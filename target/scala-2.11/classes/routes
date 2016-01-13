@@ -1,0 +1,207 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page - for testing connected device
+GET            /                                           @controllers.Application.index()
+#CORS
+OPTIONS        /                                           @controllers.SecurityController.option()
+OPTIONS        /*url                                       @controllers.SecurityController.optionLink(url: String)
+
+#  WEB SOCET  //////////////////////////////////////////////////////////////////////////////
+GET            /websocket/:id                              @webSocket.controllers.OutsideCommunicationPackageController.connection(id: String)
+
+#API - CoreClient ##############################################################################################################################################################
+
+#Login page
+# TODO -> Přihlášení pomocí všech verzí a parametrů
+POST           /coreClient/person/permission/login         @controllers.SecurityController.login()
+POST           /coreClient/person/permission/logout        @controllers.SecurityController.logout
+
+
+
+### PERSON ############ PERSON ############### PERSON ################ PERSON ################# PERSON ############ PERSON #####################################################
+################################################################################################################################################################################
+
+#Peron CRUD
+POST           /coreClient/person/person                   @controllers.PersonCreateController.createNewPerson()
+PUT            /coreClient/person/person                   @controllers.PersonCreateController.updatePersonInformation()
+GET            /coreClient/person/person/:id               @controllers.PersonCreateController.getPerson(id: String)
+DELETE         /coreClient/person/person/:id               @controllers.PersonCreateController.deletePerson(id: String)
+
+
+
+### PERMISSION ############ PERMISSION ############### PERMISSION ################ PERMISSION ################# PERMISSION #####################################################
+################################################################################################################################################################################
+GET            /permission/permisionKeys                   @controllers.PermissionController.getAllPermissions()
+GET            /permission/permisionGroups                 @controllers.PermissionController.getAllGroups()
+POST           /permission/group                           @controllers.PermissionController.createGroup()
+
+GET            /permission/personPermission                @controllers.PermissionController.getAllPersonPermission()
+DELETE         /permission/personPermission                @controllers.PermissionController.removeAllPersonPermission()
+PUT            /permission/personPermission                @controllers.PermissionController.addAllPersonPermission()
+
+### OVERFLOW ############ OVERFLOW ############### OVERFLOW ################ OVERFLOW ################# OVERFLOW ###############################################################
+################################################################################################################################################################################
+
+POST           /overflow/post                              @controllers.OverFlowController.newPost()
+GET            /overflow/post/:id                          @controllers.OverFlowController.getPost(id: String)
+DELETE         /overflow/post/:id                          @controllers.OverFlowController.deletePost(id: String)
+PUT            /overflow/post                              @controllers.OverFlowController.editPost()
+GET            /overflow/postAll                           @controllers.OverFlowController.getLatestPost()
+POST           /overflow/postFilter                        @controllers.OverFlowController.getPostByFilter()
+GET            /overflow/linkedAnswers/:id                 @controllers.OverFlowController.getPostLinkedAnswers(id: String)
+
+GET           /overflow/post/hashTags/:id                  @controllers.OverFlowController.hashTagsListOnPost(id: String)
+GET           /overflow/post/comments/:id                  @controllers.OverFlowController.commentsListOnPost(id: String)
+GET           /overflow/post/answers/:id                   @controllers.OverFlowController.answereListOnPost(id: String)
+GET           /overflow/post/textOfPost/:id                @controllers.OverFlowController.textOfPost(id: String)
+
+POST           /overflow/typeOfPost                        @controllers.OverFlowController.newTypeOfPost()
+GET            /overflow/typeOfPost                        @controllers.OverFlowController.getTypeOfPost()
+
+
+POST           /overflow/comment                           @controllers.OverFlowController.addComment()
+PUT            /overflow/comment/:id                       @controllers.OverFlowController.updateComment(id: String)
+DELETE         /overflow/comment/:id                       @controllers.OverFlowController.deletePost(id: String)
+
+POST           /overflow/answer                            @controllers.OverFlowController.addAnswer()
+PUT            /overflow/answer/:id                        @controllers.OverFlowController.updateComment(id: String)
+DELETE         /overflow/answer/:id                        @controllers.OverFlowController.deletePost(id: String)
+
+PUT            /overflow/likePlus/:id                      @controllers.OverFlowController.likePlus(id: String)
+PUT            /overflow/likeMinus/:id                     @controllers.OverFlowController.likeMinus(id: String)
+POST           /overflow/link                              @controllers.OverFlowController.linkWithPreviousAnswer()
+DELETE         /overflow/link/:id                          @controllers.OverFlowController.unlinkWithPreviousAnswer(id: String)
+PUT            /overflow/removeLink                        @controllers.OverFlowController.removeHashTag()
+POST           /overflow/hashTag                           @controllers.OverFlowController.addHashTag()
+PUT            /overflow/removeHashTag                     @controllers.OverFlowController.removeHashTag()
+POST           /overflow/confirm/:id                       @controllers.OverFlowController.addConfirmType(id: String)
+DELETE         /overflow/confirm/:id                       @controllers.OverFlowController.removeConfirmType(id: String)
+
+
+
+
+### PROJECT ############ PROJECT ############### PROJECT ################ PROJECT ################# PROJECT ####################################################################
+################################################################################################################################################################################
+#Project
+POST           /project/project                            @controllers.ProgramingPackageController.postNewProject()
+PUT            /project/project/:id                        @controllers.ProgramingPackageController.updateProject(id: String)
+GET            /project/project/:id                        @controllers.ProgramingPackageController.getProject(id: String)
+GET            /project/project                            @controllers.ProgramingPackageController.getProjectsByUserAccount()
+DELETE         /project/project/:id                        @controllers.ProgramingPackageController.deleteProject(id: String)
+
+#Homer
+POST           /project/homer                              @controllers.ProgramingPackageController.newHomer()
+DELETE         /project/homer/:id                          @controllers.ProgramingPackageController.removeHomer(id: String)
+GET            /project/homer/:id                          @controllers.ProgramingPackageController.getHomer(id: String)
+GET            /project/getAllConnectedHomers/:id          @controllers.ProgramingPackageController.getConnectedHomers(id: String)
+GET            /project/getallhoumers                      @controllers.ProgramingPackageController.getAllHomers()
+
+
+#Project - connection
+PUT            /project/connectIoTWithProject              @controllers.ProgramingPackageController.connectIoTWithProject()
+PUT            /project/unconnectIoTWithProject            @controllers.ProgramingPackageController.unConnectIoTWithProject()
+PUT            /project/connectHomerWithProject            @controllers.ProgramingPackageController.connectHomerWithProject()
+PUT            /project/unconnectHomerWithProject          @controllers.ProgramingPackageController.unConnectHomerWithProject()
+
+#Program
+POST           /project/program                            @controllers.ProgramingPackageController.postNewProgram()
+GET            /project/program/:id                        @controllers.ProgramingPackageController.getProgram(id: String)
+PUT            /project/program/:id                        @controllers.ProgramingPackageController.editProgram(id: String)
+DELETE         /project/program/:id                        @controllers.ProgramingPackageController.removeProgram(id: String)
+GET            /project/programInJson/:id                  @controllers.ProgramingPackageController.getProgramInJson(id: String)
+
+GET            /project/getallprograms/:id                 @controllers.ProgramingPackageController.getAllPrograms(id: String)
+GET            /project/listOfUploadedHomers/:id           @controllers.ProgramingPackageController.listOfUploadedHomers(id: String)
+GET            /project/listOfHomersWaitingForUpload/:id   @controllers.ProgramingPackageController.listOfHomersWaitingForUpload(id: String)
+GET            /project/getProgramInJson/:id               @controllers.ProgramingPackageController.getProgramInJson(id: String)
+PUT            /project/uploudtohomerImmediately           @controllers.ProgramingPackageController.uploadProgramToHomer_Immediately()
+PUT            /project/uploudtohomerAsSoonAsPossible      @controllers.ProgramingPackageController.uploadProgramToHomer_AsSoonAsPossible()
+PUT            /project/uploudtohomerGivenTime             @controllers.ProgramingPackageController.uploadProgramToHomer_GivenTimeAsSoonAsPossible()
+
+#Blocks
+POST           /project/blockoBlock                        @controllers.ProgramingPackageController.newBlock()
+PUT            /project/blockoBlock/:id                    @controllers.ProgramingPackageController.newVersionOfBlock(id: String)
+GET            /project/blockoBlock/logicJson/*url         @controllers.ProgramingPackageController.logicJson(url: String)
+GET            /project/blockoBlock/designJson/*url        @controllers.ProgramingPackageController.designJson(url: String)
+GET            /project/blockoBlock/generalDescription/:id @controllers.ProgramingPackageController.generalDescription(id: String)
+GET            /project/blockoBlock/versionDescription/:id @controllers.ProgramingPackageController.versionDescription(id: String)
+GET            /project/blockoBlock/*url                   @controllers.ProgramingPackageController.getBlock(url: String)
+
+GET            /project/blockoBlock/allPrevVersions/:id    @controllers.ProgramingPackageController.allPrevVersions(id: String)
+DELETE         /project/blockoBlock/*url                   @controllers.ProgramingPackageController.deleteBlock(url: String)
+POST           /project/blockoBlock/filter                 @controllers.ProgramingPackageController.getByFilter()
+
+
+
+
+### COMPILATION & LIBRARIES ############ COMPILATION & LIBRARIES ############### COMPILATION & LIBRARIES ################ COMPILATION & LIBRARIES ##############################
+################################################################################################################################################################################
+
+#Processor
+POST            /compilation/processor                      @controllers.CompilationLibrariesController.newProcessor()
+GET             /compilation/processor/:id                  @controllers.CompilationLibrariesController.getProcessor(id: String)
+GET             /compilation/processor                      @controllers.CompilationLibrariesController.getProcessorAll()
+PUT             /compilation/processor/:id                  @controllers.CompilationLibrariesController.updateProcessor(id: String)
+DELETE          /compilation/processor/:id                  @controllers.CompilationLibrariesController.deleteProcessor(id: String)
+POST            /compilation/processor/description/:id      @controllers.CompilationLibrariesController.getProcessorDescription(id: String)
+POST            /compilation/processor/libraryGroups        @controllers.CompilationLibrariesController.getProcessorLibraryGroups(id: String)
+
+#Board
+POST            /compilation/board                          @controllers.CompilationLibrariesController.newBoard()
+PUT             /compilation/board/:id                      @controllers.CompilationLibrariesController.editBoard(id: String)
+GET             /compilation/board/:id                      @controllers.CompilationLibrariesController.getBoard(id: String)
+DELETE          /compilation/board/:id                      @controllers.CompilationLibrariesController.deleteBoard(id: String)
+GET             /compilation/board/generalDescription/:id   @controllers.CompilationLibrariesController.getBoardgeneralDescription(id: String)
+GET             /compilation/board/userDescription/:id      @controllers.CompilationLibrariesController.getUserDescription(id: String)
+
+#Producer
+POST            /compilation/producer                       @controllers.CompilationLibrariesController.newProducers()
+PUT             /compilation/producer/:id                   @controllers.CompilationLibrariesController.updateProducers(id: String)
+GET             /compilation/producer                       @controllers.CompilationLibrariesController.getProducers()
+GET             /compilation/producer/:id                   @controllers.CompilationLibrariesController.getProducer(id: String)
+GET             /compilation/producer/description/:id       @controllers.CompilationLibrariesController.getProducerDescription(id: String)
+GET             /compilation/producer/typeOfBoards/:id      @controllers.CompilationLibrariesController.getProducerTypeOfBoards(id: String)
+
+#TypeOfBoard
+POST            /compilation/typeOfBoard                    @controllers.CompilationLibrariesController.newTypeOfBoard()
+PUT             /compilation/typeOfBoard/:id                @controllers.CompilationLibrariesController.updateTypeOfBoard(id: String)
+GET             /compilation/typeOfBoard                    @controllers.CompilationLibrariesController.getTypeOfBoards()
+GET             /compilation/typeOfBoard/:id                @controllers.CompilationLibrariesController.getTypeOfBoard(id: String)
+GET             /compilation/typeOfBoard/description/:id    @controllers.CompilationLibrariesController.getTypeOfBoardDescription(id: String)
+GET             /compilation/TypeOfBoard/boards/:id         @controllers.CompilationLibrariesController.getTypeOfBoardAllBoards(id: String)
+
+#LibraryGroups
+POST            /compilation/libraryGroup                   @controllers.CompilationLibrariesController.newLibraryGroup()
+GET             /compilation/libraryGroup/:id               @controllers.CompilationLibrariesController.getLibraryGroup(id: String)
+GET             /compilation/libraryGroup                   @controllers.CompilationLibrariesController.getLibraryGroupAll()
+PUT             /compilation/libraryGroup/:id               @controllers.CompilationLibrariesController.updateLibraryGroup(id: String)
+POST            /compilation/libraryGroup/description/:id   @controllers.CompilationLibrariesController.getLibraryGroupDescription(id: String)
+POST            /compilation/libraryGroup/processors/:id    @controllers.CompilationLibrariesController.getLibraryGroupProcessors(id: String)
+POST            /compilation/libraryGroup/libraries/:id     @controllers.CompilationLibrariesController.getLibraryGroupLibraries(id: String)
+POST            /compilation/libraryGroup/upload/:id        @controllers.CompilationLibrariesController.libraryGroupUpload(id: String)
+
+#Library
+POST            /compilation/library                        @controllers.CompilationLibrariesController.newLibrary()
+GET             /compilation/library/:id                    @controllers.CompilationLibrariesController.getLibrary(id: String)
+GET             /compilation/library                        @controllers.CompilationLibrariesController.getLibraryAll()
+GET             /compilation/library/filter                 @controllers.CompilationLibrariesController.getLibraryFilter()
+PUT             /compilation/library/:id                    @controllers.CompilationLibrariesController.updateLibrary(id: String)
+DELETE          /compilation/library/:id                    @controllers.CompilationLibrariesController.deleteLibrary(id: String)
+GET             /compilation/library/description/:id        @controllers.CompilationLibrariesController.getLibraryDescription(id: String)
+GET             /compilation/library/content/:id            @controllers.CompilationLibrariesController.getLibraryContent(id: String)
+GET             /compilation/library/libraryGroups/:id      @controllers.CompilationLibrariesController.getLibraryLibraryGroups(id: String)
+
+GET             /compilation/project/eclipse                 @controllers.CompilationLibrariesController.generateProjectForEclipse()
+
+### TOOLS ############ TOOLS ############### TOOLS ################ TOOLS ######################################################################################################
+################################################################################################################################################################################
+#CSS template
+GET            /public/*file                               controllers.Assets.at(path="/public", file)
+
+# Map static resources from the /public folder to the /assets URL path
+#GET            /assets/*file                               controllers.Assets.at(path="/public", file)
+GET            /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
+
+

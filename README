@@ -1,0 +1,32 @@
+Tyrion main cloud server <- dev version
+
+Version 1.30
+========================================================================================================================
+Globální změny:
+1)  Byly přesunuty API na tvorbu IoT -> Jejich tvorba a registrace do systému bude zatím pouze pro "naše zaměstnance"
+    Do projektu půjde IoT pouze přihlásit a odhlásit.
+
+2)  Globální změna ebean filtrů - JSON který vrací ID objektu vždy proměnou udává jako "id" : "12"
+    -> už se nebude vracet "programId" : "14" -> jen ve výjmečných případech kdy se bude vracet více udajů.
+
+
+Projektové změny:
+
+API změny na Objektu IoT -> Přejmenován na Board
+Board:
+    - Je to objekt zastřešující fyzicky konrkétní desku - kdo je její majitel, generace, datum vyrobení atd...
+    - Bylo odstraněno "Producer" -> Přesunoto do vlastního objektu "Typ Desky"
+    - Bylo odstraněno "parameters" -> Přesunoto do vlastního objektu "Typ Desky"
+
+Objektové (Pro Tyrion)
+TypeOfBoard (Type of Procesor, Group Of Libraries, Libraries)
+Procesor    (Group Of Libraries, Libraries)
+
+
+
+
+
+
+Version 1.29
+========================================================================================================================
+ Nothing here.. :(
