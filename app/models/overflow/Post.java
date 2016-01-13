@@ -19,21 +19,22 @@ public class Post extends Model {
     public String postId;
 
     @Constraints.Required @Constraints.MinLength(value = 12)
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    public String name;
+    @JsonInclude(JsonInclude.Include.NON_EMPTY) public String name;
 
-    @JsonIgnore @Constraints.Required @ManyToOne public TypeOfPost type;
-    @JsonProperty public String type(){return type.type;}
+    @JsonIgnore @ManyToOne public TypeOfPost type;
+    @JsonInclude(JsonInclude.Include.NON_EMPTY) @JsonProperty public String type(){return type == null ? null : type.type;}
 
-                                public int views;
-                                public int likes;
+    @JsonIgnore   public int views;
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)  @JsonProperty public String views(){ return name == null ? null : Integer.toString(views); }
+
+    public int likes;
                                 public Date dateOfCreate;
     @JsonIgnore                 public boolean deleted;
     @JsonIgnore @ManyToOne      public Person author;
 
 
     @JsonIgnore @Constraints.Required @Constraints.MinLength(value = 30) @Column(columnDefinition = "TEXT")  public String textOfPost;
-    @JsonProperty public String textOfPost(){  return "http://localhost:9000/overflow/post/textOfPost/" + this.postId; }
+    @JsonProperty public String textOfPost(){ return name == null ? textOfPost : "http://localhost:9000/overflow/post/textOfPost/" + this.postId; }
 
 
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "posts")      @JoinTable(name = "hashTagsTable")      public List<HashTag>            hashTagsList = new ArrayList<>();
@@ -43,8 +44,8 @@ public class Post extends Model {
 
 
    // @JsonProperty public String hashTagsList(){  return "http://localhost:9000/overflow/post/hashTags/" + this.postId; } // Není nezbytně vyžadováno
-    @JsonProperty public String comments(){  return "http://localhost:9000/overflow/post/comments/" +      this.postId; }
-    @JsonProperty public String answers(){  return  "http://localhost:9000/overflow/post/answers/" +      this.postId; }
+   @JsonInclude(JsonInclude.Include.NON_EMPTY) @JsonProperty public String comments(){ return name == null ? null : "http://localhost:9000/overflow/post/comments/" +      this.postId; }
+    @JsonInclude(JsonInclude.Include.NON_EMPTY) @JsonProperty public String answers(){ return name == null ? null : "http://localhost:9000/overflow/post/answers/" +      this.postId; }
 
     // Vazba M:1 pro nalinkování komentáře na post
     //@JsonInclude(JsonInclude.Include.NON_EMPTY)

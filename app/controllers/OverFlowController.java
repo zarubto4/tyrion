@@ -102,7 +102,11 @@ public class OverFlowController  extends Controller {
         try{
             Post post = Post.find.byId(id);
             if(post == null) throw new Exception("Id not Exist");
+
+            System.out.println("List je veliký " + post.comments.size());
+
             return GlobalResult.okResult(Json.toJson(post.comments));
+
         }catch (Exception e){
             return GlobalResult.badRequestResult(e);
         }
@@ -303,7 +307,7 @@ public class OverFlowController  extends Controller {
 
             Post post = Post.find.byId(postId);
             if (post == null ) throw new Exception("Overflow post not Exist");
-            if ( post.author !=SecurityController.getPerson() ) throw new Exception("You are not Author");
+            if (!post.author.mail.equals( SecurityController.getPerson().mail) ) throw new Exception("You are not Author");
 
             post.delete();
 

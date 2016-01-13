@@ -1,6 +1,6 @@
 Tyrion main cloud server <- dev version
 
-Version 1.30
+Version 1.01
 ========================================================================================================================
 Globální změny:
 1)  Byly přesunuty API na tvorbu IoT -> Jejich tvorba a registrace do systému bude zatím pouze pro "naše zaměstnance"
@@ -12,21 +12,36 @@ Globální změny:
 
 Projektové změny:
 
-API změny na Objektu IoT -> Přejmenován na Board
-Board:
-    - Je to objekt zastřešující fyzicky konrkétní desku - kdo je její majitel, generace, datum vyrobení atd...
-    - Bylo odstraněno "Producer" -> Přesunoto do vlastního objektu "Typ Desky"
-    - Bylo odstraněno "parameters" -> Přesunoto do vlastního objektu "Typ Desky"
+-> API změny na Objektu IoT -> Přejmenován na Board
+    Board:
+        - Je to objekt zastřešující fyzicky konrkétní desku - kdo je její majitel, generace, datum vyrobení atd...
+        - Bylo odstraněno "Producer" -> Přesunoto do vlastního objektu "Typ Desky"
+        - Bylo odstraněno "parameters" -> Přesunoto do vlastního objektu "Typ Desky"
 
-Objektové (Pro Tyrion)
-TypeOfBoard (Type of Procesor, Group Of Libraries, Libraries)
-Procesor    (Group Of Libraries, Libraries)
+    Objektové (Pro Tyrion)
+    TypeOfBoard (Type of Procesor, Group Of Libraries, Libraries)
+    Procesor    (Group Of Libraries, Libraries)
+
+-> GET /overflow/post/comments/:id
+    Upraven výpis jen na potřebné a používané proměné.
+    [
+      {
+        "postId": "22",
+        "likes": 0,
+        "dateOfCreate": 1452671440266,
+        "textOfPost": "komentář komentář 111",
+        "hashTags": [
+          "stairs",
+          "blabla",
+          "mocas"
+        ]
+      }
+    ]
 
 
 
 
 
-
-Version 1.29
+Version 1.00
 ========================================================================================================================
  Nothing here.. :(
