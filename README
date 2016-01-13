@@ -38,6 +38,51 @@ Projektové změny:
       }
     ]
 
+-> GET /project/program/:id
+
+    Předchozí verze:
+    [
+      {
+        "projectId": "1",
+        "projectName": "Projekt 1",
+        "projectDescription": "Velý testovací projekt",
+        "homerList": [],
+        "electronicDevicesList": [],
+        "programs": [
+          {
+            "programId": "1",
+            "programName": "Program 1",
+            "programDescription": "Test",
+            "dateOfCreate": 1452680317152,
+            "listOfUploadedHomers": "http://localhost:9000/project/listOfUploadedHomers/1",
+            "listOfHomersWaitingForUpload": "http://localhost:9000/project/listOfHomersWaitingForUpload/1",
+            "programinJson": "http://localhost:9000/project/programInJson/1",
+            "projectinJson": "http://localhost:9000/project/1"
+          }
+        ]
+      }
+    ]
+
+    Nová verze:
+
+    homerList -> homers
+    electronicDevicesList -> boards
+    programs -> @link
+
+    Výpis počtu pro rychlé zopbrazení
+
+    {
+      "projectId": "1",
+      "projectName": "Projekt 1",
+      "projectDescription": "Velý testovací projekt",
+      "programs": "http://localhost:9000/project/project/programs/1",
+      "boards": "http://localhost:9000/project/project/electronicDevicesList/1",
+      "homers": "http://localhost:9000/project/project/homerList/1",
+      "countOfBoards": 0,
+      "countOfPrograms": 1,
+      "countOfHomer": 0
+    }
+
 
 
 

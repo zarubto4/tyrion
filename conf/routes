@@ -111,6 +111,10 @@ GET            /project/program/:id                        @controllers.Programi
 PUT            /project/program/:id                        @controllers.ProgramingPackageController.editProgram(id: String)
 DELETE         /project/program/:id                        @controllers.ProgramingPackageController.removeProgram(id: String)
 GET            /project/programInJson/:id                  @controllers.ProgramingPackageController.getProgramInJson(id: String)
+GET            /project/project/programs/:id               @controllers.ProgramingPackageController.getProgramPrograms(id: String)
+GET            /project/project/electronicDevicesList/:id  @controllers.ProgramingPackageController.getProgramelectronicDevicesList(id: String)
+GET            /project/project/homerList/:id              @controllers.ProgramingPackageController.getProgramhomerList(id: String)
+
 
 GET            /project/getallprograms/:id                 @controllers.ProgramingPackageController.getAllPrograms(id: String)
 GET            /project/listOfUploadedHomers/:id           @controllers.ProgramingPackageController.listOfUploadedHomers(id: String)

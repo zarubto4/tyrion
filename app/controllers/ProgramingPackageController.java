@@ -368,6 +368,40 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
+    public  Result getProgramPrograms(String id){
+        try{
+
+            Project project  = Project.find.byId(id);
+            if (project == null) throw new Exception("Program not exist");
+
+            return GlobalResult.okResult(Json.toJson(project.programs));
+        }catch(Exception e){
+            return GlobalResult.badRequestResult(e);
+        }
+    }
+    public  Result getProgramelectronicDevicesList(String id){
+        try{
+
+            Project project  = Project.find.byId(id);
+            if (project == null) throw new Exception("Program not exist");
+
+            return GlobalResult.okResult(Json.toJson(project.electronicDevicesList));
+        }catch(Exception e){
+            return GlobalResult.badRequestResult(e);
+        }
+    }
+    public  Result getProgramhomerList(String id){
+        try{
+
+            Project project  = Project.find.byId(id);
+            if (project == null) throw new Exception("Program not exist");
+
+            return GlobalResult.okResult(Json.toJson(project.homerList));
+        }catch(Exception e){
+            return GlobalResult.badRequestResult(e);
+        }
+    }
+
     public  Result editProgram(String id){
         try{
             JsonNode json = request().body().asJson();

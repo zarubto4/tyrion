@@ -103,7 +103,7 @@ public class OverFlowController  extends Controller {
             Post post = Post.find.byId(id);
             if(post == null) throw new Exception("Id not Exist");
 
-            System.out.println("List je veliký " + post.comments.size());
+
 
             return GlobalResult.okResult(Json.toJson(post.comments));
 
