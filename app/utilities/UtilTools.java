@@ -1,6 +1,9 @@
 package utilities;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.microsoft.azure.storage.blob.CloudBlob;
+import com.microsoft.azure.storage.blob.CloudBlobContainer;
+import com.microsoft.azure.storage.blob.ListBlobItem;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -34,6 +37,27 @@ public class UtilTools {
         return list;
 
     }
+
+
+
+    public static void azureDelete(CloudBlobContainer container, String pocatekMazani) throws Exception {
+
+
+        for (ListBlobItem blobItem : container.listBlobs( pocatekMazani + "/" )) {
+
+
+            if (blobItem instanceof CloudBlob) {
+                System.out.println( "I am deleting file: " + ((CloudBlob) blobItem).getName() );
+                ((CloudBlob) blobItem).deleteIfExists();
+            }
+
+            // Break & loop
+            String help = blobItem.getUri().toString().substring(0,blobItem.getUri().toString().length() -1);
+
+            azureDelete(container, pocatekMazani +  help.substring( help.lastIndexOf("/") ,help.length()) );
+        }
+    }
+
 
 
 }

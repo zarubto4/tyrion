@@ -4,6 +4,7 @@
 
 # Home page - for testing connected device
 GET            /                                           @controllers.Application.index()
+GET            /test1                                      @controllers.Application.test1()
 #CORS
 OPTIONS        /                                           @controllers.SecurityController.option()
 OPTIONS        /*url                                       @controllers.SecurityController.optionLink(url: String)
@@ -177,25 +178,32 @@ GET             /compilation/typeOfBoard/description/:id    @controllers.Compila
 GET             /compilation/TypeOfBoard/boards/:id         @controllers.CompilationLibrariesController.getTypeOfBoardAllBoards(id: String)
 
 #LibraryGroups
-POST            /compilation/libraryGroup                   @controllers.CompilationLibrariesController.newLibraryGroup()
-GET             /compilation/libraryGroup/:id               @controllers.CompilationLibrariesController.getLibraryGroup(id: String)
-GET             /compilation/libraryGroup                   @controllers.CompilationLibrariesController.getLibraryGroupAll()
-PUT             /compilation/libraryGroup/:id               @controllers.CompilationLibrariesController.updateLibraryGroup(id: String)
-POST            /compilation/libraryGroup/description/:id   @controllers.CompilationLibrariesController.getLibraryGroupDescription(id: String)
-POST            /compilation/libraryGroup/processors/:id    @controllers.CompilationLibrariesController.getLibraryGroupProcessors(id: String)
-POST            /compilation/libraryGroup/libraries/:id     @controllers.CompilationLibrariesController.getLibraryGroupLibraries(id: String)
-POST            /compilation/libraryGroup/upload/:id        @controllers.CompilationLibrariesController.libraryGroupUpload(id: String)
+POST            /compilation/libraryGroup                               @controllers.CompilationLibrariesController.newLibraryGroup()
+GET             /compilation/libraryGroup/:id                           @controllers.CompilationLibrariesController.getLibraryGroup(id: String)
+DELETE          /compilation/libraryGroup/:id                           @controllers.CompilationLibrariesController.deleteLibraryGroup(id: String)
+GET             /compilation/libraryGroup                               @controllers.CompilationLibrariesController.getLibraryGroupAll()
+PUT             /compilation/libraryGroup/:id                           @controllers.CompilationLibrariesController.updateLibraryGroup(id: String)
+GET             /compilation/libraryGroup/generalDescription/:id        @controllers.CompilationLibrariesController.getLibraryGroupDescription(id: String)
+GET             /compilation/libraryGroup/processors/:id                @controllers.CompilationLibrariesController.getLibraryGroupProcessors(id: String)
+GET             /compilation/libraryGroup/libraries/:libraryId/:version @controllers.CompilationLibrariesController.getLibraryGroupLibraries(libraryId: String, version: String)
+POST            /compilation/libraryGroup/version/:id                   @controllers.CompilationLibrariesController.createNewVersionLibraryGroup(id: String)
+GET             /compilation/libraryGroup/versions/:id                  @controllers.CompilationLibrariesController.getVersionLibraryGroup(id: String)
+POST            /compilation/libraryGroup/upload/:libraryId/:version    @controllers.CompilationLibrariesController.uploudLibraryToLibraryGroup(libraryId: String, version: Double)
 
-#Library
-POST            /compilation/library                        @controllers.CompilationLibrariesController.newLibrary()
-GET             /compilation/library/:id                    @controllers.CompilationLibrariesController.getLibrary(id: String)
-GET             /compilation/library                        @controllers.CompilationLibrariesController.getLibraryAll()
-GET             /compilation/library/filter                 @controllers.CompilationLibrariesController.getLibraryFilter()
-PUT             /compilation/library/:id                    @controllers.CompilationLibrariesController.updateLibrary(id: String)
-DELETE          /compilation/library/:id                    @controllers.CompilationLibrariesController.deleteLibrary(id: String)
-GET             /compilation/library/description/:id        @controllers.CompilationLibrariesController.getLibraryDescription(id: String)
-GET             /compilation/library/content/:id            @controllers.CompilationLibrariesController.getLibraryContent(id: String)
-GET             /compilation/library/libraryGroups/:id      @controllers.CompilationLibrariesController.getLibraryLibraryGroups(id: String)
+GET             /compilation/library/listOfFiles/:id       @controllers.CompilationLibrariesController.listOfFilesInVersion(id: String)
+GET             /compilation/library/fileRecord/:id        @controllers.CompilationLibrariesController.fileRecord(id: String)
+
+#LibraryRecord
+POST            /compilation/library                       @controllers.CompilationLibrariesController.newSingleLibrary()
+POST            /compilation/library/version/:id           @controllers.CompilationLibrariesController.newVersionSingleLibrary(id: String)
+GET             /compilation/library/filter                @controllers.CompilationLibrariesController.getSingleLibraryFilter()
+GET             /compilation/library/:id                   @controllers.CompilationLibrariesController.getSingleLibrary(id: String)
+GET             /compilation/library                       @controllers.CompilationLibrariesController.getSingleLibraryAll()
+
+PUT             /compilation/library/:id                   @controllers.CompilationLibrariesController.updateSingleLibrary(id: String)
+DELETE          /compilation/library/:id                   @controllers.CompilationLibrariesController.deleteSingleLibrary(id: String)
+POST            /compilation/library/uploud/:id/:version   @controllers.CompilationLibrariesController.uploadSingleLibraryWithVersion(id: String, version: Double)
+GET             /compilation/library/description/:id       @controllers.CompilationLibrariesController.getSingleLibraryDescription(id: String)
 
 GET             /compilation/project/eclipse                 @controllers.CompilationLibrariesController.generateProjectForEclipse()
 
@@ -206,6 +214,6 @@ GET            /public/*file                               controllers.Assets.at
 
 # Map static resources from the /public folder to the /assets URL path
 #GET            /assets/*file                               controllers.Assets.at(path="/public", file)
-GET            /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
+GET            /assets/*file                               controllers.Assets.versioned(path="/public", file: Asset)
 
 

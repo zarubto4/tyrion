@@ -82,7 +82,7 @@ create table homer_program (
   constraint pk_homer_program primary key (program_id))
 ;
 
-create table library (
+create table libraryRecord (
   id                        varchar(255) not null,
   description               TEXT,
   content                   TEXT,
@@ -303,7 +303,7 @@ alter table library_group_processor add constraint fk_library_group_processor_pr
 
 alter table library_group_library add constraint fk_library_group_library_libr_01 foreign key (library_group_id) references library_group (id);
 
-alter table library_group_library add constraint fk_library_group_library_libr_02 foreign key (library_id) references library (id);
+alter table library_group_library add constraint fk_library_group_library_libr_02 foreign key (library_id) references libraryRecord (id);
 
 alter table permission_key_group_with_permis add constraint fk_permission_key_group_with__01 foreign key (permission_key_id) references permission_key (id);
 
@@ -361,7 +361,7 @@ drop table if exists homer_program_homer cascade;
 
 drop table if exists homer_program cascade;
 
-drop table if exists library cascade;
+drop table if exists libraryRecord cascade;
 
 drop table if exists library_group_library cascade;
 

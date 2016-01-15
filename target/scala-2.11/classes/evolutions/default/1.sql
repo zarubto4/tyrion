@@ -82,18 +82,21 @@ create table homer_program (
   constraint pk_homer_program primary key (program_id))
 ;
 
-create table library (
-  id                        varchar(255) not null,
-  description               TEXT,
-  content                   TEXT,
-  constraint pk_library primary key (id))
-;
-
 create table library_group (
   id                        varchar(255) not null,
   group_name                varchar(255),
   description               TEXT,
+  azure_package_link        varchar(255),
+  azure_storage_link        varchar(255),
+  azure_primary_url         varchar(255),
+  azure_secondary_url       varchar(255),
   constraint pk_library_group primary key (id))
+;
+
+create table library_record (
+  id                        varchar(255) not null,
+  filename                  varchar(255),
+  constraint pk_library_record primary key (id))
 ;
 
 create table linked_post (
@@ -168,6 +171,14 @@ create table property_of_post (
   constraint pk_property_of_post primary key (property_of_post_id))
 ;
 
+create table single_library (
+  id                        varchar(255) not null,
+  description               TEXT,
+  library_name              varchar(255),
+  azure_blob_link           varchar(255),
+  constraint pk_single_library primary key (id))
+;
+
 create table type_of_board (
   id                        varchar(255) not null,
   description               TEXT,
@@ -180,6 +191,17 @@ create table type_of_post (
   id                        varchar(255) not null,
   type                      varchar(255),
   constraint pk_type_of_post primary key (id))
+;
+
+create table version (
+  id                        varchar(255) not null,
+  version_name              varchar(255),
+  version_description       TEXT,
+  date_of_create            timestamp,
+  azure_link_version        float,
+  library_group_id          varchar(255),
+  single_library_id         varchar(255),
+  constraint pk_version primary key (id))
 ;
 
 
@@ -205,12 +227,6 @@ create table library_group_processor (
   library_group_id               varchar(255) not null,
   processor_id                   varchar(255) not null,
   constraint pk_library_group_processor primary key (library_group_id, processor_id))
-;
-
-create table library_group_library (
-  library_group_id               varchar(255) not null,
-  library_id                     varchar(255) not null,
-  constraint pk_library_group_library primary key (library_group_id, library_id))
 ;
 
 create table permission_key_group_with_permis (
@@ -249,16 +265,22 @@ create table property_of_post_post (
   constraint pk_property_of_post_post primary key (property_of_post_property_of_post_id, post_post_id))
 ;
 
-create table type_of_board_library (
+create table type_of_board_library_record (
   type_of_board_id               varchar(255) not null,
-  library_id                     varchar(255) not null,
-  constraint pk_type_of_board_library primary key (type_of_board_id, library_id))
+  library_record_id              varchar(255) not null,
+  constraint pk_type_of_board_library_record primary key (type_of_board_id, library_record_id))
 ;
 
 create table type_of_board_library_group (
   type_of_board_id               varchar(255) not null,
   library_group_id               varchar(255) not null,
   constraint pk_type_of_board_library_group primary key (type_of_board_id, library_group_id))
+;
+
+create table version_library_record (
+  version_id                     varchar(255) not null,
+  library_record_id              varchar(255) not null,
+  constraint pk_version_library_record primary key (version_id, library_record_id))
 ;
 create sequence blocko_block_seq;
 
@@ -272,6 +294,8 @@ create sequence homer_program_seq;
 
 create sequence library_group_seq;
 
+create sequence library_record_seq;
+
 create sequence linked_post_seq;
 
 create sequence permission_key_seq;
@@ -280,7 +304,11 @@ create sequence post_seq;
 
 create sequence project_seq;
 
+create sequence single_library_seq;
+
 create sequence type_of_post_seq;
+
+create sequence version_seq;
 
 alter table blocko_block add constraint fk_blocko_block_author_1 foreign key (author_mail) references person (mail);
 create index ix_blocko_block_author_1 on blocko_block (author_mail);
@@ -316,6 +344,10 @@ alter table type_of_board add constraint fk_type_of_board_producer_16 foreign ke
 create index ix_type_of_board_producer_16 on type_of_board (producer_id);
 alter table type_of_board add constraint fk_type_of_board_processor_17 foreign key (processor_id) references processor (id);
 create index ix_type_of_board_processor_17 on type_of_board (processor_id);
+alter table version add constraint fk_version_libraryGroup_18 foreign key (library_group_id) references library_group (id);
+create index ix_version_libraryGroup_18 on version (library_group_id);
+alter table version add constraint fk_version_singleLibrary_19 foreign key (single_library_id) references single_library (id);
+create index ix_version_singleLibrary_19 on version (single_library_id);
 
 
 
@@ -334,10 +366,6 @@ alter table homer_program_homer add constraint fk_homer_program_homer_homer_02 f
 alter table library_group_processor add constraint fk_library_group_processor_li_01 foreign key (library_group_id) references library_group (id);
 
 alter table library_group_processor add constraint fk_library_group_processor_pr_02 foreign key (processor_id) references processor (id);
-
-alter table library_group_library add constraint fk_library_group_library_libr_01 foreign key (library_group_id) references library_group (id);
-
-alter table library_group_library add constraint fk_library_group_library_libr_02 foreign key (library_id) references library (id);
 
 alter table permission_key_group_with_permis add constraint fk_permission_key_group_with__01 foreign key (permission_key_id) references permission_key (id);
 
@@ -363,13 +391,17 @@ alter table property_of_post_post add constraint fk_property_of_post_post_prop_0
 
 alter table property_of_post_post add constraint fk_property_of_post_post_post_02 foreign key (post_post_id) references post (post_id);
 
-alter table type_of_board_library add constraint fk_type_of_board_library_type_01 foreign key (type_of_board_id) references type_of_board (id);
+alter table type_of_board_library_record add constraint fk_type_of_board_library_reco_01 foreign key (type_of_board_id) references type_of_board (id);
 
-alter table type_of_board_library add constraint fk_type_of_board_library_libr_02 foreign key (library_id) references library (id);
+alter table type_of_board_library_record add constraint fk_type_of_board_library_reco_02 foreign key (library_record_id) references library_record (id);
 
 alter table type_of_board_library_group add constraint fk_type_of_board_library_grou_01 foreign key (type_of_board_id) references type_of_board (id);
 
 alter table type_of_board_library_group add constraint fk_type_of_board_library_grou_02 foreign key (library_group_id) references library_group (id);
+
+alter table version_library_record add constraint fk_version_library_record_ver_01 foreign key (version_id) references version (id);
+
+alter table version_library_record add constraint fk_version_library_record_lib_02 foreign key (library_record_id) references library_record (id);
 
 # --- !Downs
 
@@ -403,13 +435,13 @@ drop table if exists homer_program_homer cascade;
 
 drop table if exists homer_program cascade;
 
-drop table if exists library cascade;
-
-drop table if exists library_group_library cascade;
-
 drop table if exists library_group cascade;
 
 drop table if exists library_group_processor cascade;
+
+drop table if exists library_record cascade;
+
+drop table if exists version_library_record cascade;
 
 drop table if exists linked_post cascade;
 
@@ -435,13 +467,17 @@ drop table if exists project cascade;
 
 drop table if exists property_of_post cascade;
 
+drop table if exists single_library cascade;
+
 drop table if exists type_of_board cascade;
 
-drop table if exists type_of_board_library cascade;
+drop table if exists type_of_board_library_record cascade;
 
 drop table if exists type_of_board_library_group cascade;
 
 drop table if exists type_of_post cascade;
+
+drop table if exists version cascade;
 
 drop sequence if exists blocko_block_seq;
 
@@ -455,6 +491,8 @@ drop sequence if exists homer_program_seq;
 
 drop sequence if exists library_group_seq;
 
+drop sequence if exists library_record_seq;
+
 drop sequence if exists linked_post_seq;
 
 drop sequence if exists permission_key_seq;
@@ -463,5 +501,9 @@ drop sequence if exists post_seq;
 
 drop sequence if exists project_seq;
 
+drop sequence if exists single_library_seq;
+
 drop sequence if exists type_of_post_seq;
+
+drop sequence if exists version_seq;
 

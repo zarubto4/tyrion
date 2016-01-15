@@ -20,12 +20,12 @@ public class TypeOfBoard extends Model {
     @JsonIgnore @OneToMany(mappedBy="typeOfBoard", cascade = CascadeType.ALL) public List<Board> boards = new ArrayList<>();
 
 
-    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL)   public List<Library>       libraries = new ArrayList<>();
+    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL)   public List<LibraryRecord>       libraries = new ArrayList<>();
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL)   public List<LibraryGroup>  libraryGroups = new ArrayList<>();
 
     @JsonProperty public String description   (){return "http://localhost:9000/compilation/TypeOfBoard/generalDescription/"    +  this.id;}
     @JsonProperty public String libraryGroups (){return "http://localhost:9000/compilation/processor/libraryGroups/" +  this.id;}
-    @JsonProperty public String libraries     (){return "http://localhost:9000/compilation/processor/libraries/" +  this.id;}
+    @JsonProperty public String libraries     (){return "http://localhost:9000/compilation/processor/records/" +  this.id;}
     @JsonProperty public String procesor      (){return "http://localhost:9000/compilation/processor/" +  this.id;}
     @JsonProperty public String boards        (){return "http://localhost:9000/compilation/TypeOfBoard/boards/" +  this.id;}
 

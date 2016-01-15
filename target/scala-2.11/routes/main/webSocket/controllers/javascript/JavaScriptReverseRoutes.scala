@@ -1,7 +1,7 @@
 
 // @GENERATOR:play-routes-compiler
-// @SOURCE:/Users/zaruba/ownCloud/Git/tyrion/conf/routes
-// @DATE:Tue Jan 12 19:48:46 CET 2016
+// @SOURCE:/Users/zaruba/ownCloud/Git/Tyrion/conf/routes
+// @DATE:Fri Jan 15 18:09:49 CET 2016
 
 import play.api.routing.JavaScriptReverseRoute
 import play.api.mvc.{ QueryStringBindable, PathBindable, Call, JavascriptLiteral }
@@ -11,11 +11,11 @@ import play.core.routing.{ HandlerDef, ReverseRouteContext, queryString, dynamic
 import _root_.controllers.Assets.Asset
 import _root_.play.libs.F
 
-// @LINE:12
+// @LINE:13
 package webSocket.controllers.javascript {
   import ReverseRouteContext.empty
 
-  // @LINE:12
+  // @LINE:13
   class ReverseOutsideCommunicationPackageController(_prefix: => String) {
 
     def _defaultPrefix: String = {
@@ -23,7 +23,7 @@ package webSocket.controllers.javascript {
     }
 
   
-    // @LINE:12
+    // @LINE:13
     def connection: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "webSocket.controllers.OutsideCommunicationPackageController.connection",
       """

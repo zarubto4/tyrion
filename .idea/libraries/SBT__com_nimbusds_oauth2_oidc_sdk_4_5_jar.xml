@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="SBT: com.nimbusds:oauth2-oidc-sdk:4.5:jar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/com.nimbusds/oauth2-oidc-sdk/jars/oauth2-oidc-sdk-4.5.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/.ivy2/cache/com.nimbusds/oauth2-oidc-sdk/docs/oauth2-oidc-sdk-4.5-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/com.nimbusds/oauth2-oidc-sdk/srcs/oauth2-oidc-sdk-4.5-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

@@ -4,7 +4,7 @@
 		module="tyrion_2.11"
 		revision="1.0-SNAPSHOT"
 		status="integration"
-		publication="20160112180950"
+		publication="20160115173802"
 	>
 		<description>
 		tyrion
@@ -43,11 +43,10 @@
 		<dependency org="com.typesafe.play" name="play-java_2.11" rev="2.4.4" conf="compile->default(compile)"/>
 		<dependency org="com.typesafe.play" name="play-netty-server_2.11" rev="2.4.4" conf="compile->default(compile)"/>
 		<dependency org="org.postgresql" name="postgresql" rev="9.4-1201-jdbc4" conf="compile->default(compile)"/>
-		<dependency org="com.google.code.gson" name="gson" rev="2.2.4" conf="compile->default(compile)"/>
-		<dependency org="org.eclipse.persistence" name="javax.persistence" rev="2.1.1" conf="compile->default(compile)"/>
-		<dependency org="javax.xml.bind" name="jaxb-api" rev="2.2.12" conf="compile->default(compile)"/>
-		<dependency org="org.apache.camel" name="camel-xmljson" rev="2.16.1" conf="compile->default(compile)"/>
-		<dependency org="org.json" name="json" rev="20151123" conf="compile->default(compile)"/>
+		<dependency org="com.microsoft.azure" name="adal4j" rev="1.1.2" conf="compile->default(compile)"/>
+		<dependency org="com.microsoft.azure" name="azure-core" rev="0.9.1" conf="compile->default(compile)"/>
+		<dependency org="com.microsoft.azure" name="azure-storage" rev="4.0.0" conf="compile->default(compile)"/>
+		<dependency org="com.microsoft.azure" name="azure-svc-mgmt" rev="0.9.1" conf="compile->default(compile)"/>
 		<dependency org="com.typesafe.play" name="play-java-jdbc_2.11" rev="2.4.4" conf="compile->default(compile)"/>
 		<dependency org="com.typesafe.play" name="filters-helpers_2.11" rev="2.4.4" conf="compile->default(compile)"/>
 		<dependency org="com.typesafe.play" name="play-cache_2.11" rev="2.4.4" conf="compile->default(compile)"/>

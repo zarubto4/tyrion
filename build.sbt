@@ -11,11 +11,10 @@ scalaVersion := "2.11.6"
 
 libraryDependencies ++= Seq(
   "org.postgresql" % "postgresql" % "9.4-1201-jdbc4",
-  "com.google.code.gson" % "gson" % "2.2.4",
-  "org.eclipse.persistence" % "javax.persistence" % "2.1.1",
-  "javax.xml.bind" % "jaxb-api" % "2.2.12",
-  "org.apache.camel" % "camel-xmljson" % "2.16.1",
-  "org.json" % "json" % "20151123",
+  "com.microsoft.azure" % "adal4j" % "1.1.2",
+  "com.microsoft.azure" % "azure-core" % "0.9.1",
+  "com.microsoft.azure" % "azure-storage" % "4.0.0",
+  "com.microsoft.azure" % "azure-svc-mgmt" % "0.9.1",
   javaJdbc,
   filters,
   cache,

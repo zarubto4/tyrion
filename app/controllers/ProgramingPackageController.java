@@ -731,6 +731,7 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
+    // TODO opravit -> Jako všechny už správně udělané link
     public Result logicJson(String url){
         try {
 
@@ -738,7 +739,6 @@ public class ProgramingPackageController extends Controller {
 
             if (parts.length > 2)
                 return GlobalResult.badRequestResult(new Exception("URL " + url + " contains more substrings than one"));
-
 
             if (parts.length > 1) {
                 BlockoContentBlock block = BlockoContentBlock.find

@@ -1,3 +1,4 @@
+import utilities.A_GlobalValue;
 import play.Application;
 import play.GlobalSettings;
 import play.mvc.Action;
@@ -7,13 +8,22 @@ import java.lang.reflect.Method;
 
 public class Global extends GlobalSettings {
 
+   // public static String server = Configuration.root().getString("serverName");
+
     @Override
     public void onStart(Application app){
 
-      //  PermissionController.onStartPermission();
-      //  OverFlowController.onStartPermission();
+        try {
+            A_GlobalValue.onStart();
 
-       // PersonCreateController.onStartPermission(); TODO
+            //  PermissionController.onStartPermission();
+            //  OverFlowController.onStartPermission();
+
+            // PersonCreateController.onStartPermission(); TODO
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 

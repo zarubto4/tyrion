@@ -1,5 +1,45 @@
 Tyrion main cloud server <- dev version
 
+
+Version 1.04
+========================================================================================================================
+Globální změny:
+
+
+   Abych nezasílal vše co není zrovna potřeba, obsah je překrýván linkem.
+   Uprava navrhu je videt na  výpisu všech knihoven "description"! Jednou obsahuje link (když obsah existuje)
+   V opačném případě je nahrazeno null.
+
+1) [
+     {
+       "id": "1",
+       "groupName": "Pro ARM7 - YP",
+       "description": "http://localhost:9000/compilation/libraryGroup/generalDescription/1",
+       "azurePackageLink": "libraryGroup",
+       "azureStorageLink": "244n44r7p7j8n",
+       "azurePrimaryUrl": null,
+       "azureSecondaryUrl": null,
+       "processors": "http://localhost:9000/compilation/libraryGroup/processors/1",
+       "libraries": "http://localhost:9000/compilation/libraryGroup/libraries/1"
+     },
+     {
+       "id": "21",
+       "groupName": "Pro ad ads afsdf ",
+       "description": null,
+       "azurePackageLink": "libraryGroup",
+       "azureStorageLink": "1p57k9lnjgbn4",
+       "azurePrimaryUrl": null,
+       "azureSecondaryUrl": null,
+       "processors": "http://localhost:9000/compilation/libraryGroup/processors/21",
+       "libraries": "http://localhost:9000/compilation/libraryGroup/libraries/21"
+     }
+   ]
+
+   Změny jsou zavedeny v těchto objektech: // LibraryGroup,  TODO
+
+
+
+
 Version 1.01
 ========================================================================================================================
 Globální změny:
