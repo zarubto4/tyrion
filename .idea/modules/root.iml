@@ -187,5 +187,29 @@
     <orderEntry type="library" name="SBT: commons-logging:commons-logging:1.1.1:jar" level="project" />
     <orderEntry type="library" scope="TEST" name="SBT: commons-logging:commons-logging:1.1.3:jar" level="project" />
     <orderEntry type="library" name="SBT: javax.xml.bind:jaxb-api:2.2.7:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.4.5:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.fasterxml.jackson.datatype:jackson-datatype-joda:2.4.5:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.fasterxml.jackson.module:jackson-module-scala_2.11:2.4.2:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.thoughtworks.paranamer:paranamer:2.6:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.typesafe.play:build-link:2.4.6:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.typesafe.play:play-datacommons_2.11:2.4.6:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.typesafe.play:play-exceptions:2.4.6:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.typesafe.play:play-functional_2.11:2.4.6:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.typesafe.play:play-iteratees_2.11:2.4.6:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.typesafe.play:play-json_2.11:2.4.6:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.typesafe.play:play-netty-server_2.11:2.4.6:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.typesafe.play:play-netty-utils:2.4.6:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.typesafe.play:play-server_2.11:2.4.6:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.typesafe.play:play_2.11:2.4.6:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.typesafe.play:routes-compiler_2.11:2.4.6:jar" level="project" />
+    <orderEntry type="library" name="SBT: io.swagger:swagger-annotations:1.5.6:jar" level="project" />
+    <orderEntry type="library" name="SBT: io.swagger:swagger-core:1.5.6:jar" level="project" />
+    <orderEntry type="library" name="SBT: io.swagger:swagger-models:1.5.6:jar" level="project" />
+    <orderEntry type="library" name="SBT: io.swagger:swagger-play2_2.11:1.5.1:jar" level="project" />
+    <orderEntry type="library" name="SBT: io.swagger:swagger-scala-module_2.11:1.0.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.wordnik:swagger-annotations:1.5.3-M1:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.wordnik:swagger-core:1.5.3-M1:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.wordnik:swagger-models:1.5.3-M1:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.webjars:swagger-ui:2.1.8-M1:jar" level="project" />
   </component>
 </module>

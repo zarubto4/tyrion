@@ -4,7 +4,7 @@
 		module="tyrion_2.11"
 		revision="1.0-SNAPSHOT"
 		status="integration"
-		publication="20160115173802"
+		publication="20160122095813"
 	>
 		<description>
 		tyrion
@@ -47,6 +47,10 @@
 		<dependency org="com.microsoft.azure" name="azure-core" rev="0.9.1" conf="compile->default(compile)"/>
 		<dependency org="com.microsoft.azure" name="azure-storage" rev="4.0.0" conf="compile->default(compile)"/>
 		<dependency org="com.microsoft.azure" name="azure-svc-mgmt" rev="0.9.1" conf="compile->default(compile)"/>
+		<dependency org="io.swagger" name="swagger-play2_2.11" rev="1.5.1" conf="compile->default(compile)">
+			<exclude org="org.reflections" module="reflections" name="*" type="*" ext="*" conf="" matcher="exact"/>
+		</dependency>
+		<dependency org="io.swagger" name="swagger-core" rev="1.5.6" conf="compile->default(compile)"/>
 		<dependency org="com.typesafe.play" name="play-java-jdbc_2.11" rev="2.4.4" conf="compile->default(compile)"/>
 		<dependency org="com.typesafe.play" name="filters-helpers_2.11" rev="2.4.4" conf="compile->default(compile)"/>
 		<dependency org="com.typesafe.play" name="play-cache_2.11" rev="2.4.4" conf="compile->default(compile)"/>

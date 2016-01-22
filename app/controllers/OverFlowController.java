@@ -9,14 +9,13 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.GlobalResult;
+import utilities.response.GlobalResult;
 import utilities.Secured;
 import utilities.UtilTools;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
 
 public class OverFlowController  extends Controller {
 
@@ -83,7 +82,7 @@ public class OverFlowController  extends Controller {
             return GlobalResult.okResult(Json.toJson(post));
 
         }catch (Exception e){
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
 
@@ -94,7 +93,7 @@ public class OverFlowController  extends Controller {
             if(post == null) throw new Exception("Id not Exist");
             return GlobalResult.okResult(Json.toJson(post.hashTagsList));
         }catch (Exception e){
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
 
@@ -108,7 +107,7 @@ public class OverFlowController  extends Controller {
             return GlobalResult.okResult(Json.toJson(post.comments));
 
         }catch (Exception e){
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
 
@@ -118,7 +117,7 @@ public class OverFlowController  extends Controller {
             if(post == null) throw new Exception("Id not Exist");
             return GlobalResult.okResult(Json.toJson(post.answers));
         }catch (Exception e){
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
 
@@ -128,7 +127,7 @@ public class OverFlowController  extends Controller {
             if(post == null) throw new Exception("Id not Exist");
             return GlobalResult.okResult(Json.toJson(post.textOfPost));
         }catch (Exception e){
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
 
@@ -167,7 +166,7 @@ public class OverFlowController  extends Controller {
             return GlobalResult.okResult(Json.toJson(latestPost));
 
         } catch (Exception e){
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
 
     }
@@ -203,7 +202,7 @@ public class OverFlowController  extends Controller {
             return GlobalResult.okResult(Json.toJson(latestPost));
 
         } catch (Exception e){
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
 
     }
@@ -240,7 +239,7 @@ public class OverFlowController  extends Controller {
                 return GlobalResult.okResult(Json.toJson(list));
 
         } catch (Exception e){
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
 
@@ -252,7 +251,7 @@ public class OverFlowController  extends Controller {
           return GlobalResult.okResult( Json.toJson(SecurityController.getPerson().personPosts)  );
         }catch (Exception e){
             e.printStackTrace();
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
 
@@ -297,7 +296,7 @@ public class OverFlowController  extends Controller {
             return GlobalResult.okResult( Json.newObject().put( "postId", post.postId ) );
         }catch (Exception e){
             e.printStackTrace();
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
 
@@ -313,7 +312,7 @@ public class OverFlowController  extends Controller {
 
             return GlobalResult.okResult();
         }catch (Exception e){
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
 
@@ -327,7 +326,7 @@ public class OverFlowController  extends Controller {
 
             Post post = Post.find.byId(json.get("postId").asText());
 
-            if (post == null) return GlobalResult.badRequestResult(new Exception(" Overflow post not Exist"));
+            if (post == null) return GlobalResult.badRequest(new Exception(" Overflow post not Exist"));
 
             if( !post.author.mail.equals(SecurityController.getPerson().mail)) return GlobalResult.forbidden();
 
@@ -359,7 +358,7 @@ public class OverFlowController  extends Controller {
            return GlobalResult.okResult();
 
         }catch (Exception e){
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
 
     }
@@ -403,7 +402,7 @@ public class OverFlowController  extends Controller {
 
            return GlobalResult.okResult( Json.newObject().put( "postId", post.postId ));
        }catch (Exception e){
-           return GlobalResult.badRequestResult(e);
+           return GlobalResult.badRequest(e);
        }
     }
 
@@ -449,7 +448,7 @@ public class OverFlowController  extends Controller {
 
         }catch (Exception e){
 
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
 
         }
     }
@@ -484,7 +483,7 @@ public class OverFlowController  extends Controller {
 
             return GlobalResult.okResult();
         }catch (Exception e){
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
 
@@ -497,8 +496,8 @@ public class OverFlowController  extends Controller {
             Post question = Post.find.byId(json.get("postId").asText());
             Post answer = Post.find.byId(json.get("linkId").asText());
 
-            if (question == null)   return GlobalResult.badRequestResult(new Exception(" Overflow post not Exist"));
-            if (answer == null)     return GlobalResult.badRequestResult(new Exception(" Overflow link post not Exist"));
+            if (question == null)   return GlobalResult.badRequest(new Exception(" Overflow post not Exist"));
+            if (answer == null)     return GlobalResult.badRequest(new Exception(" Overflow link post not Exist"));
             if (question.postParentComment != null)     throw new Exception("You can link only main post");
             if (answer.postParentComment != null)       throw new Exception("You can link only main post");
 
@@ -514,7 +513,7 @@ public class OverFlowController  extends Controller {
 
             return GlobalResult.okResult(result);
         }catch (Exception e){
-            return GlobalResult.badRequestResult(e, "postId", "linkId");
+            return GlobalResult.badRequest(e, "postId", "linkId");
         }
     }
 
@@ -530,7 +529,7 @@ public class OverFlowController  extends Controller {
 
             return GlobalResult.okResult();
         }catch (Exception e){
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
 
@@ -550,11 +549,9 @@ public class OverFlowController  extends Controller {
 
             return GlobalResult.okResult();
         }catch (Exception e){
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
-
-
 
     public Result removeProperty(String postId){
         try{
@@ -568,7 +565,7 @@ public class OverFlowController  extends Controller {
 
             return GlobalResult.okResult();
         }catch (Exception e){
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
 
@@ -587,7 +584,7 @@ public class OverFlowController  extends Controller {
 
             return GlobalResult.okResult( Json.newObject().put( "postId", typeOfPost.id ) );
         }catch (Exception e){
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
 
@@ -596,11 +593,9 @@ public class OverFlowController  extends Controller {
         try{
             return GlobalResult.okResult(Json.toJson( TypeOfPost.find.all() ));
         }catch (Exception e){
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
-
-
 
 
     @Security.Authenticated(Secured.class)
@@ -630,7 +625,7 @@ public class OverFlowController  extends Controller {
 
             return GlobalResult.okResult();
         }catch (Exception e){
-            return GlobalResult.badRequestResult(e, "postId", "[hashTags]");
+            return GlobalResult.badRequest(e, "postId", "[hashTags]");
         }
 
     }
@@ -647,7 +642,7 @@ public class OverFlowController  extends Controller {
 
             return GlobalResult.okResult();
         }catch (Exception e){
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
 
     }
@@ -677,7 +672,7 @@ public class OverFlowController  extends Controller {
 
             return GlobalResult.okResult();
         }catch (Exception e){
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
 
@@ -702,7 +697,7 @@ public class OverFlowController  extends Controller {
             return GlobalResult.okResult();
         }catch (Exception e){
             e.printStackTrace();
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
 
         }
     }
@@ -721,7 +716,7 @@ public class OverFlowController  extends Controller {
 
             return GlobalResult.okResult();
         }catch (Exception e){
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
 
@@ -738,7 +733,7 @@ public class OverFlowController  extends Controller {
 
             return GlobalResult.okResult();
         }catch (Exception e){
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
 

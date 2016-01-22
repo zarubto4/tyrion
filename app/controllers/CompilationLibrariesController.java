@@ -3,15 +3,18 @@ package controllers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
+import io.swagger.annotations.*;
+import models.blocko.Project;
 import models.compiler.*;
+import play.Logger;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
-import utilities.A_GlobalValue;
 import utilities.EclipseProject.EclipseProject;
-import utilities.GlobalResult;
+import utilities.GlobalValue;
 import utilities.UtilTools;
+import utilities.response.GlobalResult;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -21,8 +24,34 @@ import java.util.Date;
 import java.util.List;
 
 
+@Api(   value = "/compilation",
+        authorizations = { @Authorization(value="X-AUTH-TOKEN") },
+        description = "Operations used for Compilation, Library Operation and Others",
+        produces = "application/json",
+        basePath = "/compilation")
+//@Security.Authenticated(Secured.class)
 public class CompilationLibrariesController extends Controller {
 
+
+
+
+    @ApiOperation(
+            value = "post new Processor",
+            notes = "Returns id of new Processor",
+            response = Processor.class,
+            responseReference = "id",
+            consumes = "application/json",
+            httpMethod = "POST"
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(code = 201, message = "201 Created - Object created with id in Json", response = Processor.class),
+                    @ApiResponse(code = 400, message = "400 Bad Request - Incoming values are broken"),
+                    @ApiResponse(code = 401, message = "401 Unauthorized - You need Permission"),
+                    @ApiResponse(code = 500, message = "500 Server Error - Its Reported"),
+            }
+    )
+    @ApiImplicitParams({ @ApiImplicitParam(name = "body", value = "Description for users", required = false,  paramType = "body" )})
     public Result newProcessor() {
         try {
             JsonNode json = request().body().asJson();
@@ -34,44 +63,97 @@ public class CompilationLibrariesController extends Controller {
             processor.processorName = json.get("processorName").asText();
             processor.speed         = json.get("speed").asInt();
 
-            List<String> libraryGroups = UtilTools.getListFromJson(json, "libraryGroups");
-
-            for (String id : libraryGroups) {
-                try {
-                    processor.libraryGroups.add(LibraryGroup.find.byId(id));
-                } catch (Exception e) {/**nothing*/}
-            }
-
             processor.save();
+            return GlobalResult.created(Json.toJson(processor));
 
-            return GlobalResult.okResultWithId(processor.id);
+        } catch (NullPointerException e) {
+            return GlobalResult.badRequest(e, "description - TEXT", "processorCode - String", "processorName - String", "speed - Integer", "libraryGroups [Id,Id..]");
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e, "description - TEXT", "processorCode - String", "processorName - String" , "speed - Integer", "libraryGroups [Id,Id..]");
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - newProcessor ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
-    public Result getProcessor(String id) {
+    @ApiOperation(
+            value = "get Processor object by Id",
+            notes = "Returns Procesor obejct",
+            response = Producer.class,
+            responseReference = "id",
+            consumes = "application/json",
+            httpMethod = "GET"
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(code = 200, message = "200 Return object in JSON", response = Processor.class),
+                  //  @ApiResponse(code = 201, message = "201 Created - Object created with id in Json", response = Processor.class),
+                    @ApiResponse(code = 401, message = "401 Unauthorized - You need Permission"),
+                    @ApiResponse(code = 404, message = "404 Not Found - Document not found"),
+                  //  @ApiResponse(code = 500, message = "500 Server Error - Its Reported"),
+            }
+    )
+    public Result getProcessor(@ApiParam( name = "id", value =  "id of processor object", required = true, example = "1"  ) String id) {
         try {
             Processor processor = Processor.find.byId(id);
-            if(processor == null ) throw new Exception("Processor not Exist");
+
+
+            if(processor == null ) return GlobalResult.notFound();
 
             return GlobalResult.okResult(Json.toJson(processor));
+
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            Logger.error("CompilationLibrariesController - newProcessor ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
+    @ApiOperation(
+            value = "get all Processor",
+            notes = "Returns Processor Json Array",
+            response = Processor.class,
+            consumes = "application/json",
+            httpMethod = "GET"
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(code = 200, message = "200 Return object in JSON", response = Processor.class),
+                    //@ApiResponse(code = 201, message = "201 Created - Object created with id in Json", response = Processor.class),
+                    //@ApiResponse(code = 204, message = "204 Updated - Object updated successfully", response = Processor.class),
+                    @ApiResponse(code = 401, message = "401 Unauthorized - You need Permission"),
+                    //@ApiResponse(code = 404, message = "404 Not Found - Document not found"),
+                    //@ApiResponse(code = 500, message = "500 Server Error - Its Reported"),
+            }
+    )
     public Result getProcessorAll() {
         try {
-           List<Processor> processors = Processor.find.all();
 
+           List<Processor> processors = Processor.find.all();
             return GlobalResult.okResult(Json.toJson(processors));
+
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
 
-    public Result updateProcessor(String id) {
+    @ApiOperation(
+            value = "update Processor by id",
+            notes = "Return Processor in Json",
+            consumes = "application/json",
+            httpMethod = "PUT"
+    )
+    @ApiResponses(
+            value = {
+                    //@ApiResponse(code = 200, message = "200 Return object in JSON", response = Processor.class),
+                    @ApiResponse(code = 204, message = "204 Updated - Object updated successfully", response = Processor.class),
+                    @ApiResponse(code = 401, message = "401 Unauthorized - You need Permission"),
+                    @ApiResponse(code = 404, message = "404 Not Found - Document not found"),
+                    //@ApiResponse(code = 500, message = "500 Server Error - Its Reported"),
+            }
+    )
+    @ApiImplicitParams({ @ApiImplicitParam(name = "body", value = "Description for users", required = false,  dataType = "models.compiler.Processor",  paramType = "body" )})
+    public Result updateProcessor(@ApiParam( name ="id", value =  "id of processor object", required = true, example = "1"  ) String id) {
         try {
             JsonNode json = request().body().asJson();
 
@@ -96,9 +178,10 @@ public class CompilationLibrariesController extends Controller {
 
             processor.update();
 
-            return GlobalResult.okResult();
+            return GlobalResult.update(Json.toJson(processor));
+
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
 
@@ -106,35 +189,142 @@ public class CompilationLibrariesController extends Controller {
         try {
 
             Processor processor = Processor.find.byId(id);
-            if(processor == null ) throw new Exception("Processor not Exist");
+            if(processor == null ) return GlobalResult.notFound();
 
             processor.delete();
 
             return GlobalResult.okResult();
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - newProcessor ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
     public Result getProcessorDescription(String id) {
         try {
             Processor processor = Processor.find.byId(id);
-            if(processor == null ) throw new Exception("Processor not Exist");
+            if(processor == null ) return GlobalResult.notFound();
 
             return GlobalResult.okResult(Json.toJson(processor.description));
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - getProcessorDescription ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
     public Result getProcessorLibraryGroups(String id) {
         try {
             Processor processor = Processor.find.byId(id);
-            if(processor == null ) throw new Exception("Processor not Exist");
+            if(processor == null ) return GlobalResult.notFound();
 
             return GlobalResult.okResult(Json.toJson(processor.libraryGroups));
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - getProcessorLibraryGroups ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
+        }
+    }
+
+    public Result getProcessorSingleLibraries(String id) {
+        try {
+            Processor processor = Processor.find.byId(id);
+            if(processor == null ) return GlobalResult.notFound();
+
+            return GlobalResult.okResult(Json.toJson(processor.singleLibraries));
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - getProcessorSingleLibraries ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
+        }
+    }
+
+    public Result connectProcessorWithLibrary(String id, String lbrId) {
+        try {
+            Processor processor = Processor.find.byId(id);
+            if(processor == null ) return GlobalResult.notFound();
+
+            SingleLibrary singleLibrary = SingleLibrary.find.byId(id);
+            if(singleLibrary == null ) return GlobalResult.notFound();
+
+
+            processor.singleLibraries.add(singleLibrary);
+            processor.update();
+
+            return GlobalResult.okResult();
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - connectProcessorWithLibrary ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
+        }
+    }
+
+    public Result connectProcessorWithLibraryGroup(String id, String lbrgId) {
+        try {
+            Processor processor = Processor.find.byId(id);
+            if(processor == null ) return GlobalResult.notFound();
+
+            LibraryGroup libraryGroup = LibraryGroup.find.byId(id);
+            if(libraryGroup == null ) return GlobalResult.notFound();
+
+
+            processor.libraryGroups.add(libraryGroup);
+            processor.update();
+
+            return GlobalResult.okResult();
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - connectProcessorWithLibraryGroup ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
+        }
+    }
+
+    public Result unconnectProcessorWithLibrary(String id, String lbrId) {
+        try {
+            Processor processor = Processor.find.byId(id);
+            if(processor == null ) return GlobalResult.notFound();
+
+            SingleLibrary singleLibrary = SingleLibrary.find.byId(id);
+            if(singleLibrary == null ) return GlobalResult.notFound();
+
+
+            processor.singleLibraries.remove(singleLibrary);
+            processor.update();
+
+            return GlobalResult.okResult();
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - connectProcessorWithLibrary ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
+        }
+    }
+
+    public Result unconnectProcessorWithLibraryGroup(String id, String lbrgId) {
+        try {
+            Processor processor = Processor.find.byId(id);
+            if(processor == null ) return GlobalResult.notFound();
+
+            LibraryGroup libraryGroup = LibraryGroup.find.byId(id);
+            if(libraryGroup == null ) return GlobalResult.notFound();
+
+
+            processor.libraryGroups.remove(libraryGroup);
+            processor.update();
+
+            return GlobalResult.okResult();
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - connectProcessorWithLibraryGroup ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -169,7 +359,7 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.okResultWithId(libraryGroup.id);
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e, "description - TEXT", "groupName - String");
+            return GlobalResult.badRequest(e, "description - TEXT", "groupName - String");
         }
     }
 
@@ -178,12 +368,12 @@ public class CompilationLibrariesController extends Controller {
             JsonNode json = request().body().asJson();
 
             LibraryGroup libraryGroup = LibraryGroup.find.byId(id);
-            if(libraryGroup == null) throw new Exception("LibraryRecord Not found");
+            if(libraryGroup == null) return GlobalResult.notFound();
 
             Version versionObject = new Version();
-            versionObject.azureLinkVersion = json.get("version").asDouble();
-            versionObject.dateOfCreate = new Date();
-            versionObject.versionName = json.get("versionName").asText();
+            versionObject.azureLinkVersion   = json.get("version").asDouble();
+            versionObject.dateOfCreate       = new Date();
+            versionObject.versionName        = json.get("versionName").asText();
             versionObject.versionDescription = json.get("description").asText();
 
             // Kontrola nové verze jestli je vyšší číslo než u té předchozí!
@@ -197,20 +387,22 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.okResultWithId(versionObject.id);
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e, "description - TEXT", "versionName - String", "version - Double");
+            Logger.error("CompilationLibrariesController - newProcessor ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
     public Result getVersionLibraryGroup(String id){
         try {
             LibraryGroup libraryGroup = LibraryGroup.find.byId(id);
-            if(libraryGroup == null) throw new Exception("LibraryRecord Not found");
-
-
+            if(libraryGroup == null) return GlobalResult.notFound();
 
             return GlobalResult.okResult(Json.toJson(libraryGroup.versions));
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e, "description - TEXT", "versionName - String", "version - Double");
+            Logger.error("CompilationLibrariesController - getVersionLibraryGroup ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -223,28 +415,27 @@ public class CompilationLibrariesController extends Controller {
 
             // If libraryRecord group is not null
             LibraryGroup libraryGroup = LibraryGroup.find.byId(libraryId);
-            if(libraryGroup == null ) throw new Exception("libraryGroup not Exist: -> " +libraryId);
+            if(libraryGroup == null ) return GlobalResult.notFound();
 
             Version versionObject = Version.find.where().in("libraryGroup.id", libraryGroup.id).eq("azureLinkVersion",versionId).setMaxRows(1).findUnique();
-            if(versionObject == null ) throw new Exception("Version not Exist: -> " +versionId);
+            if(versionObject == null ) return GlobalResult.notFound();
 
             // Its file not null
-            if (file == null) throw new Exception("No File");
+            if (file == null) return GlobalResult.notFound("File not found");
 
             // Control lenght of name
             String fileName = file.getFilename();
-            if(fileName.length()< 5 ) throw new Exception("Too short FileName -> " + fileName);
+            if(fileName.length()< 5 ) GlobalResult.forbidden("Too short file name");
 
             // Ještě kontrola souboru zda už tam není - > Version a knihovny
             LibraryRecord libraryRecord = LibraryRecord.find.where().in("versions.id", versionObject.id).eq("filename", fileName).setMaxRows(1).findUnique();
             if(libraryRecord != null) throw new Exception("File exist in this version -> " + fileName + " please, create new version!");
 
-
             // Mám soubor
             File libraryFile = file.getFile();
 
             // Připojuji se a tvořím cestu souboru
-            CloudBlobContainer container = A_GlobalValue.blobClient.getContainerReference("libraries");
+            CloudBlobContainer container = GlobalValue.blobClient.getContainerReference("libraries");
 
             String azurePath = libraryGroup.azurePackageLink+"/"+libraryGroup.azureStorageLink+ "/"+ versionObject.azureLinkVersion +"/"+fileName;
 
@@ -262,34 +453,40 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.okResult();
         } catch (Exception e) {
-            e.printStackTrace();
-            return GlobalResult.badRequestResult(e);
+            Logger.error("CompilationLibrariesController - uploudLibraryToLibraryGroup ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
     public Result getLibraryGroup(String id) {
         try {
             LibraryGroup libraryGroup = LibraryGroup.find.byId(id);
-            if(libraryGroup == null) throw new Exception("Not found");
+            if(libraryGroup == null) return GlobalResult.notFound();
 
             return GlobalResult.okResult(Json.toJson(libraryGroup));
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            Logger.error("CompilationLibrariesController - getLibraryGroup ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
     public Result deleteLibraryGroup(String id) {
         try {
             LibraryGroup libraryGroup = LibraryGroup.find.byId(id);
-            if(libraryGroup == null) throw new Exception("Not found");
+            if(libraryGroup == null) return GlobalResult.notFound();
 
-            UtilTools.azureDelete(A_GlobalValue.blobClient.getContainerReference("libraries"), libraryGroup.azurePackageLink+"/"+libraryGroup.azureStorageLink);
+            UtilTools.azureDelete(GlobalValue.blobClient.getContainerReference("libraries"), libraryGroup.azurePackageLink+"/"+libraryGroup.azureStorageLink);
 
             libraryGroup.delete();
 
             return GlobalResult.okResult();
+
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            Logger.error("CompilationLibrariesController - deleteLibraryGroup ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -300,7 +497,9 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.okResult(Json.toJson(libraryGroups));
 
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            Logger.error("CompilationLibrariesController - getLibraryGroupAll ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -308,7 +507,7 @@ public class CompilationLibrariesController extends Controller {
         try {
 
             LibraryGroup libraryGroup = LibraryGroup.find.byId(id);
-            if(libraryGroup == null) throw new Exception("Not found");
+            if(libraryGroup == null) return GlobalResult.notFound();
 
             JsonNode json = request().body().asJson();
 
@@ -318,30 +517,38 @@ public class CompilationLibrariesController extends Controller {
             libraryGroup.save();
 
             return GlobalResult.okResult();
+
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e, "description - TEXT", "groupName - String");
+            Logger.error("CompilationLibrariesController - updateLibraryGroup ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
     public Result getLibraryGroupDescription(String id) {
         try {
             LibraryGroup libraryGroup = LibraryGroup.find.byId(id);
-            if(libraryGroup == null) throw new Exception("Not found");
+            if(libraryGroup == null) return GlobalResult.notFound();
 
             return GlobalResult.okResult(Json.toJson(libraryGroup.description));
+
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            Logger.error("CompilationLibrariesController - getLibraryGroupDescription ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
     public Result getLibraryGroupProcessors(String id) {
         try {
             LibraryGroup libraryGroup = LibraryGroup.find.byId(id);
-            if(libraryGroup == null) throw new Exception("Not found");
+            if(libraryGroup == null) return GlobalResult.notFound();
 
             return GlobalResult.okResult(Json.toJson(libraryGroup.processors));
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            Logger.error("CompilationLibrariesController - getLibraryGroupProcessors ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -349,22 +556,26 @@ public class CompilationLibrariesController extends Controller {
         try {
 
             Version versionObject= Version.find.where().in("libraryGroup.id", libraryId).eq("id",versionId).setMaxRows(1).findUnique();
-            if(versionObject == null ) throw new Exception("Version in library not Exist: -> " +versionId);
+            if(versionObject == null ) return GlobalResult.notFound();
 
             return GlobalResult.okResult(Json.toJson(versionObject.records));
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            Logger.error("CompilationLibrariesController - getLibraryGroupLibraries ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
     public Result listOfFilesInVersion(String id){
         try {
             Version version = Version.find.byId(id);
-            if(version == null) throw new Exception("Version Not found");
+            if(version == null) return GlobalResult.notFound();
 
             return GlobalResult.okResult(Json.toJson(version.records));
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            Logger.error("CompilationLibrariesController - listOfFilesInVersion ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -372,11 +583,13 @@ public class CompilationLibrariesController extends Controller {
     public Result fileRecord(String id){
         try {
             LibraryRecord libraryRecord = LibraryRecord.find.byId(id);
-            if(libraryRecord == null) throw new Exception("Version Not found");
+            if(libraryRecord == null) return GlobalResult.notFound();
 
             return GlobalResult.okResult("Zatím neimplementováno... TODO .. tom youtrack.byzance.cz@36 ");
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            Logger.error("CompilationLibrariesController - fileRecord ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -387,12 +600,11 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.okResult();
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
 
 /**###################################################################################################################*/
-
     public Result newSingleLibrary() {
         try {
             JsonNode json = request().body().asJson();
@@ -419,7 +631,7 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.okResultWithId(singleLibrary.id);
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e, "libraryName - String", "description - TEXT");
+            return GlobalResult.badRequest(e, "libraryName - String", "description - TEXT");
         }
     }
 
@@ -452,7 +664,7 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.okResultWithId(versionObject.id);
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e, "description - TEXT", "versionName - String", "version - Double");
+            return GlobalResult.badRequest(e, "description - TEXT", "versionName - String", "version - Double");
         }
     }
 
@@ -481,7 +693,7 @@ public class CompilationLibrariesController extends Controller {
             libraryRecord.filename = fileName;
             libraryRecord.save();
 
-            CloudBlobContainer container = A_GlobalValue.blobClient.getContainerReference("records");
+            CloudBlobContainer container = GlobalValue.blobClient.getContainerReference("records");
             String azurePath = singleLibrary.azurePackageLink + "/" + singleLibrary.azureStorageLink + "/"+ versionObject.azureLinkVersion  +"/" + libraryRecord.filename;
             CloudBlockBlob blob = container.getBlockBlobReference(azurePath);
 
@@ -493,7 +705,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.okResult();
         } catch (Exception e) {
             e.printStackTrace();
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
 
@@ -505,7 +717,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.okResult(Json.toJson(singleLibrary));
 
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
 
@@ -516,7 +728,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.okResult(Json.toJson(singleLibraries));
 
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
 
@@ -527,7 +739,7 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.okResult();
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
 
@@ -546,7 +758,7 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.okResult();
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
 
@@ -556,13 +768,13 @@ public class CompilationLibrariesController extends Controller {
             SingleLibrary singleLibrary = SingleLibrary.find.byId(id);
             if(singleLibrary == null) throw new Exception("LibraryRecord not found");
 
-            UtilTools.azureDelete(A_GlobalValue.blobClient.getContainerReference("libraries"), singleLibrary.azurePackageLink+"/"+singleLibrary.azureStorageLink);
+            UtilTools.azureDelete(GlobalValue.blobClient.getContainerReference("libraries"), singleLibrary.azurePackageLink+"/"+singleLibrary.azureStorageLink);
 
             singleLibrary.delete();
             return GlobalResult.okResult();
 
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
 
@@ -573,10 +785,9 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.okResult(singleLibrary.description);
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
-
 
 /**###################################################################################################################*/
 
@@ -584,9 +795,20 @@ public class CompilationLibrariesController extends Controller {
         try {
             JsonNode json = request().body().asJson();
 
-            return GlobalResult.okResult();
+            Producer producer = new Producer();
+            producer.name = json.get("name").asText();
+            producer.description = json.get("description").asText();
+
+            producer.save();
+
+            return GlobalResult.created(Json.toJson(producer));
+        } catch (NullPointerException e) {
+            return GlobalResult.badRequest(e, "description - TEXT", "name - String");
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - newProcessor ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -594,59 +816,115 @@ public class CompilationLibrariesController extends Controller {
         try {
             JsonNode json = request().body().asJson();
 
-            return GlobalResult.okResult();
+            Producer producer = Producer.find.byId(id);
+            if(producer == null ) return GlobalResult.notFound();
+
+            producer.name = json.get("name").asText();
+            producer.description = json.get("description").asText();
+
+            producer.update();
+
+            return GlobalResult.okResult(Json.toJson(producer));
+        } catch (NullPointerException e) {
+            return GlobalResult.badRequest(e, "description - TEXT", "name - String");
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - updateProducers ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
     public Result getProducers() {
         try {
-            JsonNode json = request().body().asJson();
+            List<Producer> producers = Producer.find.all();
 
-            return GlobalResult.okResult();
+            return GlobalResult.okResult(Json.toJson(producers));
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - getProducers ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
     public Result getProducer(String id) {
         try {
-            JsonNode json = request().body().asJson();
+            Producer producer = Producer.find.byId(id);
 
-            return GlobalResult.okResult();
+            if(producer == null ) return GlobalResult.notFound();
+
+            return GlobalResult.okResult(Json.toJson(producer));
+
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - getProducer ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
     public Result getProducerDescription(String id) {
         try {
-            JsonNode json = request().body().asJson();
+            Producer producer = Producer.find.byId(id);
 
-            return GlobalResult.okResult();
+            if(producer == null ) return GlobalResult.notFound();
+
+            return GlobalResult.okResult(Json.toJson(producer.description));
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - getProducerDescription ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
     public Result getProducerTypeOfBoards(String id) {
         try {
-            JsonNode json = request().body().asJson();
+            Producer producer = Producer.find.byId(id);
 
-            return GlobalResult.okResult();
+            if(producer == null ) return GlobalResult.notFound();
+
+            return GlobalResult.okResult(Json.toJson(producer.typeOfBoards));
+
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - getProducerTypeOfBoards ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
+
+/**###################################################################################################################*/
 
     public Result newTypeOfBoard() {
         try {
             JsonNode json = request().body().asJson();
 
-            return GlobalResult.okResult();
+            Producer producer = Producer.find.byId(json.get("producerId").asText());
+            if(producer == null ) return GlobalResult.notFound();
+
+            Processor processor = Processor.find.byId(json.get("processorId").asText());
+            if(processor == null ) return GlobalResult.notFound();
+
+
+            TypeOfBoard typeOfBoard = new TypeOfBoard();
+            typeOfBoard.name = json.get("name").asText();
+            typeOfBoard.description = json.get("description").asText();
+            typeOfBoard.processor = processor;
+            typeOfBoard.producer = producer;
+
+            typeOfBoard.save();
+
+            return GlobalResult.okResult(Json.toJson(typeOfBoard));
+
+        } catch (NullPointerException e) {
+            return GlobalResult.badRequest(e, "description - TEXT","name - String", "processorId - String", "producerId - String");
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - newTypeOfBoard ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -654,122 +932,175 @@ public class CompilationLibrariesController extends Controller {
         try {
             JsonNode json = request().body().asJson();
 
-            return GlobalResult.okResult();
+            TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(id);
+            if(typeOfBoard == null ) return GlobalResult.notFound();
+
+            Producer producer = Producer.find.byId(json.get("producerId").asText());
+            if(producer == null ) return GlobalResult.notFound();
+
+            Processor processor = Processor.find.byId(json.get("processorId").asText());
+            if(processor == null ) return GlobalResult.notFound();
+
+            typeOfBoard.name = json.get("name").asText();
+            typeOfBoard.description = json.get("description").asText();
+            typeOfBoard.processor = processor;
+            typeOfBoard.producer = producer;
+            typeOfBoard.update();
+
+            return GlobalResult.okResult(Json.toJson(typeOfBoard));
+
+        } catch (NullPointerException e) {
+            return GlobalResult.badRequest(e, "description - TEXT","name - String", "processorId - String", "producerId - String");
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - updateTypeOfBoard ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
     public Result getTypeOfBoards() {
         try {
-            JsonNode json = request().body().asJson();
 
-            return GlobalResult.okResult();
+            List<TypeOfBoard> typeOfBoards = TypeOfBoard.find.all();
+
+            return  GlobalResult.okResult(Json.toJson(typeOfBoards));
+
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - getTypeOfBoards ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
     public Result getTypeOfBoard(String id) {
         try {
-            JsonNode json = request().body().asJson();
 
-            return GlobalResult.okResult();
+            TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(id);
+            if(typeOfBoard == null ) return GlobalResult.notFound();
+
+            return GlobalResult.okResult(Json.toJson(typeOfBoard));
+
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - getProducerTypeOfBoards ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
     public Result getTypeOfBoardDescription(String id) {
         try {
-            JsonNode json = request().body().asJson();
 
-            return GlobalResult.okResult();
+            TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(id);
+            if(typeOfBoard == null ) return GlobalResult.notFound();
+
+            return GlobalResult.okResult(Json.toJson(typeOfBoard.description));
+
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - getProducerTypeOfBoards ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
     public Result getTypeOfBoardAllBoards(String id) {
         try {
-            JsonNode json = request().body().asJson();
 
-            return GlobalResult.okResult();
+            TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(id);
+            if(typeOfBoard == null ) return GlobalResult.notFound();
+
+            return GlobalResult.okResult(Json.toJson(typeOfBoard.boards));
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - getProducerTypeOfBoards ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
-
 
 /**###################################################################################################################*/
 
     public Result newBoard() {
         try {
-
             JsonNode json = request().body().asJson();
-            if (json == null) throw new Exception("Null Json");
+            if (Board.find.byId(json.get("hwName").asText()) != null) GlobalResult.forbidden("Duplicate database value");
 
-            if (Board.find.byId(json.get("hwName").asText()) != null) throw new Exception("Duplicate database value");
+            TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(json.get("typeOfBoard").asText());
+            if(typeOfBoard == null ) return GlobalResult.notFound();
 
             Board board = new Board();
+            board.id = json.get("hwName").asText();
+            board.isActive = false;
+            board.typeOfBoard = typeOfBoard;
 
             board.save();
 
+            return GlobalResult.okResult(Json.toJson(board));
 
-            return GlobalResult.okResult();
-
+        } catch (NullPointerException e) {
+            return GlobalResult.badRequest(e, "hwName - String(Unique)", "typeOfBoard - String(Id)");
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e, "hwName", "typeOfDevice", "producer", "parameters");
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - newBoard ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
-
     }
 
-    public Result editBoard(String id) {
+    public Result addUserDescription(String id){
         try {
-
             JsonNode json = request().body().asJson();
-            if (json == null) throw new Exception("Null Json");
 
             Board board = Board.find.byId(id);
+            if(board == null ) return GlobalResult.notFound();
 
-            if (board == null) throw new Exception("Id not exist");
-
+            board.userDescription = json.get("userDescription").asText();
             board.update();
 
-            return GlobalResult.okResult();
+            return GlobalResult.okResult(Json.toJson(board));
 
+        } catch (NullPointerException e) {
+            return GlobalResult.badRequest(e, "generalDescription - Text", "typeOfBoard - String(Id)");
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - newBoard ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
-
     }
 
-    public Result deleteBoard(String id) {
+    public Result deactivateBoard(String id) {
         try {
-
             Board board = Board.find.byId(id);
+            if(board == null ) return GlobalResult.notFound();
 
-            if (board == null) throw new Exception("Id not exist");
+            board.isActive = false;
+            board.update();
 
-
-            board.delete();
-
-            return GlobalResult.okResult();
-
+            return GlobalResult.okResult(Json.toJson(board));
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - deactivateBoard ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
 
     }
 
     public Result getBoard(String id) {
         try {
-            Board device = Board.find.byId(id);
-            if (device == null) throw new Exception("Id not exist");
+            Board board = Board.find.byId(id);
+            if(board == null ) return GlobalResult.notFound();
 
-            return GlobalResult.ok(Json.toJson(device));
+            return GlobalResult.okResult(Json.toJson(board));
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - getBoard ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -779,7 +1110,7 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.okResult();
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
 
@@ -789,10 +1120,66 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.okResult();
         } catch (Exception e) {
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
 
+    public Result connectBoardWthProject(String id, String pr){
+        try {
+            Board board = Board.find.byId(id);
+            if(board == null ) return GlobalResult.notFound();
+
+            Project project = Project.find.byId(pr);
+            if(project == null) return GlobalResult.notFound();
+
+
+            board.projects.add(project);
+
+            board.update();
+            return GlobalResult.okResult(Json.toJson(board));
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - getBoard ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
+        }
+    }
+
+    public Result unconnectBoardWthProject(String id, String pr){
+        try {
+            Board board = Board.find.byId(id);
+            if(board == null ) return GlobalResult.notFound();
+
+            Project project = Project.find.byId(pr);
+            if(project == null) return GlobalResult.notFound();
+
+            board.projects.remove(project);
+
+            board.update();
+            return GlobalResult.okResult(Json.toJson(board));
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - getBoard ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
+        }
+    }
+
+    public Result getBoardProjects(String id){
+        try {
+            Board board = Board.find.byId(id);
+            if(board == null ) return GlobalResult.notFound();
+
+            return GlobalResult.okResult(Json.toJson(board.projects));
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - getBoard ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
+        }
+    }
+
+    //TODO
     public Result generateProjectForEclipse() {
 
         EclipseProject.createFullnewProject();

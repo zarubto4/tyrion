@@ -15,6 +15,9 @@ libraryDependencies ++= Seq(
   "com.microsoft.azure" % "azure-core" % "0.9.1",
   "com.microsoft.azure" % "azure-storage" % "4.0.0",
   "com.microsoft.azure" % "azure-svc-mgmt" % "0.9.1",
+  "io.swagger" %% "swagger-play2" % "1.5.1" exclude("org.reflections", "reflections"),
+  "io.swagger" % "swagger-core" % "1.5.6",
+
   javaJdbc,
   filters,
   cache,

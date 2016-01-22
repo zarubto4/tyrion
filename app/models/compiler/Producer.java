@@ -3,17 +3,22 @@ package models.compiler;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.*;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
+
+@ApiModel(
+        value="ProducerModel", description="Sample model for the documentation"
+)
 @Entity
 public class Producer extends Model {
 
-                                   @Id  public String id;
-                                        public String name;
-    @Column(columnDefinition = "TEXT")  public String description;
+    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public String id;
+                                                             public String name;
+                     @Column(columnDefinition = "TEXT")      public String description;
 
     @JsonIgnore @OneToMany(mappedBy="producer", cascade = CascadeType.ALL) public List<TypeOfBoard> typeOfBoards = new ArrayList<>();
 
@@ -21,6 +26,6 @@ public class Producer extends Model {
     @JsonProperty public String typeOfBoards() { return "http://localhost:9000/compilation/producer/typeOfBoards/" +id;}
 
 
-    public static Finder<String, Producer> find = new Finder<>(Producer.class);
+    public static Finder<String, Producer> find = new Model.Finder<>(Producer.class);
 
 }

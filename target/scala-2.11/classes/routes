@@ -3,11 +3,7 @@
 # ~~~~
 
 # Home page - for testing connected device
-GET            /                                           @controllers.Application.index()
-GET            /test1                                      @controllers.Application.test1()
-#CORS
-OPTIONS        /                                           @controllers.SecurityController.option()
-OPTIONS        /*url                                       @controllers.SecurityController.optionLink(url: String)
+GET            /                                           @controllers.Application.index
 
 #  WEB SOCET  //////////////////////////////////////////////////////////////////////////////
 GET            /websocket/:id                              @webSocket.controllers.OutsideCommunicationPackageController.connection(id: String)
@@ -91,18 +87,21 @@ PUT            /project/project/:id                        @controllers.Programi
 GET            /project/project/:id                        @controllers.ProgramingPackageController.getProject(id: String)
 GET            /project/project                            @controllers.ProgramingPackageController.getProjectsByUserAccount()
 DELETE         /project/project/:id                        @controllers.ProgramingPackageController.deleteProject(id: String)
+PUT            /project/project/shareProject/:id           @controllers.ProgramingPackageController.shareProjectWithUsers(id: String)
+PUT            /project/project/unshareProject/:id         @controllers.ProgramingPackageController.unshareProjectWithUsers(id: String)
+GET            /project/project/programs/:id               @controllers.ProgramingPackageController.getProgramPrograms(id: String)
+GET            /project/project/homerList/:id              @controllers.ProgramingPackageController.getProgramhomerList(id: String)
+GET            /project/project/owners/:id                 @controllers.ProgramingPackageController.getProjectOwners(id: String)
 
 #Homer
 POST           /project/homer                              @controllers.ProgramingPackageController.newHomer()
 DELETE         /project/homer/:id                          @controllers.ProgramingPackageController.removeHomer(id: String)
 GET            /project/homer/:id                          @controllers.ProgramingPackageController.getHomer(id: String)
-GET            /project/getAllConnectedHomers/:id          @controllers.ProgramingPackageController.getConnectedHomers(id: String)
-GET            /project/getallhoumers                      @controllers.ProgramingPackageController.getAllHomers()
+GET            /project/homer/getAllConnectedHomers/:id    @controllers.ProgramingPackageController.getConnectedHomers(id: String)
+GET            /project/homer                              @controllers.ProgramingPackageController.getAllHomers()
 
 
 #Project - connection
-PUT            /project/connectIoTWithProject              @controllers.ProgramingPackageController.connectIoTWithProject()
-PUT            /project/unconnectIoTWithProject            @controllers.ProgramingPackageController.unConnectIoTWithProject()
 PUT            /project/connectHomerWithProject            @controllers.ProgramingPackageController.connectHomerWithProject()
 PUT            /project/unconnectHomerWithProject          @controllers.ProgramingPackageController.unConnectHomerWithProject()
 
@@ -112,15 +111,13 @@ GET            /project/program/:id                        @controllers.Programi
 PUT            /project/program/:id                        @controllers.ProgramingPackageController.editProgram(id: String)
 DELETE         /project/program/:id                        @controllers.ProgramingPackageController.removeProgram(id: String)
 GET            /project/programInJson/:id                  @controllers.ProgramingPackageController.getProgramInJson(id: String)
-GET            /project/project/programs/:id               @controllers.ProgramingPackageController.getProgramPrograms(id: String)
-GET            /project/project/electronicDevicesList/:id  @controllers.ProgramingPackageController.getProgramelectronicDevicesList(id: String)
-GET            /project/project/homerList/:id              @controllers.ProgramingPackageController.getProgramhomerList(id: String)
 
 
 GET            /project/getallprograms/:id                 @controllers.ProgramingPackageController.getAllPrograms(id: String)
 GET            /project/listOfUploadedHomers/:id           @controllers.ProgramingPackageController.listOfUploadedHomers(id: String)
 GET            /project/listOfHomersWaitingForUpload/:id   @controllers.ProgramingPackageController.listOfHomersWaitingForUpload(id: String)
 GET            /project/getProgramInJson/:id               @controllers.ProgramingPackageController.getProgramInJson(id: String)
+GET            /project/boards/:id                         @controllers.ProgramingPackageController.getProjectsBoard(id: String)
 PUT            /project/uploudtohomerImmediately           @controllers.ProgramingPackageController.uploadProgramToHomer_Immediately()
 PUT            /project/uploudtohomerAsSoonAsPossible      @controllers.ProgramingPackageController.uploadProgramToHomer_AsSoonAsPossible()
 PUT            /project/uploudtohomerGivenTime             @controllers.ProgramingPackageController.uploadProgramToHomer_GivenTimeAsSoonAsPossible()
@@ -150,16 +147,27 @@ GET             /compilation/processor/:id                  @controllers.Compila
 GET             /compilation/processor                      @controllers.CompilationLibrariesController.getProcessorAll()
 PUT             /compilation/processor/:id                  @controllers.CompilationLibrariesController.updateProcessor(id: String)
 DELETE          /compilation/processor/:id                  @controllers.CompilationLibrariesController.deleteProcessor(id: String)
-POST            /compilation/processor/description/:id      @controllers.CompilationLibrariesController.getProcessorDescription(id: String)
-POST            /compilation/processor/libraryGroups        @controllers.CompilationLibrariesController.getProcessorLibraryGroups(id: String)
+
+PUT             /compilation/processor/lbr/:id/:lbrId       @controllers.CompilationLibrariesController.connectProcessorWithLibrary(id: String, lbrId: String)
+PUT             /compilation/processor/lbrgrp/:id/:lbrgId   @controllers.CompilationLibrariesController.connectProcessorWithLibraryGroup(id: String, lbrgId: String)
+DELETE          /compilation/processor/lbr/:id/:lbrId       @controllers.CompilationLibrariesController.unconnectProcessorWithLibrary(id: String, lbrId: String)
+DELETE          /compilation/processor/lbrgrp/:id/:lbrgId   @controllers.CompilationLibrariesController.unconnectProcessorWithLibraryGroup(id: String, lbrgId: String)
+
+GET            /compilation/processor/description/:id       @controllers.CompilationLibrariesController.getProcessorDescription(id: String)
+GET            /compilation/processor/libraryGroups/:id     @controllers.CompilationLibrariesController.getProcessorLibraryGroups(id: String)
+GET            /compilation/processor/singleLibrary/:id     @controllers.CompilationLibrariesController.getProcessorSingleLibraries(id: String)
+
 
 #Board
 POST            /compilation/board                          @controllers.CompilationLibrariesController.newBoard()
-PUT             /compilation/board/:id                      @controllers.CompilationLibrariesController.editBoard(id: String)
+PUT             /compilation/board/userDescription/:id      @controllers.CompilationLibrariesController.addUserDescription(id: String)
 GET             /compilation/board/:id                      @controllers.CompilationLibrariesController.getBoard(id: String)
-DELETE          /compilation/board/:id                      @controllers.CompilationLibrariesController.deleteBoard(id: String)
-GET             /compilation/board/generalDescription/:id   @controllers.CompilationLibrariesController.getBoardgeneralDescription(id: String)
+DELETE          /compilation/board/deactivateBoard:id       @controllers.CompilationLibrariesController.deactivateBoard(id: String)
 GET             /compilation/board/userDescription/:id      @controllers.CompilationLibrariesController.getUserDescription(id: String)
+PUT             /compilation/board/connect/:id/:pr          @controllers.CompilationLibrariesController.connectBoardWthProject(id: String, pr: String)
+PUT             /compilation/board/unconnect/:id/:pr        @controllers.CompilationLibrariesController.unconnectBoardWthProject(id: String, pr: String)
+GET             /compilation/board/projects/:id             @controllers.CompilationLibrariesController.getBoardProjects(id: String)
+
 
 #Producer
 POST            /compilation/producer                       @controllers.CompilationLibrariesController.newProducers()
@@ -175,7 +183,8 @@ PUT             /compilation/typeOfBoard/:id                @controllers.Compila
 GET             /compilation/typeOfBoard                    @controllers.CompilationLibrariesController.getTypeOfBoards()
 GET             /compilation/typeOfBoard/:id                @controllers.CompilationLibrariesController.getTypeOfBoard(id: String)
 GET             /compilation/typeOfBoard/description/:id    @controllers.CompilationLibrariesController.getTypeOfBoardDescription(id: String)
-GET             /compilation/TypeOfBoard/boards/:id         @controllers.CompilationLibrariesController.getTypeOfBoardAllBoards(id: String)
+GET             /compilation/typeOfBoard/boards/:id         @controllers.CompilationLibrariesController.getTypeOfBoardAllBoards(id: String)
+
 
 #LibraryGroups
 POST            /compilation/libraryGroup                               @controllers.CompilationLibrariesController.newLibraryGroup()
@@ -209,11 +218,12 @@ GET             /compilation/project/eclipse                 @controllers.Compil
 
 ### TOOLS ############ TOOLS ############### TOOLS ################ TOOLS ######################################################################################################
 ################################################################################################################################################################################
-#CSS template
-GET            /public/*file                               controllers.Assets.at(path="/public", file)
 
-# Map static resources from the /public folder to the /assets URL path
-#GET            /assets/*file                               controllers.Assets.at(path="/public", file)
-GET            /assets/*file                               controllers.Assets.versioned(path="/public", file: Asset)
+#SWAGGER API
+GET            /api-docs                                   @utilities.swagger.ApiHelpController.getResources
+
+#CORS
+OPTIONS        /*all                                       @controllers.SecurityController.optionLink(all)
+
 
 

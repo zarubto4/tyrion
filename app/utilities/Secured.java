@@ -14,8 +14,6 @@ public class Secured extends Security.Authenticator {
     @Override
     public String getUsername(Context ctx) {
 
-
-
         Person person = null;
         String[] authTokenHeaderValues = ctx.request().headers().get(SecurityController.AUTH_TOKEN_HEADER);
 

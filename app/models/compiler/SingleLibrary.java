@@ -19,6 +19,7 @@ public class SingleLibrary  extends Model {
 
     @JsonProperty public String  description()     { return description == null     ? null : "http://localhost:9000/compilation/library/generalDescription/" +  this.id;}
     @JsonIgnore @OneToMany(mappedBy="singleLibrary", cascade=CascadeType.ALL) @OrderBy("azureLinkVersion DESC") public List<Version> versions = new ArrayList<>();
+    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL)   public List<Processor> processors = new ArrayList<>();
 
     @JsonProperty public Integer versions()        { return versions.size(); }
     @JsonProperty public Double  lastVersion()     { return versions.isEmpty()      ? null : versions.get(0).azureLinkVersion; }

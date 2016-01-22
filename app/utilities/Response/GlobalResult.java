@@ -1,4 +1,4 @@
-package utilities;
+package utilities.response;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -12,6 +12,7 @@ public class GlobalResult extends Controller {
         CoreResponse.cors();
         return ok(json);
     }
+
 
     public static Result okResult(){
         ObjectNode result = Json.newObject();
@@ -38,7 +39,7 @@ public class GlobalResult extends Controller {
         return ok(result);
     }
 
-    public static Result badRequestResult(Exception e){
+    public static Result badRequest(Exception e){
 
         System.out.println("CHYBA " + e.getMessage());
 
@@ -49,7 +50,7 @@ public class GlobalResult extends Controller {
         return badRequest(result);
     }
 
-    public static Result badRequestResult(Exception e, String... args){
+    public static Result badRequest(Exception e, String... args){
         ObjectNode result = Json.newObject();
         result.put("state", "error");
         result.put("message", e.getMessage());
@@ -58,12 +59,36 @@ public class GlobalResult extends Controller {
         for(String arg : args) result.put("Required JSON parameter "+i++, arg);
 
         CoreResponse.cors();
-        return badRequest(result);
+        return Controller.badRequest(result);
+    }
+
+    public static StatusHeader internalServerError(){
+        CoreResponse.cors();
+        return Controller.internalServerError();
+    }
+
+    public static Status created(JsonNode o){
+        CoreResponse.cors();
+        return Controller.created(o);
+    }
+
+    public static Status update(JsonNode o){
+        CoreResponse.cors();
+        return Controller.created(o);
+    }
+    public static StatusHeader notFound(){
+        CoreResponse.cors();
+        return Controller.notFound();
     }
 
     public static StatusHeader forbidden(){
         CoreResponse.cors();
-        return forbidden();
+        return Controller.forbidden();
+    }
+
+    public static Status forbidden(String message){
+        CoreResponse.cors();
+        return Controller.forbidden(message);
     }
 
 }

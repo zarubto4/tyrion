@@ -24,7 +24,7 @@ public class BlockoContentBlock extends Model {
 
     @JsonProperty public String designJson()         { return "http://localhost:9000/project/blockoBlock/designJson/" + blockoBlock.id +"/"+version;}
     @JsonProperty public String logicJson()          { return "http://localhost:9000/project/blockoBlock/logicJson/"  + blockoBlock.id +"/"+version;}
-    @JsonProperty public String versionDescription()          { return "http://localhost:9000/project/blockoBlock/versionDescription/"  + this.id;}
+    @JsonProperty public String versionDescription() { return "http://localhost:9000/project/blockoBlock/versionDescription/"  + this.id;}
 
     //******************************************************************************************************************
     public BlockoContentBlock(){}

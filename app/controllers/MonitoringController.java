@@ -7,7 +7,7 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.GlobalResult;
+import utilities.response.GlobalResult;
 import utilities.Secured;
 import webSocket.controllers.SocketCollector;
 
@@ -44,7 +44,7 @@ public class MonitoringController  extends Controller {
             return GlobalResult.okResult( result);
 
         }catch(Exception e){
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
 

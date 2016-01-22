@@ -8,8 +8,8 @@ import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.CoreResponse;
-import utilities.GlobalResult;
+import utilities.response.GlobalResult;
+import utilities.response.CoreResponse;
 import utilities.Secured;
 
 
@@ -46,7 +46,7 @@ public class SecurityController extends Controller {
         return GlobalResult.okResult(result);
 
         }catch(Exception e){
-           return GlobalResult.badRequestResult(e);
+           return GlobalResult.badRequest(e);
        }
     }
 
@@ -58,7 +58,7 @@ public class SecurityController extends Controller {
 
             return GlobalResult.okResult();
 
-        }catch(Exception e){return GlobalResult.badRequestResult(e);}
+        }catch(Exception e){return GlobalResult.badRequest(e);}
     }
 
 
@@ -67,8 +67,10 @@ public class SecurityController extends Controller {
     }
 
     public Result optionLink(String url){
+
         CoreResponse.cors();
         response().setHeader("Access-Control-Link", url);
+        System.out.println("URL: " + url + " confirm with POST");
         return ok();
     }
 

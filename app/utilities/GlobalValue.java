@@ -4,7 +4,7 @@ import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import play.Configuration;
 
-public class A_GlobalValue {
+public class GlobalValue {
 
     public static CloudStorageAccount storageAccount;
     public static CloudBlobClient blobClient;
@@ -16,6 +16,8 @@ public class A_GlobalValue {
         blobClient = storageAccount.createCloudBlobClient();
 
     }
+
+
 
 
 

@@ -10,6 +10,7 @@ Globální změny:
    Uprava navrhu je videt na  výpisu všech knihoven "description"! Jednou obsahuje link (když obsah existuje)
    V opačném případě je nahrazeno null.
 
+
 1) [
      {
        "id": "1",
@@ -37,6 +38,9 @@ Globální změny:
 
    Změny jsou zavedeny v těchto objektech: // LibraryGroup,  TODO
 
+2) Změna linků
+GET   /project/getAllConnectedHomers/:id  ->   /project/homer/getAllConnectedHomers/:id
+GET   /project/getallhoumers              ->   /project/homer
 
 
 

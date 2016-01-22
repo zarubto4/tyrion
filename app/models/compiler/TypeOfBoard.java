@@ -12,16 +12,15 @@ import java.util.List;
 @Entity
 public class TypeOfBoard extends Model {
 
-                                   @Id  public String id;
-    @Column(columnDefinition = "TEXT")  public String description;
-                @ManyToOne @JsonIgnore  public Producer producer;
-                @ManyToOne @JsonIgnore  public Processor processor;
+     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)    public String id;
+                                                                public String name;
+                       @Column(columnDefinition = "TEXT")       public String description;
+                                   @ManyToOne @JsonIgnore       public Producer producer;
+                                   @ManyToOne @JsonIgnore       public Processor processor;
 
     @JsonIgnore @OneToMany(mappedBy="typeOfBoard", cascade = CascadeType.ALL) public List<Board> boards = new ArrayList<>();
 
 
-    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL)   public List<LibraryRecord>       libraries = new ArrayList<>();
-    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL)   public List<LibraryGroup>  libraryGroups = new ArrayList<>();
 
     @JsonProperty public String description   (){return "http://localhost:9000/compilation/TypeOfBoard/generalDescription/"    +  this.id;}
     @JsonProperty public String libraryGroups (){return "http://localhost:9000/compilation/processor/libraryGroups/" +  this.id;}

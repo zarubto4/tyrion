@@ -9,7 +9,7 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.GlobalResult;
+import utilities.response.GlobalResult;
 import utilities.Secured;
 
 import java.util.ArrayList;
@@ -66,7 +66,7 @@ public class PermissionController extends Controller {
             List<PermissionKey> keys = PermissionKey.find.all();
             return GlobalResult.okResult(Json.toJson(keys));
         }catch (Exception e){
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
 
@@ -75,7 +75,7 @@ public class PermissionController extends Controller {
             List<GroupWithPermissions> groups = GroupWithPermissions.find.all();
             return GlobalResult.okResult(Json.toJson(groups));
         }catch (Exception e){
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
 
@@ -124,7 +124,7 @@ public class PermissionController extends Controller {
 
             return GlobalResult.okResult(result);
         }catch (Exception e){
-            return GlobalResult.badRequestResult(e);
+            return GlobalResult.badRequest(e);
         }
     }
 

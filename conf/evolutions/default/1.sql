@@ -24,10 +24,9 @@ create table blocko_content_block (
 
 create table board (
   id                        varchar(255) not null,
-  general_description       TEXT,
   user_description          TEXT,
-  project_project_id        varchar(255),
   type_of_board_id          varchar(255),
+  is_active                 boolean,
   constraint pk_board primary key (id))
 ;
 
@@ -175,12 +174,14 @@ create table single_library (
   id                        varchar(255) not null,
   description               TEXT,
   library_name              varchar(255),
-  azure_blob_link           varchar(255),
+  azure_package_link        varchar(255),
+  azure_storage_link        varchar(255),
   constraint pk_single_library primary key (id))
 ;
 
 create table type_of_board (
   id                        varchar(255) not null,
+  name                      varchar(255),
   description               TEXT,
   producer_id               varchar(255),
   processor_id              varchar(255),
@@ -204,6 +205,12 @@ create table version (
   constraint pk_version primary key (id))
 ;
 
+
+create table board_project (
+  board_id                       varchar(255) not null,
+  project_project_id             varchar(255) not null,
+  constraint pk_board_project primary key (board_id, project_project_id))
+;
 
 create table confirm_type_of_post_post (
   confirm_type_of_post_id        varchar(255) not null,
@@ -265,16 +272,10 @@ create table property_of_post_post (
   constraint pk_property_of_post_post primary key (property_of_post_property_of_post_id, post_post_id))
 ;
 
-create table type_of_board_library_record (
-  type_of_board_id               varchar(255) not null,
-  library_record_id              varchar(255) not null,
-  constraint pk_type_of_board_library_record primary key (type_of_board_id, library_record_id))
-;
-
-create table type_of_board_library_group (
-  type_of_board_id               varchar(255) not null,
-  library_group_id               varchar(255) not null,
-  constraint pk_type_of_board_library_group primary key (type_of_board_id, library_group_id))
+create table single_library_processor (
+  single_library_id              varchar(255) not null,
+  processor_id                   varchar(255) not null,
+  constraint pk_single_library_processor primary key (single_library_id, processor_id))
 ;
 
 create table version_library_record (
@@ -285,6 +286,8 @@ create table version_library_record (
 create sequence blocko_block_seq;
 
 create sequence blocko_content_block_seq;
+
+create sequence board_seq;
 
 create sequence for_upload_program_seq;
 
@@ -302,9 +305,15 @@ create sequence permission_key_seq;
 
 create sequence post_seq;
 
+create sequence processor_seq;
+
+create sequence producer_seq;
+
 create sequence project_seq;
 
 create sequence single_library_seq;
+
+create sequence type_of_board_seq;
 
 create sequence type_of_post_seq;
 
@@ -314,42 +323,44 @@ alter table blocko_block add constraint fk_blocko_block_author_1 foreign key (au
 create index ix_blocko_block_author_1 on blocko_block (author_mail);
 alter table blocko_content_block add constraint fk_blocko_content_block_blocko_2 foreign key (blocko_block_id) references blocko_block (id);
 create index ix_blocko_content_block_blocko_2 on blocko_content_block (blocko_block_id);
-alter table board add constraint fk_board_project_3 foreign key (project_project_id) references project (project_id);
-create index ix_board_project_3 on board (project_project_id);
-alter table board add constraint fk_board_typeOfBoard_4 foreign key (type_of_board_id) references type_of_board (id);
-create index ix_board_typeOfBoard_4 on board (type_of_board_id);
-alter table for_upload_program add constraint fk_for_upload_program_homer_5 foreign key (homer_homer_id) references homer (homer_id);
-create index ix_for_upload_program_homer_5 on for_upload_program (homer_homer_id);
-alter table for_upload_program add constraint fk_for_upload_program_program_6 foreign key (program_program_id) references homer_program (program_id);
-create index ix_for_upload_program_program_6 on for_upload_program (program_program_id);
-alter table homer add constraint fk_homer_project_7 foreign key (project_project_id) references project (project_id);
-create index ix_homer_project_7 on homer (project_project_id);
-alter table homer_program add constraint fk_homer_program_project_8 foreign key (project_project_id) references project (project_id);
-create index ix_homer_program_project_8 on homer_program (project_project_id);
-alter table linked_post add constraint fk_linked_post_author_9 foreign key (author_mail) references person (mail);
-create index ix_linked_post_author_9 on linked_post (author_mail);
-alter table linked_post add constraint fk_linked_post_answer_10 foreign key (answer_post_id) references post (post_id);
-create index ix_linked_post_answer_10 on linked_post (answer_post_id);
-alter table linked_post add constraint fk_linked_post_question_11 foreign key (question_post_id) references post (post_id);
-create index ix_linked_post_question_11 on linked_post (question_post_id);
-alter table post add constraint fk_post_type_12 foreign key (type_id) references type_of_post (id);
-create index ix_post_type_12 on post (type_id);
-alter table post add constraint fk_post_author_13 foreign key (author_mail) references person (mail);
-create index ix_post_author_13 on post (author_mail);
-alter table post add constraint fk_post_postParentComment_14 foreign key (post_parent_comment_post_id) references post (post_id);
-create index ix_post_postParentComment_14 on post (post_parent_comment_post_id);
-alter table post add constraint fk_post_postParentAnswer_15 foreign key (post_parent_answer_post_id) references post (post_id);
-create index ix_post_postParentAnswer_15 on post (post_parent_answer_post_id);
-alter table type_of_board add constraint fk_type_of_board_producer_16 foreign key (producer_id) references producer (id);
-create index ix_type_of_board_producer_16 on type_of_board (producer_id);
-alter table type_of_board add constraint fk_type_of_board_processor_17 foreign key (processor_id) references processor (id);
-create index ix_type_of_board_processor_17 on type_of_board (processor_id);
-alter table version add constraint fk_version_libraryGroup_18 foreign key (library_group_id) references library_group (id);
-create index ix_version_libraryGroup_18 on version (library_group_id);
-alter table version add constraint fk_version_singleLibrary_19 foreign key (single_library_id) references single_library (id);
-create index ix_version_singleLibrary_19 on version (single_library_id);
+alter table board add constraint fk_board_typeOfBoard_3 foreign key (type_of_board_id) references type_of_board (id);
+create index ix_board_typeOfBoard_3 on board (type_of_board_id);
+alter table for_upload_program add constraint fk_for_upload_program_homer_4 foreign key (homer_homer_id) references homer (homer_id);
+create index ix_for_upload_program_homer_4 on for_upload_program (homer_homer_id);
+alter table for_upload_program add constraint fk_for_upload_program_program_5 foreign key (program_program_id) references homer_program (program_id);
+create index ix_for_upload_program_program_5 on for_upload_program (program_program_id);
+alter table homer add constraint fk_homer_project_6 foreign key (project_project_id) references project (project_id);
+create index ix_homer_project_6 on homer (project_project_id);
+alter table homer_program add constraint fk_homer_program_project_7 foreign key (project_project_id) references project (project_id);
+create index ix_homer_program_project_7 on homer_program (project_project_id);
+alter table linked_post add constraint fk_linked_post_author_8 foreign key (author_mail) references person (mail);
+create index ix_linked_post_author_8 on linked_post (author_mail);
+alter table linked_post add constraint fk_linked_post_answer_9 foreign key (answer_post_id) references post (post_id);
+create index ix_linked_post_answer_9 on linked_post (answer_post_id);
+alter table linked_post add constraint fk_linked_post_question_10 foreign key (question_post_id) references post (post_id);
+create index ix_linked_post_question_10 on linked_post (question_post_id);
+alter table post add constraint fk_post_type_11 foreign key (type_id) references type_of_post (id);
+create index ix_post_type_11 on post (type_id);
+alter table post add constraint fk_post_author_12 foreign key (author_mail) references person (mail);
+create index ix_post_author_12 on post (author_mail);
+alter table post add constraint fk_post_postParentComment_13 foreign key (post_parent_comment_post_id) references post (post_id);
+create index ix_post_postParentComment_13 on post (post_parent_comment_post_id);
+alter table post add constraint fk_post_postParentAnswer_14 foreign key (post_parent_answer_post_id) references post (post_id);
+create index ix_post_postParentAnswer_14 on post (post_parent_answer_post_id);
+alter table type_of_board add constraint fk_type_of_board_producer_15 foreign key (producer_id) references producer (id);
+create index ix_type_of_board_producer_15 on type_of_board (producer_id);
+alter table type_of_board add constraint fk_type_of_board_processor_16 foreign key (processor_id) references processor (id);
+create index ix_type_of_board_processor_16 on type_of_board (processor_id);
+alter table version add constraint fk_version_libraryGroup_17 foreign key (library_group_id) references library_group (id);
+create index ix_version_libraryGroup_17 on version (library_group_id);
+alter table version add constraint fk_version_singleLibrary_18 foreign key (single_library_id) references single_library (id);
+create index ix_version_singleLibrary_18 on version (single_library_id);
 
 
+
+alter table board_project add constraint fk_board_project_board_01 foreign key (board_id) references board (id);
+
+alter table board_project add constraint fk_board_project_project_02 foreign key (project_project_id) references project (project_id);
 
 alter table confirm_type_of_post_post add constraint fk_confirm_type_of_post_post__01 foreign key (confirm_type_of_post_id) references confirm_type_of_post (id);
 
@@ -391,13 +402,9 @@ alter table property_of_post_post add constraint fk_property_of_post_post_prop_0
 
 alter table property_of_post_post add constraint fk_property_of_post_post_post_02 foreign key (post_post_id) references post (post_id);
 
-alter table type_of_board_library_record add constraint fk_type_of_board_library_reco_01 foreign key (type_of_board_id) references type_of_board (id);
+alter table single_library_processor add constraint fk_single_library_processor_s_01 foreign key (single_library_id) references single_library (id);
 
-alter table type_of_board_library_record add constraint fk_type_of_board_library_reco_02 foreign key (library_record_id) references library_record (id);
-
-alter table type_of_board_library_group add constraint fk_type_of_board_library_grou_01 foreign key (type_of_board_id) references type_of_board (id);
-
-alter table type_of_board_library_group add constraint fk_type_of_board_library_grou_02 foreign key (library_group_id) references library_group (id);
+alter table single_library_processor add constraint fk_single_library_processor_p_02 foreign key (processor_id) references processor (id);
 
 alter table version_library_record add constraint fk_version_library_record_ver_01 foreign key (version_id) references version (id);
 
@@ -410,6 +417,8 @@ drop table if exists blocko_block cascade;
 drop table if exists blocko_content_block cascade;
 
 drop table if exists board cascade;
+
+drop table if exists board_project cascade;
 
 drop table if exists confirm_type_of_post cascade;
 
@@ -461,6 +470,8 @@ drop table if exists property_of_post_post cascade;
 
 drop table if exists processor cascade;
 
+drop table if exists single_library_processor cascade;
+
 drop table if exists producer cascade;
 
 drop table if exists project cascade;
@@ -471,10 +482,6 @@ drop table if exists single_library cascade;
 
 drop table if exists type_of_board cascade;
 
-drop table if exists type_of_board_library_record cascade;
-
-drop table if exists type_of_board_library_group cascade;
-
 drop table if exists type_of_post cascade;
 
 drop table if exists version cascade;
@@ -482,6 +489,8 @@ drop table if exists version cascade;
 drop sequence if exists blocko_block_seq;
 
 drop sequence if exists blocko_content_block_seq;
+
+drop sequence if exists board_seq;
 
 drop sequence if exists for_upload_program_seq;
 
@@ -499,9 +508,15 @@ drop sequence if exists permission_key_seq;
 
 drop sequence if exists post_seq;
 
+drop sequence if exists processor_seq;
+
+drop sequence if exists producer_seq;
+
 drop sequence if exists project_seq;
 
 drop sequence if exists single_library_seq;
+
+drop sequence if exists type_of_board_seq;
 
 drop sequence if exists type_of_post_seq;
 

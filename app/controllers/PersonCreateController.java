@@ -6,7 +6,7 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.GlobalResult;
+import utilities.response.GlobalResult;
 import utilities.Secured;
 
 import java.text.SimpleDateFormat;
@@ -32,7 +32,7 @@ public class PersonCreateController extends Controller {
             person.save();
 
             return GlobalResult.okResult();
-        }catch(Exception e){return GlobalResult.badRequestResult(e);}
+        }catch(Exception e){return GlobalResult.badRequest(e);}
     }
 
 
@@ -45,7 +45,7 @@ public class PersonCreateController extends Controller {
 
             return GlobalResult.okResult(Json.toJson(p));
 
-        }catch(Exception e){return GlobalResult.badRequestResult(e);}
+        }catch(Exception e){return GlobalResult.badRequest(e);}
     }
 
 
@@ -59,7 +59,7 @@ public class PersonCreateController extends Controller {
 
             return GlobalResult.okResult();
 
-        }catch(Exception e){ return GlobalResult.badRequestResult(e);}
+        }catch(Exception e){ return GlobalResult.badRequest(e);}
     }
 
 
@@ -83,7 +83,7 @@ public class PersonCreateController extends Controller {
 
             return GlobalResult.okResult("updating was properly performed");
 
-        }catch(Exception e){return GlobalResult.badRequestResult(e);}
+        }catch(Exception e){return GlobalResult.badRequest(e);}
     }
 
 

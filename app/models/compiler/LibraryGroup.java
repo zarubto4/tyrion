@@ -21,10 +21,11 @@ public class LibraryGroup extends Model {
                                                             public String azurePrimaryUrl;
                                                             public String azureSecondaryUrl;
 
-       @JsonIgnore @ManyToMany(cascade = CascadeType.ALL)   public List<Processor> processors = new ArrayList<>();
+         @JsonIgnore @ManyToMany(cascade = CascadeType.ALL) public List<Processor> processors = new ArrayList<>();
 
 
-    @JsonIgnore @OneToMany(mappedBy="libraryGroup", cascade=CascadeType.ALL)  @OrderBy("azureLinkVersion DESC") public List<Version> versions = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="libraryGroup", cascade=CascadeType.ALL) @OrderBy("azureLinkVersion DESC") public List<Version> versions = new ArrayList<>();
+
 
     @JsonProperty public Integer versionsCount() { return versions.size(); }
     @JsonProperty public Double  lastVersion()   { return versions.isEmpty()      ? null : versions.get(0).azureLinkVersion; }
