@@ -6,7 +6,7 @@
 create table blocko_block (
   id                        varchar(255) not null,
   name                      varchar(255),
-  author_mail               varchar(255),
+  author_id                 varchar(255),
   general_description       TEXT,
   constraint pk_blocko_block primary key (id))
 ;
@@ -103,8 +103,7 @@ create table linked_account (
   provider_user_id          varchar(255),
   provider_key              TEXT,
   type_of_connection        varchar(255),
-  sha_password              bytea not null,
-  person_mail               varchar(255),
+  person_id                 varchar(255),
   auth_token                varchar(255),
   token_verified            boolean,
   constraint pk_linked_account primary key (id))
@@ -112,7 +111,7 @@ create table linked_account (
 
 create table linked_post (
   link_id                   varchar(255) not null,
-  author_mail               varchar(255),
+  author_id                 varchar(255),
   answer_post_id            varchar(255),
   question_post_id          varchar(255),
   constraint pk_linked_post primary key (link_id))
@@ -126,8 +125,10 @@ create table permission_key (
 ;
 
 create table person (
-  mail                      varchar(255) not null,
+  id                        varchar(255) not null,
+  mail                      varchar(255),
   password                  varchar(255),
+  nick_name                 varchar(255),
   first_name                varchar(255),
   middle_name               varchar(255),
   last_name                 varchar(255),
@@ -136,8 +137,10 @@ create table person (
   date_of_birth             timestamp,
   auth_token                varchar(255),
   email_validated           boolean,
-  sha_password              bytea not null,
-  constraint pk_person primary key (mail))
+  sha_password              bytea,
+  constraint uq_person_mail unique (mail),
+  constraint uq_person_nick_name unique (nick_name),
+  constraint pk_person primary key (id))
 ;
 
 create table post (
@@ -148,7 +151,7 @@ create table post (
   likes                     integer,
   date_of_create            timestamp,
   deleted                   boolean,
-  author_mail               varchar(255),
+  author_id                 varchar(255),
   text_of_post              TEXT,
   post_parent_comment_post_id varchar(255),
   post_parent_answer_post_id varchar(255),
@@ -257,26 +260,26 @@ create table permission_key_group_with_permis (
 
 create table permission_key_person (
   permission_key_id              varchar(255) not null,
-  person_mail                    varchar(255) not null,
-  constraint pk_permission_key_person primary key (permission_key_id, person_mail))
+  person_id                      varchar(255) not null,
+  constraint pk_permission_key_person primary key (permission_key_id, person_id))
 ;
 
 create table person_project (
-  person_mail                    varchar(255) not null,
+  person_id                      varchar(255) not null,
   project_project_id             varchar(255) not null,
-  constraint pk_person_project primary key (person_mail, project_project_id))
+  constraint pk_person_project primary key (person_id, project_project_id))
 ;
 
 create table person_post (
-  person_mail                    varchar(255) not null,
+  person_id                      varchar(255) not null,
   post_post_id                   varchar(255) not null,
-  constraint pk_person_post primary key (person_mail, post_post_id))
+  constraint pk_person_post primary key (person_id, post_post_id))
 ;
 
 create table person_group_with_permissions (
-  person_mail                    varchar(255) not null,
+  person_id                      varchar(255) not null,
   group_with_permissions_group_id varchar(255) not null,
-  constraint pk_person_group_with_permissions primary key (person_mail, group_with_permissions_group_id))
+  constraint pk_person_group_with_permissions primary key (person_id, group_with_permissions_group_id))
 ;
 
 create table property_of_post_post (
@@ -318,6 +321,8 @@ create sequence linked_post_seq;
 
 create sequence permission_key_seq;
 
+create sequence person_seq;
+
 create sequence post_seq;
 
 create sequence processor_seq;
@@ -334,8 +339,8 @@ create sequence type_of_post_seq;
 
 create sequence version_seq;
 
-alter table blocko_block add constraint fk_blocko_block_author_1 foreign key (author_mail) references person (mail);
-create index ix_blocko_block_author_1 on blocko_block (author_mail);
+alter table blocko_block add constraint fk_blocko_block_author_1 foreign key (author_id) references person (id);
+create index ix_blocko_block_author_1 on blocko_block (author_id);
 alter table blocko_content_block add constraint fk_blocko_content_block_blocko_2 foreign key (blocko_block_id) references blocko_block (id);
 create index ix_blocko_content_block_blocko_2 on blocko_content_block (blocko_block_id);
 alter table board add constraint fk_board_typeOfBoard_3 foreign key (type_of_board_id) references type_of_board (id);
@@ -348,18 +353,18 @@ alter table homer add constraint fk_homer_project_6 foreign key (project_project
 create index ix_homer_project_6 on homer (project_project_id);
 alter table homer_program add constraint fk_homer_program_project_7 foreign key (project_project_id) references project (project_id);
 create index ix_homer_program_project_7 on homer_program (project_project_id);
-alter table linked_account add constraint fk_linked_account_person_8 foreign key (person_mail) references person (mail);
-create index ix_linked_account_person_8 on linked_account (person_mail);
-alter table linked_post add constraint fk_linked_post_author_9 foreign key (author_mail) references person (mail);
-create index ix_linked_post_author_9 on linked_post (author_mail);
+alter table linked_account add constraint fk_linked_account_person_8 foreign key (person_id) references person (id);
+create index ix_linked_account_person_8 on linked_account (person_id);
+alter table linked_post add constraint fk_linked_post_author_9 foreign key (author_id) references person (id);
+create index ix_linked_post_author_9 on linked_post (author_id);
 alter table linked_post add constraint fk_linked_post_answer_10 foreign key (answer_post_id) references post (post_id);
 create index ix_linked_post_answer_10 on linked_post (answer_post_id);
 alter table linked_post add constraint fk_linked_post_question_11 foreign key (question_post_id) references post (post_id);
 create index ix_linked_post_question_11 on linked_post (question_post_id);
 alter table post add constraint fk_post_type_12 foreign key (type_id) references type_of_post (id);
 create index ix_post_type_12 on post (type_id);
-alter table post add constraint fk_post_author_13 foreign key (author_mail) references person (mail);
-create index ix_post_author_13 on post (author_mail);
+alter table post add constraint fk_post_author_13 foreign key (author_id) references person (id);
+create index ix_post_author_13 on post (author_id);
 alter table post add constraint fk_post_postParentComment_14 foreign key (post_parent_comment_post_id) references post (post_id);
 create index ix_post_postParentComment_14 on post (post_parent_comment_post_id);
 alter table post add constraint fk_post_postParentAnswer_15 foreign key (post_parent_answer_post_id) references post (post_id);
@@ -401,17 +406,17 @@ alter table permission_key_group_with_permis add constraint fk_permission_key_gr
 
 alter table permission_key_person add constraint fk_permission_key_person_perm_01 foreign key (permission_key_id) references permission_key (id);
 
-alter table permission_key_person add constraint fk_permission_key_person_pers_02 foreign key (person_mail) references person (mail);
+alter table permission_key_person add constraint fk_permission_key_person_pers_02 foreign key (person_id) references person (id);
 
-alter table person_project add constraint fk_person_project_person_01 foreign key (person_mail) references person (mail);
+alter table person_project add constraint fk_person_project_person_01 foreign key (person_id) references person (id);
 
 alter table person_project add constraint fk_person_project_project_02 foreign key (project_project_id) references project (project_id);
 
-alter table person_post add constraint fk_person_post_person_01 foreign key (person_mail) references person (mail);
+alter table person_post add constraint fk_person_post_person_01 foreign key (person_id) references person (id);
 
 alter table person_post add constraint fk_person_post_post_02 foreign key (post_post_id) references post (post_id);
 
-alter table person_group_with_permissions add constraint fk_person_group_with_permissi_01 foreign key (person_mail) references person (mail);
+alter table person_group_with_permissions add constraint fk_person_group_with_permissi_01 foreign key (person_id) references person (id);
 
 alter table person_group_with_permissions add constraint fk_person_group_with_permissi_02 foreign key (group_with_permissions_group_id) references group_with_permissions (group_id);
 
@@ -526,6 +531,8 @@ drop sequence if exists linked_account_seq;
 drop sequence if exists linked_post_seq;
 
 drop sequence if exists permission_key_seq;
+
+drop sequence if exists person_seq;
 
 drop sequence if exists post_seq;
 

@@ -7,7 +7,7 @@
 [0m[[0mdebug[0m] [0m== resolving dependencies for tyrion#tyrion_2.11;1.0-SNAPSHOT [compile][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies tyrion#tyrion_2.11;1.0-SNAPSHOT->org.scala-lang#scala-compiler;2.11.6 [compile->default(compile)][0m
 [0m[[0minfo[0m] [0mResolving org.scala-lang#scala-compiler;2.11.6 ...[0m
-[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: sbt.ivyint.MergedDescriptors@14e08bd1[0m
+[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: sbt.ivyint.MergedDescriptors@4c2bed17[0m
 [0m[[0mdebug[0m] [0msbt-chain: module revision found in cache: org.scala-lang#scala-compiler;2.11.6[0m
 [0m[[0mdebug[0m] [0m	found org.scala-lang#scala-compiler;2.11.6 in sbt-chain[0m
 [0m[[0mdebug[0m] [0m== resolving dependencies tyrion#tyrion_2.11;1.0-SNAPSHOT->org.scala-lang#scala-compiler;2.11.6 [compile->runtime][0m
@@ -475,7 +475,7 @@
 [0m[[0mdebug[0m] [0m	public: downloading https://repo1.maven.org/maven2/com/google/inject/extensions/guice-assistedinject/4.0/guice-assistedinject-4.0.pom[0m
 [0m[[0mdebug[0m] [0m	public: downloading https://repo1.maven.org/maven2/com/google/inject/extensions/guice-assistedinject/4.0/guice-assistedinject-4.0.pom.sha1[0m
 [0m[[0mdebug[0m] [0msha1 OK for https://repo1.maven.org/maven2/com/google/inject/extensions/guice-assistedinject/4.0/guice-assistedinject-4.0.pom[0m
-[0m[[0mdebug[0m] [0m	[SUCCESSFUL ] com.google.inject.extensions#guice-assistedinject;4.0!guice-assistedinject.pom(pom.original) (173ms)[0m
+[0m[[0mdebug[0m] [0m	[SUCCESSFUL ] com.google.inject.extensions#guice-assistedinject;4.0!guice-assistedinject.pom(pom.original) (226ms)[0m
 [0m[[0minfo[0m] [0mResolving com.google.inject.extensions#extensions-parent;4.0 ...[0m
 [0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: com.google.inject.extensions#extensions-parent;4.0 {}[0m
 [0m[[0mdebug[0m] [0msbt-chain: module revision found in cache: com.google.inject.extensions#extensions-parent;4.0[0m
@@ -15217,7 +15217,7 @@
 [0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.ow2.asm#asm-analysis;4.1!asm-analysis.jar[0m
 [0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.ow2.asm#asm-util;4.1!asm-util.jar[0m
 [0m[[0mdebug[0m] [0m	[NOT REQUIRED] jline#jline;2.12.1!jline.jar[0m
-[0m[[0mdebug[0m] [0m:: resolution report :: resolve 26867ms :: artifacts dl 552ms[0m
+[0m[[0mdebug[0m] [0m:: resolution report :: resolve 18300ms :: artifacts dl 368ms[0m
 [0m[[0mdebug[0m] [0m	report for tyrion#tyrion_2.11;1.0-SNAPSHOT compile produced in /Users/zaruba/ownCloud/Git/Tyrion/target/resolution-cache/reports/tyrion-tyrion_2.11-compile.xml[0m
 [0m[[0mdebug[0m] [0m	report for tyrion#tyrion_2.11;1.0-SNAPSHOT runtime produced in /Users/zaruba/ownCloud/Git/Tyrion/target/resolution-cache/reports/tyrion-tyrion_2.11-runtime.xml[0m
 [0m[[0mdebug[0m] [0m	report for tyrion#tyrion_2.11;1.0-SNAPSHOT test produced in /Users/zaruba/ownCloud/Git/Tyrion/target/resolution-cache/reports/tyrion-tyrion_2.11-test.xml[0m
@@ -15231,5 +15231,5 @@
 [0m[[0mdebug[0m] [0m	report for tyrion#tyrion_2.11;1.0-SNAPSHOT docs produced in /Users/zaruba/ownCloud/Git/Tyrion/target/resolution-cache/reports/tyrion-tyrion_2.11-docs.xml[0m
 [0m[[0mdebug[0m] [0m	report for tyrion#tyrion_2.11;1.0-SNAPSHOT pom produced in /Users/zaruba/ownCloud/Git/Tyrion/target/resolution-cache/reports/tyrion-tyrion_2.11-pom.xml[0m
 [0m[[0mdebug[0m] [0m	report for tyrion#tyrion_2.11;1.0-SNAPSHOT scala-tool produced in /Users/zaruba/ownCloud/Git/Tyrion/target/resolution-cache/reports/tyrion-tyrion_2.11-scala-tool.xml[0m
-[0m[[0mdebug[0m] [0m	resolve done (26867ms resolve - 552ms download)[0m
+[0m[[0mdebug[0m] [0m	resolve done (18300ms resolve - 368ms download)[0m
 [0m[[0minfo[0m] [0mDone updating.[0m

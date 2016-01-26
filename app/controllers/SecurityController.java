@@ -5,13 +5,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.scribejava.core.model.*;
 import com.github.scribejava.core.oauth.OAuthService;
-import com.google.inject.Inject;
 import models.login.LinkedAccount;
 import models.login.Person;
 import play.Configuration;
 import play.Logger;
 import play.libs.Json;
-import play.libs.ws.WSClient;
 import play.mvc.*;
 import utilities.Secured;
 import utilities.loginEntities.Socials;
@@ -22,23 +20,24 @@ import utilities.response.GlobalResult;
 public class SecurityController extends Controller {
 
     public final static String AUTH_TOKEN_HEADER = "X-AUTH-TOKEN";
-    public static final String AUTH_TOKEN = "authToken";
+    public final static String AUTH_TOKEN = "authToken";
 
+    public Result index(){
+        return ok("Version 1.4 is alive!");
+    }
 
     public static Person getPerson() {
         return (Person) Http.Context.current().args.get("person");
     }
 
 
+    @BodyParser.Of(BodyParser.Json.class)
     public Result login() {
        try{
-
         JsonNode json = request().body().asJson();
-        if (json == null) throw new Exception("Null Json");
-
 
         Person person = Person.findByEmailAddressAndPassword(json.get("email").asText(), json.get("password").asText());
-        if (person == null) throw new Exception("Email or password are wrong");
+        if (person == null) return GlobalResult.forbidden("Email or password are wrong");
 
         String authToken = person.createToken();
 
@@ -50,30 +49,37 @@ public class SecurityController extends Controller {
 
         return GlobalResult.okResult(result);
 
-        }catch(Exception e){
-           return GlobalResult.badRequest(e);
+       } catch (NullPointerException e) {
+           return GlobalResult.badRequest(e, "email - String", "password - String");
+       } catch (Exception e) {
+           Logger.error("Error", e);
+           Logger.error("SecurityController - login ERROR");
+           Logger.error(request().body().asJson().toString());
+           return GlobalResult.internalServerError();
        }
     }
 
    @Security.Authenticated(Secured.class)
     public  Result logout() {
         try {
+
             response().discardCookie(AUTH_TOKEN);
             getPerson().deleteAuthToken();
 
             return GlobalResult.okResult();
 
-        }catch(Exception e){return GlobalResult.badRequest(e);}
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - logout ERROR");
+            return GlobalResult.internalServerError();
+        }
     }
 
-
-
-    public Result index(){
-        return ok("Version 1.4 is alive!");
-    }
-
-    @Inject WSClient ws;
-
+//#### Oaut pro příjem Requestů zvenčí ################################################################################*/
+    // Metoda slouží pro příjem autentifikačních klíču ze sociálních sítí když se přihlásí uživatel.
+    // Taktéž spojuje přihlášené účty pod jednu cvirtuální Person - aby v systému bylo jendotné rozpoznávání.
+    // V nějaké fázy je nutné mít email - pokud ho nedostaneme od sociální služby - mělo by někde v kodu být upozornění pro fontEnd
+    // Aby doplnil uživatel svůj email - hlavní identifikátor!
     public Result  GEToauth_callback(String code, String state){
         try {
 
@@ -182,6 +188,7 @@ public class SecurityController extends Controller {
     }
 
 
+//###### Socilání sítě - a generátory přístupů ########################################################################*/
 
     public Result GitHub(){
         try {
@@ -267,6 +274,7 @@ public class SecurityController extends Controller {
         }
     }
 
+//###### Option########################################################################*/
 
     public Result option(){
         return GlobalResult.okResult();

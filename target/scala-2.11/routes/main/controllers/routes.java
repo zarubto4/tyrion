@@ -1,7 +1,7 @@
 
 // @GENERATOR:play-routes-compiler
 // @SOURCE:/Users/zaruba/ownCloud/Git/Tyrion/conf/routes
-// @DATE:Mon Jan 25 23:42:15 CET 2016
+// @DATE:Tue Jan 26 17:01:35 CET 2016
 
 package controllers;
 

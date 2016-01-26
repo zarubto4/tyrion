@@ -9,6 +9,7 @@ import models.login.Person;
 import models.blocko.*;
 import play.Logger;
 import play.libs.Json;
+import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -24,27 +25,27 @@ import java.util.List;
 @Security.Authenticated(Secured.class)
 public class ProgramingPackageController extends Controller {
 
+    @BodyParser.Of(BodyParser.Json.class)
     public  Result postNewProject() {
         try{
             JsonNode json = request().body().asJson();
-            if (json == null) throw new Exception("Null Json");
-            Project project  = Json.fromJson(json, Project.class);
 
-            Person prihlaseny =  SecurityController.getPerson();
-
-            project.ownersOfProject.add( prihlaseny );
+            Project project  = new Project();
+            project.projectName = json.get("projectName").asText();
+            project.projectDescription = json.get("projectDescription").asText();
+            project.ownersOfProject.add( SecurityController.getPerson() );
 
             project.save();
 
+            return GlobalResult.okResult( Json.toJson(project) );
 
-
-            ObjectNode result = Json.newObject();
-            result.put("projectId", project.projectId);
-
-            return GlobalResult.okResult( result );
-
-        } catch(Exception e){
-           return GlobalResult.badRequest(e);
+        } catch (NullPointerException e) {
+            return GlobalResult.badRequest(e, "projectName - String", "projectDescription - TEXT");
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - postNewProject ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -53,8 +54,10 @@ public class ProgramingPackageController extends Controller {
 
             return GlobalResult.okResult(Json.toJson( SecurityController.getPerson().owningProjects ));
 
-        } catch(Exception e){
-            return GlobalResult.badRequest(e);
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - getProjectsByUserAccount ERROR");
+            return GlobalResult.internalServerError();
         }
 
     }
@@ -62,45 +65,61 @@ public class ProgramingPackageController extends Controller {
     public  Result getProject(String id){
         try {
             Project project = Project.find.byId(id);
-            if (project == null) throw new Exception("Project with this ID not exist");
+            if (project == null) return GlobalResult.notFound();
 
+            if (!project.ownersOfProject.contains( SecurityController.getPerson() ) ) return GlobalResult.forbidden();
 
             return GlobalResult.okResult(Json.toJson(project));
 
-        } catch(Exception e){
-            return GlobalResult.badRequest(e);
+         } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - getProjectsByUserAccount ERROR");
+            return GlobalResult.internalServerError();
         }
     }
 
     public  Result deleteProject(String id){
-
         try {
+
             Project project = Project.find.byId(id);
-            if (project == null) throw new Exception("Project with this ID not exist");
+            if (project == null) return GlobalResult.notFound();
+
+            if (!project.ownersOfProject.contains( SecurityController.getPerson() ) ) return GlobalResult.forbidden();
 
             project.delete();
 
-            return GlobalResult.okResult("Deleting was properly performed");
-        } catch(Exception e){
-            return GlobalResult.badRequest(e);
+            return GlobalResult.okResult();
+
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - deleteProject ERROR");
+            return GlobalResult.internalServerError();
         }
     }
 
+    @BodyParser.Of(BodyParser.Json.class)
     public  Result updateProject(String id){
         try {
             JsonNode json = request().body().asJson();
-            if (json == null) throw new Exception("Null Json");
 
             Project project = Project.find.byId(id);
-            if (project == null) throw new Exception("Project with this ID not exist");
+            if (project == null) return GlobalResult.notFound();
+
+            if (!project.ownersOfProject.contains( SecurityController.getPerson() ) ) return GlobalResult.forbidden();
 
             project.projectName = json.get("projectName").asText();
             project.projectDescription = json.get("projectDescription").asText();
             project.update();
 
-            return GlobalResult.okResult("Updating was properly performed");
-        } catch(Exception e){
-            return GlobalResult.badRequest(e);
+            return GlobalResult.okResult(Json.toJson(project));
+
+        } catch (NullPointerException e) {
+            return GlobalResult.badRequest(e, "projectName - String", "projectDescription - TEXT");
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - updateProject ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -111,14 +130,16 @@ public class ProgramingPackageController extends Controller {
             if(project == null) return GlobalResult.notFound();
 
             return GlobalResult.okResult(Json.toJson(project.boards));
+
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - getBoard ERROR");
+            Logger.error("ProgramingPackageController - getBoard ERROR");
             Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
     }
 
+    @BodyParser.Of(BodyParser.Json.class)
     public Result shareProjectWithUsers(String id){
         try {
 
@@ -146,12 +167,13 @@ public class ProgramingPackageController extends Controller {
             return GlobalResult.badRequest(e, "persons - [ids]");
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - shareProjectWithUsers ERROR");
+            Logger.error("ProgramingPackageController - shareProjectWithUsers ERROR");
             Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
     }
 
+    @BodyParser.Of(BodyParser.Json.class)
     public Result unshareProjectWithUsers(String id){
         try {
             JsonNode json = request().body().asJson();
@@ -175,7 +197,7 @@ public class ProgramingPackageController extends Controller {
             return GlobalResult.badRequest(e, "persons - [ids]");
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - shareProjectWithUsers ERROR");
+            Logger.error("ProgramingPackageController - unshareProjectWithUsers ERROR");
             Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
@@ -198,22 +220,28 @@ public class ProgramingPackageController extends Controller {
     }
 
 
-/**###################################################################################################################*/
+///###################################################################################################################*/
 
-
+    @BodyParser.Of(BodyParser.Json.class)
     public  Result newHomer(){
         try{
-
             JsonNode json = request().body().asJson();
 
-            Homer help = Json.fromJson(json, Homer.class);
+            Homer homer = new Homer();
+            homer.homerId = json.get("homerId").asText();
+            homer.typeOfDevice = json.get("typeOfDevice").asText();
 
-            help.save();
+            homer.save();
 
-            return GlobalResult.okResult();
+            return GlobalResult.okResult(Json.toJson(homer));
 
-        } catch(Exception e){
-            return GlobalResult.badRequest(e);
+        } catch (NullPointerException e) {
+            return GlobalResult.badRequest(e, "homerId - String", "typeOfDevice - String");
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - newHomer ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -229,28 +257,29 @@ public class ProgramingPackageController extends Controller {
 
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - removeHomer ERROR");
-            Logger.error(request().body().asJson().toString());
+            Logger.error("ProgramingPackageController - removeHomer ERROR");
             return GlobalResult.internalServerError();
         }
     }
 
     public  Result getHomer(String id){
         try {
-            Homer device = Homer.find.byId(id);
-            if (device == null) throw new Exception("Homer with this macAddress not exist");
+            Homer homer = Homer.find.byId(id);
+            if (homer == null) return GlobalResult.notFound();
 
-            return GlobalResult.okResult( Json.toJson(device) );
+            return GlobalResult.okResult( Json.toJson(homer) );
 
-        } catch(Exception e){
-            return GlobalResult.badRequest(e);
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - removeHomer ERROR");
+            return GlobalResult.internalServerError();
         }
     }
 
     public  Result getConnectedHomers(String id){
         try {
             Project project = Project.find.byId(id);
-            if (project == null) throw new Exception("Project with this ID not exist");
+            if (project == null) return GlobalResult.notFound();
 
             List<Homer> projectDevices = project.homerList;
             if(projectDevices.isEmpty()) return GlobalResult.okResult(Json.toJson(projectDevices));
@@ -263,8 +292,10 @@ public class ProgramingPackageController extends Controller {
 
             return GlobalResult.okResult(Json.toJson(intersection));
 
-        } catch(Exception e){
-            return GlobalResult.badRequest(e);
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - getConnectedHomers ERROR");
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -276,94 +307,80 @@ public class ProgramingPackageController extends Controller {
 
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - removeHomer ERROR");
-            Logger.error(request().body().asJson().toString());
+            Logger.error("ProgramingPackageController - getAllHomers ERROR");
             return GlobalResult.internalServerError();
         }
     }
 
-    public  Result postHome(){
-        try{
-            JsonNode json = request().body().asJson();
-            if (json == null) throw new Exception("Null Json");
-            Home help = Json.fromJson(json, Home.class);
+// ###################################################################################################################*/
 
-            help.save();
-
-            return GlobalResult.okResult();
-
-        }catch(Exception e){
-            return GlobalResult.badRequest(e);
-        }
-    }
-
-
-
-/**###################################################################################################################*/
-
+    @BodyParser.Of(BodyParser.Json.class)
     public  Result connectHomerWithProject(){
         try{
             JsonNode json = request().body().asJson();
-            if (json == null) throw new Exception("Null Json");
 
-            Project p = Project.find.byId(json.get("projectId").asText());
-            Homer d = Homer.find.byId(json.get("homerId").asText());
+            Project project = Project.find.byId(json.get("projectId").asText());
+            Homer homer = Homer.find.byId(json.get("homerId").asText());
 
-            if(p == null)  throw new Exception(" Project doesn't exist");
-            if(d == null)  throw new Exception(" Homer doesn't exist");
+            if(project == null)  return GlobalResult.notFound();
+            if(homer == null)  return GlobalResult.notFound();
 
-            d.project = p;
-            d.update();
+            homer.project = project;
+            homer.update();
 
-            return GlobalResult.okResult();
-
-        }catch(Exception e){
-            return GlobalResult.badRequest(e);
+            return GlobalResult.okResult(Json.toJson(project));
+        } catch (NullPointerException e) {
+            return GlobalResult.badRequest(e, "homerId - String", "projectId - String");
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - newHomer ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
     public  Result unConnectHomerWithProject(){
         try{
             JsonNode json = request().body().asJson();
-            if (json == null) throw new Exception("Null Json");
 
-            Project p = Project.find.byId(json.get("projectId").asText());
-            Homer d = Homer.find.byId(json.get("homerId").asText());
+            Project project = Project.find.byId(json.get("projectId").asText());
+            Homer homer = Homer.find.byId(json.get("homerId").asText());
 
-            if(p == null)  throw new Exception(" Project doesn't exist");
-            if(d == null)  throw new Exception(" Homer doesn't exist");
+            if(project == null)  return GlobalResult.notFound();
+            if(homer == null)  return GlobalResult.notFound();
 
-            p.homerList.remove(d);
-            d.project = null;
 
-            p.update();
-            d.update();
+            project.homerList.remove(homer);
+            homer.project = null;
 
-            return GlobalResult.okResult();
-        }catch(Exception e){
-            return GlobalResult.badRequest(e);
+            project.update();
+            homer.update();
+
+            return GlobalResult.okResult(Json.toJson(project));
+        } catch (NullPointerException e) {
+            return GlobalResult.badRequest(e, "homerId - String", "projectId - String");
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - newHomer ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
+/// ###################################################################################################################*/
 
-/**###################################################################################################################*/
-
-
+    @BodyParser.Of(BodyParser.Json.class)
     public  Result postNewProgram(){
         try{
             JsonNode json = request().body().asJson();
-            if (json == null) throw new Exception("Null Json");
-
 
 
             Project project = Project.find.byId(json.get("projectId").asText());
-            if (project == null) throw new Exception("Project not exist");
+            if (project == null) return GlobalResult.notFound();
 
             HomerProgram program = new HomerProgram();
 
-
             program.programInString = json.get("program").toString();
-
 
             program.dateOfCreate = new Date();
             program.programDescription = json.get("programDescription").asText();
@@ -371,28 +388,32 @@ public class ProgramingPackageController extends Controller {
 
             program.save();
 
-
             program.project = project;
             program.update();
 
-            ObjectNode result = Json.newObject();
-            result.put("projectId", program.programId);
+            return GlobalResult.okResult(Json.toJson(program));
 
-            return GlobalResult.okResult(result);
-        }catch(Exception e){
-            return GlobalResult.badRequest(e);
+        } catch (NullPointerException e) {
+            return GlobalResult.badRequest(e, "homerId - String", "projectId - String");
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - newHomer ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
     public  Result getProgram(String id){
         try{
 
-            HomerProgram program  = HomerProgram.find.byId(id);
-            if (program == null) throw new Exception("Program not exist");
+            HomerProgram program = HomerProgram.find.byId(id);
+            if (program == null) return GlobalResult.notFound();
 
             return GlobalResult.okResult(Json.toJson(program));
-        }catch(Exception e){
-            return GlobalResult.badRequest(e);
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - newHomer ERROR");
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -400,15 +421,18 @@ public class ProgramingPackageController extends Controller {
         try{
 
             HomerProgram program  = HomerProgram.find.byId(id);
-            if (program == null) throw new Exception("Program not exist");
+            if (program == null) return GlobalResult.notFound();
 
             ObjectMapper mapper = new ObjectMapper();
             JsonFactory factory = mapper.getFactory();
             JsonParser jp = factory.createParser(program.programInString);
 
             return GlobalResult.okResult(Json.toJson(jp));
-        }catch(Exception e){
-            return GlobalResult.badRequest(e);
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - newHomer ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -416,11 +440,14 @@ public class ProgramingPackageController extends Controller {
         try{
 
             Project project  = Project.find.byId(id);
-            if (project == null) throw new Exception("Program not exist");
+            if (project == null) return GlobalResult.notFound();
 
             return GlobalResult.okResult(Json.toJson(project.programs));
-        }catch(Exception e){
-            return GlobalResult.badRequest(e);
+
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - getProgramPrograms ERROR");
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -428,22 +455,24 @@ public class ProgramingPackageController extends Controller {
         try{
 
             Project project  = Project.find.byId(id);
-            if (project == null) throw new Exception("Program not exist");
+            if (project == null) return GlobalResult.notFound();
 
             return GlobalResult.okResult(Json.toJson(project.homerList));
-        }catch(Exception e){
-            return GlobalResult.badRequest(e);
+
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - getProgramhomerList ERROR");
+            return GlobalResult.internalServerError();
         }
     }
 
+    @BodyParser.Of(BodyParser.Json.class)
     public  Result editProgram(String id){
         try{
             JsonNode json = request().body().asJson();
 
-            if (json == null) throw new Exception("Null Json");
-
             HomerProgram program  = HomerProgram.find.byId(id);
-            if (program == null) throw new Exception("Program not exist");
+            if (program == null) return GlobalResult.notFound();
 
 
             program.programInString = json.get("program").asText();
@@ -453,26 +482,33 @@ public class ProgramingPackageController extends Controller {
 
             program.update();
 
-            return GlobalResult.okResult();
-        }catch(Exception e){
-            return GlobalResult.badRequest(e);
+            return GlobalResult.okResult(Json.toJson(program));
+
+        } catch (NullPointerException e) {
+            return GlobalResult.badRequest(e, "programName - String", "programDescription - TEXT", "program - TEXT" );
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - editProgram ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
     public  Result removeProgram(String id){
         try{
-            JsonNode json = request().body().asJson();
-
-            if (json == null) throw new Exception("Null Json");
 
             HomerProgram program  = HomerProgram.find.byId(id);
-            if (program == null) throw new Exception("Program not exist");
+            if (program == null) return GlobalResult.notFound();
+
 
             program.delete();
 
             return GlobalResult.okResult();
-        }catch(Exception e){
-            return GlobalResult.badRequest(e);
+
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - removeProgram ERROR");
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -485,8 +521,10 @@ public class ProgramingPackageController extends Controller {
            JsonNode json = new ObjectMapper().valueToTree(project.programs);
 
             return GlobalResult.okResult(json);
-        }catch(Exception e){
-            return GlobalResult.badRequest(e);
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - removeProgram ERROR");
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -656,32 +694,35 @@ public class ProgramingPackageController extends Controller {
         return GlobalResult.okResult( result );
     }
 
-    public Result getBlock(String url){
+    public Result getBlockLast(String id){
         try {
-            String[] parts = url.split("/");
+                BlockoBlock blockoBlock = BlockoBlock.find.byId(id);
+                if (blockoBlock == null) return GlobalResult.notFound();
 
-            if (parts.length > 2)
-                return GlobalResult.badRequest(new Exception("URL " + url + " contains more substrings than one"));
+                return GlobalResult.ok(Json.toJson(blockoBlock));
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - getBlockLast ERROR");
+            return GlobalResult.internalServerError();
+        }
 
-            if (parts.length > 1) {
+    }
 
-                BlockoContentBlock block = BlockoContentBlock.find.where().in("blockoBlock.id", parts[0]).where().in("version", Double.valueOf(parts[1])).findUnique();
-                if (block == null) return GlobalResult.badRequest(new Exception("This version doesn't exist"));
+    public Result getBlockVersion(String id, Double version){
+        try {
 
-                BlockoBlock blockoBlock = BlockoBlock.find.byId(parts[0]);
-                blockoBlock.setVersion(Double.parseDouble(parts[1]));
+                BlockoContentBlock block = BlockoContentBlock.find.where().in("blockoBlock.id", id).where().in("version", version).findUnique();
+                if (block == null) return GlobalResult.notFound();
+
+                BlockoBlock blockoBlock = BlockoBlock.find.byId(id);
+                blockoBlock.setVersion(version);
 
                 return GlobalResult.ok(Json.toJson(blockoBlock));
 
-            } else {
-
-                BlockoBlock blockoBlock = BlockoBlock.find.byId(parts[0]);
-                if (blockoBlock == null)
-                    return GlobalResult.badRequest(new Exception("This block doesn't exist"));
-                return GlobalResult.ok(Json.toJson(blockoBlock));
-            }
-        } catch(Exception e){
-            return GlobalResult.badRequest(e);
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - getBlockVersion ERROR");
+            return GlobalResult.internalServerError();
         }
 
     }
@@ -744,37 +785,45 @@ public class ProgramingPackageController extends Controller {
             blockoBlock.update();
 
             return GlobalResult.okResult();
-        } catch(Exception e){
-            return GlobalResult.badRequest(e);
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - shareProjectWithUsers ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
-    //TODO opravit
-    public Result designJson(String url){
+
+    public Result designJsonVersion(String id, Double version){
         try {
 
-            String[] parts = url.split("/");
-
-            if (parts.length > 2)
-                return GlobalResult.badRequest(new Exception("URL " + url + " contains more substrings than one"));
-
-
-            if (parts.length > 1) {
-                BlockoContentBlock block = BlockoContentBlock.find
-                        .where().in("blockoBlock.id", parts[0])
-                        .eq("version", Double.valueOf(parts[1]))
+             BlockoContentBlock block = BlockoContentBlock.find
+                        .where().in("blockoBlock.id", id)
+                        .eq("version", version)
                         .findUnique();
-                return GlobalResult.ok(Json.toJson(block.designJson));
 
-            } else {
-                BlockoContentBlock block = BlockoContentBlock.find
-                        .where().in("blockoBlock.id", parts[0])
-                        .orderBy("dateOfCreate").where()
-                        .setMaxRows(1)
-                        .findUnique();
-                return GlobalResult.ok(Json.toJson(block.designJson));
-            }
+            if(block == null) return GlobalResult.notFound();
 
+            return GlobalResult.ok(Json.toJson(block.designJson));
+
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - designJsonDouble ERROR");
+            return GlobalResult.internalServerError();
+        }
+    }
+
+    public Result logicJsonVersion(String id, Double version){
+        try {
+
+            BlockoContentBlock block = BlockoContentBlock.find
+                    .where().in("blockoBlock.id", id)
+                    .eq("version", version)
+                    .findUnique();
+
+            if(block == null) return GlobalResult.notFound();
+
+            return GlobalResult.ok(Json.toJson(block.logicJson));
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - logicJson ERROR");
@@ -783,30 +832,39 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-    // TODO opravit -> Jako všechny už správně udělané link
-    public Result logicJson(String url){
+    public Result designJsonLast(String id){
         try {
 
-            String[] parts = url.split("/");
-
-            if (parts.length > 2)
-                return GlobalResult.badRequest(new Exception("URL " + url + " contains more substrings than one"));
-
-            if (parts.length > 1) {
-                BlockoContentBlock block = BlockoContentBlock.find
-                        .where().in("blockoBlock.id", parts[0])
-                        .eq("version", Double.valueOf(parts[1]))
-                        .findUnique();
-                return GlobalResult.ok(Json.toJson(block.logicJson));
-
-            } else {
-                BlockoContentBlock block = BlockoContentBlock.find
-                        .where().in("blockoBlock.id", parts[0])
+            BlockoContentBlock block = BlockoContentBlock.find
+                        .where().in("blockoBlock.id", id)
                         .orderBy("dateOfCreate").where()
                         .setMaxRows(1)
                         .findUnique();
-                return GlobalResult.ok(Json.toJson(block.logicJson));
-            }
+
+            if(block == null) return GlobalResult.notFound();
+
+            return GlobalResult.ok(Json.toJson(block.designJson));
+
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - logicJson ERROR");
+            return GlobalResult.internalServerError();
+        }
+    }
+
+
+    public Result logicJsonLast(String id){
+        try {
+
+            BlockoContentBlock block = BlockoContentBlock.find
+                    .where().in("blockoBlock.id", id)
+                    .orderBy("dateOfCreate").where()
+                    .setMaxRows(1)
+                    .findUnique();
+
+            if(block == null) return GlobalResult.notFound();
+
+            return GlobalResult.ok(Json.toJson(block.logicJson));
 
         } catch (Exception e) {
             Logger.error("Error", e);

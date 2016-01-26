@@ -1,7 +1,7 @@
 
 // @GENERATOR:play-routes-compiler
 // @SOURCE:/Users/zaruba/ownCloud/Git/Tyrion/conf/routes
-// @DATE:Mon Jan 25 23:42:15 CET 2016
+// @DATE:Tue Jan 26 17:01:35 CET 2016
 
 import play.api.mvc.{ QueryStringBindable, PathBindable, Call, JavascriptLiteral }
 import play.core.routing.{ HandlerDef, ReverseRouteContext, queryString, dynamicString }
@@ -190,338 +190,338 @@ package controllers {
   
   }
 
-  // @LINE:150
+  // @LINE:154
   class ReverseCompilationLibrariesController(_prefix: => String) {
     def _defaultPrefix: String = {
       if (_prefix.endsWith("/")) "" else "/"
     }
 
   
-    // @LINE:202
+    // @LINE:206
     def getLibraryGroupLibraries(libraryId:String, version:String): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "compilation/libraryGroup/libraries/" + implicitly[PathBindable[String]].unbind("libraryId", dynamicString(libraryId)) + "/" + implicitly[PathBindable[String]].unbind("version", dynamicString(version)))
     }
   
-    // @LINE:153
+    // @LINE:157
     def updateProcessor(id:String): Call = {
       import ReverseRouteContext.empty
       Call("PUT", _prefix + { _defaultPrefix } + "compilation/processor/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:154
+    // @LINE:158
     def deleteProcessor(id:String): Call = {
       import ReverseRouteContext.empty
       Call("DELETE", _prefix + { _defaultPrefix } + "compilation/processor/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:167
+    // @LINE:171
     def newBoard(): Call = {
       import ReverseRouteContext.empty
       Call("POST", _prefix + { _defaultPrefix } + "compilation/board")
     }
   
-    // @LINE:205
+    // @LINE:209
     def uploudLibraryToLibraryGroup(libraryId:String, version:Double): Call = {
       import ReverseRouteContext.empty
       Call("POST", _prefix + { _defaultPrefix } + "compilation/libraryGroup/upload/" + implicitly[PathBindable[String]].unbind("libraryId", dynamicString(libraryId)) + "/" + implicitly[PathBindable[Double]].unbind("version", version))
     }
   
-    // @LINE:196
+    // @LINE:200
     def getLibraryGroup(id:String): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "compilation/libraryGroup/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:214
+    // @LINE:218
     def getSingleLibrary(id:String): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "compilation/library/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:178
+    // @LINE:182
     def newProducers(): Call = {
       import ReverseRouteContext.empty
       Call("POST", _prefix + { _defaultPrefix } + "compilation/producer")
     }
   
-    // @LINE:170
+    // @LINE:174
     def deactivateBoard(id:String): Call = {
       import ReverseRouteContext.empty
       Call("DELETE", _prefix + { _defaultPrefix } + "compilation/board/deactivateBoard" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:204
+    // @LINE:208
     def getVersionLibraryGroup(id:String): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "compilation/libraryGroup/versions/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:151
+    // @LINE:155
     def getProcessor(id:String): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "compilation/processor/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:200
+    // @LINE:204
     def getLibraryGroupDescription(id:String): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "compilation/libraryGroup/generalDescription/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:190
+    // @LINE:194
     def getTypeOfBoardDescription(id:String): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "compilation/typeOfBoard/description/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:191
+    // @LINE:195
     def getTypeOfBoardAllBoards(id:String): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "compilation/typeOfBoard/boards/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:211
+    // @LINE:215
     def newSingleLibrary(): Call = {
       import ReverseRouteContext.empty
       Call("POST", _prefix + { _defaultPrefix } + "compilation/library")
     }
   
-    // @LINE:152
+    // @LINE:156
     def getProcessorAll(): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "compilation/processor")
     }
   
-    // @LINE:212
+    // @LINE:216
     def newVersionSingleLibrary(id:String): Call = {
       import ReverseRouteContext.empty
       Call("POST", _prefix + { _defaultPrefix } + "compilation/library/version/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:161
+    // @LINE:165
     def getProcessorDescription(id:String): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "compilation/processor/description/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:219
+    // @LINE:223
     def uploadSingleLibraryWithVersion(id:String, version:Double): Call = {
       import ReverseRouteContext.empty
       Call("POST", _prefix + { _defaultPrefix } + "compilation/library/uploud/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)) + "/" + implicitly[PathBindable[Double]].unbind("version", version))
     }
   
-    // @LINE:168
+    // @LINE:172
     def addUserDescription(id:String): Call = {
       import ReverseRouteContext.empty
       Call("PUT", _prefix + { _defaultPrefix } + "compilation/board/userDescription/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:195
+    // @LINE:199
     def newLibraryGroup(): Call = {
       import ReverseRouteContext.empty
       Call("POST", _prefix + { _defaultPrefix } + "compilation/libraryGroup")
     }
   
-    // @LINE:208
+    // @LINE:212
     def fileRecord(id:String): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "compilation/library/fileRecord/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:189
+    // @LINE:193
     def getTypeOfBoard(id:String): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "compilation/typeOfBoard/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:213
+    // @LINE:217
     def getSingleLibraryFilter(): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "compilation/library/filter")
     }
   
-    // @LINE:169
+    // @LINE:173
     def getBoard(id:String): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "compilation/board/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:218
+    // @LINE:222
     def deleteSingleLibrary(id:String): Call = {
       import ReverseRouteContext.empty
       Call("DELETE", _prefix + { _defaultPrefix } + "compilation/library/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:171
+    // @LINE:175
     def getUserDescription(id:String): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "compilation/board/userDescription/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:150
+    // @LINE:154
     def newProcessor(): Call = {
       import ReverseRouteContext.empty
       Call("POST", _prefix + { _defaultPrefix } + "compilation/processor")
     }
   
-    // @LINE:163
+    // @LINE:167
     def getProcessorSingleLibraries(id:String): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "compilation/processor/singleLibrary/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:186
+    // @LINE:190
     def newTypeOfBoard(): Call = {
       import ReverseRouteContext.empty
       Call("POST", _prefix + { _defaultPrefix } + "compilation/typeOfBoard")
     }
   
-    // @LINE:198
+    // @LINE:202
     def getLibraryGroupAll(): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "compilation/libraryGroup")
     }
   
-    // @LINE:179
+    // @LINE:183
     def updateProducers(id:String): Call = {
       import ReverseRouteContext.empty
       Call("PUT", _prefix + { _defaultPrefix } + "compilation/producer/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:158
+    // @LINE:162
     def unconnectProcessorWithLibrary(id:String, lbrId:String): Call = {
       import ReverseRouteContext.empty
       Call("DELETE", _prefix + { _defaultPrefix } + "compilation/processor/lbr/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)) + "/" + implicitly[PathBindable[String]].unbind("lbrId", dynamicString(lbrId)))
     }
   
-    // @LINE:156
+    // @LINE:160
     def connectProcessorWithLibrary(id:String, lbrId:String): Call = {
       import ReverseRouteContext.empty
       Call("PUT", _prefix + { _defaultPrefix } + "compilation/processor/lbr/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)) + "/" + implicitly[PathBindable[String]].unbind("lbrId", dynamicString(lbrId)))
     }
   
-    // @LINE:203
+    // @LINE:207
     def createNewVersionLibraryGroup(id:String): Call = {
       import ReverseRouteContext.empty
       Call("POST", _prefix + { _defaultPrefix } + "compilation/libraryGroup/version/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:222
+    // @LINE:226
     def generateProjectForEclipse(): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "compilation/project/eclipse")
     }
   
-    // @LINE:183
+    // @LINE:187
     def getProducerTypeOfBoards(id:String): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "compilation/producer/typeOfBoards/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:199
+    // @LINE:203
     def updateLibraryGroup(id:String): Call = {
       import ReverseRouteContext.empty
       Call("PUT", _prefix + { _defaultPrefix } + "compilation/libraryGroup/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:173
+    // @LINE:177
     def unconnectBoardWthProject(id:String, pr:String): Call = {
       import ReverseRouteContext.empty
       Call("PUT", _prefix + { _defaultPrefix } + "compilation/board/unconnect/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)) + "/" + implicitly[PathBindable[String]].unbind("pr", dynamicString(pr)))
     }
   
-    // @LINE:197
+    // @LINE:201
     def deleteLibraryGroup(id:String): Call = {
       import ReverseRouteContext.empty
       Call("DELETE", _prefix + { _defaultPrefix } + "compilation/libraryGroup/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:157
+    // @LINE:161
     def connectProcessorWithLibraryGroup(id:String, lbrgId:String): Call = {
       import ReverseRouteContext.empty
       Call("PUT", _prefix + { _defaultPrefix } + "compilation/processor/lbrgrp/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)) + "/" + implicitly[PathBindable[String]].unbind("lbrgId", dynamicString(lbrgId)))
     }
   
-    // @LINE:220
+    // @LINE:224
     def getSingleLibraryDescription(id:String): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "compilation/library/description/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:174
+    // @LINE:178
     def getBoardProjects(id:String): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "compilation/board/projects/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:181
+    // @LINE:185
     def getProducer(id:String): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "compilation/producer/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:201
+    // @LINE:205
     def getLibraryGroupProcessors(id:String): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "compilation/libraryGroup/processors/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:207
+    // @LINE:211
     def listOfFilesInVersion(id:String): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "compilation/library/listOfFiles/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:180
+    // @LINE:184
     def getProducers(): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "compilation/producer")
     }
   
-    // @LINE:215
+    // @LINE:219
     def getSingleLibraryAll(): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "compilation/library")
     }
   
-    // @LINE:172
+    // @LINE:176
     def connectBoardWthProject(id:String, pr:String): Call = {
       import ReverseRouteContext.empty
       Call("PUT", _prefix + { _defaultPrefix } + "compilation/board/connect/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)) + "/" + implicitly[PathBindable[String]].unbind("pr", dynamicString(pr)))
     }
   
-    // @LINE:159
+    // @LINE:163
     def unconnectProcessorWithLibraryGroup(id:String, lbrgId:String): Call = {
       import ReverseRouteContext.empty
       Call("DELETE", _prefix + { _defaultPrefix } + "compilation/processor/lbrgrp/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)) + "/" + implicitly[PathBindable[String]].unbind("lbrgId", dynamicString(lbrgId)))
     }
   
-    // @LINE:187
+    // @LINE:191
     def updateTypeOfBoard(id:String): Call = {
       import ReverseRouteContext.empty
       Call("PUT", _prefix + { _defaultPrefix } + "compilation/typeOfBoard/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:217
+    // @LINE:221
     def updateSingleLibrary(id:String): Call = {
       import ReverseRouteContext.empty
       Call("PUT", _prefix + { _defaultPrefix } + "compilation/library/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:162
+    // @LINE:166
     def getProcessorLibraryGroups(id:String): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "compilation/processor/libraryGroups/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:188
+    // @LINE:192
     def getTypeOfBoards(): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "compilation/typeOfBoard")
     }
   
-    // @LINE:182
+    // @LINE:186
     def getProducerDescription(id:String): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "compilation/producer/description/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
@@ -560,7 +560,7 @@ package controllers {
       Call("GET", _prefix + { _defaultPrefix } + "login/github")
     }
   
-    // @LINE:231
+    // @LINE:235
     def optionLink(all:String): Call = {
       import ReverseRouteContext.empty
       Call("OPTIONS", _prefix + { _defaultPrefix } + implicitly[PathBindable[String]].unbind("all", all))
@@ -677,18 +677,18 @@ package controllers {
     }
 
   
-    // @LINE:139
+    // @LINE:143
     def allPrevVersions(id:String): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "project/blockoBlock/allPrevVersions/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:118
+    // @LINE:119
     def getProgramInJson(id:String): Call = {
     
       (id: @unchecked) match {
       
-        // @LINE:118
+        // @LINE:119
         case (id)  =>
           import ReverseRouteContext.empty
           Call("GET", _prefix + { _defaultPrefix } + "project/programInJson/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
@@ -697,13 +697,13 @@ package controllers {
     
     }
   
-    // @LINE:141
+    // @LINE:145
     def getByFilter(): Call = {
       import ReverseRouteContext.empty
       Call("POST", _prefix + { _defaultPrefix } + "project/blockoBlock/filter")
     }
   
-    // @LINE:115
+    // @LINE:116
     def getProgram(id:String): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "project/program/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
@@ -715,7 +715,13 @@ package controllers {
       Call("POST", _prefix + { _defaultPrefix } + "project/project")
     }
   
-    // @LINE:132
+    // @LINE:141
+    def getBlockLast(id:String): Call = {
+      import ReverseRouteContext.empty
+      Call("GET", _prefix + { _defaultPrefix } + "project/blockoBlock/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
+    }
+  
+    // @LINE:133
     def newVersionOfBlock(id:String): Call = {
       import ReverseRouteContext.empty
       Call("PUT", _prefix + { _defaultPrefix } + "project/blockoBlock/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
@@ -727,7 +733,7 @@ package controllers {
       Call("GET", _prefix + { _defaultPrefix } + "project/project")
     }
   
-    // @LINE:135
+    // @LINE:138
     def generalDescription(id:String): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "project/blockoBlock/generalDescription/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
@@ -739,7 +745,13 @@ package controllers {
       Call("GET", _prefix + { _defaultPrefix } + "project/project/homerList/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:125
+    // @LINE:135
+    def designJsonVersion(id:String, version:Double): Call = {
+      import ReverseRouteContext.empty
+      Call("GET", _prefix + { _defaultPrefix } + "project/blockoBlock/designJson/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)) + "/" + implicitly[PathBindable[Double]].unbind("version", version))
+    }
+  
+    // @LINE:126
     def getProjectsBoard(id:String): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "project/boards/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
@@ -751,43 +763,37 @@ package controllers {
       Call("DELETE", _prefix + { _defaultPrefix } + "project/project/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:137
-    def getBlock(url:String): Call = {
-      import ReverseRouteContext.empty
-      Call("GET", _prefix + { _defaultPrefix } + "project/blockoBlock/" + implicitly[PathBindable[String]].unbind("url", url))
-    }
-  
     // @LINE:92
     def getProject(id:String): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "project/project/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:122
+    // @LINE:123
     def listOfUploadedHomers(id:String): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "project/listOfUploadedHomers/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:106
+    // @LINE:105
     def getAllHomers(): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "project/homer")
     }
   
-    // @LINE:121
+    // @LINE:122
     def getAllPrograms(id:String): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "project/getallprograms/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:127
+    // @LINE:128
     def uploadProgramToHomer_AsSoonAsPossible(): Call = {
       import ReverseRouteContext.empty
       Call("PUT", _prefix + { _defaultPrefix } + "project/uploudtohomerAsSoonAsPossible")
     }
   
-    // @LINE:116
+    // @LINE:117
     def editProgram(id:String): Call = {
       import ReverseRouteContext.empty
       Call("PUT", _prefix + { _defaultPrefix } + "project/program/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
@@ -799,7 +805,7 @@ package controllers {
       Call("GET", _prefix + { _defaultPrefix } + "project/project/owners/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:131
+    // @LINE:132
     def newBlock(): Call = {
       import ReverseRouteContext.empty
       Call("POST", _prefix + { _defaultPrefix } + "project/blockoBlock")
@@ -811,7 +817,7 @@ package controllers {
       Call("POST", _prefix + { _defaultPrefix } + "project/homer")
     }
   
-    // @LINE:117
+    // @LINE:118
     def removeProgram(id:String): Call = {
       import ReverseRouteContext.empty
       Call("DELETE", _prefix + { _defaultPrefix } + "project/program/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
@@ -823,7 +829,13 @@ package controllers {
       Call("GET", _prefix + { _defaultPrefix } + "project/project/programs/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:105
+    // @LINE:136
+    def logicJsonLast(id:String): Call = {
+      import ReverseRouteContext.empty
+      Call("GET", _prefix + { _defaultPrefix } + "project/blockoBlock/logicJson/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
+    }
+  
+    // @LINE:106
     def getConnectedHomers(id:String): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "project/homer/getAllConnectedHomers/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
@@ -841,19 +853,37 @@ package controllers {
       Call("DELETE", _prefix + { _defaultPrefix } + "project/homer/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
+    // @LINE:134
+    def logicJsonVersion(id:String, version:Double): Call = {
+      import ReverseRouteContext.empty
+      Call("GET", _prefix + { _defaultPrefix } + "project/blockoBlock/logicJson/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)) + "/" + implicitly[PathBindable[Double]].unbind("version", version))
+    }
+  
+    // @LINE:140
+    def getBlockVersion(id:String, version:Double): Call = {
+      import ReverseRouteContext.empty
+      Call("GET", _prefix + { _defaultPrefix } + "project/blockoBlock/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)) + "/" + implicitly[PathBindable[Double]].unbind("version", version))
+    }
+  
     // @LINE:104
     def getHomer(id:String): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "project/homer/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:110
+    // @LINE:137
+    def designJsonLast(id:String): Call = {
+      import ReverseRouteContext.empty
+      Call("GET", _prefix + { _defaultPrefix } + "project/blockoBlock/designJson/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
+    }
+  
+    // @LINE:111
     def connectHomerWithProject(): Call = {
       import ReverseRouteContext.empty
       Call("PUT", _prefix + { _defaultPrefix } + "project/connectHomerWithProject")
     }
   
-    // @LINE:140
+    // @LINE:144
     def deleteBlock(url:String): Call = {
       import ReverseRouteContext.empty
       Call("DELETE", _prefix + { _defaultPrefix } + "project/blockoBlock/" + implicitly[PathBindable[String]].unbind("url", url))
@@ -865,19 +895,19 @@ package controllers {
       Call("PUT", _prefix + { _defaultPrefix } + "project/project/unshareProject/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:136
+    // @LINE:139
     def versionDescription(id:String): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "project/blockoBlock/versionDescription/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:114
+    // @LINE:115
     def postNewProgram(): Call = {
       import ReverseRouteContext.empty
       Call("POST", _prefix + { _defaultPrefix } + "project/program")
     }
   
-    // @LINE:126
+    // @LINE:127
     def uploadProgramToHomer_Immediately(): Call = {
       import ReverseRouteContext.empty
       Call("PUT", _prefix + { _defaultPrefix } + "project/uploudtohomerImmediately")
@@ -889,31 +919,19 @@ package controllers {
       Call("PUT", _prefix + { _defaultPrefix } + "project/project/shareProject/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))
     }
   
-    // @LINE:134
-    def designJson(url:String): Call = {
-      import ReverseRouteContext.empty
-      Call("GET", _prefix + { _defaultPrefix } + "project/blockoBlock/designJson/" + implicitly[PathBindable[String]].unbind("url", url))
-    }
-  
-    // @LINE:128
+    // @LINE:129
     def uploadProgramToHomer_GivenTimeAsSoonAsPossible(): Call = {
       import ReverseRouteContext.empty
       Call("PUT", _prefix + { _defaultPrefix } + "project/uploudtohomerGivenTime")
     }
   
-    // @LINE:111
+    // @LINE:112
     def unConnectHomerWithProject(): Call = {
       import ReverseRouteContext.empty
       Call("PUT", _prefix + { _defaultPrefix } + "project/unconnectHomerWithProject")
     }
   
-    // @LINE:133
-    def logicJson(url:String): Call = {
-      import ReverseRouteContext.empty
-      Call("GET", _prefix + { _defaultPrefix } + "project/blockoBlock/logicJson/" + implicitly[PathBindable[String]].unbind("url", url))
-    }
-  
-    // @LINE:123
+    // @LINE:124
     def listOfHomersWaitingForUpload(id:String): Call = {
       import ReverseRouteContext.empty
       Call("GET", _prefix + { _defaultPrefix } + "project/listOfHomersWaitingForUpload/" + implicitly[PathBindable[String]].unbind("id", dynamicString(id)))

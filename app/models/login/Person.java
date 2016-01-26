@@ -11,11 +11,12 @@ import models.permission.PermissionKey;
 import play.data.validation.Constraints;
 
 import javax.persistence.*;
+import java.math.BigInteger;
 import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 public class Person extends Model{
@@ -80,11 +81,15 @@ public class Person extends Model{
         authToken = token;
     }
 
-    public String createToken() {
+    public String createToken() throws Exception{
 
-        authToken = UUID.randomUUID().toString();
+        while(true){ // I need Unique Value
+            authToken = new BigInteger(130, new SecureRandom()).toString(32).toLowerCase();
+            if (LinkedAccount.find.where().eq("authToken",authToken).findUnique() == null) break;
+
+        }
+
         update();
-
         return authToken;
     }
 

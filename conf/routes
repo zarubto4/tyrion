@@ -102,8 +102,9 @@ GET            /project/project/owners/:id                 @controllers.Programi
 POST           /project/homer                              @controllers.ProgramingPackageController.newHomer()
 DELETE         /project/homer/:id                          @controllers.ProgramingPackageController.removeHomer(id: String)
 GET            /project/homer/:id                          @controllers.ProgramingPackageController.getHomer(id: String)
-GET            /project/homer/getAllConnectedHomers/:id    @controllers.ProgramingPackageController.getConnectedHomers(id: String)
 GET            /project/homer                              @controllers.ProgramingPackageController.getAllHomers()
+GET            /project/homer/getAllConnectedHomers/:id    @controllers.ProgramingPackageController.getConnectedHomers(id: String)
+
 
 
 #Project - connection
@@ -128,13 +129,16 @@ PUT            /project/uploudtohomerAsSoonAsPossible      @controllers.Programi
 PUT            /project/uploudtohomerGivenTime             @controllers.ProgramingPackageController.uploadProgramToHomer_GivenTimeAsSoonAsPossible()
 
 #Blocks
-POST           /project/blockoBlock                        @controllers.ProgramingPackageController.newBlock()
-PUT            /project/blockoBlock/:id                    @controllers.ProgramingPackageController.newVersionOfBlock(id: String)
-GET            /project/blockoBlock/logicJson/*url         @controllers.ProgramingPackageController.logicJson(url: String)
-GET            /project/blockoBlock/designJson/*url        @controllers.ProgramingPackageController.designJson(url: String)
-GET            /project/blockoBlock/generalDescription/:id @controllers.ProgramingPackageController.generalDescription(id: String)
-GET            /project/blockoBlock/versionDescription/:id @controllers.ProgramingPackageController.versionDescription(id: String)
-GET            /project/blockoBlock/*url                   @controllers.ProgramingPackageController.getBlock(url: String)
+POST           /project/blockoBlock                         @controllers.ProgramingPackageController.newBlock()
+PUT            /project/blockoBlock/:id                     @controllers.ProgramingPackageController.newVersionOfBlock(id: String)
+GET            /project/blockoBlock/logicJson/:id/:version  @controllers.ProgramingPackageController.logicJsonVersion(id: String, version: Double)
+GET            /project/blockoBlock/designJson/:id/:version @controllers.ProgramingPackageController.designJsonVersion(id: String, version: Double)
+GET            /project/blockoBlock/logicJson/:id           @controllers.ProgramingPackageController.logicJsonLast(id: String)
+GET            /project/blockoBlock/designJson/:id          @controllers.ProgramingPackageController.designJsonLast(id: String)
+GET            /project/blockoBlock/generalDescription/:id  @controllers.ProgramingPackageController.generalDescription(id: String)
+GET            /project/blockoBlock/versionDescription/:id  @controllers.ProgramingPackageController.versionDescription(id: String)
+GET            /project/blockoBlock/:id/:version            @controllers.ProgramingPackageController.getBlockVersion(id: String, version: Double)
+GET            /project/blockoBlock/:id                     @controllers.ProgramingPackageController.getBlockLast(id: String)
 
 GET            /project/blockoBlock/allPrevVersions/:id    @controllers.ProgramingPackageController.allPrevVersions(id: String)
 DELETE         /project/blockoBlock/*url                   @controllers.ProgramingPackageController.deleteBlock(url: String)

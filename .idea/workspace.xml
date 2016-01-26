@@ -1,36 +1,366 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="f6cef342-dd25-45cb-b650-fad262b8d827" name="Default" comment="Version 1.04.1 - Login and untested Marge wit accounts">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-compile-internal.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-compile.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-docs.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-optional.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-plugin.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-pom.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-provided.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-runtime-internal.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-runtime.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-scala-tool.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-sources.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-test-internal.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-test.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/resolution-cache/tyrion/tyrion_2.11/1.0-SNAPSHOT/resolved.xml.properties" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/resolution-cache/tyrion/tyrion_2.11/1.0-SNAPSHOT/resolved.xml.xml" afterPath="" />
+    <list default="true" id="f6cef342-dd25-45cb-b650-fad262b8d827" name="Default" comment="">
+      <change type="DELETED" beforePath="$PROJECT_DIR$/logs/application.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/Global.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/application.conf" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/controllers/CompilationLibrariesController.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/controllers/MonitoringController.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/controllers/OverFlowController.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/controllers/PermissionController.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/controllers/PersonCreateController.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/controllers/ProgramingPackageController.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/controllers/ReverseCompilationLibrariesController.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/controllers/ReverseOverFlowController.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/controllers/ReversePermissionController.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/controllers/ReversePersonCreateController.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/controllers/ReverseProgramingPackageController.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/controllers/ReverseSecurityController.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/controllers/SecurityController.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/controllers/WikyController.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/controllers/javascript/ReverseCompilationLibrariesController.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/controllers/javascript/ReverseOverFlowController.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/controllers/javascript/ReversePermissionController.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/controllers/javascript/ReversePersonCreateController.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/controllers/javascript/ReverseProgramingPackageController.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/controllers/javascript/ReverseSecurityController.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/controllers/routes$javascript.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/controllers/routes.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/eclipseFiles/cdproject.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/eclipseFiles/project.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/evolutions/default/1.sql" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/evolutions/default/1_conflict-20160108-152521.sql" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/logback.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/models/blocko/BlockoBlock.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/models/blocko/BlockoContentBlock.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/models/blocko/ForUploadProgram.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/models/blocko/Home.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/models/blocko/Homer.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/models/blocko/HomerProgram.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/models/blocko/Project.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/models/compiler/Board.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/models/compiler/LibraryGroup.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/models/compiler/Processor.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/models/compiler/Producer.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/models/compiler/TypeOfBoard.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/models/overflow/ConfirmTypeOfPost.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/models/overflow/HashTag.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/models/overflow/LinkedPost.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/models/overflow/Post.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/models/overflow/PropertyOfPost.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/models/overflow/TypeOfPost.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/models/permission/GroupWithPermissions.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/models/permission/PermissionKey.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$documentation$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$1$$anonfun$apply$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$10$$anonfun$apply$10.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$10.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$100$$anonfun$apply$100.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$100.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$101$$anonfun$apply$101.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$101.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$102$$anonfun$apply$102.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$102.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$103$$anonfun$apply$103.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$103.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$104$$anonfun$apply$104.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$104.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$105$$anonfun$apply$105.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$105.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$106$$anonfun$apply$106.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$106.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$107$$anonfun$apply$107.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$107.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$108$$anonfun$apply$108.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$108.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$109$$anonfun$apply$109.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$109.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$11$$anonfun$apply$11.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$11.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$110$$anonfun$apply$110.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$110.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$111$$anonfun$apply$111.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$111.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$112$$anonfun$apply$112.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$112.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$113$$anonfun$apply$113.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$113.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$114$$anonfun$apply$114.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$114.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$115$$anonfun$apply$115.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$115.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$116$$anonfun$apply$116.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$116.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$117$$anonfun$apply$117.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$117.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$118$$anonfun$apply$118.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$118.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$119$$anonfun$apply$119.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$119.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$12$$anonfun$apply$12.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$12.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$120$$anonfun$apply$120.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$120.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$121$$anonfun$apply$121.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$121.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$122$$anonfun$apply$122.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$122.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$123$$anonfun$apply$123.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$123.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$124$$anonfun$apply$124.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$124.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$125$$anonfun$apply$125.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$125.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$13$$anonfun$apply$13.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$13.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$14$$anonfun$apply$14.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$14.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$15$$anonfun$apply$15.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$15.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$16$$anonfun$apply$16.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$16.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$17$$anonfun$apply$17.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$17.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$18$$anonfun$apply$18.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$18.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$19$$anonfun$apply$19.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$19.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$2$$anonfun$apply$2.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$2.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$20$$anonfun$apply$20.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$20.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$21$$anonfun$apply$21.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$21.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$22$$anonfun$apply$22.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$22.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$23$$anonfun$apply$23.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$23.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$24$$anonfun$apply$24.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$24.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$25$$anonfun$apply$25.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$25.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$26$$anonfun$apply$26.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$26.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$27$$anonfun$apply$27.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$27.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$28$$anonfun$apply$28.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$28.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$29$$anonfun$apply$29.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$29.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$3$$anonfun$apply$3.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$3.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$30$$anonfun$apply$30.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$30.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$31$$anonfun$apply$31.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$31.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$32$$anonfun$apply$32.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$32.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$33$$anonfun$apply$33.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$33.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$34$$anonfun$apply$34.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$34.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$35$$anonfun$apply$35.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$35.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$36$$anonfun$apply$36.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$36.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$37$$anonfun$apply$37.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$37.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$38$$anonfun$apply$38.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$38.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$39$$anonfun$apply$39.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$39.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$4$$anonfun$apply$4.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$4.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$40$$anonfun$apply$40.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$40.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$41$$anonfun$apply$41.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$41.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$42$$anonfun$apply$42.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$42.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$43$$anonfun$apply$43.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$43.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$44$$anonfun$apply$44.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$44.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$45$$anonfun$apply$45.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$45.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$46$$anonfun$apply$46.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$46.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$47$$anonfun$apply$47.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$47.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$48$$anonfun$apply$48.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$48.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$49$$anonfun$apply$49.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$49.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$5$$anonfun$apply$5.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$5.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$50$$anonfun$apply$50.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$50.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$51$$anonfun$apply$51.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$51.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$52$$anonfun$apply$52.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$52.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$53$$anonfun$apply$53.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$53.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$54$$anonfun$apply$54.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$54.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$55$$anonfun$apply$55.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$55.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$56$$anonfun$apply$56.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$56.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$57$$anonfun$apply$57.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$57.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$58$$anonfun$apply$58.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$58.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$59$$anonfun$apply$59.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$59.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$6$$anonfun$apply$6.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$6.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$60$$anonfun$apply$60.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$60.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$61$$anonfun$apply$61.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$61.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$62$$anonfun$apply$62.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$62.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$63$$anonfun$apply$63.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$63.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$64$$anonfun$apply$64.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$64.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$65$$anonfun$apply$65.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$65.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$66$$anonfun$apply$66.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$66.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$67$$anonfun$apply$67.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$67.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$68$$anonfun$apply$68.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$68.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$69$$anonfun$apply$69.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$69.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$7$$anonfun$apply$7.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$7.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$70$$anonfun$apply$70.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$70.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$71$$anonfun$apply$71.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$71.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$72$$anonfun$apply$72.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$72.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$73$$anonfun$apply$73.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$73.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$74$$anonfun$apply$74.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$74.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$75$$anonfun$apply$75.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$75.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$76$$anonfun$apply$76.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$76.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$77$$anonfun$apply$77.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$77.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$78$$anonfun$apply$78.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$78.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$79$$anonfun$apply$79.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$79.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$8$$anonfun$apply$8.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$8.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$80$$anonfun$apply$80.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$80.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$81$$anonfun$apply$81.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$81.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$82$$anonfun$apply$82.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$82.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$83$$anonfun$apply$83.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$83.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$84$$anonfun$apply$84.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$84.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$85$$anonfun$apply$85.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$85.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$86$$anonfun$apply$86.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$86.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$87$$anonfun$apply$87.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$87.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$88$$anonfun$apply$88.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$88.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$89$$anonfun$apply$89.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$89.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$9$$anonfun$apply$9.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$9.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$90$$anonfun$apply$90.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$90.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$91$$anonfun$apply$91.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$91.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$92$$anonfun$apply$92.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$92.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$93$$anonfun$apply$93.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$93.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$94$$anonfun$apply$94.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$94.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$95$$anonfun$apply$95.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$95.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$96$$anonfun$apply$96.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$96.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$97$$anonfun$apply$97.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$97.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$98$$anonfun$apply$98.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$98.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$99$$anonfun$apply$99.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1$$anonfun$applyOrElse$99.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/RoutesPrefix$$anonfun$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/RoutesPrefix$.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/RoutesPrefix.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/routes" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/utilities/EclipseProject/EclipseProject.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/utilities/Secured.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/utilities/UtilTools.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/webSocket/config/PropertiesOfDevice.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/webSocket/controllers/Distributor.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/webSocket/controllers/OutsideCommunicationPackageController.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/webSocket/controllers/ReverseOutsideCommunicationPackageController.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/webSocket/controllers/SocketCollector.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/webSocket/controllers/WebSocketServer$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/webSocket/controllers/WebSocketServer$2.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/webSocket/controllers/WebSocketServer$3.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/webSocket/controllers/WebSocketServer.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/webSocket/controllers/javascript/ReverseOutsideCommunicationPackageController.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/webSocket/controllers/routes$javascript.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/webSocket/controllers/routes.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/webSocket/incomingMessage/FirstConnection.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/webSocket/incomingMessage/NewConnection.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/webSocket/messageHolder/AreYouAlive.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/webSocket/models_JSON/WebSocketStats.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/streams/$global/coffeescript/$global/streams/copy-resource/op-cache" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/streams/$global/jshint/$global/streams/copy-resource/op-cache" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/streams/$global/less/$global/streams/copy-resource/op-cache" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/streams/$global/playCompileEverything/$global/streams/out" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/streams/$global/webReporter/$global/streams/out" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/streams/compile/$global/$global/discoveredMainClasses/data" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/streams/compile/copyResources/$global/streams/copy-resources" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/streams/compile/copyResources/$global/streams/out" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/streams/compile/exportedProducts/$global/streams/export" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/streams/compile/incCompileSetup/$global/streams/inc_compile_2.11" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/streams/compile/manipulateBytecode/$global/streams/out" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/streams/compile/playEnhancerGenerateAccessors/$global/streams/play_instrumentation_2.11" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/streams/compile/playEnhancerRewriteAccessors/$global/streams/play_instrumentation_2.11" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/streams/compile/playRoutes/$global/streams/out" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/streams/runtime/exportedProducts/$global/streams/export" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/streams/runtime/internalDependencyClasspath/$global/streams/export" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/streams/web-assets/assets/$global/streams/sync-mappings" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/streams/web-assets/coffeescript/$global/streams/run/op-cache" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/streams/web-assets/jshint/$global/streams/run/op-cache" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/streams/web-assets/less/$global/streams/run/op-cache" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/streams/web-assets/webExportedDirectory/$global/streams/sync-mappings" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/project/target/streams/$global/dependencyPositions/$global/streams/update_cache_2.10/output_dsp" afterPath="$PROJECT_DIR$/project/target/streams/$global/dependencyPositions/$global/streams/update_cache_2.10/output_dsp" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/project/target/streams/$global/update/$global/streams/update_cache_2.10/inputs" afterPath="$PROJECT_DIR$/project/target/streams/$global/update/$global/streams/update_cache_2.10/inputs" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/project/target/streams/$global/update/$global/streams/update_cache_2.10/output" afterPath="$PROJECT_DIR$/project/target/streams/$global/update/$global/streams/update_cache_2.10/output" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/streams/$global/dependencyPositions/$global/streams/update_cache_2.11/output_dsp" afterPath="$PROJECT_DIR$/target/streams/$global/dependencyPositions/$global/streams/update_cache_2.11/output_dsp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/streams/$global/update/$global/streams/update_cache_2.11/inputs" afterPath="$PROJECT_DIR$/target/streams/$global/update/$global/streams/update_cache_2.11/inputs" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/streams/$global/update/$global/streams/update_cache_2.11/output" afterPath="$PROJECT_DIR$/target/streams/$global/update/$global/streams/update_cache_2.11/output" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/streams/compile/playRoutes/$global/streams/op-cache" afterPath="$PROJECT_DIR$/target/streams/compile/playRoutes/$global/streams/op-cache" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/controllers/OverFlowController.java" afterPath="$PROJECT_DIR$/app/controllers/OverFlowController.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/controllers/PersonCreateController.java" afterPath="$PROJECT_DIR$/app/controllers/PersonCreateController.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/controllers/ProgramingPackageController.java" afterPath="$PROJECT_DIR$/app/controllers/ProgramingPackageController.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/controllers/SecurityController.java" afterPath="$PROJECT_DIR$/app/controllers/SecurityController.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/models/login/Person.java" afterPath="$PROJECT_DIR$/app/models/login/Person.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/conf/application.conf" afterPath="$PROJECT_DIR$/conf/application.conf" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/conf/evolutions/default/1.sql" afterPath="$PROJECT_DIR$/conf/evolutions/default/1.sql" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/conf/routes" afterPath="$PROJECT_DIR$/conf/routes" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/project/target/resolution-cache/default/tyrion-build/scala_2.10/sbt_0.13/0.1-SNAPSHOT/resolved.xml.properties" afterPath="$PROJECT_DIR$/project/target/resolution-cache/default/tyrion-build/scala_2.10/sbt_0.13/0.1-SNAPSHOT/resolved.xml.properties" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/project/target/resolution-cache/default/tyrion-build/scala_2.10/sbt_0.13/0.1-SNAPSHOT/resolved.xml.xml" afterPath="$PROJECT_DIR$/project/target/resolution-cache/default/tyrion-build/scala_2.10/sbt_0.13/0.1-SNAPSHOT/resolved.xml.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/project/target/resolution-cache/reports/default-tyrion-build-compile-internal.xml" afterPath="$PROJECT_DIR$/project/target/resolution-cache/reports/default-tyrion-build-compile-internal.xml" />
@@ -50,7 +380,32 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/project/target/streams/$global/update/$global/streams/out" afterPath="$PROJECT_DIR$/project/target/streams/$global/update/$global/streams/out" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/project/target/streams/compile/compileIncremental/$global/streams/out" afterPath="$PROJECT_DIR$/project/target/streams/compile/compileIncremental/$global/streams/out" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/project/target/streams/compile/copyResources/$global/streams/out" afterPath="$PROJECT_DIR$/project/target/streams/compile/copyResources/$global/streams/out" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-compile-internal.xml" afterPath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-compile-internal.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-compile.xml" afterPath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-compile.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-docs.xml" afterPath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-docs.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-optional.xml" afterPath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-optional.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-plugin.xml" afterPath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-plugin.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-pom.xml" afterPath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-pom.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-provided.xml" afterPath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-provided.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-runtime-internal.xml" afterPath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-runtime-internal.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-runtime.xml" afterPath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-runtime.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-scala-tool.xml" afterPath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-scala-tool.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-sources.xml" afterPath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-sources.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-test-internal.xml" afterPath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-test-internal.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-test.xml" afterPath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-test.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/resolution-cache/tyrion/tyrion_2.11/1.0-SNAPSHOT/resolved.xml.properties" afterPath="$PROJECT_DIR$/target/resolution-cache/tyrion/tyrion_2.11/1.0-SNAPSHOT/resolved.xml.properties" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/resolution-cache/tyrion/tyrion_2.11/1.0-SNAPSHOT/resolved.xml.xml" afterPath="$PROJECT_DIR$/target/resolution-cache/tyrion/tyrion_2.11/1.0-SNAPSHOT/resolved.xml.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/scala-2.11/routes/main/controllers/ReverseRoutes.scala" afterPath="$PROJECT_DIR$/target/scala-2.11/routes/main/controllers/ReverseRoutes.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/scala-2.11/routes/main/controllers/javascript/JavaScriptReverseRoutes.scala" afterPath="$PROJECT_DIR$/target/scala-2.11/routes/main/controllers/javascript/JavaScriptReverseRoutes.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/scala-2.11/routes/main/controllers/routes.java" afterPath="$PROJECT_DIR$/target/scala-2.11/routes/main/controllers/routes.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/scala-2.11/routes/main/router/Routes.scala" afterPath="$PROJECT_DIR$/target/scala-2.11/routes/main/router/Routes.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/scala-2.11/routes/main/router/RoutesPrefix.scala" afterPath="$PROJECT_DIR$/target/scala-2.11/routes/main/router/RoutesPrefix.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/scala-2.11/routes/main/webSocket/controllers/ReverseRoutes.scala" afterPath="$PROJECT_DIR$/target/scala-2.11/routes/main/webSocket/controllers/ReverseRoutes.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/scala-2.11/routes/main/webSocket/controllers/javascript/JavaScriptReverseRoutes.scala" afterPath="$PROJECT_DIR$/target/scala-2.11/routes/main/webSocket/controllers/javascript/JavaScriptReverseRoutes.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/scala-2.11/routes/main/webSocket/controllers/routes.java" afterPath="$PROJECT_DIR$/target/scala-2.11/routes/main/webSocket/controllers/routes.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/streams/$global/update/$global/streams/out" afterPath="$PROJECT_DIR$/target/streams/$global/update/$global/streams/out" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/streams/compile/compileIncremental/$global/streams/export" afterPath="$PROJECT_DIR$/target/streams/compile/compileIncremental/$global/streams/export" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/streams/compile/compileIncremental/$global/streams/out" afterPath="$PROJECT_DIR$/target/streams/compile/compileIncremental/$global/streams/out" />
     </list>
     <ignored path="tyrion.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -151,111 +506,34 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="SecurityController.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="SecurityController.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/controllers/SecurityController.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.33333334">
-              <caret line="151" column="19" selection-start-line="151" selection-start-column="19" selection-end-line="151" selection-end-column="19" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="51" column="0" selection-start-line="51" selection-start-column="0" selection-end-line="52" selection-end-column="84" />
               <folding>
-                <element signature="imports" expanded="true" />
-                <element signature="method#logout#0;class#SecurityController#0" expanded="false" />
-                <element signature="e#9866#9867#0" expanded="true" />
-                <element signature="e#9912#9913#0" expanded="true" />
+                <element signature="method#GEToauth_callback#0;class#SecurityController#0" expanded="false" />
+                <element signature="e#4987#5097#0" expanded="false" />
+                <element signature="e#5799#5888#0" expanded="false" />
+                <element signature="method#GitHub#0;class#SecurityController#0" expanded="false" />
+                <element signature="method#Facebook#0;class#SecurityController#0" expanded="false" />
+                <element signature="method#Twitter#0;class#SecurityController#0" expanded="false" />
+                <element signature="method#optionLink#0;class#SecurityController#0" expanded="false" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="PermissionController.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/controllers/PermissionController.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="41" column="6" selection-start-line="41" selection-start-column="6" selection-end-line="41" selection-end-column="6" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="OverFlowController.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/controllers/OverFlowController.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="727" column="134" selection-start-line="727" selection-start-column="134" selection-end-line="727" selection-end-column="134" />
-              <folding>
-                <element signature="method#onStartPermission#0;class#OverFlowController#0" expanded="false" />
-                <element signature="method#getPost#0;class#OverFlowController#0" expanded="false" />
-                <element signature="method#hashTagsListOnPost#0;class#OverFlowController#0" expanded="false" />
-                <element signature="method#commentsListOnPost#0;class#OverFlowController#0" expanded="false" />
-                <element signature="method#answereListOnPost#0;class#OverFlowController#0" expanded="false" />
-                <element signature="method#textOfPost#0;class#OverFlowController#0" expanded="false" />
-                <element signature="method#getLatestPost#0;class#OverFlowController#0" expanded="false" />
-                <element signature="method#getPostByFilter#0;class#OverFlowController#0" expanded="false" />
-                <element signature="method#getPostLinkedAnswers#0;class#OverFlowController#0" expanded="false" />
-                <element signature="method#getAllPersonPost#0;class#OverFlowController#0" expanded="false" />
-                <element signature="method#deletePost#0;class#OverFlowController#0" expanded="false" />
-                <element signature="method#editPost#0;class#OverFlowController#0" expanded="false" />
-                <element signature="method#addComment#0;class#OverFlowController#0" expanded="false" />
-                <element signature="method#addAnswer#0;class#OverFlowController#0" expanded="false" />
-                <element signature="method#updateComment#0;class#OverFlowController#0" expanded="false" />
-                <element signature="method#linkWithPreviousAnswer#0;class#OverFlowController#0" expanded="false" />
-                <element signature="method#unlinkWithPreviousAnswer#0;class#OverFlowController#0" expanded="false" />
-                <element signature="method#setProperty#0;class#OverFlowController#0" expanded="false" />
-                <element signature="method#removeProperty#0;class#OverFlowController#0" expanded="false" />
-                <element signature="method#newTypeOfPost#0;class#OverFlowController#0" expanded="false" />
-                <element signature="method#getTypeOfPost#0;class#OverFlowController#0" expanded="false" />
-                <element signature="method#addHashTag#0;class#OverFlowController#0" expanded="false" />
-                <element signature="method#removeHashTag#0;class#OverFlowController#0" expanded="false" />
-                <element signature="method#addConfirmType#0;class#OverFlowController#0" expanded="false" />
-                <element signature="method#removeConfirmType#0;class#OverFlowController#0" expanded="false" />
-                <element signature="method#likePlus#0;class#OverFlowController#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="PersonCreateController.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/controllers/PersonCreateController.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="42" column="32" selection-start-line="42" selection-start-column="32" selection-end-line="42" selection-end-column="64" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ProgramingPackageController.java" pinned="false" current-in-tab="false">
+      <file leaf-file-name="ProgramingPackageController.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/controllers/ProgramingPackageController.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="694" column="38" selection-start-line="694" selection-start-column="38" selection-end-line="694" selection-end-column="38" />
+            <state vertical-scroll-proportion="0.8557692">
+              <caret line="527" column="9" selection-start-line="527" selection-start-column="9" selection-end-line="527" selection-end-column="9" />
               <folding>
-                <element signature="method#postNewProject#0;class#ProgramingPackageController#0" expanded="false" />
-                <element signature="method#getProjectsByUserAccount#0;class#ProgramingPackageController#0" expanded="false" />
-                <element signature="method#getProject#0;class#ProgramingPackageController#0" expanded="false" />
-                <element signature="method#deleteProject#0;class#ProgramingPackageController#0" expanded="false" />
-                <element signature="method#updateProject#0;class#ProgramingPackageController#0" expanded="false" />
-                <element signature="method#getProjectsBoard#0;class#ProgramingPackageController#0" expanded="false" />
-                <element signature="method#shareProjectWithUsers#0;class#ProgramingPackageController#0" expanded="false" />
-                <element signature="method#unshareProjectWithUsers#0;class#ProgramingPackageController#0" expanded="false" />
-                <element signature="docComment;method#newHomer#0;class#ProgramingPackageController#0" expanded="false" />
-                <element signature="method#newHomer#0;class#ProgramingPackageController#0" expanded="false" />
-                <element signature="method#removeHomer#0;class#ProgramingPackageController#0" expanded="false" />
                 <element signature="method#getHomer#0;class#ProgramingPackageController#0" expanded="false" />
                 <element signature="method#getConnectedHomers#0;class#ProgramingPackageController#0" expanded="false" />
                 <element signature="method#getAllHomers#0;class#ProgramingPackageController#0" expanded="false" />
-                <element signature="method#postHome#0;class#ProgramingPackageController#0" expanded="false" />
-                <element signature="docComment;method#connectHomerWithProject#0;class#ProgramingPackageController#0" expanded="false" />
                 <element signature="method#connectHomerWithProject#0;class#ProgramingPackageController#0" expanded="false" />
-                <element signature="method#unConnectHomerWithProject#0;class#ProgramingPackageController#0" expanded="false" />
-                <element signature="docComment;method#postNewProgram#0;class#ProgramingPackageController#0" expanded="false" />
-                <element signature="method#postNewProgram#0;class#ProgramingPackageController#0" expanded="false" />
-                <element signature="method#getProgram#0;class#ProgramingPackageController#0" expanded="false" />
-                <element signature="method#getProgramInJson#0;class#ProgramingPackageController#0" expanded="false" />
-                <element signature="method#getProgramPrograms#0;class#ProgramingPackageController#0" expanded="false" />
-                <element signature="method#getProgramhomerList#0;class#ProgramingPackageController#0" expanded="false" />
-                <element signature="method#editProgram#0;class#ProgramingPackageController#0" expanded="false" />
-                <element signature="method#removeProgram#0;class#ProgramingPackageController#0" expanded="false" />
-                <element signature="method#getAllPrograms#0;class#ProgramingPackageController#0" expanded="false" />
                 <element signature="method#uploadProgramToHomer_Immediately#0;class#ProgramingPackageController#0" expanded="false" />
                 <element signature="method#uploadProgramToHomer_AsSoonAsPossible#0;class#ProgramingPackageController#0" expanded="false" />
                 <element signature="method#uploadProgramToHomer_GivenTimeAsSoonAsPossible#0;class#ProgramingPackageController#0" expanded="false" />
@@ -264,133 +542,38 @@
                 <element signature="method#listOfHomersWaitingForUpload#0;class#ProgramingPackageController#0" expanded="false" />
                 <element signature="docComment;method#newBlock#0;class#ProgramingPackageController#0" expanded="false" />
                 <element signature="method#newBlock#0;class#ProgramingPackageController#0" expanded="false" />
-                <element signature="method#getBlock#0;class#ProgramingPackageController#0" expanded="false" />
+                <element signature="method#getBlockLast#0;class#ProgramingPackageController#0" expanded="false" />
+                <element signature="method#getBlockVersion#0;class#ProgramingPackageController#0" expanded="false" />
                 <element signature="method#getByFilter#0;class#ProgramingPackageController#0" expanded="false" />
                 <element signature="method#deleteBlock#0;class#ProgramingPackageController#0" expanded="false" />
                 <element signature="method#newVersionOfBlock#0;class#ProgramingPackageController#0" expanded="false" />
+                <element signature="method#designJsonVersion#0;class#ProgramingPackageController#0" expanded="false" />
+                <element signature="method#logicJsonVersion#0;class#ProgramingPackageController#0" expanded="false" />
+                <element signature="method#designJsonLast#0;class#ProgramingPackageController#0" expanded="false" />
+                <element signature="method#logicJsonLast#0;class#ProgramingPackageController#0" expanded="false" />
+                <element signature="method#allPrevVersions#0;class#ProgramingPackageController#0" expanded="false" />
+                <element signature="method#generalDescription#0;class#ProgramingPackageController#0" expanded="false" />
+                <element signature="method#versionDescription#0;class#ProgramingPackageController#0" expanded="false" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="1.sql" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/conf/evolutions/default/1.sql">
+      <file leaf-file-name="application.conf" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/conf/application.conf">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-0.0">
-              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+            <state vertical-scroll-proportion="-29.25">
+              <caret line="78" column="15" selection-start-line="78" selection-start-column="15" selection-end-line="78" selection-end-column="15" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="CompilationLibrariesController.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/controllers/CompilationLibrariesController.java">
+      <file leaf-file-name="MonitoringController.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/controllers/MonitoringController.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="331" column="0" selection-start-line="331" selection-start-column="0" selection-end-line="331" selection-end-column="0" />
-              <folding>
-                <element signature="e#704#963#0" expanded="false" />
-                <element signature="e#1078#1344#0" expanded="false" />
-                <element signature="method#newProcessor#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="e#3004#3272#0" expanded="false" />
-                <element signature="method#getProcessor#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="e#4466#4693#0" expanded="false" />
-                <element signature="method#getProcessorAll#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="e#5703#5891#0" expanded="false" />
-                <element signature="method#updateProcessor#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#deleteProcessor#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#getProcessorDescription#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#getProcessorLibraryGroups#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#getProcessorSingleLibraries#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#connectProcessorWithLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#connectProcessorWithLibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#unconnectProcessorWithLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#unconnectProcessorWithLibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#newLibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#createNewVersionLibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#getVersionLibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#uploudLibraryToLibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#getLibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#deleteLibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#getLibraryGroupAll#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#updateLibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#getLibraryGroupDescription#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#getLibraryGroupProcessors#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#getLibraryGroupLibraries#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#listOfFilesInVersion#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#fileRecord#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#getGroupLibraryFilter#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="docComment;method#newSingleLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#newSingleLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#newVersionSingleLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#uploadSingleLibraryWithVersion#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#getSingleLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#getSingleLibraryAll#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#getSingleLibraryFilter#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#updateSingleLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#deleteSingleLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#getSingleLibraryDescription#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#newProducers#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#updateProducers#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#getProducers#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#getProducer#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#getProducerDescription#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#getProducerTypeOfBoards#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#newTypeOfBoard#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#updateTypeOfBoard#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#getTypeOfBoards#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#getTypeOfBoard#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#getTypeOfBoardDescription#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#getTypeOfBoardAllBoards#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#newBoard#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#addUserDescription#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#deactivateBoard#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#getBoard#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#getBoardgeneralDescription#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#getUserDescription#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#connectBoardWthProject#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#unconnectBoardWthProject#0;class#CompilationLibrariesController#0" expanded="false" />
-                <element signature="method#getBoardProjects#0;class#CompilationLibrariesController#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="WikyController.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/controllers/WikyController.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="6" column="13" selection-start-line="6" selection-start-column="13" selection-end-line="6" selection-end-column="13" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="byzanceERP.public.person" pinned="false" current-in-tab="false">
-        <entry file="dbDummy://dbtable:/58931e48/8b2e8319-e534-4206-984d-3171871f0bd9/byzanceERP.public.person">
-          <provider selected="true" editor-type-id="com.intellij.database.editor.DatabaseTableFileEditorProvider">
-            <state>
-              <filtering enabled="true" />
-            </state>
-          </provider>
-          <provider editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="byzanceERP.public.linked_account" pinned="false" current-in-tab="false">
-        <entry file="dbDummy://dbtable:/58931e48/8b2e8319-e534-4206-984d-3171871f0bd9/byzanceERP.public.linked_account">
-          <provider selected="true" editor-type-id="com.intellij.database.editor.DatabaseTableFileEditorProvider">
-            <state>
-              <filtering enabled="true" />
-            </state>
-          </provider>
-          <provider editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+              <caret line="20" column="13" selection-start-line="20" selection-start-column="13" selection-end-line="20" selection-end-column="13" />
               <folding />
             </state>
           </provider>
@@ -458,16 +641,16 @@
         <option value="$PROJECT_DIR$/app/models/docasny/UserDB.java" />
         <option value="$PROJECT_DIR$/app/models/docasny/TokenAction.java" />
         <option value="$PROJECT_DIR$/app/utilities/loginEntities/Facebook.java" />
-        <option value="$PROJECT_DIR$/conf/routes" />
         <option value="$PROJECT_DIR$/app/utilities/loginEntities/Socials.java" />
         <option value="$PROJECT_DIR$/app/controllers/PersonCreateController.java" />
-        <option value="$PROJECT_DIR$/conf/application.conf" />
         <option value="$PROJECT_DIR$/app/models/login/LinkedAccount.java" />
         <option value="$PROJECT_DIR$/app/controllers/PermissionController.java" />
-        <option value="$PROJECT_DIR$/app/models/login/Person.java" />
         <option value="$PROJECT_DIR$/app/controllers/OverFlowController.java" />
-        <option value="$PROJECT_DIR$/app/controllers/ProgramingPackageController.java" />
+        <option value="$PROJECT_DIR$/conf/routes" />
+        <option value="$PROJECT_DIR$/app/models/login/Person.java" />
         <option value="$PROJECT_DIR$/app/controllers/SecurityController.java" />
+        <option value="$PROJECT_DIR$/conf/application.conf" />
+        <option value="$PROJECT_DIR$/app/controllers/ProgramingPackageController.java" />
       </list>
     </option>
   </component>
@@ -534,20 +717,6 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="Tyrion" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="tyrion" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Tyrion" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="logs" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -678,6 +847,28 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="compiler" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tyrion" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Tyrion" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="app" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="models" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="blocko" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -1267,7 +1458,7 @@
       <workItem from="1453450311218" duration="7033000" />
       <workItem from="1453716597900" duration="6701000" />
       <workItem from="1453732658058" duration="24041000" />
-      <workItem from="1453797189849" duration="10620000" />
+      <workItem from="1453797189849" duration="15148000" />
     </task>
     <task id="LOCAL-00001" summary="Version 1.04.1 - Login with social Networks">
       <created>1453797530585</created>
@@ -1275,11 +1466,17 @@
       <option name="project" value="LOCAL" />
       <updated>1453797530585</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Version 1.04.1 - Login and untested Marge wit accounts">
+      <created>1453818359155</created>
+      <option name="number" value="00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1453818359155</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="156889000" />
+    <option name="totallyTimeSpent" value="161417000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1295,18 +1492,19 @@
     <editor active="true" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32986626" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.49255952" sideWeight="0.49841145" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3296131" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.49255952" sideWeight="0.49841145" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="SBT" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32962668" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="true" internal_type="SLIDING" type="SLIDING" visible="false" show_stripe_button="true" weight="0.29017857" sideWeight="0.43923748" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32962668" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.21502976" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2827381" sideWeight="0.5607625" order="12" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2827381" sideWeight="0.5607625" order="12" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.22756156" sideWeight="0.49309504" order="5" side_tool="false" content_ui="combo" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.09134234" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.328125" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24980143" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -1320,7 +1518,6 @@
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Services Explorer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.328125" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Gradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
@@ -1339,7 +1536,8 @@
     <MESSAGE value="Version 1.04 - New Libraries, Hardware etc...." />
     <MESSAGE value="Version 1.04.1 - Login with social Networks" />
     <MESSAGE value="Version 1.04.1 - Login and untested Marge wit accounts" />
-    <option name="LAST_COMMIT_MESSAGE" value="Version 1.04.1 - Login and untested Marge wit accounts" />
+    <MESSAGE value="Version 1.04.1 - Refactoring 1" />
+    <option name="LAST_COMMIT_MESSAGE" value="Version 1.04.1 - Refactoring 1" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1375,19 +1573,11 @@
           <option name="timeStamp" value="20" />
         </line-breakpoint>
       </breakpoints>
-      <option name="time" value="25" />
+      <option name="time" value="31" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/app/utilities/EclipseProject/EclipseProject.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.014962593">
-          <caret line="6" column="13" selection-start-line="6" selection-start-column="13" selection-end-line="6" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/utilities/UtilTools.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.6109726">
@@ -1481,14 +1671,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="7" column="24" selection-start-line="7" selection-start-column="24" selection-end-line="7" selection-end-column="24" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/models/blocko/BlockoBlock.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="17" column="3" selection-start-line="17" selection-start-column="3" selection-end-line="17" selection-end-column="48" />
           <folding />
         </state>
       </provider>
@@ -1616,26 +1798,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/logs/application.log">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://$USER_HOME$/.ivy2/cache/com.typesafe.play/play_2.11/srcs/play_2.11-2.4.6-sources.jar!/play/mvc/Results.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="1559" column="7" selection-start-line="1559" selection-start-column="7" selection-end-line="1559" selection-end-column="7" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/conf/routes">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.020435967">
-          <caret line="15" column="94" selection-start-line="15" selection-start-column="94" selection-end-line="15" selection-end-column="94" />
           <folding />
         </state>
       </provider>
@@ -1650,29 +1816,11 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/conf/application.conf">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-25.0">
-          <caret line="40" column="41" selection-start-line="40" selection-start-column="41" selection-end-line="40" selection-end-column="41" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/src.zip!/java/util/UUID.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="1.875">
           <caret line="140" column="23" selection-start-line="140" selection-start-column="23" selection-end-line="140" selection-end-column="23" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/models/login/LinkedAccount.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="15" column="86" selection-start-line="15" selection-start-column="75" selection-end-line="15" selection-end-column="86" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1686,25 +1834,6 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/controllers/MonitoringController.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="20" column="13" selection-start-line="20" selection-start-column="13" selection-end-line="20" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/models/login/Person.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="38" column="0" selection-start-line="38" selection-start-column="0" selection-end-line="38" selection-end-column="0" />
-          <folding>
-            <element signature="e#4304#4305#0" expanded="true" />
-            <element signature="e#4337#4338#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1742,97 +1871,76 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/controllers/CompilationLibrariesController.java">
+    <entry file="file://$PROJECT_DIR$/app/utilities/response/GlobalResult.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="331" column="0" selection-start-line="331" selection-start-column="0" selection-end-line="331" selection-end-column="0" />
-          <folding>
-            <element signature="e#704#963#0" expanded="false" />
-            <element signature="e#1078#1344#0" expanded="false" />
-            <element signature="method#newProcessor#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#3004#3272#0" expanded="false" />
-            <element signature="method#getProcessor#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#4466#4693#0" expanded="false" />
-            <element signature="method#getProcessorAll#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#5703#5891#0" expanded="false" />
-            <element signature="method#updateProcessor#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#deleteProcessor#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#getProcessorDescription#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#getProcessorLibraryGroups#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#getProcessorSingleLibraries#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#connectProcessorWithLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#connectProcessorWithLibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#unconnectProcessorWithLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#unconnectProcessorWithLibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#newLibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#createNewVersionLibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#getVersionLibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#uploudLibraryToLibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#getLibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#deleteLibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#getLibraryGroupAll#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#updateLibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#getLibraryGroupDescription#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#getLibraryGroupProcessors#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#getLibraryGroupLibraries#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#listOfFilesInVersion#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#fileRecord#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#getGroupLibraryFilter#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="docComment;method#newSingleLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#newSingleLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#newVersionSingleLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#uploadSingleLibraryWithVersion#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#getSingleLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#getSingleLibraryAll#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#getSingleLibraryFilter#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#updateSingleLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#deleteSingleLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#getSingleLibraryDescription#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#newProducers#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#updateProducers#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#getProducers#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#getProducer#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#getProducerDescription#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#getProducerTypeOfBoards#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#newTypeOfBoard#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#updateTypeOfBoard#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#getTypeOfBoards#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#getTypeOfBoard#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#getTypeOfBoardDescription#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#getTypeOfBoardAllBoards#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#newBoard#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#addUserDescription#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#deactivateBoard#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#getBoard#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#getBoardgeneralDescription#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#getUserDescription#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#connectBoardWthProject#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#unconnectBoardWthProject#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#getBoardProjects#0;class#CompilationLibrariesController#0" expanded="false" />
-          </folding>
+        <state vertical-scroll-proportion="0.7275641">
+          <caret line="83" column="31" selection-start-line="83" selection-start-column="31" selection-end-line="83" selection-end-column="31" />
+          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/controllers/PermissionController.java">
+    <entry file="file://$PROJECT_DIR$/app/utilities/swagger/swagger/PlayReader.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.28334957">
+          <caret line="571" column="11" selection-start-line="571" selection-start-column="11" selection-end-line="571" selection-end-column="11" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/conf/routes">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.40116847">
+          <caret line="105" column="130" selection-start-line="105" selection-start-column="130" selection-end-line="105" selection-end-column="130" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/controllers/MonitoringController.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="41" column="6" selection-start-line="41" selection-start-column="6" selection-end-line="41" selection-end-column="6" />
+          <caret line="20" column="13" selection-start-line="20" selection-start-column="13" selection-end-line="20" selection-end-column="13" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/models/blocko/BlockoBlock.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.14605647">
+          <caret line="17" column="3" selection-start-line="17" selection-start-column="3" selection-end-line="17" selection-end-column="48" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/models/login/LinkedAccount.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.6134372">
+          <caret line="42" column="9" selection-start-line="36" selection-start-column="8" selection-end-line="42" selection-end-column="9" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/controllers/PersonCreateController.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
+        <state vertical-scroll-proportion="0.19668938">
           <caret line="42" column="32" selection-start-line="42" selection-start-column="32" selection-end-line="42" selection-end-column="64" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/controllers/PermissionController.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.40895814">
+          <caret line="41" column="6" selection-start-line="41" selection-start-column="6" selection-end-line="41" selection-end-column="6" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/controllers/OverFlowController.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="727" column="134" selection-start-line="727" selection-start-column="134" selection-end-line="727" selection-end-column="134" />
+        <state vertical-scroll-proportion="0.34274587">
+          <caret line="599" column="0" selection-start-line="599" selection-start-column="0" selection-end-line="599" selection-end-column="0" />
           <folding>
             <element signature="method#onStartPermission#0;class#OverFlowController#0" expanded="false" />
             <element signature="method#getPost#0;class#OverFlowController#0" expanded="false" />
@@ -1864,58 +1972,94 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/utilities/response/GlobalResult.java">
+    <entry file="file://$PROJECT_DIR$/app/models/login/Person.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.7275641">
-          <caret line="83" column="31" selection-start-line="83" selection-start-column="31" selection-end-line="83" selection-end-column="31" />
+        <state vertical-scroll-proportion="0.79552096">
+          <caret line="91" column="17" selection-start-line="91" selection-start-column="17" selection-end-line="91" selection-end-column="17" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/controllers/ProgramingPackageController.java">
+    <entry file="file://$PROJECT_DIR$/app/controllers/CompilationLibrariesController.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="2.1616359">
+          <caret line="805" column="85" selection-start-line="804" selection-start-column="8" selection-end-line="805" selection-end-column="85" />
+          <folding>
+            <element signature="e#704#963#0" expanded="false" />
+            <element signature="e#1078#1344#0" expanded="false" />
+            <element signature="method#newProcessor#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="e#3004#3272#0" expanded="false" />
+            <element signature="method#getProcessor#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="e#4466#4693#0" expanded="false" />
+            <element signature="method#getProcessorAll#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="e#5703#5891#0" expanded="false" />
+            <element signature="method#updateProcessor#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#deleteProcessor#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#getProcessorDescription#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#getProcessorLibraryGroups#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#getProcessorSingleLibraries#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#connectProcessorWithLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#connectProcessorWithLibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#unconnectProcessorWithLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#unconnectProcessorWithLibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#createNewVersionLibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#uploudLibraryToLibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#getLibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#deleteLibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#getLibraryGroupAll#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#updateLibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#getLibraryGroupDescription#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#getLibraryGroupProcessors#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#getLibraryGroupLibraries#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#listOfFilesInVersion#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#fileRecord#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#getGroupLibraryFilter#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="docComment;method#newSingleLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#newSingleLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#newVersionSingleLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#uploadSingleLibraryWithVersion#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#getSingleLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#getSingleLibraryAll#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#getSingleLibraryFilter#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#updateSingleLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#deleteSingleLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#getSingleLibraryDescription#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#updateProducers#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#getProducers#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#getProducer#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#getProducerDescription#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#getProducerTypeOfBoards#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#newTypeOfBoard#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#updateTypeOfBoard#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#getTypeOfBoards#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#getTypeOfBoard#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#getTypeOfBoardDescription#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#getTypeOfBoardAllBoards#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#newBoard#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#addUserDescription#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#deactivateBoard#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#getBoard#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#getBoardgeneralDescription#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#getUserDescription#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#connectBoardWthProject#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#unconnectBoardWthProject#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="method#getBoardProjects#0;class#CompilationLibrariesController#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/controllers/SecurityController.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="694" column="38" selection-start-line="694" selection-start-column="38" selection-end-line="694" selection-end-column="38" />
+          <caret line="51" column="0" selection-start-line="51" selection-start-column="0" selection-end-line="52" selection-end-column="84" />
           <folding>
-            <element signature="method#postNewProject#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#getProjectsByUserAccount#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#getProject#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#deleteProject#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#updateProject#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#getProjectsBoard#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#shareProjectWithUsers#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#unshareProjectWithUsers#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="docComment;method#newHomer#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#newHomer#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#removeHomer#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#getHomer#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#getConnectedHomers#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#getAllHomers#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#postHome#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="docComment;method#connectHomerWithProject#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#connectHomerWithProject#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#unConnectHomerWithProject#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="docComment;method#postNewProgram#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#postNewProgram#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#getProgram#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#getProgramInJson#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#getProgramPrograms#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#getProgramhomerList#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#editProgram#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#removeProgram#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#getAllPrograms#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#uploadProgramToHomer_Immediately#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#uploadProgramToHomer_AsSoonAsPossible#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#uploadProgramToHomer_GivenTimeAsSoonAsPossible#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#uploadProgramToHomer#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#listOfUploadedHomers#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#listOfHomersWaitingForUpload#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="docComment;method#newBlock#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#newBlock#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#getBlock#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#getByFilter#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#deleteBlock#0;class#ProgramingPackageController#0" expanded="false" />
-            <element signature="method#newVersionOfBlock#0;class#ProgramingPackageController#0" expanded="false" />
+            <element signature="method#GEToauth_callback#0;class#SecurityController#0" expanded="false" />
+            <element signature="e#4987#5097#0" expanded="false" />
+            <element signature="e#5799#5888#0" expanded="false" />
+            <element signature="method#GitHub#0;class#SecurityController#0" expanded="false" />
+            <element signature="method#Facebook#0;class#SecurityController#0" expanded="false" />
+            <element signature="method#Twitter#0;class#SecurityController#0" expanded="false" />
+            <element signature="method#optionLink#0;class#SecurityController#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1928,15 +2072,43 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/controllers/SecurityController.java">
+    <entry file="file://$PROJECT_DIR$/conf/application.conf">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.33333334">
-          <caret line="151" column="19" selection-start-line="151" selection-start-column="19" selection-end-line="151" selection-end-column="19" />
+        <state vertical-scroll-proportion="-29.25">
+          <caret line="78" column="15" selection-start-line="78" selection-start-column="15" selection-end-line="78" selection-end-column="15" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/controllers/ProgramingPackageController.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.8557692">
+          <caret line="527" column="9" selection-start-line="527" selection-start-column="9" selection-end-line="527" selection-end-column="9" />
           <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="method#logout#0;class#SecurityController#0" expanded="false" />
-            <element signature="e#9866#9867#0" expanded="true" />
-            <element signature="e#9912#9913#0" expanded="true" />
+            <element signature="method#getHomer#0;class#ProgramingPackageController#0" expanded="false" />
+            <element signature="method#getConnectedHomers#0;class#ProgramingPackageController#0" expanded="false" />
+            <element signature="method#getAllHomers#0;class#ProgramingPackageController#0" expanded="false" />
+            <element signature="method#connectHomerWithProject#0;class#ProgramingPackageController#0" expanded="false" />
+            <element signature="method#uploadProgramToHomer_Immediately#0;class#ProgramingPackageController#0" expanded="false" />
+            <element signature="method#uploadProgramToHomer_AsSoonAsPossible#0;class#ProgramingPackageController#0" expanded="false" />
+            <element signature="method#uploadProgramToHomer_GivenTimeAsSoonAsPossible#0;class#ProgramingPackageController#0" expanded="false" />
+            <element signature="method#uploadProgramToHomer#0;class#ProgramingPackageController#0" expanded="false" />
+            <element signature="method#listOfUploadedHomers#0;class#ProgramingPackageController#0" expanded="false" />
+            <element signature="method#listOfHomersWaitingForUpload#0;class#ProgramingPackageController#0" expanded="false" />
+            <element signature="docComment;method#newBlock#0;class#ProgramingPackageController#0" expanded="false" />
+            <element signature="method#newBlock#0;class#ProgramingPackageController#0" expanded="false" />
+            <element signature="method#getBlockLast#0;class#ProgramingPackageController#0" expanded="false" />
+            <element signature="method#getBlockVersion#0;class#ProgramingPackageController#0" expanded="false" />
+            <element signature="method#getByFilter#0;class#ProgramingPackageController#0" expanded="false" />
+            <element signature="method#deleteBlock#0;class#ProgramingPackageController#0" expanded="false" />
+            <element signature="method#newVersionOfBlock#0;class#ProgramingPackageController#0" expanded="false" />
+            <element signature="method#designJsonVersion#0;class#ProgramingPackageController#0" expanded="false" />
+            <element signature="method#logicJsonVersion#0;class#ProgramingPackageController#0" expanded="false" />
+            <element signature="method#designJsonLast#0;class#ProgramingPackageController#0" expanded="false" />
+            <element signature="method#logicJsonLast#0;class#ProgramingPackageController#0" expanded="false" />
+            <element signature="method#allPrevVersions#0;class#ProgramingPackageController#0" expanded="false" />
+            <element signature="method#generalDescription#0;class#ProgramingPackageController#0" expanded="false" />
+            <element signature="method#versionDescription#0;class#ProgramingPackageController#0" expanded="false" />
           </folding>
         </state>
       </provider>
