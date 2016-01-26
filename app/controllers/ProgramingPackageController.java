@@ -191,7 +191,7 @@ public class ProgramingPackageController extends Controller {
 
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - shareProjectWithUsers ERROR");
+            Logger.error("ProgramingPackageController - shareProjectWithUsers ERROR");
             Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
@@ -749,6 +749,7 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
+    //TODO opravit
     public Result designJson(String url){
         try {
 
@@ -774,8 +775,11 @@ public class ProgramingPackageController extends Controller {
                 return GlobalResult.ok(Json.toJson(block.designJson));
             }
 
-        } catch(Exception e){
-            return GlobalResult.badRequest(e);
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - logicJson ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -804,38 +808,51 @@ public class ProgramingPackageController extends Controller {
                 return GlobalResult.ok(Json.toJson(block.logicJson));
             }
 
-        } catch(Exception e){
-            return GlobalResult.badRequest(e);
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - logicJson ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
     public Result allPrevVersions(String id){
         try {
             BlockoBlock blockoBlock = BlockoBlock.find.byId(id);
-            if (blockoBlock == null) return GlobalResult.badRequest(new Exception("Block with this Id not exist"));
+            if (blockoBlock == null) return GlobalResult.notFound();
             return GlobalResult.ok(Json.toJson(blockoBlock.contentBlocks));
-        } catch(Exception e){
-            return GlobalResult.badRequest(e);
+
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - allPrevVersions ERROR");
+            return GlobalResult.internalServerError();
         }
     }
 
     public Result generalDescription(String id) {
         try {
             BlockoBlock block = BlockoBlock.find.byId(id);
-            if (block == null) return GlobalResult.badRequest(new Exception("This block doesn't exist"));
+            if (block == null) return GlobalResult.notFound();
             return GlobalResult.ok(Json.toJson(block.generalDescription));
-        } catch(Exception e){
-            return GlobalResult.badRequest(e);
+
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - generalDescription ERROR");
+            return GlobalResult.internalServerError();
         }
     }
 
     public Result versionDescription(String id) {
         try {
             BlockoContentBlock block = BlockoContentBlock.find.byId(id);
-            if (block == null) return GlobalResult.badRequest(new Exception("This block doesn't exist"));
+            if (block == null) return GlobalResult.notFound();
+
             return GlobalResult.ok(Json.toJson(block.versionDescription));
-        } catch(Exception e){
-            return GlobalResult.badRequest(e);
+
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - versionDescription ERROR");
+            return GlobalResult.internalServerError();
         }
     }
 

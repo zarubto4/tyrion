@@ -12,10 +12,7 @@ import play.Configuration;
 import play.Logger;
 import play.libs.Json;
 import play.libs.ws.WSClient;
-import play.mvc.Controller;
-import play.mvc.Http;
-import play.mvc.Result;
-import play.mvc.Security;
+import play.mvc.*;
 import utilities.Secured;
 import utilities.loginEntities.Socials;
 import utilities.response.CoreResponse;
@@ -81,22 +78,22 @@ public class SecurityController extends Controller {
         try {
 
             LinkedAccount linkedAccount = LinkedAccount.find.where().eq("providerKey", state).findUnique();
-            if(linkedAccount == null) return forbidden("providerKey not found!");
+            if(linkedAccount == null) return redirect(Configuration.root().getString("Becki.redirectFail"));
+            linkedAccount.tokenVerified = true;
 
             OAuthService service;
 
             switch (linkedAccount.typeOfConnection){
-                case "Facebook" : service  = Socials.Facebook(state); break;
-                case "Github"   : service  = Socials.GitHub(state); break;
-                case "Twitter"  : service  = Socials.Twitter(state); break;
-                case "Vkontakte": service  = Socials.Vkontakte(state); break;
+                case "Facebook" : service  = Socials.Facebook(state);   break;
+                case "Github"   : service  = Socials.GitHub(state);     break;
+                case "Twitter"  : service  = Socials.Twitter(state);    break;
+                case "Vkontakte": service  = Socials.Vkontakte(state);  break;
                 default: {
                     Logger.error("Error - SWITCH ERROR");
                     Logger.error("linkedAccount.typeOfConnection: " + linkedAccount.typeOfConnection + " not found");
                     return GlobalResult.internalServerError();
                 }
             }
-
 
             Verifier verifier = new Verifier(code);
             Token accessToken = service.getAccessToken(null, verifier);
@@ -106,25 +103,74 @@ public class SecurityController extends Controller {
             service.signRequest(accessToken, request);
 
             Response response = request.send();
-            if(!response.isSuccessful()) return GlobalResult.forbidden("něco se nepovedlo");
+            if(!response.isSuccessful()){
+                Logger.error("Incoming state: " + state + " not found in database");
+                redirect(Configuration.root().getString("Becki.redirectFail"));
+            }
 
 
             JsonNode jsonNode = Json.parse(response.getBody());
-            linkedAccount.providerUserId = jsonNode.get("id").asText();
 
-            if(!jsonNode.get("mail").isNull()){
-                Person person = Person.find.byId(jsonNode.get("mail").asText());
-                if(person == null){
-                    person = new Person();
-                    person.mail = jsonNode.get("mail").asText();
-                    person.save();
+            // Zkontroluji zda příchozí Json obsahuje id uživatele ze sociální sítě
+            if(jsonNode.has("id")) {
+
+                // Zkontroluji zda už takové id nemám náhodou v databázi a pokud ano, zamezuji duplicitě
+                LinkedAccount usedAccount = LinkedAccount.find.where().eq("providerUserId", jsonNode.get("id").asText()).findUnique();
+
+                // Ovařím zda už v databázi není - pokud ano provedu následující metodu, ve které smažu poslední LinkedAccount
+                // a používám už ten předchozí, jen prohodím a aktualizuji token! Poté přesměruji
+                if (usedAccount != null) {
+
+
+                    usedAccount.authToken = linkedAccount.authToken;
+                    linkedAccount.delete();
+                    usedAccount.update();
+                    return redirect(Configuration.root().getString("Becki.redirectOk"));
                 }
 
-                linkedAccount.person = person;
-            }
-            linkedAccount.update();
+                // Pokud se uživatel přihlásí poprvé
+                else {
 
-            return GlobalResult.ok(Json.toJson(linkedAccount));
+                    // Přiřadím do záznamu id uživatele ze sociální sítě
+                    linkedAccount.providerUserId = jsonNode.get("id").asText();
+                    linkedAccount.update();
+
+                    // A vytvářím osobu - Je nutné se podívat, zda náhodou už neexistuje daná osoba v systému
+                    // - pak bych tento LinkedAccount napojil na ní.
+
+                    // Existuje email podle které bych mohl identifikovat osobu - a Person s tímto emailem existuje.
+                    if( jsonNode.has("email") && Person.find.where().eq("mail", jsonNode.get("mail").asText()).findUnique() != null ) {
+                       Person person = Person.find.where().eq("mail", jsonNode.get("mail").asText()).findUnique();
+
+                        person.linkedAccounts.add(linkedAccount);
+                        person.setToken(linkedAccount.authToken); // update je v metodě už zahrnut!
+                        person.update();
+                        return redirect(Configuration.root().getString("Becki.redirectOk"));
+                    }
+                    // V ostatních případech - kdy email nemám a tedy nemám šanci najít osobu pro marge
+                    else{
+
+                        Person person = new Person();
+                        if( jsonNode.has("email") ){
+                            person.mail = jsonNode.get("email").asText();
+                        }
+                        person.setToken(linkedAccount.authToken); // update je v metodě už zahrnut!
+                        person.save();
+
+                        linkedAccount.person = person;
+                        linkedAccount.update();
+
+                        return redirect(Configuration.root().getString("Becki.redirectOk"));
+                    }
+
+                }
+            }
+
+            Logger.error("Error ");
+            Logger.error("Error - Příchozí JSON v metodě GEToauth_callback neobsahuje identifikačnmí ID!");
+            Logger.error("Error \n");
+
+            return redirect(Configuration.root().getString("Becki.redirectFail"));
 
         }catch (Exception e) {
             Logger.error("Error", e);
@@ -146,7 +192,7 @@ public class SecurityController extends Controller {
             ObjectNode result = Json.newObject();
             result.put("type", "GitHub");
             result.put("url", service.getAuthorizationUrl(null));
-            result.put("authToken", linkedAccount.createToken());
+            result.put("authToken", linkedAccount.authToken);
 
             return GlobalResult.okResult(result);
 
@@ -166,7 +212,7 @@ public class SecurityController extends Controller {
             ObjectNode result = Json.newObject();
             result.put("type", "Facebook");
             result.put("url", service.getAuthorizationUrl(null));
-            result.put("authToken", linkedAccount.createToken());
+            result.put("authToken", linkedAccount.authToken);
 
             return GlobalResult.okResult(result);
         }catch (Exception e) {
@@ -189,7 +235,7 @@ public class SecurityController extends Controller {
             ObjectNode result = Json.newObject();
             result.put("type", "Twitter");
             result.put("url", service.getAuthorizationUrl(requestToken) );
-            result.put("authToken", linkedAccount.createToken());
+            result.put("authToken", linkedAccount.authToken);
 
             return GlobalResult.okResult(result);
 
@@ -210,7 +256,7 @@ public class SecurityController extends Controller {
             ObjectNode result = Json.newObject();
             result.put("type", "Vkontakte");
             result.put("url", service.getAuthorizationUrl(null));
-            result.put("authToken", linkedAccount.createToken());
+            result.put("authToken", linkedAccount.authToken);
 
             return GlobalResult.okResult(result);
 

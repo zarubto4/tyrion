@@ -725,7 +725,7 @@ public class OverFlowController  extends Controller {
         try {
             Post post = Post.find.where().eq("postId", postId).findUnique();
 
-            if(post.listOfLikers != null &&  post.listOfLikers.contains(  SecurityController.getPerson()  ) ) throw new Exception("You have decided");
+            if(post.listOfLikers != null &&  post.listOfLikers.contains(  SecurityController.getPerson()  ) ) return GlobalResult.forbidden();
 
             post.listOfLikers.add(SecurityController.getPerson());
             post.likes--;

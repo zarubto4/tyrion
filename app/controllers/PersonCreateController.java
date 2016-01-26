@@ -26,7 +26,7 @@ public class PersonCreateController extends Controller {
             person.password = json.get("password").asText();
 
 
-            if (Person.find.byId(json.get("mail").asText()) != null) throw new Exception("UserDB with this email exist yet!");
+            if (Person.find.byId(json.get("mail").asText()) != null) return GlobalResult.badRequest("Email Exist");
 
             person.setSha(json.get("password").asText());
             person.save();
@@ -36,26 +36,26 @@ public class PersonCreateController extends Controller {
     }
 
 
-    public  Result getPerson(String mail){
+    public  Result getPerson(String id){
         try{
 
-            Person p =Person.find.byId(mail);
-            if(p == null ) throw new Exception("UserDB not exist");
+            Person person =Person.find.byId(id);
+            if(person == null )  return GlobalResult.notFound();
 
 
-            return GlobalResult.okResult(Json.toJson(p));
+            return GlobalResult.okResult(Json.toJson(person));
 
         }catch(Exception e){return GlobalResult.badRequest(e);}
     }
 
 
-    public  Result deletePerson(String mail){
+    public  Result deletePerson(String id){
         try{
 
-            Person p = Person.find.byId(mail);
-            if(p == null ) throw new Exception("UserDB not exist");
+            Person person = Person.find.byId(id);
+            if(person == null ) return GlobalResult.notFound();
 
-            p.delete();
+            person.delete();
 
             return GlobalResult.okResult();
 
@@ -73,6 +73,7 @@ public class PersonCreateController extends Controller {
             Person person = Person.find.byId(json.get("email").asText());
             if (person == null) throw new Exception("UserDB for update doesn't exist in database");
 
+            person.nickName     =  json.get("nickName")     .asText();
             person.firstName    = json.get("firstName")     .asText();
             person.middleName   = json.get("middleName")    .asText();
             person.lastNAme     = json.get("lastNAme")      .asText();

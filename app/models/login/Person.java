@@ -21,8 +21,11 @@ import java.util.UUID;
 public class Person extends Model{
 
     //#### DB VALUE ########################################################################################################
-    @Id  @Column(unique=true)  @Constraints.Email           public String mail;
-    @Constraints.Required @Constraints.Min(8)  @JsonIgnore  public String password;
+    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) public String id;
+
+    @Column(unique=true)  @Constraints.Email                public String mail;
+                          @Constraints.Min(8)  @JsonIgnore  public String password;
+    @Column(unique=true)  @Constraints.Min(5)               public String nickName;
                                                             public String firstName;
     @JsonIgnore                                             public String middleName;
                                                             public String lastNAme;
@@ -34,18 +37,16 @@ public class Person extends Model{
 
                                                             public boolean emailValidated;
 
-
-
-    @Column(length = 64, nullable = false)                  private byte[] shaPassword;
+    @Column(length = 64)                                    private byte[] shaPassword;
 
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<Project>              owningProjects            = new ArrayList<>();
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<Post>                 postLiker                 = new ArrayList<>();    // Propojení, které byly uživatelem hodnoceny (jak negativně, tak pozitivně)
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<GroupWithPermissions> groupWithPermissions      = new ArrayList<>();
 
 
-    @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<BlockoBlock>  blocksAuthor    = new ArrayList<>(); // Propojení, které bločky uživatel vytvořil
-    @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<Post>         personPosts     = new ArrayList<>(); // Propojení, které uživatel napsal
-    @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<LinkedPost>   linkedPosts     = new ArrayList<>(); // Propojení, které uživatel nalinkoval
+    @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<BlockoBlock>   blocksAuthor    = new ArrayList<>(); // Propojení, které bločky uživatel vytvořil
+    @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<Post>          personPosts     = new ArrayList<>(); // Propojení, které uživatel napsal
+    @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<LinkedPost>    linkedPosts     = new ArrayList<>(); // Propojení, které uživatel nalinkoval
     @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL)     public List<LinkedAccount> linkedAccounts;
 
     @JsonIgnore  @ManyToMany(mappedBy = "ownersOfPermission", cascade = CascadeType.ALL)  @JoinTable(name = "permissionsPerson")  public List<PermissionKey> owningPermissions = new ArrayList<>();
@@ -75,10 +76,14 @@ public class Person extends Model{
         this.shaPassword = getSha512(value);
     }
 
+    public void setToken(String token){
+        authToken = token;
+    }
+
     public String createToken() {
 
         authToken = UUID.randomUUID().toString();
-        save();
+        update();
 
         return authToken;
     }
@@ -86,7 +91,7 @@ public class Person extends Model{
     // If userDB/system make log out
     public void deleteAuthToken() {
         authToken = null;
-        save();
+        update();
     }
 
 
