@@ -1,16 +1,25 @@
 package controllers;
 
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import models.Person;
+import com.github.scribejava.core.model.*;
+import com.github.scribejava.core.oauth.OAuthService;
+import com.google.inject.Inject;
+import models.login.LinkedAccount;
+import models.login.Person;
+import play.Configuration;
+import play.Logger;
 import play.libs.Json;
+import play.libs.ws.WSClient;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.response.GlobalResult;
-import utilities.response.CoreResponse;
 import utilities.Secured;
+import utilities.loginEntities.Socials;
+import utilities.response.CoreResponse;
+import utilities.response.GlobalResult;
 
 
 public class SecurityController extends Controller {
@@ -40,7 +49,6 @@ public class SecurityController extends Controller {
         result.replace("person", Json.toJson(person));
         result.put("authToken", authToken );
 
-
         response().setCookie(AUTH_TOKEN, authToken);
 
         return GlobalResult.okResult(result);
@@ -62,17 +70,165 @@ public class SecurityController extends Controller {
     }
 
 
+
+    public Result index(){
+        return ok("Version 1.4 is alive!");
+    }
+
+    @Inject WSClient ws;
+
+    public Result  GEToauth_callback(String code, String state){
+        try {
+
+            LinkedAccount linkedAccount = LinkedAccount.find.where().eq("providerKey", state).findUnique();
+            if(linkedAccount == null) return forbidden("providerKey not found!");
+
+            OAuthService service;
+
+            switch (linkedAccount.typeOfConnection){
+                case "Facebook" : service  = Socials.Facebook(state); break;
+                case "Github"   : service  = Socials.GitHub(state); break;
+                case "Twitter"  : service  = Socials.Twitter(state); break;
+                case "Vkontakte": service  = Socials.Vkontakte(state); break;
+                default: {
+                    Logger.error("Error - SWITCH ERROR");
+                    Logger.error("linkedAccount.typeOfConnection: " + linkedAccount.typeOfConnection + " not found");
+                    return GlobalResult.internalServerError();
+                }
+            }
+
+
+            Verifier verifier = new Verifier(code);
+            Token accessToken = service.getAccessToken(null, verifier);
+
+
+            OAuthRequest request = new OAuthRequest(Verb.GET, Configuration.root().getString(linkedAccount.typeOfConnection + ".url") , service);
+            service.signRequest(accessToken, request);
+
+            Response response = request.send();
+            if(!response.isSuccessful()) return GlobalResult.forbidden("něco se nepovedlo");
+
+
+            JsonNode jsonNode = Json.parse(response.getBody());
+            linkedAccount.providerUserId = jsonNode.get("id").asText();
+
+            if(!jsonNode.get("mail").isNull()){
+                Person person = Person.find.byId(jsonNode.get("mail").asText());
+                if(person == null){
+                    person = new Person();
+                    person.mail = jsonNode.get("mail").asText();
+                    person.save();
+                }
+
+                linkedAccount.person = person;
+            }
+            linkedAccount.update();
+
+            return GlobalResult.ok(Json.toJson(linkedAccount));
+
+        }catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("SecurityController - GEToauth_callback ERROR");
+            return GlobalResult.internalServerError();
+        }
+
+
+    }
+
+
+
+    public Result GitHub(){
+        try {
+            LinkedAccount linkedAccount = LinkedAccount.setProviderKey("GitHub");
+
+            OAuthService service = Socials.GitHub(linkedAccount.providerKey);
+
+            ObjectNode result = Json.newObject();
+            result.put("type", "GitHub");
+            result.put("url", service.getAuthorizationUrl(null));
+            result.put("authToken", linkedAccount.createToken());
+
+            return GlobalResult.okResult(result);
+
+        }catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("SecurityController - GitHub ERROR");
+            return GlobalResult.internalServerError();
+        }
+    }
+
+    public Result Facebook(){
+        try {
+            LinkedAccount linkedAccount = LinkedAccount.setProviderKey("Facebook");
+
+            OAuthService service = Socials.Facebook(linkedAccount.providerKey);
+
+            ObjectNode result = Json.newObject();
+            result.put("type", "Facebook");
+            result.put("url", service.getAuthorizationUrl(null));
+            result.put("authToken", linkedAccount.createToken());
+
+            return GlobalResult.okResult(result);
+        }catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("SecurityController - facebook ERROR");
+
+            return GlobalResult.internalServerError();
+        }
+    }
+
+    public Result Twitter(){
+        try {
+            LinkedAccount linkedAccount = LinkedAccount.setProviderKey("Twitter");
+
+            OAuthService service = Socials.Twitter(linkedAccount.providerKey);
+
+
+            Token requestToken = service.getRequestToken();
+
+            ObjectNode result = Json.newObject();
+            result.put("type", "Twitter");
+            result.put("url", service.getAuthorizationUrl(requestToken) );
+            result.put("authToken", linkedAccount.createToken());
+
+            return GlobalResult.okResult(result);
+
+        }catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("SecurityController - Twitter ERROR");
+            return GlobalResult.internalServerError();
+        }
+    }
+
+    public Result Vkontakte(){
+        try {
+            LinkedAccount linkedAccount = LinkedAccount.setProviderKey("Vkontakte");
+
+            OAuthService service = Socials.Vkontakte(linkedAccount.providerKey);
+
+
+            ObjectNode result = Json.newObject();
+            result.put("type", "Vkontakte");
+            result.put("url", service.getAuthorizationUrl(null));
+            result.put("authToken", linkedAccount.createToken());
+
+            return GlobalResult.okResult(result);
+
+        }catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("SecurityController - facebook ERROR");
+            return GlobalResult.internalServerError();
+        }
+    }
+
+
     public Result option(){
         return GlobalResult.okResult();
     }
 
     public Result optionLink(String url){
-
         CoreResponse.cors();
         response().setHeader("Access-Control-Link", url);
-        System.out.println("URL: " + url + " confirm with POST");
         return ok();
     }
-
-
 }

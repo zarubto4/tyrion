@@ -3,9 +3,7 @@
     <CLASSES>
       <root url="jar://$USER_HOME$/.ivy2/cache/com.microsoft.azure/azure-storage/jars/azure-storage-4.0.0.jar!/" />
     </CLASSES>
-    <JAVADOC>
-      <root url="jar://$USER_HOME$/.ivy2/cache/com.microsoft.azure/azure-storage/docs/azure-storage-4.0.0-javadoc.jar!/" />
-    </JAVADOC>
+    <JAVADOC />
     <SOURCES>
       <root url="jar://$USER_HOME$/.ivy2/cache/com.microsoft.azure/azure-storage/srcs/azure-storage-4.0.0-sources.jar!/" />
     </SOURCES>

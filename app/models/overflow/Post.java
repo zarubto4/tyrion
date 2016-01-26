@@ -4,7 +4,7 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import models.Person;
+import models.login.Person;
 import play.data.validation.Constraints;
 
 import javax.persistence.*;

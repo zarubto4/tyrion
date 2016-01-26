@@ -2,13 +2,14 @@
 [0m[[0mdebug[0m] [0m	(/Users/zaruba/ownCloud/Git/Tyrion/conf/application.conf,/Users/zaruba/ownCloud/Git/Tyrion/target/scala-2.11/classes/application.conf)[0m
 [0m[[0mdebug[0m] [0m	(/Users/zaruba/ownCloud/Git/Tyrion/conf/eclipseFiles,/Users/zaruba/ownCloud/Git/Tyrion/target/scala-2.11/classes/eclipseFiles)[0m
 [0m[[0mdebug[0m] [0m	(/Users/zaruba/ownCloud/Git/Tyrion/conf/evolutions,/Users/zaruba/ownCloud/Git/Tyrion/target/scala-2.11/classes/evolutions)[0m
+[0m[[0mdebug[0m] [0m	(/Users/zaruba/ownCloud/Git/Tyrion/conf/language,/Users/zaruba/ownCloud/Git/Tyrion/target/scala-2.11/classes/language)[0m
 [0m[[0mdebug[0m] [0m	(/Users/zaruba/ownCloud/Git/Tyrion/conf/logback.xml,/Users/zaruba/ownCloud/Git/Tyrion/target/scala-2.11/classes/logback.xml)[0m
-[0m[[0mdebug[0m] [0m	(/Users/zaruba/ownCloud/Git/Tyrion/conf/message,/Users/zaruba/ownCloud/Git/Tyrion/target/scala-2.11/classes/message)[0m
-[0m[[0mdebug[0m] [0m	(/Users/zaruba/ownCloud/Git/Tyrion/conf/message.en,/Users/zaruba/ownCloud/Git/Tyrion/target/scala-2.11/classes/message.en)[0m
-[0m[[0mdebug[0m] [0m	(/Users/zaruba/ownCloud/Git/Tyrion/conf/messages.cs-cz,/Users/zaruba/ownCloud/Git/Tyrion/target/scala-2.11/classes/messages.cs-cz)[0m
 [0m[[0mdebug[0m] [0m	(/Users/zaruba/ownCloud/Git/Tyrion/conf/routes,/Users/zaruba/ownCloud/Git/Tyrion/target/scala-2.11/classes/routes)[0m
 [0m[[0mdebug[0m] [0m	(/Users/zaruba/ownCloud/Git/Tyrion/conf/eclipseFiles/cdproject.xml,/Users/zaruba/ownCloud/Git/Tyrion/target/scala-2.11/classes/eclipseFiles/cdproject.xml)[0m
 [0m[[0mdebug[0m] [0m	(/Users/zaruba/ownCloud/Git/Tyrion/conf/eclipseFiles/project.xml,/Users/zaruba/ownCloud/Git/Tyrion/target/scala-2.11/classes/eclipseFiles/project.xml)[0m
 [0m[[0mdebug[0m] [0m	(/Users/zaruba/ownCloud/Git/Tyrion/conf/evolutions/default,/Users/zaruba/ownCloud/Git/Tyrion/target/scala-2.11/classes/evolutions/default)[0m
 [0m[[0mdebug[0m] [0m	(/Users/zaruba/ownCloud/Git/Tyrion/conf/evolutions/default/1.sql,/Users/zaruba/ownCloud/Git/Tyrion/target/scala-2.11/classes/evolutions/default/1.sql)[0m
 [0m[[0mdebug[0m] [0m	(/Users/zaruba/ownCloud/Git/Tyrion/conf/evolutions/default/1_conflict-20160108-152521.sql,/Users/zaruba/ownCloud/Git/Tyrion/target/scala-2.11/classes/evolutions/default/1_conflict-20160108-152521.sql)[0m
+[0m[[0mdebug[0m] [0m	(/Users/zaruba/ownCloud/Git/Tyrion/conf/language/message,/Users/zaruba/ownCloud/Git/Tyrion/target/scala-2.11/classes/language/message)[0m
+[0m[[0mdebug[0m] [0m	(/Users/zaruba/ownCloud/Git/Tyrion/conf/language/message.en,/Users/zaruba/ownCloud/Git/Tyrion/target/scala-2.11/classes/language/message.en)[0m
+[0m[[0mdebug[0m] [0m	(/Users/zaruba/ownCloud/Git/Tyrion/conf/language/messages.cs-cz,/Users/zaruba/ownCloud/Git/Tyrion/target/scala-2.11/classes/language/messages.cs-cz)[0m

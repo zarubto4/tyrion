@@ -3,7 +3,7 @@ package models.permission;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import models.Person;
+import models.login.Person;
 
 import javax.persistence.*;
 import java.util.ArrayList;

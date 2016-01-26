@@ -98,6 +98,18 @@ create table library_record (
   constraint pk_library_record primary key (id))
 ;
 
+create table linked_account (
+  id                        varchar(255) not null,
+  provider_user_id          varchar(255),
+  provider_key              TEXT,
+  type_of_connection        varchar(255),
+  sha_password              bytea not null,
+  person_mail               varchar(255),
+  auth_token                varchar(255),
+  token_verified            boolean,
+  constraint pk_linked_account primary key (id))
+;
+
 create table linked_post (
   link_id                   varchar(255) not null,
   author_mail               varchar(255),
@@ -123,6 +135,7 @@ create table person (
   last_title                varchar(255),
   date_of_birth             timestamp,
   auth_token                varchar(255),
+  email_validated           boolean,
   sha_password              bytea not null,
   constraint pk_person primary key (mail))
 ;
@@ -299,6 +312,8 @@ create sequence library_group_seq;
 
 create sequence library_record_seq;
 
+create sequence linked_account_seq;
+
 create sequence linked_post_seq;
 
 create sequence permission_key_seq;
@@ -333,28 +348,30 @@ alter table homer add constraint fk_homer_project_6 foreign key (project_project
 create index ix_homer_project_6 on homer (project_project_id);
 alter table homer_program add constraint fk_homer_program_project_7 foreign key (project_project_id) references project (project_id);
 create index ix_homer_program_project_7 on homer_program (project_project_id);
-alter table linked_post add constraint fk_linked_post_author_8 foreign key (author_mail) references person (mail);
-create index ix_linked_post_author_8 on linked_post (author_mail);
-alter table linked_post add constraint fk_linked_post_answer_9 foreign key (answer_post_id) references post (post_id);
-create index ix_linked_post_answer_9 on linked_post (answer_post_id);
-alter table linked_post add constraint fk_linked_post_question_10 foreign key (question_post_id) references post (post_id);
-create index ix_linked_post_question_10 on linked_post (question_post_id);
-alter table post add constraint fk_post_type_11 foreign key (type_id) references type_of_post (id);
-create index ix_post_type_11 on post (type_id);
-alter table post add constraint fk_post_author_12 foreign key (author_mail) references person (mail);
-create index ix_post_author_12 on post (author_mail);
-alter table post add constraint fk_post_postParentComment_13 foreign key (post_parent_comment_post_id) references post (post_id);
-create index ix_post_postParentComment_13 on post (post_parent_comment_post_id);
-alter table post add constraint fk_post_postParentAnswer_14 foreign key (post_parent_answer_post_id) references post (post_id);
-create index ix_post_postParentAnswer_14 on post (post_parent_answer_post_id);
-alter table type_of_board add constraint fk_type_of_board_producer_15 foreign key (producer_id) references producer (id);
-create index ix_type_of_board_producer_15 on type_of_board (producer_id);
-alter table type_of_board add constraint fk_type_of_board_processor_16 foreign key (processor_id) references processor (id);
-create index ix_type_of_board_processor_16 on type_of_board (processor_id);
-alter table version add constraint fk_version_libraryGroup_17 foreign key (library_group_id) references library_group (id);
-create index ix_version_libraryGroup_17 on version (library_group_id);
-alter table version add constraint fk_version_singleLibrary_18 foreign key (single_library_id) references single_library (id);
-create index ix_version_singleLibrary_18 on version (single_library_id);
+alter table linked_account add constraint fk_linked_account_person_8 foreign key (person_mail) references person (mail);
+create index ix_linked_account_person_8 on linked_account (person_mail);
+alter table linked_post add constraint fk_linked_post_author_9 foreign key (author_mail) references person (mail);
+create index ix_linked_post_author_9 on linked_post (author_mail);
+alter table linked_post add constraint fk_linked_post_answer_10 foreign key (answer_post_id) references post (post_id);
+create index ix_linked_post_answer_10 on linked_post (answer_post_id);
+alter table linked_post add constraint fk_linked_post_question_11 foreign key (question_post_id) references post (post_id);
+create index ix_linked_post_question_11 on linked_post (question_post_id);
+alter table post add constraint fk_post_type_12 foreign key (type_id) references type_of_post (id);
+create index ix_post_type_12 on post (type_id);
+alter table post add constraint fk_post_author_13 foreign key (author_mail) references person (mail);
+create index ix_post_author_13 on post (author_mail);
+alter table post add constraint fk_post_postParentComment_14 foreign key (post_parent_comment_post_id) references post (post_id);
+create index ix_post_postParentComment_14 on post (post_parent_comment_post_id);
+alter table post add constraint fk_post_postParentAnswer_15 foreign key (post_parent_answer_post_id) references post (post_id);
+create index ix_post_postParentAnswer_15 on post (post_parent_answer_post_id);
+alter table type_of_board add constraint fk_type_of_board_producer_16 foreign key (producer_id) references producer (id);
+create index ix_type_of_board_producer_16 on type_of_board (producer_id);
+alter table type_of_board add constraint fk_type_of_board_processor_17 foreign key (processor_id) references processor (id);
+create index ix_type_of_board_processor_17 on type_of_board (processor_id);
+alter table version add constraint fk_version_libraryGroup_18 foreign key (library_group_id) references library_group (id);
+create index ix_version_libraryGroup_18 on version (library_group_id);
+alter table version add constraint fk_version_singleLibrary_19 foreign key (single_library_id) references single_library (id);
+create index ix_version_singleLibrary_19 on version (single_library_id);
 
 
 
@@ -452,6 +469,8 @@ drop table if exists library_record cascade;
 
 drop table if exists version_library_record cascade;
 
+drop table if exists linked_account cascade;
+
 drop table if exists linked_post cascade;
 
 drop table if exists permission_key cascade;
@@ -501,6 +520,8 @@ drop sequence if exists homer_program_seq;
 drop sequence if exists library_group_seq;
 
 drop sequence if exists library_record_seq;
+
+drop sequence if exists linked_account_seq;
 
 drop sequence if exists linked_post_seq;
 

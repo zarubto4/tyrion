@@ -1,7 +1,7 @@
 package models.overflow;
 
 import com.avaje.ebean.Model;
-import models.Person;
+import models.login.Person;
 
 import javax.persistence.*;
 

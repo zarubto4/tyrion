@@ -7,10 +7,10 @@
 		revision="1.0-SNAPSHOT"
 		conf="test-internal"
 		confs="compile, runtime, test, provided, optional, compile-internal, runtime-internal, test-internal, plugin, sources, docs, pom, scala-tool"
-		date="20160122095813"/>
+		date="20160125212126"/>
 	<dependencies>
 		<module organisation="com.typesafe.play" name="play-test_2.11">
-			<revision name="2.4.4" status="release" pubdate="20151118223323" resolver="sbt-chain" artresolver="sbt-chain" homepage="https://playframework.com" downloaded="false" searched="false" default="false" conf="default, compile, runtime, default(compile), master" position="117">
+			<revision name="2.4.4" status="release" pubdate="20151118223323" resolver="sbt-chain" artresolver="sbt-chain" homepage="https://playframework.com" downloaded="false" searched="false" default="false" conf="default, compile, runtime, default(compile), master" position="121">
 				<license name="Apache-2.0" url="http://www.apache.org/licenses/LICENSE-2.0.html"/>
 				<metadata-artifact status="no" details="" size="3873" time="0" location="/Users/zaruba/.ivy2/cache/com.typesafe.play/play-test_2.11/ivy-2.4.4.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/typesafe/play/play-test_2.11/2.4.4/play-test_2.11-2.4.4.pom"/>
 				<caller organisation="tyrion" name="tyrion_2.11" conf="test, compile, provided, test-internal, runtime, optional" rev="2.4.4" rev-constraint-default="2.4.4" rev-constraint-dynamic="2.4.4" callerrev="1.0-SNAPSHOT"/>
@@ -22,7 +22,7 @@
 			</revision>
 		</module>
 		<module organisation="org.fluentlenium" name="fluentlenium-core">
-			<revision name="0.10.3" status="release" pubdate="20141126094927" resolver="sbt-chain" artresolver="sbt-chain" homepage="https://github.com/FluentLenium/FluentLenium" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="122">
+			<revision name="0.10.3" status="release" pubdate="20141126094927" resolver="sbt-chain" artresolver="sbt-chain" homepage="https://github.com/FluentLenium/FluentLenium" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="126">
 				<license name="Apache 2" url="http://www.apache.org/licenses/LICENSE-2.0.txt"/>
 				<metadata-artifact status="no" details="" size="6176" time="0" location="/Users/zaruba/.ivy2/cache/org.fluentlenium/fluentlenium-core/ivy-0.10.3.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/fluentlenium/fluentlenium-core/0.10.3/fluentlenium-core-0.10.3.pom"/>
 				<caller organisation="com.typesafe.play" name="play-test_2.11" conf="default, compile, runtime, master" rev="0.10.3" rev-constraint-default="0.10.3" rev-constraint-dynamic="0.10.3" callerrev="2.4.4"/>
@@ -34,7 +34,7 @@
 			</revision>
 		</module>
 		<module organisation="org.seleniumhq.selenium" name="selenium-java">
-			<revision name="2.44.0" status="release" pubdate="20141023221531" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="123">
+			<revision name="2.44.0" status="release" pubdate="20141023221531" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="127">
 				<metadata-artifact status="no" details="" size="6968" time="0" location="/Users/zaruba/.ivy2/cache/org.seleniumhq.selenium/selenium-java/ivy-2.44.0.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/seleniumhq/selenium/selenium-java/2.44.0/selenium-java-2.44.0.pom"/>
 				<caller organisation="org.fluentlenium" name="fluentlenium-core" conf="compile, runtime" rev="2.44.0" rev-constraint-default="2.44.0" rev-constraint-dynamic="2.44.0" callerrev="0.10.3"/>
 				<artifacts>
@@ -45,7 +45,7 @@
 			</revision>
 		</module>
 		<module organisation="org.seleniumhq.selenium" name="selenium-support">
-			<revision name="2.44.0" status="release" pubdate="20141023221505" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="151">
+			<revision name="2.44.0" status="release" pubdate="20141023221505" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="155">
 				<metadata-artifact status="no" details="" size="5988" time="0" location="/Users/zaruba/.ivy2/cache/org.seleniumhq.selenium/selenium-support/ivy-2.44.0.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/seleniumhq/selenium/selenium-support/2.44.0/selenium-support-2.44.0.pom"/>
 				<caller organisation="org.seleniumhq.selenium" name="selenium-java" conf="compile, runtime" rev="2.44.0" rev-constraint-default="2.44.0" rev-constraint-dynamic="2.44.0" callerrev="2.44.0"/>
 				<artifacts>
@@ -56,7 +56,7 @@
 			</revision>
 		</module>
 		<module organisation="org.seleniumhq.selenium" name="selenium-safari-driver">
-			<revision name="2.44.0" status="release" pubdate="20141023221441" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="149">
+			<revision name="2.44.0" status="release" pubdate="20141023221441" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="153">
 				<metadata-artifact status="no" details="" size="5911" time="0" location="/Users/zaruba/.ivy2/cache/org.seleniumhq.selenium/selenium-safari-driver/ivy-2.44.0.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/seleniumhq/selenium/selenium-safari-driver/2.44.0/selenium-safari-driver-2.44.0.pom"/>
 				<caller organisation="org.seleniumhq.selenium" name="selenium-java" conf="compile, runtime" rev="2.44.0" rev-constraint-default="2.44.0" rev-constraint-dynamic="2.44.0" callerrev="2.44.0"/>
 				<artifacts>
@@ -67,7 +67,7 @@
 			</revision>
 		</module>
 		<module organisation="org.webbitserver" name="webbit">
-			<revision name="0.4.14" status="release" pubdate="20120713143639" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://webbitserver.org/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="150">
+			<revision name="0.4.14" status="release" pubdate="20120713143639" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://webbitserver.org/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="154">
 				<license name="BSD License" url="http://www.opensource.org/licenses/bsd-license"/>
 				<metadata-artifact status="no" details="" size="3373" time="0" location="/Users/zaruba/.ivy2/cache/org.webbitserver/webbit/ivy-0.4.14.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/webbitserver/webbit/0.4.14/webbit-0.4.14.pom"/>
 				<caller organisation="org.seleniumhq.selenium" name="selenium-safari-driver" conf="compile, runtime" rev="0.4.14" rev-constraint-default="0.4.14" rev-constraint-dynamic="0.4.14" callerrev="2.44.0"/>
@@ -80,7 +80,7 @@
 			</revision>
 		</module>
 		<module organisation="org.seleniumhq.selenium" name="selenium-ie-driver">
-			<revision name="2.44.0" status="release" pubdate="20141023221419" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="148">
+			<revision name="2.44.0" status="release" pubdate="20141023221419" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="152">
 				<metadata-artifact status="no" details="" size="6042" time="0" location="/Users/zaruba/.ivy2/cache/org.seleniumhq.selenium/selenium-ie-driver/ivy-2.44.0.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/seleniumhq/selenium/selenium-ie-driver/2.44.0/selenium-ie-driver-2.44.0.pom"/>
 				<caller organisation="org.seleniumhq.selenium" name="selenium-java" conf="compile, runtime" rev="2.44.0" rev-constraint-default="2.44.0" rev-constraint-dynamic="2.44.0" callerrev="2.44.0"/>
 				<artifacts>
@@ -91,7 +91,7 @@
 			</revision>
 		</module>
 		<module organisation="org.seleniumhq.selenium" name="selenium-firefox-driver">
-			<revision name="2.44.0" status="release" pubdate="20141023221325" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="147">
+			<revision name="2.44.0" status="release" pubdate="20141023221325" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="151">
 				<metadata-artifact status="no" details="" size="6055" time="0" location="/Users/zaruba/.ivy2/cache/org.seleniumhq.selenium/selenium-firefox-driver/ivy-2.44.0.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/seleniumhq/selenium/selenium-firefox-driver/2.44.0/selenium-firefox-driver-2.44.0.pom"/>
 				<caller organisation="org.seleniumhq.selenium" name="selenium-java" conf="compile, runtime" rev="2.44.0" rev-constraint-default="2.44.0" rev-constraint-dynamic="2.44.0" callerrev="2.44.0"/>
 				<artifacts>
@@ -102,7 +102,7 @@
 			</revision>
 		</module>
 		<module organisation="org.seleniumhq.selenium" name="selenium-htmlunit-driver">
-			<revision name="2.44.0" status="release" pubdate="20141023221358" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="132">
+			<revision name="2.44.0" status="release" pubdate="20141023221358" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="136">
 				<metadata-artifact status="no" details="" size="6077" time="0" location="/Users/zaruba/.ivy2/cache/org.seleniumhq.selenium/selenium-htmlunit-driver/ivy-2.44.0.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/seleniumhq/selenium/selenium-htmlunit-driver/2.44.0/selenium-htmlunit-driver-2.44.0.pom"/>
 				<caller organisation="org.seleniumhq.selenium" name="selenium-java" conf="compile, runtime" rev="2.44.0" rev-constraint-default="2.44.0" rev-constraint-dynamic="2.44.0" callerrev="2.44.0"/>
 				<artifacts>
@@ -113,7 +113,7 @@
 			</revision>
 		</module>
 		<module organisation="net.sourceforge.htmlunit" name="htmlunit">
-			<revision name="2.15" status="release" pubdate="20140602204620" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://htmlunit.sourceforge.net" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="133">
+			<revision name="2.15" status="release" pubdate="20140602204620" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://htmlunit.sourceforge.net" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="137">
 				<license name="Apache License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.txt"/>
 				<metadata-artifact status="no" details="" size="7501" time="0" location="/Users/zaruba/.ivy2/cache/net.sourceforge.htmlunit/htmlunit/ivy-2.15.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/net/sourceforge/htmlunit/htmlunit/2.15/htmlunit-2.15.pom"/>
 				<caller organisation="org.seleniumhq.selenium" name="selenium-htmlunit-driver" conf="compile, runtime" rev="2.15" rev-constraint-default="2.15" rev-constraint-dynamic="2.15" callerrev="2.44.0"/>
@@ -125,7 +125,7 @@
 			</revision>
 		</module>
 		<module organisation="org.eclipse.jetty" name="jetty-websocket">
-			<revision name="8.1.15.v20140411" status="release" pubdate="20140411200939" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://www.eclipse.org/jetty" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="143">
+			<revision name="8.1.15.v20140411" status="release" pubdate="20140411200939" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://www.eclipse.org/jetty" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="147">
 				<metadata-artifact status="no" details="" size="9348" time="0" location="/Users/zaruba/.ivy2/cache/org.eclipse.jetty/jetty-websocket/ivy-8.1.15.v20140411.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-websocket/8.1.15.v20140411/jetty-websocket-8.1.15.v20140411.pom"/>
 				<caller organisation="net.sourceforge.htmlunit" name="htmlunit" conf="compile, runtime" rev="8.1.15.v20140411" rev-constraint-default="8.1.15.v20140411" rev-constraint-dynamic="8.1.15.v20140411" callerrev="2.15"/>
 				<artifacts>
@@ -136,7 +136,7 @@
 			</revision>
 		</module>
 		<module organisation="org.eclipse.jetty" name="jetty-http">
-			<revision name="8.1.15.v20140411" status="release" pubdate="20140411200328" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://www.eclipse.org/jetty" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="146">
+			<revision name="8.1.15.v20140411" status="release" pubdate="20140411200328" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://www.eclipse.org/jetty" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="150">
 				<metadata-artifact status="no" details="" size="8686" time="0" location="/Users/zaruba/.ivy2/cache/org.eclipse.jetty/jetty-http/ivy-8.1.15.v20140411.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-http/8.1.15.v20140411/jetty-http-8.1.15.v20140411.pom"/>
 				<caller organisation="org.eclipse.jetty" name="jetty-websocket" conf="compile, runtime" rev="8.1.15.v20140411" rev-constraint-default="8.1.15.v20140411" rev-constraint-dynamic="8.1.15.v20140411" callerrev="8.1.15.v20140411"/>
 				<artifacts>
@@ -147,7 +147,7 @@
 			</revision>
 		</module>
 		<module organisation="org.eclipse.jetty" name="jetty-io">
-			<revision name="8.1.15.v20140411" status="release" pubdate="20140411200310" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://www.eclipse.org/jetty" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="145">
+			<revision name="8.1.15.v20140411" status="release" pubdate="20140411200310" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://www.eclipse.org/jetty" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="149">
 				<metadata-artifact status="no" details="" size="8542" time="0" location="/Users/zaruba/.ivy2/cache/org.eclipse.jetty/jetty-io/ivy-8.1.15.v20140411.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-io/8.1.15.v20140411/jetty-io-8.1.15.v20140411.pom"/>
 				<caller organisation="org.eclipse.jetty" name="jetty-websocket" conf="compile, runtime" rev="8.1.15.v20140411" rev-constraint-default="8.1.15.v20140411" rev-constraint-dynamic="8.1.15.v20140411" callerrev="8.1.15.v20140411"/>
 				<caller organisation="org.eclipse.jetty" name="jetty-http" conf="compile, runtime" rev="8.1.15.v20140411" rev-constraint-default="8.1.15.v20140411" rev-constraint-dynamic="8.1.15.v20140411" callerrev="8.1.15.v20140411"/>
@@ -159,7 +159,7 @@
 			</revision>
 		</module>
 		<module organisation="org.eclipse.jetty" name="jetty-util">
-			<revision name="8.1.15.v20140411" status="release" pubdate="20140411200203" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://www.eclipse.org/jetty" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="144">
+			<revision name="8.1.15.v20140411" status="release" pubdate="20140411200203" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://www.eclipse.org/jetty" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="148">
 				<metadata-artifact status="no" details="" size="8918" time="0" location="/Users/zaruba/.ivy2/cache/org.eclipse.jetty/jetty-util/ivy-8.1.15.v20140411.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/8.1.15.v20140411/jetty-util-8.1.15.v20140411.pom"/>
 				<caller organisation="org.eclipse.jetty" name="jetty-websocket" conf="compile, runtime" rev="8.1.15.v20140411" rev-constraint-default="8.1.15.v20140411" rev-constraint-dynamic="8.1.15.v20140411" callerrev="8.1.15.v20140411"/>
 				<caller organisation="org.eclipse.jetty" name="jetty-io" conf="compile, runtime" rev="8.1.15.v20140411" rev-constraint-default="8.1.15.v20140411" rev-constraint-dynamic="8.1.15.v20140411" callerrev="8.1.15.v20140411"/>
@@ -171,7 +171,7 @@
 			</revision>
 		</module>
 		<module organisation="net.sourceforge.cssparser" name="cssparser">
-			<revision name="0.9.14" status="release" pubdate="20140508204756" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://cssparser.sourceforge.net/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="140">
+			<revision name="0.9.14" status="release" pubdate="20140508204756" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://cssparser.sourceforge.net/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="144">
 				<license name="GNU Lesser General Public License" url="http://www.gnu.org/licenses/lgpl.txt"/>
 				<metadata-artifact status="no" details="" size="3490" time="0" location="/Users/zaruba/.ivy2/cache/net.sourceforge.cssparser/cssparser/ivy-0.9.14.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/net/sourceforge/cssparser/cssparser/0.9.14/cssparser-0.9.14.pom"/>
 				<caller organisation="net.sourceforge.htmlunit" name="htmlunit" conf="compile, runtime" rev="0.9.14" rev-constraint-default="0.9.14" rev-constraint-dynamic="0.9.14" callerrev="2.15"/>
@@ -183,7 +183,7 @@
 			</revision>
 		</module>
 		<module organisation="org.w3c.css" name="sac">
-			<revision name="1.3" status="release" pubdate="20080323054250" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://www.w3.org/Style/CSS/SAC/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="141">
+			<revision name="1.3" status="release" pubdate="20080323054250" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://www.w3.org/Style/CSS/SAC/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="145">
 				<license name="The W3C Software License" url="http://www.w3.org/Consortium/Legal/copyright-software-19980720"/>
 				<metadata-artifact status="no" details="" size="2385" time="0" location="/Users/zaruba/.ivy2/cache/org.w3c.css/sac/ivy-1.3.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/w3c/css/sac/1.3/sac-1.3.pom"/>
 				<caller organisation="net.sourceforge.cssparser" name="cssparser" conf="compile, runtime" rev="1.3" rev-constraint-default="1.3" rev-constraint-dynamic="1.3" callerrev="0.9.14"/>
@@ -195,7 +195,7 @@
 			</revision>
 		</module>
 		<module organisation="net.sourceforge.nekohtml" name="nekohtml">
-			<revision name="1.9.21" status="release" pubdate="20140602122453" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://nekohtml.sourceforge.net/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="139">
+			<revision name="1.9.21" status="release" pubdate="20140602122453" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://nekohtml.sourceforge.net/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="143">
 				<license name="The Apache Software License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.txt"/>
 				<metadata-artifact status="no" details="" size="2568" time="0" location="/Users/zaruba/.ivy2/cache/net.sourceforge.nekohtml/nekohtml/ivy-1.9.21.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/net/sourceforge/nekohtml/nekohtml/1.9.21/nekohtml-1.9.21.pom"/>
 				<caller organisation="net.sourceforge.htmlunit" name="htmlunit" conf="compile, runtime" rev="1.9.21" rev-constraint-default="1.9.21" rev-constraint-dynamic="1.9.21" callerrev="2.15"/>
@@ -207,7 +207,7 @@
 			</revision>
 		</module>
 		<module organisation="net.sourceforge.htmlunit" name="htmlunit-core-js">
-			<revision name="2.15" status="release" pubdate="20140530155757" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://htmlunit.sourceforge.net" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="138">
+			<revision name="2.15" status="release" pubdate="20140530155757" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://htmlunit.sourceforge.net" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="142">
 				<license name="Mozilla Public License version 2.0" url="http://www.mozilla.org/MPL/2.0/"/>
 				<metadata-artifact status="no" details="" size="2513" time="0" location="/Users/zaruba/.ivy2/cache/net.sourceforge.htmlunit/htmlunit-core-js/ivy-2.15.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/net/sourceforge/htmlunit/htmlunit-core-js/2.15/htmlunit-core-js-2.15.pom"/>
 				<caller organisation="net.sourceforge.htmlunit" name="htmlunit" conf="compile, runtime" rev="2.15" rev-constraint-default="2.15" rev-constraint-dynamic="2.15" callerrev="2.15"/>
@@ -219,7 +219,7 @@
 			</revision>
 		</module>
 		<module organisation="org.apache.httpcomponents" name="httpmime">
-			<revision name="4.3.3" status="release" pubdate="20140222150636" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://hc.apache.org/httpcomponents-client" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="137">
+			<revision name="4.3.3" status="release" pubdate="20140222150636" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://hc.apache.org/httpcomponents-client" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="141">
 				<metadata-artifact status="no" details="" size="10068" time="0" location="/Users/zaruba/.ivy2/cache/org.apache.httpcomponents/httpmime/ivy-4.3.3.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/apache/httpcomponents/httpmime/4.3.3/httpmime-4.3.3.pom"/>
 				<caller organisation="net.sourceforge.htmlunit" name="htmlunit" conf="compile, runtime" rev="4.3.3" rev-constraint-default="4.3.3" rev-constraint-dynamic="4.3.3" callerrev="2.15"/>
 				<artifacts>
@@ -230,7 +230,7 @@
 			</revision>
 		</module>
 		<module organisation="commons-collections" name="commons-collections">
-			<revision name="3.2.1" status="release" pubdate="20080415030924" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://commons.apache.org/collections/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="136">
+			<revision name="3.2.1" status="release" pubdate="20080415030924" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://commons.apache.org/collections/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="140">
 				<metadata-artifact status="no" details="" size="4590" time="0" location="/Users/zaruba/.ivy2/cache/commons-collections/commons-collections/ivy-3.2.1.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/commons-collections/commons-collections/3.2.1/commons-collections-3.2.1.pom"/>
 				<caller organisation="net.sourceforge.htmlunit" name="htmlunit" conf="compile, runtime" rev="3.2.1" rev-constraint-default="3.2.1" rev-constraint-dynamic="3.2.1" callerrev="2.15"/>
 				<artifacts>
@@ -241,7 +241,7 @@
 			</revision>
 		</module>
 		<module organisation="xalan" name="xalan">
-			<revision name="2.7.1" status="release" pubdate="20080930100254" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://xml.apache.org/xalan-j/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="134">
+			<revision name="2.7.1" status="release" pubdate="20080930100254" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://xml.apache.org/xalan-j/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="138">
 				<metadata-artifact status="no" details="" size="2937" time="0" location="/Users/zaruba/.ivy2/cache/xalan/xalan/ivy-2.7.1.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/xalan/xalan/2.7.1/xalan-2.7.1.pom"/>
 				<caller organisation="net.sourceforge.htmlunit" name="htmlunit" conf="compile, runtime" rev="2.7.1" rev-constraint-default="2.7.1" rev-constraint-dynamic="2.7.1" callerrev="2.15"/>
 				<artifacts>
@@ -252,7 +252,7 @@
 			</revision>
 		</module>
 		<module organisation="xalan" name="serializer">
-			<revision name="2.7.1" status="release" pubdate="20080930100254" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://xml.apache.org/xalan-j/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="135">
+			<revision name="2.7.1" status="release" pubdate="20080930100254" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://xml.apache.org/xalan-j/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="139">
 				<metadata-artifact status="no" details="" size="2747" time="0" location="/Users/zaruba/.ivy2/cache/xalan/serializer/ivy-2.7.1.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/xalan/serializer/2.7.1/serializer-2.7.1.pom"/>
 				<caller organisation="xalan" name="xalan" conf="compile, runtime" rev="2.7.1" rev-constraint-default="2.7.1" rev-constraint-dynamic="2.7.1" callerrev="2.7.1"/>
 				<artifacts>
@@ -263,7 +263,7 @@
 			</revision>
 		</module>
 		<module organisation="org.seleniumhq.selenium" name="selenium-chrome-driver">
-			<revision name="2.44.0" status="release" pubdate="20141023221257" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="124">
+			<revision name="2.44.0" status="release" pubdate="20141023221257" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="128">
 				<metadata-artifact status="no" details="" size="5769" time="0" location="/Users/zaruba/.ivy2/cache/org.seleniumhq.selenium/selenium-chrome-driver/ivy-2.44.0.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/seleniumhq/selenium/selenium-chrome-driver/2.44.0/selenium-chrome-driver-2.44.0.pom"/>
 				<caller organisation="org.seleniumhq.selenium" name="selenium-java" conf="compile, runtime" rev="2.44.0" rev-constraint-default="2.44.0" rev-constraint-dynamic="2.44.0" callerrev="2.44.0"/>
 				<artifacts>
@@ -274,7 +274,7 @@
 			</revision>
 		</module>
 		<module organisation="org.seleniumhq.selenium" name="selenium-remote-driver">
-			<revision name="2.44.0" status="release" pubdate="20141023221235" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="125">
+			<revision name="2.44.0" status="release" pubdate="20141023221235" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="129">
 				<metadata-artifact status="no" details="" size="6756" time="0" location="/Users/zaruba/.ivy2/cache/org.seleniumhq.selenium/selenium-remote-driver/ivy-2.44.0.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/seleniumhq/selenium/selenium-remote-driver/2.44.0/selenium-remote-driver-2.44.0.pom"/>
 				<caller organisation="org.seleniumhq.selenium" name="selenium-safari-driver" conf="compile, runtime" rev="2.44.0" rev-constraint-default="2.44.0" rev-constraint-dynamic="2.44.0" callerrev="2.44.0"/>
 				<caller organisation="org.seleniumhq.selenium" name="selenium-htmlunit-driver" conf="compile, runtime" rev="2.44.0" rev-constraint-default="2.44.0" rev-constraint-dynamic="2.44.0" callerrev="2.44.0"/>
@@ -290,7 +290,7 @@
 			</revision>
 		</module>
 		<module organisation="net.java.dev.jna" name="platform">
-			<revision name="3.4.0" status="release" pubdate="20111221232302" resolver="sbt-chain" artresolver="sbt-chain" homepage="https://github.com/twall/jna" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="131">
+			<revision name="3.4.0" status="release" pubdate="20111221232302" resolver="sbt-chain" artresolver="sbt-chain" homepage="https://github.com/twall/jna" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="135">
 				<license name="LGPL, version 2.1" url="http://creativecommons.org/licenses/LGPL/2.1/"/>
 				<metadata-artifact status="no" details="" size="2469" time="0" location="/Users/zaruba/.ivy2/cache/net.java.dev.jna/platform/ivy-3.4.0.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/net/java/dev/jna/platform/3.4.0/platform-3.4.0.pom"/>
 				<caller organisation="org.seleniumhq.selenium" name="selenium-ie-driver" conf="compile, runtime" rev="3.4.0" rev-constraint-default="3.4.0" rev-constraint-dynamic="3.4.0" callerrev="2.44.0"/>
@@ -303,7 +303,7 @@
 			</revision>
 		</module>
 		<module organisation="net.java.dev.jna" name="jna">
-			<revision name="3.4.0" status="release" pubdate="20111221232220" resolver="sbt-chain" artresolver="sbt-chain" homepage="https://github.com/twall/jna" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="130">
+			<revision name="3.4.0" status="release" pubdate="20111221232220" resolver="sbt-chain" artresolver="sbt-chain" homepage="https://github.com/twall/jna" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="134">
 				<license name="LGPL, version 2.1" url="http://creativecommons.org/licenses/LGPL/2.1/"/>
 				<metadata-artifact status="no" details="" size="2450" time="0" location="/Users/zaruba/.ivy2/cache/net.java.dev.jna/jna/ivy-3.4.0.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/net/java/dev/jna/jna/3.4.0/jna-3.4.0.pom"/>
 				<caller organisation="org.seleniumhq.selenium" name="selenium-ie-driver" conf="compile, runtime" rev="3.4.0" rev-constraint-default="3.4.0" rev-constraint-dynamic="3.4.0" callerrev="2.44.0"/>
@@ -316,7 +316,7 @@
 			</revision>
 		</module>
 		<module organisation="org.apache.commons" name="commons-exec">
-			<revision name="1.1" status="release" pubdate="20101019231142" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://commons.apache.org/exec/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="129">
+			<revision name="1.1" status="release" pubdate="20101019231142" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://commons.apache.org/exec/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="133">
 				<metadata-artifact status="no" details="" size="6054" time="0" location="/Users/zaruba/.ivy2/cache/org.apache.commons/commons-exec/ivy-1.1.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/apache/commons/commons-exec/1.1/commons-exec-1.1.pom"/>
 				<caller organisation="org.seleniumhq.selenium" name="selenium-firefox-driver" conf="compile, runtime" rev="1.1" rev-constraint-default="1.1" rev-constraint-dynamic="1.1" callerrev="2.44.0"/>
 				<caller organisation="org.seleniumhq.selenium" name="selenium-remote-driver" conf="compile, runtime" rev="1.1" rev-constraint-default="1.1" rev-constraint-dynamic="1.1" callerrev="2.44.0"/>
@@ -328,7 +328,7 @@
 			</revision>
 		</module>
 		<module organisation="org.seleniumhq.selenium" name="selenium-api">
-			<revision name="2.44.0" status="release" pubdate="20141023221206" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="128">
+			<revision name="2.44.0" status="release" pubdate="20141023221206" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="132">
 				<metadata-artifact status="no" details="" size="5893" time="0" location="/Users/zaruba/.ivy2/cache/org.seleniumhq.selenium/selenium-api/ivy-2.44.0.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/seleniumhq/selenium/selenium-api/2.44.0/selenium-api-2.44.0.pom"/>
 				<caller organisation="org.seleniumhq.selenium" name="selenium-remote-driver" conf="compile, runtime" rev="2.44.0" rev-constraint-default="2.44.0" rev-constraint-dynamic="2.44.0" callerrev="2.44.0"/>
 				<artifacts>
@@ -339,7 +339,7 @@
 			</revision>
 		</module>
 		<module organisation="com.google.code.gson" name="gson">
-			<revision name="2.3" status="release" pubdate="20140812014157" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://code.google.com/p/google-gson/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="127">
+			<revision name="2.3" status="release" pubdate="20140812014157" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://code.google.com/p/google-gson/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="131">
 				<license name="The Apache Software License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.txt"/>
 				<metadata-artifact status="no" details="" size="3255" time="0" location="/Users/zaruba/.ivy2/cache/com.google.code.gson/gson/ivy-2.3.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/google/code/gson/gson/2.3/gson-2.3.pom"/>
 				<caller organisation="org.seleniumhq.selenium" name="selenium-remote-driver" conf="compile, runtime" rev="2.3" rev-constraint-default="2.3" rev-constraint-dynamic="2.3" callerrev="2.44.0"/>
@@ -361,7 +361,7 @@
 			</revision>
 		</module>
 		<module organisation="cglib" name="cglib-nodep">
-			<revision name="2.1_3" status="release" pubdate="20051108231406" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://cglib.sourceforge.net/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="126">
+			<revision name="2.1_3" status="release" pubdate="20051108231406" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://cglib.sourceforge.net/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="130">
 				<metadata-artifact status="no" details="" size="2217" time="0" location="/Users/zaruba/.ivy2/cache/cglib/cglib-nodep/ivy-2.1_3.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/cglib/cglib-nodep/2.1_3/cglib-nodep-2.1_3.pom"/>
 				<caller organisation="org.seleniumhq.selenium" name="selenium-remote-driver" conf="compile, runtime" rev="2.1_3" rev-constraint-default="2.1_3" rev-constraint-dynamic="2.1_3" callerrev="2.44.0"/>
 				<artifacts>
@@ -372,7 +372,7 @@
 			</revision>
 		</module>
 		<module organisation="com.typesafe.play" name="play-java-ws_2.11">
-			<revision name="2.4.4" status="release" pubdate="20151118223253" resolver="sbt-chain" artresolver="sbt-chain" homepage="https://playframework.com" downloaded="false" searched="false" default="false" conf="default, compile, runtime, default(compile), master" position="112">
+			<revision name="2.4.4" status="release" pubdate="20151118223253" resolver="sbt-chain" artresolver="sbt-chain" homepage="https://playframework.com" downloaded="false" searched="false" default="false" conf="default, compile, runtime, default(compile), master" position="116">
 				<license name="Apache-2.0" url="http://www.apache.org/licenses/LICENSE-2.0.html"/>
 				<metadata-artifact status="no" details="" size="4173" time="0" location="/Users/zaruba/.ivy2/cache/com.typesafe.play/play-java-ws_2.11/ivy-2.4.4.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/typesafe/play/play-java-ws_2.11/2.4.4/play-java-ws_2.11-2.4.4.pom"/>
 				<caller organisation="tyrion" name="tyrion_2.11" conf="test, compile, provided, test-internal, runtime, optional" rev="2.4.4" rev-constraint-default="2.4.4" rev-constraint-dynamic="2.4.4" callerrev="1.0-SNAPSHOT"/>
@@ -383,32 +383,8 @@
 				</artifacts>
 			</revision>
 		</module>
-		<module organisation="com.typesafe.play" name="play-cache_2.11">
-			<revision name="2.4.4" status="release" pubdate="20151118223233" resolver="sbt-chain" artresolver="sbt-chain" homepage="https://playframework.com" downloaded="false" searched="false" default="false" conf="default, compile, runtime, default(compile), master" position="110">
-				<license name="Apache-2.0" url="http://www.apache.org/licenses/LICENSE-2.0.html"/>
-				<metadata-artifact status="no" details="" size="3308" time="0" location="/Users/zaruba/.ivy2/cache/com.typesafe.play/play-cache_2.11/ivy-2.4.4.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/typesafe/play/play-cache_2.11/2.4.4/play-cache_2.11-2.4.4.pom"/>
-				<caller organisation="tyrion" name="tyrion_2.11" conf="test, compile, provided, test-internal, runtime, optional" rev="2.4.4" rev-constraint-default="2.4.4" rev-constraint-dynamic="2.4.4" callerrev="1.0-SNAPSHOT"/>
-				<artifacts>
-					<artifact name="play-cache_2.11" type="jar" ext="jar" status="no" details="" size="74205" time="0" location="/Users/zaruba/.ivy2/cache/com.typesafe.play/play-cache_2.11/jars/play-cache_2.11-2.4.4.jar">
-						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/typesafe/play/play-cache_2.11/2.4.4/play-cache_2.11-2.4.4.jar"/>
-					</artifact>
-				</artifacts>
-			</revision>
-		</module>
-		<module organisation="net.sf.ehcache" name="ehcache-core">
-			<revision name="2.6.11" status="release" pubdate="20150422191931" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://ehcache.org" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="111">
-				<license name="The Apache Software License, Version 2.0" url="src/assemble/EHCACHE-CORE-LICENSE.txt"/>
-				<metadata-artifact status="no" details="" size="8415" time="0" location="/Users/zaruba/.ivy2/cache/net.sf.ehcache/ehcache-core/ivy-2.6.11.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/net/sf/ehcache/ehcache-core/2.6.11/ehcache-core-2.6.11.pom"/>
-				<caller organisation="com.typesafe.play" name="play-cache_2.11" conf="default, compile, runtime, master" rev="2.6.11" rev-constraint-default="2.6.11" rev-constraint-dynamic="2.6.11" callerrev="2.4.4"/>
-				<artifacts>
-					<artifact name="ehcache-core" type="jar" ext="jar" status="no" details="" size="1347501" time="0" location="/Users/zaruba/.ivy2/cache/net.sf.ehcache/ehcache-core/jars/ehcache-core-2.6.11.jar">
-						<origin-location is-local="false" location="https://repo1.maven.org/maven2/net/sf/ehcache/ehcache-core/2.6.11/ehcache-core-2.6.11.jar"/>
-					</artifact>
-				</artifacts>
-			</revision>
-		</module>
 		<module organisation="com.typesafe.play" name="filters-helpers_2.11">
-			<revision name="2.4.4" status="release" pubdate="20151118223244" resolver="sbt-chain" artresolver="sbt-chain" homepage="https://playframework.com" downloaded="false" searched="false" default="false" conf="default, compile, runtime, default(compile), master" position="109">
+			<revision name="2.4.4" status="release" pubdate="20151118223244" resolver="sbt-chain" artresolver="sbt-chain" homepage="https://playframework.com" downloaded="false" searched="false" default="false" conf="default, compile, runtime, default(compile), master" position="115">
 				<license name="Apache-2.0" url="http://www.apache.org/licenses/LICENSE-2.0.html"/>
 				<metadata-artifact status="no" details="" size="3068" time="0" location="/Users/zaruba/.ivy2/cache/com.typesafe.play/filters-helpers_2.11/ivy-2.4.4.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/typesafe/play/filters-helpers_2.11/2.4.4/filters-helpers_2.11-2.4.4.pom"/>
 				<caller organisation="tyrion" name="tyrion_2.11" conf="test, compile, provided, test-internal, runtime, optional" rev="2.4.4" rev-constraint-default="2.4.4" rev-constraint-dynamic="2.4.4" callerrev="1.0-SNAPSHOT"/>
@@ -420,7 +396,7 @@
 			</revision>
 		</module>
 		<module organisation="com.typesafe.play" name="play-ws_2.11">
-			<revision name="2.4.4" status="release" pubdate="20151118223235" resolver="sbt-chain" artresolver="sbt-chain" homepage="https://playframework.com" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="113">
+			<revision name="2.4.4" status="release" pubdate="20151118223235" resolver="sbt-chain" artresolver="sbt-chain" homepage="https://playframework.com" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="117">
 				<license name="Apache-2.0" url="http://www.apache.org/licenses/LICENSE-2.0.html"/>
 				<metadata-artifact status="no" details="" size="3989" time="0" location="/Users/zaruba/.ivy2/cache/com.typesafe.play/play-ws_2.11/ivy-2.4.4.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/typesafe/play/play-ws_2.11/2.4.4/play-ws_2.11-2.4.4.pom"/>
 				<caller organisation="com.typesafe.play" name="play-java-ws_2.11" conf="default, compile, runtime, master" rev="2.4.4" rev-constraint-default="2.4.4" rev-constraint-dynamic="2.4.4" callerrev="2.4.4"/>
@@ -432,7 +408,7 @@
 			</revision>
 		</module>
 		<module organisation="oauth.signpost" name="signpost-commonshttp4">
-			<revision name="1.2.1.2" status="release" pubdate="20120226031621" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="116">
+			<revision name="1.2.1.2" status="release" pubdate="20120226031621" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="120">
 				<metadata-artifact status="no" details="" size="3787" time="0" location="/Users/zaruba/.ivy2/cache/oauth.signpost/signpost-commonshttp4/ivy-1.2.1.2.xml" searched="false" origin-is-local="false" origin-location="file:/Users/zaruba/Downloads/activator-1.2.10/repository/oauth.signpost/signpost-commonshttp4/1.2.1.2/ivys/ivy.xml"/>
 				<caller organisation="com.typesafe.play" name="play-java-ws_2.11" conf="default, compile, runtime, master" rev="1.2.1.2" rev-constraint-default="1.2.1.2" rev-constraint-dynamic="1.2.1.2" callerrev="2.4.4"/>
 				<caller organisation="com.typesafe.play" name="play-ws_2.11" conf="compile, runtime" rev="1.2.1.2" rev-constraint-default="1.2.1.2" rev-constraint-dynamic="1.2.1.2" callerrev="2.4.4"/>
@@ -444,7 +420,7 @@
 			</revision>
 		</module>
 		<module organisation="oauth.signpost" name="signpost-core">
-			<revision name="1.2.1.2" status="release" pubdate="20120226031606" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="master(*), compile, runtime(*), master(compile), runtime, compile(*), master" position="115">
+			<revision name="1.2.1.2" status="release" pubdate="20120226031606" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="master(*), compile, runtime(*), master(compile), runtime, compile(*), master" position="119">
 				<metadata-artifact status="no" details="" size="3129" time="0" location="/Users/zaruba/.ivy2/cache/oauth.signpost/signpost-core/ivy-1.2.1.2.xml" searched="false" origin-is-local="false" origin-location="file:/Users/zaruba/Downloads/activator-1.2.10/repository/oauth.signpost/signpost-core/1.2.1.2/ivys/ivy.xml"/>
 				<caller organisation="com.typesafe.play" name="play-java-ws_2.11" conf="default, compile, runtime, master" rev="1.2.1.2" rev-constraint-default="1.2.1.2" rev-constraint-dynamic="1.2.1.2" callerrev="2.4.4"/>
 				<caller organisation="oauth.signpost" name="signpost-commonshttp4" conf="compile, runtime" rev="1.2.1.2" rev-constraint-default="1.2.1.2" rev-constraint-dynamic="1.2.1.2" callerrev="1.2.1.2"/>
@@ -457,7 +433,7 @@
 			</revision>
 		</module>
 		<module organisation="com.ning" name="async-http-client">
-			<revision name="1.9.21" status="release" pubdate="20150506144545" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://github.com/AsyncHttpClient/async-http-client" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="114">
+			<revision name="1.9.21" status="release" pubdate="20150506144545" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://github.com/AsyncHttpClient/async-http-client" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="118">
 				<license name="Apache License 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.html"/>
 				<metadata-artifact status="no" details="" size="6755" time="0" location="/Users/zaruba/.ivy2/cache/com.ning/async-http-client/ivy-1.9.21.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/ning/async-http-client/1.9.21/async-http-client-1.9.21.pom"/>
 				<caller organisation="com.typesafe.play" name="play-java-ws_2.11" conf="default, compile, runtime, master" rev="1.9.21" rev-constraint-default="1.9.21" rev-constraint-dynamic="1.9.21" callerrev="2.4.4"/>
@@ -465,6 +441,84 @@
 				<artifacts>
 					<artifact name="async-http-client" type="jar" ext="jar" status="no" details="" size="552950" time="0" location="/Users/zaruba/.ivy2/cache/com.ning/async-http-client/jars/async-http-client-1.9.21.jar">
 						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/ning/async-http-client/1.9.21/async-http-client-1.9.21.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.github.scribejava" name="scribejava-apis">
+			<revision name="2.1.0" status="release" pubdate="20151230155424" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="default, compile, runtime, default(compile), master" position="113">
+				<metadata-artifact status="no" details="" size="3838" time="0" location="/Users/zaruba/.ivy2/cache/com.github.scribejava/scribejava-apis/ivy-2.1.0.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/github/scribejava/scribejava-apis/2.1.0/scribejava-apis-2.1.0.pom"/>
+				<caller organisation="tyrion" name="tyrion_2.11" conf="test, compile, provided, test-internal, runtime, optional" rev="2.1.0" rev-constraint-default="2.1.0" rev-constraint-dynamic="2.1.0" callerrev="1.0-SNAPSHOT"/>
+				<artifacts>
+					<artifact name="scribejava-apis" type="jar" ext="jar" status="no" details="" size="63771" time="0" location="/Users/zaruba/.ivy2/cache/com.github.scribejava/scribejava-apis/jars/scribejava-apis-2.1.0.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/github/scribejava/scribejava-apis/2.1.0/scribejava-apis-2.1.0.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.github.scribejava" name="scribejava-core">
+			<revision name="2.1.0" status="release" pubdate="20151230155359" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="114">
+				<metadata-artifact status="no" details="" size="3683" time="0" location="/Users/zaruba/.ivy2/cache/com.github.scribejava/scribejava-core/ivy-2.1.0.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/github/scribejava/scribejava-core/2.1.0/scribejava-core-2.1.0.pom"/>
+				<caller organisation="com.github.scribejava" name="scribejava-apis" conf="default, compile, runtime, master" rev="2.1.0" rev-constraint-default="2.1.0" rev-constraint-dynamic="2.1.0" callerrev="2.1.0"/>
+				<artifacts>
+					<artifact name="scribejava-core" type="jar" ext="jar" status="no" details="" size="69530" time="0" location="/Users/zaruba/.ivy2/cache/com.github.scribejava/scribejava-core/jars/scribejava-core-2.1.0.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/github/scribejava/scribejava-core/2.1.0/scribejava-core-2.1.0.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.typesafe.play" name="play-cache_2.11">
+			<revision name="2.4.4" status="release" pubdate="20151118223233" resolver="sbt-chain" artresolver="sbt-chain" homepage="https://playframework.com" downloaded="false" searched="false" default="false" conf="default, compile, runtime, default(compile), master, runtime(*), master(compile), compile(*)" position="110">
+				<license name="Apache-2.0" url="http://www.apache.org/licenses/LICENSE-2.0.html"/>
+				<metadata-artifact status="no" details="" size="3308" time="0" location="/Users/zaruba/.ivy2/cache/com.typesafe.play/play-cache_2.11/ivy-2.4.4.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/typesafe/play/play-cache_2.11/2.4.4/play-cache_2.11-2.4.4.pom"/>
+				<caller organisation="tyrion" name="tyrion_2.11" conf="test, compile, provided, test-internal, runtime, optional" rev="2.4.4" rev-constraint-default="2.4.4" rev-constraint-dynamic="2.4.4" callerrev="1.0-SNAPSHOT"/>
+				<caller organisation="be.objectify" name="deadbolt-java_2.11" conf="default, compile, runtime, master" rev="2.4.0" rev-constraint-default="2.4.0" rev-constraint-dynamic="2.4.0" callerrev="2.4.3"/>
+				<artifacts>
+					<artifact name="play-cache_2.11" type="jar" ext="jar" status="no" details="" size="74205" time="0" location="/Users/zaruba/.ivy2/cache/com.typesafe.play/play-cache_2.11/jars/play-cache_2.11-2.4.4.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/typesafe/play/play-cache_2.11/2.4.4/play-cache_2.11-2.4.4.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+			<revision name="2.4.0" evicted="latest-revision" evicted-reason="" downloaded="false" searched="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master, default(compile)" position="-1">
+				<evicted-by rev="2.4.4"/>
+				<caller organisation="tyrion" name="tyrion_2.11" conf="test, compile, provided, test-internal, runtime, optional" rev="2.4.4" rev-constraint-default="2.4.4" rev-constraint-dynamic="2.4.4" callerrev="1.0-SNAPSHOT"/>
+				<caller organisation="be.objectify" name="deadbolt-java_2.11" conf="default, compile, runtime, master" rev="2.4.0" rev-constraint-default="2.4.0" rev-constraint-dynamic="2.4.0" callerrev="2.4.3"/>
+				<artifacts>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="net.sf.ehcache" name="ehcache-core">
+			<revision name="2.6.11" status="release" pubdate="20150422191931" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://ehcache.org" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="111">
+				<license name="The Apache Software License, Version 2.0" url="src/assemble/EHCACHE-CORE-LICENSE.txt"/>
+				<metadata-artifact status="no" details="" size="8415" time="0" location="/Users/zaruba/.ivy2/cache/net.sf.ehcache/ehcache-core/ivy-2.6.11.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/net/sf/ehcache/ehcache-core/2.6.11/ehcache-core-2.6.11.pom"/>
+				<caller organisation="com.typesafe.play" name="play-cache_2.11" conf="compile, runtime" rev="2.6.11" rev-constraint-default="2.6.11" rev-constraint-dynamic="2.6.11" callerrev="2.4.4"/>
+				<artifacts>
+					<artifact name="ehcache-core" type="jar" ext="jar" status="no" details="" size="1347501" time="0" location="/Users/zaruba/.ivy2/cache/net.sf.ehcache/ehcache-core/jars/ehcache-core-2.6.11.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/net/sf/ehcache/ehcache-core/2.6.11/ehcache-core-2.6.11.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="be.objectify" name="deadbolt-java_2.11">
+			<revision name="2.4.3" status="release" pubdate="20150917111621" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://deadbolt.ws" downloaded="false" searched="false" default="false" conf="default, compile, runtime, default(compile), master" position="109">
+				<license name="Apache 2" url="http://opensource.org/licenses/Apache-2.0"/>
+				<metadata-artifact status="no" details="" size="3673" time="0" location="/Users/zaruba/.ivy2/cache/be.objectify/deadbolt-java_2.11/ivy-2.4.3.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/be/objectify/deadbolt-java_2.11/2.4.3/deadbolt-java_2.11-2.4.3.pom"/>
+				<caller organisation="tyrion" name="tyrion_2.11" conf="test, compile, provided, test-internal, runtime, optional" rev="2.4.3" rev-constraint-default="2.4.3" rev-constraint-dynamic="2.4.3" callerrev="1.0-SNAPSHOT"/>
+				<artifacts>
+					<artifact name="deadbolt-java_2.11" type="jar" ext="jar" status="no" details="" size="177938" time="0" location="/Users/zaruba/.ivy2/cache/be.objectify/deadbolt-java_2.11/jars/deadbolt-java_2.11-2.4.3.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/be/objectify/deadbolt-java_2.11/2.4.3/deadbolt-java_2.11-2.4.3.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="be.objectify" name="deadbolt-core_2.11">
+			<revision name="2.4.2" status="release" pubdate="20150817140111" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://deadbolt.ws" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="112">
+				<license name="Apache 2" url="http://opensource.org/licenses/Apache-2.0"/>
+				<metadata-artifact status="no" details="" size="3373" time="0" location="/Users/zaruba/.ivy2/cache/be.objectify/deadbolt-core_2.11/ivy-2.4.2.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/be/objectify/deadbolt-core_2.11/2.4.2/deadbolt-core_2.11-2.4.2.pom"/>
+				<caller organisation="be.objectify" name="deadbolt-java_2.11" conf="default, compile, runtime, master" rev="2.4.2" rev-constraint-default="2.4.2" rev-constraint-dynamic="2.4.2" callerrev="2.4.3"/>
+				<artifacts>
+					<artifact name="deadbolt-core_2.11" type="jar" ext="jar" status="no" details="" size="6415" time="0" location="/Users/zaruba/.ivy2/cache/be.objectify/deadbolt-core_2.11/jars/deadbolt-core_2.11-2.4.2.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/be/objectify/deadbolt-core_2.11/2.4.2/deadbolt-core_2.11-2.4.2.jar"/>
 					</artifact>
 				</artifacts>
 			</revision>
@@ -596,7 +650,9 @@
 				<license name="Apache-2.0" url="http://www.apache.org/licenses/LICENSE-2.0.html"/>
 				<metadata-artifact status="no" details="" size="3358" time="0" location="/Users/zaruba/.ivy2/cache/com.typesafe.play/play-netty-server_2.11/ivy-2.4.6.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/typesafe/play/play-netty-server_2.11/2.4.6/play-netty-server_2.11-2.4.6.pom"/>
 				<caller organisation="io.swagger" name="swagger-play2_2.11" conf="default, compile, runtime, master" rev="2.4.6" rev-constraint-default="2.4.6" rev-constraint-dynamic="2.4.6" callerrev="1.5.1"/>
+				<caller organisation="be.objectify" name="deadbolt-core_2.11" conf="compile, runtime" rev="2.4.0" rev-constraint-default="2.4.0" rev-constraint-dynamic="2.4.0" callerrev="2.4.2"/>
 				<caller organisation="tyrion" name="tyrion_2.11" conf="test, compile, provided, test-internal, runtime, optional" rev="2.4.4" rev-constraint-default="2.4.4" rev-constraint-dynamic="2.4.4" callerrev="1.0-SNAPSHOT"/>
+				<caller organisation="be.objectify" name="deadbolt-java_2.11" conf="default, compile, runtime, master" rev="2.4.0" rev-constraint-default="2.4.0" rev-constraint-dynamic="2.4.0" callerrev="2.4.3"/>
 				<caller organisation="com.typesafe.play" name="play-test_2.11" conf="default, compile, runtime, master" rev="2.4.4" rev-constraint-default="2.4.4" rev-constraint-dynamic="2.4.4" callerrev="2.4.4"/>
 				<artifacts>
 					<artifact name="play-netty-server_2.11" type="jar" ext="jar" status="no" details="" size="213430" time="0" location="/Users/zaruba/.ivy2/cache/com.typesafe.play/play-netty-server_2.11/jars/play-netty-server_2.11-2.4.6.jar">
@@ -613,6 +669,13 @@
 				<artifacts>
 				</artifacts>
 			</revision>
+			<revision name="2.4.0" evicted="latest-revision" evicted-reason="" downloaded="false" searched="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="-1">
+				<evicted-by rev="2.4.6"/>
+				<caller organisation="be.objectify" name="deadbolt-core_2.11" conf="compile, runtime" rev="2.4.0" rev-constraint-default="2.4.0" rev-constraint-dynamic="2.4.0" callerrev="2.4.2"/>
+				<caller organisation="be.objectify" name="deadbolt-java_2.11" conf="default, compile, runtime, master" rev="2.4.0" rev-constraint-default="2.4.0" rev-constraint-dynamic="2.4.0" callerrev="2.4.3"/>
+				<artifacts>
+				</artifacts>
+			</revision>
 		</module>
 		<module organisation="com.typesafe.play" name="play-server_2.11">
 			<revision name="2.4.6" status="release" pubdate="20151214082154" resolver="sbt-chain" artresolver="sbt-chain" homepage="https://playframework.com" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master, default, default(compile)" position="90">
@@ -621,7 +684,9 @@
 				<caller organisation="io.swagger" name="swagger-play2_2.11" conf="default, compile, runtime, master" rev="2.4.6" rev-constraint-default="2.4.6" rev-constraint-dynamic="2.4.6" callerrev="1.5.1"/>
 				<caller organisation="com.typesafe.play" name="play-netty-server_2.11" conf="default, compile, runtime, master" rev="2.4.4" rev-constraint-default="2.4.4" rev-constraint-dynamic="2.4.4" callerrev="2.4.4"/>
 				<caller organisation="com.typesafe.play" name="play-netty-server_2.11" conf="compile, runtime" rev="2.4.6" rev-constraint-default="2.4.6" rev-constraint-dynamic="2.4.6" callerrev="2.4.6"/>
+				<caller organisation="be.objectify" name="deadbolt-core_2.11" conf="compile, runtime" rev="2.4.0" rev-constraint-default="2.4.0" rev-constraint-dynamic="2.4.0" callerrev="2.4.2"/>
 				<caller organisation="tyrion" name="tyrion_2.11" conf="test, compile, provided, test-internal, runtime, optional" rev="2.4.4" rev-constraint-default="2.4.4" rev-constraint-dynamic="2.4.4" callerrev="1.0-SNAPSHOT"/>
+				<caller organisation="be.objectify" name="deadbolt-java_2.11" conf="default, compile, runtime, master" rev="2.4.0" rev-constraint-default="2.4.0" rev-constraint-dynamic="2.4.0" callerrev="2.4.3"/>
 				<artifacts>
 					<artifact name="play-server_2.11" type="jar" ext="jar" status="no" details="" size="261357" time="0" location="/Users/zaruba/.ivy2/cache/com.typesafe.play/play-server_2.11/jars/play-server_2.11-2.4.6.jar">
 						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/typesafe/play/play-server_2.11/2.4.6/play-server_2.11-2.4.6.jar"/>
@@ -637,6 +702,13 @@
 				<artifacts>
 				</artifacts>
 			</revision>
+			<revision name="2.4.0" evicted="latest-revision" evicted-reason="" downloaded="false" searched="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="-1">
+				<evicted-by rev="2.4.6"/>
+				<caller organisation="be.objectify" name="deadbolt-core_2.11" conf="compile, runtime" rev="2.4.0" rev-constraint-default="2.4.0" rev-constraint-dynamic="2.4.0" callerrev="2.4.2"/>
+				<caller organisation="be.objectify" name="deadbolt-java_2.11" conf="default, compile, runtime, master" rev="2.4.0" rev-constraint-default="2.4.0" rev-constraint-dynamic="2.4.0" callerrev="2.4.3"/>
+				<artifacts>
+				</artifacts>
+			</revision>
 		</module>
 		<module organisation="com.typesafe.play" name="play_2.11">
 			<revision name="2.4.6" status="release" pubdate="20151214082207" resolver="sbt-chain" artresolver="sbt-chain" homepage="https://playframework.com" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="91">
@@ -646,7 +718,7 @@
 				<caller organisation="com.typesafe.play" name="play-java-ws_2.11" conf="default, compile, runtime, master" rev="2.4.4" rev-constraint-default="2.4.4" rev-constraint-dynamic="2.4.4" callerrev="2.4.4"/>
 				<caller organisation="com.typesafe.play" name="play-java_2.11" conf="compile, runtime" rev="2.4.4" rev-constraint-default="2.4.4" rev-constraint-dynamic="2.4.4" callerrev="2.4.4"/>
 				<caller organisation="com.typesafe.play" name="play-jdbc-api_2.11" conf="compile, runtime" rev="2.4.4" rev-constraint-default="2.4.4" rev-constraint-dynamic="2.4.4" callerrev="2.4.4"/>
-				<caller organisation="com.typesafe.play" name="play-cache_2.11" conf="default, compile, runtime, master" rev="2.4.4" rev-constraint-default="2.4.4" rev-constraint-dynamic="2.4.4" callerrev="2.4.4"/>
+				<caller organisation="com.typesafe.play" name="play-cache_2.11" conf="compile, runtime" rev="2.4.4" rev-constraint-default="2.4.4" rev-constraint-dynamic="2.4.4" callerrev="2.4.4"/>
 				<caller organisation="com.typesafe.play" name="play-server_2.11" conf="compile, runtime" rev="2.4.6" rev-constraint-default="2.4.6" rev-constraint-dynamic="2.4.6" callerrev="2.4.6"/>
 				<caller organisation="com.typesafe.play" name="play-server_2.11" conf="default, compile, runtime, master" rev="2.4.4" rev-constraint-default="2.4.4" rev-constraint-dynamic="2.4.4" callerrev="2.4.4"/>
 				<caller organisation="com.typesafe.play" name="play-ws_2.11" conf="compile, runtime" rev="2.4.4" rev-constraint-default="2.4.4" rev-constraint-dynamic="2.4.4" callerrev="2.4.4"/>
@@ -664,7 +736,7 @@
 				<caller organisation="com.typesafe.play" name="play-java-ws_2.11" conf="default, compile, runtime, master" rev="2.4.4" rev-constraint-default="2.4.4" rev-constraint-dynamic="2.4.4" callerrev="2.4.4"/>
 				<caller organisation="com.typesafe.play" name="play-java_2.11" conf="compile, runtime" rev="2.4.4" rev-constraint-default="2.4.4" rev-constraint-dynamic="2.4.4" callerrev="2.4.4"/>
 				<caller organisation="com.typesafe.play" name="play-jdbc-api_2.11" conf="compile, runtime" rev="2.4.4" rev-constraint-default="2.4.4" rev-constraint-dynamic="2.4.4" callerrev="2.4.4"/>
-				<caller organisation="com.typesafe.play" name="play-cache_2.11" conf="default, compile, runtime, master" rev="2.4.4" rev-constraint-default="2.4.4" rev-constraint-dynamic="2.4.4" callerrev="2.4.4"/>
+				<caller organisation="com.typesafe.play" name="play-cache_2.11" conf="compile, runtime" rev="2.4.4" rev-constraint-default="2.4.4" rev-constraint-dynamic="2.4.4" callerrev="2.4.4"/>
 				<caller organisation="com.typesafe.play" name="play-server_2.11" conf="default, compile, runtime, master" rev="2.4.4" rev-constraint-default="2.4.4" rev-constraint-dynamic="2.4.4" callerrev="2.4.4"/>
 				<caller organisation="com.typesafe.play" name="play-ws_2.11" conf="compile, runtime" rev="2.4.4" rev-constraint-default="2.4.4" rev-constraint-dynamic="2.4.4" callerrev="2.4.4"/>
 				<artifacts>
@@ -1115,7 +1187,7 @@
 			</revision>
 		</module>
 		<module organisation="commons-logging" name="commons-logging">
-			<revision name="1.1.3" status="release" pubdate="20130516220523" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://commons.apache.org/proper/commons-logging/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="142">
+			<revision name="1.1.3" status="release" pubdate="20130516220523" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://commons.apache.org/proper/commons-logging/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="146">
 				<metadata-artifact status="no" details="" size="10109" time="0" location="/Users/zaruba/.ivy2/cache/commons-logging/commons-logging/ivy-1.1.3.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/commons-logging/commons-logging/1.1.3/commons-logging-1.1.3.pom"/>
 				<caller organisation="net.sourceforge.htmlunit" name="htmlunit" conf="compile, runtime" rev="1.1.3" rev-constraint-default="1.1.3" rev-constraint-dynamic="1.1.3" callerrev="2.15"/>
 				<caller organisation="org.apache.httpcomponents" name="httpclient" conf="compile, runtime" rev="1.1.1" rev-constraint-default="1.1.1" rev-constraint-dynamic="1.1.3" callerrev="4.3.6"/>
@@ -1327,12 +1399,21 @@
 				<license name="Apache-2.0" url="http://www.apache.org/licenses/LICENSE-2.0.html"/>
 				<metadata-artifact status="no" details="" size="6520" time="0" location="/Users/zaruba/.ivy2/cache/com.typesafe.play/play-java_2.11/ivy-2.4.4.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/typesafe/play/play-java_2.11/2.4.4/play-java_2.11-2.4.4.pom"/>
 				<caller organisation="com.typesafe.play" name="play-java-ws_2.11" conf="default, compile, runtime, master" rev="2.4.4" rev-constraint-default="2.4.4" rev-constraint-dynamic="2.4.4" callerrev="2.4.4"/>
+				<caller organisation="be.objectify" name="deadbolt-core_2.11" conf="compile, runtime" rev="2.4.0" rev-constraint-default="2.4.0" rev-constraint-dynamic="2.4.0" callerrev="2.4.2"/>
 				<caller organisation="tyrion" name="tyrion_2.11" conf="test, compile, provided, test-internal, runtime, optional" rev="2.4.4" rev-constraint-default="2.4.4" rev-constraint-dynamic="2.4.4" callerrev="1.0-SNAPSHOT"/>
 				<caller organisation="com.typesafe.play" name="play-java-jdbc_2.11" conf="compile, runtime" rev="2.4.4" rev-constraint-default="2.4.4" rev-constraint-dynamic="2.4.4" callerrev="2.4.4"/>
+				<caller organisation="be.objectify" name="deadbolt-java_2.11" conf="default, compile, runtime, master" rev="2.4.0" rev-constraint-default="2.4.0" rev-constraint-dynamic="2.4.0" callerrev="2.4.3"/>
 				<artifacts>
 					<artifact name="play-java_2.11" type="jar" ext="jar" status="no" details="" size="114431" time="0" location="/Users/zaruba/.ivy2/cache/com.typesafe.play/play-java_2.11/jars/play-java_2.11-2.4.4.jar">
 						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/typesafe/play/play-java_2.11/2.4.4/play-java_2.11-2.4.4.jar"/>
 					</artifact>
+				</artifacts>
+			</revision>
+			<revision name="2.4.0" evicted="latest-revision" evicted-reason="" downloaded="false" searched="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="-1">
+				<evicted-by rev="2.4.4"/>
+				<caller organisation="be.objectify" name="deadbolt-core_2.11" conf="compile, runtime" rev="2.4.0" rev-constraint-default="2.4.0" rev-constraint-dynamic="2.4.0" callerrev="2.4.2"/>
+				<caller organisation="be.objectify" name="deadbolt-java_2.11" conf="default, compile, runtime, master" rev="2.4.0" rev-constraint-default="2.4.0" rev-constraint-dynamic="2.4.0" callerrev="2.4.3"/>
+				<artifacts>
 				</artifacts>
 			</revision>
 		</module>
@@ -1637,7 +1718,7 @@
 		</module>
 		<module organisation="com.google.inject.extensions" name="guice-assistedinject">
 			<revision name="4.0" status="release" pubdate="20150428223500" resolver="public" artresolver="public" homepage="" downloaded="true" searched="true" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="35">
-				<metadata-artifact status="successful" details="" size="549" time="242" location="/Users/zaruba/.ivy2/cache/com.google.inject.extensions/guice-assistedinject/ivy-4.0.xml" searched="true" original-local-location="/Users/zaruba/.ivy2/cache/com.google.inject.extensions/guice-assistedinject/ivy-4.0.xml.original" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/google/inject/extensions/guice-assistedinject/4.0/guice-assistedinject-4.0.pom"/>
+				<metadata-artifact status="successful" details="" size="549" time="228" location="/Users/zaruba/.ivy2/cache/com.google.inject.extensions/guice-assistedinject/ivy-4.0.xml" searched="true" original-local-location="/Users/zaruba/.ivy2/cache/com.google.inject.extensions/guice-assistedinject/ivy-4.0.xml.original" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/google/inject/extensions/guice-assistedinject/4.0/guice-assistedinject-4.0.pom"/>
 				<caller organisation="com.typesafe.play" name="play_2.11" conf="compile, runtime" rev="4.0" rev-constraint-default="4.0" rev-constraint-dynamic="4.0" callerrev="2.4.6"/>
 				<caller organisation="com.typesafe.play" name="play_2.11" conf="compile, runtime" rev="4.0" rev-constraint-default="4.0" rev-constraint-dynamic="4.0" callerrev="2.4.4"/>
 				<artifacts>
@@ -2110,7 +2191,7 @@
 			</revision>
 		</module>
 		<module organisation="com.novocode" name="junit-interface">
-			<revision name="0.11" status="release" pubdate="20140814102745" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://github.com/sbt/junit-interface/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="119">
+			<revision name="0.11" status="release" pubdate="20140814102745" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://github.com/sbt/junit-interface/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="123">
 				<license name="Two-clause BSD-style license" url="http://github.com/sbt/junit-interface/blob/master/LICENSE.txt"/>
 				<metadata-artifact status="no" details="" size="2739" time="0" location="/Users/zaruba/.ivy2/cache/com.novocode/junit-interface/ivy-0.11.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/novocode/junit-interface/0.11/junit-interface-0.11.pom"/>
 				<caller organisation="com.typesafe.play" name="play-test_2.11" conf="default, compile, runtime, master" rev="0.11" rev-constraint-default="0.11" rev-constraint-dynamic="0.11" callerrev="2.4.4"/>
@@ -2122,7 +2203,7 @@
 			</revision>
 		</module>
 		<module organisation="org.scala-sbt" name="test-interface">
-			<revision name="1.0" status="release" pubdate="20130629004435" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://www.scala-sbt.org" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="121">
+			<revision name="1.0" status="release" pubdate="20130629004435" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://www.scala-sbt.org" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="125">
 				<license name="BSD" url="https://github.com/sbt/test-interface/blob/master/LICENSE"/>
 				<metadata-artifact status="no" details="" size="2589" time="0" location="/Users/zaruba/.ivy2/cache/org.scala-sbt/test-interface/ivy-1.0.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/scala-sbt/test-interface/1.0/test-interface-1.0.pom"/>
 				<caller organisation="com.novocode" name="junit-interface" conf="compile, runtime" rev="1.0" rev-constraint-default="1.0" rev-constraint-dynamic="1.0" callerrev="0.11"/>
@@ -2258,8 +2339,10 @@
 				<caller organisation="io.swagger" name="swagger-play2_2.11" conf="default, compile, runtime, master" rev="1.1.1" rev-constraint-default="1.1.1" rev-constraint-dynamic="1.1.1" callerrev="1.5.1"/>
 				<caller organisation="com.typesafe.play" name="play_2.11" conf="compile, runtime" rev="1.1.1" rev-constraint-default="1.1.1" rev-constraint-dynamic="1.1.1" callerrev="2.4.6"/>
 				<caller organisation="com.typesafe.play" name="play_2.11" conf="compile, runtime" rev="1.1.1" rev-constraint-default="1.1.1" rev-constraint-dynamic="1.1.1" callerrev="2.4.4"/>
+				<caller organisation="be.objectify" name="deadbolt-core_2.11" conf="compile, runtime" rev="1.1.1" rev-constraint-default="1.1.1" rev-constraint-dynamic="1.1.1" callerrev="2.4.2"/>
 				<caller organisation="tyrion" name="tyrion_2.11" conf="test, compile, provided, test-internal, runtime, optional" rev="1.1.1" rev-constraint-default="1.1.1" rev-constraint-dynamic="1.1.1" callerrev="1.0-SNAPSHOT"/>
 				<caller organisation="com.typesafe.play" name="routes-compiler_2.11" conf="compile, runtime" rev="1.1.1" rev-constraint-default="1.1.1" rev-constraint-dynamic="1.1.1" callerrev="2.4.6"/>
+				<caller organisation="be.objectify" name="deadbolt-java_2.11" conf="default, compile, runtime, master" rev="1.1.1" rev-constraint-default="1.1.1" rev-constraint-dynamic="1.1.1" callerrev="2.4.3"/>
 				<artifacts>
 					<artifact name="twirl-api_2.11" type="jar" ext="jar" status="no" details="" size="60413" time="0" location="/Users/zaruba/.ivy2/cache/com.typesafe.play/twirl-api_2.11/jars/twirl-api_2.11-1.1.1.jar">
 						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/typesafe/play/twirl-api_2.11/1.1.1/twirl-api_2.11-1.1.1.jar"/>
@@ -2346,7 +2429,7 @@
 				<artifacts>
 				</artifacts>
 			</revision>
-			<revision name="4.11" status="release" pubdate="20121114202147" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://junit.org" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="120">
+			<revision name="4.11" status="release" pubdate="20121114202147" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://junit.org" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="124">
 				<license name="Common Public License Version 1.0" url="http://www.opensource.org/licenses/cpl1.0.txt"/>
 				<metadata-artifact status="no" details="" size="2771" time="0" location="/Users/zaruba/.ivy2/cache/junit/junit/ivy-4.11.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/junit/junit/4.11/junit-4.11.pom"/>
 				<caller organisation="com.novocode" name="junit-interface" conf="compile, runtime" rev="4.11" rev-constraint-default="4.11" rev-constraint-dynamic="4.11" callerrev="0.11"/>
@@ -2383,7 +2466,7 @@
 			</revision>
 		</module>
 		<module organisation="org.hamcrest" name="hamcrest-core">
-			<revision name="1.3" status="release" pubdate="20120709230802" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="118">
+			<revision name="1.3" status="release" pubdate="20120709230802" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="122">
 				<metadata-artifact status="no" details="" size="2397" time="0" location="/Users/zaruba/.ivy2/cache/org.hamcrest/hamcrest-core/ivy-1.3.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.pom"/>
 				<caller organisation="junit" name="junit" conf="compile" rev="1.3" rev-constraint-default="1.3" rev-constraint-dynamic="1.3" callerrev="4.12"/>
 				<caller organisation="junit" name="junit" conf="compile, runtime" rev="1.3" rev-constraint-default="1.3" rev-constraint-dynamic="1.3" callerrev="4.11"/>
@@ -2429,9 +2512,10 @@
 				<caller organisation="com.typesafe.play" name="play-iteratees_2.11" conf="compile, runtime" rev="2.11.6" rev-constraint-default="2.11.6" rev-constraint-dynamic="2.11.6" callerrev="2.4.6"/>
 				<caller organisation="com.typesafe.play" name="twirl-api_2.11" conf="default, compile, runtime, master" rev="2.11.6" rev-constraint-default="2.11.6" rev-constraint-dynamic="2.11.6" callerrev="1.1.1"/>
 				<caller organisation="com.typesafe.play" name="play-datacommons_2.11" conf="compile, runtime" rev="2.11.6" rev-constraint-default="2.11.6" rev-constraint-dynamic="2.11.6" callerrev="2.4.6"/>
+				<caller organisation="be.objectify" name="deadbolt-core_2.11" conf="compile, runtime" rev="2.11.6" rev-constraint-default="2.11.6" rev-constraint-dynamic="2.11.6" callerrev="2.4.2"/>
 				<caller organisation="com.typesafe.play" name="play-jdbc-api_2.11" conf="compile, runtime" rev="2.11.6" rev-constraint-default="2.11.6" rev-constraint-dynamic="2.11.6" callerrev="2.4.4"/>
 				<caller organisation="com.typesafe.play" name="play-java-jdbc_2.11" conf="compile, runtime" rev="2.11.6" rev-constraint-default="2.11.6" rev-constraint-dynamic="2.11.6" callerrev="2.4.4"/>
-				<caller organisation="com.typesafe.play" name="play-cache_2.11" conf="default, compile, runtime, master" rev="2.11.6" rev-constraint-default="2.11.6" rev-constraint-dynamic="2.11.6" callerrev="2.4.4"/>
+				<caller organisation="com.typesafe.play" name="play-cache_2.11" conf="compile, runtime" rev="2.11.6" rev-constraint-default="2.11.6" rev-constraint-dynamic="2.11.6" callerrev="2.4.4"/>
 				<caller organisation="com.typesafe.play" name="play-functional_2.11" conf="compile, runtime" rev="2.11.6" rev-constraint-default="2.11.6" rev-constraint-dynamic="2.11.6" callerrev="2.4.4"/>
 				<caller organisation="org.scala-stm" name="scala-stm_2.11" conf="compile, runtime" rev="2.11.0" rev-constraint-default="2.11.0" rev-constraint-dynamic="2.11.0" callerrev="0.7"/>
 				<caller organisation="com.typesafe.play" name="play-iteratees_2.11" conf="compile, runtime" rev="2.11.6" rev-constraint-default="2.11.6" rev-constraint-dynamic="2.11.6" callerrev="2.4.4"/>
@@ -2453,6 +2537,7 @@
 				<caller organisation="com.typesafe.play" name="play-json_2.11" conf="compile, runtime" rev="2.11.6" rev-constraint-default="2.11.6" rev-constraint-dynamic="2.11.6" callerrev="2.4.6"/>
 				<caller organisation="com.typesafe.play" name="play-server_2.11" conf="compile, runtime" rev="2.11.6" rev-constraint-default="2.11.6" rev-constraint-dynamic="2.11.6" callerrev="2.4.6"/>
 				<caller organisation="org.scala-lang" name="scala-reflect" conf="compile, runtime" rev="2.11.6" rev-constraint-default="2.11.6" rev-constraint-dynamic="2.11.6" callerrev="2.11.6"/>
+				<caller organisation="be.objectify" name="deadbolt-java_2.11" conf="default, compile, runtime, master" rev="2.11.6" rev-constraint-default="2.11.6" rev-constraint-dynamic="2.11.6" callerrev="2.4.3"/>
 				<caller organisation="com.typesafe.akka" name="akka-slf4j_2.11" conf="compile, runtime" rev="2.11.5" rev-constraint-default="2.11.5" rev-constraint-dynamic="2.11.5" callerrev="2.3.13"/>
 				<caller organisation="com.typesafe.play" name="play-jdbc-evolutions_2.11" conf="compile, runtime" rev="2.11.6" rev-constraint-default="2.11.6" rev-constraint-dynamic="2.11.6" callerrev="2.4.0"/>
 				<caller organisation="com.typesafe.akka" name="akka-actor_2.11" conf="compile, runtime" rev="2.11.5" rev-constraint-default="2.11.5" rev-constraint-dynamic="2.11.5" callerrev="2.3.13"/>

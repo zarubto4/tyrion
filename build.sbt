@@ -17,7 +17,8 @@ libraryDependencies ++= Seq(
   "com.microsoft.azure" % "azure-svc-mgmt" % "0.9.1",
   "io.swagger" %% "swagger-play2" % "1.5.1" exclude("org.reflections", "reflections"),
   "io.swagger" % "swagger-core" % "1.5.6",
-
+  "be.objectify"  %% "deadbolt-java"     % "2.4.3",
+  "com.github.scribejava" % "scribejava-apis" % "2.1.0",
   javaJdbc,
   filters,
   cache,
@@ -33,3 +34,16 @@ scalacOptions ++= Seq(
 // Enable routes file splitting
 "-language:reflectiveCalls"
 )
+
+
+// add resolver for deadbolt and easymail snapshots
+resolvers += Resolver.sonatypeRepo("snapshots")
+
+// display deprecated or poorly formed Java
+javacOptions ++= Seq("-Xlint:unchecked")
+javacOptions ++= Seq("-Xlint:deprecation")
+javacOptions ++= Seq("-Xdiags:verbose")
+
+//  Uncomment the next line for local development of the Play Authenticate core:
+//lazy val playAuthenticate = project.in(file("modules/play-authenticate")).enablePlugins(PlayJava)
+

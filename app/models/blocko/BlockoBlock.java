@@ -3,7 +3,7 @@ package models.blocko;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import models.Person;
+import models.login.Person;
 
 import javax.persistence.*;
 import java.util.ArrayList;

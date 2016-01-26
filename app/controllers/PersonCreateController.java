@@ -1,7 +1,7 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import models.Person;
+import models.login.Person;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -26,9 +26,9 @@ public class PersonCreateController extends Controller {
             person.password = json.get("password").asText();
 
 
-            if (Person.find.byId(json.get("mail").asText()) != null) throw new Exception("User with this email exist yet!");
+            if (Person.find.byId(json.get("mail").asText()) != null) throw new Exception("UserDB with this email exist yet!");
 
-            person.setSha();
+            person.setSha(json.get("password").asText());
             person.save();
 
             return GlobalResult.okResult();
@@ -40,7 +40,7 @@ public class PersonCreateController extends Controller {
         try{
 
             Person p =Person.find.byId(mail);
-            if(p == null ) throw new Exception("User not exist");
+            if(p == null ) throw new Exception("UserDB not exist");
 
 
             return GlobalResult.okResult(Json.toJson(p));
@@ -53,7 +53,7 @@ public class PersonCreateController extends Controller {
         try{
 
             Person p = Person.find.byId(mail);
-            if(p == null ) throw new Exception("User not exist");
+            if(p == null ) throw new Exception("UserDB not exist");
 
             p.delete();
 
@@ -71,7 +71,7 @@ public class PersonCreateController extends Controller {
             if (json == null) throw new Exception("Null Json");
 
             Person person = Person.find.byId(json.get("email").asText());
-            if (person == null) throw new Exception("User for update doesn't exist in database");
+            if (person == null) throw new Exception("UserDB for update doesn't exist in database");
 
             person.firstName    = json.get("firstName")     .asText();
             person.middleName   = json.get("middleName")    .asText();

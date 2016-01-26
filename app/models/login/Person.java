@@ -1,8 +1,7 @@
-package models;
+package models.login;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import controllers.SecurityController;
 import models.blocko.BlockoBlock;
 import models.blocko.Project;
 import models.overflow.LinkedPost;
@@ -32,15 +31,22 @@ public class Person extends Model{
 
                                                             public Date   dateOfBirth;
                                                             private String authToken;
+
+                                                            public boolean emailValidated;
+
+
+
     @Column(length = 64, nullable = false)                  private byte[] shaPassword;
 
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<Project>              owningProjects            = new ArrayList<>();
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<Post>                 postLiker                 = new ArrayList<>();    // Propojení, které byly uživatelem hodnoceny (jak negativně, tak pozitivně)
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<GroupWithPermissions> groupWithPermissions      = new ArrayList<>();
 
+
     @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<BlockoBlock>  blocksAuthor    = new ArrayList<>(); // Propojení, které bločky uživatel vytvořil
     @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<Post>         personPosts     = new ArrayList<>(); // Propojení, které uživatel napsal
     @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<LinkedPost>   linkedPosts     = new ArrayList<>(); // Propojení, které uživatel nalinkoval
+    @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL)     public List<LinkedAccount> linkedAccounts;
 
     @JsonIgnore  @ManyToMany(mappedBy = "ownersOfPermission", cascade = CascadeType.ALL)  @JoinTable(name = "permissionsPerson")  public List<PermissionKey> owningPermissions = new ArrayList<>();
 
@@ -49,22 +55,7 @@ public class Person extends Model{
 
 //#### DB FINDER ########################################################################################################
     public static Finder<String,Person> find = new Finder<>(Person.class);
-
     public static Person findByEmailAddressAndPassword(String emailAddress, String password) { return find.where().eq("mail", emailAddress.toLowerCase()).eq("shaPassword", getSha512(password)).findUnique();}
-
-//#### PERMISSIONS #####################################################################################################
-
-    public static boolean containsPermission(String id, String key){
-        return (Person.find.where() .eq("personID", id)
-                .in("permission", PermissionKey.find.where().eq("key", key).findUnique())
-                .findList().size() > 0);
-    }
-    public static boolean containsPermission(String key){
-        return (Person.find.where() .eq("mail", SecurityController.getPerson().mail)
-                .in("permission", PermissionKey.find.where().eq("key", key).findUnique())
-                .findList().size() > 0);
-
-    }
 
 //#### SECURITY LOGIN ##################################################################################################
     public static Person findByAuthToken(String authToken) {
@@ -73,7 +64,6 @@ public class Person extends Model{
         catch (Exception e) { return null; }
     }
 
-
     public static byte[] getSha512(String value) {
         try {
             return MessageDigest.getInstance("SHA-512").digest(value.getBytes("UTF-8"));
@@ -81,8 +71,8 @@ public class Person extends Model{
         catch (Exception e) {throw new RuntimeException(e); }
     }
 
-    public void setSha() {
-        this.shaPassword = getSha512(password);
+    public void setSha(String value) {
+        this.shaPassword = getSha512(value);
     }
 
     public String createToken() {
@@ -93,7 +83,7 @@ public class Person extends Model{
         return authToken;
     }
 
-    // If user/system make log out
+    // If userDB/system make log out
     public void deleteAuthToken() {
         authToken = null;
         save();

@@ -1,7 +1,7 @@
 
 // @GENERATOR:play-routes-compiler
 // @SOURCE:/Users/zaruba/ownCloud/Git/Tyrion/conf/routes
-// @DATE:Fri Jan 22 11:11:57 CET 2016
+// @DATE:Mon Jan 25 23:42:15 CET 2016
 
 package controllers;
 
@@ -13,7 +13,6 @@ public class routes {
   public static final controllers.ReverseCompilationLibrariesController CompilationLibrariesController = new controllers.ReverseCompilationLibrariesController(RoutesPrefix.byNamePrefix());
   public static final controllers.ReverseSecurityController SecurityController = new controllers.ReverseSecurityController(RoutesPrefix.byNamePrefix());
   public static final controllers.ReversePermissionController PermissionController = new controllers.ReversePermissionController(RoutesPrefix.byNamePrefix());
-  public static final controllers.ReverseApplication Application = new controllers.ReverseApplication(RoutesPrefix.byNamePrefix());
   public static final controllers.ReversePersonCreateController PersonCreateController = new controllers.ReversePersonCreateController(RoutesPrefix.byNamePrefix());
   public static final controllers.ReverseProgramingPackageController ProgramingPackageController = new controllers.ReverseProgramingPackageController(RoutesPrefix.byNamePrefix());
 
@@ -23,7 +22,6 @@ public class routes {
     public static final controllers.javascript.ReverseCompilationLibrariesController CompilationLibrariesController = new controllers.javascript.ReverseCompilationLibrariesController(RoutesPrefix.byNamePrefix());
     public static final controllers.javascript.ReverseSecurityController SecurityController = new controllers.javascript.ReverseSecurityController(RoutesPrefix.byNamePrefix());
     public static final controllers.javascript.ReversePermissionController PermissionController = new controllers.javascript.ReversePermissionController(RoutesPrefix.byNamePrefix());
-    public static final controllers.javascript.ReverseApplication Application = new controllers.javascript.ReverseApplication(RoutesPrefix.byNamePrefix());
     public static final controllers.javascript.ReversePersonCreateController PersonCreateController = new controllers.javascript.ReversePersonCreateController(RoutesPrefix.byNamePrefix());
     public static final controllers.javascript.ReverseProgramingPackageController ProgramingPackageController = new controllers.javascript.ReverseProgramingPackageController(RoutesPrefix.byNamePrefix());
   }

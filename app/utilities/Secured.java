@@ -2,7 +2,7 @@ package utilities;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.SecurityController;
-import models.Person;
+import models.login.Person;
 import play.libs.Json;
 import play.mvc.Http.Context;
 import play.mvc.Result;
@@ -37,8 +37,5 @@ public class Secured extends Security.Authenticator {
 
         return unauthorized(result);
     }
-
-
-
 
 }

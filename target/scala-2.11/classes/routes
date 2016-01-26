@@ -3,18 +3,23 @@
 # ~~~~
 
 # Home page - for testing connected device
-GET            /                                           @controllers.Application.index
+# Home page
+GET     /                                    controllers.SecurityController.index()
+
 
 #  WEB SOCET  //////////////////////////////////////////////////////////////////////////////
-GET            /websocket/:id                              @webSocket.controllers.OutsideCommunicationPackageController.connection(id: String)
+GET             /websocket/:id               @webSocket.controllers.OutsideCommunicationPackageController.connection(id: String)
 
 #API - CoreClient ##############################################################################################################################################################
 
 #Login page
-# TODO -> Přihlášení pomocí všech verzí a parametrů
-POST           /coreClient/person/permission/login         @controllers.SecurityController.login()
-POST           /coreClient/person/permission/logout        @controllers.SecurityController.logout
-
+POST            /coreClient/person/permission/login         @controllers.SecurityController.login()
+POST            /coreClient/person/permission/logout        @controllers.SecurityController.logout
+GET             /login/facebook                             @controllers.SecurityController.Facebook()
+GET             /login/twitter                              @controllers.SecurityController.Twitter()
+GET             /login/github                               @controllers.SecurityController.GitHub()
+GET             /login/vkontakte                            @controllers.SecurityController.Vkontakte()
+GET             /oauth_callback/                            @controllers.SecurityController.GEToauth_callback(code, state)
 
 
 ### PERSON ############ PERSON ############### PERSON ################ PERSON ################# PERSON ############ PERSON #####################################################
