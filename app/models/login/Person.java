@@ -34,9 +34,10 @@ public class Person extends Model{
                                                             public String lastTitle;
 
                                                             public Date   dateOfBirth;
+
                                                             private String authToken;
 
-                                                            public boolean emailValidated;
+                                                            private boolean emailValidated;
 
     @Column(length = 64)                                    private byte[] shaPassword;
 
@@ -64,6 +65,10 @@ public class Person extends Model{
         if (authToken == null) { return null; }
         try  { return find.where().eq("authToken", authToken).findUnique(); }
         catch (Exception e) { return null; }
+    }
+
+    public void validation(boolean value){
+        emailValidated = value;
     }
 
     public static byte[] getSha512(String value) {

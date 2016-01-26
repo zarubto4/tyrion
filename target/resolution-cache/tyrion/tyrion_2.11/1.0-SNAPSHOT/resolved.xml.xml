@@ -4,7 +4,7 @@
 		module="tyrion_2.11"
 		revision="1.0-SNAPSHOT"
 		status="integration"
-		publication="20160126165909"
+		publication="20160126174653"
 	>
 		<description>
 		tyrion
@@ -53,6 +53,7 @@
 		<dependency org="io.swagger" name="swagger-core" rev="1.5.6" conf="compile->default(compile)"/>
 		<dependency org="be.objectify" name="deadbolt-java_2.11" rev="2.4.3" conf="compile->default(compile)"/>
 		<dependency org="com.github.scribejava" name="scribejava-apis" rev="2.1.0" conf="compile->default(compile)"/>
+		<dependency org="com.typesafe.play" name="play-mailer_2.11" rev="4.0.0-M1" conf="compile->default(compile)"/>
 		<dependency org="com.typesafe.play" name="play-java-jdbc_2.11" rev="2.4.4" conf="compile->default(compile)"/>
 		<dependency org="com.typesafe.play" name="filters-helpers_2.11" rev="2.4.4" conf="compile->default(compile)"/>
 		<dependency org="com.typesafe.play" name="play-cache_2.11" rev="2.4.4" conf="compile->default(compile)"/>

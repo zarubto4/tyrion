@@ -4,9 +4,8 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import models.login.Person;
 import models.blocko.*;
+import models.login.Person;
 import play.Logger;
 import play.libs.Json;
 import play.mvc.BodyParser;
@@ -528,6 +527,7 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
+    @BodyParser.Of(BodyParser.Json.class)
     public  Result uploadProgramToHomer_Immediately(){
         try {
             JsonNode json = request().body().asJson();
@@ -559,6 +559,7 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
+    @BodyParser.Of(BodyParser.Json.class)
     public  Result uploadProgramToHomer_AsSoonAsPossible(){
         try {
             JsonNode json = request().body().asJson();
@@ -597,6 +598,7 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
+    @BodyParser.Of(BodyParser.Json.class)
     public  Result uploadProgramToHomer_GivenTimeAsSoonAsPossible(){
         try {
             JsonNode json = request().body().asJson();
@@ -636,6 +638,7 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
+    @BodyParser.Of(BodyParser.Json.class)
     public  Result uploadProgramToHomer(){
         try {
             JsonNode json = request().body().asJson();
@@ -643,9 +646,12 @@ public class ProgramingPackageController extends Controller {
             if( UtilTools.returnIntFromString( json.get("when").asText() ) < 0 ) return uploadProgramToHomer_Immediately();
             if( UtilTools.returnIntFromString( json.get("when").asText() ) == 0 ) return uploadProgramToHomer_AsSoonAsPossible();
             else return uploadProgramToHomer_GivenTimeAsSoonAsPossible();
-
-        }catch (Exception e){
-            return GlobalResult.badRequest(e, "when");
+        } catch (NullPointerException e) {
+            return GlobalResult.badRequest(e, "when - String");
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - removeProgram ERROR");
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -662,36 +668,43 @@ public class ProgramingPackageController extends Controller {
     }
 
 
-/**###################################################################################################################*/
+///###################################################################################################################*/
 
+    @BodyParser.Of(BodyParser.Json.class)
     public Result newBlock(){
-       JsonNode json = request().body().asJson();
+       try{
+            JsonNode json = request().body().asJson();
 
-        BlockoBlock blockoBlock = new BlockoBlock();
-        blockoBlock.generalDescription = json.get("description").asText();
-        blockoBlock.name        = json.get("name").asText();
-        blockoBlock.author = SecurityController.getPerson();
-
-
-        BlockoContentBlock contentBlock = new BlockoContentBlock();
-        contentBlock.dateOfCreate = new Date();
-        contentBlock.designJson   = json.findValue("designJson").toString();
-        contentBlock.logicJson    = json.findValue("logicJson").toString();
-        contentBlock.version  = 1.01;
-
-        contentBlock.save();
-        blockoBlock.save();
+            BlockoBlock blockoBlock = new BlockoBlock();
+            blockoBlock.generalDescription = json.get("description").asText();
+            blockoBlock.name        = json.get("name").asText();
+            blockoBlock.author = SecurityController.getPerson();
 
 
-        contentBlock.blockoBlock  = blockoBlock;
-        blockoBlock.contentBlocks.add(contentBlock);
+            BlockoContentBlock contentBlock = new BlockoContentBlock();
+            contentBlock.dateOfCreate = new Date();
+            contentBlock.designJson   = json.findValue("designJson").toString();
+            contentBlock.logicJson    = json.findValue("logicJson").toString();
+            contentBlock.version  = 1.01;
 
-        contentBlock.update();
+            contentBlock.save();
+            blockoBlock.save();
 
-        ObjectNode result = Json.newObject();
-        result.put("id", blockoBlock.id);
 
-        return GlobalResult.okResult( result );
+            contentBlock.blockoBlock  = blockoBlock;
+            blockoBlock.contentBlocks.add(contentBlock);
+
+            contentBlock.update();
+
+
+            return GlobalResult.okResult( Json.toJson(blockoBlock) );
+       } catch (NullPointerException e) {
+           return GlobalResult.badRequest(e, "name - String", "designJson - TEXT", "logicJson - TEXT", "description - TEXT");
+       } catch (Exception e) {
+           Logger.error("Error", e);
+           Logger.error("ProgramingPackageController - newBlock ERROR");
+           return GlobalResult.internalServerError();
+       }
     }
 
     public Result getBlockLast(String id){
