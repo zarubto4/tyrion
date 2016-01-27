@@ -1,4 +1,4 @@
-package play.modules.swagger;
+package utilities.swagger.swagger;
 
 public class PlaySwaggerConfig {
 

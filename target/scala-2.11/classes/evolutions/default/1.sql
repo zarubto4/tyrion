@@ -210,6 +210,12 @@ create table type_of_post (
   constraint pk_type_of_post primary key (id))
 ;
 
+create table validation_token (
+  person_email              varchar(255) not null,
+  auth_token                varchar(255),
+  constraint pk_validation_token primary key (person_email))
+;
+
 create table version (
   id                        varchar(255) not null,
   version_name              varchar(255),
@@ -507,6 +513,8 @@ drop table if exists single_library cascade;
 drop table if exists type_of_board cascade;
 
 drop table if exists type_of_post cascade;
+
+drop table if exists validation_token cascade;
 
 drop table if exists version cascade;
 

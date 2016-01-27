@@ -1,13 +1,13 @@
-package play.modules.swagger;
+package utilities.swagger.swagger;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import io.swagger.annotations.*;
 import io.swagger.annotations.Info;
 import io.swagger.converter.ModelConverters;
-import io.swagger.models.*;
 import io.swagger.models.Contact;
 import io.swagger.models.ExternalDocs;
+import io.swagger.models.*;
 import io.swagger.models.Tag;
 import io.swagger.models.parameters.*;
 import io.swagger.models.parameters.Parameter;
@@ -18,8 +18,8 @@ import io.swagger.util.PrimitiveType;
 import io.swagger.util.ReflectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import play.Logger;
-import play.modules.swagger.util.CrossUtil;
 import play.routes.compiler.*;
+import utilities.swagger.swagger.util.CrossUtil;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;

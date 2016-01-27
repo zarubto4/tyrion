@@ -1,4 +1,4 @@
-package play.modules.swagger;
+package utilities.swagger.swagger;
 
 import play.routes.compiler.Route;
 

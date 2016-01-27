@@ -10,6 +10,9 @@ import play.Configuration;
 
 public class Socials {
 
+    // Toturiál a popis na
+    // https://github.com/scribejava/scribejava/issues
+
     public static OAuthService Facebook(String state){
 
         final OAuthService Facebook = new ServiceBuilder()

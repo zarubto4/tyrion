@@ -1,4 +1,4 @@
-package play.modules.swagger.util
+package utilities.swagger.swagger.util;
 
 import collection.mutable.ListBuffer
 import org.slf4j.{LoggerFactory, Logger}

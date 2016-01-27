@@ -1,7 +1,7 @@
 
 // @GENERATOR:play-routes-compiler
 // @SOURCE:/Users/zaruba/ownCloud/Git/Tyrion/conf/routes
-// @DATE:Tue Jan 26 17:01:35 CET 2016
+// @DATE:Wed Jan 27 15:12:26 CET 2016
 
 import play.api.routing.JavaScriptReverseRoute
 import play.api.mvc.{ QueryStringBindable, PathBindable, Call, JavascriptLiteral }
@@ -11,11 +11,31 @@ import play.core.routing.{ HandlerDef, ReverseRouteContext, queryString, dynamic
 import _root_.controllers.Assets.Asset
 import _root_.play.libs.F
 
-// @LINE:7
+// @LINE:8
 package controllers.javascript {
   import ReverseRouteContext.empty
 
-  // @LINE:49
+  // @LINE:243
+  class ReverseAssets(_prefix: => String) {
+
+    def _defaultPrefix: String = {
+      if (_prefix.endsWith("/")) "" else "/"
+    }
+
+  
+    // @LINE:243
+    def at: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.Assets.at",
+      """
+        function(file) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "assets/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("file", file)})
+        }
+      """
+    )
+  
+  }
+
+  // @LINE:54
   class ReverseOverFlowController(_prefix: => String) {
 
     def _defaultPrefix: String = {
@@ -23,7 +43,7 @@ package controllers.javascript {
     }
 
   
-    // @LINE:74
+    // @LINE:79
     def likePlus: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.likePlus",
       """
@@ -33,7 +53,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:54
+    // @LINE:59
     def getPostByFilter: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.getPostByFilter",
       """
@@ -43,7 +63,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:67
+    // @LINE:72
     def updateComment: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.updateComment",
       """
@@ -57,7 +77,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:63
+    // @LINE:68
     def getTypeOfPost: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.getTypeOfPost",
       """
@@ -67,7 +87,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:58
+    // @LINE:63
     def commentsListOnPost: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.commentsListOnPost",
       """
@@ -77,7 +97,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:75
+    // @LINE:80
     def likeMinus: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.likeMinus",
       """
@@ -87,7 +107,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:62
+    // @LINE:67
     def newTypeOfPost: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.newTypeOfPost",
       """
@@ -97,7 +117,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:78
+    // @LINE:83
     def removeHashTag: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.removeHashTag",
       """
@@ -111,7 +131,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:76
+    // @LINE:81
     def linkWithPreviousAnswer: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.linkWithPreviousAnswer",
       """
@@ -121,7 +141,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:55
+    // @LINE:60
     def getPostLinkedAnswers: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.getPostLinkedAnswers",
       """
@@ -131,7 +151,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:53
+    // @LINE:58
     def getLatestPost: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.getLatestPost",
       """
@@ -141,7 +161,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:52
+    // @LINE:57
     def editPost: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.editPost",
       """
@@ -151,7 +171,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:66
+    // @LINE:71
     def addComment: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.addComment",
       """
@@ -161,7 +181,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:59
+    // @LINE:64
     def answereListOnPost: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.answereListOnPost",
       """
@@ -171,7 +191,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:82
+    // @LINE:87
     def removeConfirmType: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.removeConfirmType",
       """
@@ -181,7 +201,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:50
+    // @LINE:55
     def getPost: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.getPost",
       """
@@ -191,7 +211,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:70
+    // @LINE:75
     def addAnswer: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.addAnswer",
       """
@@ -201,7 +221,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:51
+    // @LINE:56
     def deletePost: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.deletePost",
       """
@@ -215,7 +235,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:77
+    // @LINE:82
     def unlinkWithPreviousAnswer: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.unlinkWithPreviousAnswer",
       """
@@ -225,7 +245,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:49
+    // @LINE:54
     def newPost: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.newPost",
       """
@@ -235,7 +255,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:81
+    // @LINE:86
     def addConfirmType: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.addConfirmType",
       """
@@ -245,7 +265,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:57
+    // @LINE:62
     def hashTagsListOnPost: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.hashTagsListOnPost",
       """
@@ -255,7 +275,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:79
+    // @LINE:84
     def addHashTag: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.addHashTag",
       """
@@ -265,7 +285,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:60
+    // @LINE:65
     def textOfPost: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.textOfPost",
       """
@@ -277,7 +297,7 @@ package controllers.javascript {
   
   }
 
-  // @LINE:154
+  // @LINE:159
   class ReverseCompilationLibrariesController(_prefix: => String) {
 
     def _defaultPrefix: String = {
@@ -285,7 +305,7 @@ package controllers.javascript {
     }
 
   
-    // @LINE:206
+    // @LINE:211
     def getLibraryGroupLibraries: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getLibraryGroupLibraries",
       """
@@ -295,7 +315,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:157
+    // @LINE:162
     def updateProcessor: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.updateProcessor",
       """
@@ -305,7 +325,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:158
+    // @LINE:163
     def deleteProcessor: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.deleteProcessor",
       """
@@ -315,7 +335,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:171
+    // @LINE:176
     def newBoard: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.newBoard",
       """
@@ -325,7 +345,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:209
+    // @LINE:214
     def uploudLibraryToLibraryGroup: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.uploudLibraryToLibraryGroup",
       """
@@ -335,7 +355,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:200
+    // @LINE:205
     def getLibraryGroup: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getLibraryGroup",
       """
@@ -345,7 +365,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:218
+    // @LINE:223
     def getSingleLibrary: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getSingleLibrary",
       """
@@ -355,7 +375,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:182
+    // @LINE:187
     def newProducers: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.newProducers",
       """
@@ -365,7 +385,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:174
+    // @LINE:179
     def deactivateBoard: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.deactivateBoard",
       """
@@ -375,7 +395,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:208
+    // @LINE:213
     def getVersionLibraryGroup: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getVersionLibraryGroup",
       """
@@ -385,7 +405,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:155
+    // @LINE:160
     def getProcessor: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getProcessor",
       """
@@ -395,7 +415,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:204
+    // @LINE:209
     def getLibraryGroupDescription: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getLibraryGroupDescription",
       """
@@ -405,7 +425,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:194
+    // @LINE:199
     def getTypeOfBoardDescription: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getTypeOfBoardDescription",
       """
@@ -415,7 +435,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:195
+    // @LINE:200
     def getTypeOfBoardAllBoards: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getTypeOfBoardAllBoards",
       """
@@ -425,7 +445,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:215
+    // @LINE:220
     def newSingleLibrary: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.newSingleLibrary",
       """
@@ -435,7 +455,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:156
+    // @LINE:161
     def getProcessorAll: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getProcessorAll",
       """
@@ -445,7 +465,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:216
+    // @LINE:221
     def newVersionSingleLibrary: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.newVersionSingleLibrary",
       """
@@ -455,7 +475,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:165
+    // @LINE:170
     def getProcessorDescription: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getProcessorDescription",
       """
@@ -465,7 +485,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:223
+    // @LINE:228
     def uploadSingleLibraryWithVersion: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.uploadSingleLibraryWithVersion",
       """
@@ -475,7 +495,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:172
+    // @LINE:177
     def addUserDescription: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.addUserDescription",
       """
@@ -485,7 +505,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:199
+    // @LINE:204
     def newLibraryGroup: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.newLibraryGroup",
       """
@@ -495,7 +515,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:212
+    // @LINE:217
     def fileRecord: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.fileRecord",
       """
@@ -505,7 +525,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:193
+    // @LINE:198
     def getTypeOfBoard: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getTypeOfBoard",
       """
@@ -515,7 +535,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:217
+    // @LINE:222
     def getSingleLibraryFilter: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getSingleLibraryFilter",
       """
@@ -525,7 +545,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:173
+    // @LINE:178
     def getBoard: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getBoard",
       """
@@ -535,7 +555,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:222
+    // @LINE:227
     def deleteSingleLibrary: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.deleteSingleLibrary",
       """
@@ -545,7 +565,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:175
+    // @LINE:180
     def getUserDescription: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getUserDescription",
       """
@@ -555,7 +575,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:154
+    // @LINE:159
     def newProcessor: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.newProcessor",
       """
@@ -565,7 +585,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:167
+    // @LINE:172
     def getProcessorSingleLibraries: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getProcessorSingleLibraries",
       """
@@ -575,7 +595,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:190
+    // @LINE:195
     def newTypeOfBoard: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.newTypeOfBoard",
       """
@@ -585,7 +605,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:202
+    // @LINE:207
     def getLibraryGroupAll: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getLibraryGroupAll",
       """
@@ -595,7 +615,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:183
+    // @LINE:188
     def updateProducers: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.updateProducers",
       """
@@ -605,7 +625,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:162
+    // @LINE:167
     def unconnectProcessorWithLibrary: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.unconnectProcessorWithLibrary",
       """
@@ -615,7 +635,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:160
+    // @LINE:165
     def connectProcessorWithLibrary: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.connectProcessorWithLibrary",
       """
@@ -625,7 +645,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:207
+    // @LINE:212
     def createNewVersionLibraryGroup: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.createNewVersionLibraryGroup",
       """
@@ -635,7 +655,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:226
+    // @LINE:231
     def generateProjectForEclipse: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.generateProjectForEclipse",
       """
@@ -645,7 +665,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:187
+    // @LINE:192
     def getProducerTypeOfBoards: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getProducerTypeOfBoards",
       """
@@ -655,7 +675,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:203
+    // @LINE:208
     def updateLibraryGroup: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.updateLibraryGroup",
       """
@@ -665,7 +685,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:177
+    // @LINE:182
     def unconnectBoardWthProject: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.unconnectBoardWthProject",
       """
@@ -675,7 +695,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:201
+    // @LINE:206
     def deleteLibraryGroup: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.deleteLibraryGroup",
       """
@@ -685,7 +705,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:161
+    // @LINE:166
     def connectProcessorWithLibraryGroup: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.connectProcessorWithLibraryGroup",
       """
@@ -695,7 +715,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:224
+    // @LINE:229
     def getSingleLibraryDescription: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getSingleLibraryDescription",
       """
@@ -705,7 +725,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:178
+    // @LINE:183
     def getBoardProjects: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getBoardProjects",
       """
@@ -715,7 +735,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:185
+    // @LINE:190
     def getProducer: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getProducer",
       """
@@ -725,7 +745,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:205
+    // @LINE:210
     def getLibraryGroupProcessors: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getLibraryGroupProcessors",
       """
@@ -735,7 +755,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:211
+    // @LINE:216
     def listOfFilesInVersion: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.listOfFilesInVersion",
       """
@@ -745,7 +765,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:184
+    // @LINE:189
     def getProducers: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getProducers",
       """
@@ -755,7 +775,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:219
+    // @LINE:224
     def getSingleLibraryAll: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getSingleLibraryAll",
       """
@@ -765,7 +785,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:176
+    // @LINE:181
     def connectBoardWthProject: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.connectBoardWthProject",
       """
@@ -775,7 +795,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:163
+    // @LINE:168
     def unconnectProcessorWithLibraryGroup: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.unconnectProcessorWithLibraryGroup",
       """
@@ -785,7 +805,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:191
+    // @LINE:196
     def updateTypeOfBoard: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.updateTypeOfBoard",
       """
@@ -795,7 +815,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:221
+    // @LINE:226
     def updateSingleLibrary: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.updateSingleLibrary",
       """
@@ -805,7 +825,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:166
+    // @LINE:171
     def getProcessorLibraryGroups: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getProcessorLibraryGroups",
       """
@@ -815,7 +835,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:192
+    // @LINE:197
     def getTypeOfBoards: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getTypeOfBoards",
       """
@@ -825,7 +845,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:186
+    // @LINE:191
     def getProducerDescription: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getProducerDescription",
       """
@@ -837,7 +857,7 @@ package controllers.javascript {
   
   }
 
-  // @LINE:7
+  // @LINE:8
   class ReverseSecurityController(_prefix: => String) {
 
     def _defaultPrefix: String = {
@@ -845,7 +865,7 @@ package controllers.javascript {
     }
 
   
-    // @LINE:19
+    // @LINE:20
     def Twitter: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.SecurityController.Twitter",
       """
@@ -855,7 +875,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:18
+    // @LINE:19
     def Facebook: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.SecurityController.Facebook",
       """
@@ -865,7 +885,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:21
+    // @LINE:22
     def Vkontakte: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.SecurityController.Vkontakte",
       """
@@ -875,7 +895,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:20
+    // @LINE:21
     def GitHub: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.SecurityController.GitHub",
       """
@@ -885,7 +905,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:235
+    // @LINE:240
     def optionLink: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.SecurityController.optionLink",
       """
@@ -895,7 +915,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:17
+    // @LINE:18
     def logout: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.SecurityController.logout",
       """
@@ -905,7 +925,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:22
+    // @LINE:23
     def GEToauth_callback: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.SecurityController.GEToauth_callback",
       """
@@ -915,7 +935,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:7
+    // @LINE:8
     def index: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.SecurityController.index",
       """
@@ -925,7 +945,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:16
+    // @LINE:17
     def login: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.SecurityController.login",
       """
@@ -937,7 +957,7 @@ package controllers.javascript {
   
   }
 
-  // @LINE:38
+  // @LINE:43
   class ReversePermissionController(_prefix: => String) {
 
     def _defaultPrefix: String = {
@@ -945,7 +965,7 @@ package controllers.javascript {
     }
 
   
-    // @LINE:40
+    // @LINE:45
     def createGroup: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.PermissionController.createGroup",
       """
@@ -955,7 +975,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:42
+    // @LINE:47
     def getAllPersonPermission: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.PermissionController.getAllPersonPermission",
       """
@@ -965,7 +985,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:43
+    // @LINE:48
     def removeAllPersonPermission: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.PermissionController.removeAllPersonPermission",
       """
@@ -975,7 +995,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:44
+    // @LINE:49
     def addAllPersonPermission: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.PermissionController.addAllPersonPermission",
       """
@@ -985,7 +1005,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:38
+    // @LINE:43
     def getAllPermissions: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.PermissionController.getAllPermissions",
       """
@@ -995,7 +1015,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:39
+    // @LINE:44
     def getAllGroups: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.PermissionController.getAllGroups",
       """
@@ -1007,7 +1027,7 @@ package controllers.javascript {
   
   }
 
-  // @LINE:29
+  // @LINE:30
   class ReversePersonCreateController(_prefix: => String) {
 
     def _defaultPrefix: String = {
@@ -1016,6 +1036,16 @@ package controllers.javascript {
 
   
     // @LINE:32
+    def updatePersonInformation: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.PersonCreateController.updatePersonInformation",
+      """
+        function() {
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "coreClient/person/person"})
+        }
+      """
+    )
+  
+    // @LINE:34
     def deletePerson: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.PersonCreateController.deletePerson",
       """
@@ -1026,6 +1056,26 @@ package controllers.javascript {
     )
   
     // @LINE:31
+    def standartRegistration: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.PersonCreateController.standartRegistration",
+      """
+        function() {
+          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "coreClient/person/person"})
+        }
+      """
+    )
+  
+    // @LINE:36
+    def emailPersonAuthentitaction: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.PersonCreateController.emailPersonAuthentitaction",
+      """
+        function(mail,authToken) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "emailPersonAuthentication/" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("mail", mail), (""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("authToken", authToken)])})
+        }
+      """
+    )
+  
+    // @LINE:33
     def getPerson: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.PersonCreateController.getPerson",
       """
@@ -1036,28 +1086,18 @@ package controllers.javascript {
     )
   
     // @LINE:30
-    def updatePersonInformation: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.PersonCreateController.updatePersonInformation",
+    def developerRegistration: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.PersonCreateController.developerRegistration",
       """
         function() {
-          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "coreClient/person/person"})
-        }
-      """
-    )
-  
-    // @LINE:29
-    def createNewPerson: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.PersonCreateController.createNewPerson",
-      """
-        function() {
-          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "coreClient/person/person"})
+          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "coreClient/person/developer"})
         }
       """
     )
   
   }
 
-  // @LINE:90
+  // @LINE:95
   class ReverseProgramingPackageController(_prefix: => String) {
 
     def _defaultPrefix: String = {
@@ -1065,7 +1105,7 @@ package controllers.javascript {
     }
 
   
-    // @LINE:143
+    // @LINE:148
     def allPrevVersions: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.allPrevVersions",
       """
@@ -1075,7 +1115,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:119
+    // @LINE:124
     def getProgramInJson: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.getProgramInJson",
       """
@@ -1089,7 +1129,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:145
+    // @LINE:150
     def getByFilter: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.getByFilter",
       """
@@ -1099,7 +1139,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:116
+    // @LINE:121
     def getProgram: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.getProgram",
       """
@@ -1109,7 +1149,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:90
+    // @LINE:95
     def postNewProject: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.postNewProject",
       """
@@ -1119,7 +1159,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:141
+    // @LINE:146
     def getBlockLast: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.getBlockLast",
       """
@@ -1129,7 +1169,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:133
+    // @LINE:138
     def newVersionOfBlock: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.newVersionOfBlock",
       """
@@ -1139,7 +1179,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:93
+    // @LINE:98
     def getProjectsByUserAccount: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.getProjectsByUserAccount",
       """
@@ -1149,7 +1189,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:138
+    // @LINE:143
     def generalDescription: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.generalDescription",
       """
@@ -1159,7 +1199,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:98
+    // @LINE:103
     def getProgramhomerList: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.getProgramhomerList",
       """
@@ -1169,7 +1209,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:135
+    // @LINE:140
     def designJsonVersion: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.designJsonVersion",
       """
@@ -1179,7 +1219,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:126
+    // @LINE:131
     def getProjectsBoard: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.getProjectsBoard",
       """
@@ -1189,7 +1229,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:94
+    // @LINE:99
     def deleteProject: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.deleteProject",
       """
@@ -1199,7 +1239,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:92
+    // @LINE:97
     def getProject: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.getProject",
       """
@@ -1209,7 +1249,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:123
+    // @LINE:128
     def listOfUploadedHomers: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.listOfUploadedHomers",
       """
@@ -1219,7 +1259,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:105
+    // @LINE:110
     def getAllHomers: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.getAllHomers",
       """
@@ -1229,7 +1269,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:122
+    // @LINE:127
     def getAllPrograms: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.getAllPrograms",
       """
@@ -1239,7 +1279,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:128
+    // @LINE:133
     def uploadProgramToHomer_AsSoonAsPossible: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.uploadProgramToHomer_AsSoonAsPossible",
       """
@@ -1249,7 +1289,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:117
+    // @LINE:122
     def editProgram: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.editProgram",
       """
@@ -1259,7 +1299,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:99
+    // @LINE:104
     def getProjectOwners: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.getProjectOwners",
       """
@@ -1269,7 +1309,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:132
+    // @LINE:137
     def newBlock: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.newBlock",
       """
@@ -1279,7 +1319,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:102
+    // @LINE:107
     def newHomer: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.newHomer",
       """
@@ -1289,7 +1329,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:118
+    // @LINE:123
     def removeProgram: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.removeProgram",
       """
@@ -1299,7 +1339,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:97
+    // @LINE:102
     def getProgramPrograms: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.getProgramPrograms",
       """
@@ -1309,7 +1349,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:136
+    // @LINE:141
     def logicJsonLast: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.logicJsonLast",
       """
@@ -1319,7 +1359,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:106
+    // @LINE:111
     def getConnectedHomers: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.getConnectedHomers",
       """
@@ -1329,7 +1369,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:91
+    // @LINE:96
     def updateProject: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.updateProject",
       """
@@ -1339,7 +1379,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:103
+    // @LINE:108
     def removeHomer: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.removeHomer",
       """
@@ -1349,7 +1389,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:134
+    // @LINE:139
     def logicJsonVersion: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.logicJsonVersion",
       """
@@ -1359,7 +1399,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:140
+    // @LINE:145
     def getBlockVersion: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.getBlockVersion",
       """
@@ -1369,7 +1409,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:104
+    // @LINE:109
     def getHomer: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.getHomer",
       """
@@ -1379,7 +1419,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:137
+    // @LINE:142
     def designJsonLast: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.designJsonLast",
       """
@@ -1389,7 +1429,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:111
+    // @LINE:116
     def connectHomerWithProject: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.connectHomerWithProject",
       """
@@ -1399,7 +1439,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:144
+    // @LINE:149
     def deleteBlock: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.deleteBlock",
       """
@@ -1409,7 +1449,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:96
+    // @LINE:101
     def unshareProjectWithUsers: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.unshareProjectWithUsers",
       """
@@ -1419,7 +1459,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:139
+    // @LINE:144
     def versionDescription: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.versionDescription",
       """
@@ -1429,7 +1469,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:115
+    // @LINE:120
     def postNewProgram: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.postNewProgram",
       """
@@ -1439,7 +1479,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:127
+    // @LINE:132
     def uploadProgramToHomer_Immediately: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.uploadProgramToHomer_Immediately",
       """
@@ -1449,7 +1489,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:95
+    // @LINE:100
     def shareProjectWithUsers: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.shareProjectWithUsers",
       """
@@ -1459,7 +1499,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:129
+    // @LINE:134
     def uploadProgramToHomer_GivenTimeAsSoonAsPossible: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.uploadProgramToHomer_GivenTimeAsSoonAsPossible",
       """
@@ -1469,7 +1509,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:112
+    // @LINE:117
     def unConnectHomerWithProject: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.unConnectHomerWithProject",
       """
@@ -1479,7 +1519,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:124
+    // @LINE:129
     def listOfHomersWaitingForUpload: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.listOfHomersWaitingForUpload",
       """

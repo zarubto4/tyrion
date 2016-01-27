@@ -1,6 +1,5 @@
 Tyrion main cloud server <- dev version
 
-
 Version 1.04
 ========================================================================================================================
 Globální změny:
@@ -9,7 +8,6 @@ Globální změny:
    Abych nezasílal vše co není zrovna potřeba, obsah je překrýván linkem.
    Uprava navrhu je videt na  výpisu všech knihoven "description"! Jednou obsahuje link (když obsah existuje)
    V opačném případě je nahrazeno null.
-
 
 1) [
      {
@@ -42,6 +40,14 @@ Globální změny:
 GET   /project/getAllConnectedHomers/:id  ->   /project/homer/getAllConnectedHomers/:id
 GET   /project/getallhoumers              ->   /project/homer
 
+3) Změna Přihlášení
+
+POST           /coreClient/person/developer                @controllers.PersonCreateController.developerRegistration()
+"password - String",  "mail - String"
+
+POST           /coreClient/person/person                   @controllers.PersonCreateController.standartRegistration()
+"nickName - String", "password - String",  "mail - String"
++ Vyžaduje autorizaci přes email!!!!!!! - Musíš upravit config!!!
 
 
 Version 1.01

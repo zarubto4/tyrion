@@ -1,23 +1,24 @@
 package utilities.emails;
 
+import play.Configuration;
+import play.api.libs.mailer.MailerClient;
 import play.libs.mailer.Email;
-import play.libs.mailer.MailerClient;
+import play.mvc.Controller;
 
 import javax.inject.Inject;
 
-public class EmailTool {
+public class EmailTool{
 
-    @Inject MailerClient mailerClient;
 
-    public void sendEmail(String subject, String to, String html) {
+    public Email sendEmailValidation(String name, String userMail, String tokenLink){
+        String html = utilities.emails.templates.html.ActivatedAccount.render(Configuration.root().getString("serverLink.Production"), tokenLink).body();
 
-        Email email = new Email()
-                .setSubject(subject)
-                .setFrom("Byzance")
-                .addTo(to) // persons email
+        return new Email()
+                .setSubject("Validation of your account")
+                .setFrom("Byzance IoT Platform <server@byzance.cz>")
+                .addTo( name + "<"+ userMail +">")
+                .setBodyText("A text message")
                 .setBodyHtml(html);
-
-        mailerClient.send(email);
     }
 
 }

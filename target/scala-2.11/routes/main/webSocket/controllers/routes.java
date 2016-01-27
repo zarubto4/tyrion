@@ -1,7 +1,7 @@
 
 // @GENERATOR:play-routes-compiler
 // @SOURCE:/Users/zaruba/ownCloud/Git/Tyrion/conf/routes
-// @DATE:Tue Jan 26 17:01:35 CET 2016
+// @DATE:Wed Jan 27 15:12:26 CET 2016
 
 package webSocket.controllers;
 

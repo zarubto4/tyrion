@@ -39,6 +39,12 @@ public class SecurityController extends Controller {
         Person person = Person.findByEmailAddressAndPassword(json.get("email").asText(), json.get("password").asText());
         if (person == null) return GlobalResult.forbidden("Email or password are wrong");
 
+
+        if (!person.emailValidated) return GlobalResult.forbidden("Account is not authorized");
+           // TODO zde by byl asi prostor pro zaslání JSON kdyby si uživatel potřeboval vygenerovat nový autorizační klíč k emailu.
+
+
+
         String authToken = person.createToken();
 
         ObjectNode result = Json.newObject();

@@ -3,7 +3,6 @@ package controllers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
-import io.swagger.annotations.*;
 import models.blocko.Project;
 import models.compiler.*;
 import play.Logger;
@@ -24,34 +23,10 @@ import java.util.Date;
 import java.util.List;
 
 
-@Api(   value = "/compilation",
-        authorizations = { @Authorization(value="X-AUTH-TOKEN") },
-        description = "Operations used for Compilation, Library Operation and Others",
-        produces = "application/json",
-        basePath = "/compilation")
 //@Security.Authenticated(Secured.class)
 public class CompilationLibrariesController extends Controller {
 
 
-
-
-    @ApiOperation(
-            value = "post new Processor",
-            notes = "Returns id of new Processor",
-            response = Processor.class,
-            responseReference = "id",
-            consumes = "application/json",
-            httpMethod = "POST"
-    )
-    @ApiResponses(
-            value = {
-                    @ApiResponse(code = 201, message = "201 Created - Object created with id in Json", response = Processor.class),
-                    @ApiResponse(code = 400, message = "400 Bad Request - Incoming values are broken"),
-                    @ApiResponse(code = 401, message = "401 Unauthorized - You need Permission"),
-                    @ApiResponse(code = 500, message = "500 Server Error - Its Reported"),
-            }
-    )
-    @ApiImplicitParams({ @ApiImplicitParam(name = "body", value = "Description for users", required = false,  paramType = "body" )})
     public Result newProcessor() {
         try {
             JsonNode json = request().body().asJson();
@@ -76,27 +51,11 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
-    @ApiOperation(
-            value = "get Processor object by Id",
-            notes = "Returns Procesor obejct",
-            response = Producer.class,
-            responseReference = "id",
-            consumes = "application/json",
-            httpMethod = "GET"
-    )
-    @ApiResponses(
-            value = {
-                    @ApiResponse(code = 200, message = "200 Return object in JSON", response = Processor.class),
-                  //  @ApiResponse(code = 201, message = "201 Created - Object created with id in Json", response = Processor.class),
-                    @ApiResponse(code = 401, message = "401 Unauthorized - You need Permission"),
-                    @ApiResponse(code = 404, message = "404 Not Found - Document not found"),
-                  //  @ApiResponse(code = 500, message = "500 Server Error - Its Reported"),
-            }
-    )
-    public Result getProcessor(@ApiParam( name = "id", value =  "id of processor object", required = true, example = "1"  ) String id) {
-        try {
-            Processor processor = Processor.find.byId(id);
 
+    public Result getProcessor( String id) {
+        try {
+
+            Processor processor = Processor.find.byId(id);
 
             if(processor == null ) return GlobalResult.notFound();
 
@@ -109,23 +68,7 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
-    @ApiOperation(
-            value = "get all Processor",
-            notes = "Returns Processor Json Array",
-            response = Processor.class,
-            consumes = "application/json",
-            httpMethod = "GET"
-    )
-    @ApiResponses(
-            value = {
-                    @ApiResponse(code = 200, message = "200 Return object in JSON", response = Processor.class),
-                    //@ApiResponse(code = 201, message = "201 Created - Object created with id in Json", response = Processor.class),
-                    //@ApiResponse(code = 204, message = "204 Updated - Object updated successfully", response = Processor.class),
-                    @ApiResponse(code = 401, message = "401 Unauthorized - You need Permission"),
-                    //@ApiResponse(code = 404, message = "404 Not Found - Document not found"),
-                    //@ApiResponse(code = 500, message = "500 Server Error - Its Reported"),
-            }
-    )
+
     public Result getProcessorAll() {
         try {
 
@@ -137,23 +80,8 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
-    @ApiOperation(
-            value = "update Processor by id",
-            notes = "Return Processor in Json",
-            consumes = "application/json",
-            httpMethod = "PUT"
-    )
-    @ApiResponses(
-            value = {
-                    //@ApiResponse(code = 200, message = "200 Return object in JSON", response = Processor.class),
-                    @ApiResponse(code = 204, message = "204 Updated - Object updated successfully", response = Processor.class),
-                    @ApiResponse(code = 401, message = "401 Unauthorized - You need Permission"),
-                    @ApiResponse(code = 404, message = "404 Not Found - Document not found"),
-                    //@ApiResponse(code = 500, message = "500 Server Error - Its Reported"),
-            }
-    )
-    @ApiImplicitParams({ @ApiImplicitParam(name = "body", value = "Description for users", required = false,  dataType = "models.compiler.Processor",  paramType = "body" )})
-    public Result updateProcessor(@ApiParam( name ="id", value =  "id of processor object", required = true, example = "1"  ) String id) {
+
+    public Result updateProcessor( String id) {
         try {
             JsonNode json = request().body().asJson();
 
@@ -180,8 +108,13 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.update(Json.toJson(processor));
 
+        } catch (NullPointerException e) {
+            return GlobalResult.badRequest(e, "description - TEXT", "processorCode - String", "processorName - String", "speed - Integer", "libraryGroups [Id,Id..]");
         } catch (Exception e) {
-            return GlobalResult.badRequest(e);
+            Logger.error("Error", e.getMessage());
+            Logger.error("CompilationLibrariesController - updateProcessor ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -581,27 +514,12 @@ public class CompilationLibrariesController extends Controller {
 
     // TODO - IDEA?
     public Result fileRecord(String id){
-        try {
-            LibraryRecord libraryRecord = LibraryRecord.find.byId(id);
-            if(libraryRecord == null) return GlobalResult.notFound();
-
-            return GlobalResult.okResult("Zatím neimplementováno... TODO .. tom youtrack.byzance.cz@36 ");
-        } catch (Exception e) {
-            Logger.error("CompilationLibrariesController - fileRecord ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
-        }
+       return TODO;
     }
 
     // TODO - IDEA?
     public Result getGroupLibraryFilter() {
-        try {
-            JsonNode json = request().body().asJson();
-
-            return GlobalResult.okResult();
-        } catch (Exception e) {
-            return GlobalResult.badRequest(e);
-        }
+        return TODO;
     }
 
 /**###################################################################################################################*/

@@ -38,8 +38,8 @@ public class MonitoringController  extends Controller {
             JsonNode cnr = Json.toJson(connectedRaspberries);
 
             ObjectNode result = Json.newObject();
-            result.put("allRaspberriesInDatabase", rsp);
-            result.put("connectedRaspberries", cnr);
+            result.set("allRaspberriesInDatabase", rsp);
+            result.set("connectedRaspberries", cnr);
 
             return GlobalResult.okResult( result);
 

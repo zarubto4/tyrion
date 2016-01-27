@@ -4,11 +4,12 @@
 
 # Home page - for testing connected device
 # Home page
-GET     /                                    controllers.SecurityController.index()
+
+GET             /                                           @controllers.SecurityController.index
 
 
 #  WEB SOCET  //////////////////////////////////////////////////////////////////////////////
-GET             /websocket/:id               @webSocket.controllers.OutsideCommunicationPackageController.connection(id: String)
+GET             /websocket/:id                              @webSocket.controllers.OutsideCommunicationPackageController.connection(id: String)
 
 #API - CoreClient ##############################################################################################################################################################
 
@@ -26,10 +27,14 @@ GET             /oauth_callback/                            @controllers.Securit
 ################################################################################################################################################################################
 
 #Peron CRUD
-POST           /coreClient/person/person                   @controllers.PersonCreateController.createNewPerson()
+POST           /coreClient/person/developer                @controllers.PersonCreateController.developerRegistration()
+POST           /coreClient/person/person                   @controllers.PersonCreateController.standartRegistration()
 PUT            /coreClient/person/person                   @controllers.PersonCreateController.updatePersonInformation()
 GET            /coreClient/person/person/:id               @controllers.PersonCreateController.getPerson(id: String)
 DELETE         /coreClient/person/person/:id               @controllers.PersonCreateController.deletePerson(id: String)
+
+GET            /emailPersonAuthentication/    @controllers.PersonCreateController.emailPersonAuthentitaction(mail,authToken)
+
 
 
 
@@ -234,5 +239,6 @@ GET            /api-docs                                   @utilities.swagger.Ap
 #CORS
 OPTIONS        /*all                                       @controllers.SecurityController.optionLink(all)
 
-
+# Map static resources from the /public folder to the /assets URL path
+GET           /assets/*file               controllers.Assets.at(path="/public", file)
 

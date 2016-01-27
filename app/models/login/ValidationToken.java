@@ -15,7 +15,7 @@ public class ValidationToken extends Model{
 
     public static Finder<String,ValidationToken> find = new Finder<>(ValidationToken.class);
 
-    public void setValidation(String mail){
+    public ValidationToken  setValidation(String mail){
 
         this.personEmail = mail;
 
@@ -25,6 +25,8 @@ public class ValidationToken extends Model{
         }
 
         save();
+
+        return this;
     }
 
 

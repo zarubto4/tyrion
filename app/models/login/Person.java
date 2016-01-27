@@ -37,7 +37,7 @@ public class Person extends Model{
 
                                                             private String authToken;
 
-                                                            private boolean emailValidated;
+                                        @JsonIgnore         public boolean emailValidated;
 
     @Column(length = 64)                                    private byte[] shaPassword;
 
@@ -67,9 +67,6 @@ public class Person extends Model{
         catch (Exception e) { return null; }
     }
 
-    public void validation(boolean value){
-        emailValidated = value;
-    }
 
     public static byte[] getSha512(String value) {
         try {
