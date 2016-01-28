@@ -11,7 +11,7 @@ import play.Configuration;
 import play.Logger;
 import play.libs.Json;
 import play.mvc.*;
-import utilities.Secured;
+import utilities.loginEntities.Secured;
 import utilities.loginEntities.Socials;
 import utilities.response.CoreResponse;
 import utilities.response.GlobalResult;

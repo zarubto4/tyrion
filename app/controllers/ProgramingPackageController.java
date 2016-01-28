@@ -12,10 +12,10 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.Secured;
+import utilities.loginEntities.Secured;
 import utilities.UtilTools;
 import utilities.response.GlobalResult;
-import webSocket.controllers.SocketCollector;
+
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -160,7 +160,7 @@ public class ProgramingPackageController extends Controller {
                 }
             }
 
-            return GlobalResult.okResult(Json.toJson(project.ownersOfProject));
+            return GlobalResult.okResult(Json.toJson(project));
 
         } catch (NullPointerException e) {
             return GlobalResult.badRequest(e, "persons - [ids]");
@@ -283,7 +283,7 @@ public class ProgramingPackageController extends Controller {
             List<Homer> projectDevices = project.homerList;
             if(projectDevices.isEmpty()) return GlobalResult.okResult(Json.toJson(projectDevices));
 
-            List<Homer> connectedDevices = SocketCollector.getAllConnectedDevice();
+            List<Homer> connectedDevices = WebSocketController.getAllConnectedDevice();
 
             List<Homer> intersection = new ArrayList<>();
 
@@ -542,7 +542,7 @@ public class ProgramingPackageController extends Controller {
 
 
             if (!project.projectId.equals(program.project.projectId)) GlobalResult.forbidden("Program is not from the same project!");
-            if(!SocketCollector.isConnected(homer.homerId))           GlobalResult.forbidden("Homer is not connected");
+            if(!WebSocketController.isConnected(homer))           GlobalResult.forbidden("Homer is not connected");
 
 
             homer.sendProgramToHomer(program, null, null);
@@ -576,7 +576,7 @@ public class ProgramingPackageController extends Controller {
 
             //1 Pokud je zařízení přopojené, nahraji okamžitě
             Date until = UtilTools.returnDateFromMillis( json.get("until").asText());
-            if(SocketCollector.isConnected(homer.homerId)) homer.sendProgramToHomer(program, null, until);
+            if(WebSocketController.isConnected(homer))   homer.sendProgramToHomer(program, null, until);
 
             //2 Pokud není, vytvářím meziobjekt - Mezi Holder
             ForUploadProgram forUploadProgram = new ForUploadProgram();
@@ -617,7 +617,7 @@ public class ProgramingPackageController extends Controller {
             Date until = UtilTools.returnDateFromMillis( json.get("until").asText());
 
             //1 Pokud je zařízení přopojené, nahraji okamžitě
-            if(SocketCollector.isConnected(homer.homerId)) homer.sendProgramToHomer(program, when, until);
+            if(WebSocketController.isConnected(homer))  homer.sendProgramToHomer(program, when, until);
 
             //2 Pokud ne -
             ForUploadProgram forUploadProgram = new ForUploadProgram();

@@ -1,4 +1,4 @@
-package utilities;
+package utilities.loginEntities;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.SecurityController;

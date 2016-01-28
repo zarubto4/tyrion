@@ -20,6 +20,8 @@ libraryDependencies ++= Seq(
   "be.objectify"  %% "deadbolt-java"     % "2.4.3",
   "com.github.scribejava" % "scribejava-apis" % "2.1.0",
   "com.typesafe.play" %% "play-mailer" % "4.0.0-M1",
+  "javax.websocket" % "javax.websocket-api" % "1.1",
+  "org.java-websocket" % "Java-WebSocket" % "1.3.0",
   javaJdbc,
   filters,
   cache,

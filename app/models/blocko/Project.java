@@ -31,7 +31,7 @@ public class Project extends Model {
     @JsonProperty public Integer countOfHomer()     { return homerList.size(); }
     @JsonProperty public Integer countOfBoards()    { return boards.size(); }
     @JsonProperty public Integer countOfPrograms()  { return programs.size(); }
-    @JsonProperty public Integer countOfOwners()    { return ownersOfProject.size(); }
+    @JsonProperty public Integer countOfOwners()    { return 1+ownersOfProject.size(); }
 
     @JsonProperty public String  homers()           { return "http://localhost:9000/project/project/homerList/" + projectId; }
     @JsonProperty public String  boards()           { return "http://localhost:9000/project/boards/" + projectId; }

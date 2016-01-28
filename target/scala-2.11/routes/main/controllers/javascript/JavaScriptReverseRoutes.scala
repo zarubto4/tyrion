@@ -1,7 +1,7 @@
 
 // @GENERATOR:play-routes-compiler
 // @SOURCE:/Users/zaruba/ownCloud/Git/Tyrion/conf/routes
-// @DATE:Wed Jan 27 15:12:26 CET 2016
+// @DATE:Thu Jan 28 16:10:22 CET 2016
 
 import play.api.routing.JavaScriptReverseRoute
 import play.api.mvc.{ QueryStringBindable, PathBindable, Call, JavascriptLiteral }
@@ -1525,6 +1525,26 @@ package controllers.javascript {
       """
         function(id) {
           return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "project/listOfHomersWaitingForUpload/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        }
+      """
+    )
+  
+  }
+
+  // @LINE:12
+  class ReverseWebSocketController(_prefix: => String) {
+
+    def _defaultPrefix: String = {
+      if (_prefix.endsWith("/")) "" else "/"
+    }
+
+  
+    // @LINE:12
+    def connection: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.WebSocketController.connection",
+      """
+        function(id) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "websocket/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
         }
       """
     )

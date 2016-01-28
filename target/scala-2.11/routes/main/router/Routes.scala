@@ -1,7 +1,7 @@
 
 // @GENERATOR:play-routes-compiler
 // @SOURCE:/Users/zaruba/ownCloud/Git/Tyrion/conf/routes
-// @DATE:Wed Jan 27 15:12:26 CET 2016
+// @DATE:Thu Jan 28 16:10:22 CET 2016
 
 package router
 
@@ -19,7 +19,7 @@ class Routes(
   // @LINE:8
   SecurityController_3: javax.inject.Provider[controllers.SecurityController],
   // @LINE:12
-  OutsideCommunicationPackageController_2: javax.inject.Provider[webSocket.controllers.OutsideCommunicationPackageController],
+  WebSocketController_1: javax.inject.Provider[controllers.WebSocketController],
   // @LINE:30
   PersonCreateController_8: javax.inject.Provider[controllers.PersonCreateController],
   // @LINE:43
@@ -31,7 +31,7 @@ class Routes(
   // @LINE:159
   CompilationLibrariesController_5: javax.inject.Provider[controllers.CompilationLibrariesController],
   // @LINE:237
-  ApiHelpController_1: javax.inject.Provider[utilities.swagger.ApiHelpController],
+  ApiHelpController_2: javax.inject.Provider[utilities.swagger.ApiHelpController],
   // @LINE:243
   Assets_6: controllers.Assets,
   val prefix: String
@@ -42,7 +42,7 @@ class Routes(
     // @LINE:8
     SecurityController_3: javax.inject.Provider[controllers.SecurityController],
     // @LINE:12
-    OutsideCommunicationPackageController_2: javax.inject.Provider[webSocket.controllers.OutsideCommunicationPackageController],
+    WebSocketController_1: javax.inject.Provider[controllers.WebSocketController],
     // @LINE:30
     PersonCreateController_8: javax.inject.Provider[controllers.PersonCreateController],
     // @LINE:43
@@ -54,16 +54,16 @@ class Routes(
     // @LINE:159
     CompilationLibrariesController_5: javax.inject.Provider[controllers.CompilationLibrariesController],
     // @LINE:237
-    ApiHelpController_1: javax.inject.Provider[utilities.swagger.ApiHelpController],
+    ApiHelpController_2: javax.inject.Provider[utilities.swagger.ApiHelpController],
     // @LINE:243
     Assets_6: controllers.Assets
-  ) = this(errorHandler, SecurityController_3, OutsideCommunicationPackageController_2, PersonCreateController_8, PermissionController_0, OverFlowController_7, ProgramingPackageController_4, CompilationLibrariesController_5, ApiHelpController_1, Assets_6, "/")
+  ) = this(errorHandler, SecurityController_3, WebSocketController_1, PersonCreateController_8, PermissionController_0, OverFlowController_7, ProgramingPackageController_4, CompilationLibrariesController_5, ApiHelpController_2, Assets_6, "/")
 
   import ReverseRouteContext.empty
 
   def withPrefix(prefix: String): Routes = {
     router.RoutesPrefix.setPrefix(prefix)
-    new Routes(errorHandler, SecurityController_3, OutsideCommunicationPackageController_2, PersonCreateController_8, PermissionController_0, OverFlowController_7, ProgramingPackageController_4, CompilationLibrariesController_5, ApiHelpController_1, Assets_6, prefix)
+    new Routes(errorHandler, SecurityController_3, WebSocketController_1, PersonCreateController_8, PermissionController_0, OverFlowController_7, ProgramingPackageController_4, CompilationLibrariesController_5, ApiHelpController_2, Assets_6, prefix)
   }
 
   private[this] val defaultPrefix: String = {
@@ -72,7 +72,7 @@ class Routes(
 
   def documentation = List(
     ("""GET""", this.prefix, """@controllers.SecurityController@.index"""),
-    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """websocket/$id<[^/]+>""", """@webSocket.controllers.OutsideCommunicationPackageController@.connection(id:String)"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """websocket/$id<[^/]+>""", """@controllers.WebSocketController@.connection(id:String)"""),
     ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """coreClient/person/permission/login""", """@controllers.SecurityController@.login()"""),
     ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """coreClient/person/permission/logout""", """@controllers.SecurityController@.logout"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """login/facebook""", """@controllers.SecurityController@.Facebook()"""),
@@ -246,14 +246,14 @@ class Routes(
   )
 
   // @LINE:12
-  private[this] lazy val webSocket_controllers_OutsideCommunicationPackageController_connection1_route = Route("GET",
+  private[this] lazy val controllers_WebSocketController_connection1_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("websocket/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val webSocket_controllers_OutsideCommunicationPackageController_connection1_invoker = createInvoker(
-    OutsideCommunicationPackageController_2.get.connection(fakeValue[String]),
+  private[this] lazy val controllers_WebSocketController_connection1_invoker = createInvoker(
+    WebSocketController_1.get.connection(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
-      "webSocket.controllers.OutsideCommunicationPackageController",
+      "controllers.WebSocketController",
       "connection",
       Seq(classOf[String]),
       "GET",
@@ -2735,7 +2735,7 @@ Project""",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("api-docs")))
   )
   private[this] lazy val utilities_swagger_ApiHelpController_getResources147_invoker = createInvoker(
-    ApiHelpController_1.get.getResources,
+    ApiHelpController_2.get.getResources,
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "utilities.swagger.ApiHelpController",
@@ -2791,9 +2791,9 @@ Project""",
       }
   
     // @LINE:12
-    case webSocket_controllers_OutsideCommunicationPackageController_connection1_route(params) =>
+    case controllers_WebSocketController_connection1_route(params) =>
       call(params.fromPath[String]("id", None)) { (id) =>
-        webSocket_controllers_OutsideCommunicationPackageController_connection1_invoker.call(OutsideCommunicationPackageController_2.get.connection(id))
+        controllers_WebSocketController_connection1_invoker.call(WebSocketController_1.get.connection(id))
       }
   
     // @LINE:17
@@ -3669,7 +3669,7 @@ Project""",
     // @LINE:237
     case utilities_swagger_ApiHelpController_getResources147_route(params) =>
       call { 
-        utilities_swagger_ApiHelpController_getResources147_invoker.call(ApiHelpController_1.get.getResources)
+        utilities_swagger_ApiHelpController_getResources147_invoker.call(ApiHelpController_2.get.getResources)
       }
   
     // @LINE:240

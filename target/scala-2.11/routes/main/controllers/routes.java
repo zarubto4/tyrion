@@ -1,7 +1,7 @@
 
 // @GENERATOR:play-routes-compiler
 // @SOURCE:/Users/zaruba/ownCloud/Git/Tyrion/conf/routes
-// @DATE:Wed Jan 27 15:12:26 CET 2016
+// @DATE:Thu Jan 28 16:10:22 CET 2016
 
 package controllers;
 
@@ -16,6 +16,7 @@ public class routes {
   public static final controllers.ReversePermissionController PermissionController = new controllers.ReversePermissionController(RoutesPrefix.byNamePrefix());
   public static final controllers.ReversePersonCreateController PersonCreateController = new controllers.ReversePersonCreateController(RoutesPrefix.byNamePrefix());
   public static final controllers.ReverseProgramingPackageController ProgramingPackageController = new controllers.ReverseProgramingPackageController(RoutesPrefix.byNamePrefix());
+  public static final controllers.ReverseWebSocketController WebSocketController = new controllers.ReverseWebSocketController(RoutesPrefix.byNamePrefix());
 
   public static class javascript {
     
@@ -26,6 +27,7 @@ public class routes {
     public static final controllers.javascript.ReversePermissionController PermissionController = new controllers.javascript.ReversePermissionController(RoutesPrefix.byNamePrefix());
     public static final controllers.javascript.ReversePersonCreateController PersonCreateController = new controllers.javascript.ReversePersonCreateController(RoutesPrefix.byNamePrefix());
     public static final controllers.javascript.ReverseProgramingPackageController ProgramingPackageController = new controllers.javascript.ReverseProgramingPackageController(RoutesPrefix.byNamePrefix());
+    public static final controllers.javascript.ReverseWebSocketController WebSocketController = new controllers.javascript.ReverseWebSocketController(RoutesPrefix.byNamePrefix());
   }
 
 }

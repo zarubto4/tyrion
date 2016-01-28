@@ -12,7 +12,7 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.Secured;
+import utilities.loginEntities.Secured;
 import utilities.emails.EmailTool;
 import utilities.response.GlobalResult;
 

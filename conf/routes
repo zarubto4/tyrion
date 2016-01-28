@@ -9,7 +9,7 @@ GET             /                                           @controllers.Securit
 
 
 #  WEB SOCET  //////////////////////////////////////////////////////////////////////////////
-GET             /websocket/:id                              @webSocket.controllers.OutsideCommunicationPackageController.connection(id: String)
+GET             /websocket/:id                              @controllers.WebSocketController.connection(id: String)
 
 #API - CoreClient ##############################################################################################################################################################
 

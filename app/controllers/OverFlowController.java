@@ -10,7 +10,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.response.GlobalResult;
-import utilities.Secured;
+import utilities.loginEntities.Secured;
 import utilities.UtilTools;
 
 import java.util.ArrayList;

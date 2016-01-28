@@ -3,8 +3,8 @@ package models.blocko;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import controllers.WebSocketController;
 import play.libs.Json;
-import webSocket.controllers.SocketCollector;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -53,7 +53,7 @@ public class Homer extends Model {
 
             result.set("contents", data);
 
-            SocketCollector.getConnectionFromMasterThread(this.homerId).write(result.toString());
+            WebSocketController.getConnection(this).write(result.toString());
 
         }
 
