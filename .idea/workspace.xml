@@ -1,29 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="f6cef342-dd25-45cb-b650-fad262b8d827" name="Default" comment="Version 1.04.4  Support for Websocket server side and client side. Client side is with Thread aplication.">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/app/models/login/LinkedAccount.java" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/models/blocko/HomerProgram.class" afterPath="" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/app/models/blocko/HomerProgram.java" afterPath="$PROJECT_DIR$/app/models/blocko/B_Program.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/controllers/OverFlowController.class" afterPath="$PROJECT_DIR$/target/scala-2.11/classes/controllers/OverFlowController.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/controllers/ProgramingPackageController.class" afterPath="$PROJECT_DIR$/target/scala-2.11/classes/controllers/ProgramingPackageController.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/models/blocko/ForUploadProgram.class" afterPath="$PROJECT_DIR$/target/scala-2.11/classes/models/blocko/ForUploadProgram.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/models/blocko/Homer.class" afterPath="$PROJECT_DIR$/target/scala-2.11/classes/models/blocko/Homer.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/models/blocko/Project.class" afterPath="$PROJECT_DIR$/target/scala-2.11/classes/models/blocko/Project.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/models/overflow/Post.class" afterPath="$PROJECT_DIR$/target/scala-2.11/classes/models/overflow/Post.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/streams/$global/dependencyPositions/$global/streams/update_cache_2.11/output_dsp" afterPath="$PROJECT_DIR$/target/streams/$global/dependencyPositions/$global/streams/update_cache_2.11/output_dsp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/streams/compile/copyResources/$global/streams/copy-resources" afterPath="$PROJECT_DIR$/target/streams/compile/copyResources/$global/streams/copy-resources" />
+    <list default="true" id="f6cef342-dd25-45cb-b650-fad262b8d827" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/README" afterPath="$PROJECT_DIR$/README" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/Global.java" afterPath="$PROJECT_DIR$/app/Global.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/controllers/ProgramingPackageController.java" afterPath="$PROJECT_DIR$/app/controllers/ProgramingPackageController.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/models/blocko/ForUploadProgram.java" afterPath="$PROJECT_DIR$/app/models/blocko/ForUploadProgram.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/models/blocko/Homer.java" afterPath="$PROJECT_DIR$/app/models/blocko/Homer.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/models/blocko/Project.java" afterPath="$PROJECT_DIR$/app/models/blocko/Project.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/conf/evolutions/default/1.sql" afterPath="$PROJECT_DIR$/conf/evolutions/default/1.sql" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/evolutions/default/1.sql" afterPath="$PROJECT_DIR$/target/scala-2.11/classes/evolutions/default/1.sql" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/streams/$global/playCommonClassloader/$global/streams/out" afterPath="$PROJECT_DIR$/target/streams/$global/playCommonClassloader/$global/streams/out" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/streams/compile/incCompileSetup/$global/streams/inc_compile_2.11" afterPath="$PROJECT_DIR$/target/streams/compile/incCompileSetup/$global/streams/inc_compile_2.11" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/streams/compile/playEnhancerGenerateAccessors/$global/streams/play_instrumentation_2.11" afterPath="$PROJECT_DIR$/target/streams/compile/playEnhancerGenerateAccessors/$global/streams/play_instrumentation_2.11" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/streams/compile/playEnhancerRewriteAccessors/$global/streams/play_instrumentation_2.11" afterPath="$PROJECT_DIR$/target/streams/compile/playEnhancerRewriteAccessors/$global/streams/play_instrumentation_2.11" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/controllers/SecurityController.java" afterPath="$PROJECT_DIR$/app/controllers/SecurityController.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/conf/application.conf" afterPath="$PROJECT_DIR$/conf/application.conf" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/logs/application.log" afterPath="$PROJECT_DIR$/logs/application.log" />
     </list>
     <ignored path="tyrion.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -128,41 +113,21 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="ClientThreadChecker.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/utilities/webSocket/ClientThreadChecker.java">
+      <file leaf-file-name="README" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/README">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="39" column="9" selection-start-line="39" selection-start-column="9" selection-end-line="39" selection-end-column="9" />
+              <caret line="8" column="2" selection-start-line="8" selection-start-column="2" selection-end-line="8" selection-end-column="2" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Project.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/models/blocko/Project.java">
+      <file leaf-file-name="application.conf" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/conf/application.conf">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="45" column="0" selection-start-line="45" selection-start-column="0" selection-end-line="45" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="OverFlowController.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/controllers/OverFlowController.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="299" column="9" selection-start-line="299" selection-start-column="9" selection-end-line="299" selection-end-column="9" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Post.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/models/overflow/Post.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="55" column="0" selection-start-line="55" selection-start-column="0" selection-end-line="55" selection-end-column="0" />
+            <state vertical-scroll-proportion="-5.625">
+              <caret line="55" column="28" selection-start-line="55" selection-start-column="28" selection-end-line="55" selection-end-column="28" />
               <folding />
             </state>
           </provider>
@@ -172,181 +137,19 @@
         <entry file="file://$PROJECT_DIR$/conf/routes">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="97" column="105" selection-start-line="97" selection-start-column="105" selection-end-line="97" selection-end-column="105" />
+              <caret line="23" column="107" selection-start-line="23" selection-start-column="107" selection-end-line="23" selection-end-column="107" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="B_Program.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/models/blocko/B_Program.java">
+      <file leaf-file-name="SecurityController.java" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/app/controllers/SecurityController.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="16" column="61" selection-start-line="16" selection-start-column="61" selection-end-line="16" selection-end-column="61" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="LinkedAccount.java" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/app/models/login/LinkedAccount.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.5769231">
-              <caret line="31" column="4" selection-start-line="0" selection-start-column="0" selection-end-line="59" selection-end-column="1" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ForUploadProgram.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/models/blocko/ForUploadProgram.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="10" column="13" selection-start-line="10" selection-start-column="13" selection-end-line="10" selection-end-column="13" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="GlobalResult.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/utilities/response/GlobalResult.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="84" column="45" selection-start-line="84" selection-start-column="45" selection-end-line="84" selection-end-column="45" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Results.java" pinned="false" current-in-tab="false">
-        <entry file="jar://$USER_HOME$/.ivy2/cache/com.typesafe.play/play_2.11/srcs/play_2.11-2.4.6-sources.jar!/play/mvc/Results.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="922" column="53" selection-start-line="922" selection-start-column="53" selection-end-line="922" selection-end-column="53" />
+            <state vertical-scroll-proportion="0.7647059">
+              <caret line="98" column="37" selection-start-line="98" selection-start-column="37" selection-end-line="98" selection-end-column="37" />
               <folding>
-                <element signature="e#0#49230#0" expanded="false" />
-                <element signature="e#866#867#0" expanded="false" />
-                <element signature="e#945#946#0" expanded="false" />
-                <element signature="e#2591#2592#0" expanded="false" />
-                <element signature="e#2655#2656#0" expanded="false" />
-                <element signature="e#3602#3603#0" expanded="false" />
-                <element signature="e#3671#3672#0" expanded="false" />
-                <element signature="e#3776#3777#0" expanded="false" />
-                <element signature="e#3854#3855#0" expanded="false" />
-                <element signature="e#4181#4182#0" expanded="false" />
-                <element signature="e#4259#4260#0" expanded="false" />
-                <element signature="e#4587#4588#0" expanded="false" />
-                <element signature="e#4665#4666#0" expanded="false" />
-                <element signature="e#4993#4994#0" expanded="false" />
-                <element signature="e#5065#5066#0" expanded="false" />
-                <element signature="e#5175#5176#0" expanded="false" />
-                <element signature="e#5227#5228#0" expanded="false" />
-                <element signature="e#5599#5600#0" expanded="false" />
-                <element signature="e#5671#5672#0" expanded="false" />
-                <element signature="e#5916#5917#0" expanded="false" />
-                <element signature="e#5984#5985#0" expanded="false" />
-                <element signature="e#6401#6402#0" expanded="false" />
-                <element signature="e#6472#6473#0" expanded="false" />
-                <element signature="e#6597#6598#0" expanded="false" />
-                <element signature="e#6671#6672#0" expanded="false" />
-                <element signature="e#8093#8094#0" expanded="false" />
-                <element signature="e#8170#8171#0" expanded="false" />
-                <element signature="e#8290#8291#0" expanded="false" />
-                <element signature="e#8347#8348#0" expanded="false" />
-                <element signature="e#8744#8745#0" expanded="false" />
-                <element signature="e#8821#8822#0" expanded="false" />
-                <element signature="e#9591#9592#0" expanded="false" />
-                <element signature="e#9667#9668#0" expanded="false" />
-                <element signature="e#9794#9795#0" expanded="false" />
-                <element signature="e#9864#9865#0" expanded="false" />
-                <element signature="e#13735#13736#0" expanded="false" />
-                <element signature="e#13810#13811#0" expanded="false" />
-                <element signature="e#15259#15260#0" expanded="false" />
-                <element signature="e#15337#15338#0" expanded="false" />
-                <element signature="e#15460#15461#0" expanded="false" />
-                <element signature="e#15518#15519#0" expanded="false" />
-                <element signature="e#15922#15923#0" expanded="false" />
-                <element signature="e#16000#16001#0" expanded="false" />
-                <element signature="e#16781#16782#0" expanded="false" />
-                <element signature="e#16858#16859#0" expanded="false" />
-                <element signature="e#16989#16990#0" expanded="false" />
-                <element signature="e#17065#17066#0" expanded="false" />
-                <element signature="e#18527#18528#0" expanded="false" />
-                <element signature="e#18606#18607#0" expanded="false" />
-                <element signature="e#18730#18731#0" expanded="false" />
-                <element signature="e#18789#18790#0" expanded="false" />
-                <element signature="e#19196#19197#0" expanded="false" />
-                <element signature="e#19275#19276#0" expanded="false" />
-                <element signature="e#20061#20062#0" expanded="false" />
-                <element signature="e#20139#20140#0" expanded="false" />
-                <element signature="e#20290#20291#0" expanded="false" />
-                <element signature="e#20372#20373#0" expanded="false" />
-                <element signature="e#22180#22181#0" expanded="false" />
-                <element signature="e#22245#22246#0" expanded="false" />
-                <element signature="e#23830#23831#0" expanded="false" />
-                <element signature="e#23909#23910#0" expanded="false" />
-                <element signature="e#25643#25644#0" expanded="false" />
-                <element signature="e#25705#25706#0" expanded="false" />
-                <element signature="e#27236#27237#0" expanded="false" />
-                <element signature="e#27313#27314#0" expanded="false" />
-                <element signature="e#29009#29010#0" expanded="false" />
-                <element signature="e#29069#29070#0" expanded="false" />
-                <element signature="e#29483#29484#0" expanded="false" />
-                <element signature="e#29563#29564#0" expanded="false" />
-                <element signature="e#30618#30619#0" expanded="false" />
-                <element signature="e#30663#30664#0" expanded="false" />
-                <element signature="e#30874#30875#0" expanded="false" />
-                <element signature="e#30926#30927#0" expanded="false" />
-                <element signature="e#31095#31096#0" expanded="false" />
-                <element signature="e#31140#31141#0" expanded="false" />
-                <element signature="e#31344#31345#0" expanded="false" />
-                <element signature="e#31396#31397#0" expanded="false" />
-                <element signature="e#31600#31601#0" expanded="false" />
-                <element signature="e#31645#31646#0" expanded="false" />
-                <element signature="e#31872#31873#0" expanded="false" />
-                <element signature="e#31924#31925#0" expanded="false" />
-                <element signature="e#32104#32105#0" expanded="false" />
-                <element signature="e#32149#32150#0" expanded="false" />
-                <element signature="e#32360#32361#0" expanded="false" />
-                <element signature="e#32412#32413#0" expanded="false" />
-                <element signature="e#32619#32620#0" expanded="false" />
-                <element signature="e#32664#32665#0" expanded="false" />
-                <element signature="e#32893#32894#0" expanded="false" />
-                <element signature="e#32945#32946#0" expanded="false" />
-                <element signature="e#35054#35055#0" expanded="false" />
-                <element signature="e#35105#35106#0" expanded="false" />
-                <element signature="e#35468#35469#0" expanded="false" />
-                <element signature="e#35519#35520#0" expanded="false" />
-                <element signature="e#35815#35816#0" expanded="false" />
-                <element signature="e#35849#35850#0" expanded="false" />
-                <element signature="e#35894#35895#0" expanded="false" />
-                <element signature="e#35950#35951#0" expanded="false" />
-                <element signature="e#35994#35995#0" expanded="false" />
-                <element signature="e#36067#36068#0" expanded="false" />
-                <element signature="e#38857#38858#0" expanded="false" />
-                <element signature="e#38924#38925#0" expanded="false" />
-                <element signature="e#40911#40912#0" expanded="false" />
-                <element signature="e#40960#40961#0" expanded="false" />
-                <element signature="e#41209#41210#0" expanded="false" />
-                <element signature="e#41267#41268#0" expanded="false" />
-                <element signature="e#41566#41567#0" expanded="false" />
-                <element signature="e#41629#41630#0" expanded="false" />
-                <element signature="e#43199#43200#0" expanded="false" />
-                <element signature="e#43251#43252#0" expanded="false" />
-                <element signature="e#44846#44847#0" expanded="false" />
-                <element signature="e#44890#44891#0" expanded="false" />
-                <element signature="e#45100#45101#0" expanded="false" />
-                <element signature="e#45158#45159#0" expanded="false" />
-                <element signature="e#46991#46992#0" expanded="false" />
-                <element signature="e#47043#47044#0" expanded="false" />
-                <element signature="e#48465#48466#0" expanded="false" />
-                <element signature="e#48509#48510#0" expanded="false" />
-                <element signature="e#48770#48771#0" expanded="false" />
-                <element signature="e#48825#48826#0" expanded="false" />
-                <element signature="e#49037#49038#0" expanded="false" />
-                <element signature="e#49122#49123#0" expanded="false" />
-                <element signature="e#49170#49171#0" expanded="false" />
-                <element signature="e#49219#49220#0" expanded="false" />
+                <element signature="imports" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -373,11 +176,9 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/app/models/docasny/TokenAction.java" />
         <option value="$PROJECT_DIR$/app/utilities/loginEntities/Facebook.java" />
         <option value="$PROJECT_DIR$/app/models/login/LinkedAccount.java" />
         <option value="$PROJECT_DIR$/app/controllers/PermissionController.java" />
-        <option value="$PROJECT_DIR$/README" />
         <option value="$PROJECT_DIR$/app/utilities/loginEntities/Socials.java" />
         <option value="$PROJECT_DIR$/app/utilities/emails/templates/index.html" />
         <option value="$PROJECT_DIR$/app/models/login/ValidationToken.java" />
@@ -411,19 +212,21 @@
         <option value="$PROJECT_DIR$/app/models/blocko/Project.java" />
         <option value="$PROJECT_DIR$/app/utilities/webSocket/WebSocketPlayServer.java" />
         <option value="$PROJECT_DIR$/app/utilities/webSocket/WebSocketClientNotPlay.java" />
-        <option value="$PROJECT_DIR$/app/Global.java" />
-        <option value="$PROJECT_DIR$/conf/application.conf" />
         <option value="$PROJECT_DIR$/app/utilities/webSocket/ClientThreadChecker.java" />
         <option value="$PROJECT_DIR$/app/controllers/WebSocketController.java" />
         <option value="$PROJECT_DIR$/build.sbt" />
         <option value="$PROJECT_DIR$/conf/routes" />
-        <option value="$PROJECT_DIR$/app/controllers/SecurityController.java" />
         <option value="$PROJECT_DIR$/app/utilities/response/GlobalResult.java" />
         <option value="$PROJECT_DIR$/app/models/blocko/HomerProgram.java" />
-        <option value="$PROJECT_DIR$/app/controllers/ProgramingPackageController.java" />
         <option value="$PROJECT_DIR$/app/controllers/OverFlowController.java" />
         <option value="$PROJECT_DIR$/app/models/overflow/Post.java" />
         <option value="$PROJECT_DIR$/app/models/blocko/B_Program.java" />
+        <option value="$PROJECT_DIR$/app/Global.java" />
+        <option value="$PROJECT_DIR$/app/utilities/response/CoreResponse.java" />
+        <option value="$PROJECT_DIR$/README" />
+        <option value="$PROJECT_DIR$/app/controllers/ProgramingPackageController.java" />
+        <option value="$PROJECT_DIR$/conf/application.conf" />
+        <option value="$PROJECT_DIR$/app/controllers/SecurityController.java" />
       </list>
     </option>
   </component>
@@ -493,6 +296,38 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="Tyrion" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tyrion" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Tyrion" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="conf" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tyrion" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Tyrion" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="conf" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="default" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -1218,7 +1053,7 @@
       <workItem from="1453908973552" duration="20769000" />
       <workItem from="1454036530067" duration="16907000" />
       <workItem from="1454156030038" duration="593000" />
-      <workItem from="1454233331200" duration="4306000" />
+      <workItem from="1454233331200" duration="6229000" />
     </task>
     <task id="LOCAL-00001" summary="Version 1.04.1 - Login with social Networks">
       <created>1453797530585</created>
@@ -1262,11 +1097,17 @@
       <option name="project" value="LOCAL" />
       <updated>1454408297630</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Version 1.04.5  Hot Fix for critical Error">
+      <created>1454417693218</created>
+      <option name="number" value="00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1454417693218</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="230153000" />
+    <option name="totallyTimeSpent" value="232076000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1288,11 +1129,11 @@
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="true" internal_type="SLIDING" type="SLIDING" visible="false" show_stripe_button="true" weight="0.29017857" sideWeight="0.43923748" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32962668" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.453125" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.20170455" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.453125" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3721591" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.34151787" sideWeight="0.5607625" order="12" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25928918" sideWeight="0.48834628" order="5" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2907916" sideWeight="0.48834628" order="5" side_tool="false" content_ui="combo" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.023828436" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.328125" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24980143" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -1361,7 +1202,8 @@
     <MESSAGE value="Version 1.04.2 - Email registration support &amp; and logging" />
     <MESSAGE value="Version 1.04.3  Share project FIX" />
     <MESSAGE value="Version 1.04.4  Support for Websocket server side and client side. Client side is with Thread aplication." />
-    <option name="LAST_COMMIT_MESSAGE" value="Version 1.04.4  Support for Websocket server side and client side. Client side is with Thread aplication." />
+    <MESSAGE value="Version 1.04.5  Hot Fix for critical Error" />
+    <option name="LAST_COMMIT_MESSAGE" value="Version 1.04.5  Hot Fix for critical Error" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1394,34 +1236,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="jar://$USER_HOME$/.ivy2/cache/org.java-websocket/Java-WebSocket/srcs/Java-WebSocket-1.3.0-sources.jar!/org/java_websocket/server/WebSocketServer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.09231963">
-          <caret line="607" column="22" selection-start-line="607" selection-start-column="13" selection-end-line="607" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/.ivy2/cache/org.java-websocket/Java-WebSocket/srcs/Java-WebSocket-1.3.0-sources.jar!/org/java_websocket/drafts/Draft.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.098314606">
-          <caret line="28" column="22" selection-start-line="28" selection-start-column="22" selection-end-line="28" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/src.zip!/java/lang/Thread.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.24501759">
-          <caret line="808" column="25" selection-start-line="808" selection-start-column="25" selection-end-line="808" selection-end-column="25" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/utilities/webSocket/WebSocketPlayServer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="7" column="13" selection-start-line="7" selection-start-column="13" selection-end-line="7" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://$USER_HOME$/.ivy2/cache/com.typesafe.play/play_2.11/srcs/play_2.11-2.4.6-sources.jar!/play/core/j/JavaGlobalSettingsAdapter.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.26957637">
@@ -1598,25 +1412,11 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/conf/application.conf">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-27.5">
-          <caret line="54" column="38" selection-start-line="54" selection-start-column="38" selection-end-line="54" selection-end-column="38" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/utilities/UtilTools.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="12" column="13" selection-start-line="12" selection-start-column="13" selection-end-line="12" selection-end-column="13" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/Global.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="25" column="68" selection-start-line="25" selection-start-column="68" selection-end-line="25" selection-end-column="68" />
         </state>
       </provider>
     </entry>
@@ -1638,16 +1438,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.2989449">
           <caret line="17" column="43" selection-start-line="17" selection-start-column="43" selection-end-line="17" selection-end-column="43" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/controllers/SecurityController.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="43" column="0" selection-start-line="43" selection-start-column="0" selection-end-line="43" selection-end-column="0" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1676,22 +1466,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.06872852">
           <caret line="6" column="13" selection-start-line="6" selection-start-column="13" selection-end-line="6" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/controllers/ProgramingPackageController.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.26899695">
-          <caret line="46" column="13" selection-start-line="46" selection-start-column="13" selection-end-line="46" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/utilities/response/GlobalResult.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="84" column="45" selection-start-line="84" selection-start-column="45" selection-end-line="84" selection-end-column="45" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1835,26 +1609,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/conf/routes">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="97" column="105" selection-start-line="97" selection-start-column="105" selection-end-line="97" selection-end-column="105" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/models/overflow/Post.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="55" column="0" selection-start-line="55" selection-start-column="0" selection-end-line="55" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/controllers/OverFlowController.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="299" column="9" selection-start-line="299" selection-start-column="9" selection-end-line="299" selection-end-column="9" />
           <folding />
         </state>
       </provider>
@@ -1883,19 +1641,113 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/models/blocko/B_Program.java">
+    <entry file="file://$PROJECT_DIR$/app/utilities/response/GlobalResult.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.34640524">
+          <caret line="84" column="45" selection-start-line="84" selection-start-column="45" selection-end-line="84" selection-end-column="45" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/Global.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
+          <caret line="25" column="32" selection-start-line="25" selection-start-column="11" selection-end-line="25" selection-end-column="32" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/models/blocko/B_Program.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.29411766">
           <caret line="16" column="61" selection-start-line="16" selection-start-column="61" selection-end-line="16" selection-end-column="61" />
           <folding />
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/conf/logback.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/utilities/response/CoreResponse.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.52287585">
+          <caret line="16" column="5" selection-start-line="16" selection-start-column="5" selection-end-line="16" selection-end-column="5" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/app/models/login/LinkedAccount.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.5769231">
-          <caret line="31" column="4" selection-start-line="0" selection-start-column="0" selection-end-line="59" selection-end-column="1" />
+        <state vertical-scroll-proportion="1.1764706">
+          <caret line="41" column="13" selection-start-line="41" selection-start-column="13" selection-end-line="41" selection-end-column="13" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/models/login/Person.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="43" column="67" selection-start-line="43" selection-start-column="67" selection-end-line="43" selection-end-column="84" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/conf/application.conf">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-5.625">
+          <caret line="55" column="28" selection-start-line="55" selection-start-column="28" selection-end-line="55" selection-end-column="28" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/controllers/OverFlowController.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.8559322">
+          <caret line="299" column="9" selection-start-line="299" selection-start-column="9" selection-end-line="299" selection-end-column="9" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/controllers/ProgramingPackageController.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="1.9194915">
+          <caret line="52" column="66" selection-start-line="52" selection-start-column="66" selection-end-line="52" selection-end-column="66" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/README">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="8" column="2" selection-start-line="8" selection-start-column="2" selection-end-line="8" selection-end-column="2" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/conf/routes">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="23" column="107" selection-start-line="23" selection-start-column="107" selection-end-line="23" selection-end-column="107" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/controllers/SecurityController.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.7647059">
+          <caret line="98" column="37" selection-start-line="98" selection-start-column="37" selection-end-line="98" selection-end-column="37" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

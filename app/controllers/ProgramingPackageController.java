@@ -9,14 +9,16 @@ import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
+import play.mvc.Security;
 import utilities.UtilTools;
+import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-//@Security.Authenticated(Secured.class)
+@Security.Authenticated(Secured.class)
 public class ProgramingPackageController extends Controller {
 
     @BodyParser.Of(BodyParser.Json.class)
@@ -46,7 +48,9 @@ public class ProgramingPackageController extends Controller {
     public  Result getProjectsByUserAccount(){
         try {
 
-            return GlobalResult.okResult(Json.toJson( SecurityController.getPerson().owningProjects ));
+            List<Project> projects = SecurityController.getPerson().owningProjects;
+
+            return GlobalResult.okResult(Json.toJson( projects ));
 
         } catch (Exception e) {
             Logger.error("Error", e);
