@@ -76,9 +76,13 @@ public class GlobalResult extends Controller {
         CoreResponse.cors();
         return Controller.created(o);
     }
-    public static StatusHeader notFound(){
+
+    public static Result notFoundObject(){
         CoreResponse.cors();
-        return Controller.notFound();
+        ObjectNode result = Json.newObject();
+        result.put("state", "error");
+        result.put("message", "Object not found");
+        return Controller.badRequest(result);
     }
 
     public static StatusHeader forbidden(){

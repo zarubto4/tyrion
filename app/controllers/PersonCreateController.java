@@ -120,7 +120,7 @@ public class PersonCreateController extends Controller {
         try{
 
             Person person =Person.find.byId(id);
-            if(person == null )  return GlobalResult.notFound();
+            if(person == null )  return GlobalResult.notFoundObject();
 
 
             return GlobalResult.okResult(Json.toJson(person));
@@ -138,7 +138,7 @@ public class PersonCreateController extends Controller {
         try{
 
             Person person = Person.find.byId(id);
-            if(person == null ) return GlobalResult.notFound();
+            if(person == null ) return GlobalResult.notFoundObject();
 
             person.delete();
 
@@ -161,7 +161,7 @@ public class PersonCreateController extends Controller {
             JsonNode json = request().body().asJson();
 
             Person person = Person.find.byId(json.get("mail").asText());
-            if (person == null) return GlobalResult.notFound();
+            if (person == null) return GlobalResult.notFoundObject();
 
             person.nickName     =  json.get("nickName")     .asText();
             person.firstName    = json.get("firstName")     .asText();

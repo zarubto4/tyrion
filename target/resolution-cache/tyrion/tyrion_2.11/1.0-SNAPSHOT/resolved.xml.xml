@@ -4,7 +4,7 @@
 		module="tyrion_2.11"
 		revision="1.0-SNAPSHOT"
 		status="integration"
-		publication="20160128161004"
+		publication="20160202110641"
 	>
 		<description>
 		tyrion
@@ -47,15 +47,16 @@
 		<dependency org="com.microsoft.azure" name="azure-core" rev="0.9.1" conf="compile->default(compile)"/>
 		<dependency org="com.microsoft.azure" name="azure-storage" rev="4.0.0" conf="compile->default(compile)"/>
 		<dependency org="com.microsoft.azure" name="azure-svc-mgmt" rev="0.9.1" conf="compile->default(compile)"/>
-		<dependency org="io.swagger" name="swagger-play2_2.11" rev="1.5.1" conf="compile->default(compile)">
-			<exclude org="org.reflections" module="reflections" name="*" type="*" ext="*" conf="" matcher="exact"/>
-		</dependency>
+		<dependency org="io.swagger" name="swagger-play2_2.11" rev="1.5.1" conf="compile->default(compile)"/>
 		<dependency org="io.swagger" name="swagger-core" rev="1.5.6" conf="compile->default(compile)"/>
 		<dependency org="be.objectify" name="deadbolt-java_2.11" rev="2.4.3" conf="compile->default(compile)"/>
 		<dependency org="com.github.scribejava" name="scribejava-apis" rev="2.1.0" conf="compile->default(compile)"/>
 		<dependency org="com.typesafe.play" name="play-mailer_2.11" rev="4.0.0-M1" conf="compile->default(compile)"/>
+		<dependency org="org.glassfish.grizzly" name="grizzly-http-server" rev="2.3.23" conf="compile->default(compile)"/>
 		<dependency org="javax.websocket" name="javax.websocket-api" rev="1.1" conf="compile->default(compile)"/>
-		<dependency org="org.java-websocket" name="Java-WebSocket" rev="1.3.0" conf="compile->default(compile)"/>
+		<dependency org="org.glassfish.tyrus" name="tyrus-client" rev="1.12" conf="compile->default(compile)"/>
+		<dependency org="org.glassfish.tyrus" name="tyrus-container-grizzly-client" rev="1.12" conf="compile->default(compile)"/>
+		<dependency org="org.glassfish.tyrus" name="tyrus-core" rev="1.12" conf="compile->default(compile)"/>
 		<dependency org="com.typesafe.play" name="play-java-jdbc_2.11" rev="2.4.4" conf="compile->default(compile)"/>
 		<dependency org="com.typesafe.play" name="filters-helpers_2.11" rev="2.4.4" conf="compile->default(compile)"/>
 		<dependency org="com.typesafe.play" name="play-cache_2.11" rev="2.4.4" conf="compile->default(compile)"/>

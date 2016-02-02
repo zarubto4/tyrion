@@ -10,7 +10,8 @@ GET             /                                           @controllers.Securit
 
 #  WEB SOCET  //////////////////////////////////////////////////////////////////////////////
 GET             /websocket/:id                              @controllers.WebSocketController.connection(id: String)
-
+POST             /websocket/webSocketStats                   @controllers.WebSocketController.getWebSocketStats()
+POST             /websocket/sendTo/:id                       @controllers.WebSocketController.sendTo(id: String)
 #API - CoreClient ##############################################################################################################################################################
 
 #Login page

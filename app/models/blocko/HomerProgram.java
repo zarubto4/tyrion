@@ -27,7 +27,7 @@ public class HomerProgram extends Model {
     @JsonProperty public String listOfUploadedHomers(){  return "http://localhost:9000/project/listOfUploadedHomers/" + this.programId; }
     @JsonProperty public String listOfHomersWaitingForUpload(){  return "http://localhost:9000/project/listOfHomersWaitingForUpload/" + this.programId; }
     @JsonProperty public String programinJson(){  return "http://localhost:9000/project/programInJson/" + this.programId; }
-    @JsonProperty public String projectinJson(){  return "http://localhost:9000/project/" + this.project.projectId; }
+    @JsonProperty public String project(){  return "http://localhost:9000/project/project/" + this.project.projectId; }
 
 
 

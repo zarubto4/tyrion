@@ -44,7 +44,7 @@ public class Post extends Model {
 
 
    // @JsonProperty public String hashTagsList(){  return "http://localhost:9000/overflow/post/hashTags/" + this.postId; } // Není nezbytně vyžadováno
-   @JsonInclude(JsonInclude.Include.NON_EMPTY) @JsonProperty public String comments(){ return name == null ? null : "http://localhost:9000/overflow/post/comments/" +      this.postId; }
+    @JsonProperty public String comments(){ return comments.size() == 0 ? null : "http://localhost:9000/overflow/post/comments/" +      this.postId; }
     @JsonInclude(JsonInclude.Include.NON_EMPTY) @JsonProperty public String answers(){ return name == null ? null : "http://localhost:9000/overflow/post/answers/" +      this.postId; }
 
     // Vazba M:1 pro nalinkování komentáře na post

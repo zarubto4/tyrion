@@ -57,7 +57,7 @@ public class CompilationLibrariesController extends Controller {
 
             Processor processor = Processor.find.byId(id);
 
-            if(processor == null ) return GlobalResult.notFound();
+            if(processor == null ) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(processor));
 
@@ -122,7 +122,7 @@ public class CompilationLibrariesController extends Controller {
         try {
 
             Processor processor = Processor.find.byId(id);
-            if(processor == null ) return GlobalResult.notFound();
+            if(processor == null ) return GlobalResult.notFoundObject();
 
             processor.delete();
 
@@ -138,7 +138,7 @@ public class CompilationLibrariesController extends Controller {
     public Result getProcessorDescription(String id) {
         try {
             Processor processor = Processor.find.byId(id);
-            if(processor == null ) return GlobalResult.notFound();
+            if(processor == null ) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(processor.description));
         } catch (Exception e) {
@@ -152,7 +152,7 @@ public class CompilationLibrariesController extends Controller {
     public Result getProcessorLibraryGroups(String id) {
         try {
             Processor processor = Processor.find.byId(id);
-            if(processor == null ) return GlobalResult.notFound();
+            if(processor == null ) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(processor.libraryGroups));
         } catch (Exception e) {
@@ -166,7 +166,7 @@ public class CompilationLibrariesController extends Controller {
     public Result getProcessorSingleLibraries(String id) {
         try {
             Processor processor = Processor.find.byId(id);
-            if(processor == null ) return GlobalResult.notFound();
+            if(processor == null ) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(processor.singleLibraries));
         } catch (Exception e) {
@@ -180,10 +180,10 @@ public class CompilationLibrariesController extends Controller {
     public Result connectProcessorWithLibrary(String id, String lbrId) {
         try {
             Processor processor = Processor.find.byId(id);
-            if(processor == null ) return GlobalResult.notFound();
+            if(processor == null ) return GlobalResult.notFoundObject();
 
             SingleLibrary singleLibrary = SingleLibrary.find.byId(id);
-            if(singleLibrary == null ) return GlobalResult.notFound();
+            if(singleLibrary == null ) return GlobalResult.notFoundObject();
 
 
             processor.singleLibraries.add(singleLibrary);
@@ -201,10 +201,10 @@ public class CompilationLibrariesController extends Controller {
     public Result connectProcessorWithLibraryGroup(String id, String lbrgId) {
         try {
             Processor processor = Processor.find.byId(id);
-            if(processor == null ) return GlobalResult.notFound();
+            if(processor == null ) return GlobalResult.notFoundObject();
 
             LibraryGroup libraryGroup = LibraryGroup.find.byId(id);
-            if(libraryGroup == null ) return GlobalResult.notFound();
+            if(libraryGroup == null ) return GlobalResult.notFoundObject();
 
 
             processor.libraryGroups.add(libraryGroup);
@@ -222,10 +222,10 @@ public class CompilationLibrariesController extends Controller {
     public Result unconnectProcessorWithLibrary(String id, String lbrId) {
         try {
             Processor processor = Processor.find.byId(id);
-            if(processor == null ) return GlobalResult.notFound();
+            if(processor == null ) return GlobalResult.notFoundObject();
 
             SingleLibrary singleLibrary = SingleLibrary.find.byId(id);
-            if(singleLibrary == null ) return GlobalResult.notFound();
+            if(singleLibrary == null ) return GlobalResult.notFoundObject();
 
 
             processor.singleLibraries.remove(singleLibrary);
@@ -243,10 +243,10 @@ public class CompilationLibrariesController extends Controller {
     public Result unconnectProcessorWithLibraryGroup(String id, String lbrgId) {
         try {
             Processor processor = Processor.find.byId(id);
-            if(processor == null ) return GlobalResult.notFound();
+            if(processor == null ) return GlobalResult.notFoundObject();
 
             LibraryGroup libraryGroup = LibraryGroup.find.byId(id);
-            if(libraryGroup == null ) return GlobalResult.notFound();
+            if(libraryGroup == null ) return GlobalResult.notFoundObject();
 
 
             processor.libraryGroups.remove(libraryGroup);
@@ -301,7 +301,7 @@ public class CompilationLibrariesController extends Controller {
             JsonNode json = request().body().asJson();
 
             LibraryGroup libraryGroup = LibraryGroup.find.byId(id);
-            if(libraryGroup == null) return GlobalResult.notFound();
+            if(libraryGroup == null) return GlobalResult.notFoundObject();
 
             Version versionObject = new Version();
             versionObject.azureLinkVersion   = json.get("version").asDouble();
@@ -329,7 +329,7 @@ public class CompilationLibrariesController extends Controller {
     public Result getVersionLibraryGroup(String id){
         try {
             LibraryGroup libraryGroup = LibraryGroup.find.byId(id);
-            if(libraryGroup == null) return GlobalResult.notFound();
+            if(libraryGroup == null) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(libraryGroup.versions));
         } catch (Exception e) {
@@ -348,10 +348,10 @@ public class CompilationLibrariesController extends Controller {
 
             // If libraryRecord group is not null
             LibraryGroup libraryGroup = LibraryGroup.find.byId(libraryId);
-            if(libraryGroup == null ) return GlobalResult.notFound();
+            if(libraryGroup == null ) return GlobalResult.notFoundObject();
 
             Version versionObject = Version.find.where().in("libraryGroup.id", libraryGroup.id).eq("azureLinkVersion",versionId).setMaxRows(1).findUnique();
-            if(versionObject == null ) return GlobalResult.notFound();
+            if(versionObject == null ) return GlobalResult.notFoundObject();
 
             // Its file not null
             if (file == null) return GlobalResult.notFound("File not found");
@@ -395,7 +395,7 @@ public class CompilationLibrariesController extends Controller {
     public Result getLibraryGroup(String id) {
         try {
             LibraryGroup libraryGroup = LibraryGroup.find.byId(id);
-            if(libraryGroup == null) return GlobalResult.notFound();
+            if(libraryGroup == null) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(libraryGroup));
         } catch (Exception e) {
@@ -408,7 +408,7 @@ public class CompilationLibrariesController extends Controller {
     public Result deleteLibraryGroup(String id) {
         try {
             LibraryGroup libraryGroup = LibraryGroup.find.byId(id);
-            if(libraryGroup == null) return GlobalResult.notFound();
+            if(libraryGroup == null) return GlobalResult.notFoundObject();
 
             UtilTools.azureDelete(GlobalValue.blobClient.getContainerReference("libraries"), libraryGroup.azurePackageLink+"/"+libraryGroup.azureStorageLink);
 
@@ -440,7 +440,7 @@ public class CompilationLibrariesController extends Controller {
         try {
 
             LibraryGroup libraryGroup = LibraryGroup.find.byId(id);
-            if(libraryGroup == null) return GlobalResult.notFound();
+            if(libraryGroup == null) return GlobalResult.notFoundObject();
 
             JsonNode json = request().body().asJson();
 
@@ -461,7 +461,7 @@ public class CompilationLibrariesController extends Controller {
     public Result getLibraryGroupDescription(String id) {
         try {
             LibraryGroup libraryGroup = LibraryGroup.find.byId(id);
-            if(libraryGroup == null) return GlobalResult.notFound();
+            if(libraryGroup == null) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(libraryGroup.description));
 
@@ -475,7 +475,7 @@ public class CompilationLibrariesController extends Controller {
     public Result getLibraryGroupProcessors(String id) {
         try {
             LibraryGroup libraryGroup = LibraryGroup.find.byId(id);
-            if(libraryGroup == null) return GlobalResult.notFound();
+            if(libraryGroup == null) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(libraryGroup.processors));
         } catch (Exception e) {
@@ -489,7 +489,7 @@ public class CompilationLibrariesController extends Controller {
         try {
 
             Version versionObject= Version.find.where().in("libraryGroup.id", libraryId).eq("id",versionId).setMaxRows(1).findUnique();
-            if(versionObject == null ) return GlobalResult.notFound();
+            if(versionObject == null ) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(versionObject.records));
         } catch (Exception e) {
@@ -502,7 +502,7 @@ public class CompilationLibrariesController extends Controller {
     public Result listOfFilesInVersion(String id){
         try {
             Version version = Version.find.byId(id);
-            if(version == null) return GlobalResult.notFound();
+            if(version == null) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(version.records));
         } catch (Exception e) {
@@ -735,7 +735,7 @@ public class CompilationLibrariesController extends Controller {
             JsonNode json = request().body().asJson();
 
             Producer producer = Producer.find.byId(id);
-            if(producer == null ) return GlobalResult.notFound();
+            if(producer == null ) return GlobalResult.notFoundObject();
 
             producer.name = json.get("name").asText();
             producer.description = json.get("description").asText();
@@ -770,7 +770,7 @@ public class CompilationLibrariesController extends Controller {
         try {
             Producer producer = Producer.find.byId(id);
 
-            if(producer == null ) return GlobalResult.notFound();
+            if(producer == null ) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(producer));
 
@@ -786,7 +786,7 @@ public class CompilationLibrariesController extends Controller {
         try {
             Producer producer = Producer.find.byId(id);
 
-            if(producer == null ) return GlobalResult.notFound();
+            if(producer == null ) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(producer.description));
         } catch (Exception e) {
@@ -801,7 +801,7 @@ public class CompilationLibrariesController extends Controller {
         try {
             Producer producer = Producer.find.byId(id);
 
-            if(producer == null ) return GlobalResult.notFound();
+            if(producer == null ) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(producer.typeOfBoards));
 
@@ -820,10 +820,10 @@ public class CompilationLibrariesController extends Controller {
             JsonNode json = request().body().asJson();
 
             Producer producer = Producer.find.byId(json.get("producerId").asText());
-            if(producer == null ) return GlobalResult.notFound();
+            if(producer == null ) return GlobalResult.notFoundObject();
 
             Processor processor = Processor.find.byId(json.get("processorId").asText());
-            if(processor == null ) return GlobalResult.notFound();
+            if(processor == null ) return GlobalResult.notFoundObject();
 
 
             TypeOfBoard typeOfBoard = new TypeOfBoard();
@@ -851,13 +851,13 @@ public class CompilationLibrariesController extends Controller {
             JsonNode json = request().body().asJson();
 
             TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(id);
-            if(typeOfBoard == null ) return GlobalResult.notFound();
+            if(typeOfBoard == null ) return GlobalResult.notFoundObject();
 
             Producer producer = Producer.find.byId(json.get("producerId").asText());
-            if(producer == null ) return GlobalResult.notFound();
+            if(producer == null ) return GlobalResult.notFoundObject();
 
             Processor processor = Processor.find.byId(json.get("processorId").asText());
-            if(processor == null ) return GlobalResult.notFound();
+            if(processor == null ) return GlobalResult.notFoundObject();
 
             typeOfBoard.name = json.get("name").asText();
             typeOfBoard.description = json.get("description").asText();
@@ -896,7 +896,7 @@ public class CompilationLibrariesController extends Controller {
         try {
 
             TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(id);
-            if(typeOfBoard == null ) return GlobalResult.notFound();
+            if(typeOfBoard == null ) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(typeOfBoard));
 
@@ -912,7 +912,7 @@ public class CompilationLibrariesController extends Controller {
         try {
 
             TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(id);
-            if(typeOfBoard == null ) return GlobalResult.notFound();
+            if(typeOfBoard == null ) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(typeOfBoard.description));
 
@@ -928,7 +928,7 @@ public class CompilationLibrariesController extends Controller {
         try {
 
             TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(id);
-            if(typeOfBoard == null ) return GlobalResult.notFound();
+            if(typeOfBoard == null ) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(typeOfBoard.boards));
         } catch (Exception e) {
@@ -947,7 +947,7 @@ public class CompilationLibrariesController extends Controller {
             if (Board.find.byId(json.get("hwName").asText()) != null) GlobalResult.forbidden("Duplicate database value");
 
             TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(json.get("typeOfBoard").asText());
-            if(typeOfBoard == null ) return GlobalResult.notFound();
+            if(typeOfBoard == null ) return GlobalResult.notFoundObject();
 
             Board board = new Board();
             board.id = json.get("hwName").asText();
@@ -973,7 +973,7 @@ public class CompilationLibrariesController extends Controller {
             JsonNode json = request().body().asJson();
 
             Board board = Board.find.byId(id);
-            if(board == null ) return GlobalResult.notFound();
+            if(board == null ) return GlobalResult.notFoundObject();
 
             board.userDescription = json.get("userDescription").asText();
             board.update();
@@ -993,7 +993,7 @@ public class CompilationLibrariesController extends Controller {
     public Result deactivateBoard(String id) {
         try {
             Board board = Board.find.byId(id);
-            if(board == null ) return GlobalResult.notFound();
+            if(board == null ) return GlobalResult.notFoundObject();
 
             board.isActive = false;
             board.update();
@@ -1011,7 +1011,7 @@ public class CompilationLibrariesController extends Controller {
     public Result getBoard(String id) {
         try {
             Board board = Board.find.byId(id);
-            if(board == null ) return GlobalResult.notFound();
+            if(board == null ) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(board));
         } catch (Exception e) {
@@ -1045,10 +1045,10 @@ public class CompilationLibrariesController extends Controller {
     public Result connectBoardWthProject(String id, String pr){
         try {
             Board board = Board.find.byId(id);
-            if(board == null ) return GlobalResult.notFound();
+            if(board == null ) return GlobalResult.notFoundObject();
 
             Project project = Project.find.byId(pr);
-            if(project == null) return GlobalResult.notFound();
+            if(project == null) return GlobalResult.notFoundObject();
 
 
             board.projects.add(project);
@@ -1066,10 +1066,10 @@ public class CompilationLibrariesController extends Controller {
     public Result unconnectBoardWthProject(String id, String pr){
         try {
             Board board = Board.find.byId(id);
-            if(board == null ) return GlobalResult.notFound();
+            if(board == null ) return GlobalResult.notFoundObject();
 
             Project project = Project.find.byId(pr);
-            if(project == null) return GlobalResult.notFound();
+            if(project == null) return GlobalResult.notFoundObject();
 
             board.projects.remove(project);
 
@@ -1086,7 +1086,7 @@ public class CompilationLibrariesController extends Controller {
     public Result getBoardProjects(String id){
         try {
             Board board = Board.find.byId(id);
-            if(board == null ) return GlobalResult.notFound();
+            if(board == null ) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(board.projects));
         } catch (Exception e) {

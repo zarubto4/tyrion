@@ -295,7 +295,7 @@ public class OverFlowController  extends Controller {
 
             return GlobalResult.okResult( Json.newObject().put( "postId", post.postId ) );
         }catch (Exception e){
-            e.printStackTrace();
+           // e.printStackTrace();
             return GlobalResult.badRequest(e);
         }
     }

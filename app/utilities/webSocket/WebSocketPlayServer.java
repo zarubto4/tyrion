@@ -13,13 +13,13 @@ public class WebSocketPlayServer {
 
             public void onReady(final WebSocket.In<String> in, final WebSocket.Out<String> out) {
 
-                WebSocketController.addConnection( identificator , out);
+                WebSocketController.incomingConnections.put(identificator, out);
 
                 in.onMessage(new F.Callback<String>() {
                     @Override
                     public void invoke(String event) throws Throwable {
                         try {
-                            WebSocketController.incomingJson(identificator, Json.parse(event));
+                            WebSocketController.incomingJson_PLAY_As_Server(identificator, Json.parse(event));
                         }catch (Exception e){
                             out.write("Its not JSON!");
                         }
@@ -29,7 +29,7 @@ public class WebSocketPlayServer {
                 in.onClose(new F.Callback0() {
                     @Override
                     public void invoke() throws Throwable {
-                        WebSocketController.removeConnection(identificator);
+                        WebSocketController.incomingConnections.remove(identificator, out);
                     }
                 });
             }

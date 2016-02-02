@@ -1,7 +1,5 @@
 package controllers;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import models.blocko.*;
@@ -11,17 +9,14 @@ import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
-import play.mvc.Security;
-import utilities.loginEntities.Secured;
 import utilities.UtilTools;
 import utilities.response.GlobalResult;
-
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-@Security.Authenticated(Secured.class)
+//@Security.Authenticated(Secured.class)
 public class ProgramingPackageController extends Controller {
 
     @BodyParser.Of(BodyParser.Json.class)
@@ -64,9 +59,11 @@ public class ProgramingPackageController extends Controller {
     public  Result getProject(String id){
         try {
             Project project = Project.find.byId(id);
-            if (project == null) return GlobalResult.notFound();
+            if (project == null) return GlobalResult.notFoundObject();
 
-            if (!project.ownersOfProject.contains( SecurityController.getPerson() ) ) return GlobalResult.forbidden();
+
+
+            if (    Project.find.where().eq("ownersOfProject.mail", SecurityController.getPerson().mail).eq("projectId", id).findUnique() == null ) return GlobalResult.forbidden();
 
             return GlobalResult.okResult(Json.toJson(project));
 
@@ -81,7 +78,7 @@ public class ProgramingPackageController extends Controller {
         try {
 
             Project project = Project.find.byId(id);
-            if (project == null) return GlobalResult.notFound();
+            if (project == null) return GlobalResult.notFoundObject();
 
             if (!project.ownersOfProject.contains( SecurityController.getPerson() ) ) return GlobalResult.forbidden();
 
@@ -102,7 +99,7 @@ public class ProgramingPackageController extends Controller {
             JsonNode json = request().body().asJson();
 
             Project project = Project.find.byId(id);
-            if (project == null) return GlobalResult.notFound();
+            if (project == null) return GlobalResult.notFoundObject();
 
             if (!project.ownersOfProject.contains( SecurityController.getPerson() ) ) return GlobalResult.forbidden();
 
@@ -126,14 +123,13 @@ public class ProgramingPackageController extends Controller {
         try {
 
             Project project = Project.find.byId(id);
-            if(project == null) return GlobalResult.notFound();
+            if(project == null) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(project.boards));
 
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - getBoard ERROR");
-            Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
     }
@@ -145,7 +141,7 @@ public class ProgramingPackageController extends Controller {
             JsonNode json = request().body().asJson();
 
             Project project = Project.find.byId(id);
-            if(project == null) return GlobalResult.notFound();
+            if(project == null) return GlobalResult.notFoundObject();
 
 
 
@@ -178,7 +174,7 @@ public class ProgramingPackageController extends Controller {
             JsonNode json = request().body().asJson();
 
             Project project = Project.find.byId(id);
-            if(project == null) return GlobalResult.notFound();
+            if(project == null) return GlobalResult.notFoundObject();
 
             for (final JsonNode objNode : json.get("persons")) {
 
@@ -206,14 +202,13 @@ public class ProgramingPackageController extends Controller {
         try {
 
             Project project = Project.find.byId(id);
-            if(project == null) return GlobalResult.notFound();
+            if(project == null) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(project.ownersOfProject));
 
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - shareProjectWithUsers ERROR");
-            Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
     }
@@ -248,7 +243,7 @@ public class ProgramingPackageController extends Controller {
         try{
 
            Homer homer = Homer.find.byId(id);
-           if(homer == null) return GlobalResult.notFound();
+           if(homer == null) return GlobalResult.notFoundObject();
 
            homer.delete();
 
@@ -264,7 +259,7 @@ public class ProgramingPackageController extends Controller {
     public  Result getHomer(String id){
         try {
             Homer homer = Homer.find.byId(id);
-            if (homer == null) return GlobalResult.notFound();
+            if (homer == null) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult( Json.toJson(homer) );
 
@@ -278,7 +273,7 @@ public class ProgramingPackageController extends Controller {
     public  Result getConnectedHomers(String id){
         try {
             Project project = Project.find.byId(id);
-            if (project == null) return GlobalResult.notFound();
+            if (project == null) return GlobalResult.notFoundObject();
 
             List<Homer> projectDevices = project.homerList;
             if(projectDevices.isEmpty()) return GlobalResult.okResult(Json.toJson(projectDevices));
@@ -321,8 +316,8 @@ public class ProgramingPackageController extends Controller {
             Project project = Project.find.byId(json.get("projectId").asText());
             Homer homer = Homer.find.byId(json.get("homerId").asText());
 
-            if(project == null)  return GlobalResult.notFound();
-            if(homer == null)  return GlobalResult.notFound();
+            if(project == null)  return GlobalResult.notFoundObject();
+            if(homer == null)  return GlobalResult.notFoundObject();
 
             homer.project = project;
             homer.update();
@@ -332,7 +327,7 @@ public class ProgramingPackageController extends Controller {
             return GlobalResult.badRequest(e, "homerId - String", "projectId - String");
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - newHomer ERROR");
+            Logger.error("ProgramingPackageController - connectHomerWithProject ERROR");
             Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
@@ -345,8 +340,8 @@ public class ProgramingPackageController extends Controller {
             Project project = Project.find.byId(json.get("projectId").asText());
             Homer homer = Homer.find.byId(json.get("homerId").asText());
 
-            if(project == null)  return GlobalResult.notFound();
-            if(homer == null)  return GlobalResult.notFound();
+            if(project == null)  return GlobalResult.notFoundObject();
+            if(homer == null)  return GlobalResult.notFoundObject();
 
 
             project.homerList.remove(homer);
@@ -360,8 +355,7 @@ public class ProgramingPackageController extends Controller {
             return GlobalResult.badRequest(e, "homerId - String", "projectId - String");
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - newHomer ERROR");
-            Logger.error(request().body().asJson().toString());
+            Logger.error("ProgramingPackageController - unConnectHomerWithProject ERROR");
             return GlobalResult.internalServerError();
         }
     }
@@ -375,7 +369,7 @@ public class ProgramingPackageController extends Controller {
 
 
             Project project = Project.find.byId(json.get("projectId").asText());
-            if (project == null) return GlobalResult.notFound();
+            if (project == null) return GlobalResult.notFoundObject();
 
             HomerProgram program = new HomerProgram();
 
@@ -396,7 +390,7 @@ public class ProgramingPackageController extends Controller {
             return GlobalResult.badRequest(e, "homerId - String", "projectId - String");
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - newHomer ERROR");
+            Logger.error("ProgramingPackageController - postNewProgram ERROR");
             Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
@@ -406,12 +400,12 @@ public class ProgramingPackageController extends Controller {
         try{
 
             HomerProgram program = HomerProgram.find.byId(id);
-            if (program == null) return GlobalResult.notFound();
+            if (program == null) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(program));
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - newHomer ERROR");
+            Logger.error("ProgramingPackageController - getProgram ERROR");
             return GlobalResult.internalServerError();
         }
     }
@@ -420,17 +414,13 @@ public class ProgramingPackageController extends Controller {
         try{
 
             HomerProgram program  = HomerProgram.find.byId(id);
-            if (program == null) return GlobalResult.notFound();
+            if (program == null) return GlobalResult.notFoundObject();
 
-            ObjectMapper mapper = new ObjectMapper();
-            JsonFactory factory = mapper.getFactory();
-            JsonParser jp = factory.createParser(program.programInString);
 
-            return GlobalResult.okResult(Json.toJson(jp));
+            return GlobalResult.okResult( Json.parse(program.programInString));
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - newHomer ERROR");
-            Logger.error(request().body().asJson().toString());
+            Logger.error("ProgramingPackageController - getProgramInJson ERROR");
             return GlobalResult.internalServerError();
         }
     }
@@ -439,7 +429,7 @@ public class ProgramingPackageController extends Controller {
         try{
 
             Project project  = Project.find.byId(id);
-            if (project == null) return GlobalResult.notFound();
+            if (project == null) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(project.programs));
 
@@ -454,7 +444,7 @@ public class ProgramingPackageController extends Controller {
         try{
 
             Project project  = Project.find.byId(id);
-            if (project == null) return GlobalResult.notFound();
+            if (project == null) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(project.homerList));
 
@@ -471,7 +461,7 @@ public class ProgramingPackageController extends Controller {
             JsonNode json = request().body().asJson();
 
             HomerProgram program  = HomerProgram.find.byId(id);
-            if (program == null) return GlobalResult.notFound();
+            if (program == null) return GlobalResult.notFoundObject();
 
 
             program.programInString = json.get("program").asText();
@@ -497,7 +487,7 @@ public class ProgramingPackageController extends Controller {
         try{
 
             HomerProgram program  = HomerProgram.find.byId(id);
-            if (program == null) return GlobalResult.notFound();
+            if (program == null) return GlobalResult.notFoundObject();
 
 
             program.delete();
@@ -533,10 +523,10 @@ public class ProgramingPackageController extends Controller {
             JsonNode json = request().body().asJson();
 
             Homer homer = Homer.find.byId(json.get("homerId").asText());
-            if (homer == null) return GlobalResult.notFound();
+            if (homer == null) return GlobalResult.notFoundObject();
 
             HomerProgram program = HomerProgram.find.byId(json.get("programId").asText());
-            if (program == null) return GlobalResult.notFound();
+            if (program == null) return GlobalResult.notFoundObject();
 
             Project project = homer.project;
 
@@ -565,10 +555,10 @@ public class ProgramingPackageController extends Controller {
             JsonNode json = request().body().asJson();
 
             Homer homer = Homer.find.byId(json.get("homerId").asText());
-            if (homer == null) return GlobalResult.notFound();
+            if (homer == null) return GlobalResult.notFoundObject();
 
             HomerProgram program = HomerProgram.find.byId(json.get("programId").asText());
-            if (program == null) return GlobalResult.notFound();
+            if (program == null) return GlobalResult.notFoundObject();
 
             Project project = homer.project;
 
@@ -604,10 +594,10 @@ public class ProgramingPackageController extends Controller {
             JsonNode json = request().body().asJson();
 
             Homer homer = Homer.find.byId(json.get("homerId").asText());
-            if (homer == null) return GlobalResult.notFound();
+            if (homer == null) return GlobalResult.notFoundObject();
 
             HomerProgram program = HomerProgram.find.byId(json.get("programId").asText());
-            if (program == null) return GlobalResult.notFound();
+            if (program == null) return GlobalResult.notFoundObject();
 
             Project project = homer.project;
 
@@ -654,6 +644,7 @@ public class ProgramingPackageController extends Controller {
             return GlobalResult.internalServerError();
         }
     }
+
 
     //TODO
     public Result listOfUploadedHomers(String id) {
@@ -710,7 +701,7 @@ public class ProgramingPackageController extends Controller {
     public Result getBlockLast(String id){
         try {
                 BlockoBlock blockoBlock = BlockoBlock.find.byId(id);
-                if (blockoBlock == null) return GlobalResult.notFound();
+                if (blockoBlock == null) return GlobalResult.notFoundObject();
 
                 return GlobalResult.ok(Json.toJson(blockoBlock));
         } catch (Exception e) {
@@ -725,7 +716,7 @@ public class ProgramingPackageController extends Controller {
         try {
 
                 BlockoContentBlock block = BlockoContentBlock.find.where().in("blockoBlock.id", id).where().in("version", version).findUnique();
-                if (block == null) return GlobalResult.notFound();
+                if (block == null) return GlobalResult.notFoundObject();
 
                 BlockoBlock blockoBlock = BlockoBlock.find.byId(id);
                 blockoBlock.setVersion(version);
@@ -815,7 +806,7 @@ public class ProgramingPackageController extends Controller {
                         .eq("version", version)
                         .findUnique();
 
-            if(block == null) return GlobalResult.notFound();
+            if(block == null) return GlobalResult.notFoundObject();
 
             return GlobalResult.ok(Json.toJson(block.designJson));
 
@@ -834,7 +825,7 @@ public class ProgramingPackageController extends Controller {
                     .eq("version", version)
                     .findUnique();
 
-            if(block == null) return GlobalResult.notFound();
+            if(block == null) return GlobalResult.notFoundObject();
 
             return GlobalResult.ok(Json.toJson(block.logicJson));
         } catch (Exception e) {
@@ -854,7 +845,7 @@ public class ProgramingPackageController extends Controller {
                         .setMaxRows(1)
                         .findUnique();
 
-            if(block == null) return GlobalResult.notFound();
+            if(block == null) return GlobalResult.notFoundObject();
 
             return GlobalResult.ok(Json.toJson(block.designJson));
 
@@ -875,7 +866,7 @@ public class ProgramingPackageController extends Controller {
                     .setMaxRows(1)
                     .findUnique();
 
-            if(block == null) return GlobalResult.notFound();
+            if(block == null) return GlobalResult.notFoundObject();
 
             return GlobalResult.ok(Json.toJson(block.logicJson));
 
@@ -890,7 +881,7 @@ public class ProgramingPackageController extends Controller {
     public Result allPrevVersions(String id){
         try {
             BlockoBlock blockoBlock = BlockoBlock.find.byId(id);
-            if (blockoBlock == null) return GlobalResult.notFound();
+            if (blockoBlock == null) return GlobalResult.notFoundObject();
             return GlobalResult.ok(Json.toJson(blockoBlock.contentBlocks));
 
         } catch (Exception e) {
@@ -903,7 +894,7 @@ public class ProgramingPackageController extends Controller {
     public Result generalDescription(String id) {
         try {
             BlockoBlock block = BlockoBlock.find.byId(id);
-            if (block == null) return GlobalResult.notFound();
+            if (block == null) return GlobalResult.notFoundObject();
             return GlobalResult.ok(Json.toJson(block.generalDescription));
 
         } catch (Exception e) {
@@ -916,7 +907,7 @@ public class ProgramingPackageController extends Controller {
     public Result versionDescription(String id) {
         try {
             BlockoContentBlock block = BlockoContentBlock.find.byId(id);
-            if (block == null) return GlobalResult.notFound();
+            if (block == null) return GlobalResult.notFoundObject();
 
             return GlobalResult.ok(Json.toJson(block.versionDescription));
 

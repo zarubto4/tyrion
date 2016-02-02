@@ -190,6 +190,12 @@
     <orderEntry type="library" name="SBT: io.swagger:swagger-play2_2.11:1.5.1:jar" level="project" />
     <orderEntry type="library" name="SBT: io.swagger:swagger-scala-module_2.11:1.0.0:jar" level="project" />
     <orderEntry type="library" name="SBT: javax.websocket:javax.websocket-api:1.1:jar" level="project" />
-    <orderEntry type="library" name="SBT: org.java-websocket:Java-WebSocket:1.3.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.glassfish.grizzly:grizzly-framework:2.3.23:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.glassfish.grizzly:grizzly-http:2.3.23:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.glassfish.grizzly:grizzly-http-server:2.3.23:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.glassfish.tyrus:tyrus-client:1.12:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.glassfish.tyrus:tyrus-container-grizzly-client:1.12:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.glassfish.tyrus:tyrus-core:1.12:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.glassfish.tyrus:tyrus-spi:1.12:jar" level="project" />
   </component>
 </module>

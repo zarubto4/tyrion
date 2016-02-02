@@ -41,9 +41,6 @@ public class SecurityController extends Controller {
 
 
         if (!person.emailValidated) return GlobalResult.forbidden("Account is not authorized");
-           // TODO zde by byl asi prostor pro zaslání JSON kdyby si uživatel potřeboval vygenerovat nový autorizační klíč k emailu.
-
-
 
         String authToken = person.createToken();
 
