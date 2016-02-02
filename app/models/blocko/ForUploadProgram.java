@@ -13,7 +13,7 @@ public class ForUploadProgram extends Model {
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  @JsonIgnore public String id;
 
     @JsonIgnore @ManyToOne     public Homer homer;
-    @JsonIgnore @ManyToOne     public HomerProgram program;
+    @JsonIgnore @ManyToOne     public B_Program program;
                                public Date whenDate;
                                public Date untilDate;
 

@@ -3,6 +3,16 @@
 
 # --- !Ups
 
+create table b_program (
+  program_id                varchar(255) not null,
+  program_name              varchar(255),
+  program_description       varchar(255),
+  program_in_string         TEXT,
+  date_of_create            timestamp,
+  project_project_id        varchar(255),
+  constraint pk_b_program primary key (program_id))
+;
+
 create table blocko_block (
   id                        varchar(255) not null,
   name                      varchar(255),
@@ -69,16 +79,6 @@ create table homer (
   version                   varchar(255),
   project_project_id        varchar(255),
   constraint pk_homer primary key (homer_id))
-;
-
-create table homer_program (
-  program_id                varchar(255) not null,
-  program_name              varchar(255),
-  program_description       varchar(255),
-  program_in_string         TEXT,
-  date_of_create            timestamp,
-  project_project_id        varchar(255),
-  constraint pk_homer_program primary key (program_id))
 ;
 
 create table library_group (
@@ -228,6 +228,12 @@ create table version (
 ;
 
 
+create table b_program_homer (
+  b_program_program_id           varchar(255) not null,
+  homer_homer_id                 varchar(255) not null,
+  constraint pk_b_program_homer primary key (b_program_program_id, homer_homer_id))
+;
+
 create table board_project (
   board_id                       varchar(255) not null,
   project_project_id             varchar(255) not null,
@@ -244,12 +250,6 @@ create table hash_tag_post (
   hash_tag_post_hash_tag_id      varchar(255) not null,
   post_post_id                   varchar(255) not null,
   constraint pk_hash_tag_post primary key (hash_tag_post_hash_tag_id, post_post_id))
-;
-
-create table homer_program_homer (
-  homer_program_program_id       varchar(255) not null,
-  homer_homer_id                 varchar(255) not null,
-  constraint pk_homer_program_homer primary key (homer_program_program_id, homer_homer_id))
 ;
 
 create table library_group_processor (
@@ -305,6 +305,8 @@ create table version_library_record (
   library_record_id              varchar(255) not null,
   constraint pk_version_library_record primary key (version_id, library_record_id))
 ;
+create sequence b_program_seq;
+
 create sequence blocko_block_seq;
 
 create sequence blocko_content_block_seq;
@@ -314,8 +316,6 @@ create sequence board_seq;
 create sequence for_upload_program_seq;
 
 create sequence group_with_permissions_seq;
-
-create sequence homer_program_seq;
 
 create sequence library_group_seq;
 
@@ -345,20 +345,20 @@ create sequence type_of_post_seq;
 
 create sequence version_seq;
 
-alter table blocko_block add constraint fk_blocko_block_author_1 foreign key (author_id) references person (id);
-create index ix_blocko_block_author_1 on blocko_block (author_id);
-alter table blocko_content_block add constraint fk_blocko_content_block_blocko_2 foreign key (blocko_block_id) references blocko_block (id);
-create index ix_blocko_content_block_blocko_2 on blocko_content_block (blocko_block_id);
-alter table board add constraint fk_board_typeOfBoard_3 foreign key (type_of_board_id) references type_of_board (id);
-create index ix_board_typeOfBoard_3 on board (type_of_board_id);
-alter table for_upload_program add constraint fk_for_upload_program_homer_4 foreign key (homer_homer_id) references homer (homer_id);
-create index ix_for_upload_program_homer_4 on for_upload_program (homer_homer_id);
-alter table for_upload_program add constraint fk_for_upload_program_program_5 foreign key (program_program_id) references homer_program (program_id);
-create index ix_for_upload_program_program_5 on for_upload_program (program_program_id);
-alter table homer add constraint fk_homer_project_6 foreign key (project_project_id) references project (project_id);
-create index ix_homer_project_6 on homer (project_project_id);
-alter table homer_program add constraint fk_homer_program_project_7 foreign key (project_project_id) references project (project_id);
-create index ix_homer_program_project_7 on homer_program (project_project_id);
+alter table b_program add constraint fk_b_program_project_1 foreign key (project_project_id) references project (project_id);
+create index ix_b_program_project_1 on b_program (project_project_id);
+alter table blocko_block add constraint fk_blocko_block_author_2 foreign key (author_id) references person (id);
+create index ix_blocko_block_author_2 on blocko_block (author_id);
+alter table blocko_content_block add constraint fk_blocko_content_block_blocko_3 foreign key (blocko_block_id) references blocko_block (id);
+create index ix_blocko_content_block_blocko_3 on blocko_content_block (blocko_block_id);
+alter table board add constraint fk_board_typeOfBoard_4 foreign key (type_of_board_id) references type_of_board (id);
+create index ix_board_typeOfBoard_4 on board (type_of_board_id);
+alter table for_upload_program add constraint fk_for_upload_program_homer_5 foreign key (homer_homer_id) references homer (homer_id);
+create index ix_for_upload_program_homer_5 on for_upload_program (homer_homer_id);
+alter table for_upload_program add constraint fk_for_upload_program_program_6 foreign key (program_program_id) references b_program (program_id);
+create index ix_for_upload_program_program_6 on for_upload_program (program_program_id);
+alter table homer add constraint fk_homer_project_7 foreign key (project_project_id) references project (project_id);
+create index ix_homer_project_7 on homer (project_project_id);
 alter table linked_account add constraint fk_linked_account_person_8 foreign key (person_id) references person (id);
 create index ix_linked_account_person_8 on linked_account (person_id);
 alter table linked_post add constraint fk_linked_post_author_9 foreign key (author_id) references person (id);
@@ -386,6 +386,10 @@ create index ix_version_singleLibrary_19 on version (single_library_id);
 
 
 
+alter table b_program_homer add constraint fk_b_program_homer_b_program_01 foreign key (b_program_program_id) references b_program (program_id);
+
+alter table b_program_homer add constraint fk_b_program_homer_homer_02 foreign key (homer_homer_id) references homer (homer_id);
+
 alter table board_project add constraint fk_board_project_board_01 foreign key (board_id) references board (id);
 
 alter table board_project add constraint fk_board_project_project_02 foreign key (project_project_id) references project (project_id);
@@ -397,10 +401,6 @@ alter table confirm_type_of_post_post add constraint fk_confirm_type_of_post_pos
 alter table hash_tag_post add constraint fk_hash_tag_post_hash_tag_01 foreign key (hash_tag_post_hash_tag_id) references hash_tag (post_hash_tag_id);
 
 alter table hash_tag_post add constraint fk_hash_tag_post_post_02 foreign key (post_post_id) references post (post_id);
-
-alter table homer_program_homer add constraint fk_homer_program_homer_homer__01 foreign key (homer_program_program_id) references homer_program (program_id);
-
-alter table homer_program_homer add constraint fk_homer_program_homer_homer_02 foreign key (homer_homer_id) references homer (homer_id);
 
 alter table library_group_processor add constraint fk_library_group_processor_li_01 foreign key (library_group_id) references library_group (id);
 
@@ -440,6 +440,10 @@ alter table version_library_record add constraint fk_version_library_record_lib_
 
 # --- !Downs
 
+drop table if exists b_program cascade;
+
+drop table if exists b_program_homer cascade;
+
 drop table if exists blocko_block cascade;
 
 drop table if exists blocko_content_block cascade;
@@ -467,10 +471,6 @@ drop table if exists hash_tag_post cascade;
 drop table if exists home cascade;
 
 drop table if exists homer cascade;
-
-drop table if exists homer_program_homer cascade;
-
-drop table if exists homer_program cascade;
 
 drop table if exists library_group cascade;
 
@@ -518,6 +518,8 @@ drop table if exists validation_token cascade;
 
 drop table if exists version cascade;
 
+drop sequence if exists b_program_seq;
+
 drop sequence if exists blocko_block_seq;
 
 drop sequence if exists blocko_content_block_seq;
@@ -527,8 +529,6 @@ drop sequence if exists board_seq;
 drop sequence if exists for_upload_program_seq;
 
 drop sequence if exists group_with_permissions_seq;
-
-drop sequence if exists homer_program_seq;
 
 drop sequence if exists library_group_seq;
 

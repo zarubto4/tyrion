@@ -371,7 +371,7 @@ public class ProgramingPackageController extends Controller {
             Project project = Project.find.byId(json.get("projectId").asText());
             if (project == null) return GlobalResult.notFoundObject();
 
-            HomerProgram program = new HomerProgram();
+            B_Program program = new B_Program();
 
             program.programInString = json.get("program").toString();
 
@@ -399,7 +399,7 @@ public class ProgramingPackageController extends Controller {
     public  Result getProgram(String id){
         try{
 
-            HomerProgram program = HomerProgram.find.byId(id);
+            B_Program program = B_Program.find.byId(id);
             if (program == null) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(program));
@@ -413,7 +413,7 @@ public class ProgramingPackageController extends Controller {
     public  Result getProgramInJson(String id){
         try{
 
-            HomerProgram program  = HomerProgram.find.byId(id);
+            B_Program program  = B_Program.find.byId(id);
             if (program == null) return GlobalResult.notFoundObject();
 
 
@@ -460,7 +460,7 @@ public class ProgramingPackageController extends Controller {
         try{
             JsonNode json = request().body().asJson();
 
-            HomerProgram program  = HomerProgram.find.byId(id);
+            B_Program program  = B_Program.find.byId(id);
             if (program == null) return GlobalResult.notFoundObject();
 
 
@@ -486,7 +486,7 @@ public class ProgramingPackageController extends Controller {
     public  Result removeProgram(String id){
         try{
 
-            HomerProgram program  = HomerProgram.find.byId(id);
+            B_Program program  = B_Program.find.byId(id);
             if (program == null) return GlobalResult.notFoundObject();
 
 
@@ -525,7 +525,7 @@ public class ProgramingPackageController extends Controller {
             Homer homer = Homer.find.byId(json.get("homerId").asText());
             if (homer == null) return GlobalResult.notFoundObject();
 
-            HomerProgram program = HomerProgram.find.byId(json.get("programId").asText());
+            B_Program program = B_Program.find.byId(json.get("programId").asText());
             if (program == null) return GlobalResult.notFoundObject();
 
             Project project = homer.project;
@@ -557,7 +557,7 @@ public class ProgramingPackageController extends Controller {
             Homer homer = Homer.find.byId(json.get("homerId").asText());
             if (homer == null) return GlobalResult.notFoundObject();
 
-            HomerProgram program = HomerProgram.find.byId(json.get("programId").asText());
+            B_Program program = B_Program.find.byId(json.get("programId").asText());
             if (program == null) return GlobalResult.notFoundObject();
 
             Project project = homer.project;
@@ -596,7 +596,7 @@ public class ProgramingPackageController extends Controller {
             Homer homer = Homer.find.byId(json.get("homerId").asText());
             if (homer == null) return GlobalResult.notFoundObject();
 
-            HomerProgram program = HomerProgram.find.byId(json.get("programId").asText());
+            B_Program program = B_Program.find.byId(json.get("programId").asText());
             if (program == null) return GlobalResult.notFoundObject();
 
             Project project = homer.project;
@@ -648,13 +648,13 @@ public class ProgramingPackageController extends Controller {
 
     //TODO
     public Result listOfUploadedHomers(String id) {
-        //Na projectId HomerProgram vezmu všechny Houmry na kterých je program nahrán
+        //Na projectId B_Program vezmu všechny Houmry na kterých je program nahrán
         return GlobalResult.ok("Nutné dodělat - listOfUploadedHomers");
     }
 
     //TODO
     public Result listOfHomersWaitingForUpload(String id){
-        //Na projectId HomerProgram vezmu všechny Houmry na které jsem program ještě nenahrál
+        //Na projectId B_Program vezmu všechny Houmry na které jsem program ještě nenahrál
         return GlobalResult.ok("Nutné dodělat - listOfHomersWaitingForUpload");
     }
 

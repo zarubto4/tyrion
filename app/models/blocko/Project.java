@@ -20,7 +20,7 @@ public class Project extends Model {
     public String projectDescription;
 
    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Homer> homerList = new ArrayList<>();
-   @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<HomerProgram>     programs = new ArrayList<>();
+   @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<B_Program>     programs = new ArrayList<>();
 
 
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "owningProjects")  @JoinTable(name = "connected_projects") public List<Person> ownersOfProject = new ArrayList<>();

@@ -22,7 +22,7 @@ public class Homer extends Model {
     @JsonIgnore @ManyToOne  public Project project;
     @JsonIgnore @OneToMany(mappedBy="homer", cascade = CascadeType.ALL) public List<ForUploadProgram> forUploadPrograms = new ArrayList<>();
 
-    @ManyToMany(cascade = CascadeType.ALL, mappedBy = "successfullyUploaded")  @JoinTable(name = "uploadedPrograms") public List<HomerProgram> uploudedProgram = new ArrayList<>();
+    @ManyToMany(cascade = CascadeType.ALL, mappedBy = "successfullyUploaded")  @JoinTable(name = "uploadedPrograms") public List<B_Program> uploudedProgram = new ArrayList<>();
 
 
 /* FINDER & WEBSOCKET --------------------------------------------------------------------------------------------------------*/
@@ -40,7 +40,7 @@ public class Homer extends Model {
 
         }
 
-        public void sendProgramToHomer(HomerProgram program, Date when, Date until)throws Exception{
+        public void sendProgramToHomer(B_Program program, Date when, Date until)throws Exception{
 
             ObjectNode data = Json.newObject();
             data.put("whenDate", "immediately");
