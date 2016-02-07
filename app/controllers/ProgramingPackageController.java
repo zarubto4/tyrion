@@ -435,7 +435,7 @@ public class ProgramingPackageController extends Controller {
             Project project  = Project.find.byId(id);
             if (project == null) return GlobalResult.notFoundObject();
 
-            return GlobalResult.okResult(Json.toJson(project.programs));
+            return GlobalResult.okResult(Json.toJson(project.b_programs));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -511,7 +511,7 @@ public class ProgramingPackageController extends Controller {
             Project project = Project.find.byId(id);
             if(project == null) throw new Exception("Project not exist");
 
-           JsonNode json = new ObjectMapper().valueToTree(project.programs);
+           JsonNode json = new ObjectMapper().valueToTree(project.b_programs);
 
             return GlobalResult.okResult(json);
         } catch (Exception e) {

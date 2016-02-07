@@ -27,7 +27,7 @@ public class Post extends Model {
     @JsonIgnore   public int views;
     @JsonInclude(JsonInclude.Include.NON_EMPTY)  @JsonProperty public String views(){ return name == null ? null : Integer.toString(views); }
 
-    public int likes;
+                                public int likes;
                                 public Date dateOfCreate;
     @JsonIgnore                 public boolean deleted;
     @JsonIgnore @ManyToOne      public Person author;
@@ -39,11 +39,12 @@ public class Post extends Model {
 
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "posts")      @JoinTable(name = "hashTagsTable")      public List<HashTag>            hashTagsList = new ArrayList<>();
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "posts")      @JoinTable(name = "typePostsTable")     public List<PropertyOfPost>     propertyOfPostList = new ArrayList<>();
-    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "posts")      @JoinTable(name = "confirmTypesTable")  public List<ConfirmTypeOfPost>  confirmTypeOfPostList = new ArrayList<>();
-    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "postLiker")  @JoinTable(name = "postLikerTable")     public List<Person>             listOfLikers = new ArrayList<>();
+     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "postLiker") @JoinTable(name = "postLikerTable")    public List<Person>             listOfLikers = new ArrayList<>();
+    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "posts")      @JoinTable(name = "postConfirmsTable")  public List<TypeOfConfirms>     typeOfConfirmses = new ArrayList<>();
 
 
-   // @JsonProperty public String hashTagsList(){  return "http://localhost:9000/overflow/post/hashTags/" + this.postId; } // Není nezbytně vyžadováno
+
+    // @JsonProperty public String hashTagsList(){  return "http://localhost:9000/overflow/post/hashTags/" + this.postId; } // Není nezbytně vyžadováno
     @JsonProperty public String comments(){ return comments.size() == 0 ? null : "http://localhost:9000/overflow/post/comments/" +      this.postId; }
     @JsonInclude(JsonInclude.Include.NON_EMPTY) @JsonProperty public String answers(){ return name == null ? null : "http://localhost:9000/overflow/post/answers/" +      this.postId; }
 

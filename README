@@ -1,5 +1,37 @@
 Tyrion main cloud server <- dev version
 
+
+Version 1.04.07
+========================================================================================================================
+
+1) Připojování na další servery (Blocko atd.) na WS je řešeno v configu serveru run ( true nebo false)(Default true)
+2) Verze v html hlavičce  je nyní synchronizována s configuračním souborem. (Byzance-Technical-Version → 1.04.X )
+3) Přibylo možnost blocko provozovat mimo Houmra i v Cloudu - Nová api
+    Uploud to Cloud Hosting -> PUT {{url}}/project/uploudToCloud
+       JSON {
+
+            }
+4) Editace PUT /overflow/post -> YouTrack( TYRION-29 ) změna podle hlášeného bugu na ID
+        {
+            "postId" : "1",
+            "name" : "Zmena Nazvu",
+            "type" : "1", //( id Type - dle databáze) - obdobně jako při create (POST)
+            "hashTags" : ["tag1", "tag7"],
+            "comment" : "Zmena komentare"
+        }
+
+5) Compilation Program -> YouTrack( http://youtrack.byzance.cz/youtrack/issue/TYRION-47 )
+     Vyžaduje Json uvedený v PostMan
+
+6) Library and Library Group directly contain description in Json
+
+7) Person - odebrána položka middle name
+
+
+
+
+
+
 Version 1.04
 ========================================================================================================================
 Globální změny:

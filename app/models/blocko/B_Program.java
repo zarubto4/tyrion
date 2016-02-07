@@ -16,7 +16,7 @@ public class B_Program extends Model {
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public String programId;
                                                              public String programName;
-                                                             public String programDescription;
+                        @Column(columnDefinition = "TEXT")   public String programDescription;
             @JsonIgnore @Column(columnDefinition = "TEXT")   public String programInString;
                                                              public Date dateOfCreate;
                                     @JsonIgnore @ManyToOne   public Project project;

@@ -90,9 +90,13 @@ public class GlobalResult extends Controller {
         return Controller.forbidden();
     }
 
+
     public static Status forbidden(String message){
         CoreResponse.cors();
-        return Controller.forbidden(message);
+        ObjectNode result = Json.newObject();
+        result.put("state", "forbidden");
+        result.put("message", message);
+        return Controller.forbidden(result);
     }
 
 }

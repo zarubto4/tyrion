@@ -1,12 +1,11 @@
 package models.login;
 
-
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import javax.persistence.*;
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.Date;
 
 @Entity
 public class LinkedAccount extends Model {
@@ -15,6 +14,7 @@ public class LinkedAccount extends Model {
 									     					 public String providerUserId;
 						@Column(columnDefinition = "TEXT")   public String providerKey;
 										 					 public String typeOfConnection;
+															 public Date dateOfCreate;
 
 									@JsonIgnore	@ManyToOne   public Person person;
 															 public String authToken;
@@ -43,6 +43,7 @@ public class LinkedAccount extends Model {
 		}
 
 		linkedAccount.typeOfConnection = typeOfConnection;
+        linkedAccount.dateOfCreate = new Date();
 		linkedAccount.save();
 		return linkedAccount;
 	}

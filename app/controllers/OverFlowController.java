@@ -535,45 +535,11 @@ public class OverFlowController  extends Controller {
 
 
 
-
-    // TODO
-    @Security.Authenticated(Secured.class)
-    public Result setProperty(String postId){
-        try{
-            JsonNode json = request().body().asJson();
-            if (json == null) throw new Exception("Null Json");
-
-            Post post = Post.find.byId(json.get("postId").asText());
-            if(post == null) throw new Exception("Id not Exist");
-
-
-            return GlobalResult.okResult();
-        }catch (Exception e){
-            return GlobalResult.badRequest(e);
-        }
-    }
-
-    public Result removeProperty(String postId){
-        try{
-            JsonNode json = request().body().asJson();
-            if (json == null) throw new Exception("Null Json");
-
-            Post post = Post.find.byId(json.get("postId").asText());
-            if(post == null) throw new Exception("Id not Exist");
-
-
-
-            return GlobalResult.okResult();
-        }catch (Exception e){
-            return GlobalResult.badRequest(e);
-        }
-    }
-
     @Security.Authenticated(Secured.class)
     public Result newTypeOfPost(){
         try{
             JsonNode json = request().body().asJson();
-            if (json == null) throw new Exception("Null Json");
+
 
             if( TypeOfPost.find.where().eq("type", json.get("type").asText() ).findUnique() != null) throw new Exception("Duplicate value");
 
@@ -582,7 +548,7 @@ public class OverFlowController  extends Controller {
 
             typeOfPost.save();
 
-            return GlobalResult.okResult( Json.newObject().put( "postId", typeOfPost.id ) );
+            return GlobalResult.okResult( Json.toJson(typeOfPost) );
         }catch (Exception e){
             return GlobalResult.badRequest(e);
         }
@@ -596,6 +562,57 @@ public class OverFlowController  extends Controller {
             return GlobalResult.badRequest(e);
         }
     }
+
+    @Security.Authenticated(Secured.class)
+    public Result newTypeOfConfirms(){
+        try{
+            JsonNode json = request().body().asJson();
+
+            TypeOfConfirms typeOfConfirms = new TypeOfConfirms();
+            typeOfConfirms.type = json.get("type").asText();
+            typeOfConfirms.color = json.get("color").asText();
+            typeOfConfirms.size = json.get("size").asInt();
+
+            typeOfConfirms.save();
+
+            return GlobalResult.okResult(Json.toJson( typeOfConfirms) );
+
+        }catch (Exception e){
+            return GlobalResult.badRequest(e);
+        }
+    }
+
+    @Security.Authenticated(Secured.class)
+    public Result getTypeOfConfirms(){
+        try{
+            return GlobalResult.okResult(Json.toJson( TypeOfConfirms.find.all() ));
+        }catch (Exception e){
+            return GlobalResult.badRequest(e);
+        }
+    }
+
+
+
+    // TODO
+    @Security.Authenticated(Secured.class)
+    public Result putTypeOfConfirmToPost(String conf, String pst){
+        try{
+            TypeOfConfirms typeOfConfirms = TypeOfConfirms.find.byId(conf);
+            if(typeOfConfirms == null) throw new Exception("Id not Exist");
+
+            Post post = Post.find.byId(pst);
+            if(post == null) throw new Exception("Id not Exist");
+
+
+            post.typeOfConfirmses.add(typeOfConfirms);
+            post.save();
+
+            return GlobalResult.okResult(Json.toJson(post));
+        }catch (Exception e){
+            return GlobalResult.badRequest(e);
+        }
+    }
+
 
 
     @Security.Authenticated(Secured.class)
@@ -630,6 +647,8 @@ public class OverFlowController  extends Controller {
 
     }
 
+
+
     @Security.Authenticated(Secured.class)
     public Result removeHashTag(){
         try{
@@ -647,62 +666,7 @@ public class OverFlowController  extends Controller {
 
     }
 
-    @Security.Authenticated(Secured.class)
-    public Result addConfirmType(String postId){
-        try{
-            JsonNode json = request().body().asJson();
-            if (json == null) throw new Exception("Null Json");
-
-            Post post = Post.find.byId(postId);
-            if(post == null) throw new Exception("Id not Exist");
-
-
-            for (final JsonNode objNode : json.get("hashTags")) {
-                ConfirmTypeOfPost confirmObj = ConfirmTypeOfPost.find.byId(objNode.asText());
-
-                if(confirmObj == null) {
-                    confirmObj = new ConfirmTypeOfPost(objNode.asText());
-                    confirmObj.save();
-                }
-
-                if(!post.confirmTypeOfPostList.contains(confirmObj)) post.confirmTypeOfPostList.add(confirmObj);
-            }
-
-            post.save();
-
-            return GlobalResult.okResult();
-        }catch (Exception e){
-            return GlobalResult.badRequest(e);
-        }
-    }
-
-    @Security.Authenticated(Secured.class)
-    public Result removeConfirmType(String postId){
-        try{
-            JsonNode json = request().body().asJson();
-            if (json == null) throw new Exception("Null Json");
-
-            Post post = Post.find.byId(postId);
-
-            for (final JsonNode objNode : json.get("hashTags")) {
-                ConfirmTypeOfPost confirmObj = ConfirmTypeOfPost.find.byId(objNode.asText());
-
-                if(confirmObj == null) throw new Exception("ConfirmType not exist");
-                confirmObj.posts.remove(post);
-                confirmObj.update();
-            }
-
-            post.update();
-
-            return GlobalResult.okResult();
-        }catch (Exception e){
-            e.printStackTrace();
-            return GlobalResult.badRequest(e);
-
-        }
-    }
-
-    @Security.Authenticated(Secured.class)
+        @Security.Authenticated(Secured.class)
     public Result likePlus(String postId){
         try {
             Post post = Post.find.where().eq("postId", postId).findUnique();

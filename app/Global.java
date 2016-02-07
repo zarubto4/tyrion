@@ -1,8 +1,10 @@
 import play.Application;
 import play.Configuration;
 import play.GlobalSettings;
+import play.Logger;
 import play.mvc.Action;
 import play.mvc.Http;
+import utilities.GlobalValue;
 import utilities.webSocket.ClientThreadChecker;
 
 import java.lang.reflect.Method;
@@ -17,20 +19,27 @@ public class Global extends GlobalSettings {
     @Override
     public void onStart(Application app) {
 
-       // Nastavení práv
+       try {
+           Logger.warn("Nastavuji globální proměné");
+           GlobalValue.onStart();
 
-        // Nastartování Připojení
 
-        System.out.println("Zapínám server - startuji proceduru připojování se k serveru BLOCKO \n");
+           Logger.warn("Zapínám server - startuji proceduru připojování se k serveru BLOCKO ");
+           if (Configuration.root().getBoolean("Servers.blocko.server1.run")) {
+               ClientThreadChecker clientThreadChecker = new ClientThreadChecker()
+                       .setIDentificator(Configuration.root().getString("Servers.blocko.server1.name"))
+                       .setPeriodReconnectionTime(Configuration.root().getInt("Servers.blocko.server1.periodicTime"))
+                       .setReconnection(true)
+                       .setServerAddress(Configuration.root().getString("Servers.blocko.server1.url"))
+                       .connectToServer();
+           }
 
-        ClientThreadChecker clientThreadChecker = new ClientThreadChecker()
-                                                    .setIDentificator( Configuration.root().getString("Servers.blocko.server1.name"))
-                                                    .setPeriodReconnectionTime(15500)
-                                                    .setReconnection(true)
-                                                    .setServerAddress( Configuration.root().getString("Servers.blocko.server1.url"))
-                                                    .connectToServer();
+       }catch (Exception e){
+         e.printStackTrace();
+       }
 
     }
+
 
     @Override
     public void onStop(Application app){

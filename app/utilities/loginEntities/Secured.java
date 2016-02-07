@@ -11,6 +11,7 @@ import play.mvc.Security;
 
 public class Secured extends Security.Authenticator {
 
+
     @Override
     public String getUsername(Context ctx) {
 
@@ -22,7 +23,7 @@ public class Secured extends Security.Authenticator {
             person = Person.findByAuthToken(authTokenHeaderValues[0]);
             if (person != null) {
                 ctx.args.put("person", person);
-                return person.mail;
+                return person.id;
             }
         }
         return null;

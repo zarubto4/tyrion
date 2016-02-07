@@ -28,8 +28,8 @@ public class Person extends Model{
                           @Constraints.Min(8)  @JsonIgnore  public String password;
     @Column(unique=true)  @Constraints.Min(5)               public String nickName;
                                                             public String firstName;
-    @JsonIgnore                                             public String middleName;
-                                                            public String lastNAme;
+                                                            public String middleName;
+                                                            public String lastName;
                                                             public String firstTitle;
                                                             public String lastTitle;
 

@@ -6,10 +6,12 @@
 # Home page
 
 GET             /                                           @controllers.SecurityController.index
+GET             /test                                       @controllers.WikyController.test
+GET             /test2                                      @controllers.WikyController.test2(fields)
 
 
 #  WEB SOCET  //////////////////////////////////////////////////////////////////////////////
-GET             /websocket/:id                              @controllers.WebSocketController.connection(id: String)
+GET              /websocket/:id                              @controllers.WebSocketController.connection(id: String)
 POST             /websocket/webSocketStats                   @controllers.WebSocketController.getWebSocketStats()
 POST             /websocket/sendTo/:id                       @controllers.WebSocketController.sendTo(id: String)
 #API - CoreClient ##############################################################################################################################################################
@@ -17,13 +19,19 @@ POST             /websocket/sendTo/:id                       @controllers.WebSoc
 #Login page
 POST            /coreClient/person/permission/login         @controllers.SecurityController.login()
 POST            /coreClient/person/permission/logout        @controllers.SecurityController.logout
+
 GET             /login/facebook                             @controllers.SecurityController.Facebook()
 GET             /login/twitter                              @controllers.SecurityController.Twitter()
 GET             /login/github                               @controllers.SecurityController.GitHub()
 GET             /login/vkontakte                            @controllers.SecurityController.Vkontakte()
-GET             /oauth_callback/                            @controllers.SecurityController.GEToauth_callback(code, state)
 
+GET             /login/person                               @controllers.SecurityController.getPersonByToken()
 
+GET             /oauth_callback                             @controllers.SecurityController.GET_facebook_oauth(code, state)
+GET             /login/facebook/oauth_callback              @controllers.SecurityController.GET_facebook_oauth(code, state)
+#GET             /login/twitter/oauth_callback              @controllers.SecurityController.GET_twitter_oauth(code, state)
+GET             /login/github/oauth_callback                @controllers.SecurityController.GET_github_oauth(code, state)
+#GET             /login/vkontakte/oauth_callback             @controllers.SecurityController.GET_vkontakte_oauth(code, state)
 ### PERSON ############ PERSON ############### PERSON ################ PERSON ################# PERSON ############ PERSON #####################################################
 ################################################################################################################################################################################
 
@@ -32,9 +40,10 @@ POST           /coreClient/person/developer                @controllers.PersonCr
 POST           /coreClient/person/person                   @controllers.PersonCreateController.standartRegistration()
 PUT            /coreClient/person/person                   @controllers.PersonCreateController.updatePersonInformation()
 GET            /coreClient/person/person/:id               @controllers.PersonCreateController.getPerson(id: String)
+
 DELETE         /coreClient/person/person/:id               @controllers.PersonCreateController.deletePerson(id: String)
 
-GET            /emailPersonAuthentication/    @controllers.PersonCreateController.emailPersonAuthentitaction(mail,authToken)
+GET            /emailPersonAuthentication/                 @controllers.PersonCreateController.emailPersonAuthentitaction(mail,authToken)
 
 
 
@@ -68,6 +77,9 @@ GET           /overflow/post/textOfPost/:id                @controllers.OverFlow
 POST           /overflow/typeOfPost                        @controllers.OverFlowController.newTypeOfPost()
 GET            /overflow/typeOfPost                        @controllers.OverFlowController.getTypeOfPost()
 
+POST           /overflow/typeOfConfirm                     @controllers.OverFlowController.newTypeOfConfirms()
+GET            /overflow/typeOfConfirm                     @controllers.OverFlowController.getTypeOfConfirms()
+PUT            /overflow/typeOfConfirm/:conf/:pst          @controllers.OverFlowController.putTypeOfConfirmToPost(conf: String, pst: String)
 
 POST           /overflow/comment                           @controllers.OverFlowController.addComment()
 PUT            /overflow/comment/:id                       @controllers.OverFlowController.updateComment(id: String)
@@ -84,8 +96,7 @@ DELETE         /overflow/link/:id                          @controllers.OverFlow
 PUT            /overflow/removeLink                        @controllers.OverFlowController.removeHashTag()
 POST           /overflow/hashTag                           @controllers.OverFlowController.addHashTag()
 PUT            /overflow/removeHashTag                     @controllers.OverFlowController.removeHashTag()
-POST           /overflow/confirm/:id                       @controllers.OverFlowController.addConfirmType(id: String)
-DELETE         /overflow/confirm/:id                       @controllers.OverFlowController.removeConfirmType(id: String)
+
 
 
 
@@ -156,6 +167,21 @@ POST           /project/blockoBlock/filter                 @controllers.Programi
 ### COMPILATION & LIBRARIES ############ COMPILATION & LIBRARIES ############### COMPILATION & LIBRARIES ################ COMPILATION & LIBRARIES ##############################
 ################################################################################################################################################################################
 
+#C:Program
+POST            /compilation/program                        @controllers.CompilationLibrariesController.newCProgram()
+GET             /compilation/program/:id                    @controllers.CompilationLibrariesController.getCProgram(id: String)
+GET             /compilation/program/project/:id            @controllers.CompilationLibrariesController.gellAllProgramFromProject(id: String)
+
+PUT             /compilation/program/update/:id             @controllers.CompilationLibrariesController.updateCProgramDescription(id: String)
+PUT             /compilation/program/newVersion/:id         @controllers.CompilationLibrariesController.newVersionOfCProgram(id: String)
+
+DELETE          /compilation/program/:id                    @controllers.CompilationLibrariesController.deleteCProgram(id: String)
+DELETE          /compilation/program/:id/:version           @controllers.CompilationLibrariesController.deleteVersionOfCProgram(id: String, version: String)
+
+GET             /compilation/project/eclipse                @controllers.CompilationLibrariesController.generateProjectForEclipse()
+POST            /compilation/project/uploud/:id/:board      @controllers.CompilationLibrariesController.uploudCompilationToBoard(id: String, board: String)
+POST            /compilation/project/binary/:id             @controllers.CompilationLibrariesController.uploudBinaryFileToBoard(id: String)
+
 #Processor
 POST            /compilation/processor                      @controllers.CompilationLibrariesController.newProcessor()
 GET             /compilation/processor/:id                  @controllers.CompilationLibrariesController.getProcessor(id: String)
@@ -172,7 +198,6 @@ GET            /compilation/processor/description/:id       @controllers.Compila
 GET            /compilation/processor/libraryGroups/:id     @controllers.CompilationLibrariesController.getProcessorLibraryGroups(id: String)
 GET            /compilation/processor/singleLibrary/:id     @controllers.CompilationLibrariesController.getProcessorSingleLibraries(id: String)
 
-
 #Board
 POST            /compilation/board                          @controllers.CompilationLibrariesController.newBoard()
 PUT             /compilation/board/userDescription/:id      @controllers.CompilationLibrariesController.addUserDescription(id: String)
@@ -182,7 +207,6 @@ GET             /compilation/board/userDescription/:id      @controllers.Compila
 PUT             /compilation/board/connect/:id/:pr          @controllers.CompilationLibrariesController.connectBoardWthProject(id: String, pr: String)
 PUT             /compilation/board/unconnect/:id/:pr        @controllers.CompilationLibrariesController.unconnectBoardWthProject(id: String, pr: String)
 GET             /compilation/board/projects/:id             @controllers.CompilationLibrariesController.getBoardProjects(id: String)
-
 
 #Producer
 POST            /compilation/producer                       @controllers.CompilationLibrariesController.newProducers()
@@ -200,7 +224,6 @@ GET             /compilation/typeOfBoard/:id                @controllers.Compila
 GET             /compilation/typeOfBoard/description/:id    @controllers.CompilationLibrariesController.getTypeOfBoardDescription(id: String)
 GET             /compilation/typeOfBoard/boards/:id         @controllers.CompilationLibrariesController.getTypeOfBoardAllBoards(id: String)
 
-
 #LibraryGroups
 POST            /compilation/libraryGroup                               @controllers.CompilationLibrariesController.newLibraryGroup()
 GET             /compilation/libraryGroup/:id                           @controllers.CompilationLibrariesController.getLibraryGroup(id: String)
@@ -210,16 +233,17 @@ PUT             /compilation/libraryGroup/:id                           @control
 GET             /compilation/libraryGroup/generalDescription/:id        @controllers.CompilationLibrariesController.getLibraryGroupDescription(id: String)
 GET             /compilation/libraryGroup/processors/:id                @controllers.CompilationLibrariesController.getLibraryGroupProcessors(id: String)
 GET             /compilation/libraryGroup/libraries/:libraryId/:version @controllers.CompilationLibrariesController.getLibraryGroupLibraries(libraryId: String, version: String)
-POST            /compilation/libraryGroup/version/:id                   @controllers.CompilationLibrariesController.createNewVersionLibraryGroup(id: String)
+POST            /compilation/libraryGroup/versions/:id                  @controllers.CompilationLibrariesController.createNewVersionLibraryGroup(id: String)
 GET             /compilation/libraryGroup/versions/:id                  @controllers.CompilationLibrariesController.getVersionLibraryGroup(id: String)
 POST            /compilation/libraryGroup/upload/:libraryId/:version    @controllers.CompilationLibrariesController.uploudLibraryToLibraryGroup(libraryId: String, version: Double)
 
 GET             /compilation/library/listOfFiles/:id       @controllers.CompilationLibrariesController.listOfFilesInVersion(id: String)
 GET             /compilation/library/fileRecord/:id        @controllers.CompilationLibrariesController.fileRecord(id: String)
 
-#LibraryRecord
+#FileRecord
 POST            /compilation/library                       @controllers.CompilationLibrariesController.newSingleLibrary()
 POST            /compilation/library/version/:id           @controllers.CompilationLibrariesController.newVersionSingleLibrary(id: String)
+GET             /compilation/library/version/:id           @controllers.CompilationLibrariesController.getAllVersionSingleLibrary(id: String)
 GET             /compilation/library/filter                @controllers.CompilationLibrariesController.getSingleLibraryFilter()
 GET             /compilation/library/:id                   @controllers.CompilationLibrariesController.getSingleLibrary(id: String)
 GET             /compilation/library                       @controllers.CompilationLibrariesController.getSingleLibraryAll()
@@ -227,9 +251,8 @@ GET             /compilation/library                       @controllers.Compilat
 PUT             /compilation/library/:id                   @controllers.CompilationLibrariesController.updateSingleLibrary(id: String)
 DELETE          /compilation/library/:id                   @controllers.CompilationLibrariesController.deleteSingleLibrary(id: String)
 POST            /compilation/library/uploud/:id/:version   @controllers.CompilationLibrariesController.uploadSingleLibraryWithVersion(id: String, version: Double)
+POST            /compilation/library/uploud/:id            @controllers.CompilationLibrariesController.uploadSingleLibrary(id: String)
 GET             /compilation/library/description/:id       @controllers.CompilationLibrariesController.getSingleLibraryDescription(id: String)
-
-GET             /compilation/project/eclipse                 @controllers.CompilationLibrariesController.generateProjectForEclipse()
 
 ### TOOLS ############ TOOLS ############### TOOLS ################ TOOLS ######################################################################################################
 ################################################################################################################################################################################

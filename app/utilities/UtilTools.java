@@ -3,8 +3,16 @@ package utilities;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.microsoft.azure.storage.blob.CloudBlob;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
+import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import com.microsoft.azure.storage.blob.ListBlobItem;
+import models.compiler.FileRecord;
+import models.compiler.Version;
+import org.apache.commons.io.FileUtils;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -38,10 +46,10 @@ public class UtilTools {
 
     }
 
-
-
     public static void azureDelete(CloudBlobContainer container, String pocatekMazani) throws Exception {
 
+        System.out.println("Container name: " + container.getName());
+        System.out.println("Mazání " + pocatekMazani);
 
         for (ListBlobItem blobItem : container.listBlobs( pocatekMazani + "/" )) {
 
@@ -56,6 +64,45 @@ public class UtilTools {
 
             azureDelete(container, pocatekMazani +  help.substring( help.lastIndexOf("/") ,help.length()) );
         }
+    }
+
+
+    public static void c_ProgramAzure(String temporaryDirectory, JsonNode json, String azurePath, Version versionObject) throws Exception{
+
+         new File(temporaryDirectory).mkdirs();
+
+
+            for (final JsonNode objNode : json) {
+
+                String data = objNode.get("content").asText();
+                String fileName = objNode.get("fileName").asText() + ".cs";
+
+                File file = new File(temporaryDirectory +"/" + fileName);
+                file.createNewFile();
+
+                //true = append file
+                FileWriter fileWritter = new FileWriter(file.getName(), true);
+                BufferedWriter bufferWritter = new BufferedWriter(fileWritter);
+                bufferWritter.write(data);
+                bufferWritter.close();
+
+                // Připojuji se a tvořím cestu souboru
+                CloudBlobContainer container = GlobalValue.blobClient.getContainerReference("c-program");
+
+                CloudBlockBlob blob = container.getBlockBlobReference(azurePath +"/" +fileName);
+
+                blob.upload(new FileInputStream(file), file.length());
+
+
+                FileRecord fileRecord = new FileRecord();
+                fileRecord.filename = fileName;
+                fileRecord.save();
+
+                versionObject.files.add(fileRecord);
+                versionObject.update();
+            }
+
+        FileUtils.deleteDirectory(new File(temporaryDirectory));
     }
 
 

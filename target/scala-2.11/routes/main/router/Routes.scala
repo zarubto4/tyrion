@@ -1,7 +1,7 @@
 
 // @GENERATOR:play-routes-compiler
 // @SOURCE:/Users/zaruba/ownCloud/Git/Tyrion/conf/routes
-// @DATE:Fri Jan 29 14:46:50 CET 2016
+// @DATE:Sun Feb 07 23:38:53 CET 2016
 
 package router
 
@@ -18,22 +18,24 @@ class Routes(
   override val errorHandler: play.api.http.HttpErrorHandler, 
   // @LINE:8
   SecurityController_3: javax.inject.Provider[controllers.SecurityController],
-  // @LINE:12
+  // @LINE:9
+  WikyController_6: javax.inject.Provider[controllers.WikyController],
+  // @LINE:14
   WebSocketController_1: javax.inject.Provider[controllers.WebSocketController],
-  // @LINE:31
-  PersonCreateController_8: javax.inject.Provider[controllers.PersonCreateController],
-  // @LINE:44
+  // @LINE:39
+  PersonCreateController_9: javax.inject.Provider[controllers.PersonCreateController],
+  // @LINE:53
   PermissionController_0: javax.inject.Provider[controllers.PermissionController],
-  // @LINE:55
-  OverFlowController_7: javax.inject.Provider[controllers.OverFlowController],
-  // @LINE:96
+  // @LINE:64
+  OverFlowController_8: javax.inject.Provider[controllers.OverFlowController],
+  // @LINE:107
   ProgramingPackageController_4: javax.inject.Provider[controllers.ProgramingPackageController],
-  // @LINE:160
+  // @LINE:171
   CompilationLibrariesController_5: javax.inject.Provider[controllers.CompilationLibrariesController],
-  // @LINE:238
+  // @LINE:261
   ApiHelpController_2: javax.inject.Provider[utilities.swagger.ApiHelpController],
-  // @LINE:244
-  Assets_6: controllers.Assets,
+  // @LINE:267
+  Assets_7: controllers.Assets,
   val prefix: String
 ) extends GeneratedRouter {
 
@@ -41,29 +43,31 @@ class Routes(
    def this(errorHandler: play.api.http.HttpErrorHandler,
     // @LINE:8
     SecurityController_3: javax.inject.Provider[controllers.SecurityController],
-    // @LINE:12
+    // @LINE:9
+    WikyController_6: javax.inject.Provider[controllers.WikyController],
+    // @LINE:14
     WebSocketController_1: javax.inject.Provider[controllers.WebSocketController],
-    // @LINE:31
-    PersonCreateController_8: javax.inject.Provider[controllers.PersonCreateController],
-    // @LINE:44
+    // @LINE:39
+    PersonCreateController_9: javax.inject.Provider[controllers.PersonCreateController],
+    // @LINE:53
     PermissionController_0: javax.inject.Provider[controllers.PermissionController],
-    // @LINE:55
-    OverFlowController_7: javax.inject.Provider[controllers.OverFlowController],
-    // @LINE:96
+    // @LINE:64
+    OverFlowController_8: javax.inject.Provider[controllers.OverFlowController],
+    // @LINE:107
     ProgramingPackageController_4: javax.inject.Provider[controllers.ProgramingPackageController],
-    // @LINE:160
+    // @LINE:171
     CompilationLibrariesController_5: javax.inject.Provider[controllers.CompilationLibrariesController],
-    // @LINE:238
+    // @LINE:261
     ApiHelpController_2: javax.inject.Provider[utilities.swagger.ApiHelpController],
-    // @LINE:244
-    Assets_6: controllers.Assets
-  ) = this(errorHandler, SecurityController_3, WebSocketController_1, PersonCreateController_8, PermissionController_0, OverFlowController_7, ProgramingPackageController_4, CompilationLibrariesController_5, ApiHelpController_2, Assets_6, "/")
+    // @LINE:267
+    Assets_7: controllers.Assets
+  ) = this(errorHandler, SecurityController_3, WikyController_6, WebSocketController_1, PersonCreateController_9, PermissionController_0, OverFlowController_8, ProgramingPackageController_4, CompilationLibrariesController_5, ApiHelpController_2, Assets_7, "/")
 
   import ReverseRouteContext.empty
 
   def withPrefix(prefix: String): Routes = {
     router.RoutesPrefix.setPrefix(prefix)
-    new Routes(errorHandler, SecurityController_3, WebSocketController_1, PersonCreateController_8, PermissionController_0, OverFlowController_7, ProgramingPackageController_4, CompilationLibrariesController_5, ApiHelpController_2, Assets_6, prefix)
+    new Routes(errorHandler, SecurityController_3, WikyController_6, WebSocketController_1, PersonCreateController_9, PermissionController_0, OverFlowController_8, ProgramingPackageController_4, CompilationLibrariesController_5, ApiHelpController_2, Assets_7, prefix)
   }
 
   private[this] val defaultPrefix: String = {
@@ -72,6 +76,8 @@ class Routes(
 
   def documentation = List(
     ("""GET""", this.prefix, """@controllers.SecurityController@.index"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """test""", """@controllers.WikyController@.test"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """test2""", """@controllers.WikyController@.test2(fields:String)"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """websocket/$id<[^/]+>""", """@controllers.WebSocketController@.connection(id:String)"""),
     ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """websocket/webSocketStats""", """@controllers.WebSocketController@.getWebSocketStats()"""),
     ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """websocket/sendTo/$id<[^/]+>""", """@controllers.WebSocketController@.sendTo(id:String)"""),
@@ -81,7 +87,10 @@ class Routes(
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """login/twitter""", """@controllers.SecurityController@.Twitter()"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """login/github""", """@controllers.SecurityController@.GitHub()"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """login/vkontakte""", """@controllers.SecurityController@.Vkontakte()"""),
-    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """oauth_callback/""", """@controllers.SecurityController@.GEToauth_callback(code:String, state:String)"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """login/person""", """@controllers.SecurityController@.getPersonByToken()"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """oauth_callback""", """@controllers.SecurityController@.GET_facebook_oauth(code:String, state:String)"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """login/facebook/oauth_callback""", """@controllers.SecurityController@.GET_facebook_oauth(code:String, state:String)"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """login/github/oauth_callback""", """@controllers.SecurityController@.GET_github_oauth(code:String, state:String)"""),
     ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """coreClient/person/developer""", """@controllers.PersonCreateController@.developerRegistration()"""),
     ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """coreClient/person/person""", """@controllers.PersonCreateController@.standartRegistration()"""),
     ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """coreClient/person/person""", """@controllers.PersonCreateController@.updatePersonInformation()"""),
@@ -107,6 +116,9 @@ class Routes(
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """overflow/post/textOfPost/$id<[^/]+>""", """@controllers.OverFlowController@.textOfPost(id:String)"""),
     ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """overflow/typeOfPost""", """@controllers.OverFlowController@.newTypeOfPost()"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """overflow/typeOfPost""", """@controllers.OverFlowController@.getTypeOfPost()"""),
+    ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """overflow/typeOfConfirm""", """@controllers.OverFlowController@.newTypeOfConfirms()"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """overflow/typeOfConfirm""", """@controllers.OverFlowController@.getTypeOfConfirms()"""),
+    ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """overflow/typeOfConfirm/$conf<[^/]+>/$pst<[^/]+>""", """@controllers.OverFlowController@.putTypeOfConfirmToPost(conf:String, pst:String)"""),
     ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """overflow/comment""", """@controllers.OverFlowController@.addComment()"""),
     ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """overflow/comment/$id<[^/]+>""", """@controllers.OverFlowController@.updateComment(id:String)"""),
     ("""DELETE""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """overflow/comment/$id<[^/]+>""", """@controllers.OverFlowController@.deletePost(id:String)"""),
@@ -120,8 +132,6 @@ class Routes(
     ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """overflow/removeLink""", """@controllers.OverFlowController@.removeHashTag()"""),
     ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """overflow/hashTag""", """@controllers.OverFlowController@.addHashTag()"""),
     ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """overflow/removeHashTag""", """@controllers.OverFlowController@.removeHashTag()"""),
-    ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """overflow/confirm/$id<[^/]+>""", """@controllers.OverFlowController@.addConfirmType(id:String)"""),
-    ("""DELETE""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """overflow/confirm/$id<[^/]+>""", """@controllers.OverFlowController@.removeConfirmType(id:String)"""),
     ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """project/project""", """@controllers.ProgramingPackageController@.postNewProject()"""),
     ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """project/project/$id<[^/]+>""", """@controllers.ProgramingPackageController@.updateProject(id:String)"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """project/project/$id<[^/]+>""", """@controllers.ProgramingPackageController@.getProject(id:String)"""),
@@ -165,6 +175,16 @@ class Routes(
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """project/blockoBlock/allPrevVersions/$id<[^/]+>""", """@controllers.ProgramingPackageController@.allPrevVersions(id:String)"""),
     ("""DELETE""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """project/blockoBlock/$url<.+>""", """@controllers.ProgramingPackageController@.deleteBlock(url:String)"""),
     ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """project/blockoBlock/filter""", """@controllers.ProgramingPackageController@.getByFilter()"""),
+    ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/program""", """@controllers.CompilationLibrariesController@.newCProgram()"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/program/$id<[^/]+>""", """@controllers.CompilationLibrariesController@.getCProgram(id:String)"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/program/project/$id<[^/]+>""", """@controllers.CompilationLibrariesController@.gellAllProgramFromProject(id:String)"""),
+    ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/program/update/$id<[^/]+>""", """@controllers.CompilationLibrariesController@.updateCProgramDescription(id:String)"""),
+    ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/program/newVersion/$id<[^/]+>""", """@controllers.CompilationLibrariesController@.newVersionOfCProgram(id:String)"""),
+    ("""DELETE""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/program/$id<[^/]+>""", """@controllers.CompilationLibrariesController@.deleteCProgram(id:String)"""),
+    ("""DELETE""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/program/$id<[^/]+>/$version<[^/]+>""", """@controllers.CompilationLibrariesController@.deleteVersionOfCProgram(id:String, version:String)"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/project/eclipse""", """@controllers.CompilationLibrariesController@.generateProjectForEclipse()"""),
+    ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/project/uploud/$id<[^/]+>/$board<[^/]+>""", """@controllers.CompilationLibrariesController@.uploudCompilationToBoard(id:String, board:String)"""),
+    ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/project/binary/$id<[^/]+>""", """@controllers.CompilationLibrariesController@.uploudBinaryFileToBoard(id:String)"""),
     ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/processor""", """@controllers.CompilationLibrariesController@.newProcessor()"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/processor/$id<[^/]+>""", """@controllers.CompilationLibrariesController@.getProcessor(id:String)"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/processor""", """@controllers.CompilationLibrariesController@.getProcessorAll()"""),
@@ -205,21 +225,22 @@ class Routes(
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/libraryGroup/generalDescription/$id<[^/]+>""", """@controllers.CompilationLibrariesController@.getLibraryGroupDescription(id:String)"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/libraryGroup/processors/$id<[^/]+>""", """@controllers.CompilationLibrariesController@.getLibraryGroupProcessors(id:String)"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/libraryGroup/libraries/$libraryId<[^/]+>/$version<[^/]+>""", """@controllers.CompilationLibrariesController@.getLibraryGroupLibraries(libraryId:String, version:String)"""),
-    ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/libraryGroup/version/$id<[^/]+>""", """@controllers.CompilationLibrariesController@.createNewVersionLibraryGroup(id:String)"""),
+    ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/libraryGroup/versions/$id<[^/]+>""", """@controllers.CompilationLibrariesController@.createNewVersionLibraryGroup(id:String)"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/libraryGroup/versions/$id<[^/]+>""", """@controllers.CompilationLibrariesController@.getVersionLibraryGroup(id:String)"""),
     ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/libraryGroup/upload/$libraryId<[^/]+>/$version<[^/]+>""", """@controllers.CompilationLibrariesController@.uploudLibraryToLibraryGroup(libraryId:String, version:Double)"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/library/listOfFiles/$id<[^/]+>""", """@controllers.CompilationLibrariesController@.listOfFilesInVersion(id:String)"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/library/fileRecord/$id<[^/]+>""", """@controllers.CompilationLibrariesController@.fileRecord(id:String)"""),
     ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/library""", """@controllers.CompilationLibrariesController@.newSingleLibrary()"""),
     ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/library/version/$id<[^/]+>""", """@controllers.CompilationLibrariesController@.newVersionSingleLibrary(id:String)"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/library/version/$id<[^/]+>""", """@controllers.CompilationLibrariesController@.getAllVersionSingleLibrary(id:String)"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/library/filter""", """@controllers.CompilationLibrariesController@.getSingleLibraryFilter()"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/library/$id<[^/]+>""", """@controllers.CompilationLibrariesController@.getSingleLibrary(id:String)"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/library""", """@controllers.CompilationLibrariesController@.getSingleLibraryAll()"""),
     ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/library/$id<[^/]+>""", """@controllers.CompilationLibrariesController@.updateSingleLibrary(id:String)"""),
     ("""DELETE""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/library/$id<[^/]+>""", """@controllers.CompilationLibrariesController@.deleteSingleLibrary(id:String)"""),
     ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/library/uploud/$id<[^/]+>/$version<[^/]+>""", """@controllers.CompilationLibrariesController@.uploadSingleLibraryWithVersion(id:String, version:Double)"""),
+    ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/library/uploud/$id<[^/]+>""", """@controllers.CompilationLibrariesController@.uploadSingleLibrary(id:String)"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/library/description/$id<[^/]+>""", """@controllers.CompilationLibrariesController@.getSingleLibraryDescription(id:String)"""),
-    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/project/eclipse""", """@controllers.CompilationLibrariesController@.generateProjectForEclipse()"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """api-docs""", """@utilities.swagger.ApiHelpController@.getResources"""),
     ("""OPTIONS""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """$all<.+>""", """@controllers.SecurityController@.optionLink(all:String)"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """assets/$file<.+>""", """controllers.Assets.at(path:String = "/public", file:String)"""),
@@ -247,11 +268,45 @@ class Routes(
     )
   )
 
-  // @LINE:12
-  private[this] lazy val controllers_WebSocketController_connection1_route = Route("GET",
+  // @LINE:9
+  private[this] lazy val controllers_WikyController_test1_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("test")))
+  )
+  private[this] lazy val controllers_WikyController_test1_invoker = createInvoker(
+    WikyController_6.get.test,
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.WikyController",
+      "test",
+      Nil,
+      "GET",
+      """""",
+      this.prefix + """test"""
+    )
+  )
+
+  // @LINE:10
+  private[this] lazy val controllers_WikyController_test22_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("test2")))
+  )
+  private[this] lazy val controllers_WikyController_test22_invoker = createInvoker(
+    WikyController_6.get.test2(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.WikyController",
+      "test2",
+      Seq(classOf[String]),
+      "GET",
+      """""",
+      this.prefix + """test2"""
+    )
+  )
+
+  // @LINE:14
+  private[this] lazy val controllers_WebSocketController_connection3_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("websocket/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_WebSocketController_connection1_invoker = createInvoker(
+  private[this] lazy val controllers_WebSocketController_connection3_invoker = createInvoker(
     WebSocketController_1.get.connection(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -264,11 +319,11 @@ class Routes(
     )
   )
 
-  // @LINE:13
-  private[this] lazy val controllers_WebSocketController_getWebSocketStats2_route = Route("POST",
+  // @LINE:15
+  private[this] lazy val controllers_WebSocketController_getWebSocketStats4_route = Route("POST",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("websocket/webSocketStats")))
   )
-  private[this] lazy val controllers_WebSocketController_getWebSocketStats2_invoker = createInvoker(
+  private[this] lazy val controllers_WebSocketController_getWebSocketStats4_invoker = createInvoker(
     WebSocketController_1.get.getWebSocketStats(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -281,11 +336,11 @@ class Routes(
     )
   )
 
-  // @LINE:14
-  private[this] lazy val controllers_WebSocketController_sendTo3_route = Route("POST",
+  // @LINE:16
+  private[this] lazy val controllers_WebSocketController_sendTo5_route = Route("POST",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("websocket/sendTo/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_WebSocketController_sendTo3_invoker = createInvoker(
+  private[this] lazy val controllers_WebSocketController_sendTo5_invoker = createInvoker(
     WebSocketController_1.get.sendTo(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -298,11 +353,11 @@ class Routes(
     )
   )
 
-  // @LINE:18
-  private[this] lazy val controllers_SecurityController_login4_route = Route("POST",
+  // @LINE:20
+  private[this] lazy val controllers_SecurityController_login6_route = Route("POST",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("coreClient/person/permission/login")))
   )
-  private[this] lazy val controllers_SecurityController_login4_invoker = createInvoker(
+  private[this] lazy val controllers_SecurityController_login6_invoker = createInvoker(
     SecurityController_3.get.login(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -315,11 +370,11 @@ class Routes(
     )
   )
 
-  // @LINE:19
-  private[this] lazy val controllers_SecurityController_logout5_route = Route("POST",
+  // @LINE:21
+  private[this] lazy val controllers_SecurityController_logout7_route = Route("POST",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("coreClient/person/permission/logout")))
   )
-  private[this] lazy val controllers_SecurityController_logout5_invoker = createInvoker(
+  private[this] lazy val controllers_SecurityController_logout7_invoker = createInvoker(
     SecurityController_3.get.logout,
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -332,11 +387,11 @@ class Routes(
     )
   )
 
-  // @LINE:20
-  private[this] lazy val controllers_SecurityController_Facebook6_route = Route("GET",
+  // @LINE:23
+  private[this] lazy val controllers_SecurityController_Facebook8_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("login/facebook")))
   )
-  private[this] lazy val controllers_SecurityController_Facebook6_invoker = createInvoker(
+  private[this] lazy val controllers_SecurityController_Facebook8_invoker = createInvoker(
     SecurityController_3.get.Facebook(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -349,11 +404,11 @@ class Routes(
     )
   )
 
-  // @LINE:21
-  private[this] lazy val controllers_SecurityController_Twitter7_route = Route("GET",
+  // @LINE:24
+  private[this] lazy val controllers_SecurityController_Twitter9_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("login/twitter")))
   )
-  private[this] lazy val controllers_SecurityController_Twitter7_invoker = createInvoker(
+  private[this] lazy val controllers_SecurityController_Twitter9_invoker = createInvoker(
     SecurityController_3.get.Twitter(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -366,11 +421,11 @@ class Routes(
     )
   )
 
-  // @LINE:22
-  private[this] lazy val controllers_SecurityController_GitHub8_route = Route("GET",
+  // @LINE:25
+  private[this] lazy val controllers_SecurityController_GitHub10_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("login/github")))
   )
-  private[this] lazy val controllers_SecurityController_GitHub8_invoker = createInvoker(
+  private[this] lazy val controllers_SecurityController_GitHub10_invoker = createInvoker(
     SecurityController_3.get.GitHub(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -383,11 +438,11 @@ class Routes(
     )
   )
 
-  // @LINE:23
-  private[this] lazy val controllers_SecurityController_Vkontakte9_route = Route("GET",
+  // @LINE:26
+  private[this] lazy val controllers_SecurityController_Vkontakte11_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("login/vkontakte")))
   )
-  private[this] lazy val controllers_SecurityController_Vkontakte9_invoker = createInvoker(
+  private[this] lazy val controllers_SecurityController_Vkontakte11_invoker = createInvoker(
     SecurityController_3.get.Vkontakte(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -400,29 +455,80 @@ class Routes(
     )
   )
 
-  // @LINE:24
-  private[this] lazy val controllers_SecurityController_GEToauth_callback10_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("oauth_callback/")))
+  // @LINE:28
+  private[this] lazy val controllers_SecurityController_getPersonByToken12_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("login/person")))
   )
-  private[this] lazy val controllers_SecurityController_GEToauth_callback10_invoker = createInvoker(
-    SecurityController_3.get.GEToauth_callback(fakeValue[String], fakeValue[String]),
+  private[this] lazy val controllers_SecurityController_getPersonByToken12_invoker = createInvoker(
+    SecurityController_3.get.getPersonByToken(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.SecurityController",
-      "GEToauth_callback",
+      "getPersonByToken",
+      Nil,
+      "GET",
+      """""",
+      this.prefix + """login/person"""
+    )
+  )
+
+  // @LINE:30
+  private[this] lazy val controllers_SecurityController_GET_facebook_oauth13_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("oauth_callback")))
+  )
+  private[this] lazy val controllers_SecurityController_GET_facebook_oauth13_invoker = createInvoker(
+    SecurityController_3.get.GET_facebook_oauth(fakeValue[String], fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.SecurityController",
+      "GET_facebook_oauth",
       Seq(classOf[String], classOf[String]),
       "GET",
       """""",
-      this.prefix + """oauth_callback/"""
+      this.prefix + """oauth_callback"""
     )
   )
 
   // @LINE:31
-  private[this] lazy val controllers_PersonCreateController_developerRegistration11_route = Route("POST",
+  private[this] lazy val controllers_SecurityController_GET_facebook_oauth14_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("login/facebook/oauth_callback")))
+  )
+  private[this] lazy val controllers_SecurityController_GET_facebook_oauth14_invoker = createInvoker(
+    SecurityController_3.get.GET_facebook_oauth(fakeValue[String], fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.SecurityController",
+      "GET_facebook_oauth",
+      Seq(classOf[String], classOf[String]),
+      "GET",
+      """""",
+      this.prefix + """login/facebook/oauth_callback"""
+    )
+  )
+
+  // @LINE:33
+  private[this] lazy val controllers_SecurityController_GET_github_oauth15_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("login/github/oauth_callback")))
+  )
+  private[this] lazy val controllers_SecurityController_GET_github_oauth15_invoker = createInvoker(
+    SecurityController_3.get.GET_github_oauth(fakeValue[String], fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.SecurityController",
+      "GET_github_oauth",
+      Seq(classOf[String], classOf[String]),
+      "GET",
+      """GET             /login/twitter/oauth_callback              @controllers.SecurityController.GET_twitter_oauth(code, state)""",
+      this.prefix + """login/github/oauth_callback"""
+    )
+  )
+
+  // @LINE:39
+  private[this] lazy val controllers_PersonCreateController_developerRegistration16_route = Route("POST",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("coreClient/person/developer")))
   )
-  private[this] lazy val controllers_PersonCreateController_developerRegistration11_invoker = createInvoker(
-    PersonCreateController_8.get.developerRegistration(),
+  private[this] lazy val controllers_PersonCreateController_developerRegistration16_invoker = createInvoker(
+    PersonCreateController_9.get.developerRegistration(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.PersonCreateController",
@@ -434,12 +540,12 @@ class Routes(
     )
   )
 
-  // @LINE:32
-  private[this] lazy val controllers_PersonCreateController_standartRegistration12_route = Route("POST",
+  // @LINE:40
+  private[this] lazy val controllers_PersonCreateController_standartRegistration17_route = Route("POST",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("coreClient/person/person")))
   )
-  private[this] lazy val controllers_PersonCreateController_standartRegistration12_invoker = createInvoker(
-    PersonCreateController_8.get.standartRegistration(),
+  private[this] lazy val controllers_PersonCreateController_standartRegistration17_invoker = createInvoker(
+    PersonCreateController_9.get.standartRegistration(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.PersonCreateController",
@@ -451,12 +557,12 @@ class Routes(
     )
   )
 
-  // @LINE:33
-  private[this] lazy val controllers_PersonCreateController_updatePersonInformation13_route = Route("PUT",
+  // @LINE:41
+  private[this] lazy val controllers_PersonCreateController_updatePersonInformation18_route = Route("PUT",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("coreClient/person/person")))
   )
-  private[this] lazy val controllers_PersonCreateController_updatePersonInformation13_invoker = createInvoker(
-    PersonCreateController_8.get.updatePersonInformation(),
+  private[this] lazy val controllers_PersonCreateController_updatePersonInformation18_invoker = createInvoker(
+    PersonCreateController_9.get.updatePersonInformation(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.PersonCreateController",
@@ -468,12 +574,12 @@ class Routes(
     )
   )
 
-  // @LINE:34
-  private[this] lazy val controllers_PersonCreateController_getPerson14_route = Route("GET",
+  // @LINE:42
+  private[this] lazy val controllers_PersonCreateController_getPerson19_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("coreClient/person/person/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_PersonCreateController_getPerson14_invoker = createInvoker(
-    PersonCreateController_8.get.getPerson(fakeValue[String]),
+  private[this] lazy val controllers_PersonCreateController_getPerson19_invoker = createInvoker(
+    PersonCreateController_9.get.getPerson(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.PersonCreateController",
@@ -485,12 +591,12 @@ class Routes(
     )
   )
 
-  // @LINE:35
-  private[this] lazy val controllers_PersonCreateController_deletePerson15_route = Route("DELETE",
+  // @LINE:44
+  private[this] lazy val controllers_PersonCreateController_deletePerson20_route = Route("DELETE",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("coreClient/person/person/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_PersonCreateController_deletePerson15_invoker = createInvoker(
-    PersonCreateController_8.get.deletePerson(fakeValue[String]),
+  private[this] lazy val controllers_PersonCreateController_deletePerson20_invoker = createInvoker(
+    PersonCreateController_9.get.deletePerson(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.PersonCreateController",
@@ -502,12 +608,12 @@ class Routes(
     )
   )
 
-  // @LINE:37
-  private[this] lazy val controllers_PersonCreateController_emailPersonAuthentitaction16_route = Route("GET",
+  // @LINE:46
+  private[this] lazy val controllers_PersonCreateController_emailPersonAuthentitaction21_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("emailPersonAuthentication/")))
   )
-  private[this] lazy val controllers_PersonCreateController_emailPersonAuthentitaction16_invoker = createInvoker(
-    PersonCreateController_8.get.emailPersonAuthentitaction(fakeValue[String], fakeValue[String]),
+  private[this] lazy val controllers_PersonCreateController_emailPersonAuthentitaction21_invoker = createInvoker(
+    PersonCreateController_9.get.emailPersonAuthentitaction(fakeValue[String], fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.PersonCreateController",
@@ -519,11 +625,11 @@ class Routes(
     )
   )
 
-  // @LINE:44
-  private[this] lazy val controllers_PermissionController_getAllPermissions17_route = Route("GET",
+  // @LINE:53
+  private[this] lazy val controllers_PermissionController_getAllPermissions22_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("permission/permisionKeys")))
   )
-  private[this] lazy val controllers_PermissionController_getAllPermissions17_invoker = createInvoker(
+  private[this] lazy val controllers_PermissionController_getAllPermissions22_invoker = createInvoker(
     PermissionController_0.get.getAllPermissions(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -537,11 +643,11 @@ class Routes(
     )
   )
 
-  // @LINE:45
-  private[this] lazy val controllers_PermissionController_getAllGroups18_route = Route("GET",
+  // @LINE:54
+  private[this] lazy val controllers_PermissionController_getAllGroups23_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("permission/permisionGroups")))
   )
-  private[this] lazy val controllers_PermissionController_getAllGroups18_invoker = createInvoker(
+  private[this] lazy val controllers_PermissionController_getAllGroups23_invoker = createInvoker(
     PermissionController_0.get.getAllGroups(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -554,11 +660,11 @@ class Routes(
     )
   )
 
-  // @LINE:46
-  private[this] lazy val controllers_PermissionController_createGroup19_route = Route("POST",
+  // @LINE:55
+  private[this] lazy val controllers_PermissionController_createGroup24_route = Route("POST",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("permission/group")))
   )
-  private[this] lazy val controllers_PermissionController_createGroup19_invoker = createInvoker(
+  private[this] lazy val controllers_PermissionController_createGroup24_invoker = createInvoker(
     PermissionController_0.get.createGroup(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -571,11 +677,11 @@ class Routes(
     )
   )
 
-  // @LINE:48
-  private[this] lazy val controllers_PermissionController_getAllPersonPermission20_route = Route("GET",
+  // @LINE:57
+  private[this] lazy val controllers_PermissionController_getAllPersonPermission25_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("permission/personPermission")))
   )
-  private[this] lazy val controllers_PermissionController_getAllPersonPermission20_invoker = createInvoker(
+  private[this] lazy val controllers_PermissionController_getAllPersonPermission25_invoker = createInvoker(
     PermissionController_0.get.getAllPersonPermission(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -588,11 +694,11 @@ class Routes(
     )
   )
 
-  // @LINE:49
-  private[this] lazy val controllers_PermissionController_removeAllPersonPermission21_route = Route("DELETE",
+  // @LINE:58
+  private[this] lazy val controllers_PermissionController_removeAllPersonPermission26_route = Route("DELETE",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("permission/personPermission")))
   )
-  private[this] lazy val controllers_PermissionController_removeAllPersonPermission21_invoker = createInvoker(
+  private[this] lazy val controllers_PermissionController_removeAllPersonPermission26_invoker = createInvoker(
     PermissionController_0.get.removeAllPersonPermission(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -605,11 +711,11 @@ class Routes(
     )
   )
 
-  // @LINE:50
-  private[this] lazy val controllers_PermissionController_addAllPersonPermission22_route = Route("PUT",
+  // @LINE:59
+  private[this] lazy val controllers_PermissionController_addAllPersonPermission27_route = Route("PUT",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("permission/personPermission")))
   )
-  private[this] lazy val controllers_PermissionController_addAllPersonPermission22_invoker = createInvoker(
+  private[this] lazy val controllers_PermissionController_addAllPersonPermission27_invoker = createInvoker(
     PermissionController_0.get.addAllPersonPermission(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -622,12 +728,12 @@ class Routes(
     )
   )
 
-  // @LINE:55
-  private[this] lazy val controllers_OverFlowController_newPost23_route = Route("POST",
+  // @LINE:64
+  private[this] lazy val controllers_OverFlowController_newPost28_route = Route("POST",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("overflow/post")))
   )
-  private[this] lazy val controllers_OverFlowController_newPost23_invoker = createInvoker(
-    OverFlowController_7.get.newPost(),
+  private[this] lazy val controllers_OverFlowController_newPost28_invoker = createInvoker(
+    OverFlowController_8.get.newPost(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.OverFlowController",
@@ -639,12 +745,12 @@ class Routes(
     )
   )
 
-  // @LINE:56
-  private[this] lazy val controllers_OverFlowController_getPost24_route = Route("GET",
+  // @LINE:65
+  private[this] lazy val controllers_OverFlowController_getPost29_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("overflow/post/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_OverFlowController_getPost24_invoker = createInvoker(
-    OverFlowController_7.get.getPost(fakeValue[String]),
+  private[this] lazy val controllers_OverFlowController_getPost29_invoker = createInvoker(
+    OverFlowController_8.get.getPost(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.OverFlowController",
@@ -656,12 +762,12 @@ class Routes(
     )
   )
 
-  // @LINE:57
-  private[this] lazy val controllers_OverFlowController_deletePost25_route = Route("DELETE",
+  // @LINE:66
+  private[this] lazy val controllers_OverFlowController_deletePost30_route = Route("DELETE",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("overflow/post/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_OverFlowController_deletePost25_invoker = createInvoker(
-    OverFlowController_7.get.deletePost(fakeValue[String]),
+  private[this] lazy val controllers_OverFlowController_deletePost30_invoker = createInvoker(
+    OverFlowController_8.get.deletePost(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.OverFlowController",
@@ -673,12 +779,12 @@ class Routes(
     )
   )
 
-  // @LINE:58
-  private[this] lazy val controllers_OverFlowController_editPost26_route = Route("PUT",
+  // @LINE:67
+  private[this] lazy val controllers_OverFlowController_editPost31_route = Route("PUT",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("overflow/post")))
   )
-  private[this] lazy val controllers_OverFlowController_editPost26_invoker = createInvoker(
-    OverFlowController_7.get.editPost(),
+  private[this] lazy val controllers_OverFlowController_editPost31_invoker = createInvoker(
+    OverFlowController_8.get.editPost(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.OverFlowController",
@@ -690,12 +796,12 @@ class Routes(
     )
   )
 
-  // @LINE:59
-  private[this] lazy val controllers_OverFlowController_getLatestPost27_route = Route("GET",
+  // @LINE:68
+  private[this] lazy val controllers_OverFlowController_getLatestPost32_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("overflow/postAll")))
   )
-  private[this] lazy val controllers_OverFlowController_getLatestPost27_invoker = createInvoker(
-    OverFlowController_7.get.getLatestPost(),
+  private[this] lazy val controllers_OverFlowController_getLatestPost32_invoker = createInvoker(
+    OverFlowController_8.get.getLatestPost(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.OverFlowController",
@@ -707,12 +813,12 @@ class Routes(
     )
   )
 
-  // @LINE:60
-  private[this] lazy val controllers_OverFlowController_getPostByFilter28_route = Route("POST",
+  // @LINE:69
+  private[this] lazy val controllers_OverFlowController_getPostByFilter33_route = Route("POST",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("overflow/postFilter")))
   )
-  private[this] lazy val controllers_OverFlowController_getPostByFilter28_invoker = createInvoker(
-    OverFlowController_7.get.getPostByFilter(),
+  private[this] lazy val controllers_OverFlowController_getPostByFilter33_invoker = createInvoker(
+    OverFlowController_8.get.getPostByFilter(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.OverFlowController",
@@ -724,12 +830,12 @@ class Routes(
     )
   )
 
-  // @LINE:61
-  private[this] lazy val controllers_OverFlowController_getPostLinkedAnswers29_route = Route("GET",
+  // @LINE:70
+  private[this] lazy val controllers_OverFlowController_getPostLinkedAnswers34_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("overflow/linkedAnswers/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_OverFlowController_getPostLinkedAnswers29_invoker = createInvoker(
-    OverFlowController_7.get.getPostLinkedAnswers(fakeValue[String]),
+  private[this] lazy val controllers_OverFlowController_getPostLinkedAnswers34_invoker = createInvoker(
+    OverFlowController_8.get.getPostLinkedAnswers(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.OverFlowController",
@@ -741,12 +847,12 @@ class Routes(
     )
   )
 
-  // @LINE:63
-  private[this] lazy val controllers_OverFlowController_hashTagsListOnPost30_route = Route("GET",
+  // @LINE:72
+  private[this] lazy val controllers_OverFlowController_hashTagsListOnPost35_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("overflow/post/hashTags/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_OverFlowController_hashTagsListOnPost30_invoker = createInvoker(
-    OverFlowController_7.get.hashTagsListOnPost(fakeValue[String]),
+  private[this] lazy val controllers_OverFlowController_hashTagsListOnPost35_invoker = createInvoker(
+    OverFlowController_8.get.hashTagsListOnPost(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.OverFlowController",
@@ -758,12 +864,12 @@ class Routes(
     )
   )
 
-  // @LINE:64
-  private[this] lazy val controllers_OverFlowController_commentsListOnPost31_route = Route("GET",
+  // @LINE:73
+  private[this] lazy val controllers_OverFlowController_commentsListOnPost36_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("overflow/post/comments/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_OverFlowController_commentsListOnPost31_invoker = createInvoker(
-    OverFlowController_7.get.commentsListOnPost(fakeValue[String]),
+  private[this] lazy val controllers_OverFlowController_commentsListOnPost36_invoker = createInvoker(
+    OverFlowController_8.get.commentsListOnPost(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.OverFlowController",
@@ -775,12 +881,12 @@ class Routes(
     )
   )
 
-  // @LINE:65
-  private[this] lazy val controllers_OverFlowController_answereListOnPost32_route = Route("GET",
+  // @LINE:74
+  private[this] lazy val controllers_OverFlowController_answereListOnPost37_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("overflow/post/answers/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_OverFlowController_answereListOnPost32_invoker = createInvoker(
-    OverFlowController_7.get.answereListOnPost(fakeValue[String]),
+  private[this] lazy val controllers_OverFlowController_answereListOnPost37_invoker = createInvoker(
+    OverFlowController_8.get.answereListOnPost(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.OverFlowController",
@@ -792,12 +898,12 @@ class Routes(
     )
   )
 
-  // @LINE:66
-  private[this] lazy val controllers_OverFlowController_textOfPost33_route = Route("GET",
+  // @LINE:75
+  private[this] lazy val controllers_OverFlowController_textOfPost38_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("overflow/post/textOfPost/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_OverFlowController_textOfPost33_invoker = createInvoker(
-    OverFlowController_7.get.textOfPost(fakeValue[String]),
+  private[this] lazy val controllers_OverFlowController_textOfPost38_invoker = createInvoker(
+    OverFlowController_8.get.textOfPost(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.OverFlowController",
@@ -809,12 +915,12 @@ class Routes(
     )
   )
 
-  // @LINE:68
-  private[this] lazy val controllers_OverFlowController_newTypeOfPost34_route = Route("POST",
+  // @LINE:77
+  private[this] lazy val controllers_OverFlowController_newTypeOfPost39_route = Route("POST",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("overflow/typeOfPost")))
   )
-  private[this] lazy val controllers_OverFlowController_newTypeOfPost34_invoker = createInvoker(
-    OverFlowController_7.get.newTypeOfPost(),
+  private[this] lazy val controllers_OverFlowController_newTypeOfPost39_invoker = createInvoker(
+    OverFlowController_8.get.newTypeOfPost(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.OverFlowController",
@@ -826,12 +932,12 @@ class Routes(
     )
   )
 
-  // @LINE:69
-  private[this] lazy val controllers_OverFlowController_getTypeOfPost35_route = Route("GET",
+  // @LINE:78
+  private[this] lazy val controllers_OverFlowController_getTypeOfPost40_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("overflow/typeOfPost")))
   )
-  private[this] lazy val controllers_OverFlowController_getTypeOfPost35_invoker = createInvoker(
-    OverFlowController_7.get.getTypeOfPost(),
+  private[this] lazy val controllers_OverFlowController_getTypeOfPost40_invoker = createInvoker(
+    OverFlowController_8.get.getTypeOfPost(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.OverFlowController",
@@ -843,12 +949,63 @@ class Routes(
     )
   )
 
-  // @LINE:72
-  private[this] lazy val controllers_OverFlowController_addComment36_route = Route("POST",
+  // @LINE:80
+  private[this] lazy val controllers_OverFlowController_newTypeOfConfirms41_route = Route("POST",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("overflow/typeOfConfirm")))
+  )
+  private[this] lazy val controllers_OverFlowController_newTypeOfConfirms41_invoker = createInvoker(
+    OverFlowController_8.get.newTypeOfConfirms(),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.OverFlowController",
+      "newTypeOfConfirms",
+      Nil,
+      "POST",
+      """""",
+      this.prefix + """overflow/typeOfConfirm"""
+    )
+  )
+
+  // @LINE:81
+  private[this] lazy val controllers_OverFlowController_getTypeOfConfirms42_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("overflow/typeOfConfirm")))
+  )
+  private[this] lazy val controllers_OverFlowController_getTypeOfConfirms42_invoker = createInvoker(
+    OverFlowController_8.get.getTypeOfConfirms(),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.OverFlowController",
+      "getTypeOfConfirms",
+      Nil,
+      "GET",
+      """""",
+      this.prefix + """overflow/typeOfConfirm"""
+    )
+  )
+
+  // @LINE:82
+  private[this] lazy val controllers_OverFlowController_putTypeOfConfirmToPost43_route = Route("PUT",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("overflow/typeOfConfirm/"), DynamicPart("conf", """[^/]+""",true), StaticPart("/"), DynamicPart("pst", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_OverFlowController_putTypeOfConfirmToPost43_invoker = createInvoker(
+    OverFlowController_8.get.putTypeOfConfirmToPost(fakeValue[String], fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.OverFlowController",
+      "putTypeOfConfirmToPost",
+      Seq(classOf[String], classOf[String]),
+      "PUT",
+      """""",
+      this.prefix + """overflow/typeOfConfirm/$conf<[^/]+>/$pst<[^/]+>"""
+    )
+  )
+
+  // @LINE:84
+  private[this] lazy val controllers_OverFlowController_addComment44_route = Route("POST",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("overflow/comment")))
   )
-  private[this] lazy val controllers_OverFlowController_addComment36_invoker = createInvoker(
-    OverFlowController_7.get.addComment(),
+  private[this] lazy val controllers_OverFlowController_addComment44_invoker = createInvoker(
+    OverFlowController_8.get.addComment(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.OverFlowController",
@@ -860,12 +1017,12 @@ class Routes(
     )
   )
 
-  // @LINE:73
-  private[this] lazy val controllers_OverFlowController_updateComment37_route = Route("PUT",
+  // @LINE:85
+  private[this] lazy val controllers_OverFlowController_updateComment45_route = Route("PUT",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("overflow/comment/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_OverFlowController_updateComment37_invoker = createInvoker(
-    OverFlowController_7.get.updateComment(fakeValue[String]),
+  private[this] lazy val controllers_OverFlowController_updateComment45_invoker = createInvoker(
+    OverFlowController_8.get.updateComment(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.OverFlowController",
@@ -877,12 +1034,12 @@ class Routes(
     )
   )
 
-  // @LINE:74
-  private[this] lazy val controllers_OverFlowController_deletePost38_route = Route("DELETE",
+  // @LINE:86
+  private[this] lazy val controllers_OverFlowController_deletePost46_route = Route("DELETE",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("overflow/comment/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_OverFlowController_deletePost38_invoker = createInvoker(
-    OverFlowController_7.get.deletePost(fakeValue[String]),
+  private[this] lazy val controllers_OverFlowController_deletePost46_invoker = createInvoker(
+    OverFlowController_8.get.deletePost(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.OverFlowController",
@@ -894,12 +1051,12 @@ class Routes(
     )
   )
 
-  // @LINE:76
-  private[this] lazy val controllers_OverFlowController_addAnswer39_route = Route("POST",
+  // @LINE:88
+  private[this] lazy val controllers_OverFlowController_addAnswer47_route = Route("POST",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("overflow/answer")))
   )
-  private[this] lazy val controllers_OverFlowController_addAnswer39_invoker = createInvoker(
-    OverFlowController_7.get.addAnswer(),
+  private[this] lazy val controllers_OverFlowController_addAnswer47_invoker = createInvoker(
+    OverFlowController_8.get.addAnswer(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.OverFlowController",
@@ -911,12 +1068,12 @@ class Routes(
     )
   )
 
-  // @LINE:77
-  private[this] lazy val controllers_OverFlowController_updateComment40_route = Route("PUT",
+  // @LINE:89
+  private[this] lazy val controllers_OverFlowController_updateComment48_route = Route("PUT",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("overflow/answer/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_OverFlowController_updateComment40_invoker = createInvoker(
-    OverFlowController_7.get.updateComment(fakeValue[String]),
+  private[this] lazy val controllers_OverFlowController_updateComment48_invoker = createInvoker(
+    OverFlowController_8.get.updateComment(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.OverFlowController",
@@ -928,12 +1085,12 @@ class Routes(
     )
   )
 
-  // @LINE:78
-  private[this] lazy val controllers_OverFlowController_deletePost41_route = Route("DELETE",
+  // @LINE:90
+  private[this] lazy val controllers_OverFlowController_deletePost49_route = Route("DELETE",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("overflow/answer/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_OverFlowController_deletePost41_invoker = createInvoker(
-    OverFlowController_7.get.deletePost(fakeValue[String]),
+  private[this] lazy val controllers_OverFlowController_deletePost49_invoker = createInvoker(
+    OverFlowController_8.get.deletePost(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.OverFlowController",
@@ -945,12 +1102,12 @@ class Routes(
     )
   )
 
-  // @LINE:80
-  private[this] lazy val controllers_OverFlowController_likePlus42_route = Route("PUT",
+  // @LINE:92
+  private[this] lazy val controllers_OverFlowController_likePlus50_route = Route("PUT",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("overflow/likePlus/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_OverFlowController_likePlus42_invoker = createInvoker(
-    OverFlowController_7.get.likePlus(fakeValue[String]),
+  private[this] lazy val controllers_OverFlowController_likePlus50_invoker = createInvoker(
+    OverFlowController_8.get.likePlus(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.OverFlowController",
@@ -962,12 +1119,12 @@ class Routes(
     )
   )
 
-  // @LINE:81
-  private[this] lazy val controllers_OverFlowController_likeMinus43_route = Route("PUT",
+  // @LINE:93
+  private[this] lazy val controllers_OverFlowController_likeMinus51_route = Route("PUT",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("overflow/likeMinus/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_OverFlowController_likeMinus43_invoker = createInvoker(
-    OverFlowController_7.get.likeMinus(fakeValue[String]),
+  private[this] lazy val controllers_OverFlowController_likeMinus51_invoker = createInvoker(
+    OverFlowController_8.get.likeMinus(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.OverFlowController",
@@ -979,12 +1136,12 @@ class Routes(
     )
   )
 
-  // @LINE:82
-  private[this] lazy val controllers_OverFlowController_linkWithPreviousAnswer44_route = Route("POST",
+  // @LINE:94
+  private[this] lazy val controllers_OverFlowController_linkWithPreviousAnswer52_route = Route("POST",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("overflow/link")))
   )
-  private[this] lazy val controllers_OverFlowController_linkWithPreviousAnswer44_invoker = createInvoker(
-    OverFlowController_7.get.linkWithPreviousAnswer(),
+  private[this] lazy val controllers_OverFlowController_linkWithPreviousAnswer52_invoker = createInvoker(
+    OverFlowController_8.get.linkWithPreviousAnswer(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.OverFlowController",
@@ -996,12 +1153,12 @@ class Routes(
     )
   )
 
-  // @LINE:83
-  private[this] lazy val controllers_OverFlowController_unlinkWithPreviousAnswer45_route = Route("DELETE",
+  // @LINE:95
+  private[this] lazy val controllers_OverFlowController_unlinkWithPreviousAnswer53_route = Route("DELETE",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("overflow/link/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_OverFlowController_unlinkWithPreviousAnswer45_invoker = createInvoker(
-    OverFlowController_7.get.unlinkWithPreviousAnswer(fakeValue[String]),
+  private[this] lazy val controllers_OverFlowController_unlinkWithPreviousAnswer53_invoker = createInvoker(
+    OverFlowController_8.get.unlinkWithPreviousAnswer(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.OverFlowController",
@@ -1013,12 +1170,12 @@ class Routes(
     )
   )
 
-  // @LINE:84
-  private[this] lazy val controllers_OverFlowController_removeHashTag46_route = Route("PUT",
+  // @LINE:96
+  private[this] lazy val controllers_OverFlowController_removeHashTag54_route = Route("PUT",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("overflow/removeLink")))
   )
-  private[this] lazy val controllers_OverFlowController_removeHashTag46_invoker = createInvoker(
-    OverFlowController_7.get.removeHashTag(),
+  private[this] lazy val controllers_OverFlowController_removeHashTag54_invoker = createInvoker(
+    OverFlowController_8.get.removeHashTag(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.OverFlowController",
@@ -1030,12 +1187,12 @@ class Routes(
     )
   )
 
-  // @LINE:85
-  private[this] lazy val controllers_OverFlowController_addHashTag47_route = Route("POST",
+  // @LINE:97
+  private[this] lazy val controllers_OverFlowController_addHashTag55_route = Route("POST",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("overflow/hashTag")))
   )
-  private[this] lazy val controllers_OverFlowController_addHashTag47_invoker = createInvoker(
-    OverFlowController_7.get.addHashTag(),
+  private[this] lazy val controllers_OverFlowController_addHashTag55_invoker = createInvoker(
+    OverFlowController_8.get.addHashTag(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.OverFlowController",
@@ -1047,12 +1204,12 @@ class Routes(
     )
   )
 
-  // @LINE:86
-  private[this] lazy val controllers_OverFlowController_removeHashTag48_route = Route("PUT",
+  // @LINE:98
+  private[this] lazy val controllers_OverFlowController_removeHashTag56_route = Route("PUT",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("overflow/removeHashTag")))
   )
-  private[this] lazy val controllers_OverFlowController_removeHashTag48_invoker = createInvoker(
-    OverFlowController_7.get.removeHashTag(),
+  private[this] lazy val controllers_OverFlowController_removeHashTag56_invoker = createInvoker(
+    OverFlowController_8.get.removeHashTag(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.OverFlowController",
@@ -1064,45 +1221,11 @@ class Routes(
     )
   )
 
-  // @LINE:87
-  private[this] lazy val controllers_OverFlowController_addConfirmType49_route = Route("POST",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("overflow/confirm/"), DynamicPart("id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_OverFlowController_addConfirmType49_invoker = createInvoker(
-    OverFlowController_7.get.addConfirmType(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.OverFlowController",
-      "addConfirmType",
-      Seq(classOf[String]),
-      "POST",
-      """""",
-      this.prefix + """overflow/confirm/$id<[^/]+>"""
-    )
-  )
-
-  // @LINE:88
-  private[this] lazy val controllers_OverFlowController_removeConfirmType50_route = Route("DELETE",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("overflow/confirm/"), DynamicPart("id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_OverFlowController_removeConfirmType50_invoker = createInvoker(
-    OverFlowController_7.get.removeConfirmType(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.OverFlowController",
-      "removeConfirmType",
-      Seq(classOf[String]),
-      "DELETE",
-      """""",
-      this.prefix + """overflow/confirm/$id<[^/]+>"""
-    )
-  )
-
-  // @LINE:96
-  private[this] lazy val controllers_ProgramingPackageController_postNewProject51_route = Route("POST",
+  // @LINE:107
+  private[this] lazy val controllers_ProgramingPackageController_postNewProject57_route = Route("POST",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/project")))
   )
-  private[this] lazy val controllers_ProgramingPackageController_postNewProject51_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_postNewProject57_invoker = createInvoker(
     ProgramingPackageController_4.get.postNewProject(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1117,11 +1240,11 @@ Project""",
     )
   )
 
-  // @LINE:97
-  private[this] lazy val controllers_ProgramingPackageController_updateProject52_route = Route("PUT",
+  // @LINE:108
+  private[this] lazy val controllers_ProgramingPackageController_updateProject58_route = Route("PUT",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/project/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_ProgramingPackageController_updateProject52_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_updateProject58_invoker = createInvoker(
     ProgramingPackageController_4.get.updateProject(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1134,11 +1257,11 @@ Project""",
     )
   )
 
-  // @LINE:98
-  private[this] lazy val controllers_ProgramingPackageController_getProject53_route = Route("GET",
+  // @LINE:109
+  private[this] lazy val controllers_ProgramingPackageController_getProject59_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/project/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_ProgramingPackageController_getProject53_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_getProject59_invoker = createInvoker(
     ProgramingPackageController_4.get.getProject(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1151,11 +1274,11 @@ Project""",
     )
   )
 
-  // @LINE:99
-  private[this] lazy val controllers_ProgramingPackageController_getProjectsByUserAccount54_route = Route("GET",
+  // @LINE:110
+  private[this] lazy val controllers_ProgramingPackageController_getProjectsByUserAccount60_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/project")))
   )
-  private[this] lazy val controllers_ProgramingPackageController_getProjectsByUserAccount54_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_getProjectsByUserAccount60_invoker = createInvoker(
     ProgramingPackageController_4.get.getProjectsByUserAccount(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1168,11 +1291,11 @@ Project""",
     )
   )
 
-  // @LINE:100
-  private[this] lazy val controllers_ProgramingPackageController_deleteProject55_route = Route("DELETE",
+  // @LINE:111
+  private[this] lazy val controllers_ProgramingPackageController_deleteProject61_route = Route("DELETE",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/project/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_ProgramingPackageController_deleteProject55_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_deleteProject61_invoker = createInvoker(
     ProgramingPackageController_4.get.deleteProject(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1185,11 +1308,11 @@ Project""",
     )
   )
 
-  // @LINE:101
-  private[this] lazy val controllers_ProgramingPackageController_shareProjectWithUsers56_route = Route("PUT",
+  // @LINE:112
+  private[this] lazy val controllers_ProgramingPackageController_shareProjectWithUsers62_route = Route("PUT",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/project/shareProject/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_ProgramingPackageController_shareProjectWithUsers56_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_shareProjectWithUsers62_invoker = createInvoker(
     ProgramingPackageController_4.get.shareProjectWithUsers(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1202,11 +1325,11 @@ Project""",
     )
   )
 
-  // @LINE:102
-  private[this] lazy val controllers_ProgramingPackageController_unshareProjectWithUsers57_route = Route("PUT",
+  // @LINE:113
+  private[this] lazy val controllers_ProgramingPackageController_unshareProjectWithUsers63_route = Route("PUT",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/project/unshareProject/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_ProgramingPackageController_unshareProjectWithUsers57_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_unshareProjectWithUsers63_invoker = createInvoker(
     ProgramingPackageController_4.get.unshareProjectWithUsers(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1219,11 +1342,11 @@ Project""",
     )
   )
 
-  // @LINE:103
-  private[this] lazy val controllers_ProgramingPackageController_getProgramPrograms58_route = Route("GET",
+  // @LINE:114
+  private[this] lazy val controllers_ProgramingPackageController_getProgramPrograms64_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/project/programs/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_ProgramingPackageController_getProgramPrograms58_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_getProgramPrograms64_invoker = createInvoker(
     ProgramingPackageController_4.get.getProgramPrograms(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1236,11 +1359,11 @@ Project""",
     )
   )
 
-  // @LINE:104
-  private[this] lazy val controllers_ProgramingPackageController_getProgramhomerList59_route = Route("GET",
+  // @LINE:115
+  private[this] lazy val controllers_ProgramingPackageController_getProgramhomerList65_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/project/homerList/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_ProgramingPackageController_getProgramhomerList59_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_getProgramhomerList65_invoker = createInvoker(
     ProgramingPackageController_4.get.getProgramhomerList(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1253,11 +1376,11 @@ Project""",
     )
   )
 
-  // @LINE:105
-  private[this] lazy val controllers_ProgramingPackageController_getProjectOwners60_route = Route("GET",
+  // @LINE:116
+  private[this] lazy val controllers_ProgramingPackageController_getProjectOwners66_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/project/owners/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_ProgramingPackageController_getProjectOwners60_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_getProjectOwners66_invoker = createInvoker(
     ProgramingPackageController_4.get.getProjectOwners(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1270,11 +1393,11 @@ Project""",
     )
   )
 
-  // @LINE:108
-  private[this] lazy val controllers_ProgramingPackageController_newHomer61_route = Route("POST",
+  // @LINE:119
+  private[this] lazy val controllers_ProgramingPackageController_newHomer67_route = Route("POST",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/homer")))
   )
-  private[this] lazy val controllers_ProgramingPackageController_newHomer61_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_newHomer67_invoker = createInvoker(
     ProgramingPackageController_4.get.newHomer(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1287,11 +1410,11 @@ Project""",
     )
   )
 
-  // @LINE:109
-  private[this] lazy val controllers_ProgramingPackageController_removeHomer62_route = Route("DELETE",
+  // @LINE:120
+  private[this] lazy val controllers_ProgramingPackageController_removeHomer68_route = Route("DELETE",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/homer/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_ProgramingPackageController_removeHomer62_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_removeHomer68_invoker = createInvoker(
     ProgramingPackageController_4.get.removeHomer(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1304,11 +1427,11 @@ Project""",
     )
   )
 
-  // @LINE:110
-  private[this] lazy val controllers_ProgramingPackageController_getHomer63_route = Route("GET",
+  // @LINE:121
+  private[this] lazy val controllers_ProgramingPackageController_getHomer69_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/homer/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_ProgramingPackageController_getHomer63_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_getHomer69_invoker = createInvoker(
     ProgramingPackageController_4.get.getHomer(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1321,11 +1444,11 @@ Project""",
     )
   )
 
-  // @LINE:111
-  private[this] lazy val controllers_ProgramingPackageController_getAllHomers64_route = Route("GET",
+  // @LINE:122
+  private[this] lazy val controllers_ProgramingPackageController_getAllHomers70_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/homer")))
   )
-  private[this] lazy val controllers_ProgramingPackageController_getAllHomers64_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_getAllHomers70_invoker = createInvoker(
     ProgramingPackageController_4.get.getAllHomers(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1338,11 +1461,11 @@ Project""",
     )
   )
 
-  // @LINE:112
-  private[this] lazy val controllers_ProgramingPackageController_getConnectedHomers65_route = Route("GET",
+  // @LINE:123
+  private[this] lazy val controllers_ProgramingPackageController_getConnectedHomers71_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/homer/getAllConnectedHomers/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_ProgramingPackageController_getConnectedHomers65_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_getConnectedHomers71_invoker = createInvoker(
     ProgramingPackageController_4.get.getConnectedHomers(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1355,11 +1478,11 @@ Project""",
     )
   )
 
-  // @LINE:117
-  private[this] lazy val controllers_ProgramingPackageController_connectHomerWithProject66_route = Route("PUT",
+  // @LINE:128
+  private[this] lazy val controllers_ProgramingPackageController_connectHomerWithProject72_route = Route("PUT",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/connectHomerWithProject")))
   )
-  private[this] lazy val controllers_ProgramingPackageController_connectHomerWithProject66_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_connectHomerWithProject72_invoker = createInvoker(
     ProgramingPackageController_4.get.connectHomerWithProject(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1372,11 +1495,11 @@ Project""",
     )
   )
 
-  // @LINE:118
-  private[this] lazy val controllers_ProgramingPackageController_unConnectHomerWithProject67_route = Route("PUT",
+  // @LINE:129
+  private[this] lazy val controllers_ProgramingPackageController_unConnectHomerWithProject73_route = Route("PUT",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/unconnectHomerWithProject")))
   )
-  private[this] lazy val controllers_ProgramingPackageController_unConnectHomerWithProject67_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_unConnectHomerWithProject73_invoker = createInvoker(
     ProgramingPackageController_4.get.unConnectHomerWithProject(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1389,11 +1512,11 @@ Project""",
     )
   )
 
-  // @LINE:121
-  private[this] lazy val controllers_ProgramingPackageController_postNewProgram68_route = Route("POST",
+  // @LINE:132
+  private[this] lazy val controllers_ProgramingPackageController_postNewProgram74_route = Route("POST",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/program")))
   )
-  private[this] lazy val controllers_ProgramingPackageController_postNewProgram68_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_postNewProgram74_invoker = createInvoker(
     ProgramingPackageController_4.get.postNewProgram(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1406,11 +1529,11 @@ Project""",
     )
   )
 
-  // @LINE:122
-  private[this] lazy val controllers_ProgramingPackageController_getProgram69_route = Route("GET",
+  // @LINE:133
+  private[this] lazy val controllers_ProgramingPackageController_getProgram75_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/program/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_ProgramingPackageController_getProgram69_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_getProgram75_invoker = createInvoker(
     ProgramingPackageController_4.get.getProgram(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1423,11 +1546,11 @@ Project""",
     )
   )
 
-  // @LINE:123
-  private[this] lazy val controllers_ProgramingPackageController_editProgram70_route = Route("PUT",
+  // @LINE:134
+  private[this] lazy val controllers_ProgramingPackageController_editProgram76_route = Route("PUT",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/program/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_ProgramingPackageController_editProgram70_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_editProgram76_invoker = createInvoker(
     ProgramingPackageController_4.get.editProgram(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1440,11 +1563,11 @@ Project""",
     )
   )
 
-  // @LINE:124
-  private[this] lazy val controllers_ProgramingPackageController_removeProgram71_route = Route("DELETE",
+  // @LINE:135
+  private[this] lazy val controllers_ProgramingPackageController_removeProgram77_route = Route("DELETE",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/program/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_ProgramingPackageController_removeProgram71_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_removeProgram77_invoker = createInvoker(
     ProgramingPackageController_4.get.removeProgram(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1457,11 +1580,11 @@ Project""",
     )
   )
 
-  // @LINE:125
-  private[this] lazy val controllers_ProgramingPackageController_getProgramInJson72_route = Route("GET",
+  // @LINE:136
+  private[this] lazy val controllers_ProgramingPackageController_getProgramInJson78_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/programInJson/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_ProgramingPackageController_getProgramInJson72_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_getProgramInJson78_invoker = createInvoker(
     ProgramingPackageController_4.get.getProgramInJson(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1474,11 +1597,11 @@ Project""",
     )
   )
 
-  // @LINE:128
-  private[this] lazy val controllers_ProgramingPackageController_getAllPrograms73_route = Route("GET",
+  // @LINE:139
+  private[this] lazy val controllers_ProgramingPackageController_getAllPrograms79_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/getallprograms/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_ProgramingPackageController_getAllPrograms73_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_getAllPrograms79_invoker = createInvoker(
     ProgramingPackageController_4.get.getAllPrograms(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1491,11 +1614,11 @@ Project""",
     )
   )
 
-  // @LINE:129
-  private[this] lazy val controllers_ProgramingPackageController_listOfUploadedHomers74_route = Route("GET",
+  // @LINE:140
+  private[this] lazy val controllers_ProgramingPackageController_listOfUploadedHomers80_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/listOfUploadedHomers/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_ProgramingPackageController_listOfUploadedHomers74_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_listOfUploadedHomers80_invoker = createInvoker(
     ProgramingPackageController_4.get.listOfUploadedHomers(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1508,11 +1631,11 @@ Project""",
     )
   )
 
-  // @LINE:130
-  private[this] lazy val controllers_ProgramingPackageController_listOfHomersWaitingForUpload75_route = Route("GET",
+  // @LINE:141
+  private[this] lazy val controllers_ProgramingPackageController_listOfHomersWaitingForUpload81_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/listOfHomersWaitingForUpload/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_ProgramingPackageController_listOfHomersWaitingForUpload75_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_listOfHomersWaitingForUpload81_invoker = createInvoker(
     ProgramingPackageController_4.get.listOfHomersWaitingForUpload(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1525,11 +1648,11 @@ Project""",
     )
   )
 
-  // @LINE:131
-  private[this] lazy val controllers_ProgramingPackageController_getProgramInJson76_route = Route("GET",
+  // @LINE:142
+  private[this] lazy val controllers_ProgramingPackageController_getProgramInJson82_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/getProgramInJson/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_ProgramingPackageController_getProgramInJson76_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_getProgramInJson82_invoker = createInvoker(
     ProgramingPackageController_4.get.getProgramInJson(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1542,11 +1665,11 @@ Project""",
     )
   )
 
-  // @LINE:132
-  private[this] lazy val controllers_ProgramingPackageController_getProjectsBoard77_route = Route("GET",
+  // @LINE:143
+  private[this] lazy val controllers_ProgramingPackageController_getProjectsBoard83_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/boards/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_ProgramingPackageController_getProjectsBoard77_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_getProjectsBoard83_invoker = createInvoker(
     ProgramingPackageController_4.get.getProjectsBoard(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1559,11 +1682,11 @@ Project""",
     )
   )
 
-  // @LINE:133
-  private[this] lazy val controllers_ProgramingPackageController_uploadProgramToHomer_Immediately78_route = Route("PUT",
+  // @LINE:144
+  private[this] lazy val controllers_ProgramingPackageController_uploadProgramToHomer_Immediately84_route = Route("PUT",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/uploudtohomerImmediately")))
   )
-  private[this] lazy val controllers_ProgramingPackageController_uploadProgramToHomer_Immediately78_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_uploadProgramToHomer_Immediately84_invoker = createInvoker(
     ProgramingPackageController_4.get.uploadProgramToHomer_Immediately(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1576,11 +1699,11 @@ Project""",
     )
   )
 
-  // @LINE:134
-  private[this] lazy val controllers_ProgramingPackageController_uploadProgramToHomer_AsSoonAsPossible79_route = Route("PUT",
+  // @LINE:145
+  private[this] lazy val controllers_ProgramingPackageController_uploadProgramToHomer_AsSoonAsPossible85_route = Route("PUT",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/uploudtohomerAsSoonAsPossible")))
   )
-  private[this] lazy val controllers_ProgramingPackageController_uploadProgramToHomer_AsSoonAsPossible79_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_uploadProgramToHomer_AsSoonAsPossible85_invoker = createInvoker(
     ProgramingPackageController_4.get.uploadProgramToHomer_AsSoonAsPossible(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1593,11 +1716,11 @@ Project""",
     )
   )
 
-  // @LINE:135
-  private[this] lazy val controllers_ProgramingPackageController_uploadProgramToHomer_GivenTimeAsSoonAsPossible80_route = Route("PUT",
+  // @LINE:146
+  private[this] lazy val controllers_ProgramingPackageController_uploadProgramToHomer_GivenTimeAsSoonAsPossible86_route = Route("PUT",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/uploudtohomerGivenTime")))
   )
-  private[this] lazy val controllers_ProgramingPackageController_uploadProgramToHomer_GivenTimeAsSoonAsPossible80_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_uploadProgramToHomer_GivenTimeAsSoonAsPossible86_invoker = createInvoker(
     ProgramingPackageController_4.get.uploadProgramToHomer_GivenTimeAsSoonAsPossible(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1610,11 +1733,11 @@ Project""",
     )
   )
 
-  // @LINE:138
-  private[this] lazy val controllers_ProgramingPackageController_newBlock81_route = Route("POST",
+  // @LINE:149
+  private[this] lazy val controllers_ProgramingPackageController_newBlock87_route = Route("POST",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/blockoBlock")))
   )
-  private[this] lazy val controllers_ProgramingPackageController_newBlock81_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_newBlock87_invoker = createInvoker(
     ProgramingPackageController_4.get.newBlock(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1627,11 +1750,11 @@ Project""",
     )
   )
 
-  // @LINE:139
-  private[this] lazy val controllers_ProgramingPackageController_newVersionOfBlock82_route = Route("PUT",
+  // @LINE:150
+  private[this] lazy val controllers_ProgramingPackageController_newVersionOfBlock88_route = Route("PUT",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/blockoBlock/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_ProgramingPackageController_newVersionOfBlock82_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_newVersionOfBlock88_invoker = createInvoker(
     ProgramingPackageController_4.get.newVersionOfBlock(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1644,11 +1767,11 @@ Project""",
     )
   )
 
-  // @LINE:140
-  private[this] lazy val controllers_ProgramingPackageController_logicJsonVersion83_route = Route("GET",
+  // @LINE:151
+  private[this] lazy val controllers_ProgramingPackageController_logicJsonVersion89_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/blockoBlock/logicJson/"), DynamicPart("id", """[^/]+""",true), StaticPart("/"), DynamicPart("version", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_ProgramingPackageController_logicJsonVersion83_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_logicJsonVersion89_invoker = createInvoker(
     ProgramingPackageController_4.get.logicJsonVersion(fakeValue[String], fakeValue[Double]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1661,11 +1784,11 @@ Project""",
     )
   )
 
-  // @LINE:141
-  private[this] lazy val controllers_ProgramingPackageController_designJsonVersion84_route = Route("GET",
+  // @LINE:152
+  private[this] lazy val controllers_ProgramingPackageController_designJsonVersion90_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/blockoBlock/designJson/"), DynamicPart("id", """[^/]+""",true), StaticPart("/"), DynamicPart("version", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_ProgramingPackageController_designJsonVersion84_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_designJsonVersion90_invoker = createInvoker(
     ProgramingPackageController_4.get.designJsonVersion(fakeValue[String], fakeValue[Double]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1678,11 +1801,11 @@ Project""",
     )
   )
 
-  // @LINE:142
-  private[this] lazy val controllers_ProgramingPackageController_logicJsonLast85_route = Route("GET",
+  // @LINE:153
+  private[this] lazy val controllers_ProgramingPackageController_logicJsonLast91_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/blockoBlock/logicJson/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_ProgramingPackageController_logicJsonLast85_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_logicJsonLast91_invoker = createInvoker(
     ProgramingPackageController_4.get.logicJsonLast(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1695,11 +1818,11 @@ Project""",
     )
   )
 
-  // @LINE:143
-  private[this] lazy val controllers_ProgramingPackageController_designJsonLast86_route = Route("GET",
+  // @LINE:154
+  private[this] lazy val controllers_ProgramingPackageController_designJsonLast92_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/blockoBlock/designJson/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_ProgramingPackageController_designJsonLast86_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_designJsonLast92_invoker = createInvoker(
     ProgramingPackageController_4.get.designJsonLast(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1712,11 +1835,11 @@ Project""",
     )
   )
 
-  // @LINE:144
-  private[this] lazy val controllers_ProgramingPackageController_generalDescription87_route = Route("GET",
+  // @LINE:155
+  private[this] lazy val controllers_ProgramingPackageController_generalDescription93_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/blockoBlock/generalDescription/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_ProgramingPackageController_generalDescription87_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_generalDescription93_invoker = createInvoker(
     ProgramingPackageController_4.get.generalDescription(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1729,11 +1852,11 @@ Project""",
     )
   )
 
-  // @LINE:145
-  private[this] lazy val controllers_ProgramingPackageController_versionDescription88_route = Route("GET",
+  // @LINE:156
+  private[this] lazy val controllers_ProgramingPackageController_versionDescription94_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/blockoBlock/versionDescription/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_ProgramingPackageController_versionDescription88_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_versionDescription94_invoker = createInvoker(
     ProgramingPackageController_4.get.versionDescription(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1746,11 +1869,11 @@ Project""",
     )
   )
 
-  // @LINE:146
-  private[this] lazy val controllers_ProgramingPackageController_getBlockVersion89_route = Route("GET",
+  // @LINE:157
+  private[this] lazy val controllers_ProgramingPackageController_getBlockVersion95_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/blockoBlock/"), DynamicPart("id", """[^/]+""",true), StaticPart("/"), DynamicPart("version", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_ProgramingPackageController_getBlockVersion89_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_getBlockVersion95_invoker = createInvoker(
     ProgramingPackageController_4.get.getBlockVersion(fakeValue[String], fakeValue[Double]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1763,11 +1886,11 @@ Project""",
     )
   )
 
-  // @LINE:147
-  private[this] lazy val controllers_ProgramingPackageController_getBlockLast90_route = Route("GET",
+  // @LINE:158
+  private[this] lazy val controllers_ProgramingPackageController_getBlockLast96_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/blockoBlock/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_ProgramingPackageController_getBlockLast90_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_getBlockLast96_invoker = createInvoker(
     ProgramingPackageController_4.get.getBlockLast(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1780,11 +1903,11 @@ Project""",
     )
   )
 
-  // @LINE:149
-  private[this] lazy val controllers_ProgramingPackageController_allPrevVersions91_route = Route("GET",
+  // @LINE:160
+  private[this] lazy val controllers_ProgramingPackageController_allPrevVersions97_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/blockoBlock/allPrevVersions/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_ProgramingPackageController_allPrevVersions91_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_allPrevVersions97_invoker = createInvoker(
     ProgramingPackageController_4.get.allPrevVersions(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1797,11 +1920,11 @@ Project""",
     )
   )
 
-  // @LINE:150
-  private[this] lazy val controllers_ProgramingPackageController_deleteBlock92_route = Route("DELETE",
+  // @LINE:161
+  private[this] lazy val controllers_ProgramingPackageController_deleteBlock98_route = Route("DELETE",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/blockoBlock/"), DynamicPart("url", """.+""",false)))
   )
-  private[this] lazy val controllers_ProgramingPackageController_deleteBlock92_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_deleteBlock98_invoker = createInvoker(
     ProgramingPackageController_4.get.deleteBlock(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1814,11 +1937,11 @@ Project""",
     )
   )
 
-  // @LINE:151
-  private[this] lazy val controllers_ProgramingPackageController_getByFilter93_route = Route("POST",
+  // @LINE:162
+  private[this] lazy val controllers_ProgramingPackageController_getByFilter99_route = Route("POST",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("project/blockoBlock/filter")))
   )
-  private[this] lazy val controllers_ProgramingPackageController_getByFilter93_invoker = createInvoker(
+  private[this] lazy val controllers_ProgramingPackageController_getByFilter99_invoker = createInvoker(
     ProgramingPackageController_4.get.getByFilter(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -1831,929 +1954,130 @@ Project""",
     )
   )
 
-  // @LINE:160
-  private[this] lazy val controllers_CompilationLibrariesController_newProcessor94_route = Route("POST",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor")))
+  // @LINE:171
+  private[this] lazy val controllers_CompilationLibrariesController_newCProgram100_route = Route("POST",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/program")))
   )
-  private[this] lazy val controllers_CompilationLibrariesController_newProcessor94_invoker = createInvoker(
-    CompilationLibrariesController_5.get.newProcessor(),
+  private[this] lazy val controllers_CompilationLibrariesController_newCProgram100_invoker = createInvoker(
+    CompilationLibrariesController_5.get.newCProgram(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.CompilationLibrariesController",
-      "newProcessor",
+      "newCProgram",
       Nil,
       "POST",
-      """Processor""",
-      this.prefix + """compilation/processor"""
-    )
-  )
-
-  // @LINE:161
-  private[this] lazy val controllers_CompilationLibrariesController_getProcessor95_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/"), DynamicPart("id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_getProcessor95_invoker = createInvoker(
-    CompilationLibrariesController_5.get.getProcessor(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "getProcessor",
-      Seq(classOf[String]),
-      "GET",
-      """""",
-      this.prefix + """compilation/processor/$id<[^/]+>"""
-    )
-  )
-
-  // @LINE:162
-  private[this] lazy val controllers_CompilationLibrariesController_getProcessorAll96_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor")))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_getProcessorAll96_invoker = createInvoker(
-    CompilationLibrariesController_5.get.getProcessorAll(),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "getProcessorAll",
-      Nil,
-      "GET",
-      """""",
-      this.prefix + """compilation/processor"""
-    )
-  )
-
-  // @LINE:163
-  private[this] lazy val controllers_CompilationLibrariesController_updateProcessor97_route = Route("PUT",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/"), DynamicPart("id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_updateProcessor97_invoker = createInvoker(
-    CompilationLibrariesController_5.get.updateProcessor(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "updateProcessor",
-      Seq(classOf[String]),
-      "PUT",
-      """""",
-      this.prefix + """compilation/processor/$id<[^/]+>"""
-    )
-  )
-
-  // @LINE:164
-  private[this] lazy val controllers_CompilationLibrariesController_deleteProcessor98_route = Route("DELETE",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/"), DynamicPart("id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_deleteProcessor98_invoker = createInvoker(
-    CompilationLibrariesController_5.get.deleteProcessor(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "deleteProcessor",
-      Seq(classOf[String]),
-      "DELETE",
-      """""",
-      this.prefix + """compilation/processor/$id<[^/]+>"""
-    )
-  )
-
-  // @LINE:166
-  private[this] lazy val controllers_CompilationLibrariesController_connectProcessorWithLibrary99_route = Route("PUT",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/lbr/"), DynamicPart("id", """[^/]+""",true), StaticPart("/"), DynamicPart("lbrId", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_connectProcessorWithLibrary99_invoker = createInvoker(
-    CompilationLibrariesController_5.get.connectProcessorWithLibrary(fakeValue[String], fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "connectProcessorWithLibrary",
-      Seq(classOf[String], classOf[String]),
-      "PUT",
-      """""",
-      this.prefix + """compilation/processor/lbr/$id<[^/]+>/$lbrId<[^/]+>"""
-    )
-  )
-
-  // @LINE:167
-  private[this] lazy val controllers_CompilationLibrariesController_connectProcessorWithLibraryGroup100_route = Route("PUT",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/lbrgrp/"), DynamicPart("id", """[^/]+""",true), StaticPart("/"), DynamicPart("lbrgId", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_connectProcessorWithLibraryGroup100_invoker = createInvoker(
-    CompilationLibrariesController_5.get.connectProcessorWithLibraryGroup(fakeValue[String], fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "connectProcessorWithLibraryGroup",
-      Seq(classOf[String], classOf[String]),
-      "PUT",
-      """""",
-      this.prefix + """compilation/processor/lbrgrp/$id<[^/]+>/$lbrgId<[^/]+>"""
-    )
-  )
-
-  // @LINE:168
-  private[this] lazy val controllers_CompilationLibrariesController_unconnectProcessorWithLibrary101_route = Route("DELETE",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/lbr/"), DynamicPart("id", """[^/]+""",true), StaticPart("/"), DynamicPart("lbrId", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_unconnectProcessorWithLibrary101_invoker = createInvoker(
-    CompilationLibrariesController_5.get.unconnectProcessorWithLibrary(fakeValue[String], fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "unconnectProcessorWithLibrary",
-      Seq(classOf[String], classOf[String]),
-      "DELETE",
-      """""",
-      this.prefix + """compilation/processor/lbr/$id<[^/]+>/$lbrId<[^/]+>"""
-    )
-  )
-
-  // @LINE:169
-  private[this] lazy val controllers_CompilationLibrariesController_unconnectProcessorWithLibraryGroup102_route = Route("DELETE",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/lbrgrp/"), DynamicPart("id", """[^/]+""",true), StaticPart("/"), DynamicPart("lbrgId", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_unconnectProcessorWithLibraryGroup102_invoker = createInvoker(
-    CompilationLibrariesController_5.get.unconnectProcessorWithLibraryGroup(fakeValue[String], fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "unconnectProcessorWithLibraryGroup",
-      Seq(classOf[String], classOf[String]),
-      "DELETE",
-      """""",
-      this.prefix + """compilation/processor/lbrgrp/$id<[^/]+>/$lbrgId<[^/]+>"""
-    )
-  )
-
-  // @LINE:171
-  private[this] lazy val controllers_CompilationLibrariesController_getProcessorDescription103_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/description/"), DynamicPart("id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_getProcessorDescription103_invoker = createInvoker(
-    CompilationLibrariesController_5.get.getProcessorDescription(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "getProcessorDescription",
-      Seq(classOf[String]),
-      "GET",
-      """""",
-      this.prefix + """compilation/processor/description/$id<[^/]+>"""
+      """C:Program""",
+      this.prefix + """compilation/program"""
     )
   )
 
   // @LINE:172
-  private[this] lazy val controllers_CompilationLibrariesController_getProcessorLibraryGroups104_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/libraryGroups/"), DynamicPart("id", """[^/]+""",true)))
+  private[this] lazy val controllers_CompilationLibrariesController_getCProgram101_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/program/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_CompilationLibrariesController_getProcessorLibraryGroups104_invoker = createInvoker(
-    CompilationLibrariesController_5.get.getProcessorLibraryGroups(fakeValue[String]),
+  private[this] lazy val controllers_CompilationLibrariesController_getCProgram101_invoker = createInvoker(
+    CompilationLibrariesController_5.get.getCProgram(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.CompilationLibrariesController",
-      "getProcessorLibraryGroups",
+      "getCProgram",
       Seq(classOf[String]),
       "GET",
       """""",
-      this.prefix + """compilation/processor/libraryGroups/$id<[^/]+>"""
+      this.prefix + """compilation/program/$id<[^/]+>"""
     )
   )
 
   // @LINE:173
-  private[this] lazy val controllers_CompilationLibrariesController_getProcessorSingleLibraries105_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/singleLibrary/"), DynamicPart("id", """[^/]+""",true)))
+  private[this] lazy val controllers_CompilationLibrariesController_gellAllProgramFromProject102_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/program/project/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_CompilationLibrariesController_getProcessorSingleLibraries105_invoker = createInvoker(
-    CompilationLibrariesController_5.get.getProcessorSingleLibraries(fakeValue[String]),
+  private[this] lazy val controllers_CompilationLibrariesController_gellAllProgramFromProject102_invoker = createInvoker(
+    CompilationLibrariesController_5.get.gellAllProgramFromProject(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.CompilationLibrariesController",
-      "getProcessorSingleLibraries",
+      "gellAllProgramFromProject",
       Seq(classOf[String]),
       "GET",
       """""",
-      this.prefix + """compilation/processor/singleLibrary/$id<[^/]+>"""
+      this.prefix + """compilation/program/project/$id<[^/]+>"""
     )
   )
 
-  // @LINE:177
-  private[this] lazy val controllers_CompilationLibrariesController_newBoard106_route = Route("POST",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/board")))
+  // @LINE:175
+  private[this] lazy val controllers_CompilationLibrariesController_updateCProgramDescription103_route = Route("PUT",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/program/update/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_CompilationLibrariesController_newBoard106_invoker = createInvoker(
-    CompilationLibrariesController_5.get.newBoard(),
+  private[this] lazy val controllers_CompilationLibrariesController_updateCProgramDescription103_invoker = createInvoker(
+    CompilationLibrariesController_5.get.updateCProgramDescription(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.CompilationLibrariesController",
-      "newBoard",
-      Nil,
-      "POST",
-      """Board""",
-      this.prefix + """compilation/board"""
+      "updateCProgramDescription",
+      Seq(classOf[String]),
+      "PUT",
+      """""",
+      this.prefix + """compilation/program/update/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:176
+  private[this] lazy val controllers_CompilationLibrariesController_newVersionOfCProgram104_route = Route("PUT",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/program/newVersion/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_newVersionOfCProgram104_invoker = createInvoker(
+    CompilationLibrariesController_5.get.newVersionOfCProgram(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "newVersionOfCProgram",
+      Seq(classOf[String]),
+      "PUT",
+      """""",
+      this.prefix + """compilation/program/newVersion/$id<[^/]+>"""
     )
   )
 
   // @LINE:178
-  private[this] lazy val controllers_CompilationLibrariesController_addUserDescription107_route = Route("PUT",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/board/userDescription/"), DynamicPart("id", """[^/]+""",true)))
+  private[this] lazy val controllers_CompilationLibrariesController_deleteCProgram105_route = Route("DELETE",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/program/"), DynamicPart("id", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_CompilationLibrariesController_addUserDescription107_invoker = createInvoker(
-    CompilationLibrariesController_5.get.addUserDescription(fakeValue[String]),
+  private[this] lazy val controllers_CompilationLibrariesController_deleteCProgram105_invoker = createInvoker(
+    CompilationLibrariesController_5.get.deleteCProgram(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.CompilationLibrariesController",
-      "addUserDescription",
+      "deleteCProgram",
       Seq(classOf[String]),
-      "PUT",
+      "DELETE",
       """""",
-      this.prefix + """compilation/board/userDescription/$id<[^/]+>"""
+      this.prefix + """compilation/program/$id<[^/]+>"""
     )
   )
 
   // @LINE:179
-  private[this] lazy val controllers_CompilationLibrariesController_getBoard108_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/board/"), DynamicPart("id", """[^/]+""",true)))
+  private[this] lazy val controllers_CompilationLibrariesController_deleteVersionOfCProgram106_route = Route("DELETE",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/program/"), DynamicPart("id", """[^/]+""",true), StaticPart("/"), DynamicPart("version", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_CompilationLibrariesController_getBoard108_invoker = createInvoker(
-    CompilationLibrariesController_5.get.getBoard(fakeValue[String]),
+  private[this] lazy val controllers_CompilationLibrariesController_deleteVersionOfCProgram106_invoker = createInvoker(
+    CompilationLibrariesController_5.get.deleteVersionOfCProgram(fakeValue[String], fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.CompilationLibrariesController",
-      "getBoard",
-      Seq(classOf[String]),
-      "GET",
-      """""",
-      this.prefix + """compilation/board/$id<[^/]+>"""
-    )
-  )
-
-  // @LINE:180
-  private[this] lazy val controllers_CompilationLibrariesController_deactivateBoard109_route = Route("DELETE",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/board/deactivateBoard"), DynamicPart("id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_deactivateBoard109_invoker = createInvoker(
-    CompilationLibrariesController_5.get.deactivateBoard(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "deactivateBoard",
-      Seq(classOf[String]),
+      "deleteVersionOfCProgram",
+      Seq(classOf[String], classOf[String]),
       "DELETE",
       """""",
-      this.prefix + """compilation/board/deactivateBoard$id<[^/]+>"""
+      this.prefix + """compilation/program/$id<[^/]+>/$version<[^/]+>"""
     )
   )
 
   // @LINE:181
-  private[this] lazy val controllers_CompilationLibrariesController_getUserDescription110_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/board/userDescription/"), DynamicPart("id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_getUserDescription110_invoker = createInvoker(
-    CompilationLibrariesController_5.get.getUserDescription(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "getUserDescription",
-      Seq(classOf[String]),
-      "GET",
-      """""",
-      this.prefix + """compilation/board/userDescription/$id<[^/]+>"""
-    )
-  )
-
-  // @LINE:182
-  private[this] lazy val controllers_CompilationLibrariesController_connectBoardWthProject111_route = Route("PUT",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/board/connect/"), DynamicPart("id", """[^/]+""",true), StaticPart("/"), DynamicPart("pr", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_connectBoardWthProject111_invoker = createInvoker(
-    CompilationLibrariesController_5.get.connectBoardWthProject(fakeValue[String], fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "connectBoardWthProject",
-      Seq(classOf[String], classOf[String]),
-      "PUT",
-      """""",
-      this.prefix + """compilation/board/connect/$id<[^/]+>/$pr<[^/]+>"""
-    )
-  )
-
-  // @LINE:183
-  private[this] lazy val controllers_CompilationLibrariesController_unconnectBoardWthProject112_route = Route("PUT",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/board/unconnect/"), DynamicPart("id", """[^/]+""",true), StaticPart("/"), DynamicPart("pr", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_unconnectBoardWthProject112_invoker = createInvoker(
-    CompilationLibrariesController_5.get.unconnectBoardWthProject(fakeValue[String], fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "unconnectBoardWthProject",
-      Seq(classOf[String], classOf[String]),
-      "PUT",
-      """""",
-      this.prefix + """compilation/board/unconnect/$id<[^/]+>/$pr<[^/]+>"""
-    )
-  )
-
-  // @LINE:184
-  private[this] lazy val controllers_CompilationLibrariesController_getBoardProjects113_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/board/projects/"), DynamicPart("id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_getBoardProjects113_invoker = createInvoker(
-    CompilationLibrariesController_5.get.getBoardProjects(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "getBoardProjects",
-      Seq(classOf[String]),
-      "GET",
-      """""",
-      this.prefix + """compilation/board/projects/$id<[^/]+>"""
-    )
-  )
-
-  // @LINE:188
-  private[this] lazy val controllers_CompilationLibrariesController_newProducers114_route = Route("POST",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/producer")))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_newProducers114_invoker = createInvoker(
-    CompilationLibrariesController_5.get.newProducers(),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "newProducers",
-      Nil,
-      "POST",
-      """Producer""",
-      this.prefix + """compilation/producer"""
-    )
-  )
-
-  // @LINE:189
-  private[this] lazy val controllers_CompilationLibrariesController_updateProducers115_route = Route("PUT",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/producer/"), DynamicPart("id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_updateProducers115_invoker = createInvoker(
-    CompilationLibrariesController_5.get.updateProducers(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "updateProducers",
-      Seq(classOf[String]),
-      "PUT",
-      """""",
-      this.prefix + """compilation/producer/$id<[^/]+>"""
-    )
-  )
-
-  // @LINE:190
-  private[this] lazy val controllers_CompilationLibrariesController_getProducers116_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/producer")))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_getProducers116_invoker = createInvoker(
-    CompilationLibrariesController_5.get.getProducers(),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "getProducers",
-      Nil,
-      "GET",
-      """""",
-      this.prefix + """compilation/producer"""
-    )
-  )
-
-  // @LINE:191
-  private[this] lazy val controllers_CompilationLibrariesController_getProducer117_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/producer/"), DynamicPart("id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_getProducer117_invoker = createInvoker(
-    CompilationLibrariesController_5.get.getProducer(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "getProducer",
-      Seq(classOf[String]),
-      "GET",
-      """""",
-      this.prefix + """compilation/producer/$id<[^/]+>"""
-    )
-  )
-
-  // @LINE:192
-  private[this] lazy val controllers_CompilationLibrariesController_getProducerDescription118_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/producer/description/"), DynamicPart("id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_getProducerDescription118_invoker = createInvoker(
-    CompilationLibrariesController_5.get.getProducerDescription(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "getProducerDescription",
-      Seq(classOf[String]),
-      "GET",
-      """""",
-      this.prefix + """compilation/producer/description/$id<[^/]+>"""
-    )
-  )
-
-  // @LINE:193
-  private[this] lazy val controllers_CompilationLibrariesController_getProducerTypeOfBoards119_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/producer/typeOfBoards/"), DynamicPart("id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_getProducerTypeOfBoards119_invoker = createInvoker(
-    CompilationLibrariesController_5.get.getProducerTypeOfBoards(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "getProducerTypeOfBoards",
-      Seq(classOf[String]),
-      "GET",
-      """""",
-      this.prefix + """compilation/producer/typeOfBoards/$id<[^/]+>"""
-    )
-  )
-
-  // @LINE:196
-  private[this] lazy val controllers_CompilationLibrariesController_newTypeOfBoard120_route = Route("POST",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/typeOfBoard")))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_newTypeOfBoard120_invoker = createInvoker(
-    CompilationLibrariesController_5.get.newTypeOfBoard(),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "newTypeOfBoard",
-      Nil,
-      "POST",
-      """TypeOfBoard""",
-      this.prefix + """compilation/typeOfBoard"""
-    )
-  )
-
-  // @LINE:197
-  private[this] lazy val controllers_CompilationLibrariesController_updateTypeOfBoard121_route = Route("PUT",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/typeOfBoard/"), DynamicPart("id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_updateTypeOfBoard121_invoker = createInvoker(
-    CompilationLibrariesController_5.get.updateTypeOfBoard(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "updateTypeOfBoard",
-      Seq(classOf[String]),
-      "PUT",
-      """""",
-      this.prefix + """compilation/typeOfBoard/$id<[^/]+>"""
-    )
-  )
-
-  // @LINE:198
-  private[this] lazy val controllers_CompilationLibrariesController_getTypeOfBoards122_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/typeOfBoard")))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_getTypeOfBoards122_invoker = createInvoker(
-    CompilationLibrariesController_5.get.getTypeOfBoards(),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "getTypeOfBoards",
-      Nil,
-      "GET",
-      """""",
-      this.prefix + """compilation/typeOfBoard"""
-    )
-  )
-
-  // @LINE:199
-  private[this] lazy val controllers_CompilationLibrariesController_getTypeOfBoard123_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/typeOfBoard/"), DynamicPart("id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_getTypeOfBoard123_invoker = createInvoker(
-    CompilationLibrariesController_5.get.getTypeOfBoard(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "getTypeOfBoard",
-      Seq(classOf[String]),
-      "GET",
-      """""",
-      this.prefix + """compilation/typeOfBoard/$id<[^/]+>"""
-    )
-  )
-
-  // @LINE:200
-  private[this] lazy val controllers_CompilationLibrariesController_getTypeOfBoardDescription124_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/typeOfBoard/description/"), DynamicPart("id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_getTypeOfBoardDescription124_invoker = createInvoker(
-    CompilationLibrariesController_5.get.getTypeOfBoardDescription(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "getTypeOfBoardDescription",
-      Seq(classOf[String]),
-      "GET",
-      """""",
-      this.prefix + """compilation/typeOfBoard/description/$id<[^/]+>"""
-    )
-  )
-
-  // @LINE:201
-  private[this] lazy val controllers_CompilationLibrariesController_getTypeOfBoardAllBoards125_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/typeOfBoard/boards/"), DynamicPart("id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_getTypeOfBoardAllBoards125_invoker = createInvoker(
-    CompilationLibrariesController_5.get.getTypeOfBoardAllBoards(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "getTypeOfBoardAllBoards",
-      Seq(classOf[String]),
-      "GET",
-      """""",
-      this.prefix + """compilation/typeOfBoard/boards/$id<[^/]+>"""
-    )
-  )
-
-  // @LINE:205
-  private[this] lazy val controllers_CompilationLibrariesController_newLibraryGroup126_route = Route("POST",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup")))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_newLibraryGroup126_invoker = createInvoker(
-    CompilationLibrariesController_5.get.newLibraryGroup(),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "newLibraryGroup",
-      Nil,
-      "POST",
-      """LibraryGroups""",
-      this.prefix + """compilation/libraryGroup"""
-    )
-  )
-
-  // @LINE:206
-  private[this] lazy val controllers_CompilationLibrariesController_getLibraryGroup127_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup/"), DynamicPart("id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_getLibraryGroup127_invoker = createInvoker(
-    CompilationLibrariesController_5.get.getLibraryGroup(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "getLibraryGroup",
-      Seq(classOf[String]),
-      "GET",
-      """""",
-      this.prefix + """compilation/libraryGroup/$id<[^/]+>"""
-    )
-  )
-
-  // @LINE:207
-  private[this] lazy val controllers_CompilationLibrariesController_deleteLibraryGroup128_route = Route("DELETE",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup/"), DynamicPart("id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_deleteLibraryGroup128_invoker = createInvoker(
-    CompilationLibrariesController_5.get.deleteLibraryGroup(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "deleteLibraryGroup",
-      Seq(classOf[String]),
-      "DELETE",
-      """""",
-      this.prefix + """compilation/libraryGroup/$id<[^/]+>"""
-    )
-  )
-
-  // @LINE:208
-  private[this] lazy val controllers_CompilationLibrariesController_getLibraryGroupAll129_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup")))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_getLibraryGroupAll129_invoker = createInvoker(
-    CompilationLibrariesController_5.get.getLibraryGroupAll(),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "getLibraryGroupAll",
-      Nil,
-      "GET",
-      """""",
-      this.prefix + """compilation/libraryGroup"""
-    )
-  )
-
-  // @LINE:209
-  private[this] lazy val controllers_CompilationLibrariesController_updateLibraryGroup130_route = Route("PUT",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup/"), DynamicPart("id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_updateLibraryGroup130_invoker = createInvoker(
-    CompilationLibrariesController_5.get.updateLibraryGroup(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "updateLibraryGroup",
-      Seq(classOf[String]),
-      "PUT",
-      """""",
-      this.prefix + """compilation/libraryGroup/$id<[^/]+>"""
-    )
-  )
-
-  // @LINE:210
-  private[this] lazy val controllers_CompilationLibrariesController_getLibraryGroupDescription131_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup/generalDescription/"), DynamicPart("id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_getLibraryGroupDescription131_invoker = createInvoker(
-    CompilationLibrariesController_5.get.getLibraryGroupDescription(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "getLibraryGroupDescription",
-      Seq(classOf[String]),
-      "GET",
-      """""",
-      this.prefix + """compilation/libraryGroup/generalDescription/$id<[^/]+>"""
-    )
-  )
-
-  // @LINE:211
-  private[this] lazy val controllers_CompilationLibrariesController_getLibraryGroupProcessors132_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup/processors/"), DynamicPart("id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_getLibraryGroupProcessors132_invoker = createInvoker(
-    CompilationLibrariesController_5.get.getLibraryGroupProcessors(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "getLibraryGroupProcessors",
-      Seq(classOf[String]),
-      "GET",
-      """""",
-      this.prefix + """compilation/libraryGroup/processors/$id<[^/]+>"""
-    )
-  )
-
-  // @LINE:212
-  private[this] lazy val controllers_CompilationLibrariesController_getLibraryGroupLibraries133_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup/libraries/"), DynamicPart("libraryId", """[^/]+""",true), StaticPart("/"), DynamicPart("version", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_getLibraryGroupLibraries133_invoker = createInvoker(
-    CompilationLibrariesController_5.get.getLibraryGroupLibraries(fakeValue[String], fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "getLibraryGroupLibraries",
-      Seq(classOf[String], classOf[String]),
-      "GET",
-      """""",
-      this.prefix + """compilation/libraryGroup/libraries/$libraryId<[^/]+>/$version<[^/]+>"""
-    )
-  )
-
-  // @LINE:213
-  private[this] lazy val controllers_CompilationLibrariesController_createNewVersionLibraryGroup134_route = Route("POST",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup/version/"), DynamicPart("id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_createNewVersionLibraryGroup134_invoker = createInvoker(
-    CompilationLibrariesController_5.get.createNewVersionLibraryGroup(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "createNewVersionLibraryGroup",
-      Seq(classOf[String]),
-      "POST",
-      """""",
-      this.prefix + """compilation/libraryGroup/version/$id<[^/]+>"""
-    )
-  )
-
-  // @LINE:214
-  private[this] lazy val controllers_CompilationLibrariesController_getVersionLibraryGroup135_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup/versions/"), DynamicPart("id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_getVersionLibraryGroup135_invoker = createInvoker(
-    CompilationLibrariesController_5.get.getVersionLibraryGroup(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "getVersionLibraryGroup",
-      Seq(classOf[String]),
-      "GET",
-      """""",
-      this.prefix + """compilation/libraryGroup/versions/$id<[^/]+>"""
-    )
-  )
-
-  // @LINE:215
-  private[this] lazy val controllers_CompilationLibrariesController_uploudLibraryToLibraryGroup136_route = Route("POST",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup/upload/"), DynamicPart("libraryId", """[^/]+""",true), StaticPart("/"), DynamicPart("version", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_uploudLibraryToLibraryGroup136_invoker = createInvoker(
-    CompilationLibrariesController_5.get.uploudLibraryToLibraryGroup(fakeValue[String], fakeValue[Double]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "uploudLibraryToLibraryGroup",
-      Seq(classOf[String], classOf[Double]),
-      "POST",
-      """""",
-      this.prefix + """compilation/libraryGroup/upload/$libraryId<[^/]+>/$version<[^/]+>"""
-    )
-  )
-
-  // @LINE:217
-  private[this] lazy val controllers_CompilationLibrariesController_listOfFilesInVersion137_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library/listOfFiles/"), DynamicPart("id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_listOfFilesInVersion137_invoker = createInvoker(
-    CompilationLibrariesController_5.get.listOfFilesInVersion(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "listOfFilesInVersion",
-      Seq(classOf[String]),
-      "GET",
-      """""",
-      this.prefix + """compilation/library/listOfFiles/$id<[^/]+>"""
-    )
-  )
-
-  // @LINE:218
-  private[this] lazy val controllers_CompilationLibrariesController_fileRecord138_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library/fileRecord/"), DynamicPart("id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_fileRecord138_invoker = createInvoker(
-    CompilationLibrariesController_5.get.fileRecord(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "fileRecord",
-      Seq(classOf[String]),
-      "GET",
-      """""",
-      this.prefix + """compilation/library/fileRecord/$id<[^/]+>"""
-    )
-  )
-
-  // @LINE:221
-  private[this] lazy val controllers_CompilationLibrariesController_newSingleLibrary139_route = Route("POST",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library")))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_newSingleLibrary139_invoker = createInvoker(
-    CompilationLibrariesController_5.get.newSingleLibrary(),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "newSingleLibrary",
-      Nil,
-      "POST",
-      """LibraryRecord""",
-      this.prefix + """compilation/library"""
-    )
-  )
-
-  // @LINE:222
-  private[this] lazy val controllers_CompilationLibrariesController_newVersionSingleLibrary140_route = Route("POST",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library/version/"), DynamicPart("id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_newVersionSingleLibrary140_invoker = createInvoker(
-    CompilationLibrariesController_5.get.newVersionSingleLibrary(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "newVersionSingleLibrary",
-      Seq(classOf[String]),
-      "POST",
-      """""",
-      this.prefix + """compilation/library/version/$id<[^/]+>"""
-    )
-  )
-
-  // @LINE:223
-  private[this] lazy val controllers_CompilationLibrariesController_getSingleLibraryFilter141_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library/filter")))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_getSingleLibraryFilter141_invoker = createInvoker(
-    CompilationLibrariesController_5.get.getSingleLibraryFilter(),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "getSingleLibraryFilter",
-      Nil,
-      "GET",
-      """""",
-      this.prefix + """compilation/library/filter"""
-    )
-  )
-
-  // @LINE:224
-  private[this] lazy val controllers_CompilationLibrariesController_getSingleLibrary142_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library/"), DynamicPart("id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_getSingleLibrary142_invoker = createInvoker(
-    CompilationLibrariesController_5.get.getSingleLibrary(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "getSingleLibrary",
-      Seq(classOf[String]),
-      "GET",
-      """""",
-      this.prefix + """compilation/library/$id<[^/]+>"""
-    )
-  )
-
-  // @LINE:225
-  private[this] lazy val controllers_CompilationLibrariesController_getSingleLibraryAll143_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library")))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_getSingleLibraryAll143_invoker = createInvoker(
-    CompilationLibrariesController_5.get.getSingleLibraryAll(),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "getSingleLibraryAll",
-      Nil,
-      "GET",
-      """""",
-      this.prefix + """compilation/library"""
-    )
-  )
-
-  // @LINE:227
-  private[this] lazy val controllers_CompilationLibrariesController_updateSingleLibrary144_route = Route("PUT",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library/"), DynamicPart("id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_updateSingleLibrary144_invoker = createInvoker(
-    CompilationLibrariesController_5.get.updateSingleLibrary(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "updateSingleLibrary",
-      Seq(classOf[String]),
-      "PUT",
-      """""",
-      this.prefix + """compilation/library/$id<[^/]+>"""
-    )
-  )
-
-  // @LINE:228
-  private[this] lazy val controllers_CompilationLibrariesController_deleteSingleLibrary145_route = Route("DELETE",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library/"), DynamicPart("id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_deleteSingleLibrary145_invoker = createInvoker(
-    CompilationLibrariesController_5.get.deleteSingleLibrary(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "deleteSingleLibrary",
-      Seq(classOf[String]),
-      "DELETE",
-      """""",
-      this.prefix + """compilation/library/$id<[^/]+>"""
-    )
-  )
-
-  // @LINE:229
-  private[this] lazy val controllers_CompilationLibrariesController_uploadSingleLibraryWithVersion146_route = Route("POST",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library/uploud/"), DynamicPart("id", """[^/]+""",true), StaticPart("/"), DynamicPart("version", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_uploadSingleLibraryWithVersion146_invoker = createInvoker(
-    CompilationLibrariesController_5.get.uploadSingleLibraryWithVersion(fakeValue[String], fakeValue[Double]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "uploadSingleLibraryWithVersion",
-      Seq(classOf[String], classOf[Double]),
-      "POST",
-      """""",
-      this.prefix + """compilation/library/uploud/$id<[^/]+>/$version<[^/]+>"""
-    )
-  )
-
-  // @LINE:230
-  private[this] lazy val controllers_CompilationLibrariesController_getSingleLibraryDescription147_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library/description/"), DynamicPart("id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_CompilationLibrariesController_getSingleLibraryDescription147_invoker = createInvoker(
-    CompilationLibrariesController_5.get.getSingleLibraryDescription(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.CompilationLibrariesController",
-      "getSingleLibraryDescription",
-      Seq(classOf[String]),
-      "GET",
-      """""",
-      this.prefix + """compilation/library/description/$id<[^/]+>"""
-    )
-  )
-
-  // @LINE:232
-  private[this] lazy val controllers_CompilationLibrariesController_generateProjectForEclipse148_route = Route("GET",
+  private[this] lazy val controllers_CompilationLibrariesController_generateProjectForEclipse107_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/project/eclipse")))
   )
-  private[this] lazy val controllers_CompilationLibrariesController_generateProjectForEclipse148_invoker = createInvoker(
+  private[this] lazy val controllers_CompilationLibrariesController_generateProjectForEclipse107_invoker = createInvoker(
     CompilationLibrariesController_5.get.generateProjectForEclipse(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -2766,11 +2090,997 @@ Project""",
     )
   )
 
+  // @LINE:182
+  private[this] lazy val controllers_CompilationLibrariesController_uploudCompilationToBoard108_route = Route("POST",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/project/uploud/"), DynamicPart("id", """[^/]+""",true), StaticPart("/"), DynamicPart("board", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_uploudCompilationToBoard108_invoker = createInvoker(
+    CompilationLibrariesController_5.get.uploudCompilationToBoard(fakeValue[String], fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "uploudCompilationToBoard",
+      Seq(classOf[String], classOf[String]),
+      "POST",
+      """""",
+      this.prefix + """compilation/project/uploud/$id<[^/]+>/$board<[^/]+>"""
+    )
+  )
+
+  // @LINE:183
+  private[this] lazy val controllers_CompilationLibrariesController_uploudBinaryFileToBoard109_route = Route("POST",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/project/binary/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_uploudBinaryFileToBoard109_invoker = createInvoker(
+    CompilationLibrariesController_5.get.uploudBinaryFileToBoard(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "uploudBinaryFileToBoard",
+      Seq(classOf[String]),
+      "POST",
+      """""",
+      this.prefix + """compilation/project/binary/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:186
+  private[this] lazy val controllers_CompilationLibrariesController_newProcessor110_route = Route("POST",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor")))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_newProcessor110_invoker = createInvoker(
+    CompilationLibrariesController_5.get.newProcessor(),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "newProcessor",
+      Nil,
+      "POST",
+      """Processor""",
+      this.prefix + """compilation/processor"""
+    )
+  )
+
+  // @LINE:187
+  private[this] lazy val controllers_CompilationLibrariesController_getProcessor111_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_getProcessor111_invoker = createInvoker(
+    CompilationLibrariesController_5.get.getProcessor(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "getProcessor",
+      Seq(classOf[String]),
+      "GET",
+      """""",
+      this.prefix + """compilation/processor/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:188
+  private[this] lazy val controllers_CompilationLibrariesController_getProcessorAll112_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor")))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_getProcessorAll112_invoker = createInvoker(
+    CompilationLibrariesController_5.get.getProcessorAll(),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "getProcessorAll",
+      Nil,
+      "GET",
+      """""",
+      this.prefix + """compilation/processor"""
+    )
+  )
+
+  // @LINE:189
+  private[this] lazy val controllers_CompilationLibrariesController_updateProcessor113_route = Route("PUT",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_updateProcessor113_invoker = createInvoker(
+    CompilationLibrariesController_5.get.updateProcessor(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "updateProcessor",
+      Seq(classOf[String]),
+      "PUT",
+      """""",
+      this.prefix + """compilation/processor/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:190
+  private[this] lazy val controllers_CompilationLibrariesController_deleteProcessor114_route = Route("DELETE",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_deleteProcessor114_invoker = createInvoker(
+    CompilationLibrariesController_5.get.deleteProcessor(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "deleteProcessor",
+      Seq(classOf[String]),
+      "DELETE",
+      """""",
+      this.prefix + """compilation/processor/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:192
+  private[this] lazy val controllers_CompilationLibrariesController_connectProcessorWithLibrary115_route = Route("PUT",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/lbr/"), DynamicPart("id", """[^/]+""",true), StaticPart("/"), DynamicPart("lbrId", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_connectProcessorWithLibrary115_invoker = createInvoker(
+    CompilationLibrariesController_5.get.connectProcessorWithLibrary(fakeValue[String], fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "connectProcessorWithLibrary",
+      Seq(classOf[String], classOf[String]),
+      "PUT",
+      """""",
+      this.prefix + """compilation/processor/lbr/$id<[^/]+>/$lbrId<[^/]+>"""
+    )
+  )
+
+  // @LINE:193
+  private[this] lazy val controllers_CompilationLibrariesController_connectProcessorWithLibraryGroup116_route = Route("PUT",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/lbrgrp/"), DynamicPart("id", """[^/]+""",true), StaticPart("/"), DynamicPart("lbrgId", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_connectProcessorWithLibraryGroup116_invoker = createInvoker(
+    CompilationLibrariesController_5.get.connectProcessorWithLibraryGroup(fakeValue[String], fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "connectProcessorWithLibraryGroup",
+      Seq(classOf[String], classOf[String]),
+      "PUT",
+      """""",
+      this.prefix + """compilation/processor/lbrgrp/$id<[^/]+>/$lbrgId<[^/]+>"""
+    )
+  )
+
+  // @LINE:194
+  private[this] lazy val controllers_CompilationLibrariesController_unconnectProcessorWithLibrary117_route = Route("DELETE",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/lbr/"), DynamicPart("id", """[^/]+""",true), StaticPart("/"), DynamicPart("lbrId", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_unconnectProcessorWithLibrary117_invoker = createInvoker(
+    CompilationLibrariesController_5.get.unconnectProcessorWithLibrary(fakeValue[String], fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "unconnectProcessorWithLibrary",
+      Seq(classOf[String], classOf[String]),
+      "DELETE",
+      """""",
+      this.prefix + """compilation/processor/lbr/$id<[^/]+>/$lbrId<[^/]+>"""
+    )
+  )
+
+  // @LINE:195
+  private[this] lazy val controllers_CompilationLibrariesController_unconnectProcessorWithLibraryGroup118_route = Route("DELETE",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/lbrgrp/"), DynamicPart("id", """[^/]+""",true), StaticPart("/"), DynamicPart("lbrgId", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_unconnectProcessorWithLibraryGroup118_invoker = createInvoker(
+    CompilationLibrariesController_5.get.unconnectProcessorWithLibraryGroup(fakeValue[String], fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "unconnectProcessorWithLibraryGroup",
+      Seq(classOf[String], classOf[String]),
+      "DELETE",
+      """""",
+      this.prefix + """compilation/processor/lbrgrp/$id<[^/]+>/$lbrgId<[^/]+>"""
+    )
+  )
+
+  // @LINE:197
+  private[this] lazy val controllers_CompilationLibrariesController_getProcessorDescription119_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/description/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_getProcessorDescription119_invoker = createInvoker(
+    CompilationLibrariesController_5.get.getProcessorDescription(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "getProcessorDescription",
+      Seq(classOf[String]),
+      "GET",
+      """""",
+      this.prefix + """compilation/processor/description/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:198
+  private[this] lazy val controllers_CompilationLibrariesController_getProcessorLibraryGroups120_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/libraryGroups/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_getProcessorLibraryGroups120_invoker = createInvoker(
+    CompilationLibrariesController_5.get.getProcessorLibraryGroups(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "getProcessorLibraryGroups",
+      Seq(classOf[String]),
+      "GET",
+      """""",
+      this.prefix + """compilation/processor/libraryGroups/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:199
+  private[this] lazy val controllers_CompilationLibrariesController_getProcessorSingleLibraries121_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/singleLibrary/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_getProcessorSingleLibraries121_invoker = createInvoker(
+    CompilationLibrariesController_5.get.getProcessorSingleLibraries(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "getProcessorSingleLibraries",
+      Seq(classOf[String]),
+      "GET",
+      """""",
+      this.prefix + """compilation/processor/singleLibrary/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:202
+  private[this] lazy val controllers_CompilationLibrariesController_newBoard122_route = Route("POST",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/board")))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_newBoard122_invoker = createInvoker(
+    CompilationLibrariesController_5.get.newBoard(),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "newBoard",
+      Nil,
+      "POST",
+      """Board""",
+      this.prefix + """compilation/board"""
+    )
+  )
+
+  // @LINE:203
+  private[this] lazy val controllers_CompilationLibrariesController_addUserDescription123_route = Route("PUT",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/board/userDescription/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_addUserDescription123_invoker = createInvoker(
+    CompilationLibrariesController_5.get.addUserDescription(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "addUserDescription",
+      Seq(classOf[String]),
+      "PUT",
+      """""",
+      this.prefix + """compilation/board/userDescription/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:204
+  private[this] lazy val controllers_CompilationLibrariesController_getBoard124_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/board/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_getBoard124_invoker = createInvoker(
+    CompilationLibrariesController_5.get.getBoard(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "getBoard",
+      Seq(classOf[String]),
+      "GET",
+      """""",
+      this.prefix + """compilation/board/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:205
+  private[this] lazy val controllers_CompilationLibrariesController_deactivateBoard125_route = Route("DELETE",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/board/deactivateBoard"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_deactivateBoard125_invoker = createInvoker(
+    CompilationLibrariesController_5.get.deactivateBoard(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "deactivateBoard",
+      Seq(classOf[String]),
+      "DELETE",
+      """""",
+      this.prefix + """compilation/board/deactivateBoard$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:206
+  private[this] lazy val controllers_CompilationLibrariesController_getUserDescription126_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/board/userDescription/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_getUserDescription126_invoker = createInvoker(
+    CompilationLibrariesController_5.get.getUserDescription(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "getUserDescription",
+      Seq(classOf[String]),
+      "GET",
+      """""",
+      this.prefix + """compilation/board/userDescription/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:207
+  private[this] lazy val controllers_CompilationLibrariesController_connectBoardWthProject127_route = Route("PUT",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/board/connect/"), DynamicPart("id", """[^/]+""",true), StaticPart("/"), DynamicPart("pr", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_connectBoardWthProject127_invoker = createInvoker(
+    CompilationLibrariesController_5.get.connectBoardWthProject(fakeValue[String], fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "connectBoardWthProject",
+      Seq(classOf[String], classOf[String]),
+      "PUT",
+      """""",
+      this.prefix + """compilation/board/connect/$id<[^/]+>/$pr<[^/]+>"""
+    )
+  )
+
+  // @LINE:208
+  private[this] lazy val controllers_CompilationLibrariesController_unconnectBoardWthProject128_route = Route("PUT",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/board/unconnect/"), DynamicPart("id", """[^/]+""",true), StaticPart("/"), DynamicPart("pr", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_unconnectBoardWthProject128_invoker = createInvoker(
+    CompilationLibrariesController_5.get.unconnectBoardWthProject(fakeValue[String], fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "unconnectBoardWthProject",
+      Seq(classOf[String], classOf[String]),
+      "PUT",
+      """""",
+      this.prefix + """compilation/board/unconnect/$id<[^/]+>/$pr<[^/]+>"""
+    )
+  )
+
+  // @LINE:209
+  private[this] lazy val controllers_CompilationLibrariesController_getBoardProjects129_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/board/projects/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_getBoardProjects129_invoker = createInvoker(
+    CompilationLibrariesController_5.get.getBoardProjects(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "getBoardProjects",
+      Seq(classOf[String]),
+      "GET",
+      """""",
+      this.prefix + """compilation/board/projects/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:212
+  private[this] lazy val controllers_CompilationLibrariesController_newProducers130_route = Route("POST",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/producer")))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_newProducers130_invoker = createInvoker(
+    CompilationLibrariesController_5.get.newProducers(),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "newProducers",
+      Nil,
+      "POST",
+      """Producer""",
+      this.prefix + """compilation/producer"""
+    )
+  )
+
+  // @LINE:213
+  private[this] lazy val controllers_CompilationLibrariesController_updateProducers131_route = Route("PUT",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/producer/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_updateProducers131_invoker = createInvoker(
+    CompilationLibrariesController_5.get.updateProducers(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "updateProducers",
+      Seq(classOf[String]),
+      "PUT",
+      """""",
+      this.prefix + """compilation/producer/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:214
+  private[this] lazy val controllers_CompilationLibrariesController_getProducers132_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/producer")))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_getProducers132_invoker = createInvoker(
+    CompilationLibrariesController_5.get.getProducers(),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "getProducers",
+      Nil,
+      "GET",
+      """""",
+      this.prefix + """compilation/producer"""
+    )
+  )
+
+  // @LINE:215
+  private[this] lazy val controllers_CompilationLibrariesController_getProducer133_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/producer/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_getProducer133_invoker = createInvoker(
+    CompilationLibrariesController_5.get.getProducer(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "getProducer",
+      Seq(classOf[String]),
+      "GET",
+      """""",
+      this.prefix + """compilation/producer/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:216
+  private[this] lazy val controllers_CompilationLibrariesController_getProducerDescription134_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/producer/description/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_getProducerDescription134_invoker = createInvoker(
+    CompilationLibrariesController_5.get.getProducerDescription(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "getProducerDescription",
+      Seq(classOf[String]),
+      "GET",
+      """""",
+      this.prefix + """compilation/producer/description/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:217
+  private[this] lazy val controllers_CompilationLibrariesController_getProducerTypeOfBoards135_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/producer/typeOfBoards/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_getProducerTypeOfBoards135_invoker = createInvoker(
+    CompilationLibrariesController_5.get.getProducerTypeOfBoards(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "getProducerTypeOfBoards",
+      Seq(classOf[String]),
+      "GET",
+      """""",
+      this.prefix + """compilation/producer/typeOfBoards/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:220
+  private[this] lazy val controllers_CompilationLibrariesController_newTypeOfBoard136_route = Route("POST",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/typeOfBoard")))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_newTypeOfBoard136_invoker = createInvoker(
+    CompilationLibrariesController_5.get.newTypeOfBoard(),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "newTypeOfBoard",
+      Nil,
+      "POST",
+      """TypeOfBoard""",
+      this.prefix + """compilation/typeOfBoard"""
+    )
+  )
+
+  // @LINE:221
+  private[this] lazy val controllers_CompilationLibrariesController_updateTypeOfBoard137_route = Route("PUT",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/typeOfBoard/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_updateTypeOfBoard137_invoker = createInvoker(
+    CompilationLibrariesController_5.get.updateTypeOfBoard(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "updateTypeOfBoard",
+      Seq(classOf[String]),
+      "PUT",
+      """""",
+      this.prefix + """compilation/typeOfBoard/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:222
+  private[this] lazy val controllers_CompilationLibrariesController_getTypeOfBoards138_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/typeOfBoard")))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_getTypeOfBoards138_invoker = createInvoker(
+    CompilationLibrariesController_5.get.getTypeOfBoards(),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "getTypeOfBoards",
+      Nil,
+      "GET",
+      """""",
+      this.prefix + """compilation/typeOfBoard"""
+    )
+  )
+
+  // @LINE:223
+  private[this] lazy val controllers_CompilationLibrariesController_getTypeOfBoard139_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/typeOfBoard/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_getTypeOfBoard139_invoker = createInvoker(
+    CompilationLibrariesController_5.get.getTypeOfBoard(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "getTypeOfBoard",
+      Seq(classOf[String]),
+      "GET",
+      """""",
+      this.prefix + """compilation/typeOfBoard/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:224
+  private[this] lazy val controllers_CompilationLibrariesController_getTypeOfBoardDescription140_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/typeOfBoard/description/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_getTypeOfBoardDescription140_invoker = createInvoker(
+    CompilationLibrariesController_5.get.getTypeOfBoardDescription(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "getTypeOfBoardDescription",
+      Seq(classOf[String]),
+      "GET",
+      """""",
+      this.prefix + """compilation/typeOfBoard/description/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:225
+  private[this] lazy val controllers_CompilationLibrariesController_getTypeOfBoardAllBoards141_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/typeOfBoard/boards/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_getTypeOfBoardAllBoards141_invoker = createInvoker(
+    CompilationLibrariesController_5.get.getTypeOfBoardAllBoards(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "getTypeOfBoardAllBoards",
+      Seq(classOf[String]),
+      "GET",
+      """""",
+      this.prefix + """compilation/typeOfBoard/boards/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:228
+  private[this] lazy val controllers_CompilationLibrariesController_newLibraryGroup142_route = Route("POST",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup")))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_newLibraryGroup142_invoker = createInvoker(
+    CompilationLibrariesController_5.get.newLibraryGroup(),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "newLibraryGroup",
+      Nil,
+      "POST",
+      """LibraryGroups""",
+      this.prefix + """compilation/libraryGroup"""
+    )
+  )
+
+  // @LINE:229
+  private[this] lazy val controllers_CompilationLibrariesController_getLibraryGroup143_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_getLibraryGroup143_invoker = createInvoker(
+    CompilationLibrariesController_5.get.getLibraryGroup(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "getLibraryGroup",
+      Seq(classOf[String]),
+      "GET",
+      """""",
+      this.prefix + """compilation/libraryGroup/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:230
+  private[this] lazy val controllers_CompilationLibrariesController_deleteLibraryGroup144_route = Route("DELETE",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_deleteLibraryGroup144_invoker = createInvoker(
+    CompilationLibrariesController_5.get.deleteLibraryGroup(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "deleteLibraryGroup",
+      Seq(classOf[String]),
+      "DELETE",
+      """""",
+      this.prefix + """compilation/libraryGroup/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:231
+  private[this] lazy val controllers_CompilationLibrariesController_getLibraryGroupAll145_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup")))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_getLibraryGroupAll145_invoker = createInvoker(
+    CompilationLibrariesController_5.get.getLibraryGroupAll(),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "getLibraryGroupAll",
+      Nil,
+      "GET",
+      """""",
+      this.prefix + """compilation/libraryGroup"""
+    )
+  )
+
+  // @LINE:232
+  private[this] lazy val controllers_CompilationLibrariesController_updateLibraryGroup146_route = Route("PUT",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_updateLibraryGroup146_invoker = createInvoker(
+    CompilationLibrariesController_5.get.updateLibraryGroup(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "updateLibraryGroup",
+      Seq(classOf[String]),
+      "PUT",
+      """""",
+      this.prefix + """compilation/libraryGroup/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:233
+  private[this] lazy val controllers_CompilationLibrariesController_getLibraryGroupDescription147_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup/generalDescription/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_getLibraryGroupDescription147_invoker = createInvoker(
+    CompilationLibrariesController_5.get.getLibraryGroupDescription(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "getLibraryGroupDescription",
+      Seq(classOf[String]),
+      "GET",
+      """""",
+      this.prefix + """compilation/libraryGroup/generalDescription/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:234
+  private[this] lazy val controllers_CompilationLibrariesController_getLibraryGroupProcessors148_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup/processors/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_getLibraryGroupProcessors148_invoker = createInvoker(
+    CompilationLibrariesController_5.get.getLibraryGroupProcessors(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "getLibraryGroupProcessors",
+      Seq(classOf[String]),
+      "GET",
+      """""",
+      this.prefix + """compilation/libraryGroup/processors/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:235
+  private[this] lazy val controllers_CompilationLibrariesController_getLibraryGroupLibraries149_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup/libraries/"), DynamicPart("libraryId", """[^/]+""",true), StaticPart("/"), DynamicPart("version", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_getLibraryGroupLibraries149_invoker = createInvoker(
+    CompilationLibrariesController_5.get.getLibraryGroupLibraries(fakeValue[String], fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "getLibraryGroupLibraries",
+      Seq(classOf[String], classOf[String]),
+      "GET",
+      """""",
+      this.prefix + """compilation/libraryGroup/libraries/$libraryId<[^/]+>/$version<[^/]+>"""
+    )
+  )
+
+  // @LINE:236
+  private[this] lazy val controllers_CompilationLibrariesController_createNewVersionLibraryGroup150_route = Route("POST",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup/versions/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_createNewVersionLibraryGroup150_invoker = createInvoker(
+    CompilationLibrariesController_5.get.createNewVersionLibraryGroup(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "createNewVersionLibraryGroup",
+      Seq(classOf[String]),
+      "POST",
+      """""",
+      this.prefix + """compilation/libraryGroup/versions/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:237
+  private[this] lazy val controllers_CompilationLibrariesController_getVersionLibraryGroup151_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup/versions/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_getVersionLibraryGroup151_invoker = createInvoker(
+    CompilationLibrariesController_5.get.getVersionLibraryGroup(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "getVersionLibraryGroup",
+      Seq(classOf[String]),
+      "GET",
+      """""",
+      this.prefix + """compilation/libraryGroup/versions/$id<[^/]+>"""
+    )
+  )
+
   // @LINE:238
-  private[this] lazy val utilities_swagger_ApiHelpController_getResources149_route = Route("GET",
+  private[this] lazy val controllers_CompilationLibrariesController_uploudLibraryToLibraryGroup152_route = Route("POST",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup/upload/"), DynamicPart("libraryId", """[^/]+""",true), StaticPart("/"), DynamicPart("version", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_uploudLibraryToLibraryGroup152_invoker = createInvoker(
+    CompilationLibrariesController_5.get.uploudLibraryToLibraryGroup(fakeValue[String], fakeValue[Double]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "uploudLibraryToLibraryGroup",
+      Seq(classOf[String], classOf[Double]),
+      "POST",
+      """""",
+      this.prefix + """compilation/libraryGroup/upload/$libraryId<[^/]+>/$version<[^/]+>"""
+    )
+  )
+
+  // @LINE:240
+  private[this] lazy val controllers_CompilationLibrariesController_listOfFilesInVersion153_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library/listOfFiles/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_listOfFilesInVersion153_invoker = createInvoker(
+    CompilationLibrariesController_5.get.listOfFilesInVersion(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "listOfFilesInVersion",
+      Seq(classOf[String]),
+      "GET",
+      """""",
+      this.prefix + """compilation/library/listOfFiles/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:241
+  private[this] lazy val controllers_CompilationLibrariesController_fileRecord154_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library/fileRecord/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_fileRecord154_invoker = createInvoker(
+    CompilationLibrariesController_5.get.fileRecord(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "fileRecord",
+      Seq(classOf[String]),
+      "GET",
+      """""",
+      this.prefix + """compilation/library/fileRecord/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:244
+  private[this] lazy val controllers_CompilationLibrariesController_newSingleLibrary155_route = Route("POST",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library")))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_newSingleLibrary155_invoker = createInvoker(
+    CompilationLibrariesController_5.get.newSingleLibrary(),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "newSingleLibrary",
+      Nil,
+      "POST",
+      """FileRecord""",
+      this.prefix + """compilation/library"""
+    )
+  )
+
+  // @LINE:245
+  private[this] lazy val controllers_CompilationLibrariesController_newVersionSingleLibrary156_route = Route("POST",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library/version/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_newVersionSingleLibrary156_invoker = createInvoker(
+    CompilationLibrariesController_5.get.newVersionSingleLibrary(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "newVersionSingleLibrary",
+      Seq(classOf[String]),
+      "POST",
+      """""",
+      this.prefix + """compilation/library/version/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:246
+  private[this] lazy val controllers_CompilationLibrariesController_getAllVersionSingleLibrary157_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library/version/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_getAllVersionSingleLibrary157_invoker = createInvoker(
+    CompilationLibrariesController_5.get.getAllVersionSingleLibrary(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "getAllVersionSingleLibrary",
+      Seq(classOf[String]),
+      "GET",
+      """""",
+      this.prefix + """compilation/library/version/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:247
+  private[this] lazy val controllers_CompilationLibrariesController_getSingleLibraryFilter158_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library/filter")))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_getSingleLibraryFilter158_invoker = createInvoker(
+    CompilationLibrariesController_5.get.getSingleLibraryFilter(),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "getSingleLibraryFilter",
+      Nil,
+      "GET",
+      """""",
+      this.prefix + """compilation/library/filter"""
+    )
+  )
+
+  // @LINE:248
+  private[this] lazy val controllers_CompilationLibrariesController_getSingleLibrary159_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_getSingleLibrary159_invoker = createInvoker(
+    CompilationLibrariesController_5.get.getSingleLibrary(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "getSingleLibrary",
+      Seq(classOf[String]),
+      "GET",
+      """""",
+      this.prefix + """compilation/library/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:249
+  private[this] lazy val controllers_CompilationLibrariesController_getSingleLibraryAll160_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library")))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_getSingleLibraryAll160_invoker = createInvoker(
+    CompilationLibrariesController_5.get.getSingleLibraryAll(),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "getSingleLibraryAll",
+      Nil,
+      "GET",
+      """""",
+      this.prefix + """compilation/library"""
+    )
+  )
+
+  // @LINE:251
+  private[this] lazy val controllers_CompilationLibrariesController_updateSingleLibrary161_route = Route("PUT",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_updateSingleLibrary161_invoker = createInvoker(
+    CompilationLibrariesController_5.get.updateSingleLibrary(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "updateSingleLibrary",
+      Seq(classOf[String]),
+      "PUT",
+      """""",
+      this.prefix + """compilation/library/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:252
+  private[this] lazy val controllers_CompilationLibrariesController_deleteSingleLibrary162_route = Route("DELETE",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_deleteSingleLibrary162_invoker = createInvoker(
+    CompilationLibrariesController_5.get.deleteSingleLibrary(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "deleteSingleLibrary",
+      Seq(classOf[String]),
+      "DELETE",
+      """""",
+      this.prefix + """compilation/library/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:253
+  private[this] lazy val controllers_CompilationLibrariesController_uploadSingleLibraryWithVersion163_route = Route("POST",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library/uploud/"), DynamicPart("id", """[^/]+""",true), StaticPart("/"), DynamicPart("version", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_uploadSingleLibraryWithVersion163_invoker = createInvoker(
+    CompilationLibrariesController_5.get.uploadSingleLibraryWithVersion(fakeValue[String], fakeValue[Double]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "uploadSingleLibraryWithVersion",
+      Seq(classOf[String], classOf[Double]),
+      "POST",
+      """""",
+      this.prefix + """compilation/library/uploud/$id<[^/]+>/$version<[^/]+>"""
+    )
+  )
+
+  // @LINE:254
+  private[this] lazy val controllers_CompilationLibrariesController_uploadSingleLibrary164_route = Route("POST",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library/uploud/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_uploadSingleLibrary164_invoker = createInvoker(
+    CompilationLibrariesController_5.get.uploadSingleLibrary(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "uploadSingleLibrary",
+      Seq(classOf[String]),
+      "POST",
+      """""",
+      this.prefix + """compilation/library/uploud/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:255
+  private[this] lazy val controllers_CompilationLibrariesController_getSingleLibraryDescription165_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library/description/"), DynamicPart("id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_CompilationLibrariesController_getSingleLibraryDescription165_invoker = createInvoker(
+    CompilationLibrariesController_5.get.getSingleLibraryDescription(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.CompilationLibrariesController",
+      "getSingleLibraryDescription",
+      Seq(classOf[String]),
+      "GET",
+      """""",
+      this.prefix + """compilation/library/description/$id<[^/]+>"""
+    )
+  )
+
+  // @LINE:261
+  private[this] lazy val utilities_swagger_ApiHelpController_getResources166_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("api-docs")))
   )
-  private[this] lazy val utilities_swagger_ApiHelpController_getResources149_invoker = createInvoker(
+  private[this] lazy val utilities_swagger_ApiHelpController_getResources166_invoker = createInvoker(
     ApiHelpController_2.get.getResources,
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -2783,11 +3093,11 @@ Project""",
     )
   )
 
-  // @LINE:241
-  private[this] lazy val controllers_SecurityController_optionLink150_route = Route("OPTIONS",
+  // @LINE:264
+  private[this] lazy val controllers_SecurityController_optionLink167_route = Route("OPTIONS",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), DynamicPart("all", """.+""",false)))
   )
-  private[this] lazy val controllers_SecurityController_optionLink150_invoker = createInvoker(
+  private[this] lazy val controllers_SecurityController_optionLink167_invoker = createInvoker(
     SecurityController_3.get.optionLink(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -2800,12 +3110,12 @@ Project""",
     )
   )
 
-  // @LINE:244
-  private[this] lazy val controllers_Assets_at151_route = Route("GET",
+  // @LINE:267
+  private[this] lazy val controllers_Assets_at168_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("assets/"), DynamicPart("file", """.+""",false)))
   )
-  private[this] lazy val controllers_Assets_at151_invoker = createInvoker(
-    Assets_6.at(fakeValue[String], fakeValue[String]),
+  private[this] lazy val controllers_Assets_at168_invoker = createInvoker(
+    Assets_7.at(fakeValue[String], fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.Assets",
@@ -2826,910 +3136,1012 @@ Project""",
         controllers_SecurityController_index0_invoker.call(SecurityController_3.get.index)
       }
   
-    // @LINE:12
-    case controllers_WebSocketController_connection1_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_WebSocketController_connection1_invoker.call(WebSocketController_1.get.connection(id))
+    // @LINE:9
+    case controllers_WikyController_test1_route(params) =>
+      call { 
+        controllers_WikyController_test1_invoker.call(WikyController_6.get.test)
       }
   
-    // @LINE:13
-    case controllers_WebSocketController_getWebSocketStats2_route(params) =>
-      call { 
-        controllers_WebSocketController_getWebSocketStats2_invoker.call(WebSocketController_1.get.getWebSocketStats())
+    // @LINE:10
+    case controllers_WikyController_test22_route(params) =>
+      call(params.fromQuery[String]("fields", None)) { (fields) =>
+        controllers_WikyController_test22_invoker.call(WikyController_6.get.test2(fields))
       }
   
     // @LINE:14
-    case controllers_WebSocketController_sendTo3_route(params) =>
+    case controllers_WebSocketController_connection3_route(params) =>
       call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_WebSocketController_sendTo3_invoker.call(WebSocketController_1.get.sendTo(id))
+        controllers_WebSocketController_connection3_invoker.call(WebSocketController_1.get.connection(id))
       }
   
-    // @LINE:18
-    case controllers_SecurityController_login4_route(params) =>
+    // @LINE:15
+    case controllers_WebSocketController_getWebSocketStats4_route(params) =>
       call { 
-        controllers_SecurityController_login4_invoker.call(SecurityController_3.get.login())
+        controllers_WebSocketController_getWebSocketStats4_invoker.call(WebSocketController_1.get.getWebSocketStats())
       }
   
-    // @LINE:19
-    case controllers_SecurityController_logout5_route(params) =>
-      call { 
-        controllers_SecurityController_logout5_invoker.call(SecurityController_3.get.logout)
+    // @LINE:16
+    case controllers_WebSocketController_sendTo5_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_WebSocketController_sendTo5_invoker.call(WebSocketController_1.get.sendTo(id))
       }
   
     // @LINE:20
-    case controllers_SecurityController_Facebook6_route(params) =>
+    case controllers_SecurityController_login6_route(params) =>
       call { 
-        controllers_SecurityController_Facebook6_invoker.call(SecurityController_3.get.Facebook())
+        controllers_SecurityController_login6_invoker.call(SecurityController_3.get.login())
       }
   
     // @LINE:21
-    case controllers_SecurityController_Twitter7_route(params) =>
+    case controllers_SecurityController_logout7_route(params) =>
       call { 
-        controllers_SecurityController_Twitter7_invoker.call(SecurityController_3.get.Twitter())
-      }
-  
-    // @LINE:22
-    case controllers_SecurityController_GitHub8_route(params) =>
-      call { 
-        controllers_SecurityController_GitHub8_invoker.call(SecurityController_3.get.GitHub())
+        controllers_SecurityController_logout7_invoker.call(SecurityController_3.get.logout)
       }
   
     // @LINE:23
-    case controllers_SecurityController_Vkontakte9_route(params) =>
+    case controllers_SecurityController_Facebook8_route(params) =>
       call { 
-        controllers_SecurityController_Vkontakte9_invoker.call(SecurityController_3.get.Vkontakte())
+        controllers_SecurityController_Facebook8_invoker.call(SecurityController_3.get.Facebook())
       }
   
     // @LINE:24
-    case controllers_SecurityController_GEToauth_callback10_route(params) =>
+    case controllers_SecurityController_Twitter9_route(params) =>
+      call { 
+        controllers_SecurityController_Twitter9_invoker.call(SecurityController_3.get.Twitter())
+      }
+  
+    // @LINE:25
+    case controllers_SecurityController_GitHub10_route(params) =>
+      call { 
+        controllers_SecurityController_GitHub10_invoker.call(SecurityController_3.get.GitHub())
+      }
+  
+    // @LINE:26
+    case controllers_SecurityController_Vkontakte11_route(params) =>
+      call { 
+        controllers_SecurityController_Vkontakte11_invoker.call(SecurityController_3.get.Vkontakte())
+      }
+  
+    // @LINE:28
+    case controllers_SecurityController_getPersonByToken12_route(params) =>
+      call { 
+        controllers_SecurityController_getPersonByToken12_invoker.call(SecurityController_3.get.getPersonByToken())
+      }
+  
+    // @LINE:30
+    case controllers_SecurityController_GET_facebook_oauth13_route(params) =>
       call(params.fromQuery[String]("code", None), params.fromQuery[String]("state", None)) { (code, state) =>
-        controllers_SecurityController_GEToauth_callback10_invoker.call(SecurityController_3.get.GEToauth_callback(code, state))
+        controllers_SecurityController_GET_facebook_oauth13_invoker.call(SecurityController_3.get.GET_facebook_oauth(code, state))
       }
   
     // @LINE:31
-    case controllers_PersonCreateController_developerRegistration11_route(params) =>
-      call { 
-        controllers_PersonCreateController_developerRegistration11_invoker.call(PersonCreateController_8.get.developerRegistration())
-      }
-  
-    // @LINE:32
-    case controllers_PersonCreateController_standartRegistration12_route(params) =>
-      call { 
-        controllers_PersonCreateController_standartRegistration12_invoker.call(PersonCreateController_8.get.standartRegistration())
+    case controllers_SecurityController_GET_facebook_oauth14_route(params) =>
+      call(params.fromQuery[String]("code", None), params.fromQuery[String]("state", None)) { (code, state) =>
+        controllers_SecurityController_GET_facebook_oauth14_invoker.call(SecurityController_3.get.GET_facebook_oauth(code, state))
       }
   
     // @LINE:33
-    case controllers_PersonCreateController_updatePersonInformation13_route(params) =>
+    case controllers_SecurityController_GET_github_oauth15_route(params) =>
+      call(params.fromQuery[String]("code", None), params.fromQuery[String]("state", None)) { (code, state) =>
+        controllers_SecurityController_GET_github_oauth15_invoker.call(SecurityController_3.get.GET_github_oauth(code, state))
+      }
+  
+    // @LINE:39
+    case controllers_PersonCreateController_developerRegistration16_route(params) =>
       call { 
-        controllers_PersonCreateController_updatePersonInformation13_invoker.call(PersonCreateController_8.get.updatePersonInformation())
+        controllers_PersonCreateController_developerRegistration16_invoker.call(PersonCreateController_9.get.developerRegistration())
       }
   
-    // @LINE:34
-    case controllers_PersonCreateController_getPerson14_route(params) =>
+    // @LINE:40
+    case controllers_PersonCreateController_standartRegistration17_route(params) =>
+      call { 
+        controllers_PersonCreateController_standartRegistration17_invoker.call(PersonCreateController_9.get.standartRegistration())
+      }
+  
+    // @LINE:41
+    case controllers_PersonCreateController_updatePersonInformation18_route(params) =>
+      call { 
+        controllers_PersonCreateController_updatePersonInformation18_invoker.call(PersonCreateController_9.get.updatePersonInformation())
+      }
+  
+    // @LINE:42
+    case controllers_PersonCreateController_getPerson19_route(params) =>
       call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_PersonCreateController_getPerson14_invoker.call(PersonCreateController_8.get.getPerson(id))
-      }
-  
-    // @LINE:35
-    case controllers_PersonCreateController_deletePerson15_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_PersonCreateController_deletePerson15_invoker.call(PersonCreateController_8.get.deletePerson(id))
-      }
-  
-    // @LINE:37
-    case controllers_PersonCreateController_emailPersonAuthentitaction16_route(params) =>
-      call(params.fromQuery[String]("mail", None), params.fromQuery[String]("authToken", None)) { (mail, authToken) =>
-        controllers_PersonCreateController_emailPersonAuthentitaction16_invoker.call(PersonCreateController_8.get.emailPersonAuthentitaction(mail, authToken))
+        controllers_PersonCreateController_getPerson19_invoker.call(PersonCreateController_9.get.getPerson(id))
       }
   
     // @LINE:44
-    case controllers_PermissionController_getAllPermissions17_route(params) =>
-      call { 
-        controllers_PermissionController_getAllPermissions17_invoker.call(PermissionController_0.get.getAllPermissions())
-      }
-  
-    // @LINE:45
-    case controllers_PermissionController_getAllGroups18_route(params) =>
-      call { 
-        controllers_PermissionController_getAllGroups18_invoker.call(PermissionController_0.get.getAllGroups())
+    case controllers_PersonCreateController_deletePerson20_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_PersonCreateController_deletePerson20_invoker.call(PersonCreateController_9.get.deletePerson(id))
       }
   
     // @LINE:46
-    case controllers_PermissionController_createGroup19_route(params) =>
-      call { 
-        controllers_PermissionController_createGroup19_invoker.call(PermissionController_0.get.createGroup())
+    case controllers_PersonCreateController_emailPersonAuthentitaction21_route(params) =>
+      call(params.fromQuery[String]("mail", None), params.fromQuery[String]("authToken", None)) { (mail, authToken) =>
+        controllers_PersonCreateController_emailPersonAuthentitaction21_invoker.call(PersonCreateController_9.get.emailPersonAuthentitaction(mail, authToken))
       }
   
-    // @LINE:48
-    case controllers_PermissionController_getAllPersonPermission20_route(params) =>
+    // @LINE:53
+    case controllers_PermissionController_getAllPermissions22_route(params) =>
       call { 
-        controllers_PermissionController_getAllPersonPermission20_invoker.call(PermissionController_0.get.getAllPersonPermission())
+        controllers_PermissionController_getAllPermissions22_invoker.call(PermissionController_0.get.getAllPermissions())
       }
   
-    // @LINE:49
-    case controllers_PermissionController_removeAllPersonPermission21_route(params) =>
+    // @LINE:54
+    case controllers_PermissionController_getAllGroups23_route(params) =>
       call { 
-        controllers_PermissionController_removeAllPersonPermission21_invoker.call(PermissionController_0.get.removeAllPersonPermission())
-      }
-  
-    // @LINE:50
-    case controllers_PermissionController_addAllPersonPermission22_route(params) =>
-      call { 
-        controllers_PermissionController_addAllPersonPermission22_invoker.call(PermissionController_0.get.addAllPersonPermission())
+        controllers_PermissionController_getAllGroups23_invoker.call(PermissionController_0.get.getAllGroups())
       }
   
     // @LINE:55
-    case controllers_OverFlowController_newPost23_route(params) =>
+    case controllers_PermissionController_createGroup24_route(params) =>
       call { 
-        controllers_OverFlowController_newPost23_invoker.call(OverFlowController_7.get.newPost())
-      }
-  
-    // @LINE:56
-    case controllers_OverFlowController_getPost24_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_OverFlowController_getPost24_invoker.call(OverFlowController_7.get.getPost(id))
+        controllers_PermissionController_createGroup24_invoker.call(PermissionController_0.get.createGroup())
       }
   
     // @LINE:57
-    case controllers_OverFlowController_deletePost25_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_OverFlowController_deletePost25_invoker.call(OverFlowController_7.get.deletePost(id))
+    case controllers_PermissionController_getAllPersonPermission25_route(params) =>
+      call { 
+        controllers_PermissionController_getAllPersonPermission25_invoker.call(PermissionController_0.get.getAllPersonPermission())
       }
   
     // @LINE:58
-    case controllers_OverFlowController_editPost26_route(params) =>
+    case controllers_PermissionController_removeAllPersonPermission26_route(params) =>
       call { 
-        controllers_OverFlowController_editPost26_invoker.call(OverFlowController_7.get.editPost())
+        controllers_PermissionController_removeAllPersonPermission26_invoker.call(PermissionController_0.get.removeAllPersonPermission())
       }
   
     // @LINE:59
-    case controllers_OverFlowController_getLatestPost27_route(params) =>
+    case controllers_PermissionController_addAllPersonPermission27_route(params) =>
       call { 
-        controllers_OverFlowController_getLatestPost27_invoker.call(OverFlowController_7.get.getLatestPost())
-      }
-  
-    // @LINE:60
-    case controllers_OverFlowController_getPostByFilter28_route(params) =>
-      call { 
-        controllers_OverFlowController_getPostByFilter28_invoker.call(OverFlowController_7.get.getPostByFilter())
-      }
-  
-    // @LINE:61
-    case controllers_OverFlowController_getPostLinkedAnswers29_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_OverFlowController_getPostLinkedAnswers29_invoker.call(OverFlowController_7.get.getPostLinkedAnswers(id))
-      }
-  
-    // @LINE:63
-    case controllers_OverFlowController_hashTagsListOnPost30_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_OverFlowController_hashTagsListOnPost30_invoker.call(OverFlowController_7.get.hashTagsListOnPost(id))
+        controllers_PermissionController_addAllPersonPermission27_invoker.call(PermissionController_0.get.addAllPersonPermission())
       }
   
     // @LINE:64
-    case controllers_OverFlowController_commentsListOnPost31_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_OverFlowController_commentsListOnPost31_invoker.call(OverFlowController_7.get.commentsListOnPost(id))
+    case controllers_OverFlowController_newPost28_route(params) =>
+      call { 
+        controllers_OverFlowController_newPost28_invoker.call(OverFlowController_8.get.newPost())
       }
   
     // @LINE:65
-    case controllers_OverFlowController_answereListOnPost32_route(params) =>
+    case controllers_OverFlowController_getPost29_route(params) =>
       call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_OverFlowController_answereListOnPost32_invoker.call(OverFlowController_7.get.answereListOnPost(id))
+        controllers_OverFlowController_getPost29_invoker.call(OverFlowController_8.get.getPost(id))
       }
   
     // @LINE:66
-    case controllers_OverFlowController_textOfPost33_route(params) =>
+    case controllers_OverFlowController_deletePost30_route(params) =>
       call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_OverFlowController_textOfPost33_invoker.call(OverFlowController_7.get.textOfPost(id))
+        controllers_OverFlowController_deletePost30_invoker.call(OverFlowController_8.get.deletePost(id))
+      }
+  
+    // @LINE:67
+    case controllers_OverFlowController_editPost31_route(params) =>
+      call { 
+        controllers_OverFlowController_editPost31_invoker.call(OverFlowController_8.get.editPost())
       }
   
     // @LINE:68
-    case controllers_OverFlowController_newTypeOfPost34_route(params) =>
+    case controllers_OverFlowController_getLatestPost32_route(params) =>
       call { 
-        controllers_OverFlowController_newTypeOfPost34_invoker.call(OverFlowController_7.get.newTypeOfPost())
+        controllers_OverFlowController_getLatestPost32_invoker.call(OverFlowController_8.get.getLatestPost())
       }
   
     // @LINE:69
-    case controllers_OverFlowController_getTypeOfPost35_route(params) =>
+    case controllers_OverFlowController_getPostByFilter33_route(params) =>
       call { 
-        controllers_OverFlowController_getTypeOfPost35_invoker.call(OverFlowController_7.get.getTypeOfPost())
+        controllers_OverFlowController_getPostByFilter33_invoker.call(OverFlowController_8.get.getPostByFilter())
+      }
+  
+    // @LINE:70
+    case controllers_OverFlowController_getPostLinkedAnswers34_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_OverFlowController_getPostLinkedAnswers34_invoker.call(OverFlowController_8.get.getPostLinkedAnswers(id))
       }
   
     // @LINE:72
-    case controllers_OverFlowController_addComment36_route(params) =>
-      call { 
-        controllers_OverFlowController_addComment36_invoker.call(OverFlowController_7.get.addComment())
+    case controllers_OverFlowController_hashTagsListOnPost35_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_OverFlowController_hashTagsListOnPost35_invoker.call(OverFlowController_8.get.hashTagsListOnPost(id))
       }
   
     // @LINE:73
-    case controllers_OverFlowController_updateComment37_route(params) =>
+    case controllers_OverFlowController_commentsListOnPost36_route(params) =>
       call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_OverFlowController_updateComment37_invoker.call(OverFlowController_7.get.updateComment(id))
+        controllers_OverFlowController_commentsListOnPost36_invoker.call(OverFlowController_8.get.commentsListOnPost(id))
       }
   
     // @LINE:74
-    case controllers_OverFlowController_deletePost38_route(params) =>
+    case controllers_OverFlowController_answereListOnPost37_route(params) =>
       call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_OverFlowController_deletePost38_invoker.call(OverFlowController_7.get.deletePost(id))
+        controllers_OverFlowController_answereListOnPost37_invoker.call(OverFlowController_8.get.answereListOnPost(id))
       }
   
-    // @LINE:76
-    case controllers_OverFlowController_addAnswer39_route(params) =>
-      call { 
-        controllers_OverFlowController_addAnswer39_invoker.call(OverFlowController_7.get.addAnswer())
+    // @LINE:75
+    case controllers_OverFlowController_textOfPost38_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_OverFlowController_textOfPost38_invoker.call(OverFlowController_8.get.textOfPost(id))
       }
   
     // @LINE:77
-    case controllers_OverFlowController_updateComment40_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_OverFlowController_updateComment40_invoker.call(OverFlowController_7.get.updateComment(id))
+    case controllers_OverFlowController_newTypeOfPost39_route(params) =>
+      call { 
+        controllers_OverFlowController_newTypeOfPost39_invoker.call(OverFlowController_8.get.newTypeOfPost())
       }
   
     // @LINE:78
-    case controllers_OverFlowController_deletePost41_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_OverFlowController_deletePost41_invoker.call(OverFlowController_7.get.deletePost(id))
+    case controllers_OverFlowController_getTypeOfPost40_route(params) =>
+      call { 
+        controllers_OverFlowController_getTypeOfPost40_invoker.call(OverFlowController_8.get.getTypeOfPost())
       }
   
     // @LINE:80
-    case controllers_OverFlowController_likePlus42_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_OverFlowController_likePlus42_invoker.call(OverFlowController_7.get.likePlus(id))
+    case controllers_OverFlowController_newTypeOfConfirms41_route(params) =>
+      call { 
+        controllers_OverFlowController_newTypeOfConfirms41_invoker.call(OverFlowController_8.get.newTypeOfConfirms())
       }
   
     // @LINE:81
-    case controllers_OverFlowController_likeMinus43_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_OverFlowController_likeMinus43_invoker.call(OverFlowController_7.get.likeMinus(id))
+    case controllers_OverFlowController_getTypeOfConfirms42_route(params) =>
+      call { 
+        controllers_OverFlowController_getTypeOfConfirms42_invoker.call(OverFlowController_8.get.getTypeOfConfirms())
       }
   
     // @LINE:82
-    case controllers_OverFlowController_linkWithPreviousAnswer44_route(params) =>
-      call { 
-        controllers_OverFlowController_linkWithPreviousAnswer44_invoker.call(OverFlowController_7.get.linkWithPreviousAnswer())
-      }
-  
-    // @LINE:83
-    case controllers_OverFlowController_unlinkWithPreviousAnswer45_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_OverFlowController_unlinkWithPreviousAnswer45_invoker.call(OverFlowController_7.get.unlinkWithPreviousAnswer(id))
+    case controllers_OverFlowController_putTypeOfConfirmToPost43_route(params) =>
+      call(params.fromPath[String]("conf", None), params.fromPath[String]("pst", None)) { (conf, pst) =>
+        controllers_OverFlowController_putTypeOfConfirmToPost43_invoker.call(OverFlowController_8.get.putTypeOfConfirmToPost(conf, pst))
       }
   
     // @LINE:84
-    case controllers_OverFlowController_removeHashTag46_route(params) =>
+    case controllers_OverFlowController_addComment44_route(params) =>
       call { 
-        controllers_OverFlowController_removeHashTag46_invoker.call(OverFlowController_7.get.removeHashTag())
+        controllers_OverFlowController_addComment44_invoker.call(OverFlowController_8.get.addComment())
       }
   
     // @LINE:85
-    case controllers_OverFlowController_addHashTag47_route(params) =>
-      call { 
-        controllers_OverFlowController_addHashTag47_invoker.call(OverFlowController_7.get.addHashTag())
+    case controllers_OverFlowController_updateComment45_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_OverFlowController_updateComment45_invoker.call(OverFlowController_8.get.updateComment(id))
       }
   
     // @LINE:86
-    case controllers_OverFlowController_removeHashTag48_route(params) =>
-      call { 
-        controllers_OverFlowController_removeHashTag48_invoker.call(OverFlowController_7.get.removeHashTag())
-      }
-  
-    // @LINE:87
-    case controllers_OverFlowController_addConfirmType49_route(params) =>
+    case controllers_OverFlowController_deletePost46_route(params) =>
       call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_OverFlowController_addConfirmType49_invoker.call(OverFlowController_7.get.addConfirmType(id))
+        controllers_OverFlowController_deletePost46_invoker.call(OverFlowController_8.get.deletePost(id))
       }
   
     // @LINE:88
-    case controllers_OverFlowController_removeConfirmType50_route(params) =>
+    case controllers_OverFlowController_addAnswer47_route(params) =>
+      call { 
+        controllers_OverFlowController_addAnswer47_invoker.call(OverFlowController_8.get.addAnswer())
+      }
+  
+    // @LINE:89
+    case controllers_OverFlowController_updateComment48_route(params) =>
       call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_OverFlowController_removeConfirmType50_invoker.call(OverFlowController_7.get.removeConfirmType(id))
+        controllers_OverFlowController_updateComment48_invoker.call(OverFlowController_8.get.updateComment(id))
+      }
+  
+    // @LINE:90
+    case controllers_OverFlowController_deletePost49_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_OverFlowController_deletePost49_invoker.call(OverFlowController_8.get.deletePost(id))
+      }
+  
+    // @LINE:92
+    case controllers_OverFlowController_likePlus50_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_OverFlowController_likePlus50_invoker.call(OverFlowController_8.get.likePlus(id))
+      }
+  
+    // @LINE:93
+    case controllers_OverFlowController_likeMinus51_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_OverFlowController_likeMinus51_invoker.call(OverFlowController_8.get.likeMinus(id))
+      }
+  
+    // @LINE:94
+    case controllers_OverFlowController_linkWithPreviousAnswer52_route(params) =>
+      call { 
+        controllers_OverFlowController_linkWithPreviousAnswer52_invoker.call(OverFlowController_8.get.linkWithPreviousAnswer())
+      }
+  
+    // @LINE:95
+    case controllers_OverFlowController_unlinkWithPreviousAnswer53_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_OverFlowController_unlinkWithPreviousAnswer53_invoker.call(OverFlowController_8.get.unlinkWithPreviousAnswer(id))
       }
   
     // @LINE:96
-    case controllers_ProgramingPackageController_postNewProject51_route(params) =>
+    case controllers_OverFlowController_removeHashTag54_route(params) =>
       call { 
-        controllers_ProgramingPackageController_postNewProject51_invoker.call(ProgramingPackageController_4.get.postNewProject())
+        controllers_OverFlowController_removeHashTag54_invoker.call(OverFlowController_8.get.removeHashTag())
       }
   
     // @LINE:97
-    case controllers_ProgramingPackageController_updateProject52_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_ProgramingPackageController_updateProject52_invoker.call(ProgramingPackageController_4.get.updateProject(id))
+    case controllers_OverFlowController_addHashTag55_route(params) =>
+      call { 
+        controllers_OverFlowController_addHashTag55_invoker.call(OverFlowController_8.get.addHashTag())
       }
   
     // @LINE:98
-    case controllers_ProgramingPackageController_getProject53_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_ProgramingPackageController_getProject53_invoker.call(ProgramingPackageController_4.get.getProject(id))
-      }
-  
-    // @LINE:99
-    case controllers_ProgramingPackageController_getProjectsByUserAccount54_route(params) =>
+    case controllers_OverFlowController_removeHashTag56_route(params) =>
       call { 
-        controllers_ProgramingPackageController_getProjectsByUserAccount54_invoker.call(ProgramingPackageController_4.get.getProjectsByUserAccount())
+        controllers_OverFlowController_removeHashTag56_invoker.call(OverFlowController_8.get.removeHashTag())
       }
   
-    // @LINE:100
-    case controllers_ProgramingPackageController_deleteProject55_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_ProgramingPackageController_deleteProject55_invoker.call(ProgramingPackageController_4.get.deleteProject(id))
-      }
-  
-    // @LINE:101
-    case controllers_ProgramingPackageController_shareProjectWithUsers56_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_ProgramingPackageController_shareProjectWithUsers56_invoker.call(ProgramingPackageController_4.get.shareProjectWithUsers(id))
-      }
-  
-    // @LINE:102
-    case controllers_ProgramingPackageController_unshareProjectWithUsers57_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_ProgramingPackageController_unshareProjectWithUsers57_invoker.call(ProgramingPackageController_4.get.unshareProjectWithUsers(id))
-      }
-  
-    // @LINE:103
-    case controllers_ProgramingPackageController_getProgramPrograms58_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_ProgramingPackageController_getProgramPrograms58_invoker.call(ProgramingPackageController_4.get.getProgramPrograms(id))
-      }
-  
-    // @LINE:104
-    case controllers_ProgramingPackageController_getProgramhomerList59_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_ProgramingPackageController_getProgramhomerList59_invoker.call(ProgramingPackageController_4.get.getProgramhomerList(id))
-      }
-  
-    // @LINE:105
-    case controllers_ProgramingPackageController_getProjectOwners60_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_ProgramingPackageController_getProjectOwners60_invoker.call(ProgramingPackageController_4.get.getProjectOwners(id))
+    // @LINE:107
+    case controllers_ProgramingPackageController_postNewProject57_route(params) =>
+      call { 
+        controllers_ProgramingPackageController_postNewProject57_invoker.call(ProgramingPackageController_4.get.postNewProject())
       }
   
     // @LINE:108
-    case controllers_ProgramingPackageController_newHomer61_route(params) =>
-      call { 
-        controllers_ProgramingPackageController_newHomer61_invoker.call(ProgramingPackageController_4.get.newHomer())
+    case controllers_ProgramingPackageController_updateProject58_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_ProgramingPackageController_updateProject58_invoker.call(ProgramingPackageController_4.get.updateProject(id))
       }
   
     // @LINE:109
-    case controllers_ProgramingPackageController_removeHomer62_route(params) =>
+    case controllers_ProgramingPackageController_getProject59_route(params) =>
       call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_ProgramingPackageController_removeHomer62_invoker.call(ProgramingPackageController_4.get.removeHomer(id))
+        controllers_ProgramingPackageController_getProject59_invoker.call(ProgramingPackageController_4.get.getProject(id))
       }
   
     // @LINE:110
-    case controllers_ProgramingPackageController_getHomer63_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_ProgramingPackageController_getHomer63_invoker.call(ProgramingPackageController_4.get.getHomer(id))
+    case controllers_ProgramingPackageController_getProjectsByUserAccount60_route(params) =>
+      call { 
+        controllers_ProgramingPackageController_getProjectsByUserAccount60_invoker.call(ProgramingPackageController_4.get.getProjectsByUserAccount())
       }
   
     // @LINE:111
-    case controllers_ProgramingPackageController_getAllHomers64_route(params) =>
-      call { 
-        controllers_ProgramingPackageController_getAllHomers64_invoker.call(ProgramingPackageController_4.get.getAllHomers())
+    case controllers_ProgramingPackageController_deleteProject61_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_ProgramingPackageController_deleteProject61_invoker.call(ProgramingPackageController_4.get.deleteProject(id))
       }
   
     // @LINE:112
-    case controllers_ProgramingPackageController_getConnectedHomers65_route(params) =>
+    case controllers_ProgramingPackageController_shareProjectWithUsers62_route(params) =>
       call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_ProgramingPackageController_getConnectedHomers65_invoker.call(ProgramingPackageController_4.get.getConnectedHomers(id))
+        controllers_ProgramingPackageController_shareProjectWithUsers62_invoker.call(ProgramingPackageController_4.get.shareProjectWithUsers(id))
       }
   
-    // @LINE:117
-    case controllers_ProgramingPackageController_connectHomerWithProject66_route(params) =>
-      call { 
-        controllers_ProgramingPackageController_connectHomerWithProject66_invoker.call(ProgramingPackageController_4.get.connectHomerWithProject())
+    // @LINE:113
+    case controllers_ProgramingPackageController_unshareProjectWithUsers63_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_ProgramingPackageController_unshareProjectWithUsers63_invoker.call(ProgramingPackageController_4.get.unshareProjectWithUsers(id))
       }
   
-    // @LINE:118
-    case controllers_ProgramingPackageController_unConnectHomerWithProject67_route(params) =>
+    // @LINE:114
+    case controllers_ProgramingPackageController_getProgramPrograms64_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_ProgramingPackageController_getProgramPrograms64_invoker.call(ProgramingPackageController_4.get.getProgramPrograms(id))
+      }
+  
+    // @LINE:115
+    case controllers_ProgramingPackageController_getProgramhomerList65_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_ProgramingPackageController_getProgramhomerList65_invoker.call(ProgramingPackageController_4.get.getProgramhomerList(id))
+      }
+  
+    // @LINE:116
+    case controllers_ProgramingPackageController_getProjectOwners66_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_ProgramingPackageController_getProjectOwners66_invoker.call(ProgramingPackageController_4.get.getProjectOwners(id))
+      }
+  
+    // @LINE:119
+    case controllers_ProgramingPackageController_newHomer67_route(params) =>
       call { 
-        controllers_ProgramingPackageController_unConnectHomerWithProject67_invoker.call(ProgramingPackageController_4.get.unConnectHomerWithProject())
+        controllers_ProgramingPackageController_newHomer67_invoker.call(ProgramingPackageController_4.get.newHomer())
+      }
+  
+    // @LINE:120
+    case controllers_ProgramingPackageController_removeHomer68_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_ProgramingPackageController_removeHomer68_invoker.call(ProgramingPackageController_4.get.removeHomer(id))
       }
   
     // @LINE:121
-    case controllers_ProgramingPackageController_postNewProgram68_route(params) =>
-      call { 
-        controllers_ProgramingPackageController_postNewProgram68_invoker.call(ProgramingPackageController_4.get.postNewProgram())
+    case controllers_ProgramingPackageController_getHomer69_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_ProgramingPackageController_getHomer69_invoker.call(ProgramingPackageController_4.get.getHomer(id))
       }
   
     // @LINE:122
-    case controllers_ProgramingPackageController_getProgram69_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_ProgramingPackageController_getProgram69_invoker.call(ProgramingPackageController_4.get.getProgram(id))
+    case controllers_ProgramingPackageController_getAllHomers70_route(params) =>
+      call { 
+        controllers_ProgramingPackageController_getAllHomers70_invoker.call(ProgramingPackageController_4.get.getAllHomers())
       }
   
     // @LINE:123
-    case controllers_ProgramingPackageController_editProgram70_route(params) =>
+    case controllers_ProgramingPackageController_getConnectedHomers71_route(params) =>
       call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_ProgramingPackageController_editProgram70_invoker.call(ProgramingPackageController_4.get.editProgram(id))
-      }
-  
-    // @LINE:124
-    case controllers_ProgramingPackageController_removeProgram71_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_ProgramingPackageController_removeProgram71_invoker.call(ProgramingPackageController_4.get.removeProgram(id))
-      }
-  
-    // @LINE:125
-    case controllers_ProgramingPackageController_getProgramInJson72_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_ProgramingPackageController_getProgramInJson72_invoker.call(ProgramingPackageController_4.get.getProgramInJson(id))
+        controllers_ProgramingPackageController_getConnectedHomers71_invoker.call(ProgramingPackageController_4.get.getConnectedHomers(id))
       }
   
     // @LINE:128
-    case controllers_ProgramingPackageController_getAllPrograms73_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_ProgramingPackageController_getAllPrograms73_invoker.call(ProgramingPackageController_4.get.getAllPrograms(id))
+    case controllers_ProgramingPackageController_connectHomerWithProject72_route(params) =>
+      call { 
+        controllers_ProgramingPackageController_connectHomerWithProject72_invoker.call(ProgramingPackageController_4.get.connectHomerWithProject())
       }
   
     // @LINE:129
-    case controllers_ProgramingPackageController_listOfUploadedHomers74_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_ProgramingPackageController_listOfUploadedHomers74_invoker.call(ProgramingPackageController_4.get.listOfUploadedHomers(id))
-      }
-  
-    // @LINE:130
-    case controllers_ProgramingPackageController_listOfHomersWaitingForUpload75_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_ProgramingPackageController_listOfHomersWaitingForUpload75_invoker.call(ProgramingPackageController_4.get.listOfHomersWaitingForUpload(id))
-      }
-  
-    // @LINE:131
-    case controllers_ProgramingPackageController_getProgramInJson76_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_ProgramingPackageController_getProgramInJson76_invoker.call(ProgramingPackageController_4.get.getProgramInJson(id))
+    case controllers_ProgramingPackageController_unConnectHomerWithProject73_route(params) =>
+      call { 
+        controllers_ProgramingPackageController_unConnectHomerWithProject73_invoker.call(ProgramingPackageController_4.get.unConnectHomerWithProject())
       }
   
     // @LINE:132
-    case controllers_ProgramingPackageController_getProjectsBoard77_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_ProgramingPackageController_getProjectsBoard77_invoker.call(ProgramingPackageController_4.get.getProjectsBoard(id))
+    case controllers_ProgramingPackageController_postNewProgram74_route(params) =>
+      call { 
+        controllers_ProgramingPackageController_postNewProgram74_invoker.call(ProgramingPackageController_4.get.postNewProgram())
       }
   
     // @LINE:133
-    case controllers_ProgramingPackageController_uploadProgramToHomer_Immediately78_route(params) =>
-      call { 
-        controllers_ProgramingPackageController_uploadProgramToHomer_Immediately78_invoker.call(ProgramingPackageController_4.get.uploadProgramToHomer_Immediately())
+    case controllers_ProgramingPackageController_getProgram75_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_ProgramingPackageController_getProgram75_invoker.call(ProgramingPackageController_4.get.getProgram(id))
       }
   
     // @LINE:134
-    case controllers_ProgramingPackageController_uploadProgramToHomer_AsSoonAsPossible79_route(params) =>
-      call { 
-        controllers_ProgramingPackageController_uploadProgramToHomer_AsSoonAsPossible79_invoker.call(ProgramingPackageController_4.get.uploadProgramToHomer_AsSoonAsPossible())
+    case controllers_ProgramingPackageController_editProgram76_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_ProgramingPackageController_editProgram76_invoker.call(ProgramingPackageController_4.get.editProgram(id))
       }
   
     // @LINE:135
-    case controllers_ProgramingPackageController_uploadProgramToHomer_GivenTimeAsSoonAsPossible80_route(params) =>
-      call { 
-        controllers_ProgramingPackageController_uploadProgramToHomer_GivenTimeAsSoonAsPossible80_invoker.call(ProgramingPackageController_4.get.uploadProgramToHomer_GivenTimeAsSoonAsPossible())
+    case controllers_ProgramingPackageController_removeProgram77_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_ProgramingPackageController_removeProgram77_invoker.call(ProgramingPackageController_4.get.removeProgram(id))
       }
   
-    // @LINE:138
-    case controllers_ProgramingPackageController_newBlock81_route(params) =>
-      call { 
-        controllers_ProgramingPackageController_newBlock81_invoker.call(ProgramingPackageController_4.get.newBlock())
+    // @LINE:136
+    case controllers_ProgramingPackageController_getProgramInJson78_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_ProgramingPackageController_getProgramInJson78_invoker.call(ProgramingPackageController_4.get.getProgramInJson(id))
       }
   
     // @LINE:139
-    case controllers_ProgramingPackageController_newVersionOfBlock82_route(params) =>
+    case controllers_ProgramingPackageController_getAllPrograms79_route(params) =>
       call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_ProgramingPackageController_newVersionOfBlock82_invoker.call(ProgramingPackageController_4.get.newVersionOfBlock(id))
+        controllers_ProgramingPackageController_getAllPrograms79_invoker.call(ProgramingPackageController_4.get.getAllPrograms(id))
       }
   
     // @LINE:140
-    case controllers_ProgramingPackageController_logicJsonVersion83_route(params) =>
-      call(params.fromPath[String]("id", None), params.fromPath[Double]("version", None)) { (id, version) =>
-        controllers_ProgramingPackageController_logicJsonVersion83_invoker.call(ProgramingPackageController_4.get.logicJsonVersion(id, version))
+    case controllers_ProgramingPackageController_listOfUploadedHomers80_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_ProgramingPackageController_listOfUploadedHomers80_invoker.call(ProgramingPackageController_4.get.listOfUploadedHomers(id))
       }
   
     // @LINE:141
-    case controllers_ProgramingPackageController_designJsonVersion84_route(params) =>
-      call(params.fromPath[String]("id", None), params.fromPath[Double]("version", None)) { (id, version) =>
-        controllers_ProgramingPackageController_designJsonVersion84_invoker.call(ProgramingPackageController_4.get.designJsonVersion(id, version))
+    case controllers_ProgramingPackageController_listOfHomersWaitingForUpload81_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_ProgramingPackageController_listOfHomersWaitingForUpload81_invoker.call(ProgramingPackageController_4.get.listOfHomersWaitingForUpload(id))
       }
   
     // @LINE:142
-    case controllers_ProgramingPackageController_logicJsonLast85_route(params) =>
+    case controllers_ProgramingPackageController_getProgramInJson82_route(params) =>
       call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_ProgramingPackageController_logicJsonLast85_invoker.call(ProgramingPackageController_4.get.logicJsonLast(id))
+        controllers_ProgramingPackageController_getProgramInJson82_invoker.call(ProgramingPackageController_4.get.getProgramInJson(id))
       }
   
     // @LINE:143
-    case controllers_ProgramingPackageController_designJsonLast86_route(params) =>
+    case controllers_ProgramingPackageController_getProjectsBoard83_route(params) =>
       call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_ProgramingPackageController_designJsonLast86_invoker.call(ProgramingPackageController_4.get.designJsonLast(id))
+        controllers_ProgramingPackageController_getProjectsBoard83_invoker.call(ProgramingPackageController_4.get.getProjectsBoard(id))
       }
   
     // @LINE:144
-    case controllers_ProgramingPackageController_generalDescription87_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_ProgramingPackageController_generalDescription87_invoker.call(ProgramingPackageController_4.get.generalDescription(id))
+    case controllers_ProgramingPackageController_uploadProgramToHomer_Immediately84_route(params) =>
+      call { 
+        controllers_ProgramingPackageController_uploadProgramToHomer_Immediately84_invoker.call(ProgramingPackageController_4.get.uploadProgramToHomer_Immediately())
       }
   
     // @LINE:145
-    case controllers_ProgramingPackageController_versionDescription88_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_ProgramingPackageController_versionDescription88_invoker.call(ProgramingPackageController_4.get.versionDescription(id))
+    case controllers_ProgramingPackageController_uploadProgramToHomer_AsSoonAsPossible85_route(params) =>
+      call { 
+        controllers_ProgramingPackageController_uploadProgramToHomer_AsSoonAsPossible85_invoker.call(ProgramingPackageController_4.get.uploadProgramToHomer_AsSoonAsPossible())
       }
   
     // @LINE:146
-    case controllers_ProgramingPackageController_getBlockVersion89_route(params) =>
-      call(params.fromPath[String]("id", None), params.fromPath[Double]("version", None)) { (id, version) =>
-        controllers_ProgramingPackageController_getBlockVersion89_invoker.call(ProgramingPackageController_4.get.getBlockVersion(id, version))
-      }
-  
-    // @LINE:147
-    case controllers_ProgramingPackageController_getBlockLast90_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_ProgramingPackageController_getBlockLast90_invoker.call(ProgramingPackageController_4.get.getBlockLast(id))
+    case controllers_ProgramingPackageController_uploadProgramToHomer_GivenTimeAsSoonAsPossible86_route(params) =>
+      call { 
+        controllers_ProgramingPackageController_uploadProgramToHomer_GivenTimeAsSoonAsPossible86_invoker.call(ProgramingPackageController_4.get.uploadProgramToHomer_GivenTimeAsSoonAsPossible())
       }
   
     // @LINE:149
-    case controllers_ProgramingPackageController_allPrevVersions91_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_ProgramingPackageController_allPrevVersions91_invoker.call(ProgramingPackageController_4.get.allPrevVersions(id))
+    case controllers_ProgramingPackageController_newBlock87_route(params) =>
+      call { 
+        controllers_ProgramingPackageController_newBlock87_invoker.call(ProgramingPackageController_4.get.newBlock())
       }
   
     // @LINE:150
-    case controllers_ProgramingPackageController_deleteBlock92_route(params) =>
-      call(params.fromPath[String]("url", None)) { (url) =>
-        controllers_ProgramingPackageController_deleteBlock92_invoker.call(ProgramingPackageController_4.get.deleteBlock(url))
+    case controllers_ProgramingPackageController_newVersionOfBlock88_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_ProgramingPackageController_newVersionOfBlock88_invoker.call(ProgramingPackageController_4.get.newVersionOfBlock(id))
       }
   
     // @LINE:151
-    case controllers_ProgramingPackageController_getByFilter93_route(params) =>
-      call { 
-        controllers_ProgramingPackageController_getByFilter93_invoker.call(ProgramingPackageController_4.get.getByFilter())
+    case controllers_ProgramingPackageController_logicJsonVersion89_route(params) =>
+      call(params.fromPath[String]("id", None), params.fromPath[Double]("version", None)) { (id, version) =>
+        controllers_ProgramingPackageController_logicJsonVersion89_invoker.call(ProgramingPackageController_4.get.logicJsonVersion(id, version))
+      }
+  
+    // @LINE:152
+    case controllers_ProgramingPackageController_designJsonVersion90_route(params) =>
+      call(params.fromPath[String]("id", None), params.fromPath[Double]("version", None)) { (id, version) =>
+        controllers_ProgramingPackageController_designJsonVersion90_invoker.call(ProgramingPackageController_4.get.designJsonVersion(id, version))
+      }
+  
+    // @LINE:153
+    case controllers_ProgramingPackageController_logicJsonLast91_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_ProgramingPackageController_logicJsonLast91_invoker.call(ProgramingPackageController_4.get.logicJsonLast(id))
+      }
+  
+    // @LINE:154
+    case controllers_ProgramingPackageController_designJsonLast92_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_ProgramingPackageController_designJsonLast92_invoker.call(ProgramingPackageController_4.get.designJsonLast(id))
+      }
+  
+    // @LINE:155
+    case controllers_ProgramingPackageController_generalDescription93_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_ProgramingPackageController_generalDescription93_invoker.call(ProgramingPackageController_4.get.generalDescription(id))
+      }
+  
+    // @LINE:156
+    case controllers_ProgramingPackageController_versionDescription94_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_ProgramingPackageController_versionDescription94_invoker.call(ProgramingPackageController_4.get.versionDescription(id))
+      }
+  
+    // @LINE:157
+    case controllers_ProgramingPackageController_getBlockVersion95_route(params) =>
+      call(params.fromPath[String]("id", None), params.fromPath[Double]("version", None)) { (id, version) =>
+        controllers_ProgramingPackageController_getBlockVersion95_invoker.call(ProgramingPackageController_4.get.getBlockVersion(id, version))
+      }
+  
+    // @LINE:158
+    case controllers_ProgramingPackageController_getBlockLast96_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_ProgramingPackageController_getBlockLast96_invoker.call(ProgramingPackageController_4.get.getBlockLast(id))
       }
   
     // @LINE:160
-    case controllers_CompilationLibrariesController_newProcessor94_route(params) =>
-      call { 
-        controllers_CompilationLibrariesController_newProcessor94_invoker.call(CompilationLibrariesController_5.get.newProcessor())
+    case controllers_ProgramingPackageController_allPrevVersions97_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_ProgramingPackageController_allPrevVersions97_invoker.call(ProgramingPackageController_4.get.allPrevVersions(id))
       }
   
     // @LINE:161
-    case controllers_CompilationLibrariesController_getProcessor95_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_getProcessor95_invoker.call(CompilationLibrariesController_5.get.getProcessor(id))
+    case controllers_ProgramingPackageController_deleteBlock98_route(params) =>
+      call(params.fromPath[String]("url", None)) { (url) =>
+        controllers_ProgramingPackageController_deleteBlock98_invoker.call(ProgramingPackageController_4.get.deleteBlock(url))
       }
   
     // @LINE:162
-    case controllers_CompilationLibrariesController_getProcessorAll96_route(params) =>
+    case controllers_ProgramingPackageController_getByFilter99_route(params) =>
       call { 
-        controllers_CompilationLibrariesController_getProcessorAll96_invoker.call(CompilationLibrariesController_5.get.getProcessorAll())
-      }
-  
-    // @LINE:163
-    case controllers_CompilationLibrariesController_updateProcessor97_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_updateProcessor97_invoker.call(CompilationLibrariesController_5.get.updateProcessor(id))
-      }
-  
-    // @LINE:164
-    case controllers_CompilationLibrariesController_deleteProcessor98_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_deleteProcessor98_invoker.call(CompilationLibrariesController_5.get.deleteProcessor(id))
-      }
-  
-    // @LINE:166
-    case controllers_CompilationLibrariesController_connectProcessorWithLibrary99_route(params) =>
-      call(params.fromPath[String]("id", None), params.fromPath[String]("lbrId", None)) { (id, lbrId) =>
-        controllers_CompilationLibrariesController_connectProcessorWithLibrary99_invoker.call(CompilationLibrariesController_5.get.connectProcessorWithLibrary(id, lbrId))
-      }
-  
-    // @LINE:167
-    case controllers_CompilationLibrariesController_connectProcessorWithLibraryGroup100_route(params) =>
-      call(params.fromPath[String]("id", None), params.fromPath[String]("lbrgId", None)) { (id, lbrgId) =>
-        controllers_CompilationLibrariesController_connectProcessorWithLibraryGroup100_invoker.call(CompilationLibrariesController_5.get.connectProcessorWithLibraryGroup(id, lbrgId))
-      }
-  
-    // @LINE:168
-    case controllers_CompilationLibrariesController_unconnectProcessorWithLibrary101_route(params) =>
-      call(params.fromPath[String]("id", None), params.fromPath[String]("lbrId", None)) { (id, lbrId) =>
-        controllers_CompilationLibrariesController_unconnectProcessorWithLibrary101_invoker.call(CompilationLibrariesController_5.get.unconnectProcessorWithLibrary(id, lbrId))
-      }
-  
-    // @LINE:169
-    case controllers_CompilationLibrariesController_unconnectProcessorWithLibraryGroup102_route(params) =>
-      call(params.fromPath[String]("id", None), params.fromPath[String]("lbrgId", None)) { (id, lbrgId) =>
-        controllers_CompilationLibrariesController_unconnectProcessorWithLibraryGroup102_invoker.call(CompilationLibrariesController_5.get.unconnectProcessorWithLibraryGroup(id, lbrgId))
+        controllers_ProgramingPackageController_getByFilter99_invoker.call(ProgramingPackageController_4.get.getByFilter())
       }
   
     // @LINE:171
-    case controllers_CompilationLibrariesController_getProcessorDescription103_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_getProcessorDescription103_invoker.call(CompilationLibrariesController_5.get.getProcessorDescription(id))
+    case controllers_CompilationLibrariesController_newCProgram100_route(params) =>
+      call { 
+        controllers_CompilationLibrariesController_newCProgram100_invoker.call(CompilationLibrariesController_5.get.newCProgram())
       }
   
     // @LINE:172
-    case controllers_CompilationLibrariesController_getProcessorLibraryGroups104_route(params) =>
+    case controllers_CompilationLibrariesController_getCProgram101_route(params) =>
       call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_getProcessorLibraryGroups104_invoker.call(CompilationLibrariesController_5.get.getProcessorLibraryGroups(id))
+        controllers_CompilationLibrariesController_getCProgram101_invoker.call(CompilationLibrariesController_5.get.getCProgram(id))
       }
   
     // @LINE:173
-    case controllers_CompilationLibrariesController_getProcessorSingleLibraries105_route(params) =>
+    case controllers_CompilationLibrariesController_gellAllProgramFromProject102_route(params) =>
       call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_getProcessorSingleLibraries105_invoker.call(CompilationLibrariesController_5.get.getProcessorSingleLibraries(id))
+        controllers_CompilationLibrariesController_gellAllProgramFromProject102_invoker.call(CompilationLibrariesController_5.get.gellAllProgramFromProject(id))
       }
   
-    // @LINE:177
-    case controllers_CompilationLibrariesController_newBoard106_route(params) =>
-      call { 
-        controllers_CompilationLibrariesController_newBoard106_invoker.call(CompilationLibrariesController_5.get.newBoard())
+    // @LINE:175
+    case controllers_CompilationLibrariesController_updateCProgramDescription103_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_CompilationLibrariesController_updateCProgramDescription103_invoker.call(CompilationLibrariesController_5.get.updateCProgramDescription(id))
+      }
+  
+    // @LINE:176
+    case controllers_CompilationLibrariesController_newVersionOfCProgram104_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_CompilationLibrariesController_newVersionOfCProgram104_invoker.call(CompilationLibrariesController_5.get.newVersionOfCProgram(id))
       }
   
     // @LINE:178
-    case controllers_CompilationLibrariesController_addUserDescription107_route(params) =>
+    case controllers_CompilationLibrariesController_deleteCProgram105_route(params) =>
       call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_addUserDescription107_invoker.call(CompilationLibrariesController_5.get.addUserDescription(id))
+        controllers_CompilationLibrariesController_deleteCProgram105_invoker.call(CompilationLibrariesController_5.get.deleteCProgram(id))
       }
   
     // @LINE:179
-    case controllers_CompilationLibrariesController_getBoard108_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_getBoard108_invoker.call(CompilationLibrariesController_5.get.getBoard(id))
-      }
-  
-    // @LINE:180
-    case controllers_CompilationLibrariesController_deactivateBoard109_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_deactivateBoard109_invoker.call(CompilationLibrariesController_5.get.deactivateBoard(id))
+    case controllers_CompilationLibrariesController_deleteVersionOfCProgram106_route(params) =>
+      call(params.fromPath[String]("id", None), params.fromPath[String]("version", None)) { (id, version) =>
+        controllers_CompilationLibrariesController_deleteVersionOfCProgram106_invoker.call(CompilationLibrariesController_5.get.deleteVersionOfCProgram(id, version))
       }
   
     // @LINE:181
-    case controllers_CompilationLibrariesController_getUserDescription110_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_getUserDescription110_invoker.call(CompilationLibrariesController_5.get.getUserDescription(id))
+    case controllers_CompilationLibrariesController_generateProjectForEclipse107_route(params) =>
+      call { 
+        controllers_CompilationLibrariesController_generateProjectForEclipse107_invoker.call(CompilationLibrariesController_5.get.generateProjectForEclipse())
       }
   
     // @LINE:182
-    case controllers_CompilationLibrariesController_connectBoardWthProject111_route(params) =>
-      call(params.fromPath[String]("id", None), params.fromPath[String]("pr", None)) { (id, pr) =>
-        controllers_CompilationLibrariesController_connectBoardWthProject111_invoker.call(CompilationLibrariesController_5.get.connectBoardWthProject(id, pr))
+    case controllers_CompilationLibrariesController_uploudCompilationToBoard108_route(params) =>
+      call(params.fromPath[String]("id", None), params.fromPath[String]("board", None)) { (id, board) =>
+        controllers_CompilationLibrariesController_uploudCompilationToBoard108_invoker.call(CompilationLibrariesController_5.get.uploudCompilationToBoard(id, board))
       }
   
     // @LINE:183
-    case controllers_CompilationLibrariesController_unconnectBoardWthProject112_route(params) =>
-      call(params.fromPath[String]("id", None), params.fromPath[String]("pr", None)) { (id, pr) =>
-        controllers_CompilationLibrariesController_unconnectBoardWthProject112_invoker.call(CompilationLibrariesController_5.get.unconnectBoardWthProject(id, pr))
+    case controllers_CompilationLibrariesController_uploudBinaryFileToBoard109_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_CompilationLibrariesController_uploudBinaryFileToBoard109_invoker.call(CompilationLibrariesController_5.get.uploudBinaryFileToBoard(id))
       }
   
-    // @LINE:184
-    case controllers_CompilationLibrariesController_getBoardProjects113_route(params) =>
+    // @LINE:186
+    case controllers_CompilationLibrariesController_newProcessor110_route(params) =>
+      call { 
+        controllers_CompilationLibrariesController_newProcessor110_invoker.call(CompilationLibrariesController_5.get.newProcessor())
+      }
+  
+    // @LINE:187
+    case controllers_CompilationLibrariesController_getProcessor111_route(params) =>
       call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_getBoardProjects113_invoker.call(CompilationLibrariesController_5.get.getBoardProjects(id))
+        controllers_CompilationLibrariesController_getProcessor111_invoker.call(CompilationLibrariesController_5.get.getProcessor(id))
       }
   
     // @LINE:188
-    case controllers_CompilationLibrariesController_newProducers114_route(params) =>
+    case controllers_CompilationLibrariesController_getProcessorAll112_route(params) =>
       call { 
-        controllers_CompilationLibrariesController_newProducers114_invoker.call(CompilationLibrariesController_5.get.newProducers())
+        controllers_CompilationLibrariesController_getProcessorAll112_invoker.call(CompilationLibrariesController_5.get.getProcessorAll())
       }
   
     // @LINE:189
-    case controllers_CompilationLibrariesController_updateProducers115_route(params) =>
+    case controllers_CompilationLibrariesController_updateProcessor113_route(params) =>
       call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_updateProducers115_invoker.call(CompilationLibrariesController_5.get.updateProducers(id))
+        controllers_CompilationLibrariesController_updateProcessor113_invoker.call(CompilationLibrariesController_5.get.updateProcessor(id))
       }
   
     // @LINE:190
-    case controllers_CompilationLibrariesController_getProducers116_route(params) =>
-      call { 
-        controllers_CompilationLibrariesController_getProducers116_invoker.call(CompilationLibrariesController_5.get.getProducers())
-      }
-  
-    // @LINE:191
-    case controllers_CompilationLibrariesController_getProducer117_route(params) =>
+    case controllers_CompilationLibrariesController_deleteProcessor114_route(params) =>
       call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_getProducer117_invoker.call(CompilationLibrariesController_5.get.getProducer(id))
+        controllers_CompilationLibrariesController_deleteProcessor114_invoker.call(CompilationLibrariesController_5.get.deleteProcessor(id))
       }
   
     // @LINE:192
-    case controllers_CompilationLibrariesController_getProducerDescription118_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_getProducerDescription118_invoker.call(CompilationLibrariesController_5.get.getProducerDescription(id))
+    case controllers_CompilationLibrariesController_connectProcessorWithLibrary115_route(params) =>
+      call(params.fromPath[String]("id", None), params.fromPath[String]("lbrId", None)) { (id, lbrId) =>
+        controllers_CompilationLibrariesController_connectProcessorWithLibrary115_invoker.call(CompilationLibrariesController_5.get.connectProcessorWithLibrary(id, lbrId))
       }
   
     // @LINE:193
-    case controllers_CompilationLibrariesController_getProducerTypeOfBoards119_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_getProducerTypeOfBoards119_invoker.call(CompilationLibrariesController_5.get.getProducerTypeOfBoards(id))
+    case controllers_CompilationLibrariesController_connectProcessorWithLibraryGroup116_route(params) =>
+      call(params.fromPath[String]("id", None), params.fromPath[String]("lbrgId", None)) { (id, lbrgId) =>
+        controllers_CompilationLibrariesController_connectProcessorWithLibraryGroup116_invoker.call(CompilationLibrariesController_5.get.connectProcessorWithLibraryGroup(id, lbrgId))
       }
   
-    // @LINE:196
-    case controllers_CompilationLibrariesController_newTypeOfBoard120_route(params) =>
-      call { 
-        controllers_CompilationLibrariesController_newTypeOfBoard120_invoker.call(CompilationLibrariesController_5.get.newTypeOfBoard())
+    // @LINE:194
+    case controllers_CompilationLibrariesController_unconnectProcessorWithLibrary117_route(params) =>
+      call(params.fromPath[String]("id", None), params.fromPath[String]("lbrId", None)) { (id, lbrId) =>
+        controllers_CompilationLibrariesController_unconnectProcessorWithLibrary117_invoker.call(CompilationLibrariesController_5.get.unconnectProcessorWithLibrary(id, lbrId))
+      }
+  
+    // @LINE:195
+    case controllers_CompilationLibrariesController_unconnectProcessorWithLibraryGroup118_route(params) =>
+      call(params.fromPath[String]("id", None), params.fromPath[String]("lbrgId", None)) { (id, lbrgId) =>
+        controllers_CompilationLibrariesController_unconnectProcessorWithLibraryGroup118_invoker.call(CompilationLibrariesController_5.get.unconnectProcessorWithLibraryGroup(id, lbrgId))
       }
   
     // @LINE:197
-    case controllers_CompilationLibrariesController_updateTypeOfBoard121_route(params) =>
+    case controllers_CompilationLibrariesController_getProcessorDescription119_route(params) =>
       call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_updateTypeOfBoard121_invoker.call(CompilationLibrariesController_5.get.updateTypeOfBoard(id))
+        controllers_CompilationLibrariesController_getProcessorDescription119_invoker.call(CompilationLibrariesController_5.get.getProcessorDescription(id))
       }
   
     // @LINE:198
-    case controllers_CompilationLibrariesController_getTypeOfBoards122_route(params) =>
-      call { 
-        controllers_CompilationLibrariesController_getTypeOfBoards122_invoker.call(CompilationLibrariesController_5.get.getTypeOfBoards())
+    case controllers_CompilationLibrariesController_getProcessorLibraryGroups120_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_CompilationLibrariesController_getProcessorLibraryGroups120_invoker.call(CompilationLibrariesController_5.get.getProcessorLibraryGroups(id))
       }
   
     // @LINE:199
-    case controllers_CompilationLibrariesController_getTypeOfBoard123_route(params) =>
+    case controllers_CompilationLibrariesController_getProcessorSingleLibraries121_route(params) =>
       call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_getTypeOfBoard123_invoker.call(CompilationLibrariesController_5.get.getTypeOfBoard(id))
+        controllers_CompilationLibrariesController_getProcessorSingleLibraries121_invoker.call(CompilationLibrariesController_5.get.getProcessorSingleLibraries(id))
       }
   
-    // @LINE:200
-    case controllers_CompilationLibrariesController_getTypeOfBoardDescription124_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_getTypeOfBoardDescription124_invoker.call(CompilationLibrariesController_5.get.getTypeOfBoardDescription(id))
+    // @LINE:202
+    case controllers_CompilationLibrariesController_newBoard122_route(params) =>
+      call { 
+        controllers_CompilationLibrariesController_newBoard122_invoker.call(CompilationLibrariesController_5.get.newBoard())
       }
   
-    // @LINE:201
-    case controllers_CompilationLibrariesController_getTypeOfBoardAllBoards125_route(params) =>
+    // @LINE:203
+    case controllers_CompilationLibrariesController_addUserDescription123_route(params) =>
       call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_getTypeOfBoardAllBoards125_invoker.call(CompilationLibrariesController_5.get.getTypeOfBoardAllBoards(id))
+        controllers_CompilationLibrariesController_addUserDescription123_invoker.call(CompilationLibrariesController_5.get.addUserDescription(id))
+      }
+  
+    // @LINE:204
+    case controllers_CompilationLibrariesController_getBoard124_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_CompilationLibrariesController_getBoard124_invoker.call(CompilationLibrariesController_5.get.getBoard(id))
       }
   
     // @LINE:205
-    case controllers_CompilationLibrariesController_newLibraryGroup126_route(params) =>
-      call { 
-        controllers_CompilationLibrariesController_newLibraryGroup126_invoker.call(CompilationLibrariesController_5.get.newLibraryGroup())
+    case controllers_CompilationLibrariesController_deactivateBoard125_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_CompilationLibrariesController_deactivateBoard125_invoker.call(CompilationLibrariesController_5.get.deactivateBoard(id))
       }
   
     // @LINE:206
-    case controllers_CompilationLibrariesController_getLibraryGroup127_route(params) =>
+    case controllers_CompilationLibrariesController_getUserDescription126_route(params) =>
       call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_getLibraryGroup127_invoker.call(CompilationLibrariesController_5.get.getLibraryGroup(id))
+        controllers_CompilationLibrariesController_getUserDescription126_invoker.call(CompilationLibrariesController_5.get.getUserDescription(id))
       }
   
     // @LINE:207
-    case controllers_CompilationLibrariesController_deleteLibraryGroup128_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_deleteLibraryGroup128_invoker.call(CompilationLibrariesController_5.get.deleteLibraryGroup(id))
+    case controllers_CompilationLibrariesController_connectBoardWthProject127_route(params) =>
+      call(params.fromPath[String]("id", None), params.fromPath[String]("pr", None)) { (id, pr) =>
+        controllers_CompilationLibrariesController_connectBoardWthProject127_invoker.call(CompilationLibrariesController_5.get.connectBoardWthProject(id, pr))
       }
   
     // @LINE:208
-    case controllers_CompilationLibrariesController_getLibraryGroupAll129_route(params) =>
-      call { 
-        controllers_CompilationLibrariesController_getLibraryGroupAll129_invoker.call(CompilationLibrariesController_5.get.getLibraryGroupAll())
+    case controllers_CompilationLibrariesController_unconnectBoardWthProject128_route(params) =>
+      call(params.fromPath[String]("id", None), params.fromPath[String]("pr", None)) { (id, pr) =>
+        controllers_CompilationLibrariesController_unconnectBoardWthProject128_invoker.call(CompilationLibrariesController_5.get.unconnectBoardWthProject(id, pr))
       }
   
     // @LINE:209
-    case controllers_CompilationLibrariesController_updateLibraryGroup130_route(params) =>
+    case controllers_CompilationLibrariesController_getBoardProjects129_route(params) =>
       call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_updateLibraryGroup130_invoker.call(CompilationLibrariesController_5.get.updateLibraryGroup(id))
-      }
-  
-    // @LINE:210
-    case controllers_CompilationLibrariesController_getLibraryGroupDescription131_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_getLibraryGroupDescription131_invoker.call(CompilationLibrariesController_5.get.getLibraryGroupDescription(id))
-      }
-  
-    // @LINE:211
-    case controllers_CompilationLibrariesController_getLibraryGroupProcessors132_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_getLibraryGroupProcessors132_invoker.call(CompilationLibrariesController_5.get.getLibraryGroupProcessors(id))
+        controllers_CompilationLibrariesController_getBoardProjects129_invoker.call(CompilationLibrariesController_5.get.getBoardProjects(id))
       }
   
     // @LINE:212
-    case controllers_CompilationLibrariesController_getLibraryGroupLibraries133_route(params) =>
-      call(params.fromPath[String]("libraryId", None), params.fromPath[String]("version", None)) { (libraryId, version) =>
-        controllers_CompilationLibrariesController_getLibraryGroupLibraries133_invoker.call(CompilationLibrariesController_5.get.getLibraryGroupLibraries(libraryId, version))
+    case controllers_CompilationLibrariesController_newProducers130_route(params) =>
+      call { 
+        controllers_CompilationLibrariesController_newProducers130_invoker.call(CompilationLibrariesController_5.get.newProducers())
       }
   
     // @LINE:213
-    case controllers_CompilationLibrariesController_createNewVersionLibraryGroup134_route(params) =>
+    case controllers_CompilationLibrariesController_updateProducers131_route(params) =>
       call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_createNewVersionLibraryGroup134_invoker.call(CompilationLibrariesController_5.get.createNewVersionLibraryGroup(id))
+        controllers_CompilationLibrariesController_updateProducers131_invoker.call(CompilationLibrariesController_5.get.updateProducers(id))
       }
   
     // @LINE:214
-    case controllers_CompilationLibrariesController_getVersionLibraryGroup135_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_getVersionLibraryGroup135_invoker.call(CompilationLibrariesController_5.get.getVersionLibraryGroup(id))
+    case controllers_CompilationLibrariesController_getProducers132_route(params) =>
+      call { 
+        controllers_CompilationLibrariesController_getProducers132_invoker.call(CompilationLibrariesController_5.get.getProducers())
       }
   
     // @LINE:215
-    case controllers_CompilationLibrariesController_uploudLibraryToLibraryGroup136_route(params) =>
-      call(params.fromPath[String]("libraryId", None), params.fromPath[Double]("version", None)) { (libraryId, version) =>
-        controllers_CompilationLibrariesController_uploudLibraryToLibraryGroup136_invoker.call(CompilationLibrariesController_5.get.uploudLibraryToLibraryGroup(libraryId, version))
+    case controllers_CompilationLibrariesController_getProducer133_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_CompilationLibrariesController_getProducer133_invoker.call(CompilationLibrariesController_5.get.getProducer(id))
+      }
+  
+    // @LINE:216
+    case controllers_CompilationLibrariesController_getProducerDescription134_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_CompilationLibrariesController_getProducerDescription134_invoker.call(CompilationLibrariesController_5.get.getProducerDescription(id))
       }
   
     // @LINE:217
-    case controllers_CompilationLibrariesController_listOfFilesInVersion137_route(params) =>
+    case controllers_CompilationLibrariesController_getProducerTypeOfBoards135_route(params) =>
       call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_listOfFilesInVersion137_invoker.call(CompilationLibrariesController_5.get.listOfFilesInVersion(id))
+        controllers_CompilationLibrariesController_getProducerTypeOfBoards135_invoker.call(CompilationLibrariesController_5.get.getProducerTypeOfBoards(id))
       }
   
-    // @LINE:218
-    case controllers_CompilationLibrariesController_fileRecord138_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_fileRecord138_invoker.call(CompilationLibrariesController_5.get.fileRecord(id))
+    // @LINE:220
+    case controllers_CompilationLibrariesController_newTypeOfBoard136_route(params) =>
+      call { 
+        controllers_CompilationLibrariesController_newTypeOfBoard136_invoker.call(CompilationLibrariesController_5.get.newTypeOfBoard())
       }
   
     // @LINE:221
-    case controllers_CompilationLibrariesController_newSingleLibrary139_route(params) =>
-      call { 
-        controllers_CompilationLibrariesController_newSingleLibrary139_invoker.call(CompilationLibrariesController_5.get.newSingleLibrary())
+    case controllers_CompilationLibrariesController_updateTypeOfBoard137_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_CompilationLibrariesController_updateTypeOfBoard137_invoker.call(CompilationLibrariesController_5.get.updateTypeOfBoard(id))
       }
   
     // @LINE:222
-    case controllers_CompilationLibrariesController_newVersionSingleLibrary140_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_newVersionSingleLibrary140_invoker.call(CompilationLibrariesController_5.get.newVersionSingleLibrary(id))
+    case controllers_CompilationLibrariesController_getTypeOfBoards138_route(params) =>
+      call { 
+        controllers_CompilationLibrariesController_getTypeOfBoards138_invoker.call(CompilationLibrariesController_5.get.getTypeOfBoards())
       }
   
     // @LINE:223
-    case controllers_CompilationLibrariesController_getSingleLibraryFilter141_route(params) =>
-      call { 
-        controllers_CompilationLibrariesController_getSingleLibraryFilter141_invoker.call(CompilationLibrariesController_5.get.getSingleLibraryFilter())
+    case controllers_CompilationLibrariesController_getTypeOfBoard139_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_CompilationLibrariesController_getTypeOfBoard139_invoker.call(CompilationLibrariesController_5.get.getTypeOfBoard(id))
       }
   
     // @LINE:224
-    case controllers_CompilationLibrariesController_getSingleLibrary142_route(params) =>
+    case controllers_CompilationLibrariesController_getTypeOfBoardDescription140_route(params) =>
       call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_getSingleLibrary142_invoker.call(CompilationLibrariesController_5.get.getSingleLibrary(id))
+        controllers_CompilationLibrariesController_getTypeOfBoardDescription140_invoker.call(CompilationLibrariesController_5.get.getTypeOfBoardDescription(id))
       }
   
     // @LINE:225
-    case controllers_CompilationLibrariesController_getSingleLibraryAll143_route(params) =>
-      call { 
-        controllers_CompilationLibrariesController_getSingleLibraryAll143_invoker.call(CompilationLibrariesController_5.get.getSingleLibraryAll())
-      }
-  
-    // @LINE:227
-    case controllers_CompilationLibrariesController_updateSingleLibrary144_route(params) =>
+    case controllers_CompilationLibrariesController_getTypeOfBoardAllBoards141_route(params) =>
       call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_updateSingleLibrary144_invoker.call(CompilationLibrariesController_5.get.updateSingleLibrary(id))
+        controllers_CompilationLibrariesController_getTypeOfBoardAllBoards141_invoker.call(CompilationLibrariesController_5.get.getTypeOfBoardAllBoards(id))
       }
   
     // @LINE:228
-    case controllers_CompilationLibrariesController_deleteSingleLibrary145_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_deleteSingleLibrary145_invoker.call(CompilationLibrariesController_5.get.deleteSingleLibrary(id))
+    case controllers_CompilationLibrariesController_newLibraryGroup142_route(params) =>
+      call { 
+        controllers_CompilationLibrariesController_newLibraryGroup142_invoker.call(CompilationLibrariesController_5.get.newLibraryGroup())
       }
   
     // @LINE:229
-    case controllers_CompilationLibrariesController_uploadSingleLibraryWithVersion146_route(params) =>
-      call(params.fromPath[String]("id", None), params.fromPath[Double]("version", None)) { (id, version) =>
-        controllers_CompilationLibrariesController_uploadSingleLibraryWithVersion146_invoker.call(CompilationLibrariesController_5.get.uploadSingleLibraryWithVersion(id, version))
+    case controllers_CompilationLibrariesController_getLibraryGroup143_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_CompilationLibrariesController_getLibraryGroup143_invoker.call(CompilationLibrariesController_5.get.getLibraryGroup(id))
       }
   
     // @LINE:230
-    case controllers_CompilationLibrariesController_getSingleLibraryDescription147_route(params) =>
+    case controllers_CompilationLibrariesController_deleteLibraryGroup144_route(params) =>
       call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_getSingleLibraryDescription147_invoker.call(CompilationLibrariesController_5.get.getSingleLibraryDescription(id))
+        controllers_CompilationLibrariesController_deleteLibraryGroup144_invoker.call(CompilationLibrariesController_5.get.deleteLibraryGroup(id))
+      }
+  
+    // @LINE:231
+    case controllers_CompilationLibrariesController_getLibraryGroupAll145_route(params) =>
+      call { 
+        controllers_CompilationLibrariesController_getLibraryGroupAll145_invoker.call(CompilationLibrariesController_5.get.getLibraryGroupAll())
       }
   
     // @LINE:232
-    case controllers_CompilationLibrariesController_generateProjectForEclipse148_route(params) =>
-      call { 
-        controllers_CompilationLibrariesController_generateProjectForEclipse148_invoker.call(CompilationLibrariesController_5.get.generateProjectForEclipse())
+    case controllers_CompilationLibrariesController_updateLibraryGroup146_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_CompilationLibrariesController_updateLibraryGroup146_invoker.call(CompilationLibrariesController_5.get.updateLibraryGroup(id))
+      }
+  
+    // @LINE:233
+    case controllers_CompilationLibrariesController_getLibraryGroupDescription147_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_CompilationLibrariesController_getLibraryGroupDescription147_invoker.call(CompilationLibrariesController_5.get.getLibraryGroupDescription(id))
+      }
+  
+    // @LINE:234
+    case controllers_CompilationLibrariesController_getLibraryGroupProcessors148_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_CompilationLibrariesController_getLibraryGroupProcessors148_invoker.call(CompilationLibrariesController_5.get.getLibraryGroupProcessors(id))
+      }
+  
+    // @LINE:235
+    case controllers_CompilationLibrariesController_getLibraryGroupLibraries149_route(params) =>
+      call(params.fromPath[String]("libraryId", None), params.fromPath[String]("version", None)) { (libraryId, version) =>
+        controllers_CompilationLibrariesController_getLibraryGroupLibraries149_invoker.call(CompilationLibrariesController_5.get.getLibraryGroupLibraries(libraryId, version))
+      }
+  
+    // @LINE:236
+    case controllers_CompilationLibrariesController_createNewVersionLibraryGroup150_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_CompilationLibrariesController_createNewVersionLibraryGroup150_invoker.call(CompilationLibrariesController_5.get.createNewVersionLibraryGroup(id))
+      }
+  
+    // @LINE:237
+    case controllers_CompilationLibrariesController_getVersionLibraryGroup151_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_CompilationLibrariesController_getVersionLibraryGroup151_invoker.call(CompilationLibrariesController_5.get.getVersionLibraryGroup(id))
       }
   
     // @LINE:238
-    case utilities_swagger_ApiHelpController_getResources149_route(params) =>
-      call { 
-        utilities_swagger_ApiHelpController_getResources149_invoker.call(ApiHelpController_2.get.getResources)
+    case controllers_CompilationLibrariesController_uploudLibraryToLibraryGroup152_route(params) =>
+      call(params.fromPath[String]("libraryId", None), params.fromPath[Double]("version", None)) { (libraryId, version) =>
+        controllers_CompilationLibrariesController_uploudLibraryToLibraryGroup152_invoker.call(CompilationLibrariesController_5.get.uploudLibraryToLibraryGroup(libraryId, version))
+      }
+  
+    // @LINE:240
+    case controllers_CompilationLibrariesController_listOfFilesInVersion153_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_CompilationLibrariesController_listOfFilesInVersion153_invoker.call(CompilationLibrariesController_5.get.listOfFilesInVersion(id))
       }
   
     // @LINE:241
-    case controllers_SecurityController_optionLink150_route(params) =>
-      call(params.fromPath[String]("all", None)) { (all) =>
-        controllers_SecurityController_optionLink150_invoker.call(SecurityController_3.get.optionLink(all))
+    case controllers_CompilationLibrariesController_fileRecord154_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_CompilationLibrariesController_fileRecord154_invoker.call(CompilationLibrariesController_5.get.fileRecord(id))
       }
   
     // @LINE:244
-    case controllers_Assets_at151_route(params) =>
+    case controllers_CompilationLibrariesController_newSingleLibrary155_route(params) =>
+      call { 
+        controllers_CompilationLibrariesController_newSingleLibrary155_invoker.call(CompilationLibrariesController_5.get.newSingleLibrary())
+      }
+  
+    // @LINE:245
+    case controllers_CompilationLibrariesController_newVersionSingleLibrary156_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_CompilationLibrariesController_newVersionSingleLibrary156_invoker.call(CompilationLibrariesController_5.get.newVersionSingleLibrary(id))
+      }
+  
+    // @LINE:246
+    case controllers_CompilationLibrariesController_getAllVersionSingleLibrary157_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_CompilationLibrariesController_getAllVersionSingleLibrary157_invoker.call(CompilationLibrariesController_5.get.getAllVersionSingleLibrary(id))
+      }
+  
+    // @LINE:247
+    case controllers_CompilationLibrariesController_getSingleLibraryFilter158_route(params) =>
+      call { 
+        controllers_CompilationLibrariesController_getSingleLibraryFilter158_invoker.call(CompilationLibrariesController_5.get.getSingleLibraryFilter())
+      }
+  
+    // @LINE:248
+    case controllers_CompilationLibrariesController_getSingleLibrary159_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_CompilationLibrariesController_getSingleLibrary159_invoker.call(CompilationLibrariesController_5.get.getSingleLibrary(id))
+      }
+  
+    // @LINE:249
+    case controllers_CompilationLibrariesController_getSingleLibraryAll160_route(params) =>
+      call { 
+        controllers_CompilationLibrariesController_getSingleLibraryAll160_invoker.call(CompilationLibrariesController_5.get.getSingleLibraryAll())
+      }
+  
+    // @LINE:251
+    case controllers_CompilationLibrariesController_updateSingleLibrary161_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_CompilationLibrariesController_updateSingleLibrary161_invoker.call(CompilationLibrariesController_5.get.updateSingleLibrary(id))
+      }
+  
+    // @LINE:252
+    case controllers_CompilationLibrariesController_deleteSingleLibrary162_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_CompilationLibrariesController_deleteSingleLibrary162_invoker.call(CompilationLibrariesController_5.get.deleteSingleLibrary(id))
+      }
+  
+    // @LINE:253
+    case controllers_CompilationLibrariesController_uploadSingleLibraryWithVersion163_route(params) =>
+      call(params.fromPath[String]("id", None), params.fromPath[Double]("version", None)) { (id, version) =>
+        controllers_CompilationLibrariesController_uploadSingleLibraryWithVersion163_invoker.call(CompilationLibrariesController_5.get.uploadSingleLibraryWithVersion(id, version))
+      }
+  
+    // @LINE:254
+    case controllers_CompilationLibrariesController_uploadSingleLibrary164_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_CompilationLibrariesController_uploadSingleLibrary164_invoker.call(CompilationLibrariesController_5.get.uploadSingleLibrary(id))
+      }
+  
+    // @LINE:255
+    case controllers_CompilationLibrariesController_getSingleLibraryDescription165_route(params) =>
+      call(params.fromPath[String]("id", None)) { (id) =>
+        controllers_CompilationLibrariesController_getSingleLibraryDescription165_invoker.call(CompilationLibrariesController_5.get.getSingleLibraryDescription(id))
+      }
+  
+    // @LINE:261
+    case utilities_swagger_ApiHelpController_getResources166_route(params) =>
+      call { 
+        utilities_swagger_ApiHelpController_getResources166_invoker.call(ApiHelpController_2.get.getResources)
+      }
+  
+    // @LINE:264
+    case controllers_SecurityController_optionLink167_route(params) =>
+      call(params.fromPath[String]("all", None)) { (all) =>
+        controllers_SecurityController_optionLink167_invoker.call(SecurityController_3.get.optionLink(all))
+      }
+  
+    // @LINE:267
+    case controllers_Assets_at168_route(params) =>
       call(Param[String]("path", Right("/public")), params.fromPath[String]("file", None)) { (path, file) =>
-        controllers_Assets_at151_invoker.call(Assets_6.at(path, file))
+        controllers_Assets_at168_invoker.call(Assets_7.at(path, file))
       }
   }
 }

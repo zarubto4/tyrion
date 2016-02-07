@@ -12,22 +12,21 @@ import java.util.List;
 public class SingleLibrary  extends Model {
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public String id;
-             @JsonIgnore @Column(columnDefinition = "TEXT")  public String description;
+                         @Column(columnDefinition = "TEXT")  public String description;
                                                              public String libraryName;
                                                  @JsonIgnore public String azurePackageLink;
                                                  @JsonIgnore public String azureStorageLink;
 
-    @JsonProperty public String  description()     { return description == null     ? null : "http://localhost:9000/compilation/library/generalDescription/" +  this.id;}
+
     @JsonIgnore @OneToMany(mappedBy="singleLibrary", cascade=CascadeType.ALL) @OrderBy("azureLinkVersion DESC") public List<Version> versions = new ArrayList<>();
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL)   public List<Processor> processors = new ArrayList<>();
 
-    @JsonProperty public Integer versions()        { return versions.size(); }
+
+    @JsonProperty public Integer versionsCount()   { return versions.size(); }
     @JsonProperty public Double  lastVersion()     { return versions.isEmpty()      ? null : versions.get(0).azureLinkVersion; }
+    @JsonProperty public String  description()     { return description == null     ? null : "http://localhost:9000/compilation/library/generalDescription/" +  this.id;}
+    @JsonProperty public String  versions()        { return                                  "http://localhost:9000/compilation/library/versions/"   + id; }
 
-
-    //  @JsonProperty public String  records       (){ return records.isEmpty()     ? null  : "http://localhost:9000/compilation/libraryGroup/libraries/"  +  this.id;}
-    //  @JsonProperty public Integer librariesCount  (){ return records.size(); }
-    
 
     public static Finder<String, SingleLibrary> find = new Finder<>(SingleLibrary.class);
 

@@ -19,12 +19,16 @@ public class Version extends Model {
                                                              public Date   dateOfCreate;
                                            @JsonIgnore       public Double azureLinkVersion;
 
-    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)  public List<LibraryRecord> records = new ArrayList<>();
-    @JsonIgnore  @ManyToOne  public LibraryGroup libraryGroup;
-    @JsonIgnore  @ManyToOne  public SingleLibrary singleLibrary;
+      @ManyToMany(cascade = CascadeType.ALL)  public List<FileRecord> files = new ArrayList<>();
 
-    @JsonProperty  @JsonInclude(JsonInclude.Include.NON_EMPTY) public String  getAllFiles() { return "http://localhost:9000/compilation/library/listOfFiles/" +  this.id;}
-    @JsonProperty  @JsonInclude(JsonInclude.Include.NON_EMPTY) public Integer files()       { return records.size(); }
+    @JsonIgnore  @ManyToOne  public LibraryGroup  libraryGroup;
+    @JsonIgnore  @ManyToOne  public SingleLibrary singleLibrary;
+    @JsonIgnore  @ManyToOne  public C_Program     c_program;
+
+
+    @JsonProperty  @JsonInclude(JsonInclude.Include.NON_EMPTY) public String  allFiles() { return "http://localhost:9000/compilation/library/listOfFiles/" +  this.id;}
+    @JsonProperty  @JsonInclude(JsonInclude.Include.NON_EMPTY) public Integer files()       { return files.size(); }
+    @JsonProperty  @JsonInclude(JsonInclude.Include.NON_EMPTY) public Double  version()     { return azureLinkVersion; }
 
 
     public static Finder<String, Version> find = new Finder<>(Version.class);

@@ -75,7 +75,7 @@ public class PersonCreateController extends Controller {
             String link = Configuration.root().getString("serverLink.Production") + "/emailPersonAuthentication/" + "?mail=" + person.mail + "&authToken=" + validationToken.authToken;
 
             try {
-                Email email = new EmailTool().sendEmailValidation(person.firstName + person.lastNAme, person.mail, link);
+                Email email = new EmailTool().sendEmailValidation(person.firstName + person.lastName, person.mail, link);
                 mailerClient.send(email);
 
             }catch (Exception e){
@@ -132,6 +132,7 @@ public class PersonCreateController extends Controller {
         }
     }
 
+
     @Security.Authenticated(Secured.class)
     @BodyParser.Of(BodyParser.Json.class)
     public  Result deletePerson(String id){
@@ -166,7 +167,7 @@ public class PersonCreateController extends Controller {
             person.nickName     =  json.get("nickName")     .asText();
             person.firstName    = json.get("firstName")     .asText();
             person.middleName   = json.get("middleName")    .asText();
-            person.lastNAme     = json.get("lastName")      .asText();
+            person.lastName = json.get("lastName")      .asText();
             person.dateOfBirth  = new SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH).parse(json.get("dateOfBirth").asText());
             person.firstTitle   = json.get("firstTitle")    .asText();
             person.lastTitle    = json.get("lastTitle")     .asText();
