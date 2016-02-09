@@ -11,12 +11,11 @@ import models.permission.PermissionKey;
 import play.data.validation.Constraints;
 
 import javax.persistence.*;
-import java.math.BigInteger;
 import java.security.MessageDigest;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 public class Person extends Model{
@@ -25,7 +24,7 @@ public class Person extends Model{
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) public String id;
 
     @Column(unique=true)  @Constraints.Email                public String mail;
-                          @Constraints.Min(8)  @JsonIgnore  public String password;
+                     //     @Constraints.Min(8)  @JsonIgnore  public String password;
     @Column(unique=true)  @Constraints.Min(5)               public String nickName;
                                                             public String firstName;
                                                             public String middleName;
@@ -35,7 +34,7 @@ public class Person extends Model{
 
                                                             public Date   dateOfBirth;
 
-                                                            private String authToken;
+                                        @JsonIgnore         private String authToken;
 
                                         @JsonIgnore         public boolean emailValidated;
 
@@ -86,7 +85,7 @@ public class Person extends Model{
     public String createToken() throws Exception{
 
         while(true){ // I need Unique Value
-            authToken = new BigInteger(130, new SecureRandom()).toString(32).toLowerCase();
+            authToken = UUID.randomUUID().toString();
             if (LinkedAccount.find.where().eq("authToken",authToken).findUnique() == null) break;
 
         }

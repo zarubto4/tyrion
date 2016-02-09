@@ -15,15 +15,15 @@ import java.util.List;
 @Entity
 public class Post extends Model {
 
-    @Id  @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    public String postId;
+    @Id  @GeneratedValue(strategy = GenerationType.SEQUENCE) public String postId;
 
-    @Constraints.Required @Constraints.MinLength(value = 12)
-    @JsonInclude(JsonInclude.Include.NON_EMPTY) public String name;
+    @Constraints.Required @Constraints.MinLength(value = 12) @JsonInclude(JsonInclude.Include.NON_EMPTY) public String name;
 
+    // Počet shlédnutí - chci vracet jen tam kde to má smysl - tedy jen v "otázce" nikoli v odpovědích, kde typ postu není uveden a evidován
     @JsonIgnore @ManyToOne public TypeOfPost type;
     @JsonInclude(JsonInclude.Include.NON_EMPTY) @JsonProperty public String type(){return type == null ? null : type.type;}
 
+    // Počet shlédnutí - chci vracet jen tam kde to má smysl - tedy jen v "otázce" nikoli v odpovědích
     @JsonIgnore   public int views;
     @JsonInclude(JsonInclude.Include.NON_EMPTY)  @JsonProperty public String views(){ return name == null ? null : Integer.toString(views); }
 

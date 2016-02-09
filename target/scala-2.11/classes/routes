@@ -6,15 +6,20 @@
 # Home page
 
 GET             /                                           @controllers.SecurityController.index
+
+# -> Testovací
 GET             /test                                       @controllers.WikyController.test
 GET             /test2                                      @controllers.WikyController.test2(fields)
 
-
 #  WEB SOCET  //////////////////////////////////////////////////////////////////////////////
-GET              /websocket/:id                              @controllers.WebSocketController.connection(id: String)
-POST             /websocket/webSocketStats                   @controllers.WebSocketController.getWebSocketStats()
-POST             /websocket/sendTo/:id                       @controllers.WebSocketController.sendTo(id: String)
+GET              /websocket/homer/:id                       @controllers.WebSocketController_Incoming.homer_connection(id: String)
+GET              /websocket/mobile/:id                      @controllers.WebSocketController_Incoming.mobile_connection(id: String)
+
+POST             /websocket/webSocketStats                  @controllers.WebSocketController_Incoming.getWebSocketStats()
+POST             /websocket/sendTo/:id                      @controllers.WebSocketController_Incoming.sendTo(id: String)
+
 #API - CoreClient ##############################################################################################################################################################
+
 
 #Login page
 POST            /coreClient/person/permission/login         @controllers.SecurityController.login()
@@ -27,11 +32,11 @@ GET             /login/vkontakte                            @controllers.Securit
 
 GET             /login/person                               @controllers.SecurityController.getPersonByToken()
 
-GET             /oauth_callback                             @controllers.SecurityController.GET_facebook_oauth(code, state)
-GET             /login/facebook/oauth_callback              @controllers.SecurityController.GET_facebook_oauth(code, state)
-#GET             /login/twitter/oauth_callback              @controllers.SecurityController.GET_twitter_oauth(code, state)
-GET             /login/github/oauth_callback                @controllers.SecurityController.GET_github_oauth(code, state)
-#GET             /login/vkontakte/oauth_callback             @controllers.SecurityController.GET_vkontakte_oauth(code, state)
+GET             /login/facebook/*url                        @controllers.SecurityController.GET_facebook_oauth(url)
+GET             /login/github/*url                          @controllers.SecurityController.GET_github_oauth(url)
+
+
+
 ### PERSON ############ PERSON ############### PERSON ################ PERSON ################# PERSON ############ PERSON #####################################################
 ################################################################################################################################################################################
 
@@ -111,7 +116,7 @@ GET            /project/project                            @controllers.Programi
 DELETE         /project/project/:id                        @controllers.ProgramingPackageController.deleteProject(id: String)
 PUT            /project/project/shareProject/:id           @controllers.ProgramingPackageController.shareProjectWithUsers(id: String)
 PUT            /project/project/unshareProject/:id         @controllers.ProgramingPackageController.unshareProjectWithUsers(id: String)
-GET            /project/project/programs/:id               @controllers.ProgramingPackageController.getProgramPrograms(id: String)
+GET            /project/project/b_programs/:id             @controllers.ProgramingPackageController.getAllPrograms(id: String)
 GET            /project/project/homerList/:id              @controllers.ProgramingPackageController.getProgramhomerList(id: String)
 GET            /project/project/owners/:id                 @controllers.ProgramingPackageController.getProjectOwners(id: String)
 
@@ -123,27 +128,26 @@ GET            /project/homer                              @controllers.Programi
 GET            /project/homer/getAllConnectedHomers/:id    @controllers.ProgramingPackageController.getConnectedHomers(id: String)
 
 
-
 #Project - connection
 PUT            /project/connectHomerWithProject            @controllers.ProgramingPackageController.connectHomerWithProject()
 PUT            /project/unconnectHomerWithProject          @controllers.ProgramingPackageController.unConnectHomerWithProject()
 
+
 #Program
-POST           /project/program                            @controllers.ProgramingPackageController.postNewProgram()
-GET            /project/program/:id                        @controllers.ProgramingPackageController.getProgram(id: String)
-PUT            /project/program/:id                        @controllers.ProgramingPackageController.editProgram(id: String)
-DELETE         /project/program/:id                        @controllers.ProgramingPackageController.removeProgram(id: String)
-GET            /project/programInJson/:id                  @controllers.ProgramingPackageController.getProgramInJson(id: String)
+POST           /project/b_program                            @controllers.ProgramingPackageController.postNewProgram()
+GET            /project/b_program/:id                        @controllers.ProgramingPackageController.getProgram(id: String)
+PUT            /project/b_program/:id                        @controllers.ProgramingPackageController.editProgram(id: String)
+DELETE         /project/b_program/:id                        @controllers.ProgramingPackageController.removeProgram(id: String)
+GET            /project/b_programInJson/:id                  @controllers.ProgramingPackageController.getProgramInJson(id: String)
+PUT            /project/b_program/uploud                     @controllers.ProgramingPackageController.uploadProgramToHomer_Immediately()
+PUT            /project/b_program/uploudToCloud/:id          @controllers.ProgramingPackageController.uploadProgramToCloud(id: String)
 
-
-GET            /project/getallprograms/:id                 @controllers.ProgramingPackageController.getAllPrograms(id: String)
+GET            /project/b_programs/:id                     @controllers.ProgramingPackageController.getAllPrograms(id: String)
 GET            /project/listOfUploadedHomers/:id           @controllers.ProgramingPackageController.listOfUploadedHomers(id: String)
 GET            /project/listOfHomersWaitingForUpload/:id   @controllers.ProgramingPackageController.listOfHomersWaitingForUpload(id: String)
 GET            /project/getProgramInJson/:id               @controllers.ProgramingPackageController.getProgramInJson(id: String)
 GET            /project/boards/:id                         @controllers.ProgramingPackageController.getProjectsBoard(id: String)
-PUT            /project/uploudtohomerImmediately           @controllers.ProgramingPackageController.uploadProgramToHomer_Immediately()
-PUT            /project/uploudtohomerAsSoonAsPossible      @controllers.ProgramingPackageController.uploadProgramToHomer_AsSoonAsPossible()
-PUT            /project/uploudtohomerGivenTime             @controllers.ProgramingPackageController.uploadProgramToHomer_GivenTimeAsSoonAsPossible()
+
 
 #Blocks
 POST           /project/blockoBlock                         @controllers.ProgramingPackageController.newBlock()
@@ -168,19 +172,21 @@ POST           /project/blockoBlock/filter                 @controllers.Programi
 ################################################################################################################################################################################
 
 #C:Program
-POST            /compilation/program                        @controllers.CompilationLibrariesController.newCProgram()
-GET             /compilation/program/:id                    @controllers.CompilationLibrariesController.getCProgram(id: String)
-GET             /compilation/program/project/:id            @controllers.CompilationLibrariesController.gellAllProgramFromProject(id: String)
+POST            /compilation/c_program                        @controllers.CompilationLibrariesController.newCProgram()
+GET             /compilation/c_program/:id                    @controllers.CompilationLibrariesController.getCProgram(id: String)
+GET             /compilation/c_program/project/:id            @controllers.CompilationLibrariesController.gellAllProgramFromProject(id: String)
 
-PUT             /compilation/program/update/:id             @controllers.CompilationLibrariesController.updateCProgramDescription(id: String)
-PUT             /compilation/program/newVersion/:id         @controllers.CompilationLibrariesController.newVersionOfCProgram(id: String)
+PUT             /compilation/c_program/update/:id             @controllers.CompilationLibrariesController.updateCProgramDescription(id: String)
+PUT             /compilation/c_program/newVersion/:id         @controllers.CompilationLibrariesController.newVersionOfCProgram(id: String)
 
-DELETE          /compilation/program/:id                    @controllers.CompilationLibrariesController.deleteCProgram(id: String)
-DELETE          /compilation/program/:id/:version           @controllers.CompilationLibrariesController.deleteVersionOfCProgram(id: String, version: String)
+DELETE          /compilation/c_program/:id                    @controllers.CompilationLibrariesController.deleteCProgram(id: String)
+DELETE          /compilation/c_program/:id/:version           @controllers.CompilationLibrariesController.deleteVersionOfCProgram(id: String, version: String)
 
-GET             /compilation/project/eclipse                @controllers.CompilationLibrariesController.generateProjectForEclipse()
-POST            /compilation/project/uploud/:id/:board      @controllers.CompilationLibrariesController.uploudCompilationToBoard(id: String, board: String)
-POST            /compilation/project/binary/:id             @controllers.CompilationLibrariesController.uploudBinaryFileToBoard(id: String)
+GET             /compilation/c_program/eclipse                @controllers.CompilationLibrariesController.generateProjectForEclipse()
+POST            /compilation/c_program/uploud/:id/:board      @controllers.CompilationLibrariesController.uploudCompilationToBoard(id: String, board: String)
+POST            /compilation/c_program/binary/:id             @controllers.CompilationLibrariesController.uploudBinaryFileToBoard(id: String)
+
+GET             /compilation/project/board/:id              @controllers.CompilationLibrariesController.getBoardsFromProject(id: String)
 
 #Processor
 POST            /compilation/processor                      @controllers.CompilationLibrariesController.newProcessor()
@@ -207,6 +213,7 @@ GET             /compilation/board/userDescription/:id      @controllers.Compila
 PUT             /compilation/board/connect/:id/:pr          @controllers.CompilationLibrariesController.connectBoardWthProject(id: String, pr: String)
 PUT             /compilation/board/unconnect/:id/:pr        @controllers.CompilationLibrariesController.unconnectBoardWthProject(id: String, pr: String)
 GET             /compilation/board/projects/:id             @controllers.CompilationLibrariesController.getBoardProjects(id: String)
+
 
 #Producer
 POST            /compilation/producer                       @controllers.CompilationLibrariesController.newProducers()
@@ -252,7 +259,6 @@ PUT             /compilation/library/:id                   @controllers.Compilat
 DELETE          /compilation/library/:id                   @controllers.CompilationLibrariesController.deleteSingleLibrary(id: String)
 POST            /compilation/library/uploud/:id/:version   @controllers.CompilationLibrariesController.uploadSingleLibraryWithVersion(id: String, version: Double)
 POST            /compilation/library/uploud/:id            @controllers.CompilationLibrariesController.uploadSingleLibrary(id: String)
-GET             /compilation/library/description/:id       @controllers.CompilationLibrariesController.getSingleLibraryDescription(id: String)
 
 ### TOOLS ############ TOOLS ############### TOOLS ################ TOOLS ######################################################################################################
 ################################################################################################################################################################################

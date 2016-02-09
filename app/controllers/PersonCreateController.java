@@ -32,7 +32,7 @@ public class PersonCreateController extends Controller {
 
             Person person = new Person();
             person.mail = json.get("mail").asText();
-            person.password = json.get("password").asText();
+            //person.password = json.get("password").asText();
             person.emailValidated = true;
 
             if (Person.find.byId(json.get("mail").asText()) != null) return GlobalResult.badRequest("Email Exist");
@@ -60,8 +60,8 @@ public class PersonCreateController extends Controller {
 
             person.nickName = json.get("nickName").asText();
             person.mail = json.get("mail").asText();
-            person.password = json.get("password").asText();
             person.emailValidated = false;
+            //person.password = json.get("password").asText();
 
             if (Person.find.where().eq("mail",json.get("mail").asText()).findUnique() != null) return GlobalResult.badRequest("Email is used");
             if (Person.find.where().eq("nickName",json.get("nickName").asText()).findUnique() != null) return GlobalResult.badRequest("Nickname is used");

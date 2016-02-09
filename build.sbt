@@ -3,7 +3,7 @@ name := """tyrion"""
 routesGenerator := InjectedRoutesGenerator
 herokuAppName in Compile := "byzance3"
 
-version := "1.0-SNAPSHOT"
+version := "1.4.X"
 
 lazy val root = (project in file(".")).enablePlugins(PlayJava, PlayEbean)
 
@@ -43,7 +43,4 @@ resolvers += Resolver.sonatypeRepo("snapshots")
 javacOptions ++= Seq("-Xlint:unchecked")
 javacOptions ++= Seq("-Xlint:deprecation")
 javacOptions ++= Seq("-Xdiags:verbose")
-
-//  Uncomment the next line for local development of the Play Authenticate core:
-//lazy val playAuthenticate = project.in(file("modules/play-authenticate")).enablePlugins(PlayJava)
 

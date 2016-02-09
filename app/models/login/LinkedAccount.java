@@ -2,10 +2,10 @@ package models.login;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
-import java.math.BigInteger;
-import java.security.SecureRandom;
 import java.util.Date;
+import java.util.UUID;
 
 @Entity
 public class LinkedAccount extends Model {
@@ -27,7 +27,7 @@ public class LinkedAccount extends Model {
 	public static LinkedAccount setProviderKey(String typeOfConnection ){
 		LinkedAccount linkedAccount = new LinkedAccount();
 		while(true){ // I need Unique Value
-			String key = new BigInteger(130, new SecureRandom()).toString(32).toLowerCase();
+			String key = UUID.randomUUID().toString();
 			if (LinkedAccount.find.where().eq("providerKey",key).findUnique() == null) {
 				linkedAccount.providerKey = key;
 				break;
@@ -35,10 +35,11 @@ public class LinkedAccount extends Model {
 		}
 
 		while(true){ // I need Unique Value
-			String authToken = new BigInteger(130, new SecureRandom()).toString(32).toLowerCase();
+			String authToken = UUID.randomUUID().toString();
 			if (LinkedAccount.find.where().eq("authToken",authToken).findUnique() == null) {
 				linkedAccount.authToken = authToken;
 				break;
+
 			}
 		}
 

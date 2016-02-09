@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.overflow.*;
 import models.permission.PermissionKey;
+import play.Logger;
 import play.libs.Json;
+import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -75,14 +77,17 @@ public class OverFlowController  extends Controller {
     public Result getPost(String id){
         try{
             Post post = Post.find.byId(id);
-            if(post == null) throw new Exception("Post not Exist");
+            if(post == null) return GlobalResult.notFoundObject();
                 post.views++;
             post.update();
 
-            return GlobalResult.okResult(Json.toJson(post));
 
-        }catch (Exception e){
-            return GlobalResult.badRequest(e);
+            return GlobalResult.okResult( Json.toJson(post) );
+
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - newBlock ERROR");
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -90,7 +95,7 @@ public class OverFlowController  extends Controller {
    public Result hashTagsListOnPost(String id){
         try{
             Post post = Post.find.byId(id);
-            if(post == null) throw new Exception("Id not Exist");
+            if(post == null) return GlobalResult.notFoundObject();
             return GlobalResult.okResult(Json.toJson(post.hashTagsList));
         }catch (Exception e){
             return GlobalResult.badRequest(e);
@@ -100,7 +105,7 @@ public class OverFlowController  extends Controller {
     public Result commentsListOnPost(String id){
         try{
             Post post = Post.find.byId(id);
-            if(post == null) throw new Exception("Id not Exist");
+            if(post == null) return GlobalResult.notFoundObject();
 
 
 
@@ -114,7 +119,7 @@ public class OverFlowController  extends Controller {
     public Result answereListOnPost(String id){
         try{
             Post post = Post.find.byId(id);
-            if(post == null) throw new Exception("Id not Exist");
+            if(post == null) return GlobalResult.notFoundObject();
             return GlobalResult.okResult(Json.toJson(post.answers));
         }catch (Exception e){
             return GlobalResult.badRequest(e);
@@ -124,7 +129,7 @@ public class OverFlowController  extends Controller {
     public Result textOfPost(String id){
         try{
             Post post = Post.find.byId(id);
-            if(post == null) throw new Exception("Id not Exist");
+            if(post == null) return GlobalResult.notFoundObject();
             return GlobalResult.okResult(Json.toJson(post.textOfPost));
         }catch (Exception e){
             return GlobalResult.badRequest(e);
@@ -175,7 +180,7 @@ public class OverFlowController  extends Controller {
     public Result getPostByFilter(){
         try {
             JsonNode json = request().body().asJson();
-            if (json == null) throw new Exception("Null Json");
+            if (json == null) return GlobalResult.notFoundObject();
 
 
             List<String> confirms =  UtilTools.getListFromJson( json, "confirms" );
@@ -210,7 +215,7 @@ public class OverFlowController  extends Controller {
     public Result getPostLinkedAnswers(String id){
         try {
             Post postMain = Post.find.byId(id);
-            if(postMain == null) throw new Exception("Post not Exist");
+            if(postMain == null) return GlobalResult.notFoundObject();
 
             List<ObjectNode> list = new ArrayList<>();
 
@@ -248,22 +253,25 @@ public class OverFlowController  extends Controller {
     @Security.Authenticated(Secured.class)
     public Result getAllPersonPost(){
         try {
+
           return GlobalResult.okResult( Json.toJson(SecurityController.getPerson().personPosts)  );
-        }catch (Exception e){
-            e.printStackTrace();
-            return GlobalResult.badRequest(e);
+
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("OverFlowController - newPost ERROR");
+            return GlobalResult.internalServerError();
         }
     }
 
 
     @Security.Authenticated(Secured.class)
+    @BodyParser.Of(BodyParser.Json.class)
     public Result newPost(){
         try {
             JsonNode json = request().body().asJson();
-            if (json == null) throw new Exception("Null Json");
 
             TypeOfPost typeOfPost = TypeOfPost.find.byId(json.get("type").asText());
-            if(typeOfPost == null) throw new Exception("Type of post is not in Database");
+            if(typeOfPost == null) GlobalResult.notFoundObject();
 
             Post post = new Post();
             post.author = SecurityController.getPerson();
@@ -294,9 +302,12 @@ public class OverFlowController  extends Controller {
             SecurityController.getPerson().update();
 
             return GlobalResult.okResult( Json.newObject().put( "postId", post.postId ) );
-        }catch (Exception e){
-           // e.printStackTrace();
-            return GlobalResult.badRequest(e);
+        } catch (NullPointerException e) {
+            return GlobalResult.badRequest(e, "name - String", "comment - TEXT", "hashTags - [String, String..]");
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("OverFlowController - newPost ERROR");
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -305,8 +316,8 @@ public class OverFlowController  extends Controller {
         try {
 
             Post post = Post.find.byId(postId);
-            if (post == null ) throw new Exception("Overflow post not Exist");
-            if (!post.author.mail.equals( SecurityController.getPerson().mail) ) throw new Exception("You are not Author");
+            if (post == null ) return GlobalResult.notFoundObject();
+            if (!post.author.mail.equals( SecurityController.getPerson().mail) ) return GlobalResult.forbidden();
 
             post.delete();
 
@@ -317,12 +328,10 @@ public class OverFlowController  extends Controller {
     }
 
     @Security.Authenticated(Secured.class)
-
+    @BodyParser.Of(BodyParser.Json.class)
     public Result editPost(){
         try {
             JsonNode json = request().body().asJson();
-            if (json == null) throw new Exception("Null Json");
-
 
             Post post = Post.find.byId(json.get("postId").asText());
 
@@ -331,7 +340,7 @@ public class OverFlowController  extends Controller {
             if( !post.author.mail.equals(SecurityController.getPerson().mail)) return GlobalResult.forbidden();
 
             TypeOfPost typeOfPost = TypeOfPost.find.byId(json.get("type").asText());
-            if(typeOfPost == null) throw new Exception("Type of post is not in Database");
+            if(typeOfPost == null) return GlobalResult.notFoundObject();
 
             post.name = json.get("name").asText();
             post.type = typeOfPost;
@@ -364,15 +373,15 @@ public class OverFlowController  extends Controller {
     }
 
     @Security.Authenticated(Secured.class)
+    @BodyParser.Of(BodyParser.Json.class)
     public Result addComment(){
        try {
            JsonNode json = request().body().asJson();
-           if (json == null) throw new Exception("Null Json");
 
            Post parentPost = Post.find.byId(json.get("postId").asText());
-           if (parentPost == null) throw new Exception("Post not Exist");
+           if (parentPost == null) return GlobalResult.notFoundObject();
 
-           if( parentPost.postParentComment != null)  throw new Exception("You cannot comment another comment");
+           if( parentPost.postParentComment != null)  return GlobalResult.badRequest("You cannot comment another comment");
 
            Post post = new Post();
            post.author = SecurityController.getPerson();
@@ -407,16 +416,16 @@ public class OverFlowController  extends Controller {
     }
 
     @Security.Authenticated(Secured.class)
+    @BodyParser.Of(BodyParser.Json.class)
     public Result addAnswer(){
         try {
             JsonNode json = request().body().asJson();
-            if (json == null) throw new Exception("Null Json");
 
             Post parentPost = Post.find.byId(json.get("postId").asText());
             if (parentPost == null) throw new Exception("Post not Exist");
 
-            if( parentPost.postParentComment != null)  throw new Exception("You cannot answer to comment");
-            if( parentPost.postParentAnswer != null)  throw new Exception("You cannot answer to another  answer");
+            if( parentPost.postParentComment != null)  return GlobalResult.badRequest("You cannot answer to comment");
+            if( parentPost.postParentAnswer != null)   return GlobalResult.badRequest("You cannot answer to another  answer");
 
             Post post = new Post();
             post.author = SecurityController.getPerson();

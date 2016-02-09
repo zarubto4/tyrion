@@ -4,19 +4,21 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import models.blocko.*;
 import models.login.Person;
+import play.Configuration;
 import play.Logger;
 import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.UtilTools;
 import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeoutException;
 
 @Security.Authenticated(Secured.class)
 public class ProgramingPackageController extends Controller {
@@ -148,17 +150,26 @@ public class ProgramingPackageController extends Controller {
             if(project == null) return GlobalResult.notFoundObject();
 
 
+            List<Person> persons = new ArrayList<>();
 
+            // NEJDŘÍVE KONTROLA VŠECH UŽIVATELŮ ZDA EXISTUJÍ
             for (final JsonNode objNode : json.get("persons")) {
 
                 Person person = Person.find.byId(objNode.asText());
+                if(person == null) return GlobalResult.badRequest("User " + objNode.asText() + " not exist");
+                persons.add(person);
+            }
 
-
-                if(person != null && !person.owningProjects.contains(project)){
+            // POTÉ PŘIDÁVÁNÍ DO projektu
+            for (Person person : persons) {
+                if (!person.owningProjects.contains(project)) {
+                    project.ownersOfProject.add(person);
                     person.owningProjects.add(project);
                     person.update();
                 }
             }
+
+            project.update();
 
             return GlobalResult.okResult(Json.toJson(project));
 
@@ -180,17 +191,31 @@ public class ProgramingPackageController extends Controller {
             Project project = Project.find.byId(id);
             if(project == null) return GlobalResult.notFoundObject();
 
+
+            List<Person> persons = new ArrayList<>();
+
+            // NEJDŘÍVE KONTROLA VŠECH UŽIVATELŮ ZDA EXISTUJÍ
             for (final JsonNode objNode : json.get("persons")) {
 
                 Person person = Person.find.byId(objNode.asText());
 
-                if(person != null && person.owningProjects.contains(project)){
+                if(person == null) return GlobalResult.badRequest("User " + objNode.asText() + " not exist");
+
+                persons.add(person);
+            }
+
+            // POTÉ PŘIDÁVÁNÍ DO projektu
+            for (Person person : persons) {
+                if (person.owningProjects.contains(project)) {
+                    project.ownersOfProject.remove(person);
                     person.owningProjects.remove(project);
                     person.update();
                 }
             }
 
-            return GlobalResult.okResult(Json.toJson(project.ownersOfProject));
+            project.update();
+
+            return GlobalResult.okResult(Json.toJson(project));
 
         } catch (NullPointerException e) {
             return GlobalResult.badRequest(e, "persons - [ids]");
@@ -279,14 +304,11 @@ public class ProgramingPackageController extends Controller {
             Project project = Project.find.byId(id);
             if (project == null) return GlobalResult.notFoundObject();
 
-            List<Homer> projectDevices = project.homerList;
-            if(projectDevices.isEmpty()) return GlobalResult.okResult(Json.toJson(projectDevices));
-
-            List<Homer> connectedDevices = WebSocketController.getAllConnectedDevice();
-
             List<Homer> intersection = new ArrayList<>();
 
-            for( Homer homer :projectDevices) if(connectedDevices.contains(homer)) intersection.add(homer);
+            for( Homer homer : project.homerList){
+                if(WebSocketController_Incoming.isConnected(homer)) intersection.add(homer);
+            }
 
             return GlobalResult.okResult(Json.toJson(intersection));
 
@@ -429,21 +451,6 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-    public  Result getProgramPrograms(String id){
-        try{
-
-            Project project  = Project.find.byId(id);
-            if (project == null) return GlobalResult.notFoundObject();
-
-            return GlobalResult.okResult(Json.toJson(project.b_programs));
-
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - getProgramPrograms ERROR");
-            return GlobalResult.internalServerError();
-        }
-    }
-
     public  Result getProgramhomerList(String id){
         try{
 
@@ -509,7 +516,7 @@ public class ProgramingPackageController extends Controller {
         try {
 
             Project project = Project.find.byId(id);
-            if(project == null) throw new Exception("Project not exist");
+            if(project == null) return GlobalResult.notFoundObject();
 
            JsonNode json = new ObjectMapper().valueToTree(project.b_programs);
 
@@ -536,13 +543,16 @@ public class ProgramingPackageController extends Controller {
 
 
             if (!project.projectId.equals(program.project.projectId)) GlobalResult.forbidden("Program is not from the same project!");
-            if(!WebSocketController.isConnected(homer))           GlobalResult.forbidden("Homer is not connected");
-
+            if(!WebSocketController_Incoming.isConnected(homer))           GlobalResult.forbidden("Homer is not connected");
 
             homer.sendProgramToHomer(program, null, null);
 
-            program.successfullyUploaded.add(homer);
-            program.update();
+
+            B_Program_Homer program_homer = new B_Program_Homer();
+            program_homer.b_program = program;
+            program_homer.homer = homer;
+            program_homer.save();
+
 
             return GlobalResult.okResult("Program was uploud To Homer succesfuly and started");
         } catch (Exception e) {
@@ -553,6 +563,9 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
+
+
+    /*
     @BodyParser.Of(BodyParser.Json.class)
     public  Result uploadProgramToHomer_AsSoonAsPossible(){
         try {
@@ -570,7 +583,7 @@ public class ProgramingPackageController extends Controller {
 
             //1 Pokud je zařízení přopojené, nahraji okamžitě
             Date until = UtilTools.returnDateFromMillis( json.get("until").asText());
-            if(WebSocketController.isConnected(homer))   homer.sendProgramToHomer(program, null, until);
+            if(WebSocketController_Incoming.isConnected(homer))   homer.sendProgramToHomer(program, null, until);
 
             //2 Pokud není, vytvářím meziobjekt - Mezi Holder
             ForUploadProgram forUploadProgram = new ForUploadProgram();
@@ -590,8 +603,9 @@ public class ProgramingPackageController extends Controller {
             Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
-    }
+    }*/
 
+    /*
     @BodyParser.Of(BodyParser.Json.class)
     public  Result uploadProgramToHomer_GivenTimeAsSoonAsPossible(){
         try {
@@ -611,7 +625,7 @@ public class ProgramingPackageController extends Controller {
             Date until = UtilTools.returnDateFromMillis( json.get("until").asText());
 
             //1 Pokud je zařízení přopojené, nahraji okamžitě
-            if(WebSocketController.isConnected(homer))  homer.sendProgramToHomer(program, when, until);
+            if(WebSocketController_Incoming.isConnected(homer))  homer.sendProgramToHomer(program, when, until);
 
             //2 Pokud ne -
             ForUploadProgram forUploadProgram = new ForUploadProgram();
@@ -630,8 +644,9 @@ public class ProgramingPackageController extends Controller {
             Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
-    }
+    }*/
 
+    /*
     @BodyParser.Of(BodyParser.Json.class)
     public  Result uploadProgramToHomer(){
         try {
@@ -642,6 +657,47 @@ public class ProgramingPackageController extends Controller {
             else return uploadProgramToHomer_GivenTimeAsSoonAsPossible();
         } catch (NullPointerException e) {
             return GlobalResult.badRequest(e, "when - String");
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - removeProgram ERROR");
+            return GlobalResult.internalServerError();
+        }
+    }*/
+
+    public  Result uploadProgramToCloud(String id){
+        try {
+
+
+            B_Program b_program = B_Program.find.byId(id);
+            if (b_program == null) return GlobalResult.notFoundObject();
+
+            B_Program_Cloud program_cloud = new B_Program_Cloud();
+
+            program_cloud.b_program = b_program;
+            program_cloud.running_from = new Date();
+
+           //   // Pokud je Blocko server připojený a websocket je propojený pak...
+
+           // TODO na exception
+          //  if( WebSocketController_OutComing.servers.containsKey( Configuration.root().getString("Servers.blocko.server1.name")) && WebSocketController_OutComing.servers.get(Configuration.root().getString("Servers.blocko.server1.name") ).session.isOpen()) {
+
+
+             program_cloud.blocko_server_name = Configuration.root().getString("Servers.blocko.server1.name");
+             program_cloud.blocko_instance_name = UUID.randomUUID().toString();
+
+             WebSocketController_OutComing.blockoServerCreateInstance( program_cloud.blocko_server_name,  program_cloud.blocko_instance_name);
+
+             WebSocketController_OutComing.blockoServerUploadProgram(program_cloud.blocko_server_name, program_cloud.blocko_instance_name, program_cloud.b_program.programInString);
+
+
+            return GlobalResult.okResult();
+
+        } catch (NullPointerException a) {
+            return GlobalResult.badRequest("Server není nastartován");
+         } catch (TimeoutException a) {
+            return GlobalResult.badRequest("Nepodařilo se včas nahrát na server");
+         } catch (InterruptedException a) {
+            return GlobalResult.badRequest("Vlákno nahrávání bylo přerušeno ");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - removeProgram ERROR");

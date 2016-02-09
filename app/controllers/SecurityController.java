@@ -21,6 +21,9 @@ import utilities.response.GlobalResult;
 
 import javax.inject.Inject;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Set;
 
 
 public class SecurityController extends Controller {
@@ -113,8 +116,29 @@ public class SecurityController extends Controller {
     // Taktéž spojuje přihlášené účty pod jednu cvirtuální Person - aby v systému bylo jendotné rozpoznávání.
     // V nějaké fázy je nutné mít email - pokud ho nedostaneme od sociální služby - mělo by někde v kodu být upozornění pro fontEnd
     // Aby doplnil uživatel svůj email - hlavní identifikátor!
-    public Result GET_github_oauth(String code, String state) {
+    public Result GET_github_oauth(String url) {
         try {
+            String state = "";
+            String code = "";
+
+            // Z důvodů nemožnosti nastavit tandartně matici query v hlavičce metody v routes (když se to povede vrací to jiné
+            // parametry než když se to nepovede - bylo nutné přistoupit k trochu hloupému řešení, které však funguje za všech předpokladů
+            final Set<Map.Entry<String,String[]>> entries = request().queryString().entrySet();
+            for (Map.Entry<String,String[]> entry : entries) {
+
+                final String key = entry.getKey();
+                final String value = Arrays.toString(entry.getValue());
+
+                // Kontrola obsahu
+                if(key.equals("code")) code = value.replace("[", "").replace("]", "");
+                if(key.equals("state")) state = value.replace("[", "").replace("]", "");
+
+                if(key.equals("error")){
+                    if(state.length() > 1) LinkedAccount.find.where().eq("providerKey", state).findUnique().delete();
+                    return redirect(Configuration.root().getString("Becki.redirectFail"));
+                }
+
+            }
 
             LinkedAccount linkedAccount = LinkedAccount.find.where().eq("providerKey", state).findUnique();
             if (linkedAccount == null) return redirect(Configuration.root().getString("Becki.redirectFail"));
@@ -180,7 +204,7 @@ public class SecurityController extends Controller {
                                 person.firstName = parts[0];
                                 person.lastName = parts[1];
                             }catch (ArrayIndexOutOfBoundsException e){
-                                System.out.println("Uživatel nemá vyplněné jméno a příjmení s mezerou .. enbo jiná TODO aktivita");
+                                System.out.println("Uživatel nemá vyplněné jméno a příjmení s mezerou .. nebo jiná TODO aktivita");
                             }
                         }
 
@@ -211,8 +235,30 @@ public class SecurityController extends Controller {
 
     @Inject WSClient ws;
 
-    public Result GET_facebook_oauth(String code, String state) {
+    public Result GET_facebook_oauth(String url) {
         try {
+
+            String code = "";
+            String state = "";
+
+            // Z důvodů nemožnosti nastavit tandartně matici query v hlavičce metody v routes (když se to povede vrací to jiné
+            // parametry než když se to nepovede - bylo nutné přistoupit k trochu hloupému řešení, které však funguje za všech předpokladů
+            final Set<Map.Entry<String,String[]>> entries = request().queryString().entrySet();
+            for (Map.Entry<String,String[]> entry : entries) {
+
+                final String key = entry.getKey();
+                final String value = Arrays.toString(entry.getValue());
+
+
+                if(key.equals("code")) code = value.replace("[", "").replace("]", "");
+                if(key.equals("state")) state = value.replace("[", "").replace("]", "");
+
+                if(key.equals("error")){
+                    if(state.length() > 1) LinkedAccount.find.where().eq("providerKey", state).findUnique().delete();
+                    return redirect(Configuration.root().getString("Becki.redirectFail"));
+                }
+
+            }
 
             LinkedAccount linkedAccount = LinkedAccount.find.where().eq("providerKey", state).findUnique();
             if (linkedAccount == null) return redirect(Configuration.root().getString("Becki.redirectFail"));
@@ -313,9 +359,28 @@ public class SecurityController extends Controller {
 
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("SecurityController - GEToauth_callback ERROR");
+            Logger.error("SecurityController - GET_facebook_oauth ERROR");
             return GlobalResult.internalServerError();
         }
+    }
+
+   // oauth_callback?error=access_denied&error_code=200&error_description=Permissions+error&error_reason=user_denied&state=dug676fvv1u3r4juod9icpf3ve' [Missing parameter: code]
+
+    public Result GET_facebook_oauth_Error(String error, String error_code, String error_description, String state, String error_reason){
+        try{
+
+
+
+            return  redirect(Configuration.root().getString("Becki.redirectFail"));
+
+        }catch (Exception e){
+            Logger.error("Error", e);
+            Logger.error("SecurityController - GET_facebook_oauth_Error ERROR");
+            return GlobalResult.internalServerError();
+        }
+
+
+
     }
 
 

@@ -24,8 +24,7 @@ public class SingleLibrary  extends Model {
 
     @JsonProperty public Integer versionsCount()   { return versions.size(); }
     @JsonProperty public Double  lastVersion()     { return versions.isEmpty()      ? null : versions.get(0).azureLinkVersion; }
-    @JsonProperty public String  description()     { return description == null     ? null : "http://localhost:9000/compilation/library/generalDescription/" +  this.id;}
-    @JsonProperty public String  versions()        { return                                  "http://localhost:9000/compilation/library/versions/"   + id; }
+    @JsonProperty public String  versions()        { return                                  "http://localhost:9000/compilation/library/version/"   + id; }
 
 
     public static Finder<String, SingleLibrary> find = new Finder<>(SingleLibrary.class);

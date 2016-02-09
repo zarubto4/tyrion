@@ -623,8 +623,8 @@
       <file leaf-file-name="GridController.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/controllers/GridController.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.24412297">
-              <caret line="18" column="0" selection-start-line="18" selection-start-column="0" selection-end-line="18" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.58152795">
+              <caret line="34" column="0" selection-start-line="34" selection-start-column="0" selection-end-line="34" selection-end-column="0" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -1612,7 +1612,7 @@
       <workItem from="1454156030038" duration="593000" />
       <workItem from="1454233331200" duration="9240000" />
       <workItem from="1454487099837" duration="40705000" />
-      <workItem from="1454843907559" duration="54607000" />
+      <workItem from="1454843907559" duration="54754000" />
     </task>
     <task id="LOCAL-00001" summary="Version 1.04.1 - Login with social Networks">
       <created>1453797530585</created>
@@ -1680,11 +1680,17 @@
       <option name="project" value="LOCAL" />
       <updated>1454926243129</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="Version 1.04.8">
+      <created>1455036893282</created>
+      <option name="number" value="00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1455036893282</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="330399000" />
+    <option name="totallyTimeSpent" value="330546000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1706,7 +1712,7 @@
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="true" internal_type="SLIDING" type="SLIDING" visible="false" show_stripe_button="true" weight="0.28977272" sideWeight="0.43923748" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32962668" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.15625" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3266369" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.40625" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.34077382" sideWeight="0.5607625" order="12" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
@@ -1782,7 +1788,8 @@
     <MESSAGE value="Version 1.04.5  Hot Fix for critical Error" />
     <MESSAGE value="Version 1.04.6 FIX (TYRION-46, TYRION-45)" />
     <MESSAGE value="Version 1.04.7" />
-    <option name="LAST_COMMIT_MESSAGE" value="Version 1.04.7" />
+    <MESSAGE value="Version 1.04.8" />
+    <option name="LAST_COMMIT_MESSAGE" value="Version 1.04.8" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2372,8 +2379,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/controllers/GridController.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.24412297">
-          <caret line="18" column="0" selection-start-line="18" selection-start-column="0" selection-end-line="18" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.58152795">
+          <caret line="34" column="0" selection-start-line="34" selection-start-column="0" selection-end-line="34" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>

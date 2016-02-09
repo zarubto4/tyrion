@@ -25,7 +25,7 @@ public class Board extends Model {
     @JsonProperty public String projects()          { return "http://localhost:9000/compilation/board/projects/" + id; }
     @JsonProperty public String typeOfBoard()       { return "http://localhost:9000/compilation/typeOfBoard/" +  typeOfBoard.id; }
 
-    @JsonProperty public String userDescription()   { return "http://localhost:9000/compilation/board/userDescription/"    +  this.id; }
+    @JsonProperty public String userDescription()   { return userDescription == null ? null : "http://localhost:9000/compilation/board/userDescription/"    +  this.id; }
 
 
     public static Finder<String, Board> find = new Finder<>(Board.class);

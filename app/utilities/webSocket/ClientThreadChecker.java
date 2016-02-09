@@ -1,6 +1,6 @@
 package utilities.webSocket;
 
-import controllers.WebSocketController;
+import controllers.WebSocketController_OutComing;
 
 public class ClientThreadChecker  extends Thread {
 
@@ -43,7 +43,7 @@ public class ClientThreadChecker  extends Thread {
     }
 
     private void connect() throws Exception {
-        WebSocketController.connectToServer(identificator,serverAddress, this);
+        WebSocketController_OutComing.connectToServer(identificator,serverAddress, this);
     }
 
 

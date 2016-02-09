@@ -15,6 +15,9 @@ public class ValidationToken extends Model{
 
     public static Finder<String,ValidationToken> find = new Finder<>(ValidationToken.class);
 
+    // Tohle slouží k ověřování emailu - tedy funkčního účtu
+
+
     public ValidationToken  setValidation(String mail){
 
         this.personEmail = mail;

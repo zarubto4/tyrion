@@ -31,14 +31,6 @@ public class GlobalResult extends Controller {
 
     }
 
-    public static Result  okResultWithId(String id){
-        ObjectNode result = Json.newObject();
-        result.put("state", "ok");
-        result.put("id", id);
-        CoreResponse.cors();
-        return ok(result);
-    }
-
     public static Result badRequest(Exception e){
 
         System.out.println("CHYBA " + e.getMessage());
@@ -48,6 +40,15 @@ public class GlobalResult extends Controller {
         result.put("message", e.getMessage());
         CoreResponse.cors();
         return badRequest(result);
+    }
+
+    public static Status badRequest(String message){
+
+        ObjectNode result = Json.newObject();
+        result.put("state", "error");
+        result.put("message", message);
+        CoreResponse.cors();
+        return Controller.badRequest(result);
     }
 
     public static Result badRequest(Exception e, String... args){
@@ -84,6 +85,7 @@ public class GlobalResult extends Controller {
         result.put("message", "Object not found");
         return Controller.badRequest(result);
     }
+
 
     public static StatusHeader forbidden(){
         CoreResponse.cors();

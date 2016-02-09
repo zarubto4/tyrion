@@ -4,10 +4,10 @@
 	<info
 		organisation="tyrion"
 		module="tyrion_2.11"
-		revision="1.0-SNAPSHOT"
+		revision="1.4.X"
 		conf="sources"
 		confs="compile, runtime, test, provided, optional, compile-internal, runtime-internal, test-internal, plugin, sources, docs, pom, scala-tool"
-		date="20160207140428"/>
+		date="20160208201235"/>
 	<dependencies>
 	</dependencies>
 </ivy-report>

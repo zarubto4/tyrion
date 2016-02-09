@@ -4,7 +4,7 @@
 		module="tyrion-build"
 		revision="0.1-SNAPSHOT"
 		status="integration"
-		publication="20160207140405"
+		publication="20160208201205"
 		e:sbtVersion="0.13" e:scalaVersion="2.10"
 	>
 		<description>

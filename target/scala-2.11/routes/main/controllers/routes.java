@@ -1,7 +1,7 @@
 
 // @GENERATOR:play-routes-compiler
 // @SOURCE:/Users/zaruba/ownCloud/Git/Tyrion/conf/routes
-// @DATE:Sun Feb 07 23:38:53 CET 2016
+// @DATE:Tue Feb 09 16:44:42 CET 2016
 
 package controllers;
 
@@ -17,7 +17,7 @@ public class routes {
   public static final controllers.ReverseWikyController WikyController = new controllers.ReverseWikyController(RoutesPrefix.byNamePrefix());
   public static final controllers.ReversePersonCreateController PersonCreateController = new controllers.ReversePersonCreateController(RoutesPrefix.byNamePrefix());
   public static final controllers.ReverseProgramingPackageController ProgramingPackageController = new controllers.ReverseProgramingPackageController(RoutesPrefix.byNamePrefix());
-  public static final controllers.ReverseWebSocketController WebSocketController = new controllers.ReverseWebSocketController(RoutesPrefix.byNamePrefix());
+  public static final controllers.ReverseWebSocketController_Incoming WebSocketController_Incoming = new controllers.ReverseWebSocketController_Incoming(RoutesPrefix.byNamePrefix());
 
   public static class javascript {
     
@@ -29,7 +29,7 @@ public class routes {
     public static final controllers.javascript.ReverseWikyController WikyController = new controllers.javascript.ReverseWikyController(RoutesPrefix.byNamePrefix());
     public static final controllers.javascript.ReversePersonCreateController PersonCreateController = new controllers.javascript.ReversePersonCreateController(RoutesPrefix.byNamePrefix());
     public static final controllers.javascript.ReverseProgramingPackageController ProgramingPackageController = new controllers.javascript.ReverseProgramingPackageController(RoutesPrefix.byNamePrefix());
-    public static final controllers.javascript.ReverseWebSocketController WebSocketController = new controllers.javascript.ReverseWebSocketController(RoutesPrefix.byNamePrefix());
+    public static final controllers.javascript.ReverseWebSocketController_Incoming WebSocketController_Incoming = new controllers.javascript.ReverseWebSocketController_Incoming(RoutesPrefix.byNamePrefix());
   }
 
 }

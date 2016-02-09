@@ -7,6 +7,7 @@ import play.libs.Json;
 import play.mvc.Http.Context;
 import play.mvc.Result;
 import play.mvc.Security;
+import utilities.response.CoreResponse;
 
 
 public class Secured extends Security.Authenticator {
@@ -36,6 +37,7 @@ public class Secured extends Security.Authenticator {
         result.put("code", "401");
         result.put("message", "Unauthorized access - please log in");
 
+        CoreResponse.cors();
         return unauthorized(result);
     }
 

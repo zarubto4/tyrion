@@ -38,7 +38,10 @@ public class CompilationLibrariesController extends Controller {
             c_program.programDescription    = json.get("programDescription").asText();
             c_program.azurePackageLink      =  "personal-program";
 
-            c_program.project = Project.find.byId(json.get("project").asText());
+            Project project = Project.find.byId(json.get("project").asText());
+            if(project == null) return GlobalResult.notFoundObject();
+
+            c_program.project = project;
 
             while(true){ // I need Unique Value
                 c_program.azureStorageLink = UUID.randomUUID().toString();
@@ -143,10 +146,10 @@ public class CompilationLibrariesController extends Controller {
             if(json.has("version")) {
 
                 // Verze začíná minimálně na 1.01
-                if(json.get("version").asDouble()  >  1.01) return GlobalResult.badRequest("Version must start at 1.01");
+                if(json.get("version").asDouble()  < 1.01) return GlobalResult.badRequest("Version must be minimal 1.01");
 
-                // Pokud už nějakou verzi mám musí být nová věgtší než předchozí
-                if( !c_program.versions.isEmpty() &&  c_program.versions.get(0).azureLinkVersion > json.get("version").asDouble() )
+                // Pokud už nějakou verzi mám musí být nová větší než ta předchozí
+                if( !c_program.versions.isEmpty() &&  c_program.versions.get(0).azureLinkVersion >= json.get("version").asDouble() )
                  return  GlobalResult.forbidden ("You can create new minimal version with " + (c_program.versions.get(0).azureLinkVersion  + 0.01) + " only");
 
                 // Pokud nemám používám z Json
@@ -164,6 +167,7 @@ public class CompilationLibrariesController extends Controller {
             versionObject.c_program = c_program;
             versionObject.save();
 
+            c_program.versions.add(versionObject);
             c_program.save();
 
             String temporaryDirectory =  "files/" + c_program.azureStorageLink ;
@@ -244,19 +248,27 @@ public class CompilationLibrariesController extends Controller {
     }
 
     public Result uploudBinaryFileToBoard(String id) {
+        try{
 
-        Board board = Board.find.byId(id);
-        if(board == null ) return GlobalResult.notFoundObject();
+            Board board = Board.find.byId(id);
+            if(board == null ) return GlobalResult.notFoundObject();
 
-        // Přijmu soubor
-        Http.MultipartFormData body = request().body().asMultipartFormData();
-        Http.MultipartFormData.FilePart file = body.getFile("file");
+            // Přijmu soubor
+            Http.MultipartFormData body = request().body().asMultipartFormData();
+            Http.MultipartFormData.FilePart file = body.getFile("file");
 
-        // Its file not null
-        if (file == null) return GlobalResult.notFound("File not found");
+            // Its file not null
+            if (file == null) return GlobalResult.notFound("File not found");
 
-        return GlobalResult.okResult("Vše v pořádku další operace in In TODO"); //TODO
+            return GlobalResult.okResult("Vše v pořádku další operace in In TODO"); //TODO
+
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - deleteCProgram ERROR");
+            return GlobalResult.internalServerError();
+        }
     }
+
 
 
     public Result uploudCompilationToBoard(String id, String boardId) {
@@ -267,7 +279,7 @@ public class CompilationLibrariesController extends Controller {
         C_Program c_program = C_Program.find.byId(id);
         if (c_program == null) return GlobalResult.notFoundObject();
 
-        //TODO Chybí kompilování atd... tohle bude bega metoda!!!
+        //TODO Chybí kompilování atd... tohle bude mega metoda!!!
         return GlobalResult.okResult();
     }
 ///###################################################################################################################*/
@@ -536,7 +548,7 @@ public class CompilationLibrariesController extends Controller {
             versionObject.libraryGroup = libraryGroup;
             versionObject.save();
 
-            return GlobalResult.okResultWithId(libraryGroup.id);
+            return GlobalResult.okResult(Json.toJson(libraryGroup));
         } catch (Exception e) {
             return GlobalResult.badRequest(e, "description - TEXT", "groupName - String");
         }
@@ -559,13 +571,13 @@ public class CompilationLibrariesController extends Controller {
             // Kontrola nové verze jestli je vyšší číslo než u té předchozí!
             Version versionHelp = Version.find.where().in("libraryGroup.id", libraryGroup.id).setOrderBy("azureLinkVersion").setMaxRows(1).findUnique();
             if(versionHelp == null) throw new Exception("Error který se nikdy neměl stát - knihovna nemá žádnou verzi!!!");
-            if(versionHelp.azureLinkVersion > versionObject.azureLinkVersion) throw new Exception("You can create new minimal version with " + (versionHelp.azureLinkVersion + 0.01) + " only");
+            if(versionHelp.azureLinkVersion >= versionObject.azureLinkVersion) throw new Exception("You can create new minimal version with " + (versionHelp.azureLinkVersion + 0.01) + " only");
 
             versionObject.libraryGroup = libraryGroup;
             versionObject.save();
 
 
-            return GlobalResult.okResultWithId(versionObject.id);
+            return GlobalResult.okResult(Json.toJson(versionObject));
         } catch (Exception e) {
             Logger.error("CompilationLibrariesController - newProcessor ERROR");
             Logger.error(request().body().asJson().toString());
@@ -591,50 +603,51 @@ public class CompilationLibrariesController extends Controller {
 
             // Přijmu soubor
             Http.MultipartFormData body = request().body().asMultipartFormData();
-            Http.MultipartFormData.FilePart file = body.getFile("file");
+            List<Http.MultipartFormData.FilePart> files = body.getFiles();
 
-            // If fileRecord group is not null
-            LibraryGroup libraryGroup = LibraryGroup.find.byId(libraryId);
-            if(libraryGroup == null ) return GlobalResult.notFoundObject();
+            for( Http.MultipartFormData.FilePart file :  files ) {
+                System.out.println("Nahrávám soubor: " + file.getFilename());
 
-            Version versionObject = Version.find.where().in("libraryGroup.id", libraryGroup.id).eq("azureLinkVersion",versionId).setMaxRows(1).findUnique();
-            if(versionObject == null ) return GlobalResult.notFoundObject();
+                // If fileRecord group is not null
+                LibraryGroup libraryGroup = LibraryGroup.find.byId(libraryId);
+                if (libraryGroup == null) return GlobalResult.notFoundObject();
 
-            // Its file not null
-            if (file == null) return GlobalResult.notFound("File not found");
+                Version versionObject = Version.find.where().in("libraryGroup.id", libraryGroup.id).eq("azureLinkVersion", versionId).setMaxRows(1).findUnique();
+                if (versionObject == null) return GlobalResult.notFoundObject();
 
-            // Control lenght of name
-            String fileName = file.getFilename();
-            if(fileName.length()< 5 ) GlobalResult.forbidden("Too short file name");
+                // Control lenght of name
+                String fileName = file.getFilename();
+                if (fileName.length() < 5) GlobalResult.forbidden("Too short file name");
 
-            // Ještě kontrola souboru zda už tam není - > Version a knihovny
-            FileRecord fileRecord = FileRecord.find.where().in("versions.id", versionObject.id).eq("filename", fileName).setMaxRows(1).findUnique();
-            if(fileRecord != null) throw new Exception("File exist in this version -> " + fileName + " please, create new version!");
+                // Ještě kontrola souboru zda už tam není - > Version a knihovny
+                FileRecord fileRecord = FileRecord.find.where().in("versions.id", versionObject.id).eq("filename", fileName).setMaxRows(1).findUnique();
+                if (fileRecord != null)
+                    return GlobalResult.badRequest("File exist in this version -> " + fileName + " please, create new version!");
 
-            // Mám soubor
-            File libraryFile = file.getFile();
+                // Mám soubor
+                File libraryFile = file.getFile();
 
-            // Připojuji se a tvořím cestu souboru
-            CloudBlobContainer container = GlobalValue.blobClient.getContainerReference("libraries");
+                // Připojuji se a tvořím cestu souboru
+                CloudBlobContainer container = GlobalValue.blobClient.getContainerReference("libraries");
 
-            String azurePath = libraryGroup.azurePackageLink+"/"+libraryGroup.azureStorageLink+ "/"+ versionObject.azureLinkVersion +"/"+fileName;
+                String azurePath = libraryGroup.azurePackageLink + "/" + libraryGroup.azureStorageLink + "/" + versionObject.azureLinkVersion + "/" + fileName;
 
-            CloudBlockBlob blob = container.getBlockBlobReference(azurePath);
+                CloudBlockBlob blob = container.getBlockBlobReference(azurePath);
 
-            blob.upload(new FileInputStream(libraryFile), libraryFile.length());
+                blob.upload(new FileInputStream(libraryFile), libraryFile.length());
 
-            fileRecord = new FileRecord();
-            fileRecord.filename = fileName;
-            fileRecord.save();
+                fileRecord = new FileRecord();
+                fileRecord.filename = fileName;
+                fileRecord.save();
 
 
-            versionObject.files.add(fileRecord);
-            versionObject.save();
+                versionObject.files.add(fileRecord);
+                versionObject.save();
+            }
 
             return GlobalResult.okResult();
         } catch (Exception e) {
             Logger.error("CompilationLibrariesController - uploudLibraryToLibraryGroup ERROR");
-            Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
     }
@@ -796,7 +809,7 @@ public class CompilationLibrariesController extends Controller {
             versionObject.save();
 
 
-            return GlobalResult.okResultWithId(singleLibrary.id);
+            return GlobalResult.okResult(Json.toJson(singleLibrary));
         } catch (Exception e) {
             return GlobalResult.badRequest(e, "libraryName - String", "description - TEXT");
         }
@@ -823,13 +836,13 @@ public class CompilationLibrariesController extends Controller {
             // Kontrola nové verze jestli je vyšší číslo než u té předchozí!
             Version versionHelp = Version.find.where().in("singleLibrary.id", singleLibrary.id).setOrderBy("azureLinkVersion").setMaxRows(1).findUnique();
             if(versionHelp == null) return GlobalResult.badRequest("Error který se nikdy neměl stát - knihovna nemá žádnou verzi!!!");
-            if(versionHelp.azureLinkVersion > versionObject.azureLinkVersion) return GlobalResult.badRequest("You can create new minimal version with " + (versionHelp.azureLinkVersion + 0.01) + " only");
+            if(versionHelp.azureLinkVersion >= versionObject.azureLinkVersion) return GlobalResult.badRequest("You can create new minimal version with " + (versionHelp.azureLinkVersion + 0.01) + " only");
 
             versionObject.singleLibrary = singleLibrary;
             versionObject.save();
 
 
-            return GlobalResult.okResultWithId(versionObject.id);
+            return GlobalResult.okResult(Json.toJson(versionObject));
 
         } catch (NullPointerException a) {
             return GlobalResult.badRequest(a, "description - TEXT", "versionName - String", "version - Double");
@@ -840,7 +853,6 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.internalServerError();
         }
     }
-
 
     public Result getAllVersionSingleLibrary(String id) {
         try {
@@ -953,7 +965,6 @@ public class CompilationLibrariesController extends Controller {
     }
 
 
-
     public Result getSingleLibrary(String id) {
         try {
 
@@ -1023,19 +1034,9 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
-    public Result getSingleLibraryDescription(String id){
-        try {
-            SingleLibrary singleLibrary = SingleLibrary.find.byId(id);
-            if(singleLibrary == null) throw new Exception("FileRecord not found");
-
-            return GlobalResult.okResult(singleLibrary.description);
-        } catch (Exception e) {
-            return GlobalResult.badRequest(e);
-        }
-    }
 
 /**###################################################################################################################*/
-
+    @BodyParser.Of(BodyParser.Json.class)
     public Result newProducers() {
         try {
             JsonNode json = request().body().asJson();
@@ -1057,6 +1058,7 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
+    @BodyParser.Of(BodyParser.Json.class)
     public Result updateProducers(String id) {
         try {
             JsonNode json = request().body().asJson();
@@ -1141,7 +1143,7 @@ public class CompilationLibrariesController extends Controller {
     }
 
 /**###################################################################################################################*/
-
+    @BodyParser.Of(BodyParser.Json.class)
     public Result newTypeOfBoard() {
         try {
             JsonNode json = request().body().asJson();
@@ -1173,6 +1175,7 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
+    @BodyParser.Of(BodyParser.Json.class)
     public Result updateTypeOfBoard(String id) {
         try {
             JsonNode json = request().body().asJson();
@@ -1180,16 +1183,8 @@ public class CompilationLibrariesController extends Controller {
             TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(id);
             if(typeOfBoard == null ) return GlobalResult.notFoundObject();
 
-            Producer producer = Producer.find.byId(json.get("producerId").asText());
-            if(producer == null ) return GlobalResult.notFoundObject();
-
-            Processor processor = Processor.find.byId(json.get("processorId").asText());
-            if(processor == null ) return GlobalResult.notFoundObject();
-
             typeOfBoard.name = json.get("name").asText();
             typeOfBoard.description = json.get("description").asText();
-            typeOfBoard.processor = processor;
-            typeOfBoard.producer = producer;
             typeOfBoard.update();
 
             return GlobalResult.okResult(Json.toJson(typeOfBoard));
@@ -1267,7 +1262,7 @@ public class CompilationLibrariesController extends Controller {
     }
 
 /**###################################################################################################################*/
-
+    @BodyParser.Of(BodyParser.Json.class)
     public Result newBoard() {
         try {
             JsonNode json = request().body().asJson();
@@ -1295,6 +1290,7 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
+    @BodyParser.Of(BodyParser.Json.class)
     public Result addUserDescription(String id){
         try {
             JsonNode json = request().body().asJson();
@@ -1363,7 +1359,10 @@ public class CompilationLibrariesController extends Controller {
         try {
             JsonNode json = request().body().asJson();
 
-            return GlobalResult.okResult();
+            Board board = Board.find.byId(id);
+            if(board == null ) return GlobalResult.notFoundObject();
+
+            return GlobalResult.okResult(Json.toJson(board.userDescription));
         } catch (Exception e) {
             return GlobalResult.badRequest(e);
         }
@@ -1377,7 +1376,7 @@ public class CompilationLibrariesController extends Controller {
             Project project = Project.find.byId(pr);
             if(project == null) return GlobalResult.notFoundObject();
 
-
+            if( board.projects.contains(project)) return  GlobalResult.okResult("is already connected");
             board.projects.add(project);
 
             board.update();
@@ -1385,7 +1384,6 @@ public class CompilationLibrariesController extends Controller {
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - getBoard ERROR");
-            Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
     }
@@ -1398,6 +1396,7 @@ public class CompilationLibrariesController extends Controller {
             Project project = Project.find.byId(pr);
             if(project == null) return GlobalResult.notFoundObject();
 
+            if( !board.projects.contains(project)) return  GlobalResult.okResult("is already unconnected");
             board.projects.remove(project);
 
             board.update();
@@ -1405,7 +1404,6 @@ public class CompilationLibrariesController extends Controller {
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - getBoard ERROR");
-            Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
     }
@@ -1419,7 +1417,23 @@ public class CompilationLibrariesController extends Controller {
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - getBoard ERROR");
-            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
+        }
+    }
+
+
+
+    public Result getBoardsFromProject(String id) {
+        try {
+
+            Project project = Project.find.byId(id);
+            if (project == null) return GlobalResult.notFoundObject();
+
+            return GlobalResult.okResult(Json.toJson(project.boards));
+
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - deleteCProgram ERROR");
             return GlobalResult.internalServerError();
         }
     }

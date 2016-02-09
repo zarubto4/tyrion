@@ -15,8 +15,8 @@ public class TypeOfBoard extends Model {
      @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)    public String id;
                                                                 public String name;
                        @Column(columnDefinition = "TEXT")       public String description;
-                                   @ManyToOne @JsonIgnore       public Producer producer;
-                                   @ManyToOne @JsonIgnore       public Processor processor;
+                     @JsonIgnore  @ManyToOne                    public Producer producer;
+                    @JsonIgnore    @ManyToOne                   public Processor processor;
 
     @JsonIgnore @OneToMany(mappedBy="typeOfBoard", cascade = CascadeType.ALL) public List<Board> boards = new ArrayList<>();
 
@@ -27,6 +27,7 @@ public class TypeOfBoard extends Model {
     @JsonProperty public String libraries     (){return "http://localhost:9000/compilation/processor/files/" +  this.id;}
     @JsonProperty public String procesor      (){return "http://localhost:9000/compilation/processor/" +  this.id;}
     @JsonProperty public String boards        (){return "http://localhost:9000/compilation/TypeOfBoard/boards/" +  this.id;}
+    @JsonProperty public String producer      (){return "http://localhost:9000/compilation/producer/" +  this.id;}
 
     public static Finder<String, TypeOfBoard> find = new Finder<>(TypeOfBoard.class);
 
