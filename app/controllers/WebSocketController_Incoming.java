@@ -1,7 +1,6 @@
 package controllers;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import models.blocko.Homer;
+import models.project.global.Homer;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -37,8 +36,8 @@ public class WebSocketController_Incoming extends Controller {
 
 
     /** incoming Json from Cliens - (users, Homers, mob. apps) */
-    public static void incomingJson_PLAY_As_Server(String identificator, JsonNode jsonNode){
-        System.out.println("Zpráva od " + identificator + " Obsah " + jsonNode.asText() );
+    public static void incomingJson_PLAY_As_Server(String identificator, String string){
+        System.out.println("Zpráva od " + identificator + " Obsah " + string );
     }
 
 
@@ -95,7 +94,7 @@ public class WebSocketController_Incoming extends Controller {
             System.out.println("I am sending to " + key);
             if (!incomingConnections_homers.containsKey(key) && !WebSocketController_OutComing.servers.containsKey(key)) {
                 System.out.println("No connection with this key");
-                return ok();
+                return GlobalResult.okResult();
             }
 
             if (incomingConnections_homers.containsKey(key)) incomingConnections_homers.get(key).write((new Date()).toString());

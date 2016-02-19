@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
+import utilities.response.response_objects.*;
 
 public class GlobalResult extends Controller {
 
@@ -15,23 +16,29 @@ public class GlobalResult extends Controller {
 
 
     public static Result okResult(){
-        ObjectNode result = Json.newObject();
-        result.put("state", "ok");
+
         CoreResponse.cors();
-        return ok(result);
+        return ok(Json.toJson(new Result_ok()));
     }
 
     public static Result okResult(String message){
 
-        ObjectNode result = Json.newObject();
-        result.put("state", "ok");
-        result.put("message", message);
+        Result_ok _resultOk = new Result_ok();
+        _resultOk.message = message;
+
         CoreResponse.cors();
-        return ok(result);
+        return ok(Json.toJson(_resultOk));
 
     }
 
-    public static Result badRequest(Exception e){
+
+
+    public static Result unauthorizedResult(){
+        CoreResponse.cors();
+        return Controller.unauthorized(Json.toJson( new Result_Unauthorized()));
+    }
+
+    public static Result nullPointerResult(Exception e){
 
         System.out.println("CHYBA " + e.getMessage());
 
@@ -42,7 +49,7 @@ public class GlobalResult extends Controller {
         return badRequest(result);
     }
 
-    public static Status badRequest(String message){
+    public static Status nullPointerResult(String message){
 
         ObjectNode result = Json.newObject();
         result.put("state", "error");
@@ -51,16 +58,15 @@ public class GlobalResult extends Controller {
         return Controller.badRequest(result);
     }
 
-    public static Result badRequest(Exception e, String... args){
-        ObjectNode result = Json.newObject();
-        result.put("state", "error");
-        result.put("message", e.getMessage());
+    public static Result nullPointerResult(Exception e, String... args){
 
-        int i = 1;
-        for(String arg : args) result.put("Required JSON parameter "+i++, arg);
+        JsonValueMissing result = new JsonValueMissing();
+        result.state = "error";
+        result.message = e.getMessage();
+        for(String arg : args) result.required_jSON_parameter.add(arg);
 
         CoreResponse.cors();
-        return Controller.badRequest(result);
+        return Controller.badRequest(Json.toJson(result));
     }
 
     public static StatusHeader internalServerError(){
@@ -80,25 +86,24 @@ public class GlobalResult extends Controller {
 
     public static Result notFoundObject(){
         CoreResponse.cors();
-        ObjectNode result = Json.newObject();
-        result.put("state", "error");
-        result.put("message", "Object not found");
-        return Controller.badRequest(result);
+        Result_NotFound result = new Result_NotFound();
+
+        System.out.println("Not found object");
+
+        return Controller.badRequest(Json.toJson(result));
     }
 
 
-    public static StatusHeader forbidden(){
+    public static Status forbidden_Global(){
         CoreResponse.cors();
-        return Controller.forbidden();
-    }
+        return Controller.forbidden(Json.toJson(new Result_PermissionRequired() ) );    }
 
 
-    public static Status forbidden(String message){
+    public static Status forbidden_Global(String message){
         CoreResponse.cors();
-        ObjectNode result = Json.newObject();
-        result.put("state", "forbidden");
-        result.put("message", message);
-        return Controller.forbidden(result);
+        Result_PermissionRequired resultPermissionRequired = new Result_PermissionRequired();
+        resultPermissionRequired.message = message;
+        return Controller.forbidden(Json.toJson(resultPermissionRequired));
     }
 
 }

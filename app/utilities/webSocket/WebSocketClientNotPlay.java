@@ -48,7 +48,7 @@ public class WebSocketClientNotPlay extends Thread {
     public void onMessage(String message) {
         try {
 
-            System.out.println("Příchozí zpráva: " + message);
+          //  System.out.println("Příchozí zpráva: " + message);
             JsonNode json = Json.parse(message);
             String messageId  = json.get("messageId").asText();
 
@@ -70,6 +70,7 @@ public class WebSocketClientNotPlay extends Thread {
     public JsonNode write(String messageId, JsonNode json) throws TimeoutException, InterruptedException {
 
         message_out.put(messageId, json);
+        System.out.println("Co odesílám: " + json.toString());
         session.getAsyncRemote().sendText(json.toString());
 
         Integer breaker = 10;
@@ -82,6 +83,7 @@ public class WebSocketClientNotPlay extends Thread {
             if( message_in.containsKey(messageId)){
                 JsonNode result =  message_in.get(messageId);
                 message_in.remove(messageId);
+                System.out.println("Co příjmám: " + result.toString());
                 return result;
             }
 

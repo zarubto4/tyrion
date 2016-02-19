@@ -3,7 +3,7 @@ package models.compiler;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import models.blocko.Project;
+import models.project.global.Project;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -17,7 +17,6 @@ public class Board extends Model {
          @JsonIgnore @Column(columnDefinition = "TEXT")      public String userDescription;
                                  @ManyToOne @JsonIgnore      public TypeOfBoard typeOfBoard;  // Typ desky
                                                              public boolean isActive;
-
 
     @JsonIgnore   @ManyToMany(cascade = CascadeType.ALL)     public List<Project> projects = new ArrayList<>(); // Uživatelovi projekty
 

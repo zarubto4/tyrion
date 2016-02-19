@@ -7,25 +7,34 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 public class SingleLibrary  extends Model {
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public String id;
                          @Column(columnDefinition = "TEXT")  public String description;
-                                                             public String libraryName;
+                                                             public String library_name;
                                                  @JsonIgnore public String azurePackageLink;
                                                  @JsonIgnore public String azureStorageLink;
 
 
-    @JsonIgnore @OneToMany(mappedBy="singleLibrary", cascade=CascadeType.ALL) @OrderBy("azureLinkVersion DESC") public List<Version> versions = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="singleLibrary", cascade=CascadeType.ALL) @OrderBy("azureLinkVersion DESC") public List<Version_Object> versionObjects = new ArrayList<>();
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL)   public List<Processor> processors = new ArrayList<>();
 
 
-    @JsonProperty public Integer versionsCount()   { return versions.size(); }
-    @JsonProperty public Double  lastVersion()     { return versions.isEmpty()      ? null : versions.get(0).azureLinkVersion; }
-    @JsonProperty public String  versions()        { return                                  "http://localhost:9000/compilation/library/version/"   + id; }
+    @JsonProperty public Integer versionsCount()   { return versionObjects.size(); }
+    @JsonProperty public String  versions()        { return                                  "http://localhost:9000/compilation/library/versions/"   + id; }
 
+
+
+    @JsonIgnore
+    public void setUniqueAzureStorageLink() {
+        while(true){ // I need Unique Value
+            this.azureStorageLink = UUID.randomUUID().toString();
+            if (SingleLibrary.find.where().eq("azureStorageLink", azureStorageLink ).findUnique() == null) break;
+        }
+    }
 
     public static Finder<String, SingleLibrary> find = new Finder<>(SingleLibrary.class);
 

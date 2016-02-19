@@ -4,7 +4,7 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import models.login.Person;
+import models.persons.Person;
 import play.data.validation.Constraints;
 
 import javax.persistence.*;
@@ -15,23 +15,25 @@ import java.util.List;
 @Entity
 public class Post extends Model {
 
-    @Id  @GeneratedValue(strategy = GenerationType.SEQUENCE) public String postId;
+                  @Id  @GeneratedValue(strategy = GenerationType.SEQUENCE)                                  public String postId;
+    @Constraints.Required @Constraints.MinLength(value = 12) @JsonInclude(JsonInclude.Include.NON_EMPTY)    public String name;
+                                                                                                            public int likes;
+                                                                                                            public Date dateOfCreate;
+                                                                                @JsonIgnore                 public boolean deleted;
+                                                                                            @ManyToOne      public Person author;
 
-    @Constraints.Required @Constraints.MinLength(value = 12) @JsonInclude(JsonInclude.Include.NON_EMPTY) public String name;
+
+
 
     // Počet shlédnutí - chci vracet jen tam kde to má smysl - tedy jen v "otázce" nikoli v odpovědích, kde typ postu není uveden a evidován
     @JsonIgnore @ManyToOne public TypeOfPost type;
-    @JsonInclude(JsonInclude.Include.NON_EMPTY) @JsonProperty public String type(){return type == null ? null : type.type;}
+    @JsonInclude(JsonInclude.Include.NON_EMPTY) @JsonProperty public TypeOfPost type(){return type == null ? null : type;}
+
+
 
     // Počet shlédnutí - chci vracet jen tam kde to má smysl - tedy jen v "otázce" nikoli v odpovědích
     @JsonIgnore   public int views;
     @JsonInclude(JsonInclude.Include.NON_EMPTY)  @JsonProperty public String views(){ return name == null ? null : Integer.toString(views); }
-
-                                public int likes;
-                                public Date dateOfCreate;
-    @JsonIgnore                 public boolean deleted;
-    @JsonIgnore @ManyToOne      public Person author;
-
 
     @JsonIgnore @Constraints.Required @Constraints.MinLength(value = 30) @Column(columnDefinition = "TEXT")  public String textOfPost;
     @JsonProperty public String textOfPost(){ return name == null ? textOfPost : "http://localhost:9000/overflow/post/textOfPost/" + this.postId; }

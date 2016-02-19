@@ -1,75 +1,25 @@
 package controllers;
 
 
+import com.avaje.ebean.Ebean;
+import com.avaje.ebean.OrderBy;
+import com.avaje.ebean.Query;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.overflow.*;
-import models.permission.PermissionKey;
 import play.Logger;
 import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.response.GlobalResult;
+import utilities.a_main_utils.UtilTools;
 import utilities.loginEntities.Secured;
-import utilities.UtilTools;
+import utilities.response.GlobalResult;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class OverFlowController  extends Controller {
-
-/**
- * Každý uživatel má možnost provádět operace nad vlastními příspěvky. Uložit nový POST, Komentář i Odpověď.
- * Má možnost je smazat a editovat. Pokud nejsem vlastník, tyto operace provádět nemohu.
- *
- * Existuje skupina práv, které dávají uživateli možnost upravovat cizí příspěvky nebo je mazat.
- * Jde především o role moderátorů a administrátorů.
- *
- * Skupina Administrator může vždy vše
- * Skupina Moderator může jen
- *
- * 1. Právo Editovat
- * 2. Právo Mazat
- * 3. Právo Uzamknout
- * 4. Právo Zablokovat uživatele
- * 5. Předávat stejná nebo nižší práva
- */
-
- // Permission //
- // Jméno které bude používáno - Lze Refaktoringem v budoucnu měnit název controlleru a ničemu to nebude vadit
-
-    /**
-     * Ihned po startu serveru je tato metoda zavolána z třídy GLOBAL.onStart() aby zajistila, že budou v
-     * databázi vhodně zaregistrovány všechny skupiny. Uživatele do skupin to však v žádném případě nikdy nepřidá.
-     *
-     * Tato metoda slouží jen k počátečnímu nastavení serveru a databáze. Musí ohlídat, že nevytváří duplicity a další.
-     *
-     */
-    public static void onStartPermission(){
-        try {
-            final String controllerName =  OverFlowController.class.getSimpleName();
-
-            // ošetříme jednoduchým dotazem zda v databázi už skupina není
-            if(PermissionKey.find.byId(controllerName + "_Delete") != null) return;
-
-            new PermissionKey(controllerName + "_Delete",       "Can delete Post in Overflow");
-            new PermissionKey(controllerName + "_Lock",         "Can lock Post thread");
-            new PermissionKey(controllerName + "_Edit",         "Can edit all Post and Comments");
-            new PermissionKey(controllerName + "_PersonBlock",  "Can block Person ");
-            new PermissionKey(controllerName + "_Promote",      "Can promote other Person to same Permission");
-
-        }catch (Exception e){
-            System.out.println("***********************************************");
-            System.out.println("Došlo k chybě v OverFlowController.onStartPermission" );
-            e.printStackTrace();
-            System.out.println();
-            System.out.println("***********************************************");
-        }
-    }
-
 
 // PUBLIC
 //**********************************************************************************************************************
@@ -78,7 +28,8 @@ public class OverFlowController  extends Controller {
         try{
             Post post = Post.find.byId(id);
             if(post == null) return GlobalResult.notFoundObject();
-                post.views++;
+
+            post.views++;
             post.update();
 
 
@@ -98,7 +49,7 @@ public class OverFlowController  extends Controller {
             if(post == null) return GlobalResult.notFoundObject();
             return GlobalResult.okResult(Json.toJson(post.hashTagsList));
         }catch (Exception e){
-            return GlobalResult.badRequest(e);
+            return GlobalResult.nullPointerResult(e);
         }
     }
 
@@ -107,12 +58,10 @@ public class OverFlowController  extends Controller {
             Post post = Post.find.byId(id);
             if(post == null) return GlobalResult.notFoundObject();
 
-
-
             return GlobalResult.okResult(Json.toJson(post.comments));
 
         }catch (Exception e){
-            return GlobalResult.badRequest(e);
+            return GlobalResult.nullPointerResult(e);
         }
     }
 
@@ -120,9 +69,10 @@ public class OverFlowController  extends Controller {
         try{
             Post post = Post.find.byId(id);
             if(post == null) return GlobalResult.notFoundObject();
+
             return GlobalResult.okResult(Json.toJson(post.answers));
         }catch (Exception e){
-            return GlobalResult.badRequest(e);
+            return GlobalResult.nullPointerResult(e);
         }
     }
 
@@ -132,7 +82,7 @@ public class OverFlowController  extends Controller {
             if(post == null) return GlobalResult.notFoundObject();
             return GlobalResult.okResult(Json.toJson(post.textOfPost));
         }catch (Exception e){
-            return GlobalResult.badRequest(e);
+            return GlobalResult.nullPointerResult(e);
         }
     }
 
@@ -160,57 +110,94 @@ public class OverFlowController  extends Controller {
      more...
      */
 
-
-    public Result getLatestPost(){
-        try {
-            List<Post> latestPost  = Post.find.
-                    where().eq("postParentAnswer", null).eq("postParentComment", null)
-                    .orderBy("dateOfCreate")
-                    .findPagedList(0, 5).getList();
-
-            return GlobalResult.okResult(Json.toJson(latestPost));
-
-        } catch (Exception e){
-            return GlobalResult.badRequest(e);
-        }
-
-    }
-
-
+    @BodyParser.Of(BodyParser.Json.class)
     public Result getPostByFilter(){
         try {
             JsonNode json = request().body().asJson();
-            if (json == null) return GlobalResult.notFoundObject();
+
+            Query<Post> query = Ebean.find(Post.class);
+            query.where().eq("postParentAnswer", null);
+            query.where().eq("postParentComment", null);
 
 
-            List<String> confirms =  UtilTools.getListFromJson( json, "confirms" );
-            List<String> hashTags =  UtilTools.getListFromJson( json, "hashTags" );
+            // If contains HashTags
+            if(json.has("hash_tags") ){
+                List<String> hashTags = UtilTools.getListFromJson( json, "hash_tags" );
+                Set<String> HashTagset = new HashSet<String>(hashTags);
+                query.where().in("hashTagsList.postHashTagId", HashTagset);
 
-            int countFrom = json.get("countFrom").asInt();
-            int countTo   = json.get("countTo").asInt();
+            }
 
-            Date dateFrom = UtilTools.returnDateFromMillis( json.get("dateFrom").asText()  );
-            Date dateTo   = UtilTools.returnDateFromMillis( json.get("dateTo").asText()  );
+            // If contains confirms
+            if(json.has("confirms") ){
+                List<String> confirms = UtilTools.getListFromJson( json, "confirms" );
+                Set<String> confirmsSet = new HashSet<String>(confirms);
+                 query.where().in("hashTagsList.postHashTagId", confirmsSet);
+            }
 
-            String personId = json.get("personId").asText();
-            String type = json.get("type").asText();
+            // From date
+            if(json.has("date_from")){
+                Date dateFrom = UtilTools.returnDateFromMillis( json.get("date_from").asText());
+                query.where().ge("dateOfCreate", dateFrom);
+            }
 
-            List<Post> latestPost  = Post.find.where()
-                    .in("hashTagsList.postHashTagId", hashTags)
-                    .icontains("type", type)
-                    .eq("postParentAnswer", null)
-                    .eq("postParentComment", null)
-                    .eq("author.mail", personId)
-                    .orderBy("dateOfCreate")
-                    .findList().subList( countFrom, countTo);
+            // To date
+            if(json.has("date_to")){
+                Date dateTo = UtilTools.returnDateFromMillis( json.get("date_to").asText() );
+                query.where().le("dateOfCreate", dateTo);
+            }
 
-            return GlobalResult.okResult(Json.toJson(latestPost));
+            if(json.has("type")){
+                List<String> type=  UtilTools.getListFromJson( json, "type" );
+                query.where().in("type.id", type);
+            }
+
+            if(json.has("nick_name")){
+                String authorId = json.get("nick_name").asText();
+                query.where().ieq("author.nickName", authorId);
+            }
+
+
+            if(json.has("count_from")){
+                Integer countFrom = json.get("count_from").asInt();
+                query.setFirstRow(countFrom);
+            }
+
+            if(json.has("count_to")){
+                Integer countTo = json.get("count_to").asInt();
+                query.setMaxRows(countTo);
+            }
+
+            if(json.has("order_by")){
+                JsonNode rdb = json.get("order_by");
+
+               String order = rdb.get("order").asText();
+               String value = rdb.get("value").asText();
+
+                OrderBy<Post> orderBy = new OrderBy<>();
+
+                if(order.equals("asc")) orderBy.asc(value);
+                else if (order.equals("desc")) orderBy.desc(value);
+
+                query.setOrder(orderBy);
+            }
+
+
+            List<Post> list = query.findList();
+
+
+            return GlobalResult.okResult(Json.toJson(list));
+
+
+
 
         } catch (Exception e){
-            return GlobalResult.badRequest(e);
+            e.printStackTrace();
+            return GlobalResult.nullPointerResult(e);
         }
 
     }
+
 
     public Result getPostLinkedAnswers(String id){
         try {
@@ -244,7 +231,7 @@ public class OverFlowController  extends Controller {
                 return GlobalResult.okResult(Json.toJson(list));
 
         } catch (Exception e){
-            return GlobalResult.badRequest(e);
+            return GlobalResult.nullPointerResult(e);
         }
     }
 
@@ -271,7 +258,7 @@ public class OverFlowController  extends Controller {
             JsonNode json = request().body().asJson();
 
             TypeOfPost typeOfPost = TypeOfPost.find.byId(json.get("type").asText());
-            if(typeOfPost == null) GlobalResult.notFoundObject();
+            if(typeOfPost == null) return GlobalResult.notFoundObject();
 
             Post post = new Post();
             post.author = SecurityController.getPerson();
@@ -301,9 +288,9 @@ public class OverFlowController  extends Controller {
             SecurityController.getPerson().personPosts.add(post);
             SecurityController.getPerson().update();
 
-            return GlobalResult.okResult( Json.newObject().put( "postId", post.postId ) );
+            return GlobalResult.created( Json.toJson(post) );
         } catch (NullPointerException e) {
-            return GlobalResult.badRequest(e, "name - String", "comment - TEXT", "hashTags - [String, String..]");
+            return GlobalResult.nullPointerResult(e, "name - String", "comment - TEXT", "hashTags - [String, String..]");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("OverFlowController - newPost ERROR");
@@ -317,27 +304,28 @@ public class OverFlowController  extends Controller {
 
             Post post = Post.find.byId(postId);
             if (post == null ) return GlobalResult.notFoundObject();
-            if (!post.author.mail.equals( SecurityController.getPerson().mail) ) return GlobalResult.forbidden();
+            if (!post.author.id.equals( SecurityController.getPerson().id) ) return GlobalResult.forbidden_Global();
 
             post.delete();
 
             return GlobalResult.okResult();
         }catch (Exception e){
-            return GlobalResult.badRequest(e);
+            return GlobalResult.nullPointerResult(e);
         }
     }
 
     @Security.Authenticated(Secured.class)
     @BodyParser.Of(BodyParser.Json.class)
-    public Result editPost(){
+    public Result editPost(String id){
         try {
             JsonNode json = request().body().asJson();
 
-            Post post = Post.find.byId(json.get("postId").asText());
+            System.out.println("Jsem zde");
 
-            if (post == null) return GlobalResult.badRequest(new Exception(" Overflow post not Exist"));
+            Post post = Post.find.byId(id);
+            if (post == null) return GlobalResult.notFoundObject();
 
-            if( !post.author.mail.equals(SecurityController.getPerson().mail)) return GlobalResult.forbidden();
+            if (!post.author.id.equals( SecurityController.getPerson().id) ) return GlobalResult.forbidden_Global();
 
             TypeOfPost typeOfPost = TypeOfPost.find.byId(json.get("type").asText());
             if(typeOfPost == null) return GlobalResult.notFoundObject();
@@ -362,12 +350,12 @@ public class OverFlowController  extends Controller {
 
             }
 
-            post.save();
+            post.update();
 
            return GlobalResult.okResult();
 
         }catch (Exception e){
-            return GlobalResult.badRequest(e);
+            return GlobalResult.nullPointerResult(e);
         }
 
     }
@@ -381,7 +369,7 @@ public class OverFlowController  extends Controller {
            Post parentPost = Post.find.byId(json.get("postId").asText());
            if (parentPost == null) return GlobalResult.notFoundObject();
 
-           if( parentPost.postParentComment != null)  return GlobalResult.badRequest("You cannot comment another comment");
+           if( parentPost.postParentComment != null)  return GlobalResult.nullPointerResult("You cannot comment another comment");
 
            Post post = new Post();
            post.author = SecurityController.getPerson();
@@ -411,7 +399,7 @@ public class OverFlowController  extends Controller {
 
            return GlobalResult.okResult( Json.newObject().put( "postId", post.postId ));
        }catch (Exception e){
-           return GlobalResult.badRequest(e);
+           return GlobalResult.nullPointerResult(e);
        }
     }
 
@@ -424,8 +412,8 @@ public class OverFlowController  extends Controller {
             Post parentPost = Post.find.byId(json.get("postId").asText());
             if (parentPost == null) throw new Exception("Post not Exist");
 
-            if( parentPost.postParentComment != null)  return GlobalResult.badRequest("You cannot answer to comment");
-            if( parentPost.postParentAnswer != null)   return GlobalResult.badRequest("You cannot answer to another  answer");
+            if( parentPost.postParentComment != null)  return GlobalResult.nullPointerResult("You cannot answer to comment");
+            if( parentPost.postParentAnswer != null)   return GlobalResult.nullPointerResult("You cannot answer to another  answer");
 
             Post post = new Post();
             post.author = SecurityController.getPerson();
@@ -457,7 +445,7 @@ public class OverFlowController  extends Controller {
 
         }catch (Exception e){
 
-            return GlobalResult.badRequest(e);
+            return GlobalResult.nullPointerResult(e);
 
         }
     }
@@ -492,7 +480,7 @@ public class OverFlowController  extends Controller {
 
             return GlobalResult.okResult();
         }catch (Exception e){
-            return GlobalResult.badRequest(e);
+            return GlobalResult.nullPointerResult(e);
         }
     }
 
@@ -505,8 +493,8 @@ public class OverFlowController  extends Controller {
             Post question = Post.find.byId(json.get("postId").asText());
             Post answer = Post.find.byId(json.get("linkId").asText());
 
-            if (question == null)   return GlobalResult.badRequest(new Exception(" Overflow post not Exist"));
-            if (answer == null)     return GlobalResult.badRequest(new Exception(" Overflow link post not Exist"));
+            if (question == null)   return GlobalResult.nullPointerResult(new Exception(" Overflow post not Exist"));
+            if (answer == null)     return GlobalResult.nullPointerResult(new Exception(" Overflow link post not Exist"));
             if (question.postParentComment != null)     throw new Exception("You can link only main post");
             if (answer.postParentComment != null)       throw new Exception("You can link only main post");
 
@@ -522,7 +510,7 @@ public class OverFlowController  extends Controller {
 
             return GlobalResult.okResult(result);
         }catch (Exception e){
-            return GlobalResult.badRequest(e, "postId", "linkId");
+            return GlobalResult.nullPointerResult(e, "postId", "linkId");
         }
     }
 
@@ -532,13 +520,13 @@ public class OverFlowController  extends Controller {
             LinkedPost post = LinkedPost.find.byId(id);
 
             if (post == null ) throw new Exception("Linked connection not Exist");
-            if (! post.author.mail.equals(SecurityController.getPerson().mail) ) throw new Exception("You are not Author");
+            if (!post.author.id.equals( SecurityController.getPerson().id) ) return GlobalResult.forbidden_Global();
 
             post.delete();
 
             return GlobalResult.okResult();
         }catch (Exception e){
-            return GlobalResult.badRequest(e);
+            return GlobalResult.nullPointerResult(e);
         }
     }
 
@@ -559,7 +547,7 @@ public class OverFlowController  extends Controller {
 
             return GlobalResult.okResult( Json.toJson(typeOfPost) );
         }catch (Exception e){
-            return GlobalResult.badRequest(e);
+            return GlobalResult.nullPointerResult(e);
         }
     }
 
@@ -568,7 +556,7 @@ public class OverFlowController  extends Controller {
         try{
             return GlobalResult.okResult(Json.toJson( TypeOfPost.find.all() ));
         }catch (Exception e){
-            return GlobalResult.badRequest(e);
+            return GlobalResult.nullPointerResult(e);
         }
     }
 
@@ -587,7 +575,7 @@ public class OverFlowController  extends Controller {
             return GlobalResult.okResult(Json.toJson( typeOfConfirms) );
 
         }catch (Exception e){
-            return GlobalResult.badRequest(e);
+            return GlobalResult.nullPointerResult(e);
         }
     }
 
@@ -596,13 +584,11 @@ public class OverFlowController  extends Controller {
         try{
             return GlobalResult.okResult(Json.toJson( TypeOfConfirms.find.all() ));
         }catch (Exception e){
-            return GlobalResult.badRequest(e);
+            return GlobalResult.nullPointerResult(e);
         }
     }
 
 
-
-    // TODO
     @Security.Authenticated(Secured.class)
     public Result putTypeOfConfirmToPost(String conf, String pst){
         try{
@@ -618,7 +604,7 @@ public class OverFlowController  extends Controller {
 
             return GlobalResult.okResult(Json.toJson(post));
         }catch (Exception e){
-            return GlobalResult.badRequest(e);
+            return GlobalResult.nullPointerResult(e);
         }
     }
 
@@ -651,7 +637,7 @@ public class OverFlowController  extends Controller {
 
             return GlobalResult.okResult();
         }catch (Exception e){
-            return GlobalResult.badRequest(e, "postId", "[hashTags]");
+            return GlobalResult.nullPointerResult(e, "postId", "[hashTags]");
         }
 
     }
@@ -670,7 +656,7 @@ public class OverFlowController  extends Controller {
 
             return GlobalResult.okResult();
         }catch (Exception e){
-            return GlobalResult.badRequest(e);
+            return GlobalResult.nullPointerResult(e);
         }
 
     }
@@ -689,7 +675,7 @@ public class OverFlowController  extends Controller {
 
             return GlobalResult.okResult();
         }catch (Exception e){
-            return GlobalResult.badRequest(e);
+            return GlobalResult.nullPointerResult(e);
         }
     }
 
@@ -698,7 +684,7 @@ public class OverFlowController  extends Controller {
         try {
             Post post = Post.find.where().eq("postId", postId).findUnique();
 
-            if(post.listOfLikers != null &&  post.listOfLikers.contains(  SecurityController.getPerson()  ) ) return GlobalResult.forbidden();
+            if(post.listOfLikers != null &&  post.listOfLikers.contains(  SecurityController.getPerson()  ) ) return GlobalResult.forbidden_Global();
 
             post.listOfLikers.add(SecurityController.getPerson());
             post.likes--;
@@ -706,7 +692,7 @@ public class OverFlowController  extends Controller {
 
             return GlobalResult.okResult();
         }catch (Exception e){
-            return GlobalResult.badRequest(e);
+            return GlobalResult.nullPointerResult(e);
         }
     }
 

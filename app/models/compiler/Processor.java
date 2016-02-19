@@ -12,9 +12,9 @@ import java.util.List;
 public class Processor extends Model {
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public String id;
-                                                             public String processorName;
-         @JsonIgnore @Column(columnDefinition = "TEXT")      public String description;
-                                                             public String processorCode;
+                                                             public String processor_name;
+                @Column(columnDefinition = "TEXT")           public String description;
+                                                             public String processor_code;
                                                              public int speed;
 
     @JsonIgnore @OneToMany(mappedBy="processor", cascade = CascadeType.ALL) public List<TypeOfBoard> typeOfBoards = new ArrayList<>();
@@ -22,8 +22,8 @@ public class Processor extends Model {
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "processors")  @JoinTable(name = "processor_singleLibrary")  public List<SingleLibrary> singleLibraries = new ArrayList<>();
 
 
-    @JsonProperty public String description   (){return "http://localhost:9000/compilation/processor/generalDescription/"    +  this.id;}
-    @JsonProperty public String libraryGroups (){return "http://localhost:9000/compilation/processor/libraryGroups/" +  this.id;}
+  // @JsonProperty public String description     (){return "http://localhost:9000/compilation/processor/generalDescription/"    +  this.id;}
+    @JsonProperty public String libraryGroups   (){return "http://localhost:9000/compilation/processor/libraryGroups/" +  this.id;}
     @JsonProperty public String singleLibraries (){return "http://localhost:9000/compilation/processor/singleLibrary/" +  this.id;}
 
 

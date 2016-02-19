@@ -3,7 +3,7 @@
 [debug] 	removed:Set()
 [debug] 	added: Set()
 [debug] 	modified: Set()
-[debug] Removed products: Set()
+[debug] Invalidated products: Set()
 [debug] External API changes: API Changes: Set()
 [debug] Modified binary dependencies: Set()
 [debug] Initial directly invalidated sources: Set()

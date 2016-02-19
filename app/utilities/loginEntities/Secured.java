@@ -1,13 +1,10 @@
 package utilities.loginEntities;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import controllers.SecurityController;
-import models.login.Person;
-import play.libs.Json;
+import models.persons.Person;
 import play.mvc.Http.Context;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.response.CoreResponse;
+import utilities.response.GlobalResult;
 
 
 public class Secured extends Security.Authenticator {
@@ -16,8 +13,10 @@ public class Secured extends Security.Authenticator {
     @Override
     public String getUsername(Context ctx) {
 
+        System.out.println("Kontrola uživatele");
         Person person = null;
-        String[] authTokenHeaderValues = ctx.request().headers().get(SecurityController.AUTH_TOKEN_HEADER);
+
+        String[] authTokenHeaderValues = ctx.request().headers().get("X-AUTH-TOKEN");
 
 
         if ((authTokenHeaderValues != null) && (authTokenHeaderValues.length == 1) && (authTokenHeaderValues[0] != null)) {
@@ -27,18 +26,29 @@ public class Secured extends Security.Authenticator {
                 return person.id;
             }
         }
+
+        System.out.println("Vracím null");
         return null;
     }
 
+    public static boolean isLoggedIn(Context ctx){
+        System.out.println("Kontrola isLoggedIn");
+
+        String[] authTokenHeaderValues = ctx.request().headers().get("X-AUTH-TOKEN");
+
+
+        if ((authTokenHeaderValues != null) && (authTokenHeaderValues.length == 1) && (authTokenHeaderValues[0] != null)) {
+            if (Person.findByAuthToken(authTokenHeaderValues[0])!= null) {
+                return true;
+            }
+        }
+       return false;
+    }
+
+
     @Override
     public Result onUnauthorized(Context ctx) {
-
-        ObjectNode result = Json.newObject();
-        result.put("code", "401");
-        result.put("message", "Unauthorized access - please log in");
-
-        CoreResponse.cors();
-        return unauthorized(result);
+        return GlobalResult.unauthorizedResult();
     }
 
 }

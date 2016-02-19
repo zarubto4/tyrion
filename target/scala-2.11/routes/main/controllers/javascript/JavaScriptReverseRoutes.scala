@@ -1,7 +1,7 @@
 
 // @GENERATOR:play-routes-compiler
 // @SOURCE:/Users/zaruba/ownCloud/Git/Tyrion/conf/routes
-// @DATE:Tue Feb 09 16:44:42 CET 2016
+// @DATE:Fri Feb 19 20:16:14 CET 2016
 
 import play.api.routing.JavaScriptReverseRoute
 import play.api.mvc.{ QueryStringBindable, PathBindable, Call, JavascriptLiteral }
@@ -15,7 +15,7 @@ import _root_.play.libs.F
 package controllers.javascript {
   import ReverseRouteContext.empty
 
-  // @LINE:273
+  // @LINE:323
   class ReverseAssets(_prefix: => String) {
 
     def _defaultPrefix: String = {
@@ -23,7 +23,7 @@ package controllers.javascript {
     }
 
   
-    // @LINE:273
+    // @LINE:323
     def at: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.Assets.at",
       """
@@ -35,7 +35,7 @@ package controllers.javascript {
   
   }
 
-  // @LINE:69
+  // @LINE:85
   class ReverseOverFlowController(_prefix: => String) {
 
     def _defaultPrefix: String = {
@@ -43,7 +43,7 @@ package controllers.javascript {
     }
 
   
-    // @LINE:86
+    // @LINE:101
     def getTypeOfConfirms: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.getTypeOfConfirms",
       """
@@ -53,7 +53,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:97
+    // @LINE:112
     def likePlus: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.likePlus",
       """
@@ -63,7 +63,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:74
+    // @LINE:89
     def getPostByFilter: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.getPostByFilter",
       """
@@ -73,7 +73,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:90
+    // @LINE:105
     def updateComment: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.updateComment",
       """
@@ -87,7 +87,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:83
+    // @LINE:98
     def getTypeOfPost: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.getTypeOfPost",
       """
@@ -97,7 +97,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:78
+    // @LINE:93
     def commentsListOnPost: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.commentsListOnPost",
       """
@@ -107,7 +107,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:98
+    // @LINE:113
     def likeMinus: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.likeMinus",
       """
@@ -117,7 +117,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:82
+    // @LINE:97
     def newTypeOfPost: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.newTypeOfPost",
       """
@@ -127,7 +127,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:85
+    // @LINE:100
     def newTypeOfConfirms: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.newTypeOfConfirms",
       """
@@ -137,7 +137,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:101
+    // @LINE:116
     def removeHashTag: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.removeHashTag",
       """
@@ -151,7 +151,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:99
+    // @LINE:114
     def linkWithPreviousAnswer: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.linkWithPreviousAnswer",
       """
@@ -161,7 +161,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:75
+    // @LINE:90
     def getPostLinkedAnswers: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.getPostLinkedAnswers",
       """
@@ -171,27 +171,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:73
-    def getLatestPost: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.OverFlowController.getLatestPost",
-      """
-        function() {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "overflow/postAll"})
-        }
-      """
-    )
-  
-    // @LINE:72
-    def editPost: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.OverFlowController.editPost",
-      """
-        function() {
-          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "overflow/post"})
-        }
-      """
-    )
-  
-    // @LINE:89
+    // @LINE:104
     def addComment: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.addComment",
       """
@@ -201,7 +181,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:79
+    // @LINE:94
     def answereListOnPost: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.answereListOnPost",
       """
@@ -211,7 +191,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:70
+    // @LINE:86
     def getPost: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.getPost",
       """
@@ -221,7 +201,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:93
+    // @LINE:108
     def addAnswer: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.addAnswer",
       """
@@ -231,7 +211,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:71
+    // @LINE:87
     def deletePost: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.deletePost",
       """
@@ -245,7 +225,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:100
+    // @LINE:115
     def unlinkWithPreviousAnswer: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.unlinkWithPreviousAnswer",
       """
@@ -255,7 +235,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:69
+    // @LINE:85
     def newPost: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.newPost",
       """
@@ -265,7 +245,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:87
+    // @LINE:102
     def putTypeOfConfirmToPost: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.putTypeOfConfirmToPost",
       """
@@ -275,7 +255,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:77
+    // @LINE:92
     def hashTagsListOnPost: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.hashTagsListOnPost",
       """
@@ -285,7 +265,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:102
+    // @LINE:117
     def addHashTag: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.addHashTag",
       """
@@ -295,7 +275,17 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:80
+    // @LINE:88
+    def editPost: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.OverFlowController.editPost",
+      """
+        function(id) {
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "overflow/post/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        }
+      """
+    )
+  
+    // @LINE:95
     def textOfPost: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.OverFlowController.textOfPost",
       """
@@ -307,7 +297,7 @@ package controllers.javascript {
   
   }
 
-  // @LINE:175
+  // @LINE:196
   class ReverseCompilationLibrariesController(_prefix: => String) {
 
     def _defaultPrefix: String = {
@@ -315,19 +305,9 @@ package controllers.javascript {
     }
 
   
-    // @LINE:242
-    def getLibraryGroupLibraries: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.getLibraryGroupLibraries",
-      """
-        function(libraryId,version) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup/libraries/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("libraryId", encodeURIComponent(libraryId)) + "/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("version", encodeURIComponent(version))})
-        }
-      """
-    )
-  
-    // @LINE:195
-    def updateProcessor: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.updateProcessor",
+    // @LINE:216
+    def update_Processor: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.update_Processor",
       """
         function(id) {
           return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
@@ -335,17 +315,27 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:196
-    def deleteProcessor: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.deleteProcessor",
+    // @LINE:277
+    def upload_SingleLibrary_Version: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.upload_SingleLibrary_Version",
       """
-        function(id) {
-          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        function(library_id,version_id) {
+          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/library/upload" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("library_id", library_id), (""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("version_id", version_id)])})
         }
       """
     )
   
-    // @LINE:208
+    // @LINE:230
+    def getBoardByFilter: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.getBoardByFilter",
+      """
+        function() {
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/board/filter"})
+        }
+      """
+    )
+  
+    // @LINE:228
     def newBoard: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.newBoard",
       """
@@ -355,67 +345,67 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:245
-    def uploudLibraryToLibraryGroup: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.uploudLibraryToLibraryGroup",
+    // @LINE:259
+    def get_LibraryGroup_Filter: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.get_LibraryGroup_Filter",
       """
-        function(libraryId,version) {
-          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup/upload/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("libraryId", encodeURIComponent(libraryId)) + "/" + (""" + implicitly[PathBindable[Double]].javascriptUnbind + """)("version", version)})
+        function() {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup/filter"})
         }
       """
     )
   
-    // @LINE:236
-    def getLibraryGroup: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.getLibraryGroup",
+    // @LINE:214
+    def get_Processor: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.get_Processor",
       """
         function(id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
-        }
-      """
-    )
-  
-    // @LINE:177
-    def gellAllProgramFromProject: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.gellAllProgramFromProject",
-      """
-        function(id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program/project/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
-        }
-      """
-    )
-  
-    // @LINE:255
-    def getSingleLibrary: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.getSingleLibrary",
-      """
-        function(id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/library/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
         }
       """
     )
   
     // @LINE:261
-    def uploadSingleLibrary: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.uploadSingleLibrary",
+    def get_LibraryGroup_Description: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.get_LibraryGroup_Description",
       """
-        function(id) {
-          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/library/uploud/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        function(libraryGroup_id) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup/generalDescription" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("libraryGroup_id", libraryGroup_id)])})
         }
       """
     )
   
-    // @LINE:219
-    def newProducers: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.newProducers",
+    // @LINE:215
+    def get_Processor_All: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.get_Processor_All",
       """
         function() {
-          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/producer"})
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor"})
         }
       """
     )
   
-    // @LINE:211
+    // @LINE:221
+    def disconnectProcessorWithLibrary: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.disconnectProcessorWithLibrary",
+      """
+        function(processor_id,library_id) {
+          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor/library/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("processor_id", encodeURIComponent(processor_id)) + "/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("library_id", encodeURIComponent(library_id))})
+        }
+      """
+    )
+  
+    // @LINE:264
+    def new_LibraryGroup_Version: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.new_LibraryGroup_Version",
+      """
+        function(version_id) {
+          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup/version" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("version_id", version_id)])})
+        }
+      """
+    )
+  
+    // @LINE:232
     def deactivateBoard: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.deactivateBoard",
       """
@@ -425,47 +415,17 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:182
-    def deleteCProgram: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.deleteCProgram",
+    // @LINE:213
+    def new_Processor: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.new_Processor",
       """
-        function(id) {
-          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        function() {
+          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor"})
         }
       """
     )
   
-    // @LINE:244
-    def getVersionLibraryGroup: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.getVersionLibraryGroup",
-      """
-        function(id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup/versions/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
-        }
-      """
-    )
-  
-    // @LINE:193
-    def getProcessor: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.getProcessor",
-      """
-        function(id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
-        }
-      """
-    )
-  
-    // @LINE:240
-    def getLibraryGroupDescription: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.getLibraryGroupDescription",
-      """
-        function(id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup/generalDescription/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
-        }
-      """
-    )
-  
-    // @LINE:231
+    // @LINE:252
     def getTypeOfBoardDescription: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getTypeOfBoardDescription",
       """
@@ -475,7 +435,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:232
+    // @LINE:253
     def getTypeOfBoardAllBoards: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getTypeOfBoardAllBoards",
       """
@@ -485,57 +445,37 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:251
-    def newSingleLibrary: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.newSingleLibrary",
-      """
-        function() {
-          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/library"})
-        }
-      """
-    )
-  
-    // @LINE:194
-    def getProcessorAll: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.getProcessorAll",
-      """
-        function() {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor"})
-        }
-      """
-    )
-  
-    // @LINE:252
-    def newVersionSingleLibrary: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.newVersionSingleLibrary",
-      """
-        function(id) {
-          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/library/version/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
-        }
-      """
-    )
-  
     // @LINE:203
-    def getProcessorDescription: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.getProcessorDescription",
+    def delete_C_Program: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.delete_C_Program",
+      """
+        function(c_program_id) {
+          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program/c_program" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("c_program_id", c_program_id)])})
+        }
+      """
+    )
+  
+    // @LINE:204
+    def delete_C_Program_Version: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.delete_C_Program_Version",
+      """
+        function(c_program_id,version_id) {
+          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program/version" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("c_program_id", c_program_id), (""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("version_id", version_id)])})
+        }
+      """
+    )
+  
+    // @LINE:208
+    def uploadBinaryFileToBoard: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.uploadBinaryFileToBoard",
       """
         function(id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor/description/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program/binary/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
         }
       """
     )
   
-    // @LINE:260
-    def uploadSingleLibraryWithVersion: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.uploadSingleLibraryWithVersion",
-      """
-        function(id,version) {
-          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/library/uploud/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id)) + "/" + (""" + implicitly[PathBindable[Double]].javascriptUnbind + """)("version", version)})
-        }
-      """
-    )
-  
-    // @LINE:209
+    // @LINE:229
     def addUserDescription: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.addUserDescription",
       """
@@ -545,27 +485,37 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:235
-    def newLibraryGroup: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.newLibraryGroup",
+    // @LINE:262
+    def get_LibraryGroup_Processors: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.get_LibraryGroup_Processors",
       """
-        function() {
-          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup"})
+        function(libraryGroup_id) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup/processors" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("libraryGroup_id", libraryGroup_id)])})
         }
       """
     )
   
-    // @LINE:248
+    // @LINE:281
     def fileRecord: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.fileRecord",
       """
         function(id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/library/fileRecord/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "file/fileRecord/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
         }
       """
     )
   
-    // @LINE:230
+    // @LINE:273
+    def get_SingleLibrary: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.get_SingleLibrary",
+      """
+        function(library_id) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/library" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("library_id", library_id)])})
+        }
+      """
+    )
+  
+    // @LINE:251
     def getTypeOfBoard: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getTypeOfBoard",
       """
@@ -575,27 +525,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:179
-    def updateCProgramDescription: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.updateCProgramDescription",
-      """
-        function(id) {
-          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program/update/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
-        }
-      """
-    )
-  
-    // @LINE:254
-    def getSingleLibraryFilter: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.getSingleLibraryFilter",
-      """
-        function() {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/library/filter"})
-        }
-      """
-    )
-  
-    // @LINE:210
+    // @LINE:231
     def getBoard: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getBoard",
       """
@@ -605,17 +535,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:259
-    def deleteSingleLibrary: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.deleteSingleLibrary",
-      """
-        function(id) {
-          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/library/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
-        }
-      """
-    )
-  
-    // @LINE:212
+    // @LINE:233
     def getUserDescription: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getUserDescription",
       """
@@ -625,7 +545,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:189
+    // @LINE:210
     def getBoardsFromProject: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getBoardsFromProject",
       """
@@ -635,17 +555,77 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:192
-    def newProcessor: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.newProcessor",
+    // @LINE:257
+    def get_LibraryGroup: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.get_LibraryGroup",
       """
-        function() {
-          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor"})
+        function(libraryGroup_id) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("libraryGroup_id", libraryGroup_id)])})
         }
       """
     )
   
-    // @LINE:205
+    // @LINE:256
+    def new_LibraryGroup: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.new_LibraryGroup",
+      """
+        function() {
+          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup"})
+        }
+      """
+    )
+  
+    // @LINE:272
+    def get_SingleLibrary_Filter: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.get_SingleLibrary_Filter",
+      """
+        function() {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/library/filter"})
+        }
+      """
+    )
+  
+    // @LINE:196
+    def create_C_Program: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.create_C_Program",
+      """
+        function(project_id) {
+          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("project_id", project_id)])})
+        }
+      """
+    )
+  
+    // @LINE:276
+    def delete_SingleLibrary: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.delete_SingleLibrary",
+      """
+        function(library_id) {
+          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/library" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("library_id", library_id)])})
+        }
+      """
+    )
+  
+    // @LINE:240
+    def new_Producers: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.new_Producers",
+      """
+        function() {
+          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/producer"})
+        }
+      """
+    )
+  
+    // @LINE:275
+    def edit_SingleLibrary: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.edit_SingleLibrary",
+      """
+        function(library_id) {
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/library" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("library_id", library_id)])})
+        }
+      """
+    )
+  
+    // @LINE:225
     def getProcessorSingleLibraries: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getProcessorSingleLibraries",
       """
@@ -655,7 +635,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:227
+    // @LINE:248
     def newTypeOfBoard: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.newTypeOfBoard",
       """
@@ -665,87 +645,107 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:175
-    def newCProgram: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.newCProgram",
+    // @LINE:260
+    def editLibraryGroup: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.editLibraryGroup",
+      """
+        function(libraryGroup_id) {
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("libraryGroup_id", libraryGroup_id)])})
+        }
+      """
+    )
+  
+    // @LINE:266
+    def upload_Library_To_LibraryGroup: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.upload_Library_To_LibraryGroup",
+      """
+        function(libraryGroup_id,version_id) {
+          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup/upload" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("libraryGroup_id", libraryGroup_id), (""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("version_id", version_id)])})
+        }
+      """
+    )
+  
+    // @LINE:271
+    def get_SingleLibrary_Versions: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.get_SingleLibrary_Versions",
+      """
+        function(library_id) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/library/versions" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("library_id", library_id)])})
+        }
+      """
+    )
+  
+    // @LINE:269
+    def new_SingleLibrary: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.new_SingleLibrary",
       """
         function() {
-          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program"})
+          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/library"})
         }
       """
     )
   
-    // @LINE:238
-    def getLibraryGroupAll: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.getLibraryGroupAll",
+    // @LINE:258
+    def delete_LibraryGroup: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.delete_LibraryGroup",
       """
-        function() {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup"})
+        function(libraryGroup_id) {
+          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("libraryGroup_id", libraryGroup_id)])})
         }
       """
     )
   
-    // @LINE:253
-    def getAllVersionSingleLibrary: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.getAllVersionSingleLibrary",
+    // @LINE:222
+    def disconnectProcessorWithLibraryGroup: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.disconnectProcessorWithLibraryGroup",
       """
-        function(id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/library/version/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        function(processor_id,library_id) {
+          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor/libraryGroup/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("processor_id", encodeURIComponent(processor_id)) + "/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("library_id", encodeURIComponent(library_id))})
         }
       """
     )
   
-    // @LINE:220
+    // @LINE:241
     def updateProducers: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.updateProducers",
       """
-        function(id) {
-          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/producer/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        function(producer_id) {
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/producer" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("producer_id", producer_id)])})
         }
       """
     )
   
-    // @LINE:180
-    def newVersionOfCProgram: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.newVersionOfCProgram",
+    // @LINE:207
+    def uploadCompilationToBoard: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.uploadCompilationToBoard",
       """
-        function(id) {
-          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program/newVersion/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        function(id,board) {
+          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program/upload/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id)) + "/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("board", encodeURIComponent(board))})
+        }
+      """
+    )
+  
+    // @LINE:219
+    def connectProcessorWithLibrary: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.connectProcessorWithLibrary",
+      """
+        function(processor_id,library_id) {
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor/library/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("processor_id", encodeURIComponent(processor_id)) + "/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("library_id", encodeURIComponent(library_id))})
         }
       """
     )
   
     // @LINE:200
-    def unconnectProcessorWithLibrary: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.unconnectProcessorWithLibrary",
+    def edit_C_Program_Description: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.edit_C_Program_Description",
       """
-        function(id,lbrId) {
-          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor/lbr/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id)) + "/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("lbrId", encodeURIComponent(lbrId))})
+        function(c_program_id) {
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program/edit" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("c_program_id", c_program_id)])})
         }
       """
     )
   
-    // @LINE:198
-    def connectProcessorWithLibrary: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.connectProcessorWithLibrary",
-      """
-        function(id,lbrId) {
-          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor/lbr/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id)) + "/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("lbrId", encodeURIComponent(lbrId))})
-        }
-      """
-    )
-  
-    // @LINE:243
-    def createNewVersionLibraryGroup: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.createNewVersionLibraryGroup",
-      """
-        function(id) {
-          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup/versions/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
-        }
-      """
-    )
-  
-    // @LINE:185
+    // @LINE:206
     def generateProjectForEclipse: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.generateProjectForEclipse",
       """
@@ -755,87 +755,77 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:186
-    def uploudCompilationToBoard: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.uploudCompilationToBoard",
-      """
-        function(id,board) {
-          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program/uploud/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id)) + "/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("board", encodeURIComponent(board))})
-        }
-      """
-    )
-  
-    // @LINE:224
+    // @LINE:245
     def getProducerTypeOfBoards: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getProducerTypeOfBoards",
       """
-        function(id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/producer/typeOfBoards/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        function(producer_id) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/producer/typeOfBoards" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("producer_id", producer_id)])})
         }
       """
     )
   
-    // @LINE:183
-    def deleteVersionOfCProgram: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.deleteVersionOfCProgram",
-      """
-        function(id,version) {
-          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id)) + "/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("version", encodeURIComponent(version))})
-        }
-      """
-    )
-  
-    // @LINE:239
-    def updateLibraryGroup: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.updateLibraryGroup",
-      """
-        function(id) {
-          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
-        }
-      """
-    )
-  
-    // @LINE:214
-    def unconnectBoardWthProject: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.unconnectBoardWthProject",
+    // @LINE:235
+    def disconnectBoardWthProject: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.disconnectBoardWthProject",
       """
         function(id,pr) {
-          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/board/unconnect/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id)) + "/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("pr", encodeURIComponent(pr))})
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/board/disconnect/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id)) + "/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("pr", encodeURIComponent(pr))})
         }
       """
     )
   
-    // @LINE:237
-    def deleteLibraryGroup: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.deleteLibraryGroup",
+    // @LINE:217
+    def delete_Processor: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.delete_Processor",
       """
         function(id) {
-          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
         }
       """
     )
   
-    // @LINE:199
+    // @LINE:265
+    def get_LibraryGroup_Version: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.get_LibraryGroup_Version",
+      """
+        function(version_id) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup/versions" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("version_id", version_id)])})
+        }
+      """
+    )
+  
+    // @LINE:263
+    def get_LibraryGroup_Libraries: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.get_LibraryGroup_Libraries",
+      """
+        function(libraryGroup_id,version_id) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup/libraries" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("libraryGroup_id", libraryGroup_id), (""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("version_id", version_id)])})
+        }
+      """
+    )
+  
+    // @LINE:197
+    def get_C_Program: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.get_C_Program",
+      """
+        function(c_program_id) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("c_program_id", c_program_id)])})
+        }
+      """
+    )
+  
+    // @LINE:220
     def connectProcessorWithLibraryGroup: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.connectProcessorWithLibraryGroup",
       """
-        function(id,lbrgId) {
-          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor/lbrgrp/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id)) + "/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("lbrgId", encodeURIComponent(lbrgId))})
+        function(processor_id,library_id) {
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor/libraryGroup/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("processor_id", encodeURIComponent(processor_id)) + "/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("library_id", encodeURIComponent(library_id))})
         }
       """
     )
   
-    // @LINE:187
-    def uploudBinaryFileToBoard: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.uploudBinaryFileToBoard",
-      """
-        function(id) {
-          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program/binary/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
-        }
-      """
-    )
-  
-    // @LINE:215
+    // @LINE:236
     def getBoardProjects: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getBoardProjects",
       """
@@ -845,57 +835,27 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:222
+    // @LINE:243
     def getProducer: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getProducer",
       """
-        function(id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/producer/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        function(producer_id) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/producer" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("producer_id", producer_id)])})
         }
       """
     )
   
-    // @LINE:241
-    def getLibraryGroupProcessors: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.getLibraryGroupProcessors",
+    // @LINE:198
+    def get_C_Program_All_from_Project: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.get_C_Program_All_from_Project",
       """
-        function(id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup/processors/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        function(project_id) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program/project" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("project_id", project_id)])})
         }
       """
     )
   
-    // @LINE:247
-    def listOfFilesInVersion: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.listOfFilesInVersion",
-      """
-        function(id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/library/listOfFiles/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
-        }
-      """
-    )
-  
-    // @LINE:221
-    def getProducers: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.getProducers",
-      """
-        function() {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/producer"})
-        }
-      """
-    )
-  
-    // @LINE:256
-    def getSingleLibraryAll: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.getSingleLibraryAll",
-      """
-        function() {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/library"})
-        }
-      """
-    )
-  
-    // @LINE:213
+    // @LINE:234
     def connectBoardWthProject: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.connectBoardWthProject",
       """
@@ -905,27 +865,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:201
-    def unconnectProcessorWithLibraryGroup: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.unconnectProcessorWithLibraryGroup",
-      """
-        function(id,lbrgId) {
-          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor/lbrgrp/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id)) + "/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("lbrgId", encodeURIComponent(lbrgId))})
-        }
-      """
-    )
-  
-    // @LINE:176
-    def getCProgram: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.getCProgram",
-      """
-        function(id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
-        }
-      """
-    )
-  
-    // @LINE:228
+    // @LINE:249
     def updateTypeOfBoard: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.updateTypeOfBoard",
       """
@@ -935,17 +875,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:258
-    def updateSingleLibrary: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.CompilationLibrariesController.updateSingleLibrary",
-      """
-        function(id) {
-          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/library/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
-        }
-      """
-    )
-  
-    // @LINE:204
+    // @LINE:224
     def getProcessorLibraryGroups: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getProcessorLibraryGroups",
       """
@@ -955,7 +885,27 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:229
+    // @LINE:280
+    def get_LibraryGroup_Version_Libraries: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.get_LibraryGroup_Version_Libraries",
+      """
+        function(id) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "file/listOfFiles/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        }
+      """
+    )
+  
+    // @LINE:201
+    def update_C_Program: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.update_C_Program",
+      """
+        function(c_program_id) {
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program/update" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("c_program_id", c_program_id)])})
+        }
+      """
+    )
+  
+    // @LINE:250
     def getTypeOfBoards: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getTypeOfBoards",
       """
@@ -965,12 +915,32 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:223
+    // @LINE:270
+    def new_SingleLibrary_Version: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.new_SingleLibrary_Version",
+      """
+        function(library_id) {
+          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/library/version" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("library_id", library_id)])})
+        }
+      """
+    )
+  
+    // @LINE:244
     def getProducerDescription: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getProducerDescription",
       """
-        function(id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/producer/description/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        function(producer_id) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/producer/description" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("producer_id", producer_id)])})
+        }
+      """
+    )
+  
+    // @LINE:242
+    def get_Producers: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.CompilationLibrariesController.get_Producers",
+      """
+        function() {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/producer"})
         }
       """
     )
@@ -985,7 +955,7 @@ package controllers.javascript {
     }
 
   
-    // @LINE:29
+    // @LINE:34
     def Twitter: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.SecurityController.Twitter",
       """
@@ -995,17 +965,17 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:28
+    // @LINE:33
     def Facebook: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.SecurityController.Facebook",
       """
-        function() {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "login/facebook"})
+        function(returnLink) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "login/facebook" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("returnLink", returnLink)])})
         }
       """
     )
   
-    // @LINE:35
+    // @LINE:40
     def GET_facebook_oauth: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.SecurityController.GET_facebook_oauth",
       """
@@ -1015,7 +985,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:36
+    // @LINE:41
     def GET_github_oauth: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.SecurityController.GET_github_oauth",
       """
@@ -1025,7 +995,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:31
+    // @LINE:36
     def Vkontakte: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.SecurityController.Vkontakte",
       """
@@ -1035,17 +1005,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:30
-    def GitHub: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.SecurityController.GitHub",
-      """
-        function() {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "login/github"})
-        }
-      """
-    )
-  
-    // @LINE:270
+    // @LINE:320
     def optionLink: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.SecurityController.optionLink",
       """
@@ -1055,7 +1015,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:26
+    // @LINE:31
     def logout: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.SecurityController.logout",
       """
@@ -1065,7 +1025,17 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:33
+    // @LINE:35
+    def GitHub: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.SecurityController.GitHub",
+      """
+        function(returnLink) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "login/github" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("returnLink", returnLink)])})
+        }
+      """
+    )
+  
+    // @LINE:38
     def getPersonByToken: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.SecurityController.getPersonByToken",
       """
@@ -1085,7 +1055,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:25
+    // @LINE:30
     def login: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.SecurityController.login",
       """
@@ -1097,7 +1067,7 @@ package controllers.javascript {
   
   }
 
-  // @LINE:58
+  // @LINE:44
   class ReversePermissionController(_prefix: => String) {
 
     def _defaultPrefix: String = {
@@ -1105,62 +1075,262 @@ package controllers.javascript {
     }
 
   
-    // @LINE:60
-    def createGroup: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.PermissionController.createGroup",
+    // @LINE:57
+    def get_Role_All: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.PermissionController.get_Role_All",
       """
         function() {
-          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "permission/group"})
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "secure/role/all"})
         }
       """
     )
   
-    // @LINE:62
-    def getAllPersonPermission: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.PermissionController.getAllPersonPermission",
+    // @LINE:45
+    def remove_Permission_Person: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.PermissionController.remove_Permission_Person",
       """
-        function() {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "permission/personPermission"})
+        function(person_id,permission_id) {
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "secure/permission/person/remove" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("person_id", person_id), (""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("permission_id", permission_id)])})
         }
       """
     )
   
-    // @LINE:63
-    def removeAllPersonPermission: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.PermissionController.removeAllPersonPermission",
+    // @LINE:53
+    def delete_Role: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.PermissionController.delete_Role",
       """
-        function() {
-          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "permission/personPermission"})
+        function(role_id) {
+          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "secure/role" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("role_id", role_id)])})
         }
       """
     )
   
-    // @LINE:64
-    def addAllPersonPermission: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.PermissionController.addAllPersonPermission",
+    // @LINE:44
+    def add_Permission_Person: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.PermissionController.add_Permission_Person",
       """
-        function() {
-          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "permission/personPermission"})
+        function(person_id,permission_id) {
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "secure/permission/person/add" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("person_id", person_id), (""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("permission_id", permission_id)])})
         }
       """
     )
   
-    // @LINE:58
-    def getAllPermissions: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.PermissionController.getAllPermissions",
+    // @LINE:52
+    def new_Role: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.PermissionController.new_Role",
       """
         function() {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "permission/permisionKeys"})
+          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "secure/role"})
         }
       """
     )
   
-    // @LINE:59
-    def getAllGroups: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.PermissionController.getAllGroups",
+    // @LINE:55
+    def add_Role_Person: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.PermissionController.add_Role_Person",
+      """
+        function(person_id,role_id) {
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "secure/role/person/add" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("person_id", person_id), (""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("role_id", role_id)])})
+        }
+      """
+    )
+  
+    // @LINE:50
+    def remove_Permission_from_Role: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.PermissionController.remove_Permission_from_Role",
+      """
+        function(permission_id,role_id) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "secure/role/permission/remove" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("permission_id", permission_id), (""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("role_id", role_id)])})
+        }
+      """
+    )
+  
+    // @LINE:48
+    def add_Permission_to_Role: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.PermissionController.add_Permission_to_Role",
+      """
+        function(permission_id,role_id) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "secure/role/permission/add" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("permission_id", permission_id), (""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("role_id", role_id)])})
+        }
+      """
+    )
+  
+    // @LINE:46
+    def get_Permission_All: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.PermissionController.get_Permission_All",
       """
         function() {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "permission/permisionGroups"})
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "secure/permission"})
+        }
+      """
+    )
+  
+    // @LINE:49
+    def get_Permission_in_Group: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.PermissionController.get_Permission_in_Group",
+      """
+        function(role_id) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "secure/role/permission" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("role_id", role_id)])})
+        }
+      """
+    )
+  
+    // @LINE:56
+    def remove_Role_Person: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.PermissionController.remove_Role_Person",
+      """
+        function(person_id,role_id) {
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "secure/role/person/remove" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("person_id", person_id), (""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("role_id", role_id)])})
+        }
+      """
+    )
+  
+  }
+
+  // @LINE:288
+  class ReverseGridController(_prefix: => String) {
+
+    def _defaultPrefix: String = {
+      if (_prefix.endsWith("/")) "" else "/"
+    }
+
+  
+    // @LINE:303
+    def get_Screen_Size_Type_PublicList: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.GridController.get_Screen_Size_Type_PublicList",
+      """
+        function() {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/screen_type/all"})
+        }
+      """
+    )
+  
+    // @LINE:297
+    def remove_M_Program_Screen: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.GridController.remove_M_Program_Screen",
+      """
+        function(id) {
+          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/m_program/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        }
+      """
+    )
+  
+    // @LINE:288
+    def new_M_Program: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.GridController.new_M_Program",
+      """
+        function() {
+          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/m_project"})
+        }
+      """
+    )
+  
+    // @LINE:295
+    def get_M_Program_Screen: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.GridController.get_M_Program_Screen",
+      """
+        function(id) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/m_program/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        }
+      """
+    )
+  
+    // @LINE:308
+    def remove_Screen_Size_Type: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.GridController.remove_Screen_Size_Type",
+      """
+        function(id) {
+          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/screen_type/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        }
+      """
+    )
+  
+    // @LINE:290
+    def edit_M_Program: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.GridController.edit_M_Program",
+      """
+        function(id) {
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/m_project/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        }
+      """
+    )
+  
+    // @LINE:296
+    def edit_M_Program_Screen: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.GridController.edit_M_Program_Screen",
+      """
+        function(id) {
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/m_program/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        }
+      """
+    )
+  
+    // @LINE:307
+    def edit_Screen_Size_Type: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.GridController.edit_Screen_Size_Type",
+      """
+        function(id) {
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/screen_type/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        }
+      """
+    )
+  
+    // @LINE:289
+    def get_M_Program: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.GridController.get_M_Program",
+      """
+        function(id) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/m_project/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        }
+      """
+    )
+  
+    // @LINE:294
+    def new_M_Program_Screen: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.GridController.new_M_Program_Screen",
+      """
+        function() {
+          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/m_program"})
+        }
+      """
+    )
+  
+    // @LINE:305
+    def get_Screen_Size_Type: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.GridController.get_Screen_Size_Type",
+      """
+        function(id) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/screen_type/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        }
+      """
+    )
+  
+    // @LINE:304
+    def get_Screen_Size_Type_Combination: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.GridController.get_Screen_Size_Type_Combination",
+      """
+        function(id) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/screen_type/all/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        }
+      """
+    )
+  
+    // @LINE:291
+    def remove_M_Program: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.GridController.remove_M_Program",
+      """
+        function(id) {
+          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/m_project/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        }
+      """
+    )
+  
+    // @LINE:301
+    def new_Screen_Size_Type: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.GridController.new_Screen_Size_Type",
+      """
+        function() {
+          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/screen_type"})
         }
       """
     )
@@ -1175,29 +1345,69 @@ package controllers.javascript {
     }
 
   
-    // @LINE:12
-    def test2: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.WikyController.test2",
+    // @LINE:11
+    def test1: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.WikyController.test1",
       """
-        function(fields) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "test2" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("fields", fields)])})
+        function() {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "test1"})
         }
       """
     )
   
-    // @LINE:11
-    def test: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.WikyController.test",
+    // @LINE:13
+    def test3: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.WikyController.test3",
       """
         function() {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "test"})
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "test3"})
+        }
+      """
+    )
+  
+    // @LINE:12
+    def test2: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.WikyController.test2",
+      """
+        function() {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "test2"})
+        }
+      """
+    )
+  
+    // @LINE:15
+    def test5: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.WikyController.test5",
+      """
+        function(projectId) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "test5" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("projectId", projectId)])})
+        }
+      """
+    )
+  
+    // @LINE:14
+    def test4: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.WikyController.test4",
+      """
+        function(projectId) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "test4" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("projectId", projectId)])})
+        }
+      """
+    )
+  
+    // @LINE:16
+    def test6: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.WikyController.test6",
+      """
+        function() {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "test6"})
         }
       """
     )
   
   }
 
-  // @LINE:44
+  // @LINE:66
   class ReversePersonCreateController(_prefix: => String) {
 
     def _defaultPrefix: String = {
@@ -1205,7 +1415,7 @@ package controllers.javascript {
     }
 
   
-    // @LINE:46
+    // @LINE:68
     def updatePersonInformation: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.PersonCreateController.updatePersonInformation",
       """
@@ -1215,7 +1425,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:49
+    // @LINE:71
     def deletePerson: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.PersonCreateController.deletePerson",
       """
@@ -1225,7 +1435,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:45
+    // @LINE:67
     def standartRegistration: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.PersonCreateController.standartRegistration",
       """
@@ -1235,7 +1445,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:51
+    // @LINE:73
     def emailPersonAuthentitaction: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.PersonCreateController.emailPersonAuthentitaction",
       """
@@ -1245,7 +1455,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:47
+    // @LINE:69
     def getPerson: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.PersonCreateController.getPerson",
       """
@@ -1255,7 +1465,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:44
+    // @LINE:66
     def developerRegistration: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.PersonCreateController.developerRegistration",
       """
@@ -1267,7 +1477,7 @@ package controllers.javascript {
   
   }
 
-  // @LINE:112
+  // @LINE:127
   class ReverseProgramingPackageController(_prefix: => String) {
 
     def _defaultPrefix: String = {
@@ -1275,7 +1485,17 @@ package controllers.javascript {
     }
 
   
-    // @LINE:164
+    // @LINE:172
+    def getBlockBlock: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.ProgramingPackageController.getBlockBlock",
+      """
+        function(id) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "project/blockoBlock/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        }
+      """
+    )
+  
+    // @LINE:176
     def allPrevVersions: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.allPrevVersions",
       """
@@ -1285,31 +1505,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:141
-    def getProgramInJson: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.ProgramingPackageController.getProgramInJson",
-      """
-        function(id) {
-        
-          if (true) {
-            return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "project/b_programInJson/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
-          }
-        
-        }
-      """
-    )
-  
-    // @LINE:166
-    def getByFilter: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.ProgramingPackageController.getByFilter",
-      """
-        function() {
-          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "project/blockoBlock/filter"})
-        }
-      """
-    )
-  
-    // @LINE:138
+    // @LINE:156
     def getProgram: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.getProgram",
       """
@@ -1319,7 +1515,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:112
+    // @LINE:127
     def postNewProject: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.postNewProject",
       """
@@ -1329,27 +1525,37 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:162
-    def getBlockLast: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.ProgramingPackageController.getBlockLast",
+    // @LINE:177
+    def deleteBlockVersion: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.ProgramingPackageController.deleteBlockVersion",
       """
         function(id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "project/blockoBlock/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "project/blockoBlock/version/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
         }
       """
     )
   
-    // @LINE:154
-    def newVersionOfBlock: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.ProgramingPackageController.newVersionOfBlock",
+    // @LINE:134
+    def getAll_b_Programs: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.ProgramingPackageController.getAll_b_Programs",
       """
         function(id) {
-          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "project/blockoBlock/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "project/project/b_programs/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
         }
       """
     )
   
-    // @LINE:115
+    // @LINE:159
+    def remove_b_Program: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.ProgramingPackageController.remove_b_Program",
+      """
+        function(id) {
+          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "project/b_program/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        }
+      """
+    )
+  
+    // @LINE:130
     def getProjectsByUserAccount: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.getProjectsByUserAccount",
       """
@@ -1359,17 +1565,17 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:159
-    def generalDescription: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.ProgramingPackageController.generalDescription",
+    // @LINE:183
+    def getAllTypeOfBlocks: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.ProgramingPackageController.getAllTypeOfBlocks",
       """
-        function(id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "project/blockoBlock/generalDescription/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        function() {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "project/typeOfBlock"})
         }
       """
     )
   
-    // @LINE:120
+    // @LINE:138
     def getProgramhomerList: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.getProgramhomerList",
       """
@@ -1379,17 +1585,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:156
-    def designJsonVersion: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.ProgramingPackageController.designJsonVersion",
-      """
-        function(id,version) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "project/blockoBlock/designJson/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id)) + "/" + (""" + implicitly[PathBindable[Double]].javascriptUnbind + """)("version", version)})
-        }
-      """
-    )
-  
-    // @LINE:149
+    // @LINE:166
     def getProjectsBoard: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.getProjectsBoard",
       """
@@ -1399,7 +1595,17 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:116
+    // @LINE:158
+    def update_b_program: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.ProgramingPackageController.update_b_program",
+      """
+        function(id) {
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "project/b_program/update/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        }
+      """
+    )
+  
+    // @LINE:131
     def deleteProject: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.deleteProject",
       """
@@ -1409,7 +1615,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:114
+    // @LINE:129
     def getProject: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.getProject",
       """
@@ -1419,7 +1625,17 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:146
+    // @LINE:184
+    def deleteTypeOfBlock: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.ProgramingPackageController.deleteTypeOfBlock",
+      """
+        function(id) {
+          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "project/typeOfBlock/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        }
+      """
+    )
+  
+    // @LINE:164
     def listOfUploadedHomers: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.listOfUploadedHomers",
       """
@@ -1429,7 +1645,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:127
+    // @LINE:145
     def getAllHomers: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.getAllHomers",
       """
@@ -1439,21 +1655,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:119
-    def getAllPrograms: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.ProgramingPackageController.getAllPrograms",
-      """
-        function(id) {
-        
-          if (true) {
-            return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "project/project/b_programs/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
-          }
-        
-        }
-      """
-    )
-  
-    // @LINE:139
+    // @LINE:157
     def editProgram: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.editProgram",
       """
@@ -1463,7 +1665,37 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:121
+    // @LINE:162
+    def uploadProgramToCloud: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.ProgramingPackageController.uploadProgramToCloud",
+      """
+        function(id,ver) {
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "project/b_program/uploadToCloud/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id)) + "/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("ver", encodeURIComponent(ver))})
+        }
+      """
+    )
+  
+    // @LINE:182
+    def editTypeOfBlock: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.ProgramingPackageController.editTypeOfBlock",
+      """
+        function(id) {
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "project/typeOfBlock/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        }
+      """
+    )
+  
+    // @LINE:173
+    def getBlockVersions: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.ProgramingPackageController.getBlockVersions",
+      """
+        function(id) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "project/blockoBlock/versions/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        }
+      """
+    )
+  
+    // @LINE:139
     def getProjectOwners: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.getProjectOwners",
       """
@@ -1473,7 +1705,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:153
+    // @LINE:169
     def newBlock: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.newBlock",
       """
@@ -1483,7 +1715,17 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:124
+    // @LINE:180
+    def newTypeOfBlock: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.ProgramingPackageController.newTypeOfBlock",
+      """
+        function() {
+          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "project/typeOfBlock"})
+        }
+      """
+    )
+  
+    // @LINE:142
     def newHomer: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.newHomer",
       """
@@ -1493,37 +1735,17 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:140
-    def removeProgram: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.ProgramingPackageController.removeProgram",
+    // @LINE:151
+    def disconnectHomerWithProject: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.ProgramingPackageController.disconnectHomerWithProject",
       """
-        function(id) {
-          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "project/b_program/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        function() {
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "project/disconnectHomerWithProject"})
         }
       """
     )
   
-    // @LINE:143
-    def uploadProgramToCloud: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.ProgramingPackageController.uploadProgramToCloud",
-      """
-        function(id) {
-          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "project/b_program/uploudToCloud/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
-        }
-      """
-    )
-  
-    // @LINE:157
-    def logicJsonLast: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.ProgramingPackageController.logicJsonLast",
-      """
-        function(id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "project/blockoBlock/logicJson/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
-        }
-      """
-    )
-  
-    // @LINE:128
+    // @LINE:146
     def getConnectedHomers: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.getConnectedHomers",
       """
@@ -1533,7 +1755,17 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:113
+    // @LINE:171
+    def editBlock: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.ProgramingPackageController.editBlock",
+      """
+        function(id) {
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "project/blockoBlock/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        }
+      """
+    )
+  
+    // @LINE:128
     def updateProject: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.updateProject",
       """
@@ -1543,7 +1775,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:125
+    // @LINE:143
     def removeHomer: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.removeHomer",
       """
@@ -1553,27 +1785,17 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:155
-    def logicJsonVersion: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.ProgramingPackageController.logicJsonVersion",
+    // @LINE:160
+    def getProgramInString: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.ProgramingPackageController.getProgramInString",
       """
-        function(id,version) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "project/blockoBlock/logicJson/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id)) + "/" + (""" + implicitly[PathBindable[Double]].javascriptUnbind + """)("version", version)})
+        function(id) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "project/b_programInJson/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
         }
       """
     )
   
-    // @LINE:161
-    def getBlockVersion: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.ProgramingPackageController.getBlockVersion",
-      """
-        function(id,version) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "project/blockoBlock/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id)) + "/" + (""" + implicitly[PathBindable[Double]].javascriptUnbind + """)("version", version)})
-        }
-      """
-    )
-  
-    // @LINE:126
+    // @LINE:144
     def getHomer: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.getHomer",
       """
@@ -1583,17 +1805,27 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:158
-    def designJsonLast: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.ProgramingPackageController.designJsonLast",
+    // @LINE:135
+    def getAll_c_Programs: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.ProgramingPackageController.getAll_c_Programs",
       """
         function(id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "project/blockoBlock/designJson/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "project/project/c_programs/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
         }
       """
     )
   
-    // @LINE:132
+    // @LINE:170
+    def updateOfBlock: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.ProgramingPackageController.updateOfBlock",
+      """
+        function(id) {
+          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "project/blockoBlock/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        }
+      """
+    )
+  
+    // @LINE:150
     def connectHomerWithProject: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.connectHomerWithProject",
       """
@@ -1603,17 +1835,47 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:165
-    def deleteBlock: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.ProgramingPackageController.deleteBlock",
+    // @LINE:155
+    def postNewBProgram: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.ProgramingPackageController.postNewBProgram",
       """
-        function(url) {
-          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "project/blockoBlock/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("url", url)})
+        function() {
+          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "project/b_program"})
         }
       """
     )
   
-    // @LINE:118
+    // @LINE:161
+    def uploadProgramToHomer_Immediately: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.ProgramingPackageController.uploadProgramToHomer_Immediately",
+      """
+        function(id,ver) {
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "project/b_program/upload/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id)) + "/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("ver", encodeURIComponent(ver))})
+        }
+      """
+    )
+  
+    // @LINE:178
+    def deleteBlock: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.ProgramingPackageController.deleteBlock",
+      """
+        function(id) {
+          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "project/blockoBlock/block/id" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("id", id)])})
+        }
+      """
+    )
+  
+    // @LINE:181
+    def getByCategory: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.ProgramingPackageController.getByCategory",
+      """
+        function() {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "project/typeOfBlock/filter"})
+        }
+      """
+    )
+  
+    // @LINE:133
     def unshareProjectWithUsers: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.unshareProjectWithUsers",
       """
@@ -1623,37 +1885,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:160
-    def versionDescription: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.ProgramingPackageController.versionDescription",
-      """
-        function(id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "project/blockoBlock/versionDescription/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
-        }
-      """
-    )
-  
-    // @LINE:137
-    def postNewProgram: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.ProgramingPackageController.postNewProgram",
-      """
-        function() {
-          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "project/b_program"})
-        }
-      """
-    )
-  
-    // @LINE:142
-    def uploadProgramToHomer_Immediately: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.ProgramingPackageController.uploadProgramToHomer_Immediately",
-      """
-        function() {
-          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "project/b_program/uploud"})
-        }
-      """
-    )
-  
-    // @LINE:117
+    // @LINE:132
     def shareProjectWithUsers: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.shareProjectWithUsers",
       """
@@ -1663,17 +1895,17 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:133
-    def unConnectHomerWithProject: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.ProgramingPackageController.unConnectHomerWithProject",
+    // @LINE:136
+    def getAll_m_Projects: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.ProgramingPackageController.getAll_m_Projects",
       """
-        function() {
-          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "project/unconnectHomerWithProject"})
+        function(id) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "project/project/m_projects/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
         }
       """
     )
   
-    // @LINE:147
+    // @LINE:165
     def listOfHomersWaitingForUpload: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ProgramingPackageController.listOfHomersWaitingForUpload",
       """
@@ -1685,7 +1917,7 @@ package controllers.javascript {
   
   }
 
-  // @LINE:15
+  // @LINE:21
   class ReverseWebSocketController_Incoming(_prefix: => String) {
 
     def _defaultPrefix: String = {
@@ -1693,7 +1925,7 @@ package controllers.javascript {
     }
 
   
-    // @LINE:18
+    // @LINE:24
     def getWebSocketStats: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.WebSocketController_Incoming.getWebSocketStats",
       """
@@ -1703,7 +1935,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:19
+    // @LINE:25
     def sendTo: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.WebSocketController_Incoming.sendTo",
       """
@@ -1713,7 +1945,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:16
+    // @LINE:22
     def mobile_connection: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.WebSocketController_Incoming.mobile_connection",
       """
@@ -1723,7 +1955,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:15
+    // @LINE:21
     def homer_connection: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.WebSocketController_Incoming.homer_connection",
       """

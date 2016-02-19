@@ -22,7 +22,7 @@ public class TypeOfBoard extends Model {
 
 
 
-    @JsonProperty public String description   (){return "http://localhost:9000/compilation/TypeOfBoard/generalDescription/"    +  this.id;}
+  // @JsonProperty public String description   (){return "http://localhost:9000/compilation/TypeOfBoard/generalDescription/"    +  this.id;}
     @JsonProperty public String libraryGroups (){return "http://localhost:9000/compilation/processor/libraryGroups/" +  this.id;}
     @JsonProperty public String libraries     (){return "http://localhost:9000/compilation/processor/files/" +  this.id;}
     @JsonProperty public String procesor      (){return "http://localhost:9000/compilation/processor/" +  this.id;}

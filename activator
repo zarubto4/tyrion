@@ -267,7 +267,7 @@ Usage: $script_name <command> [options]
   -mem <integer>     Set memory options (default: $sbt_mem, which is $(get_mem_opts $sbt_mem))
   -jvm-debug <port>  Turn on JVM debugging, open at the given port.
 
-  # java version (default: java from PATH, currently $(java -version 2>&1 | grep version))
+  # java versionObject (default: java from PATH, currently $(java -versionObject 2>&1 | grep versionObject))
   -java-home <path>  Alternate JAVA_HOME
 
   # jvm options and output control
@@ -309,8 +309,8 @@ declare -r activator_user_home_dir="${userhome}/.activator"
 declare -r java_opts_config_home="${activator_user_home_dir}/activatorconfig.txt"
 declare -r java_opts_config_version="${activator_user_home_dir}/${app_version}/activatorconfig.txt"
 
-# Now check to see if it's a good enough version
-declare -r java_version=$("$java_cmd" -version 2>&1 | awk -F '"' '/version/ {print $2}')
+# Now check to see if it's a good enough versionObject
+declare -r java_version=$("$java_cmd" -versionObject 2>&1 | awk -F '"' '/versionObject/ {print $2}')
 if [[ "$java_version" == "" ]]; then
   echo
   echo No java installations was detected.
@@ -320,8 +320,8 @@ if [[ "$java_version" == "" ]]; then
 elif [[ ! "$java_version" > "1.6" ]]; then
   echo
   echo The java installation you have is not up to date
-  echo Activator requires at least version 1.6+, you have
-  echo version $java_version
+  echo Activator requires at least versionObject 1.6+, you have
+  echo versionObject $java_version
   echo
   echo Please go to http://www.java.com/getjava/ and download
   echo a valid Java Runtime and install before running Activator.

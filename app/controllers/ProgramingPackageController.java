@@ -1,9 +1,14 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.blocko.*;
-import models.login.Person;
+import models.compiler.Version_Object;
+import models.persons.Person;
+import models.project.b_program.B_Program;
+import models.project.b_program.B_Program_Cloud;
+import models.project.global.Homer;
+import models.project.global.Project;
 import play.Configuration;
 import play.Logger;
 import play.libs.Json;
@@ -11,13 +16,13 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import utilities.a_main_utils.UtilTools;
 import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
 @Security.Authenticated(Secured.class)
@@ -38,7 +43,7 @@ public class ProgramingPackageController extends Controller {
             return GlobalResult.okResult( Json.toJson(project) );
 
         } catch (NullPointerException e) {
-            return GlobalResult.badRequest(e, "projectName - String", "projectDescription - TEXT");
+            return GlobalResult.nullPointerResult(e, "projectName - String", "projectDescription - TEXT");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - postNewProject ERROR");
@@ -69,7 +74,7 @@ public class ProgramingPackageController extends Controller {
 
 
 
-            if (    Project.find.where().eq("ownersOfProject.mail", SecurityController.getPerson().mail).eq("projectId", id).findUnique() == null ) return GlobalResult.forbidden();
+            if (    Project.find.where().eq("ownersOfProject.mail", SecurityController.getPerson().mail).eq("projectId", id).findUnique() == null ) return GlobalResult.forbidden_Global();
 
             return GlobalResult.okResult(Json.toJson(project));
 
@@ -86,7 +91,7 @@ public class ProgramingPackageController extends Controller {
             Project project = Project.find.byId(id);
             if (project == null) return GlobalResult.notFoundObject();
 
-            if (!project.ownersOfProject.contains( SecurityController.getPerson() ) ) return GlobalResult.forbidden();
+            if (!project.ownersOfProject.contains( SecurityController.getPerson() ) ) return GlobalResult.forbidden_Global();
 
             project.delete();
 
@@ -107,7 +112,7 @@ public class ProgramingPackageController extends Controller {
             Project project = Project.find.byId(id);
             if (project == null) return GlobalResult.notFoundObject();
 
-            if (!project.ownersOfProject.contains( SecurityController.getPerson() ) ) return GlobalResult.forbidden();
+            if (!project.ownersOfProject.contains( SecurityController.getPerson() ) ) return GlobalResult.forbidden_Global();
 
             project.projectName = json.get("projectName").asText();
             project.projectDescription = json.get("projectDescription").asText();
@@ -116,7 +121,7 @@ public class ProgramingPackageController extends Controller {
             return GlobalResult.okResult(Json.toJson(project));
 
         } catch (NullPointerException e) {
-            return GlobalResult.badRequest(e, "projectName - String", "projectDescription - TEXT");
+            return GlobalResult.nullPointerResult(e, "projectName - String", "projectDescription - TEXT");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - updateProject ERROR");
@@ -156,7 +161,7 @@ public class ProgramingPackageController extends Controller {
             for (final JsonNode objNode : json.get("persons")) {
 
                 Person person = Person.find.byId(objNode.asText());
-                if(person == null) return GlobalResult.badRequest("User " + objNode.asText() + " not exist");
+                if(person == null) return GlobalResult.nullPointerResult("User " + objNode.asText() + " not exist");
                 persons.add(person);
             }
 
@@ -174,7 +179,7 @@ public class ProgramingPackageController extends Controller {
             return GlobalResult.okResult(Json.toJson(project));
 
         } catch (NullPointerException e) {
-            return GlobalResult.badRequest(e, "persons - [ids]");
+            return GlobalResult.nullPointerResult(e, "persons - [ids]");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - shareProjectWithUsers ERROR");
@@ -199,7 +204,7 @@ public class ProgramingPackageController extends Controller {
 
                 Person person = Person.find.byId(objNode.asText());
 
-                if(person == null) return GlobalResult.badRequest("User " + objNode.asText() + " not exist");
+                if(person == null) return GlobalResult.nullPointerResult("User " + objNode.asText() + " not exist");
 
                 persons.add(person);
             }
@@ -218,7 +223,7 @@ public class ProgramingPackageController extends Controller {
             return GlobalResult.okResult(Json.toJson(project));
 
         } catch (NullPointerException e) {
-            return GlobalResult.badRequest(e, "persons - [ids]");
+            return GlobalResult.nullPointerResult(e, "persons - [ids]");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - unshareProjectWithUsers ERROR");
@@ -259,7 +264,7 @@ public class ProgramingPackageController extends Controller {
             return GlobalResult.okResult(Json.toJson(homer));
 
         } catch (NullPointerException e) {
-            return GlobalResult.badRequest(e, "homerId - String", "typeOfDevice - String");
+            return GlobalResult.nullPointerResult(e, "homerId - String", "typeOfDevice - String");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - newHomer ERROR");
@@ -350,7 +355,7 @@ public class ProgramingPackageController extends Controller {
 
             return GlobalResult.okResult(Json.toJson(project));
         } catch (NullPointerException e) {
-            return GlobalResult.badRequest(e, "homerId - String", "projectId - String");
+            return GlobalResult.nullPointerResult(e, "homerId - String", "projectId - String");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - connectHomerWithProject ERROR");
@@ -359,7 +364,7 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-    public  Result unConnectHomerWithProject(){
+    public  Result disconnectHomerWithProject(){
         try{
             JsonNode json = request().body().asJson();
 
@@ -378,7 +383,7 @@ public class ProgramingPackageController extends Controller {
 
             return GlobalResult.okResult(Json.toJson(project));
         } catch (NullPointerException e) {
-            return GlobalResult.badRequest(e, "homerId - String", "projectId - String");
+            return GlobalResult.nullPointerResult(e, "homerId - String", "projectId - String");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - unConnectHomerWithProject ERROR");
@@ -389,34 +394,33 @@ public class ProgramingPackageController extends Controller {
 /// ###################################################################################################################*/
 
     @BodyParser.Of(BodyParser.Json.class)
-    public  Result postNewProgram(){
+    public  Result postNewBProgram(){
         try{
             JsonNode json = request().body().asJson();
 
-
+            // Ověřím program
             Project project = Project.find.byId(json.get("projectId").asText());
             if (project == null) return GlobalResult.notFoundObject();
 
-            B_Program program = new B_Program();
 
-            program.programInString = json.get("program").toString();
+            // Tvorba programu
+            B_Program b_program             = new B_Program();
+            b_program.azurePackageLink      = "personal-program";
+            b_program.dateOfCreate          = new Date();
+            b_program.programDescription    = json.get("programDescription").asText();
+            b_program.programName           = json.get("programName").asText();
+            b_program.project               = project;
+            b_program.setUniqueAzureStorageLink();
 
-            program.dateOfCreate = new Date();
-            program.programDescription = json.get("programDescription").asText();
-            program.programName = json.get("programName").asText();
 
-            program.save();
+            b_program.save();
 
-            program.project = project;
-            program.update();
-
-            return GlobalResult.okResult(Json.toJson(program));
-
+            return GlobalResult.okResult(Json.toJson(b_program));
         } catch (NullPointerException e) {
-            return GlobalResult.badRequest(e, "homerId - String", "projectId - String");
+            return GlobalResult.nullPointerResult("Some value in Json missing");
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - postNewProgram ERROR");
+            Logger.error("ProgramingPackageController - postNewBProgram ERROR");
             Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
@@ -436,14 +440,14 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-    public  Result getProgramInJson(String id){
+    public  Result getProgramInString(String version_id){
         try{
+            Version_Object versionObject  = Version_Object.find.byId(version_id);
+            if (versionObject == null) return GlobalResult.notFoundObject();
 
-            B_Program program  = B_Program.find.byId(id);
-            if (program == null) return GlobalResult.notFoundObject();
+            String text = versionObject.files.get(0).get_fileRecord_from_Azure_inString();
 
-
-            return GlobalResult.okResult( Json.parse(program.programInString));
+            return GlobalResult.okResult( Json.parse(text) );
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - getProgramInJson ERROR");
@@ -474,18 +478,14 @@ public class ProgramingPackageController extends Controller {
             B_Program program  = B_Program.find.byId(id);
             if (program == null) return GlobalResult.notFoundObject();
 
-
-            program.programInString = json.get("program").asText();
-            program.dateOfCreate = new Date();
             program.programDescription = json.get("programDescription").asText();
             program.programName = json.get("programName").asText();
 
             program.update();
-
             return GlobalResult.okResult(Json.toJson(program));
 
         } catch (NullPointerException e) {
-            return GlobalResult.badRequest(e, "programName - String", "programDescription - TEXT", "program - TEXT" );
+            return GlobalResult.nullPointerResult(e, "programName - String", "programDescription - TEXT");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - editProgram ERROR");
@@ -494,7 +494,49 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-    public  Result removeProgram(String id){
+    @BodyParser.Of(BodyParser.Json.class)
+    public  Result update_b_program(String id){
+        try{
+            JsonNode json = request().body().asJson();
+
+            // Program který budu ukládat do data Storage v Azure
+            String file_content =  json.get("program").toString();
+
+            // Ověřím program
+            B_Program b_program = B_Program.find.byId(id);
+            if (b_program == null) return GlobalResult.notFoundObject();
+
+            // První nová Verze
+            Version_Object versionObjectObject      = new Version_Object();
+            versionObjectObject.version_name = json.get("version_name").asText();
+            versionObjectObject.versionDescription  = json.get("version_description").asText();
+
+            if(b_program.versionObjects.isEmpty() ) versionObjectObject.azureLinkVersion = 1;
+            else versionObjectObject.azureLinkVersion    = ++b_program.versionObjects.get(0).azureLinkVersion; // Zvednu verzi o jednu
+
+             versionObjectObject.dateOfCreate        = new Date();
+            versionObjectObject.b_program           = b_program;
+            versionObjectObject.save();
+
+            b_program.versionObjects.add(versionObjectObject);
+            b_program.update();
+
+            // Nahraje do Azure a připojí do verze soubor (lze dělat i cyklem - ale název souboru musí být vždy jiný)
+            UtilTools.uploadAzure_Version("b-program", file_content, "b-program-file", b_program.azureStorageLink, b_program.azurePackageLink, versionObjectObject);
+
+            return GlobalResult.okResult(Json.toJson(b_program));
+
+        } catch (NullPointerException e) {
+            return GlobalResult.nullPointerResult(e, "programName - String", "programDescription - TEXT");
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - editProgram ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
+        }
+    }
+
+    public  Result remove_b_Program(String id){
         try{
 
             B_Program program  = B_Program.find.byId(id);
@@ -512,15 +554,42 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-    public  Result getAllPrograms(String id){
+    public  Result getAll_b_Programs(String id){
         try {
 
             Project project = Project.find.byId(id);
             if(project == null) return GlobalResult.notFoundObject();
 
-           JsonNode json = new ObjectMapper().valueToTree(project.b_programs);
+            return GlobalResult.okResult(Json.toJson( project.b_programs));
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - removeProgram ERROR");
+            return GlobalResult.internalServerError();
+        }
+    }
 
-            return GlobalResult.okResult(json);
+    public  Result getAll_c_Programs(String id){
+        try {
+
+            Project project = Project.find.byId(id);
+            if(project == null) return GlobalResult.notFoundObject();
+
+            return GlobalResult.okResult(Json.toJson( project.c_programs));
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - removeProgram ERROR");
+            return GlobalResult.internalServerError();
+        }
+    }
+
+    public  Result getAll_m_Projects(String id){
+        try {
+
+            Project project = Project.find.byId(id);
+            if(project == null) return GlobalResult.notFoundObject();
+
+
+            return GlobalResult.okResult(Json.toJson( project.m_projects));
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - removeProgram ERROR");
@@ -529,32 +598,21 @@ public class ProgramingPackageController extends Controller {
     }
 
     @BodyParser.Of(BodyParser.Json.class)
-    public  Result uploadProgramToHomer_Immediately(){
+    public  Result uploadProgramToHomer_Immediately(String homerId, String version_id){
         try {
             JsonNode json = request().body().asJson();
 
             Homer homer = Homer.find.byId(json.get("homerId").asText());
             if (homer == null) return GlobalResult.notFoundObject();
 
-            B_Program program = B_Program.find.byId(json.get("programId").asText());
-            if (program == null) return GlobalResult.notFoundObject();
-
-            Project project = homer.project;
+            Version_Object versionObject  = Version_Object.find.byId(version_id);
+            if (versionObject == null) return GlobalResult.notFoundObject();
 
 
-            if (!project.projectId.equals(program.project.projectId)) GlobalResult.forbidden("Program is not from the same project!");
-            if(!WebSocketController_Incoming.isConnected(homer))           GlobalResult.forbidden("Homer is not connected");
+           String b_program_in_String = versionObject.files.get(0).get_fileRecord_from_Azure_inString();
+           // TODO nahrát tento string na homera - inspirace nahrátí do cloudu
 
-            homer.sendProgramToHomer(program, null, null);
-
-
-            B_Program_Homer program_homer = new B_Program_Homer();
-            program_homer.b_program = program;
-            program_homer.homer = homer;
-            program_homer.save();
-
-
-            return GlobalResult.okResult("Program was uploud To Homer succesfuly and started");
+            return GlobalResult.okResult("Program was upload To Homer succesfuly and started");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - uploadProgramToHomer_Immediately ERROR");
@@ -563,148 +621,58 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-
-
-    /*
-    @BodyParser.Of(BodyParser.Json.class)
-    public  Result uploadProgramToHomer_AsSoonAsPossible(){
-        try {
-            JsonNode json = request().body().asJson();
-
-            Homer homer = Homer.find.byId(json.get("homerId").asText());
-            if (homer == null) return GlobalResult.notFoundObject();
-
-            B_Program program = B_Program.find.byId(json.get("programId").asText());
-            if (program == null) return GlobalResult.notFoundObject();
-
-            Project project = homer.project;
-
-            if (!project.projectId.equals(program.project.projectId)) GlobalResult.forbidden("Program is not from the same project!");
-
-            //1 Pokud je zařízení přopojené, nahraji okamžitě
-            Date until = UtilTools.returnDateFromMillis( json.get("until").asText());
-            if(WebSocketController_Incoming.isConnected(homer))   homer.sendProgramToHomer(program, null, until);
-
-            //2 Pokud není, vytvářím meziobjekt - Mezi Holder
-            ForUploadProgram forUploadProgram = new ForUploadProgram();
-            forUploadProgram.homer = homer;
-            forUploadProgram.program = program;
-            forUploadProgram.untilDate =  UtilTools.returnDateFromMillis( json.get("until").asText());
-            forUploadProgram.save();
-
-            return GlobalResult.okResult("Homer " + homer.homerId + " is not online. When Homer logs to Cloud Server, Program " + program.programId + " will be upload");
-
-
-        } catch (NullPointerException e) {
-            return GlobalResult.badRequest(e, "homerId - String","programId - String");
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - uploadProgramToHomer_Immediately ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
-        }
-    }*/
-
-    /*
-    @BodyParser.Of(BodyParser.Json.class)
-    public  Result uploadProgramToHomer_GivenTimeAsSoonAsPossible(){
-        try {
-            JsonNode json = request().body().asJson();
-
-            Homer homer = Homer.find.byId(json.get("homerId").asText());
-            if (homer == null) return GlobalResult.notFoundObject();
-
-            B_Program program = B_Program.find.byId(json.get("programId").asText());
-            if (program == null) return GlobalResult.notFoundObject();
-
-            Project project = homer.project;
-
-            if (!project.projectId.equals(program.project.projectId)) GlobalResult.forbidden("Program is not from the same project!");
-
-            Date when = UtilTools.returnDateFromMillis( json.get("when").asText());
-            Date until = UtilTools.returnDateFromMillis( json.get("until").asText());
-
-            //1 Pokud je zařízení přopojené, nahraji okamžitě
-            if(WebSocketController_Incoming.isConnected(homer))  homer.sendProgramToHomer(program, when, until);
-
-            //2 Pokud ne -
-            ForUploadProgram forUploadProgram = new ForUploadProgram();
-            forUploadProgram.homer = homer;
-            forUploadProgram.program = program;
-            forUploadProgram.untilDate =  until;
-            forUploadProgram.whenDate =  when;
-            forUploadProgram.save();
-
-            return GlobalResult.okResult("Program was uploud succesfuly ");
-        } catch (NullPointerException e) {
-            return GlobalResult.badRequest(e, "homerId - String","programId - String");
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - uploadProgramToHomer_GivenTimeAsSoonAsPossible ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
-        }
-    }*/
-
-    /*
-    @BodyParser.Of(BodyParser.Json.class)
-    public  Result uploadProgramToHomer(){
-        try {
-            JsonNode json = request().body().asJson();
-
-            if( UtilTools.returnIntFromString( json.get("when").asText() ) < 0 ) return uploadProgramToHomer_Immediately();
-            if( UtilTools.returnIntFromString( json.get("when").asText() ) == 0 ) return uploadProgramToHomer_AsSoonAsPossible();
-            else return uploadProgramToHomer_GivenTimeAsSoonAsPossible();
-        } catch (NullPointerException e) {
-            return GlobalResult.badRequest(e, "when - String");
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - removeProgram ERROR");
-            return GlobalResult.internalServerError();
-        }
-    }*/
-
-    public  Result uploadProgramToCloud(String id){
+    public  Result uploadProgramToCloud(String program_id, String version_id){
         try {
 
-
-            B_Program b_program = B_Program.find.byId(id);
+            // B program, který chci nahrát do Cloudu na Blocko server
+            B_Program b_program = B_Program.find.byId(program_id);
             if (b_program == null) return GlobalResult.notFoundObject();
 
-            B_Program_Cloud program_cloud = new B_Program_Cloud();
+            // Verze B programu kterou budu nahrávat do cloudu
+            Version_Object version_object = Version_Object.find.byId(version_id);
+            if (version_object == null) return GlobalResult.notFoundObject();
 
-            program_cloud.b_program = b_program;
-            program_cloud.running_from = new Date();
+            // Pokud už nějaká instance běžela, tak jí zabiju a z databáze odstraním vazbu na běžící instanci b programu
+            if( b_program.b_program_cloud != null ) {
 
-           //   // Pokud je Blocko server připojený a websocket je propojený pak...
+               WebSocketController_OutComing.blockoServerKillInstance(b_program.b_program_cloud.blocko_server_name,  b_program.b_program_cloud.blocko_instance_name);
 
-           // TODO na exception
-          //  if( WebSocketController_OutComing.servers.containsKey( Configuration.root().getString("Servers.blocko.server1.name")) && WebSocketController_OutComing.servers.get(Configuration.root().getString("Servers.blocko.server1.name") ).session.isOpen()) {
+               B_Program_Cloud b_program_cloud = b_program.b_program_cloud;
+               b_program_cloud.delete();
+            }
 
+            // Vytvářím nový záznam v databázi pro běžící instanci b programu na blocko serveru
+            B_Program_Cloud program_cloud       = new B_Program_Cloud();
+            program_cloud.b_program             = b_program;
+            program_cloud.running_from          = new Date();
+            program_cloud.version_object        = version_object;
+            program_cloud.blocko_server_name    = Configuration.root().getString("Servers.blocko.server1.name");
+            program_cloud.setUnique_blocko_instance_name();
 
-             program_cloud.blocko_server_name = Configuration.root().getString("Servers.blocko.server1.name");
-             program_cloud.blocko_instance_name = UUID.randomUUID().toString();
+            // if(WebSocketController_OutComing.servers.containsKey( Configuration.root().getString("Servers.blocko.server1.name")) && WebSocketController_OutComing.servers.get(Configuration.root().getString("Servers.blocko.server1.name") ).session.isOpen()) {
 
-             WebSocketController_OutComing.blockoServerCreateInstance( program_cloud.blocko_server_name,  program_cloud.blocko_instance_name);
+            // Vytvářím instanci na serveru
+            WebSocketController_OutComing.blockoServerCreateInstance( program_cloud.blocko_server_name,  program_cloud.blocko_instance_name);
 
-             WebSocketController_OutComing.blockoServerUploadProgram(program_cloud.blocko_server_name, program_cloud.blocko_instance_name, program_cloud.b_program.programInString);
+            // Nahrávám do instance program
+            WebSocketController_OutComing.blockoServerUploadProgram(  program_cloud.blocko_server_name,  program_cloud.blocko_instance_name, program_cloud.version_object.files.get(0).get_fileRecord_from_Azure_inString());
 
+            // Ukládám po úspěšné nastartvoání programu v cloudu jeho databázový ekvivalent
+            program_cloud.save();
 
             return GlobalResult.okResult();
-
         } catch (NullPointerException a) {
-            return GlobalResult.badRequest("Server není nastartován");
+            return GlobalResult.nullPointerResult("Server není nastartován");
          } catch (TimeoutException a) {
-            return GlobalResult.badRequest("Nepodařilo se včas nahrát na server");
+            return GlobalResult.nullPointerResult("Nepodařilo se včas nahrát na server");
          } catch (InterruptedException a) {
-            return GlobalResult.badRequest("Vlákno nahrávání bylo přerušeno ");
+            return GlobalResult.nullPointerResult("Vlákno nahrávání bylo přerušeno ");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - removeProgram ERROR");
             return GlobalResult.internalServerError();
         }
     }
-
 
     //TODO
     public Result listOfUploadedHomers(String id) {
@@ -718,7 +686,75 @@ public class ProgramingPackageController extends Controller {
         return GlobalResult.ok("Nutné dodělat - listOfHomersWaitingForUpload");
     }
 
+///###################################################################################################################*/
 
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result newTypeOfBlock(){
+        try{
+            JsonNode json = request().body().asJson();
+
+            TypeOfBlock typeOfBlock = new TypeOfBlock();
+            typeOfBlock.generalDescription  = json.get("generalDescription").asText();
+            typeOfBlock.name                = json.get("name").asText();
+
+            typeOfBlock.save();
+
+            return GlobalResult.created( Json.toJson(typeOfBlock));
+        } catch (NullPointerException e) {
+            return GlobalResult.nullPointerResult(e, "name - String", "generalDescription - TEXT");
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            return GlobalResult.internalServerError();
+        }
+    }
+
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result editTypeOfBlock(String id){
+        try{
+            JsonNode json = request().body().asJson();
+
+            TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(id);
+            if(typeOfBlock == null) return GlobalResult.notFoundObject();
+
+            typeOfBlock.generalDescription  = json.get("generalDescription").asText();
+            typeOfBlock.name                = json.get("name").asText();
+
+            typeOfBlock.update();
+
+            return GlobalResult.update( Json.toJson(typeOfBlock));
+        } catch (NullPointerException e) {
+            return GlobalResult.nullPointerResult(e, "name - String", "generalDescription - TEXT");
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            return GlobalResult.internalServerError();
+        }
+    }
+
+    public Result deleteTypeOfBlock(String id){
+        try{
+
+            TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(id);
+            if(typeOfBlock == null) return GlobalResult.notFoundObject();
+
+            typeOfBlock.delete();
+
+            return GlobalResult.okResult();
+
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            return GlobalResult.internalServerError();
+        }
+    }
+
+    public Result getAllTypeOfBlocks(){
+        try {
+            List<TypeOfBlock> typeOfBlocks = TypeOfBlock.find.all();
+            return GlobalResult.okResult(Json.toJson(typeOfBlocks));
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            return GlobalResult.internalServerError();
+        }
+    }
 ///###################################################################################################################*/
 
     @BodyParser.Of(BodyParser.Json.class)
@@ -726,31 +762,23 @@ public class ProgramingPackageController extends Controller {
        try{
             JsonNode json = request().body().asJson();
 
+
             BlockoBlock blockoBlock = new BlockoBlock();
-            blockoBlock.generalDescription = json.get("description").asText();
-            blockoBlock.name        = json.get("name").asText();
-            blockoBlock.author = SecurityController.getPerson();
+            blockoBlock.generalDescription  = json.get("generalDescription").asText();
+            blockoBlock.name                = json.get("name").asText();
+            blockoBlock.author              = SecurityController.getPerson();
 
 
-            BlockoContentBlock contentBlock = new BlockoContentBlock();
-            contentBlock.dateOfCreate = new Date();
-            contentBlock.designJson   = json.findValue("designJson").toString();
-            contentBlock.logicJson    = json.findValue("logicJson").toString();
-            contentBlock.version  = 1.01;
+           TypeOfBlock typeOfBlock = TypeOfBlock.find.byId( json.get("typeOfBlockId").asText());
+           if(typeOfBlock == null) return GlobalResult.notFoundObject();
 
-            contentBlock.save();
-            blockoBlock.save();
-
-
-            contentBlock.blockoBlock  = blockoBlock;
-            blockoBlock.contentBlocks.add(contentBlock);
-
-            contentBlock.update();
+           blockoBlock.typeOfBlock = typeOfBlock;
+           blockoBlock.save();
 
 
             return GlobalResult.okResult( Json.toJson(blockoBlock) );
        } catch (NullPointerException e) {
-           return GlobalResult.badRequest(e, "name - String", "designJson - TEXT", "logicJson - TEXT", "description - TEXT");
+           return GlobalResult.nullPointerResult(e, "name - String", "generalDescription - TEXT", "typeOfBlockId - String");
        } catch (Exception e) {
            Logger.error("Error", e);
            Logger.error("ProgramingPackageController - newBlock ERROR");
@@ -758,12 +786,27 @@ public class ProgramingPackageController extends Controller {
        }
     }
 
-    public Result getBlockLast(String id){
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result editBlock(String id){
         try {
+            JsonNode json = request().body().asJson();
+
                 BlockoBlock blockoBlock = BlockoBlock.find.byId(id);
                 if (blockoBlock == null) return GlobalResult.notFoundObject();
 
-                return GlobalResult.ok(Json.toJson(blockoBlock));
+                blockoBlock.generalDescription  = json.get("generalDescription").asText();
+                blockoBlock.name                = json.get("name").asText();
+
+                TypeOfBlock typeOfBlock = TypeOfBlock.find.byId( json.get("typeOfBlockId").asText());
+                if(typeOfBlock == null) return GlobalResult.notFoundObject();
+
+                blockoBlock.typeOfBlock = typeOfBlock;
+
+                blockoBlock.update();
+
+                return GlobalResult.okResult(Json.toJson(blockoBlock));
+        } catch (NullPointerException e) {
+            return GlobalResult.nullPointerResult(e, "name - String", "versionDescription - TEXT", "typeOfBlockId - String");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - getBlockLast ERROR");
@@ -772,16 +815,12 @@ public class ProgramingPackageController extends Controller {
 
     }
 
-    public Result getBlockVersion(String id, Double version){
+    public Result getBlockVersions(String id){
         try {
-
-                BlockoContentBlock block = BlockoContentBlock.find.where().in("blockoBlock.id", id).where().in("version", version).findUnique();
-                if (block == null) return GlobalResult.notFoundObject();
-
                 BlockoBlock blockoBlock = BlockoBlock.find.byId(id);
-                blockoBlock.setVersion(version);
+                if(blockoBlock == null) return GlobalResult.notFoundObject();
 
-                return GlobalResult.ok(Json.toJson(blockoBlock));
+                return GlobalResult.okResult(Json.toJson(blockoBlock.contentBlocks));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -791,64 +830,75 @@ public class ProgramingPackageController extends Controller {
 
     }
 
-    public Result getByFilter(){
-        // Přijmu v JSON nový blok
-        return null;
+    public Result getBlockBlock(String id){
+        try {
+            BlockoBlock blockoBlock = BlockoBlock.find.byId(id);
+            if(blockoBlock == null) return GlobalResult.notFoundObject();
+
+            return GlobalResult.okResult(Json.toJson(blockoBlock));
+
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - getBlockVersion ERROR");
+            return GlobalResult.internalServerError();
+        }
+
     }
 
-    //TODO
-    public Result deleteBlock(String url){
-        String[] parts = url.split("/");
 
-        if (parts.length > 2)
-            return GlobalResult.badRequest(new Exception("URL " + url + " contains more substrings than one"));
+    public Result getByCategory(){
+
+        try {
+
+            ObjectNode result = Json.newObject();
+            List<TypeOfBlock> typeOfBlocks = TypeOfBlock.find.all();
+
+            for (TypeOfBlock typeOfBlock : typeOfBlocks) {
+
+                ObjectNode blocks = Json.newObject();
+
+                blocks.set("typeOfBlock", Json.toJson(typeOfBlock));
+                blocks.set("Blocks", Json.toJson(typeOfBlock.blockoBlocks));
+
+                result.set(typeOfBlock.name, blocks);
+
+            }
+
+            return GlobalResult.okResult(result);
+
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - getBlockLast ERROR");
+            return GlobalResult.internalServerError();
+        }
 
 
-        if (parts.length > 1) {
-            BlockoContentBlock block = BlockoContentBlock.find
-                    .where().in("blockoBlock.id", parts[0])
-                    .eq("version", Double.valueOf(parts[1]))
-                    .findUnique();
-            block.delete();
-            return GlobalResult.ok();
+    }
 
-        } else {
-            BlockoBlock block = BlockoBlock.find.byId(parts[0]);
-            block.delete();
-            return GlobalResult.ok();
+    public Result deleteBlock(String id){
+        try {
+            BlockoBlock blockoBlock = BlockoBlock.find.byId(id);
+            if(blockoBlock == null) return GlobalResult.notFoundObject();
+            blockoBlock.delete();
+
+            return GlobalResult.okResult();
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - shareProjectWithUsers ERROR");
+            return GlobalResult.internalServerError();
         }
     }
 
-    public Result newVersionOfBlock(String id){
+    public Result deleteBlockVersion(String id){
         try {
-            JsonNode json = request().body().asJson();
-            BlockoBlock blockoBlock = BlockoBlock.find.byId(id);
 
-            BlockoContentBlock contentBlock = new BlockoContentBlock();
-            contentBlock.dateOfCreate = new Date();
-            contentBlock.designJson = json.findValue("designJson").toString();
-            contentBlock.logicJson = json.findValue("logicJson").toString();
+            BlockoContentBlock blockoContentBlock = BlockoContentBlock.find.byId(id);
+            if(blockoContentBlock == null) return GlobalResult.notFoundObject();
 
-            BlockoContentBlock block = BlockoContentBlock.find
-                    .where().in("blockoBlock.id", id)
-                    .orderBy("version").setMaxRows(1).findUnique();
-
-            if (json.hasNonNull("version")) {
-                Double newVersion = json.get("version").asDouble();
-                Double previousVersion = block.version;
-
-                if (newVersion < previousVersion)
-                    return GlobalResult.badRequest(new Exception("A new version " + newVersion + " should have a greater number than the previous " + previousVersion));
-                contentBlock.version = newVersion;
-            } else contentBlock.version = block.version + 0.01;
-
-            contentBlock.blockoBlock = blockoBlock;
-
-            contentBlock.save();
-            blockoBlock.contentBlocks.add(contentBlock);
-            blockoBlock.update();
+            blockoContentBlock.delete();
 
             return GlobalResult.okResult();
+
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - shareProjectWithUsers ERROR");
@@ -857,82 +907,30 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-
-    public Result designJsonVersion(String id, Double version){
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result updateOfBlock(String id){
         try {
+            JsonNode json = request().body().asJson();
+            BlockoBlock blockoBlock = BlockoBlock.find.byId(id);
 
-             BlockoContentBlock block = BlockoContentBlock.find
-                        .where().in("blockoBlock.id", id)
-                        .eq("version", version)
-                        .findUnique();
+            BlockoContentBlock contentBlock = new BlockoContentBlock();
+            contentBlock.dateOfCreate = new Date();
 
-            if(block == null) return GlobalResult.notFoundObject();
+            contentBlock.versionName = json.findValue("version_name").asText();
+            contentBlock.versionDescription = json.findValue("versionDescription").asText();
+            contentBlock.designJson = json.findValue("designJson").toString();
+            contentBlock.logicJson = json.findValue("logicJson").toString();
+            contentBlock.blockoBlock = blockoBlock;
+            contentBlock.save();
 
-            return GlobalResult.ok(Json.toJson(block.designJson));
+            //blockoBlock.contentBlocks.add(contentBlock);
+            return GlobalResult.okResult(Json.toJson(blockoBlock));
 
+        } catch (NullPointerException e) {
+            return GlobalResult.nullPointerResult(e, "version_name - String", "versionDescription - TEXT", "designJson - TEXT", "logicJson - TEXT");
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - designJsonDouble ERROR");
-            return GlobalResult.internalServerError();
-        }
-    }
-
-    public Result logicJsonVersion(String id, Double version){
-        try {
-
-            BlockoContentBlock block = BlockoContentBlock.find
-                    .where().in("blockoBlock.id", id)
-                    .eq("version", version)
-                    .findUnique();
-
-            if(block == null) return GlobalResult.notFoundObject();
-
-            return GlobalResult.ok(Json.toJson(block.logicJson));
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - logicJson ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
-        }
-    }
-
-    public Result designJsonLast(String id){
-        try {
-
-            BlockoContentBlock block = BlockoContentBlock.find
-                        .where().in("blockoBlock.id", id)
-                        .orderBy("dateOfCreate").where()
-                        .setMaxRows(1)
-                        .findUnique();
-
-            if(block == null) return GlobalResult.notFoundObject();
-
-            return GlobalResult.ok(Json.toJson(block.designJson));
-
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - logicJson ERROR");
-            return GlobalResult.internalServerError();
-        }
-    }
-
-
-    public Result logicJsonLast(String id){
-        try {
-
-            BlockoContentBlock block = BlockoContentBlock.find
-                    .where().in("blockoBlock.id", id)
-                    .orderBy("dateOfCreate").where()
-                    .setMaxRows(1)
-                    .findUnique();
-
-            if(block == null) return GlobalResult.notFoundObject();
-
-            return GlobalResult.ok(Json.toJson(block.logicJson));
-
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - logicJson ERROR");
+            Logger.error("ProgramingPackageController - shareProjectWithUsers ERROR");
             Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
@@ -978,5 +976,6 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
+///###################################################################################################################*/
 
 }

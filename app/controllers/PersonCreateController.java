@@ -1,8 +1,8 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import models.login.Person;
-import models.login.ValidationToken;
+import models.persons.Person;
+import models.persons.ValidationToken;
 import play.Configuration;
 import play.Logger;
 import play.api.libs.mailer.MailerClient;
@@ -12,8 +12,8 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.loginEntities.Secured;
 import utilities.emails.EmailTool;
+import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
 
 import javax.inject.Inject;
@@ -32,17 +32,19 @@ public class PersonCreateController extends Controller {
 
             Person person = new Person();
             person.mail = json.get("mail").asText();
-            //person.password = json.get("password").asText();
             person.emailValidated = true;
 
-            if (Person.find.byId(json.get("mail").asText()) != null) return GlobalResult.badRequest("Email Exist");
+
+
+
+            if (Person.find.byId(json.get("mail").asText()) != null) return GlobalResult.nullPointerResult("Email Exist");
 
             person.setSha(json.get("password").asText());
             person.save();
 
             return GlobalResult.okResult();
         } catch (NullPointerException e) {
-            return GlobalResult.badRequest(e, "mail - String",  "password - String");
+            return GlobalResult.nullPointerResult(e, "mail - String",  "password - String");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("PersonCreateController - updatePersonInformation ERROR");
@@ -63,8 +65,8 @@ public class PersonCreateController extends Controller {
             person.emailValidated = false;
             //person.password = json.get("password").asText();
 
-            if (Person.find.where().eq("mail",json.get("mail").asText()).findUnique() != null) return GlobalResult.badRequest("Email is used");
-            if (Person.find.where().eq("nickName",json.get("nickName").asText()).findUnique() != null) return GlobalResult.badRequest("Nickname is used");
+            if (Person.find.where().eq("mail",json.get("mail").asText()).findUnique() != null) return GlobalResult.nullPointerResult("Email is used");
+            if (Person.find.where().eq("nickName",json.get("nickName").asText()).findUnique() != null) return GlobalResult.nullPointerResult("Nickname is used");
 
 
             person.setSha(json.get("password").asText());
@@ -176,7 +178,7 @@ public class PersonCreateController extends Controller {
             return GlobalResult.okResult();
 
         } catch (NullPointerException e) {
-            return GlobalResult.badRequest(e, "nickName - String",  "firstName - String",  "middleName - String",  "lastName - String",  "dateOfBirth - String",  "firstTitle - String", "lastTitle - String");
+            return GlobalResult.nullPointerResult(e, "nickName - String",  "firstName - String",  "middleName - String",  "lastName - String",  "dateOfBirth - String",  "firstTitle - String", "lastTitle - String");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("PersonCreateController - updatePersonInformation ERROR");

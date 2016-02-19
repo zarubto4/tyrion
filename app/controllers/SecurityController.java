@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.scribejava.core.model.*;
 import com.github.scribejava.core.oauth.OAuthService;
-import models.login.LinkedAccount;
-import models.login.Person;
+import models.persons.LinkedAccount;
+import models.persons.Person;
 import play.Configuration;
 import play.Logger;
 import play.libs.F;
@@ -28,15 +28,16 @@ import java.util.Set;
 
 public class SecurityController extends Controller {
 
-    public final static String AUTH_TOKEN_HEADER = "X-AUTH-TOKEN";
-    public final static String AUTH_TOKEN = "authToken";
-
     public Result index() {
-        return ok("Version 1.4 is alive!");
+        return ok("Version_Object 1.4 is alive!");
     }
 
     public static Person getPerson() {
         return (Person) Http.Context.current().args.get("person");
+    }
+
+    public static Person getPerson(Http.Context context) {
+        return (Person) context.current().args.get("person");
     }
 
 
@@ -46,10 +47,10 @@ public class SecurityController extends Controller {
             JsonNode json = request().body().asJson();
 
             Person person = Person.findByEmailAddressAndPassword(json.get("email").asText(), json.get("password").asText());
-            if (person == null) return GlobalResult.forbidden("Email or password are wrong");
+            if (person == null) return GlobalResult.forbidden_Global("Email or password are wrong");
 
 
-            if (!person.emailValidated) return GlobalResult.forbidden("Account is not authorized");
+            if (!person.emailValidated) return GlobalResult.forbidden_Global("Account is not authorized");
 
             String authToken = person.createToken();
 
@@ -57,12 +58,11 @@ public class SecurityController extends Controller {
             result.replace("person", Json.toJson(person));
             result.put("authToken", authToken);
 
-            response().setCookie(AUTH_TOKEN, authToken);
 
             return GlobalResult.okResult(result);
 
         } catch (NullPointerException e) {
-            return GlobalResult.badRequest(e, "email - String", "password - String");
+            return GlobalResult.nullPointerResult(e, "email - String", "password - String");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("SecurityController - login ERROR");
@@ -78,13 +78,12 @@ public class SecurityController extends Controller {
             String token = request().getHeader("X-AUTH-TOKEN");
 
             Person person = Person.findByAuthToken(token);
-            if(person == null) return GlobalResult.forbidden("Account is not authorized");
+            if(person == null) return GlobalResult.forbidden_Global("Account is not authorized");
 
             ObjectNode result = Json.newObject();
             result.replace("person", Json.toJson(person));
             result.put("authToken", token);
 
-            response().setCookie(AUTH_TOKEN, token);
 
             return GlobalResult.okResult(result);
 
@@ -99,7 +98,7 @@ public class SecurityController extends Controller {
     public Result logout() {
         try {
 
-            response().discardCookie(AUTH_TOKEN);
+            // response().discardCookie("authToken");
             getPerson().deleteAuthToken();
 
             return GlobalResult.okResult();
@@ -174,7 +173,7 @@ public class SecurityController extends Controller {
                     usedAccount.authToken = linkedAccount.authToken;
                     linkedAccount.delete();
                     usedAccount.update();
-                    return redirect(Configuration.root().getString("Becki.redirectOk"));
+                    return redirect(linkedAccount.returnUrl);
 
                 }
 
@@ -215,7 +214,7 @@ public class SecurityController extends Controller {
                         linkedAccount.person = person;
                         linkedAccount.update();
 
-                        return redirect(Configuration.root().getString("Becki.redirectOk"));
+                        return redirect(linkedAccount.returnUrl);
 
 
                 }
@@ -241,7 +240,7 @@ public class SecurityController extends Controller {
             String code = "";
             String state = "";
 
-            // Z důvodů nemožnosti nastavit tandartně matici query v hlavičce metody v routes (když se to povede vrací to jiné
+            // Z důvodů nemožnosti nastavit standartně matici query v hlavičce metody v routes (když se to povede vrací to jiné
             // parametry než když se to nepovede - bylo nutné přistoupit k trochu hloupému řešení, které však funguje za všech předpokladů
             final Set<Map.Entry<String,String[]>> entries = request().queryString().entrySet();
             for (Map.Entry<String,String[]> entry : entries) {
@@ -305,7 +304,7 @@ public class SecurityController extends Controller {
                 usedAccount.update();
                 usedAccount.person.setToken(usedAccount.authToken);
                 usedAccount.person.update();
-                return redirect(Configuration.root().getString("Becki.redirectOk"));
+                return redirect(linkedAccount.returnUrl);
 
            }
 
@@ -350,7 +349,7 @@ public class SecurityController extends Controller {
                         linkedAccount.person = person;
                         linkedAccount.update();
 
-                        return redirect(Configuration.root().getString("Becki.redirectOk"));
+                        return redirect(linkedAccount.returnUrl);
 
 
            }
@@ -364,31 +363,15 @@ public class SecurityController extends Controller {
         }
     }
 
-   // oauth_callback?error=access_denied&error_code=200&error_description=Permissions+error&error_reason=user_denied&state=dug676fvv1u3r4juod9icpf3ve' [Missing parameter: code]
-
-    public Result GET_facebook_oauth_Error(String error, String error_code, String error_description, String state, String error_reason){
-        try{
-
-
-
-            return  redirect(Configuration.root().getString("Becki.redirectFail"));
-
-        }catch (Exception e){
-            Logger.error("Error", e);
-            Logger.error("SecurityController - GET_facebook_oauth_Error ERROR");
-            return GlobalResult.internalServerError();
-        }
-
-
-
-    }
-
 
 //###### Socilání sítě - a generátory přístupů ########################################################################*/
 
-    public Result GitHub(){
+    public Result GitHub(String returnLink){
         try {
             LinkedAccount linkedAccount = LinkedAccount.setProviderKey("GitHub");
+
+            linkedAccount.returnUrl = returnLink;
+            linkedAccount.update();
 
             OAuthService service = Socials.GitHub(linkedAccount.providerKey);
 
@@ -396,8 +379,6 @@ public class SecurityController extends Controller {
             result.put("type", "GitHub");
             result.put("url", service.getAuthorizationUrl(null));
             result.put("authToken", linkedAccount.authToken);
-
-
 
             return GlobalResult.okResult(result);
 
@@ -408,9 +389,12 @@ public class SecurityController extends Controller {
         }
     }
 
-    public Result Facebook(){
+    public Result Facebook(String returnLink){
         try {
             LinkedAccount linkedAccount = LinkedAccount.setProviderKey("Facebook");
+
+            linkedAccount.returnUrl = returnLink;
+            linkedAccount.update();
 
             OAuthService service = Socials.Facebook(linkedAccount.providerKey);
 
@@ -420,9 +404,8 @@ public class SecurityController extends Controller {
             result.put("url", service.getAuthorizationUrl(null));
             result.put("authToken", linkedAccount.authToken);
 
-
-
             return GlobalResult.okResult(result);
+
         }catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("SecurityController - facebook ERROR");
