@@ -599,12 +599,46 @@ public class GridController extends play.mvc.Controller {
 
 //######################################################################################################################
 
-
+    @ApiOperation(value = "create ScreenType",
+            tags = {"Screen_Size_Type"},
+            notes = "Create type of screen - its used for describe Grid dimensions for regular users - (Iphone 5, Samsung Galaxy S3 etc..). " +
+                    "Its also possible create private Screen for Personal/Enterprises projects if you add to json parameter { \"project_id\" : \"{1576}\"} " +
+                    "If json not contain project_id - you need Permission For that!!",
+            produces = "application/json",
+            protocols = "https",
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "Only if you want create personal ScreenType"),
+                                       @AuthorizationScope(scope = "SuperAdmin", description = "Or person must be SuperAdmin role")
+                            }
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_ScreeSizeType_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successful created", response = Screen_Size_Type.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @BodyParser.Of(BodyParser.Json.class)
     public Result new_Screen_Size_Type(){
         try {
-            JsonNode json = request().body().asJson();
 
+            // TODO Chybí ochrana před ukládáním nesmyslů jako mínusové velikosti + nezapomenout zdokumentovat v objektu Swagger_ScreeSizeType_New
+
+            JsonNode json = request().body().asJson();
             Screen_Size_Type screen_size_type = new Screen_Size_Type();
             screen_size_type.name = json.get("name").asText();
             screen_size_type.height = json.get("height").asInt();
@@ -634,6 +668,35 @@ public class GridController extends play.mvc.Controller {
         }
     }
 
+    @ApiOperation(value = "get ScreenType",
+            tags = {"Screen_Size_Type"},
+            notes = "get ScreenType. If you want get private ScreenType you have to owned that. Public are without permissions",
+            produces = "application/json",
+            protocols = "https",
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "Only if you want get personal ScreenType you have to be project owner")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_ScreeSizeType_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successful created", response = Screen_Size_Type.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     public Result get_Screen_Size_Type(String id){
         try {
             Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId(id);

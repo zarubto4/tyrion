@@ -1,6 +1,8 @@
 package utilities.swagger.documentationClass;
 
+import io.swagger.annotations.ApiModelProperty;
+
 public class Swagger_LibraryGroup_New {
-    public String description;
-    public String group_name;
+    @ApiModelProperty(required = true) public String description;
+    @ApiModelProperty(required = true) public String group_name;
 }
