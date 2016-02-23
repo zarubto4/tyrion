@@ -60,7 +60,7 @@ create table blocko_content_block (
 
 create table board (
   id                        varchar(255) not null,
-  user_description          TEXT,
+  personal_description      TEXT,
   type_of_board_id          varchar(255),
   is_active                 boolean,
   constraint pk_board primary key (id))
@@ -142,7 +142,7 @@ create table m_program (
   width_lock                boolean,
   date_of_create            timestamp,
   last_update               timestamp,
-  token                     varchar(255),
+  qr_token                  varchar(255),
   m_project_id              varchar(255),
   screen_size_type_id       varchar(255),
   constraint pk_m_program primary key (id))
@@ -168,7 +168,7 @@ create table person (
   last_title                varchar(255),
   date_of_birth             timestamp,
   auth_token                varchar(255),
-  email_validated           boolean,
+  mail_validated            boolean,
   sha_password              bytea,
   constraint uq_person_mail unique (mail),
   constraint uq_person_nick_name unique (nick_name),

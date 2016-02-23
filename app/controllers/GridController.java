@@ -2,10 +2,12 @@ package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.swagger.annotations.*;
+import models.grid.Screen_Size_Type;
+import models.persons.Person;
 import models.project.global.Project;
 import models.project.m_program.M_Program;
 import models.project.m_program.M_Project;
-import models.grid.Screen_Size_Type;
 import play.Logger;
 import play.libs.Json;
 import play.mvc.BodyParser;
@@ -13,20 +15,65 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
+import utilities.response.response_objects.JsonValueMissing;
+import utilities.response.response_objects.Result_PermissionRequired;
+import utilities.response.response_objects.Result_Unauthorized;
+import utilities.response.response_objects.Result_ok;
+import utilities.swagger.documentationClass.Swagger_M_Program_ByToken;
 
+import javax.websocket.server.PathParam;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+
+@Api(value = "GridController - nezdokumentované",
+        description = "Compilation operation (Role, Permission and permissions operations",
+        authorizations = { @Authorization(value="logged_in", scopes = {} )}
+)
 @Security.Authenticated(Secured.class)
 public class GridController extends play.mvc.Controller {
 
+    @ApiOperation(value = "Create new M_Project",
+            tags = {"M_Program"},
+            notes = "M_Project is box for M_Programs -> presupposition is that you need more control terminal for your IoT project. " +
+                    "Different screens for family members, for employes etc.. But of course - you can used that for only one M_program",
+            produces = "application/json",
+            response =  M_Project.class,
+            protocols = "https",
+            code = 201,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "Person need this value of permission")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_M_Project_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successful created",      response = M_Project.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+   // @Dynamic("project.owner")
     @BodyParser.Of(BodyParser.Json.class)
-    public Result new_M_Program() {
+    public Result new_M_Project(String project_id) {
         try{
             JsonNode json = request().body().asJson();
 
-            Project project = Project.find.byId( json.get("project_id").asText() );
+            Project project = Project.find.byId( project_id );
             if(project == null) return GlobalResult.notFoundObject();
 
             M_Project m_project = new M_Project();
@@ -40,7 +87,7 @@ public class GridController extends play.mvc.Controller {
             return GlobalResult.created( Json.toJson(m_project));
 
         } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "project_id - String", "program_name - String", "program_description - TEXT");
+            return GlobalResult.nullPointerResult(e, "program_name - String", "program_description - TEXT");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - postNewProject ERROR");
@@ -49,9 +96,29 @@ public class GridController extends play.mvc.Controller {
         }
     }
 
-    public Result get_M_Program(String id){
+    @ApiOperation(value = "get M_Project",
+            tags = {"M_Program"},
+            notes = "get M_Project by query = m_project_id",
+            produces = "application/json",
+            response =  M_Project.class,
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "Person need this value of permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response = M_Project.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result get_M_Project(@ApiParam(value = "m_project_id String query", required = true) @PathParam("m_project_id") String m_project_id){
         try {
-            M_Project m_project = M_Project.find.byId(id);
+            M_Project m_project = M_Project.find.byId(m_project_id);
             if (m_project == null) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(m_project));
@@ -63,12 +130,43 @@ public class GridController extends play.mvc.Controller {
         }
     }
 
+    @ApiOperation(value = "edit M_Project",
+            tags = {"M_Program"},
+            notes = "edit basic information in M_Project by query = m_project_id",
+            produces = "application/json",
+            response =  M_Project.class,
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "Person need this value of permission")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_M_Project_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response = M_Project.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_M_Program(String id){
+    public Result edit_M_Project(@ApiParam(value = "m_project_id String query", required = true) @PathParam("m_project_id") String m_project_id){
         try{
             JsonNode json = request().body().asJson();
 
-            M_Project m_project = M_Project.find.byId(id);
+            M_Project m_project = M_Project.find.byId(m_project_id);
             if(m_project == null) return GlobalResult.notFoundObject();
 
             m_project.program_description = json.get("program_description").asText();
@@ -87,9 +185,29 @@ public class GridController extends play.mvc.Controller {
         }
     }
 
-    public Result remove_M_Program(String id){
+    @ApiOperation(value = "remove M_Project",
+            tags = {"M_Program"},
+            notes = "remove M_Project by query = m_project_id",
+            produces = "application/json",
+            response =  Result_ok.class,
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "Person need this value of permission")}
+                    )
+            }
+    )
+     @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response = Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result remove_M_Project(@ApiParam(value = "m_project_id String query", required = true) @PathParam("m_project_id") String m_project_id){
         try{
-            M_Project m_project = M_Project.find.byId(id);
+            M_Project m_project = M_Project.find.byId(m_project_id);
             if(m_project == null) return GlobalResult.notFoundObject();
 
             m_project.delete();
@@ -106,12 +224,31 @@ public class GridController extends play.mvc.Controller {
         }
     }
 
-    public Result getAll_M_Program_fromProject(String id){
+    @ApiOperation(value = "get all M_Project by General Project",
+            tags = {"M_Program", "Project"},
+            notes = "get List<M_Project> by query = project_id",
+            produces = "application/json",
+            response =  M_Project.class,
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "Person need this value of permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response = M_Project.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result get_M_Projects_from_GlobalProject(String project_id){
         try {
-            Project project = Project.find.byId(id);
-            if (project == null) return GlobalResult.notFoundObject();
 
-            return GlobalResult.okResult(Json.toJson(project.m_projects));
+            List<M_Project> m_projects = M_Project.find.where().eq("project.projectId", project_id).findList();
+            return GlobalResult.okResult(Json.toJson(m_projects));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -120,10 +257,81 @@ public class GridController extends play.mvc.Controller {
         }
     }
 
+    @ApiOperation(value = "get all M_Project by Logged Person",
+            tags = {"M_Program", "APP-Api"},
+            notes = "get List<M_Project> by logged person ->that's required valid token in html head",
+            produces = "application/json",
+            response =  M_Project.class,
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "Person need this value of permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response = M_Project.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result get_M_Projects_ByLoggedPerson(){
+        try{
+
+            Person person = SecurityController.getPerson();
+            List<M_Project> m_projects = M_Project.find.where().eq("project.ownersOfProject.id", person.id).findList();
+
+            return GlobalResult.okResult(Json.toJson(m_projects));
+
+        }catch (Exception e){
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - get_Screen_Size_Type ERROR");
+            return GlobalResult.internalServerError();
+        }
+
+    }
+
+
 //######################################################################################################################
 
+
+
+    @ApiOperation(value = "Create new M_Program",
+            tags = {"M_Program"},
+            notes = "creating new M_Program",
+            produces = "application/json",
+            response =  M_Program.class,
+            protocols = "https",
+            code = 201,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "Person need this value of permission")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_M_Project_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successful created",      response = M_Program.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result new_M_Program_Screen() {
+    public Result new_M_Program() {
         try {
             JsonNode json = request().body().asJson();
 
@@ -137,15 +345,15 @@ public class GridController extends play.mvc.Controller {
             m_program_.date_of_create      = new Date();
             m_program_.program_description = json.get("program_description").asText();
             m_program_.program_name        = json.get("program_name").asText();
-            m_program_.m_project = m_project;
-            m_program_.programInString     = json.get("m_code").asText();
+            m_program_.m_project           = m_project;
+            m_program_.programInString     = json.get("m_code").toString();
             m_program_.screen_size_type    = screen_size_type;
             m_program_.height_lock         = json.get("height_lock").asBoolean();
             m_program_.width_lock          = json.get("width_lock").asBoolean();
 
             while(true){ // I need Unique Value
-                m_program_.token  = UUID.randomUUID().toString();
-                if (M_Program.find.where().eq("token", m_program_.token).findUnique() == null) break;
+                m_program_.qr_token  = UUID.randomUUID().toString();
+                if (M_Program.find.where().eq("qr_token", m_program_.qr_token).findUnique() == null) break;
             }
 
             m_program_.save();
@@ -165,9 +373,64 @@ public class GridController extends play.mvc.Controller {
 
     }
 
-    public Result get_M_Program_Screen(String id) {
+    @ApiOperation(value = "get M_Program by generated token",
+            tags = {"M_Program", "APP-Api"},
+            notes = "get M_Program by token - it will return only native M_Program code",
+            produces = "application/json",
+            response =  Swagger_M_Program_ByToken.class,
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response = Swagger_M_Program_ByToken.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result get_M_Program_byQR_Token_forMobile(@ApiParam(value = "qr_token String query", required = true) @PathParam("qr_token") String qr_token){
+       try{
+
+           System.out.println("příchozí token " + qr_token );
+
+           M_Program m_program = M_Program.find.where().eq("qr_token", qr_token).findUnique();
+           if(m_program == null) return GlobalResult.notFoundObject();
+
+           Swagger_M_Program_ByToken program = new Swagger_M_Program_ByToken();
+           program.program = m_program.programInString;
+
+           return GlobalResult.okResult(Json.toJson(program));
+
+       }catch (Exception e){
+           Logger.error("Error", e);
+           Logger.error("ProgramingPackageController - postNewProject ERROR");
+           return GlobalResult.internalServerError();
+       }
+    }
+
+
+    @ApiOperation(value = "get M_Program",
+            tags = {"M_Program"},
+            notes = "get M_Program by quarry m_program_id",
+            produces = "application/json",
+            response =  M_Project.class,
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "Person need this value of permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response = M_Project.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result get_M_Program(@ApiParam(value = "m_program_id String query", required = true) @PathParam("m_program_id") String m_program_id) {
         try {
-            M_Program m_program_ = M_Program.find.byId(id);
+            M_Program m_program_ = M_Program.find.byId(m_program_id);
             if (m_program_ == null) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(m_program_));
@@ -178,15 +441,37 @@ public class GridController extends play.mvc.Controller {
         }
     }
 
+
+    @ApiOperation(value = "update M_Program",
+            tags = {"M_Program", "APP-Api"},
+            notes = "update m_program - in this case we are not support versions of m_program",
+            produces = "application/json",
+            response =  M_Project.class,
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "Person need this value of permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response = M_Project.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_M_Program_Screen(String id){
+    public Result edit_M_Program(@ApiParam(value = "m_program_id String query", required = true) @PathParam("m_program_id") String m_program_id){
         try {
+
             JsonNode json = request().body().asJson();
 
             Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId(json.get("screen_type_id").asText());
             if(screen_size_type == null) return GlobalResult.notFoundObject();
 
-            M_Program m_program_ = M_Program.find.byId(id);
+            M_Program m_program_ = M_Program.find.byId(m_program_id);
             m_program_.program_description = json.get("program_description").asText();
             m_program_.program_name        = json.get("program_name").asText();
             m_program_.programInString     = json.get("m_code").asText();
@@ -211,9 +496,29 @@ public class GridController extends play.mvc.Controller {
         }
     }
 
-    public Result remove_M_Program_Screen(String id){
+    @ApiOperation(value = "remove M_Program",
+            tags = {"M_Program"},
+            notes = "remove M_Program by quarry = m_program_id",
+            produces = "application/json",
+            response =  Result_ok.class,
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "Person need this value of permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response = Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result remove_M_Program(@ApiParam(value = "m_program_id String query", required = true) @PathParam("m_program_id") String m_program_id){
         try {
-            M_Program m_program_ = M_Program.find.byId(id);
+            M_Program m_program_ = M_Program.find.byId(m_program_id);
             if (m_program_ == null) return GlobalResult.notFoundObject();
 
             m_program_.delete();
@@ -227,12 +532,62 @@ public class GridController extends play.mvc.Controller {
         }
     }
 
-    public Result getAll_M_Program_Screen_fromM_Project(String id){
+    @ApiOperation(value = "get all M_Program by M_Project",
+            tags = {"M_Program"},
+            notes = "remove M_Program by quarry = m_project_id",
+            produces = "application/json",
+            response =  Result_ok.class,
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "Person need this value of permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response = Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    // Owner M_Program
+    public Result getAll_M_Program_from_M_Project(@ApiParam(name = "m_project_id", value = "project_id String query", required = true) @PathParam("m_project_id") String m_project_id){
         try {
-            Project project = Project.find.byId(id);
+            M_Project project = M_Project.find.byId(m_project_id);
             if (project == null) return GlobalResult.notFoundObject();
 
-            List<M_Program> list = M_Program.find.where().eq("m_project.project.projectId", id).findList();
+            return GlobalResult.okResult(Json.toJson(project.m_program_s));
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - get_Screen_Size_Type ERROR");
+            return GlobalResult.internalServerError();
+        }
+    }
+
+    @ApiOperation(value = "get all M_Program by General Project",
+            tags = {"M_Program", "Project"},
+            notes = "remove M_Program by quarry = m_project_id",
+            produces = "application/json",
+            protocols = "https",
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "Person need this value of permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response = M_Program.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result get_all_M_Program_from_Project(@ApiParam(value = "project_id String query", required = true) @PathParam("project_id") String project_id){
+        try {
+
+            List<M_Program> list = M_Program.find.where().eq("m_project.project.projectId", project_id).findList();
             return GlobalResult.okResult(Json.toJson(list));
 
         } catch (Exception e) {
@@ -243,6 +598,7 @@ public class GridController extends play.mvc.Controller {
     }
 
 //######################################################################################################################
+
 
     @BodyParser.Of(BodyParser.Json.class)
     public Result new_Screen_Size_Type(){
@@ -291,7 +647,6 @@ public class GridController extends play.mvc.Controller {
         }
     }
 
-
     public Result get_Screen_Size_Type_PublicList(){
         try {
 
@@ -305,7 +660,6 @@ public class GridController extends play.mvc.Controller {
             return GlobalResult.internalServerError();
         }
     }
-
 
     public Result get_Screen_Size_Type_Combination(String id){
         try {
@@ -363,7 +717,6 @@ public class GridController extends play.mvc.Controller {
             return GlobalResult.internalServerError();
         }
     }
-
 
     public Result remove_Screen_Size_Type(String id){
         try {

@@ -301,10 +301,10 @@ GET   /project/getallhoumers              ->   /project/homer
 
 3) Změna Přihlášení
 
-POST           /coreClient/person/developer                @controllers.PersonCreateController.developerRegistration()
+POST           /coreClient/person/developer                @controllers.PersonController.developerRegistration()
 "password - String",  "mail - String"
 
-POST           /coreClient/person/person                   @controllers.PersonCreateController.standartRegistration()
+POST           /coreClient/person/person                   @registred_Person()
 "nickName - String", "password - String",  "mail - String"
 + Vyžaduje autorizaci přes email!!!!!!! - Musíš upravit config!!!
 
