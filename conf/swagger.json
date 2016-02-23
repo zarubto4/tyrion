@@ -1,0 +1,3579 @@
+{
+  "swagger" : "2.0",
+  "info" : {
+    "description" : "Description.............................. ......... .............",
+    "version" : "1.4.9",
+    "title" : "Tyrion Api",
+    "contact" : {
+      "name" : "Tomas Zaruba"
+    },
+    "license" : {
+      "name" : "Terms Of Service",
+      "url" : "http://google.com"
+    }
+  },
+  "host" : "localhost:9000",
+  "basePath" : "/",
+  "tags" : [ {
+    "name" : "NeroztÅ™Ã­dÄ›nÃ½ pÃ­Äoviny"
+  }, {
+    "name" : "C_Program"
+  }, {
+    "name" : "Processor"
+  }, {
+    "name" : "SingleLibrary"
+  }, {
+    "name" : "LibraryGroup"
+  }, {
+    "name" : "Producer"
+  }, {
+    "name" : "TypeOfBoard"
+  }, {
+    "name" : "PermissionController"
+  }, {
+    "name" : "Permission"
+  }, {
+    "name" : "Role"
+  }, {
+    "name" : "Person"
+  } ],
+  "paths" : {
+    "/compilation/board" : {
+      "post" : {
+        "tags" : [ "NeroztÅ™Ã­dÄ›nÃ½ pÃ­Äoviny" ],
+        "operationId" : "newBoard",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/Result"
+            },
+            "headers" : { }
+          }
+        },
+        "security" : [ {
+          "logged_in" : [ ]
+        } ]
+      }
+    },
+    "/compilation/board/connect/{id}/{pr}" : {
+      "put" : {
+        "tags" : [ "NeroztÅ™Ã­dÄ›nÃ½ pÃ­Äoviny" ],
+        "operationId" : "connectBoardWthProject",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "pr",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/Result"
+            },
+            "headers" : { }
+          }
+        },
+        "security" : [ {
+          "logged_in" : [ ]
+        } ]
+      }
+    },
+    "/compilation/board/deactivateBoard{id}" : {
+      "delete" : {
+        "tags" : [ "NeroztÅ™Ã­dÄ›nÃ½ pÃ­Äoviny" ],
+        "operationId" : "deactivateBoard",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/Result"
+            },
+            "headers" : { }
+          }
+        },
+        "security" : [ {
+          "logged_in" : [ ]
+        } ]
+      }
+    },
+    "/compilation/board/disconnect/{id}/{pr}" : {
+      "put" : {
+        "tags" : [ "NeroztÅ™Ã­dÄ›nÃ½ pÃ­Äoviny" ],
+        "operationId" : "disconnectBoardWthProject",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "pr",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/Result"
+            },
+            "headers" : { }
+          }
+        },
+        "security" : [ {
+          "logged_in" : [ ]
+        } ]
+      }
+    },
+    "/compilation/board/filter" : {
+      "put" : {
+        "tags" : [ "NeroztÅ™Ã­dÄ›nÃ½ pÃ­Äoviny" ],
+        "operationId" : "getBoardByFilter",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/Result"
+            },
+            "headers" : { }
+          }
+        },
+        "security" : [ {
+          "logged_in" : [ ]
+        } ]
+      }
+    },
+    "/compilation/board/projects/{id}" : {
+      "get" : {
+        "tags" : [ "NeroztÅ™Ã­dÄ›nÃ½ pÃ­Äoviny" ],
+        "operationId" : "getBoardProjects",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/Result"
+            },
+            "headers" : { }
+          }
+        },
+        "security" : [ {
+          "logged_in" : [ ]
+        } ]
+      }
+    },
+    "/compilation/board/userDescription/{id}" : {
+      "get" : {
+        "tags" : [ "NeroztÅ™Ã­dÄ›nÃ½ pÃ­Äoviny" ],
+        "operationId" : "getUserDescription",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/Result"
+            },
+            "headers" : { }
+          }
+        },
+        "security" : [ {
+          "logged_in" : [ ]
+        } ]
+      },
+      "put" : {
+        "tags" : [ "NeroztÅ™Ã­dÄ›nÃ½ pÃ­Äoviny" ],
+        "operationId" : "addUserDescription",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/Result"
+            },
+            "headers" : { }
+          }
+        },
+        "security" : [ {
+          "logged_in" : [ ]
+        } ]
+      }
+    },
+    "/compilation/board/{id}" : {
+      "get" : {
+        "tags" : [ "NeroztÅ™Ã­dÄ›nÃ½ pÃ­Äoviny" ],
+        "operationId" : "getBoard",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/Result"
+            },
+            "headers" : { }
+          }
+        },
+        "security" : [ {
+          "logged_in" : [ ]
+        } ]
+      }
+    },
+    "/compilation/c_program" : {
+      "get" : {
+        "tags" : [ "C_Program" ],
+        "summary" : "get C_program",
+        "description" : "get C_program by query = c_program_id",
+        "operationId" : "get_C_Program",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "c_program_id",
+          "in" : "query",
+          "description" : "c_program_id String query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "$ref" : "#/definitions/C_Program"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "project.owner", "Project_Editor" ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "C_Program" ],
+        "summary" : "Create new C_Program",
+        "description" : "If you want create new C_program in project.id = {project_id}. Send required json values and server respond with new object",
+        "operationId" : "create_C_Program",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "project_id",
+          "in" : "query",
+          "description" : "project_id String query",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "in" : "body",
+          "name" : "body",
+          "description" : "Contains Json with values",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Swagger_C_program_New"
+          }
+        } ],
+        "responses" : {
+          "201" : {
+            "description" : "Successful created",
+            "schema" : {
+              "$ref" : "#/definitions/C_Program"
+            }
+          },
+          "400" : {
+            "description" : "Some Json value Missing",
+            "schema" : {
+              "$ref" : "#/definitions/JsonValueMissing"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "project.owner", "Project_Editor" ]
+        } ]
+      }
+    },
+    "/compilation/c_program/binary/{id}" : {
+      "post" : {
+        "tags" : [ "NeroztÅ™Ã­dÄ›nÃ½ pÃ­Äoviny" ],
+        "operationId" : "uploadBinaryFileToBoard",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/Result"
+            },
+            "headers" : { }
+          }
+        },
+        "security" : [ {
+          "logged_in" : [ ]
+        } ]
+      }
+    },
+    "/compilation/c_program/c_program" : {
+      "delete" : {
+        "tags" : [ "C_Program" ],
+        "summary" : "delete C_program",
+        "description" : "delete C_program by query = c_program_id, query = version_id",
+        "operationId" : "delete_C_Program",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "c_program_id",
+          "in" : "query",
+          "description" : "c_program_id String query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "$ref" : "#/definitions/Result_ok"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "project.owner", "Project_Editor" ]
+        } ]
+      }
+    },
+    "/compilation/c_program/eclipse" : {
+      "get" : {
+        "tags" : [ "NeroztÅ™Ã­dÄ›nÃ½ pÃ­Äoviny" ],
+        "operationId" : "generateProjectForEclipse",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/Result"
+            },
+            "headers" : { }
+          }
+        },
+        "security" : [ {
+          "logged_in" : [ ]
+        } ]
+      }
+    },
+    "/compilation/c_program/edit" : {
+      "put" : {
+        "tags" : [ "C_Program" ],
+        "summary" : "Edit C_Program",
+        "description" : "If you want edit base information about C_program by  query = c_program_id. Send required json values and server respond with new object",
+        "operationId" : "edit_C_Program_Description",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "c_program_id",
+          "in" : "query",
+          "description" : "c_program_id String query",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "in" : "body",
+          "name" : "body",
+          "description" : "Contains Json with values",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Swagger_C_program_New"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "$ref" : "#/definitions/C_Program"
+            }
+          },
+          "400" : {
+            "description" : "Some Json value Missing",
+            "schema" : {
+              "$ref" : "#/definitions/JsonValueMissing"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "project.owner", "Project_Editor" ]
+        } ]
+      }
+    },
+    "/compilation/c_program/project" : {
+      "get" : {
+        "tags" : [ "C_Program" ],
+        "summary" : "get All C_program",
+        "description" : "get all C_program from project by query = project_id",
+        "operationId" : "get_C_Program_All_from_Project",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "project_id",
+          "in" : "query",
+          "description" : "project_id String query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "$ref" : "#/definitions/Swagger_C_program_list"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "project.owner", "Project_Editor" ]
+        } ]
+      }
+    },
+    "/compilation/c_program/update" : {
+      "put" : {
+        "tags" : [ "C_Program" ],
+        "summary" : "update C_Program",
+        "description" : "If you want add new code to C_program by query = c_program_id. Send required json values and server respond with new object",
+        "operationId" : "update_C_Program",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "c_program_id",
+          "in" : "query",
+          "description" : "c_program_id String query",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "in" : "body",
+          "name" : "body",
+          "description" : "Contains Json with values",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Swagger_Version"
+          }
+        } ],
+        "responses" : {
+          "201" : {
+            "description" : "Successful created",
+            "schema" : {
+              "$ref" : "#/definitions/C_Program"
+            }
+          },
+          "400" : {
+            "description" : "Some Json value Missing",
+            "schema" : {
+              "$ref" : "#/definitions/JsonValueMissing"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "project.owner", "Project_Editor" ]
+        } ]
+      }
+    },
+    "/compilation/c_program/upload/{id}/{board}" : {
+      "post" : {
+        "tags" : [ "NeroztÅ™Ã­dÄ›nÃ½ pÃ­Äoviny" ],
+        "operationId" : "uploadCompilationToBoard",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "board",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/Result"
+            },
+            "headers" : { }
+          }
+        },
+        "security" : [ {
+          "logged_in" : [ ]
+        } ]
+      }
+    },
+    "/compilation/c_program/version" : {
+      "delete" : {
+        "tags" : [ "C_Program" ],
+        "summary" : "delete Version in C_program",
+        "description" : "delete Version.id = version_id in C_program by query = c_program_id, query = version_id",
+        "operationId" : "delete_C_Program_Version",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "c_program_id",
+          "in" : "query",
+          "description" : "c_program_id String query",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "version_id",
+          "in" : "query",
+          "description" : "version_id String query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "$ref" : "#/definitions/Result_ok"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "project.owner", "Project_Editor" ]
+        } ]
+      }
+    },
+    "/compilation/library" : {
+      "get" : {
+        "tags" : [ "SingleLibrary" ],
+        "summary" : "get SingleLibrary",
+        "description" : "if you want get SingleLibrary by query = library_id",
+        "operationId" : "get_SingleLibrary",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "library_id",
+          "in" : "query",
+          "description" : "library_id String query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok result",
+            "schema" : {
+              "$ref" : "#/definitions/SingleLibrary"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "library.read" ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "SingleLibrary" ],
+        "summary" : "create new SingleLibrary",
+        "description" : "if you want create new SingleLibrary for C_program compilation",
+        "operationId" : "new_SingleLibrary",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "body",
+          "description" : "Contains Json with values",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Swagger_SingleLibrary_New"
+          }
+        } ],
+        "responses" : {
+          "201" : {
+            "description" : "Successful created",
+            "schema" : {
+              "$ref" : "#/definitions/SingleLibrary"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "library.create" ]
+        } ]
+      },
+      "put" : {
+        "tags" : [ "SingleLibrary" ],
+        "summary" : "edit SingleLibrary",
+        "description" : "if you want edit name or description of SingleLibrary by query = library_id",
+        "operationId" : "edit_SingleLibrary",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "library_id",
+          "in" : "query",
+          "description" : "library_id String query",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "in" : "body",
+          "name" : "body",
+          "description" : "Contains Json with values",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Swagger_SingleLibrary_New"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok result",
+            "schema" : {
+              "$ref" : "#/definitions/SingleLibrary"
+            }
+          },
+          "201" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/SingleLibrary"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "library.edit" : [ "library.create" ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "SingleLibrary" ],
+        "summary" : "delete SingleLibrary",
+        "description" : "If you want delete SingleLibrary by query = library_id",
+        "operationId" : "delete_SingleLibrary",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "library_id",
+          "in" : "query",
+          "description" : "library_id String query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok result",
+            "schema" : {
+              "$ref" : "#/definitions/Result_ok"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "library.delete" ]
+        } ]
+      }
+    },
+    "/compilation/library/filter" : {
+      "get" : {
+        "tags" : [ "SingleLibrary" ],
+        "summary" : "get Library with Filter parameters",
+        "description" : "If you want get all or only some SingleLibraries you can use filter parameters in Json. But EveryTime i will return maximal 25 objects \n\nso, you have to used that limit for frontend pagination -> first round (0,25), second round (26, 50) etc... I will give you alsoinformation how many results you can show \n ",
+        "operationId" : "get_SingleLibrary_Filter",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "body",
+          "description" : "Contains Json with values",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Swagger_LibraryGroup_Filter"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok result",
+            "schema" : {
+              "$ref" : "#/definitions/Swagger_SingleLibraries_list"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "libraryGroup.read" ]
+        } ]
+      }
+    },
+    "/compilation/library/upload" : {
+      "post" : {
+        "tags" : [ "NeroztÅ™Ã­dÄ›nÃ½ pÃ­Äoviny" ],
+        "operationId" : "upload_SingleLibrary_Version",
+        "parameters" : [ {
+          "name" : "library_id",
+          "in" : "query",
+          "description" : "library_id String query",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "version_id",
+          "in" : "query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/Result"
+            },
+            "headers" : { }
+          }
+        },
+        "security" : [ {
+          "logged_in" : [ ]
+        } ]
+      }
+    },
+    "/compilation/library/version" : {
+      "post" : {
+        "tags" : [ "SingleLibrary" ],
+        "summary" : "create new SingleLibrary",
+        "description" : "if you want create new SingleLibrary for C_program compilation",
+        "operationId" : "new_SingleLibrary_Version",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "library_id",
+          "in" : "query",
+          "description" : "library_id String query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "201" : {
+            "description" : "Successful created",
+            "schema" : {
+              "$ref" : "#/definitions/Swagger_SingleLibrary_Version"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "library.edit" ]
+        } ]
+      }
+    },
+    "/compilation/library/versions" : {
+      "get" : {
+        "tags" : [ "SingleLibrary" ],
+        "summary" : "get SingleLibrary versions",
+        "description" : "if you want create new SingleLibrary for C_program compilation",
+        "operationId" : "get_SingleLibrary_Versions",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "library_id",
+          "in" : "query",
+          "description" : "library_id String query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok result",
+            "schema" : {
+              "$ref" : "#/definitions/Swagger_SingleLibrary_Version_List"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "library.read" ]
+        } ]
+      }
+    },
+    "/compilation/libraryGroup" : {
+      "get" : {
+        "tags" : [ "LibraryGroup" ],
+        "summary" : "get LibraryGroup",
+        "description" : "If you want get LibraryGroup by query = libraryGroup_id",
+        "operationId" : "get_LibraryGroup",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "libraryGroup_id",
+          "in" : "query",
+          "description" : "libraryGroup_id String query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok result",
+            "schema" : {
+              "$ref" : "#/definitions/LibraryGroup"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "libraryGroup.read" ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "LibraryGroup" ],
+        "summary" : "Create new LibraryGroup",
+        "description" : "If you want create new LibraryGroup. Send required json values and server respond with new object",
+        "operationId" : "new_LibraryGroup",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "body",
+          "description" : "Contains Json with values",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Swagger_LibraryGroup_New"
+          }
+        } ],
+        "responses" : {
+          "201" : {
+            "description" : "Successful created",
+            "schema" : {
+              "$ref" : "#/definitions/LibraryGroup"
+            }
+          },
+          "400" : {
+            "description" : "Some Json value Missing",
+            "schema" : {
+              "$ref" : "#/definitions/JsonValueMissing"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "libraryGroup.create" ]
+        } ]
+      },
+      "put" : {
+        "tags" : [ "LibraryGroup" ],
+        "summary" : "edit LibraryGroup",
+        "description" : "If you want edit LibraryGroup by query libraryGroup_id. Send required json values and server respond with new object",
+        "operationId" : "editLibraryGroup",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "libraryGroup_id",
+          "in" : "query",
+          "description" : "libraryGroup_id String query",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "in" : "body",
+          "name" : "body",
+          "description" : "Contains Json with values",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Swagger_LibraryGroup_New"
+          }
+        } ],
+        "responses" : {
+          "201" : {
+            "description" : "Successful created",
+            "schema" : {
+              "$ref" : "#/definitions/LibraryGroup"
+            }
+          },
+          "400" : {
+            "description" : "Some Json value Missing",
+            "schema" : {
+              "$ref" : "#/definitions/JsonValueMissing"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "processor.create" ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "LibraryGroup" ],
+        "summary" : "delete LibraryGroup",
+        "description" : "If you want delete LibraryGroup by query = libraryGroup_id",
+        "operationId" : "delete_LibraryGroup",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "libraryGroup_id",
+          "in" : "query",
+          "description" : "libraryGroup_id String query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok result",
+            "schema" : {
+              "$ref" : "#/definitions/Result_ok"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "libraryGroup.delete" ]
+        } ]
+      }
+    },
+    "/compilation/libraryGroup/filter" : {
+      "get" : {
+        "tags" : [ "LibraryGroup" ],
+        "summary" : "get LibraryGroup with Filter parameters",
+        "description" : "If you want get all or only some LibraryGroups you can use filter parameters in Json. But EveryTime i will return maximal 25 objects \n\nso, you have to used that limit for frontend pagination -> first round (0,25), second round (26, 50) etc... \n ",
+        "operationId" : "get_LibraryGroup_Filter",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "body",
+          "description" : "Contains Json with values",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Swagger_LibraryGroup_Filter"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok result",
+            "schema" : {
+              "$ref" : "#/definitions/Swagger_LibraryGroup_list"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "libraryGroup.read" ]
+        } ]
+      }
+    },
+    "/compilation/libraryGroup/generalDescription" : {
+      "get" : {
+        "tags" : [ "LibraryGroup" ],
+        "summary" : "get LibraryGroup description",
+        "description" : "If you want get description from LibraryGroup by query = libraryGroup_id",
+        "operationId" : "get_LibraryGroup_Description",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "libraryGroup_id",
+          "in" : "query",
+          "description" : "libraryGroup_id String query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok result",
+            "schema" : {
+              "$ref" : "#/definitions/Description"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "libraryGroup.read" ]
+        } ]
+      }
+    },
+    "/compilation/libraryGroup/libraries" : {
+      "get" : {
+        "tags" : [ "LibraryGroup" ],
+        "summary" : "get Libraries from LibraryGroup",
+        "description" : "If you want get Processors from LibraryGroup by query = libraryGroup_id",
+        "operationId" : "get_LibraryGroup_Libraries",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "libraryGroup_id",
+          "in" : "query",
+          "description" : "libraryGroup_id String query",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "version_id",
+          "in" : "query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok result",
+            "schema" : {
+              "$ref" : "#/definitions/Swagger_LibraryGroup_Libraries"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "processor.read" ]
+        } ]
+      }
+    },
+    "/compilation/libraryGroup/processors" : {
+      "get" : {
+        "tags" : [ "LibraryGroup", "Processor" ],
+        "summary" : "get LibraryGroup Processors",
+        "description" : "If you want get Processors from LibraryGroup by query = libraryGroup_id",
+        "operationId" : "get_LibraryGroup_Processors",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "libraryGroup_id",
+          "in" : "query",
+          "description" : "libraryGroup_id String query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok result",
+            "schema" : {
+              "$ref" : "#/definitions/Swagger_LibraryGroup_Processor_List"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "processor.read" ]
+        } ]
+      }
+    },
+    "/compilation/libraryGroup/upload" : {
+      "post" : {
+        "tags" : [ "LibraryGroup" ],
+        "summary" : "upload files to Version in LibraryGroup",
+        "description" : "Its not possible now describe uploud file in Swagger. But file name must be longer than 5 chars.in body of html content is \"files\"",
+        "operationId" : "upload_Library_To_LibraryGroup",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "libraryGroup_id",
+          "in" : "query",
+          "description" : "libraryGroup_id String query",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "version_id",
+          "in" : "query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok result",
+            "schema" : {
+              "$ref" : "#/definitions/Swagger_LibraryGroup_Version_List"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "libraryGroup.edit" ]
+        } ]
+      }
+    },
+    "/compilation/libraryGroup/version" : {
+      "post" : {
+        "tags" : [ "LibraryGroup" ],
+        "summary" : "Create new Version in LibraryGroup",
+        "description" : "If you want create new versinon in LibraryGroup query = libraryGroup_id. Send required json values and server respond with new object",
+        "operationId" : "new_LibraryGroup_Version",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "version_id",
+          "in" : "query",
+          "description" : "libraryGroup_id String query",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "in" : "body",
+          "name" : "body",
+          "description" : "Contains Json with values",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Swagger_Version"
+          }
+        } ],
+        "responses" : {
+          "201" : {
+            "description" : "Successful created",
+            "schema" : {
+              "$ref" : "#/definitions/Swagger_LibraryGroup_Version"
+            }
+          },
+          "400" : {
+            "description" : "Some Json value Missing",
+            "schema" : {
+              "$ref" : "#/definitions/JsonValueMissing"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "libraryGroup.edit" ]
+        } ]
+      }
+    },
+    "/compilation/libraryGroup/versions" : {
+      "get" : {
+        "tags" : [ "LibraryGroup" ],
+        "summary" : "get all Versions from LibraryGroup",
+        "description" : "If you want create new versinon in LibraryGroup query = libraryGroup_id. Send required json values and server respond with new object",
+        "operationId" : "get_LibraryGroup_Version",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "version_id",
+          "in" : "query",
+          "description" : "libraryGroup_id String query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok result",
+            "schema" : {
+              "$ref" : "#/definitions/Swagger_LibraryGroup_Version_List"
+            }
+          },
+          "400" : {
+            "description" : "Some Json value Missing",
+            "schema" : {
+              "$ref" : "#/definitions/JsonValueMissing"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "libraryGroup.edit" ]
+        } ]
+      }
+    },
+    "/compilation/processor" : {
+      "get" : {
+        "tags" : [ "Processor" ],
+        "summary" : "get all Processors",
+        "description" : "If you want get Processor by query processor_id.",
+        "operationId" : "get_Processor_All",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "$ref" : "#/definitions/Swagger_Processor_list"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "processor.read" ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Processor" ],
+        "summary" : "Create new Processor",
+        "description" : "If you want create new Processor. Send required json values and server respond with new object",
+        "operationId" : "new_Processor",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "body",
+          "description" : "Contains Json with values",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Swagger_Processor"
+          }
+        } ],
+        "responses" : {
+          "201" : {
+            "description" : "Successful created",
+            "schema" : {
+              "$ref" : "#/definitions/Processor"
+            }
+          },
+          "400" : {
+            "description" : "Some Json value Missing",
+            "schema" : {
+              "$ref" : "#/definitions/JsonValueMissing"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "processor.create" ]
+        } ]
+      }
+    },
+    "/compilation/processor/library/{processor_id}/{library_id}" : {
+      "put" : {
+        "tags" : [ "Processor", "SingleLibrary" ],
+        "summary" : "connect Processor with SingleLibraries",
+        "description" : "If you want connect SingleLibraries with Processor by query processor_id and library_id.",
+        "operationId" : "connectProcessorWithLibrary",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "processor_id",
+          "in" : "path",
+          "description" : "processor_id String query",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "library_id",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result"
+          },
+          "400" : {
+            "description" : "Object Not found",
+            "schema" : {
+              "$ref" : "#/definitions/Result_NotFound"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "processor.edit" ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Processor", "SingleLibrary" ],
+        "summary" : "disconnect Processor with SingleLibraries",
+        "description" : "If you want disconnect SingleLibraries from Processor by query processor_id and library_id.",
+        "operationId" : "disconnectProcessorWithLibrary",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "processor_id",
+          "in" : "path",
+          "description" : "processor_id String query",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "library_id",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result"
+          },
+          "400" : {
+            "description" : "Object Not found",
+            "schema" : {
+              "$ref" : "#/definitions/Result_NotFound"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "processor.edit" ]
+        } ]
+      }
+    },
+    "/compilation/processor/libraryGroup/{processor_id}/{library_id}" : {
+      "put" : {
+        "tags" : [ "Processor", "LibraryGroup" ],
+        "summary" : "connect Processor with LibraryGroup",
+        "description" : "If you want  connect LibraryGroup with Processor by query processor_id and library_group_id.",
+        "operationId" : "connectProcessorWithLibraryGroup",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "processor_id",
+          "in" : "path",
+          "description" : "processor_id String query",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "library_id",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result"
+          },
+          "400" : {
+            "description" : "Object Not found",
+            "schema" : {
+              "$ref" : "#/definitions/Result_NotFound"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "processor.edit" ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Processor", "LibraryGroup" ],
+        "summary" : "disconnect Processor with LibraryGroup",
+        "description" : "If you want disconnect LibraryGroup from Processor by query processor_id and library_group_id.",
+        "operationId" : "disconnectProcessorWithLibraryGroup",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "processor_id",
+          "in" : "path",
+          "description" : "processor_id String query",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "library_id",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result"
+          },
+          "400" : {
+            "description" : "Object Not found",
+            "schema" : {
+              "$ref" : "#/definitions/Result_NotFound"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "processor.edit" ]
+        } ]
+      }
+    },
+    "/compilation/processor/libraryGroups/{id}" : {
+      "get" : {
+        "tags" : [ "Processor", "LibraryGroup" ],
+        "summary" : "get Processor.LibraryGroups",
+        "description" : "If you want get all LibraryGroups from Processor by query processor_id.",
+        "operationId" : "getProcessorLibraryGroups",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "processor_id String query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "$ref" : "#/definitions/Swagger_LibraryGroup_list"
+            }
+          },
+          "400" : {
+            "description" : "Object Not found",
+            "schema" : {
+              "$ref" : "#/definitions/Result_NotFound"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "processor.read" ]
+        } ]
+      }
+    },
+    "/compilation/processor/singleLibrary/{id}" : {
+      "get" : {
+        "tags" : [ "Processor", "SingleLibrary" ],
+        "summary" : "get Processor.SingleLibraries",
+        "description" : "If you want get all SingleLibraries from Processor by query processor_id.",
+        "operationId" : "getProcessorSingleLibraries",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "processor_id String query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "$ref" : "#/definitions/Swagger_LibraryGroup_list"
+            }
+          },
+          "400" : {
+            "description" : "Object Not found",
+            "schema" : {
+              "$ref" : "#/definitions/Result_NotFound"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "processor.read" ]
+        } ]
+      }
+    },
+    "/compilation/processor/{id}" : {
+      "get" : {
+        "tags" : [ "Processor" ],
+        "summary" : "get Processor",
+        "description" : "If you get Processor by query processor_id.",
+        "operationId" : "get_Processor",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "processor_id String query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "$ref" : "#/definitions/Processor"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "processor.read" ]
+        } ]
+      },
+      "put" : {
+        "tags" : [ "Processor" ],
+        "summary" : "update Processor",
+        "description" : "If you want update Processor.id by query = processor_id . Send required json values and server respond with update object",
+        "operationId" : "update_Processor",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "processor_id String query",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "in" : "body",
+          "name" : "body",
+          "description" : "Contains Json with values",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Swagger_Processor"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "$ref" : "#/definitions/Processor"
+            }
+          },
+          "400" : {
+            "description" : "Some Json value Missing",
+            "schema" : {
+              "$ref" : "#/definitions/JsonValueMissing"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "project.edit" ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Processor" ],
+        "summary" : "delete Processor",
+        "description" : "If you want delete Processor by query processor_id.",
+        "operationId" : "delete_Processor",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "processor_id String query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result"
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "processor.read" ]
+        } ]
+      }
+    },
+    "/compilation/producer" : {
+      "get" : {
+        "tags" : [ "Producer" ],
+        "summary" : "get Producer",
+        "description" : "if you want get Producer. Its company owned physical boards and we used that for filtering",
+        "operationId" : "getProducer",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "producer_id",
+          "in" : "query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "$ref" : "#/definitions/Swagger_Producer_list"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "producer.read", "SuperAdmin" ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Producer" ],
+        "summary" : "create new Producer",
+        "description" : "if you want create new Producer. Its company owned physical boards and we used that for filtering",
+        "operationId" : "new_Producers",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "body",
+          "description" : "Contains Json with values",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Swagger_Board_New"
+          }
+        } ],
+        "responses" : {
+          "201" : {
+            "description" : "Successful created",
+            "schema" : {
+              "$ref" : "#/definitions/ProducerModel"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "producer.create", "SuperAdmin" ]
+        } ]
+      },
+      "put" : {
+        "tags" : [ "Producer" ],
+        "summary" : "edit Producer",
+        "description" : "if you want edit information about Producer. Its company owned physical boards and we used that for filtering",
+        "operationId" : "updateProducers",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "producer_id",
+          "in" : "query",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "in" : "body",
+          "name" : "body",
+          "description" : "Contains Json with values",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Swagger_Board_New"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "$ref" : "#/definitions/ProducerModel"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "producer.edit", "SuperAdmin" ]
+        } ]
+      }
+    },
+    "/compilation/producer/description" : {
+      "get" : {
+        "tags" : [ "Producer" ],
+        "summary" : "get Producer description",
+        "description" : "if you get Producer object his description is hiding under this link",
+        "operationId" : "getProducerDescription",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "producer_id",
+          "in" : "query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "$ref" : "#/definitions/Description"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "producer.read", "SuperAdmin" ]
+        } ]
+      }
+    },
+    "/compilation/producer/typeOfBoards" : {
+      "get" : {
+        "tags" : [ "Producer", "TypeOfBoard" ],
+        "summary" : "get TypeOfBoard from Producer",
+        "description" : "if you want get TypeOfBoard from Producer. Its a list of Boards types.",
+        "operationId" : "getProducerTypeOfBoards",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "producer_id",
+          "in" : "query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "$ref" : "#/definitions/Swagger_TypeOfBoards_List"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "typeOfBoard.read", "SuperAdmin" ]
+        } ]
+      }
+    },
+    "/compilation/project/board/{id}" : {
+      "get" : {
+        "tags" : [ "NeroztÅ™Ã­dÄ›nÃ½ pÃ­Äoviny" ],
+        "operationId" : "getBoardsFromProject",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/Result"
+            },
+            "headers" : { }
+          }
+        },
+        "security" : [ {
+          "logged_in" : [ ]
+        } ]
+      }
+    },
+    "/compilation/typeOfBoard" : {
+      "get" : {
+        "tags" : [ "NeroztÅ™Ã­dÄ›nÃ½ pÃ­Äoviny" ],
+        "operationId" : "getTypeOfBoard",
+        "parameters" : [ {
+          "name" : "type_of_board_id",
+          "in" : "query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/Result"
+            },
+            "headers" : { }
+          }
+        },
+        "security" : [ {
+          "logged_in" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "TypeOfBoard" ],
+        "summary" : "create TypeOfBoard",
+        "description" : "The TypeOfBoard is category for IoT. Like Raspberry2, Arduino-Uno etc. \n\nWe using that for compilation, sorting libraries, filtres and more..",
+        "operationId" : "new_TypeOfBoard",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "body",
+          "description" : "Contains Json with values",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Swagger_TypeOfBoard_New"
+          }
+        } ],
+        "responses" : {
+          "201" : {
+            "description" : "Successful created",
+            "schema" : {
+              "$ref" : "#/definitions/TypeOfBoard"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "typeOfBoard.creat", "SuperAdmin" ]
+        } ]
+      },
+      "put" : {
+        "tags" : [ "TypeOfBoard" ],
+        "summary" : "edit TypeOfBoard",
+        "description" : "if you want edit base TypeOfBoard information",
+        "operationId" : "edit_TypeOfBoard",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "type_of_board_id",
+          "in" : "query",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "in" : "body",
+          "name" : "body",
+          "description" : "Contains Json with values",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Swagger_C_program_New"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "$ref" : "#/definitions/TypeOfBoard"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "typeOfBoard.create", "SuperAdmin" ]
+        } ]
+      }
+    },
+    "/compilation/typeOfBoard/boards" : {
+      "get" : {
+        "tags" : [ "NeroztÅ™Ã­dÄ›nÃ½ pÃ­Äoviny" ],
+        "operationId" : "getTypeOfBoardAllBoards",
+        "parameters" : [ {
+          "name" : "type_of_board_id",
+          "in" : "query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/Result"
+            },
+            "headers" : { }
+          }
+        },
+        "security" : [ {
+          "logged_in" : [ ]
+        } ]
+      }
+    },
+    "/compilation/typeOfBoard/description" : {
+      "get" : {
+        "tags" : [ "NeroztÅ™Ã­dÄ›nÃ½ pÃ­Äoviny" ],
+        "operationId" : "getTypeOfBoardDescription",
+        "parameters" : [ {
+          "name" : "type_of_board_id",
+          "in" : "query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/Result"
+            },
+            "headers" : { }
+          }
+        },
+        "security" : [ {
+          "logged_in" : [ ]
+        } ]
+      }
+    },
+    "/file/fileRecord/{id}" : {
+      "get" : {
+        "tags" : [ "NeroztÅ™Ã­dÄ›nÃ½ pÃ­Äoviny" ],
+        "operationId" : "fileRecord",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/Result"
+            },
+            "headers" : { }
+          }
+        },
+        "security" : [ {
+          "logged_in" : [ ]
+        } ]
+      }
+    },
+    "/file/listOfFiles/{id}" : {
+      "get" : {
+        "tags" : [ "LibraryGroup" ],
+        "summary" : "get Libraries from LibraryGroup Version",
+        "description" : "If you want get Libraries from LibraryGroup.Version by query = version_id",
+        "operationId" : "get_LibraryGroup_Version_Libraries",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok result",
+            "schema" : {
+              "$ref" : "#/definitions/Swagger_LibraryGroup_Libraries"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "libraryGroup.read" ]
+        } ]
+      }
+    },
+    "/secure/permission" : {
+      "get" : {
+        "tags" : [ "Permission" ],
+        "summary" : "get all system Permissions",
+        "description" : "If you want get all system permissions (Really all!). You need permission for that or have right system Roles",
+        "operationId" : "get_Permission_All",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "$ref" : "#/definitions/PersonPermission"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "permission.disconnectWithPerson", "SuperAdmin" ]
+        } ]
+      }
+    },
+    "/secure/permission/person/add" : {
+      "put" : {
+        "tags" : [ "Permission" ],
+        "summary" : "add Permission to the Person",
+        "description" : "If you want add permission to Person. You need permission for that or have right system Roles",
+        "operationId" : "add_Permission_Person",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "person_id",
+          "in" : "query",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "permission_id",
+          "in" : "query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "$ref" : "#/definitions/Result_ok"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "permission.connectWithPerson", "SuperAdmin" ]
+        } ]
+      }
+    },
+    "/secure/permission/person/remove" : {
+      "put" : {
+        "tags" : [ "Permission" ],
+        "summary" : "remove Permission from the Person",
+        "description" : "If you want remove permission from Person. You need permission for that or have right system Roles",
+        "operationId" : "remove_Permission_Person",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "person_id",
+          "in" : "query",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "permission_id",
+          "in" : "query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "$ref" : "#/definitions/Result_ok"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "permission.disconnectWithPerson", "SuperAdmin" ]
+        } ]
+      }
+    },
+    "/secure/role" : {
+      "post" : {
+        "tags" : [ "Role" ],
+        "summary" : "create new Role",
+        "description" : "If you want create new Role in system. You need permission for that or have right system Roles",
+        "operationId" : "new_Role",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "body",
+          "description" : "Contains Json with values",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Swagger_SecurityRole_New"
+          }
+        } ],
+        "responses" : {
+          "201" : {
+            "description" : "Successful created",
+            "schema" : {
+              "$ref" : "#/definitions/SecurityRole"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "role.create", "SuperAdmin" ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Role" ],
+        "summary" : "delete Role",
+        "description" : "If you want delete  Role from system. You need permission for that or have right system Roles",
+        "operationId" : "delete_Role",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "role_id",
+          "in" : "query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Successful created",
+            "schema" : {
+              "$ref" : "#/definitions/Result_ok"
+            }
+          },
+          "201" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/Result_ok"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "role.deleter", "SuperAdmin" ]
+        } ]
+      }
+    },
+    "/secure/role/all" : {
+      "get" : {
+        "tags" : [ "Role" ],
+        "summary" : "get all Role from system",
+        "description" : "If you set Role to Person. You need permission for that or have right system Roles",
+        "operationId" : "get_Role_All",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "$ref" : "#/definitions/Swagger_SecurityRole_List"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "role.manager", "SuperAdmin" ]
+        } ]
+      }
+    },
+    "/secure/role/permission" : {
+      "get" : {
+        "tags" : [ "Permission", "Role" ],
+        "summary" : "get all Permission on Role",
+        "description" : "If you want get all permissions in Role (Admins, Monkeys..etc). You need also permission for that or have right system Roles",
+        "operationId" : "get_Permission_in_Group",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "role_id",
+          "in" : "query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "$ref" : "#/definitions/Swagger_PersonPermission_list"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "permission.disconnectWithPerson", "SuperAdmin" ]
+        } ]
+      }
+    },
+    "/secure/role/permission/add" : {
+      "get" : {
+        "tags" : [ "Permission", "Role" ],
+        "summary" : "add Permission to the Role",
+        "description" : "If you want add system permissions to Role. You need permission for that or have right system Roles",
+        "operationId" : "add_Permission_to_Role",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "permission_id",
+          "in" : "query",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "role_id",
+          "in" : "query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "$ref" : "#/definitions/Result_ok"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "role.edit", "SuperAdmin" ]
+        } ]
+      }
+    },
+    "/secure/role/permission/remove" : {
+      "get" : {
+        "tags" : [ "Permission", "Role" ],
+        "summary" : "remove Permission from the Role",
+        "description" : "If you want remove system permissions from Role. You need permission for that or have right system Roles",
+        "operationId" : "remove_Permission_from_Role",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "permission_id",
+          "in" : "query",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "role_id",
+          "in" : "query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "$ref" : "#/definitions/Result_ok"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "permission.disconnectWithPerson", "SuperAdmin" ]
+        } ]
+      }
+    },
+    "/secure/role/person/add" : {
+      "put" : {
+        "tags" : [ "Role", "Person" ],
+        "summary" : "set the Role to the Person",
+        "description" : "If you set Role to Person. You need permission for that or have right system Roles",
+        "operationId" : "add_Role_Person",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "person_id",
+          "in" : "query",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "role_id",
+          "in" : "query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "$ref" : "#/definitions/Result_ok"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "role.person", "SuperAdmin" ]
+        } ]
+      }
+    },
+    "/secure/role/person/remove" : {
+      "put" : {
+        "tags" : [ "Role", "Person" ],
+        "summary" : "remove the Role of the Person",
+        "description" : "If you set Role to Person. You need permission for that or have right system Roles",
+        "operationId" : "remove_Role_Person",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "person_id",
+          "in" : "query",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "role_id",
+          "in" : "query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "$ref" : "#/definitions/Result_ok"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Result_PermissionRequired"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "role.manager", "SuperAdmin" ]
+        } ]
+      }
+    }
+  },
+  "definitions" : {
+    "Swagger_LibraryGroup_Version" : {
+      "type" : "object"
+    },
+    "Result_Unauthorized" : {
+      "type" : "object",
+      "properties" : {
+        "code" : {
+          "type" : "integer",
+          "format" : "int32"
+        },
+        "state" : {
+          "type" : "string"
+        },
+        "message" : {
+          "type" : "string"
+        }
+      }
+    },
+    "SecurityRole" : {
+      "type" : "object",
+      "properties" : {
+        "id" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        }
+      }
+    },
+    "Swagger_LibraryGroup_New" : {
+      "type" : "object",
+      "properties" : {
+        "description" : {
+          "type" : "string"
+        },
+        "group_name" : {
+          "type" : "string"
+        }
+      }
+    },
+    "Processor" : {
+      "type" : "object",
+      "properties" : {
+        "id" : {
+          "type" : "string"
+        },
+        "processor_name" : {
+          "type" : "string"
+        },
+        "description" : {
+          "type" : "string"
+        },
+        "processor_code" : {
+          "type" : "string"
+        },
+        "speed" : {
+          "type" : "integer",
+          "format" : "int32"
+        },
+        "libraryGroups" : {
+          "type" : "string"
+        },
+        "singleLibraries" : {
+          "type" : "string"
+        },
+        "libraryGroupsCount" : {
+          "type" : "integer",
+          "format" : "int32",
+          "readOnly" : true
+        },
+        "singleLibrariesCount" : {
+          "type" : "integer",
+          "format" : "int32",
+          "readOnly" : true
+        }
+      }
+    },
+    "Description" : {
+      "type" : "object",
+      "properties" : {
+        "description" : {
+          "type" : "string"
+        }
+      }
+    },
+    "Swagger_PersonPermission_list" : {
+      "type" : "object",
+      "properties" : {
+        "permissions" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/PersonPermission"
+          }
+        }
+      }
+    },
+    "Swagger_Processor" : {
+      "type" : "object",
+      "properties" : {
+        "description" : {
+          "type" : "string"
+        },
+        "processor_code" : {
+          "type" : "string"
+        },
+        "processor_name" : {
+          "type" : "string"
+        },
+        "speed" : {
+          "type" : "integer",
+          "format" : "int32"
+        }
+      }
+    },
+    "Swagger_C_program_New" : {
+      "type" : "object",
+      "properties" : {
+        "programName" : {
+          "type" : "string"
+        },
+        "programDescription" : {
+          "type" : "string"
+        },
+        "dateOfCreate" : {
+          "type" : "string",
+          "format" : "date-time"
+        }
+      }
+    },
+    "ProducerModel" : {
+      "type" : "object",
+      "properties" : {
+        "id" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "description" : {
+          "type" : "string"
+        },
+        "typeOfBoards" : {
+          "type" : "string"
+        }
+      },
+      "description" : "Sample model for the documentation"
+    },
+    "Swagger_LibraryGroup_Filter" : {
+      "type" : "object",
+      "properties" : {
+        "processors_id" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "group_name" : {
+          "type" : "string"
+        },
+        "count_from" : {
+          "type" : "integer",
+          "format" : "int32"
+        },
+        "count_to" : {
+          "type" : "integer",
+          "format" : "int32"
+        }
+      }
+    },
+    "JsonValueMissing" : {
+      "type" : "object",
+      "properties" : {
+        "state" : {
+          "type" : "string"
+        },
+        "message" : {
+          "type" : "string"
+        },
+        "required_jSON_parameter" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        }
+      }
+    },
+    "SingleLibrary" : {
+      "type" : "object",
+      "properties" : {
+        "id" : {
+          "type" : "string"
+        },
+        "description" : {
+          "type" : "string"
+        },
+        "library_name" : {
+          "type" : "string"
+        },
+        "versions" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "versionsCount" : {
+          "type" : "integer",
+          "format" : "int32",
+          "readOnly" : true
+        }
+      }
+    },
+    "Swagger_SecurityRole_New" : {
+      "type" : "object",
+      "properties" : {
+        "name" : {
+          "type" : "string"
+        }
+      }
+    },
+    "Result" : {
+      "type" : "object"
+    },
+    "Swagger_SingleLibraries_list" : {
+      "type" : "object",
+      "properties" : {
+        "singleLibraries" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/SingleLibrary"
+          }
+        }
+      }
+    },
+    "Swagger_C_program_list" : {
+      "type" : "object",
+      "properties" : {
+        "c_programArrayList" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/C_Program"
+          }
+        }
+      }
+    },
+    "Swagger_Board_New" : {
+      "type" : "object",
+      "properties" : {
+        "name" : {
+          "type" : "string"
+        },
+        "description" : {
+          "type" : "string"
+        }
+      }
+    },
+    "Swagger_LibraryGroup_Processor_List" : {
+      "type" : "object",
+      "properties" : {
+        "processors" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/Processor"
+          }
+        }
+      }
+    },
+    "Result_PermissionRequired" : {
+      "type" : "object",
+      "properties" : {
+        "code" : {
+          "type" : "integer",
+          "format" : "int32"
+        },
+        "state" : {
+          "type" : "string"
+        },
+        "statut" : {
+          "type" : "string"
+        },
+        "message" : {
+          "type" : "string"
+        }
+      }
+    },
+    "PrivateFiles" : {
+      "type" : "object",
+      "properties" : {
+        "content" : {
+          "type" : "string"
+        },
+        "fileName" : {
+          "type" : "string"
+        }
+      }
+    },
+    "Swagger_TypeOfBoards_List" : {
+      "type" : "object",
+      "properties" : {
+        "typeOfBoards" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/TypeOfBoard"
+          }
+        }
+      }
+    },
+    "Swagger_SingleLibrary_New" : {
+      "type" : "object",
+      "properties" : {
+        "library_name" : {
+          "type" : "string"
+        },
+        "description" : {
+          "type" : "string"
+        }
+      }
+    },
+    "Result_ok" : {
+      "type" : "object",
+      "properties" : {
+        "code" : {
+          "type" : "integer",
+          "format" : "int32"
+        },
+        "state" : {
+          "type" : "string"
+        },
+        "message" : {
+          "type" : "string"
+        }
+      }
+    },
+    "C_Program" : {
+      "type" : "object",
+      "properties" : {
+        "id" : {
+          "type" : "string"
+        },
+        "programName" : {
+          "type" : "string"
+        },
+        "programDescription" : {
+          "type" : "string"
+        },
+        "dateOfCreate" : {
+          "type" : "string",
+          "format" : "date-time"
+        },
+        "versionObjects" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/Version_Object"
+          }
+        }
+      },
+      "description" : "Object represented C_Program in database"
+    },
+    "Swagger_LibraryGroup_Libraries" : {
+      "type" : "object",
+      "properties" : {
+        "files" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/FileRecord"
+          }
+        }
+      }
+    },
+    "Swagger_SingleLibrary_Version_List" : {
+      "type" : "object"
+    },
+    "Swagger_LibraryGroup_Version_List" : {
+      "type" : "object"
+    },
+    "Version_Object" : {
+      "type" : "object",
+      "properties" : {
+        "id" : {
+          "type" : "string"
+        },
+        "version_name" : {
+          "type" : "string"
+        },
+        "versionDescription" : {
+          "type" : "string"
+        },
+        "dateOfCreate" : {
+          "type" : "string",
+          "format" : "date-time"
+        },
+        "files" : {
+          "type" : "integer",
+          "format" : "int32"
+        },
+        "allFiles" : {
+          "type" : "string",
+          "readOnly" : true
+        }
+      }
+    },
+    "FileRecord" : {
+      "type" : "object",
+      "properties" : {
+        "id" : {
+          "type" : "string"
+        },
+        "fileName" : {
+          "type" : "string"
+        },
+        "fileContent" : {
+          "type" : "string",
+          "readOnly" : true
+        }
+      }
+    },
+    "Swagger_Version" : {
+      "type" : "object",
+      "properties" : {
+        "version_name" : {
+          "type" : "string"
+        },
+        "version_description" : {
+          "type" : "string"
+        },
+        "files" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/PrivateFiles"
+          }
+        }
+      }
+    },
+    "TypeOfBoard" : {
+      "type" : "object",
+      "properties" : {
+        "id" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "description" : {
+          "type" : "string"
+        },
+        "producer" : {
+          "type" : "string"
+        },
+        "boards" : {
+          "type" : "string"
+        },
+        "libraryGroups" : {
+          "type" : "string",
+          "description" : "pet status in the store",
+          "readOnly" : true,
+          "enum" : [ "http://server_url/link/id" ]
+        },
+        "libraries" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "procesor" : {
+          "type" : "string",
+          "readOnly" : true
+        }
+      },
+      "description" : "divokÃ½ hodnÄ› divokÃ½ popis"
+    },
+    "PersonPermission" : {
+      "type" : "object",
+      "properties" : {
+        "id" : {
+          "type" : "string"
+        },
+        "value" : {
+          "type" : "string"
+        }
+      }
+    },
+    "Swagger_SingleLibrary_Version" : {
+      "type" : "object"
+    },
+    "Swagger_Processor_list" : {
+      "type" : "object"
+    },
+    "LibraryGroup" : {
+      "type" : "object",
+      "properties" : {
+        "id" : {
+          "type" : "string"
+        },
+        "group_name" : {
+          "type" : "string"
+        },
+        "description" : {
+          "type" : "string"
+        },
+        "processors" : {
+          "type" : "string"
+        },
+        "versions" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "versionsCount" : {
+          "type" : "integer",
+          "format" : "int32",
+          "readOnly" : true
+        }
+      }
+    },
+    "Swagger_LibraryGroup_list" : {
+      "type" : "object",
+      "properties" : {
+        "libraryGroups" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/LibraryGroup"
+          }
+        }
+      }
+    },
+    "Result_NotFound" : {
+      "type" : "object",
+      "properties" : {
+        "code" : {
+          "type" : "integer",
+          "format" : "int32"
+        },
+        "state" : {
+          "type" : "string"
+        },
+        "message" : {
+          "type" : "string"
+        }
+      }
+    },
+    "Swagger_Producer_list" : {
+      "type" : "object",
+      "properties" : {
+        "producers" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/ProducerModel"
+          }
+        }
+      }
+    },
+    "Swagger_TypeOfBoard_New" : {
+      "type" : "object"
+    },
+    "Swagger_SecurityRole_List" : {
+      "type" : "object",
+      "properties" : {
+        "roles" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/SecurityRole"
+          }
+        }
+      }
+    }
+  }
+}

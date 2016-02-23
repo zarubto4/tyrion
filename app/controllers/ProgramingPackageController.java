@@ -140,7 +140,7 @@ public class ProgramingPackageController extends Controller {
 
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - getBoard ERROR");
+            Logger.error("ProgramingPackageController - get_Board ERROR");
             return GlobalResult.internalServerError();
         }
     }
@@ -408,7 +408,7 @@ public class ProgramingPackageController extends Controller {
             b_program.azurePackageLink      = "personal-program";
             b_program.dateOfCreate          = new Date();
             b_program.programDescription    = json.get("programDescription").asText();
-            b_program.programName           = json.get("programName").asText();
+            b_program.programName           = json.get("program_name").asText();
             b_program.project               = project;
             b_program.setUniqueAzureStorageLink();
 
@@ -479,13 +479,13 @@ public class ProgramingPackageController extends Controller {
             if (program == null) return GlobalResult.notFoundObject();
 
             program.programDescription = json.get("programDescription").asText();
-            program.programName = json.get("programName").asText();
+            program.programName = json.get("program_name").asText();
 
             program.update();
             return GlobalResult.okResult(Json.toJson(program));
 
         } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "programName - String", "programDescription - TEXT");
+            return GlobalResult.nullPointerResult(e, "program_name - String", "programDescription - TEXT");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - editProgram ERROR");
@@ -527,7 +527,7 @@ public class ProgramingPackageController extends Controller {
             return GlobalResult.okResult(Json.toJson(b_program));
 
         } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "programName - String", "programDescription - TEXT");
+            return GlobalResult.nullPointerResult(e, "program_name - String", "programDescription - TEXT");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - editProgram ERROR");

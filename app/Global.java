@@ -46,7 +46,7 @@ public class Global extends GlobalSettings {
     //****************************************************************************************************************************
 
            // For Developing
-            //3
+           // 3
 
 
            if(SecurityRole.findByName("SuperAdmin") == null){
@@ -56,14 +56,14 @@ public class Global extends GlobalSettings {
                 role.save();
            }
 
-           if (Person.find.where().eq("mail", "admin@bzyance.cz").findUnique() == null)
+           if (Person.find.where().eq("mail", "admin@byzance.cz").findUnique() == null)
            {
-               Logger.warn("Creating first admin account: admin@bzyance.cz, password: 123456789");
+               Logger.warn("Creating first admin account: admin@byzance.cz, password: 123456789");
                Person person = new Person();
-               person.firstName = "Admin";
-               person.lastName = "Byzance";
-               person.emailValidated = true;
-               person.mail = "admin@bzyance.cz";
+               person.first_name = "Admin";
+               person.last_name = "Byzance";
+               person.mailValidated = true;
+               person.mail = "admin@byzance.cz";
                person.setSha("123456");
                person.roles.add(SecurityRole.findByName("SuperAdmin"));
                person.save();
@@ -109,7 +109,9 @@ public class Global extends GlobalSettings {
     public Action onRequest(Http.Request request, Method actionMethod) {
         System.out.println(request.toString());
         return super.onRequest(request, actionMethod);
+
     }
+
 
 }
 

@@ -6,6 +6,8 @@ import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.Query;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.Authorization;
 import models.overflow.*;
 import play.Logger;
 import play.libs.Json;
@@ -19,10 +21,11 @@ import utilities.response.GlobalResult;
 
 import java.util.*;
 
+
 public class OverFlowController  extends Controller {
 
-// PUBLIC
-//**********************************************************************************************************************
+// PUBLIC **********************************************************************************************************************
+
 
     public Result getPost(String id){
         try{
@@ -154,7 +157,7 @@ public class OverFlowController  extends Controller {
 
             if(json.has("nick_name")){
                 String authorId = json.get("nick_name").asText();
-                query.where().ieq("author.nickName", authorId);
+                query.where().ieq("author.nick_name", authorId);
             }
 
 
@@ -236,7 +239,7 @@ public class OverFlowController  extends Controller {
     }
 
 
-    //**********************************************************************************************************************
+// SECURED **********************************************************************************************************************
     @Security.Authenticated(Secured.class)
     public Result getAllPersonPost(){
         try {
@@ -249,7 +252,6 @@ public class OverFlowController  extends Controller {
             return GlobalResult.internalServerError();
         }
     }
-
 
     @Security.Authenticated(Secured.class)
     @BodyParser.Of(BodyParser.Json.class)
@@ -530,8 +532,6 @@ public class OverFlowController  extends Controller {
         }
     }
 
-
-
     @Security.Authenticated(Secured.class)
     public Result newTypeOfPost(){
         try{
@@ -588,7 +588,6 @@ public class OverFlowController  extends Controller {
         }
     }
 
-
     @Security.Authenticated(Secured.class)
     public Result putTypeOfConfirmToPost(String conf, String pst){
         try{
@@ -607,8 +606,6 @@ public class OverFlowController  extends Controller {
             return GlobalResult.nullPointerResult(e);
         }
     }
-
-
 
     @Security.Authenticated(Secured.class)
     public Result addHashTag(){
@@ -641,8 +638,6 @@ public class OverFlowController  extends Controller {
         }
 
     }
-
-
 
     @Security.Authenticated(Secured.class)
     public Result removeHashTag(){

@@ -2,6 +2,7 @@ package controllers;
 
 import be.objectify.deadbolt.java.actions.Pattern;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.*;
 import models.persons.Person;
 import models.persons.PersonPermission;
@@ -18,14 +19,13 @@ import utilities.response.response_objects.Result_PermissionRequired;
 import utilities.response.response_objects.Result_Unauthorized;
 import utilities.response.response_objects.Result_ok;
 import utilities.swagger.documentationClass.Swagger_PersonPermission_list;
-import utilities.swagger.documentationClass.Swagger_SecurityRole_List;
 
 import javax.websocket.server.PathParam;
 import java.util.List;
 
-@Api(value = "PermissionController",
-     description = "Compilation operation (Role, Permission and permissions operations",
-     authorizations = { @Authorization(value="logged_in", scopes = {} )}
+@Api(value = "PermissionController - nezdokumentované",
+        description = "Compilation operation (Role, Permission and permissions operations",
+        authorizations = { @Authorization(value="logged_in", scopes = {} )}
 )
 @Security.Authenticated(Secured.class)
 public class PermissionController extends Controller {
@@ -52,7 +52,7 @@ public class PermissionController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Pattern("permission.connectWithPerson")
-    public Result add_Permission_Person(@ApiParam(required = true) @PathParam("person_id") String person_id, @ApiParam(required = true) @PathParam("permission_id")String permission_id) {
+    public Result add_Permission_Person(@ApiParam(required = true) @PathParam("person_id") String person_id, @ApiParam(required = true) @PathParam("permission_id") String permission_id) {
         try {
 
             Person person = Person.find.byId(person_id);
@@ -134,7 +134,7 @@ public class PermissionController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = PersonPermission.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = PersonPermission.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -463,7 +463,7 @@ public class PermissionController extends Controller {
             tags = {"Role"},
             notes = "If you set Role to Person. You need permission for that or have right system Roles",
             produces = "application/json",
-            response =  Swagger_SecurityRole_List.class,
+            response =  SecurityRole.class,
             protocols = "https",
             code = 200,
             authorizations = {
@@ -475,7 +475,7 @@ public class PermissionController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_SecurityRole_List.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = SecurityRole.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -491,6 +491,48 @@ public class PermissionController extends Controller {
             Logger.error("CompilationLibrariesController - new_Processor ERROR");
             return GlobalResult.internalServerError();
         }
+
+    }
+
+
+///*********************************************************************************************************************
+
+    // Private class for Swagger documentation
+    private class SystemAccess {
+        public List<SecurityRole> roles;
+        public List<PersonPermission> permissions;
+    }
+    @ApiOperation(value = "get all system permissions & Roles",
+            tags = {"Role", "Permission", "Person"},
+            notes = "This api return List of Roles and List of Permission",
+            produces = "application/json",
+            response =  SystemAccess.class,
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "role.manager", description = "Person need this permission"),
+                                    @AuthorizationScope(scope = "SuperAdmin",   description = "Or person must be SuperAdmin role")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = SystemAccess.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result get_System_Acces(@ApiParam(required = true) @PathParam("person_id") String person_id){
+
+        Person person = Person.find.byId(person_id);
+        ObjectNode result = Json.newObject();
+        result.set("roles", Json.toJson(person.roles));
+        result.set("permission", Json.toJson(person.permissions));
+
+        return GlobalResult.okResult(Json.toJson(result));
+
+
 
     }
 
