@@ -2,15 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f6cef342-dd25-45cb-b650-fad262b8d827" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/app/models/project/b_program/B_Program.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/app/models/project/b_program/B_Program_Cloud.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/app/models/project/b_program/B_Program_Homer.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/app/models/project/c_program/C_Program.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/app/models/project/global/Home.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/app/models/project/global/Homer.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/app/models/project/global/Project.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/app/models/project/m_program/M_Program.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/app/models/project/m_program/M_Project.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="tyrion.iws" />
@@ -1119,7 +1110,7 @@
       <workItem from="1455730733520" duration="71210000" />
       <workItem from="1456015276807" duration="33383000" />
       <workItem from="1456179375337" duration="538000" />
-      <workItem from="1456217084972" duration="21507000" />
+      <workItem from="1456217084972" duration="21527000" />
     </task>
     <task id="LOCAL-00001" summary="Version 1.04.1 - Login with social Networks">
       <created>1453797530585</created>
@@ -1211,11 +1202,17 @@
       <option name="project" value="LOCAL" />
       <updated>1456255780973</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="Develop Version 1.04.9.6&#10;">
+      <created>1456256926140</created>
+      <option name="number" value="00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1456256926140</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="559738000" />
+    <option name="totallyTimeSpent" value="559758000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1237,11 +1234,11 @@
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="true" internal_type="SLIDING" type="SLIDING" visible="false" show_stripe_button="true" weight="0.28977272" sideWeight="0.43923748" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32962668" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3028274" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3028274" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.44270834" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" x="796" y="981" width="867" height="512" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.34077382" sideWeight="0.5607625" order="12" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.20174742" sideWeight="0.8693182" order="5" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.20174742" sideWeight="0.8693182" order="5" side_tool="false" content_ui="combo" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.030579826" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32514882" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24980143" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -1318,7 +1315,8 @@
     <MESSAGE value="Version 1.04.8.2" />
     <MESSAGE value="Develop Version 1.04.9.4&#10;" />
     <MESSAGE value="Develop Version 1.04.9.5&#10;" />
-    <option name="LAST_COMMIT_MESSAGE" value="Develop Version 1.04.9.5&#10;" />
+    <MESSAGE value="Develop Version 1.04.9.6&#10;" />
+    <option name="LAST_COMMIT_MESSAGE" value="Develop Version 1.04.9.6&#10;" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
