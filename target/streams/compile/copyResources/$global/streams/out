@@ -5,6 +5,7 @@
 [debug] 	(/Users/zaruba/ownCloud/Git/Tyrion/conf/language,/Users/zaruba/ownCloud/Git/Tyrion/target/scala-2.11/classes/language)
 [debug] 	(/Users/zaruba/ownCloud/Git/Tyrion/conf/logback.xml,/Users/zaruba/ownCloud/Git/Tyrion/target/scala-2.11/classes/logback.xml)
 [debug] 	(/Users/zaruba/ownCloud/Git/Tyrion/conf/routes,/Users/zaruba/ownCloud/Git/Tyrion/target/scala-2.11/classes/routes)
+[debug] 	(/Users/zaruba/ownCloud/Git/Tyrion/conf/swagger.json,/Users/zaruba/ownCloud/Git/Tyrion/target/scala-2.11/classes/swagger.json)
 [debug] 	(/Users/zaruba/ownCloud/Git/Tyrion/conf/eclipseFiles/cdproject.xml,/Users/zaruba/ownCloud/Git/Tyrion/target/scala-2.11/classes/eclipseFiles/cdproject.xml)
 [debug] 	(/Users/zaruba/ownCloud/Git/Tyrion/conf/eclipseFiles/project.xml,/Users/zaruba/ownCloud/Git/Tyrion/target/scala-2.11/classes/eclipseFiles/project.xml)
 [debug] 	(/Users/zaruba/ownCloud/Git/Tyrion/conf/evolutions/default,/Users/zaruba/ownCloud/Git/Tyrion/target/scala-2.11/classes/evolutions/default)

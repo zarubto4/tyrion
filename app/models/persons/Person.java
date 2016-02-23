@@ -26,15 +26,15 @@ public class Person extends Model implements Subject {
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)     public String id;
 
                    @Column(unique=true)  @Constraints.Email     public String mail;
-                   @Column(unique=true)  @Constraints.Min(5)    public String nickName;
-                                                                public String firstName;
-                                                                public String middleName;
-                                                                public String lastName;
-                                                                public String firstTitle;
-                                                                public String lastTitle;
-                                                                public Date   dateOfBirth;
+                   @Column(unique=true)  @Constraints.Min(5)    public String nick_name;
+                                                                public String first_name;
+                                                                public String middle_name;
+                                                                public String last_name;
+                                                                public String first_title;
+                                                                public String last_title;
+                                                                public Date date_of_birth;
                                                 @JsonIgnore     private String authToken;
-                                                @JsonIgnore     public boolean emailValidated;
+                                                @JsonIgnore     public boolean mailValidated;
                                        @Column(length = 64)     private byte[] shaPassword;
 
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<Project>              owningProjects            = new ArrayList<>();
@@ -57,7 +57,7 @@ public class Person extends Model implements Subject {
     public List<? extends Permission> getPermissions() { return permissions;}
 
     @Override   @JsonIgnore
-    public String getIdentifier() { return nickName; }
+    public String getIdentifier() { return nick_name; }
 
 //#### FINDER ########################################################################################################
 

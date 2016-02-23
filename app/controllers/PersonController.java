@@ -1,6 +1,8 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.Authorization;
 import models.persons.Person;
 import models.persons.ValidationToken;
 import play.Configuration;
@@ -20,67 +22,70 @@ import javax.inject.Inject;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
-
-public class PersonCreateController extends Controller {
+@Api(value = "PersonController - nezdokumentované",
+     description = "Compilation operation (Role, Permission and permissions operations",
+     authorizations = { @Authorization(value="logged_in", scopes = {} )}
+)
+public class PersonController extends Controller {
 
     @Inject MailerClient mailerClient;
+
 
     @BodyParser.Of(BodyParser.Json.class)
     public Result developerRegistration() {
         try{
             JsonNode json = request().body().asJson();
 
+            if ( Person.find.where().eq("nick_name", json.get("nick_name").asText()).findUnique() != null) return GlobalResult.badRequest("nick name is used");
+            if ( Person.find.where().eq("mail", json.get("mail").asText()).findUnique()  != null) return GlobalResult.badRequest("Email is registered");
+
             Person person = new Person();
             person.mail = json.get("mail").asText();
-            person.emailValidated = true;
-
-
-
-
-            if (Person.find.byId(json.get("mail").asText()) != null) return GlobalResult.nullPointerResult("Email Exist");
+            person.mailValidated = true;
+            person.nick_name = json.get("nick_name").asText();
 
             person.setSha(json.get("password").asText());
             person.save();
 
             return GlobalResult.okResult();
         } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "mail - String",  "password - String");
+            return GlobalResult.nullPointerResult(e, "mail",  "password");
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("PersonCreateController - updatePersonInformation ERROR");
+            Logger.error("PersonController - edit_Person_Information ERROR");
             Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
     }
 
     @BodyParser.Of(BodyParser.Json.class)
-    public Result standartRegistration() {
+    public Result registred_Person() {
         try {
             JsonNode json = request().body().asJson();
 
+            if (Person.find.where().eq("nick_name", json.get("nick_name").asText()).findUnique()  != null) return GlobalResult.badRequest("nick name is used");
+            if (Person.find.where().eq("mail", json.get("mail").asText()).findUnique() != null)  return GlobalResult.badRequest("Email is registered");
+
+
             Person person = new Person();
 
-            person.nickName = json.get("nickName").asText();
+            person.nick_name = json.get("nick_name").asText();
             person.mail = json.get("mail").asText();
-            person.emailValidated = false;
-            //person.password = json.get("password").asText();
-
-            if (Person.find.where().eq("mail",json.get("mail").asText()).findUnique() != null) return GlobalResult.nullPointerResult("Email is used");
-            if (Person.find.where().eq("nickName",json.get("nickName").asText()).findUnique() != null) return GlobalResult.nullPointerResult("Nickname is used");
-
+            person.mailValidated = false;
 
             person.setSha(json.get("password").asText());
             person.save();
 
             ValidationToken validationToken = new ValidationToken().setValidation(person.mail);
 
-            String link = Configuration.root().getString("serverLink.Production") + "/emailPersonAuthentication/" + "?mail=" + person.mail + "&authToken=" + validationToken.authToken;
+            String link = Configuration.root().getString("serverLink.Production") + "/mailPersonAuthentication/" + "?mail=" + person.mail + "&authToken=" + validationToken.authToken;
 
             try {
-                Email email = new EmailTool().sendEmailValidation(person.firstName + person.lastName, person.mail, link);
+                Email email = new EmailTool().sendEmailValidation(person.first_name + person.last_name, person.mail, link);
                 mailerClient.send(email);
 
             }catch (Exception e){
+                // TODO vhodně zalogovat tento problém
                 System.out.println("Odesílání emailu se nezdařilo");
                 e.printStackTrace();
             }
@@ -89,14 +94,14 @@ public class PersonCreateController extends Controller {
 
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("PersonCreateController - updatePersonInformation ERROR");
+            Logger.error("PersonController - edit_Person_Information ERROR");
             Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
     }
 
 
-    public Result emailPersonAuthentitaction(String mail, String authToken) {
+    public Result email_Person_authentitaction(String mail, String authToken) {
         try{
 
             Person person = Person.find.where().eq("mail", mail).findUnique();
@@ -104,7 +109,7 @@ public class PersonCreateController extends Controller {
 
             if(person == null || validationToken == null || !validationToken.personEmail.equals(mail)) return GlobalResult.redirect( Configuration.root().getString("Becki.accountAuthorizedFailed") );
 
-            person.emailValidated = true;
+            person.mailValidated = true;
             person.update();
 
            validationToken.delete();
@@ -112,7 +117,7 @@ public class PersonCreateController extends Controller {
             return GlobalResult.redirect( Configuration.root().getString("Becki.accountAuthorizedSuccessful") );
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("PersonCreateController - emailPersonAuthentitaction ERROR");
+            Logger.error("PersonController - email_Person_authentitaction ERROR");
             return GlobalResult.internalServerError();
         }
     }
@@ -129,7 +134,7 @@ public class PersonCreateController extends Controller {
 
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("PersonCreateController - getPerson ERROR");
+            Logger.error("PersonController - getPerson ERROR");
             return GlobalResult.internalServerError();
         }
     }
@@ -142,15 +147,13 @@ public class PersonCreateController extends Controller {
 
             Person person = Person.find.byId(id);
             if(person == null ) return GlobalResult.notFoundObject();
-
             person.delete();
 
             return GlobalResult.okResult();
 
-
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("PersonCreateController - deletePerson ERROR");
+            Logger.error("PersonController - deletePerson ERROR");
             return GlobalResult.internalServerError();
         }
     }
@@ -159,29 +162,29 @@ public class PersonCreateController extends Controller {
 
     @Security.Authenticated(Secured.class)
     @BodyParser.Of(BodyParser.Json.class)
-    public  Result updatePersonInformation(){
+    public  Result edit_Person_Information(){
         try{
             JsonNode json = request().body().asJson();
 
             Person person = Person.find.byId(json.get("mail").asText());
             if (person == null) return GlobalResult.notFoundObject();
 
-            person.nickName     =  json.get("nickName")     .asText();
-            person.firstName    = json.get("firstName")     .asText();
-            person.middleName   = json.get("middleName")    .asText();
-            person.lastName = json.get("lastName")      .asText();
-            person.dateOfBirth  = new SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH).parse(json.get("dateOfBirth").asText());
-            person.firstTitle   = json.get("firstTitle")    .asText();
-            person.lastTitle    = json.get("lastTitle")     .asText();
+            person.nick_name    = json.get("nick_name")     .asText();
+            person.first_name   = json.get("first_name")     .asText();
+            person.middle_name  = json.get("middle_name")    .asText();
+            person.last_name    = json.get("last_name")      .asText();
+            person.date_of_birth = new SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH).parse(json.get("date_of_birth").asText());
+            person.first_title  = json.get("first_title")    .asText();
+            person.last_title   = json.get("last_title")     .asText();
             person.update();
 
             return GlobalResult.okResult();
 
         } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "nickName - String",  "firstName - String",  "middleName - String",  "lastName - String",  "dateOfBirth - String",  "firstTitle - String", "lastTitle - String");
+            return GlobalResult.nullPointerResult(e, "nick_name - String",  "first_name - String",  "middle_name - String",  "last_name - String",  "date_of_birth - String",  "first_title - String", "last_title - String");
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("PersonCreateController - updatePersonInformation ERROR");
+            Logger.error("PersonController - edit_Person_Information ERROR");
             Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }

@@ -13,11 +13,9 @@ public class Secured extends Security.Authenticator {
     @Override
     public String getUsername(Context ctx) {
 
-        System.out.println("Kontrola uživatele");
         Person person = null;
 
         String[] authTokenHeaderValues = ctx.request().headers().get("X-AUTH-TOKEN");
-
 
         if ((authTokenHeaderValues != null) && (authTokenHeaderValues.length == 1) && (authTokenHeaderValues[0] != null)) {
             person = Person.findByAuthToken(authTokenHeaderValues[0]);
@@ -27,12 +25,10 @@ public class Secured extends Security.Authenticator {
             }
         }
 
-        System.out.println("Vracím null");
         return null;
     }
 
     public static boolean isLoggedIn(Context ctx){
-        System.out.println("Kontrola isLoggedIn");
 
         String[] authTokenHeaderValues = ctx.request().headers().get("X-AUTH-TOKEN");
 

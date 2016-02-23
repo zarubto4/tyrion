@@ -45,7 +45,7 @@ import java.util.Set;
  */
 
 
-@Api(value = "Neroztříděný píčoviny",
+@Api(value = "Ještě neroztříděné a neupravené",
      description = "Compilation operation (C_Program, Processor, Libraries, TypeOfBoard...",
      authorizations = { @Authorization(value="logged_in", scopes = {} )}
     )
@@ -68,13 +68,6 @@ public class CompilationLibrariesController extends Controller {
                         )
                   }
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful created",      response = C_Program.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(
@@ -86,6 +79,13 @@ public class CompilationLibrariesController extends Controller {
                     )
             }
     )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successful created",      response = C_Program.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @BodyParser.Of(BodyParser.Json.class)
     @Dynamic("project.owner")
     public Result create_C_Program(@ApiParam(value = "project_id String query", required = true) @PathParam("project_id") String project_id) {
@@ -96,7 +96,7 @@ public class CompilationLibrariesController extends Controller {
 
             // Tvorba programu
             C_Program c_program             = new C_Program();
-            c_program.programName           = json.get("programName").asText();
+            c_program.program_name          = json.get("program_name").asText();
             c_program.programDescription    = json.get("programDescription").asText();
             c_program.azurePackageLink      = "personal-program";
             c_program.project               = Project.find.byId(json.get(project_id).asText());
@@ -111,7 +111,7 @@ public class CompilationLibrariesController extends Controller {
 
         } catch (NullPointerException e) {
             Logger.warn("Missing Json value in " + Thread.currentThread().getStackTrace());
-            return GlobalResult.nullPointerResult(e, "programDescription", "programName");
+            return GlobalResult.nullPointerResult(e, "programDescription", "program_name");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - new_Processor ERROR");
@@ -159,7 +159,7 @@ public class CompilationLibrariesController extends Controller {
             tags = {"C_Program"},
             notes = "get all C_program from project by query = project_id",
             produces = "application/json",
-            response =  Swagger_C_program_list.class,
+            response =  C_Program.class,
             protocols = "https",
             code = 200,
             authorizations = {
@@ -171,7 +171,7 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_C_program_list.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = C_Program.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -232,7 +232,7 @@ public class CompilationLibrariesController extends Controller {
 
             C_Program program = C_Program.find.byId(c_program_id);
 
-            program.programName = json.get("programName").asText();
+            program.program_name = json.get("program_name").asText();
             program.programDescription = json.get("programDescription").asText();
 
             program.update();
@@ -240,7 +240,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.okResult(Json.toJson(program));
 
         } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "programName", "programDescription" );
+            return GlobalResult.nullPointerResult(e, "program_name", "programDescription" );
         } catch (Exception e) {
             Logger.error("CompilationLibrariesController - gellAllProgramFromProject ERROR");
             Logger.error(request().body().asJson().toString());
@@ -557,7 +557,7 @@ public class CompilationLibrariesController extends Controller {
             tags = {"Processor"},
             notes = "If you want get Processor by query processor_id.",
             produces = "application/json",
-            response =  Swagger_Processor_list.class,
+            response =  Processor.class,
             protocols = "https",
             code = 200,
             authorizations = {
@@ -568,7 +568,7 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Processor_list.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Processor.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -737,7 +737,7 @@ public class CompilationLibrariesController extends Controller {
             tags = {"Processor", "LibraryGroup"},
             notes = "If you want get all LibraryGroups from Processor by query processor_id.",
             produces = "application/json",
-            response =  Swagger_LibraryGroup_list.class,
+            response =  LibraryGroup.class,
             protocols = "https",
             code = 200,
             authorizations = {
@@ -748,7 +748,7 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_LibraryGroup_list.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = LibraryGroup.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Object Not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
@@ -768,11 +768,11 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
-    @ApiOperation(value = "get Processor.SingleLibraries",
+    @ApiOperation(value = "get SingleLibraries from Processor object",
             tags = {"Processor", "SingleLibrary"},
             notes = "If you want get all SingleLibraries from Processor by query processor_id.",
             produces = "application/json",
-            response =  Swagger_LibraryGroup_list.class,
+            response =  SingleLibrary.class,
             protocols = "https",
             code = 200,
             authorizations = {
@@ -783,14 +783,14 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_LibraryGroup_list.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = SingleLibrary.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Object Not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("processor.read")
-    public Result getProcessorSingleLibraries( @ApiParam(value = "processor_id String query", required = true) @PathParam("processor_id")String processor_id) {
+    @Pattern("singleLibraries.read")
+    public Result getProcessorSingleLibraries( @ApiParam(value = "processor_id String query", required = true) @PathParam("processor_id") String processor_id) {
         try {
             Processor processor = Processor.find.byId(processor_id);
             if(processor == null ) return GlobalResult.notFoundObject();
@@ -1030,7 +1030,7 @@ public class CompilationLibrariesController extends Controller {
             tags = {"LibraryGroup"},
             notes = "If you want create new versinon in LibraryGroup query = libraryGroup_id. Send required json values and server respond with new object",
             produces = "application/json",
-            response =  Swagger_LibraryGroup_Version.class,
+            response =  Version_Object.class,
             protocols = "https",
             code = 201,
             authorizations = {
@@ -1041,7 +1041,7 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful created",      response = Swagger_LibraryGroup_Version.class),
+            @ApiResponse(code = 201, message = "Successful created",      response = Version_Object.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
@@ -1096,7 +1096,7 @@ public class CompilationLibrariesController extends Controller {
             tags = {"LibraryGroup"},
             notes = "If you want create new versinon in LibraryGroup query = libraryGroup_id. Send required json values and server respond with new object",
             produces = "application/json",
-            response =  Swagger_LibraryGroup_Version_List.class,
+            response =  Version_Object.class,
             protocols = "https",
             code = 200,
             authorizations = {
@@ -1107,7 +1107,7 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result",      response = Swagger_LibraryGroup_Version_List.class),
+            @ApiResponse(code = 200, message = "Ok result",      response = Version_Object.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
@@ -1134,7 +1134,6 @@ public class CompilationLibrariesController extends Controller {
             notes = "Its not possible now describe uploud file in Swagger. But file name must be longer than 5 chars." +
                     "in body of html content is \"files\"",
             produces = "application/json",
-            response =  Swagger_LibraryGroup_Version_List.class,
             protocols = "https",
             code = 200,
             authorizations = {
@@ -1145,7 +1144,7 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result",      response = Swagger_LibraryGroup_Version_List.class),
+            @ApiResponse(code = 200, message = "Ok result"),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1377,7 +1376,7 @@ public class CompilationLibrariesController extends Controller {
             tags = {"LibraryGroup", "Processor"},
             notes = "If you want get Processors from LibraryGroup by query = libraryGroup_id",
             produces = "application/json",
-            response =  Swagger_LibraryGroup_Processor_List.class,
+            response =  Processor.class,
             protocols = "https",
             code = 200,
             authorizations = {
@@ -1388,7 +1387,7 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result",      response = Swagger_LibraryGroup_Processor_List.class),
+            @ApiResponse(code = 200, message = "Ok result",      response = Processor.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1477,12 +1476,12 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
-    @ApiOperation(value = "get LibraryGroup with Filter parameters",
+    @ApiOperation(value = "get LibraryGroup with Filters parameters",
             tags = {"LibraryGroup"},
             notes = "If you want get all or only some LibraryGroups you can use filter parameters in Json. But EveryTime i will return maximal 25 objects \n\n" +
                     "so, you have to used that limit for frontend pagination -> first round (0,25), second round (26, 50) etc... \n ",
             produces = "application/json",
-            response =  Swagger_LibraryGroup_Libraries.class,
+            response =  LibraryGroup.class,
             protocols = "https",
             code = 200,
             authorizations = {
@@ -1504,7 +1503,7 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result",               response = Swagger_LibraryGroup_list.class),
+            @ApiResponse(code = 200, message = "Ok result",               response = LibraryGroup.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1614,6 +1613,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successful created",      response = SingleLibrary.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1647,7 +1647,7 @@ public class CompilationLibrariesController extends Controller {
             tags = {"SingleLibrary"},
             notes = "if you want create new SingleLibrary for C_program compilation",
             produces = "application/json",
-            response =  Swagger_SingleLibrary_Version.class,
+            response =  Version_Object.class,
             protocols = "https",
             code = 201,
             authorizations = {
@@ -1659,7 +1659,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
 
-            @ApiResponse(code = 201, message = "Successful created",      response = Swagger_SingleLibrary_Version.class),
+            @ApiResponse(code = 201, message = "Successful created",      response = Version_Object.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1699,7 +1699,7 @@ public class CompilationLibrariesController extends Controller {
             tags = {"SingleLibrary"},
             notes = "if you want create new SingleLibrary for C_program compilation",
             produces = "application/json",
-            response =  Swagger_SingleLibrary_Version_List.class,
+            response =  Version_Object.class,
             protocols = "https",
             code = 200,
             authorizations = {
@@ -1710,7 +1710,7 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result",               response = Swagger_SingleLibrary_Version_List.class),
+            @ApiResponse(code = 200, message = "Ok result",               response = Version_Object.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1810,13 +1810,13 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
-    @ApiOperation(value = "get Library with Filter parameters",
+    @ApiOperation(value = "get Library with Filters parameters",
             tags = {"SingleLibrary"},
             notes = "If you want get all or only some SingleLibraries you can use filter parameters in Json. But EveryTime i will return maximal 25 objects \n\n" +
                     "so, you have to used that limit for frontend pagination -> first round (0,25), second round (26, 50) etc... I will give you also" +
                     "information how many results you can show \n ",
             produces = "application/json",
-            response =  Swagger_SingleLibraries_list.class,
+            response =  SingleLibrary.class,
             protocols = "https",
             code = 200,
             authorizations = {
@@ -1838,7 +1838,7 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result",               response = Swagger_SingleLibraries_list.class),
+            @ApiResponse(code = 200, message = "Ok result",               response = SingleLibrary.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1883,6 +1883,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok result",               response = SingleLibrary.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1972,7 +1973,7 @@ public class CompilationLibrariesController extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Board_New",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Producer_New",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -1981,13 +1982,14 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successful created",      response = Producer.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Pattern("producer.create")
     @BodyParser.Of(BodyParser.Json.class)
-    public Result new_Producers() {
+    public Result new_Producer() {
         try {
             JsonNode json = request().body().asJson();
 
@@ -2027,7 +2029,7 @@ public class CompilationLibrariesController extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Board_New",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Producer_New",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -2036,13 +2038,14 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",      response = Producer.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Pattern("producer.edit")
     @BodyParser.Of(BodyParser.Json.class)
-    public Result updateProducers(@ApiParam(required = true) @PathParam("producer_id") String producer_id) {
+    public Result edit_Producer(@ApiParam(required = true) @PathParam("producer_id") String producer_id) {
         try {
             JsonNode json = request().body().asJson();
 
@@ -2056,10 +2059,10 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.okResult(Json.toJson(producer));
         } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "description - TEXT", "name - String");
+            return GlobalResult.nullPointerResult(e, "description", "name");
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - updateProducers ERROR");
+            Logger.error("CompilationLibrariesController - edit_Producer ERROR");
             Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
@@ -2104,7 +2107,7 @@ public class CompilationLibrariesController extends Controller {
             tags = {"Producer"},
             notes = "if you want get Producer. Its company owned physical boards and we used that for filtering",
             produces = "application/json",
-            response =  Swagger_Producer_list.class,
+            response =  Producer.class,
             protocols = "https",
             code = 200,
             authorizations = {
@@ -2116,13 +2119,13 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Producer_list.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Producer.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Pattern("producer.read")
-    public Result getProducer(@ApiParam(required = true) @PathParam("producer_id") String producer_id) {
+    public Result get_Producer(@ApiParam(required = true) @PathParam("producer_id") String producer_id) {
         try {
             Producer producer = Producer.find.byId(producer_id);
 
@@ -2132,12 +2135,11 @@ public class CompilationLibrariesController extends Controller {
 
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - getProducer ERROR");
+            Logger.error("CompilationLibrariesController - get_Producer ERROR");
             Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
     }
-
 
     @ApiOperation(value = "get Producer description",
             tags = {"Producer"},
@@ -2161,7 +2163,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Pattern("producer.read")
-    public Result getProducerDescription(@ApiParam(required = true) @PathParam("producer_id") String producer_id) {
+    public Result get_Producer_Description(@ApiParam(required = true) @PathParam("producer_id") String producer_id) {
         try {
             Producer producer = Producer.find.byId(producer_id);
 
@@ -2173,7 +2175,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.okResult(Json.toJson(description));
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - getProducerDescription ERROR");
+            Logger.error("CompilationLibrariesController - get_Producer_Description ERROR");
             Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
@@ -2183,24 +2185,25 @@ public class CompilationLibrariesController extends Controller {
             tags = {"Producer", "TypeOfBoard"},
             notes = "if you want get TypeOfBoard from Producer. Its a list of Boards types.",
             produces = "application/json",
-            response =  Swagger_TypeOfBoards_List.class,
+            response =  TypeOfBoard.class,
             protocols = "https",
             code = 200,
             authorizations = {
                     @Authorization(
                             value="permission",
-                            scopes = { @AuthorizationScope(scope = "producer.read", description = "Person need this permission"),
+                            scopes = { @AuthorizationScope(scope = "typeOfBoard.read", description = "Person need this permission"),
                                        @AuthorizationScope(scope = "SuperAdmin", description = "Or person must be SuperAdmin role")}
                     )
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_TypeOfBoards_List.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = TypeOfBoard.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result getProducerTypeOfBoards(@ApiParam(required = true) @PathParam("producer_id") String producer_id) {
+    @Pattern("typeOfBoard.read")
+    public Result get_Producer_TypeOfBoards(@ApiParam(required = true) @PathParam("producer_id") String producer_id) {
         try {
             Producer producer = Producer.find.byId(producer_id);
             if(producer == null ) return GlobalResult.notFoundObject();
@@ -2209,25 +2212,61 @@ public class CompilationLibrariesController extends Controller {
 
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - getProducerTypeOfBoards ERROR");
+            Logger.error("CompilationLibrariesController - get_Producer_TypeOfBoards ERROR");
             Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
     }
 
+
+
 ///###################################################################################################################*/
 
+    @ApiOperation(value = "create TypeOfBoard",
+            tags = { "TypeOfBoard"},
+            notes = "The TypeOfBoard is category for IoT. Like Raspberry2, Arduino-Uno etc. \n\n" +
+                    "We using that for compilation, sorting libraries, filtres and more..",
+            produces = "application/json",
+            response =  TypeOfBoard.class,
+            protocols = "https",
+            code = 201,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "typeOfBoard.create", description = "Person need this permission"),
+                                       @AuthorizationScope(scope = "SuperAdmin", description = "Or person must be SuperAdmin role")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_TypeOfBoard_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successful created",      response = TypeOfBoard.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result newTypeOfBoard() {
+    @Pattern("typeOfBoard.create")
+    public Result new_TypeOfBoard() {
         try {
             JsonNode json = request().body().asJson();
 
-            Producer producer = Producer.find.byId(json.get("producerId").asText());
+            Producer producer = Producer.find.byId(json.get("producer_id").asText());
             if(producer == null ) return GlobalResult.notFoundObject();
 
-            Processor processor = Processor.find.byId(json.get("processorId").asText());
+            Processor processor = Processor.find.byId(json.get("processor_id").asText());
             if(processor == null ) return GlobalResult.notFoundObject();
-
 
             TypeOfBoard typeOfBoard = new TypeOfBoard();
             typeOfBoard.name = json.get("name").asText();
@@ -2240,22 +2279,56 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.okResult(Json.toJson(typeOfBoard));
 
         } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "description - TEXT","name - String", "processorId - String", "producerId - String");
+            return GlobalResult.nullPointerResult(e, "description","name", "processor_id", "producer_id");
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - newTypeOfBoard ERROR");
+            Logger.error("CompilationLibrariesController - new_TypeOfBoard ERROR");
             Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
     }
 
+    @ApiOperation(value = "edit TypeOfBoard",
+            tags = { "TypeOfBoard"},
+            notes = "if you want edit base TypeOfBoard information",
+            produces = "application/json",
+            response =  TypeOfBoard.class,
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "typeOfBoard.edit", description = "Person need this permission"),
+                                       @AuthorizationScope(scope = "SuperAdmin", description = "Or person must be SuperAdmin role")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_TypeOfBoard_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = TypeOfBoard.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result updateTypeOfBoard(String id) {
+    @Pattern("typeOfBoard.edit")
+    public Result edit_TypeOfBoard(@ApiParam(required = true) @PathParam("type_of_board_id") String type_of_board_id) {
         try {
             JsonNode json = request().body().asJson();
 
-            TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(id);
-            if(typeOfBoard == null ) return GlobalResult.notFoundObject();
+            TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(type_of_board_id);
+            if (typeOfBoard == null) return GlobalResult.notFoundObject();
 
             typeOfBoard.name = json.get("name").asText();
             typeOfBoard.description = json.get("description").asText();
@@ -2264,89 +2337,258 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.okResult(Json.toJson(typeOfBoard));
 
         } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "description - TEXT","name - String", "processorId - String", "producerId - String");
+            return GlobalResult.nullPointerResult(e, "description", "name");
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - updateTypeOfBoard ERROR");
+            Logger.error("CompilationLibrariesController - edit_TypeOfBoard ERROR");
             Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
+        }
+
+    }
+
+    @ApiOperation(value = "delete TypeOfBoard",
+            tags = { "TypeOfBoard"},
+            notes = "if you want delete TypeOfBoard object by query = type_of_board_id",
+            produces = "application/json",
+            response =  Result_ok.class,
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "typeOfBoard.delete", description = "Person need this permission"),
+                                       @AuthorizationScope(scope = "SuperAdmin",         description = "Or person must be SuperAdmin role")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    //TODO dokumentace Issue TYRION-88 (http://youtrack.byzance.cz/youtrack/issue/TYRION-88)
+    @Pattern("typeOfBoard.delete")
+    public Result delete_TypeOfBoard(@ApiParam(required = true) @PathParam("type_of_board_id") String type_of_board_id) {
+        try {
+            JsonNode json = request().body().asJson();
+
+            TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(type_of_board_id);
+            if(typeOfBoard == null ) return GlobalResult.notFoundObject();
+
+            typeOfBoard.delete();
+
+            return GlobalResult.okResult();
+
+        } catch (NullPointerException e) {
+            return GlobalResult.nullPointerResult(e, "description","name");
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - edit_TypeOfBoard ERROR");
             return GlobalResult.internalServerError();
         }
     }
 
-    public Result getTypeOfBoards() {
+    @ApiOperation(value = "get list of all TypeOfBoard",
+            tags = { "TypeOfBoard"},
+            notes = "if you want get all TypeOfBoard objects",
+            produces = "application/json",
+            response =  TypeOfBoard.class,
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "typeOfBoard.read", description = "Person need this permission"),
+                                       @AuthorizationScope(scope = "SuperAdmin",       description = "Or person must be SuperAdmin role")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = TypeOfBoard.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Pattern("typeOfBoard.read")
+    public Result get_TypeOfBoard_all() {
         try {
 
             List<TypeOfBoard> typeOfBoards = TypeOfBoard.find.all();
-
             return  GlobalResult.okResult(Json.toJson(typeOfBoards));
 
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - getTypeOfBoards ERROR");
-            Logger.error(request().body().asJson().toString());
+            Logger.error("CompilationLibrariesController - get_TypeOfBoard_all ERROR");
             return GlobalResult.internalServerError();
         }
     }
 
-    public Result getTypeOfBoard(String id) {
+    @ApiOperation(value = "get TypeOfBoard",
+            tags = { "TypeOfBoard"},
+            notes = "if you want get TypeOfBoard object by query = type_of_board_id",
+            produces = "application/json",
+            response =  TypeOfBoard.class,
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "typeOfBoard.read", description = "Person need this permission"),
+                                       @AuthorizationScope(scope = "SuperAdmin",       description = "Or person must be SuperAdmin role")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = TypeOfBoard.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Pattern("typeOfBoard.read")
+    public Result get_TypeOfBoard(@ApiParam(required = true) @PathParam("type_of_board_id") String type_of_board_id) {
         try {
 
-            TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(id);
+            TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(type_of_board_id);
             if(typeOfBoard == null ) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(typeOfBoard));
 
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - getProducerTypeOfBoards ERROR");
-            Logger.error(request().body().asJson().toString());
+            Logger.error("CompilationLibrariesController - get_Producer_TypeOfBoards ERROR");
             return GlobalResult.internalServerError();
         }
     }
 
-    public Result getTypeOfBoardDescription(String id) {
+    @ApiOperation(value = "get TypeOfBoard description",
+            tags = { "TypeOfBoard"},
+            notes = "if you want get description of TypeOfBoard object by query = type_of_board_id",
+            produces = "application/json",
+            response =  TypeOfBoard.class,
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "typeOfBoard.read", description = "Person need this permission"),
+                                    @AuthorizationScope(scope = "SuperAdmin",       description = "Or person must be SuperAdmin role")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = TypeOfBoard.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Pattern("typeOfBoard.read")
+    public Result get_TypeOfBoard_Description(@ApiParam(required = true) @PathParam("type_of_board_id") String type_of_board_id) {
         try {
 
-            TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(id);
+            TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(type_of_board_id);
             if(typeOfBoard == null ) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(typeOfBoard.description));
 
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - getProducerTypeOfBoards ERROR");
+            Logger.error("CompilationLibrariesController - get_Producer_TypeOfBoards ERROR");
             Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
     }
 
-    public Result getTypeOfBoardAllBoards(String id) {
+    @ApiOperation(value = "get all Boards from TypeOfBoard",
+            tags = { "TypeOfBoard"},
+            notes = "if you want get physics Boards from TypeOfBoard  by query = type_of_board_id",
+            produces = "application/json",
+            response =  Swagger_Board_List.class,
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "typeOfBoard.read", description = "Person need this permission"),
+                                       @AuthorizationScope(scope = "SuperAdmin",       description = "Or person must be SuperAdmin role")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Board_List.class), //TODO list
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result getTypeOfBoardAllBoards(@ApiParam(required = true) @PathParam("type_of_board_id") String type_of_board_id) {
         try {
 
-            TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(id);
+            TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(type_of_board_id);
             if(typeOfBoard == null ) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(typeOfBoard.boards));
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - getProducerTypeOfBoards ERROR");
+            Logger.error("CompilationLibrariesController - get_Producer_TypeOfBoards ERROR");
             Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
     }
 
+    //TODO http://youtrack.byzance.cz/youtrack/issue/TYRION-100
+    public Result get_TypeOfBoard_Filter(){
+        return null;
+    }
+
     ///###################################################################################################################*/
+
+    @ApiOperation(value = "create Board",
+            tags = { "Board"},
+            notes = "This Api is using only for developing mode, for registration of our Board - in future it will be used only by machine in factory or " +
+                    "boards themselves with \"registration procedure\". Its not allowed to delete that! Only deactivate. Classic User can registed that to own " +
+                    "project or own account",
+            produces = "application/json",
+            response =  Board.class,
+            protocols = "https",
+            code = 201,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "typeOfBoard.create", description = "Person need this permission"),
+                                       @AuthorizationScope(scope = "SuperAdmin", description = "Or person must be SuperAdmin role")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Board_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successful created",      response = Board.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result newBoard() {
+    public Result new_Board() {
         try {
             JsonNode json = request().body().asJson();
-            if (Board.find.byId(json.get("hwName").asText()) != null) GlobalResult.forbidden_Global("Duplicate database value");
+            if (Board.find.byId(json.get("hardware_unique_id").asText()) != null) return GlobalResult.badRequest("Duplicate database value");
 
-            TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(json.get("typeOfBoard").asText());
+            TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(json.get("type_of_board_id").asText());
             if(typeOfBoard == null ) return GlobalResult.notFoundObject();
 
             Board board = new Board();
-            board.id = json.get("hwName").asText();
+            board.id = json.get("hardware_unique_id").asText();
             board.isActive = false;
             board.typeOfBoard = typeOfBoard;
 
@@ -2355,7 +2597,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.okResult(Json.toJson(board));
 
         } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "hwName - String(Unique)", "typeOfBoard - String(Id)");
+            return GlobalResult.nullPointerResult(e, "hardware_unique_id", "type_of_board_id");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - newBoard ERROR");
@@ -2364,21 +2606,54 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
+    @ApiOperation(value = "edit Board - update personal description",
+            tags = { "Board"},
+            notes = "Used for add descriptions by owners. \"Persons\" who registred \"Board\" to own \"Projec\" ",
+            produces = "application/json",
+            response =  Board.class,
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "typeOfBoard.create", description = "Person need this permission"),
+                                    @AuthorizationScope(scope = "SuperAdmin", description = "Or person must be SuperAdmin role")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Board_Personal",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Board.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result addUserDescription(String id){
+    public Result edit_Board_User_Description(@ApiParam(required = true) @PathParam("board_id") String board_id){
         try {
             JsonNode json = request().body().asJson();
 
-            Board board = Board.find.byId(id);
+            Board board = Board.find.byId(board_id);
             if(board == null ) return GlobalResult.notFoundObject();
 
-            board.userDescription = json.get("userDescription").asText();
+            board.personal_description = json.get("personal_description").asText();
             board.update();
 
             return GlobalResult.okResult(Json.toJson(board));
 
         } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "generalDescription - Text", "typeOfBoard - String(Id)");
+            return GlobalResult.nullPointerResult(e, "personal_description");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - newBoard ERROR");
@@ -2387,8 +2662,30 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
+    @ApiOperation(value = "get Boards with filter parameters",
+            tags = { "Board"},
+            notes = "Get List of boards ",
+            produces = "application/json",
+            response =  Board.class,
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "board.read", description = "Person need this permission"),
+                                       @AuthorizationScope(scope = "SuperAdmin", description = "Or person must be SuperAdmin role")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Board.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result getBoardByFilter() {
+    @Pattern("board.read")
+    public Result get_Board_Filter() {
         try {
             JsonNode json = request().body().asJson();
 
@@ -2444,9 +2741,31 @@ public class CompilationLibrariesController extends Controller {
 
     }
 
-    public Result deactivateBoard(String id) {
+    @ApiOperation(value = "deactivate Board",
+            tags = { "Board"},
+            notes = "Permanent exclusion from the system - for some reason it is not allowed to remove the Board from database",
+            produces = "application/json",
+            response =  Board.class,
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "typeOfBoard.create", description = "Person need this permission"),
+                                    @AuthorizationScope(scope = "SuperAdmin", description = "Or person must be SuperAdmin role")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Board.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Pattern("board.deactivate")
+    public Result deactivate_Board(@ApiParam(required = true) @PathParam("board_id")  String board_id) {
         try {
-            Board board = Board.find.byId(id);
+            Board board = Board.find.byId(board_id);
             if(board == null ) return GlobalResult.notFoundObject();
 
             board.isActive = false;
@@ -2455,107 +2774,198 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.okResult(Json.toJson(board));
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - deactivateBoard ERROR");
+            Logger.error("CompilationLibrariesController - deactivate_Board ERROR");
             Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
 
     }
 
-    public Result getBoard(String id) {
+    @ApiOperation(value = "get Board",
+            tags = { "Board"},
+            notes = "if you want get Board object by query = board_id",
+            produces = "application/json",
+            response =  Board.class,
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "Board Owner", description = "Person who owned this Board"),
+                                       @AuthorizationScope(scope = "board.read",  description = "Person need this permission"),
+                                       @AuthorizationScope(scope = "SuperAdmin",  description = "Or person must be SuperAdmin role")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Board.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Pattern("board.read")
+    public Result get_Board(@ApiParam(required = true) @PathParam("board_id")  String board_id) {
         try {
-            Board board = Board.find.byId(id);
+            Board board = Board.find.byId(board_id);
             if(board == null ) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(board));
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - getBoard ERROR");
+            Logger.error("CompilationLibrariesController - get_Board ERROR");
             Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
     }
 
-    public Result getBoardgeneralDescription(String id) {
+    @ApiOperation(value = "connect Board with Project",
+            tags = { "Board"},
+            notes = "This Api is used by Users for connection of Board with their Project",
+            produces = "application/json",
+            response =  Board.class,
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "Board Owner & Project Owner", description = "Person who owned this Board and Project"),
+                                       @AuthorizationScope(scope = "board.edit",  description = "Person need this permission"),
+                                       @AuthorizationScope(scope = "SuperAdmin",  description = "Or person must be SuperAdmin role")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Board.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result connect_Board_with_Project(@ApiParam(required = true) @PathParam("board_id")  String board_id, @ApiParam(required = true) @PathParam("project_id")  String project_id){
         try {
-            JsonNode json = request().body().asJson();
-
-            return GlobalResult.okResult();
-        } catch (Exception e) {
-            return GlobalResult.nullPointerResult(e);
-        }
-    }
-
-    public Result getUserDescription(String id) {
-        try {
-            JsonNode json = request().body().asJson();
-
-            Board board = Board.find.byId(id);
+            Board board = Board.find.byId(board_id);
             if(board == null ) return GlobalResult.notFoundObject();
 
-            return GlobalResult.okResult(Json.toJson(board.userDescription));
-        } catch (Exception e) {
-            return GlobalResult.nullPointerResult(e);
-        }
-    }
-
-    public Result connectBoardWthProject(String id, String pr){
-        try {
-            Board board = Board.find.byId(id);
-            if(board == null ) return GlobalResult.notFoundObject();
-
-            Project project = Project.find.byId(pr);
+            Project project = Project.find.byId(project_id);
             if(project == null) return GlobalResult.notFoundObject();
 
-            if( board.projects.contains(project)) return  GlobalResult.okResult("is already connected");
+            if( board.projects.contains(project)) return  GlobalResult.okResult(Json.toJson(board));
             board.projects.add(project);
 
             board.update();
+
             return GlobalResult.okResult(Json.toJson(board));
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - getBoard ERROR");
+            Logger.error("CompilationLibrariesController - get_Board ERROR");
             return GlobalResult.internalServerError();
         }
     }
 
-    public Result disconnectBoardWthProject(String id, String pr){
+    @ApiOperation(value = "disconnect Board from Project",
+            tags = { "Board"},
+            notes = "This Api is used by Users for disconnection of Board from their Project, its not meaning that Board is removed from system, only disconnect " +
+                    "and another user can registred that (connect that with different account/project etc..)",
+            produces = "application/json",
+            response =  Board.class,
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "Board Owner & Project Owner", description = "Person who owned this Board and Project"),
+                                       @AuthorizationScope(scope = "board.edit",  description = "Person need this permission"),
+                                       @AuthorizationScope(scope = "SuperAdmin",  description = "Or person must be SuperAdmin role")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Board.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result disconnect_Board_from_Project(@ApiParam(required = true) @PathParam("board_id")  String board_id, @ApiParam(required = true) @PathParam("project_id")  String project_id){
         try {
-            Board board = Board.find.byId(id);
+            Board board = Board.find.byId(board_id);
             if(board == null ) return GlobalResult.notFoundObject();
 
-            Project project = Project.find.byId(pr);
+            Project project = Project.find.byId(project_id);
             if(project == null) return GlobalResult.notFoundObject();
 
-            if( !board.projects.contains(project)) return  GlobalResult.okResult("is already disconnected");
+            if( !board.projects.contains(project)) return  GlobalResult.okResult(Json.toJson(board));
             board.projects.remove(project);
 
             board.update();
             return GlobalResult.okResult(Json.toJson(board));
+
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - getBoard ERROR");
+            Logger.error("CompilationLibrariesController - get_Board ERROR");
             return GlobalResult.internalServerError();
         }
     }
 
-    public Result getBoardProjects(String id){
+    @ApiOperation(value = "get Project from Board",
+            tags = { "Board", "Project"},
+            notes = "Design pattern from Api-GitHub says that from every object you can get another, which belongs to it",
+            produces = "application/json",
+            response =  Board.class,
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "Board Owner & Project Owner", description = "Person who owned this Board and Project"),
+                                       @AuthorizationScope(scope = "board.edit",  description = "Person need this permission"),
+                                       @AuthorizationScope(scope = "SuperAdmin",  description = "Or person must be SuperAdmin role")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Board.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result getBoardProjects(@ApiParam(required = true) @PathParam("board_id")  String board_id){
         try {
-            Board board = Board.find.byId(id);
+            Board board = Board.find.byId(board_id);
             if(board == null ) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(board.projects));
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - getBoard ERROR");
+            Logger.error("CompilationLibrariesController - get_Board ERROR");
             return GlobalResult.internalServerError();
         }
     }
 
-    public Result getBoardsFromProject(String id) {
+    @ApiOperation(value = "get all Boards from Project",
+            tags = { "Board", "Project"},
+            notes = "Get all boards which are connected with Project",
+            produces = "application/json",
+            response =  Board.class,
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "Board Owner & Project Owner", description = "Person who owned this Board and Project"),
+                                       @AuthorizationScope(scope = "board.edit",  description = "Person need this permission"),
+                                       @AuthorizationScope(scope = "SuperAdmin",  description = "Or person must be SuperAdmin role")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Board.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result get_Boards_from_Project(@ApiParam(required = true) @PathParam("project_id")  String project_id) {
         try {
 
-            Project project = Project.find.byId(id);
+            Project project = Project.find.byId(project_id);
             if (project == null) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(project.boards));
@@ -2566,5 +2976,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.internalServerError();
         }
     }
+
+
 
 }
