@@ -422,10 +422,10 @@ public class CompilationLibrariesController extends Controller {
     }
 
     //TODO
-    public Result uploadBinaryFileToBoard(String id) {
+    public Result uploadBinaryFileToBoard(String board_id) {
         try{
 
-            Board board = Board.find.byId(id);
+            Board board = Board.find.byId(board_id);
             if(board == null ) return GlobalResult.notFoundObject();
 
             // Přijmu soubor
@@ -445,12 +445,12 @@ public class CompilationLibrariesController extends Controller {
     }
 
     //TODO
-    public Result uploadCompilationToBoard(String id, String boardId) {
+    public Result uploadCompilationToBoard(String c_program_id, String boardId) {
 
         Board board = Board.find.byId(boardId);
         if(board == null ) return GlobalResult.notFoundObject();
 
-        C_Program c_program = C_Program.find.byId(id);
+        C_Program c_program = C_Program.find.byId(c_program_id);
         if (c_program == null) return GlobalResult.notFoundObject();
 
         //TODO Chybí kompilování atd... tohle bude mega metoda!!!

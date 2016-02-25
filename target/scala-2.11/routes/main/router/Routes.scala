@@ -1,7 +1,7 @@
 
 // @GENERATOR:play-routes-compiler
 // @SOURCE:/Users/zaruba/ownCloud/Git/Tyrion/conf/routes
-// @DATE:Tue Feb 23 18:14:01 CET 2016
+// @DATE:Thu Feb 25 18:09:35 CET 2016
 
 package router
 
@@ -34,9 +34,9 @@ class Routes(
   CompilationLibrariesController_7: javax.inject.Provider[controllers.CompilationLibrariesController],
   // @LINE:290
   GridController_6: javax.inject.Provider[controllers.GridController],
-  // @LINE:323
+  // @LINE:326
   ApiHelpController_3: javax.inject.Provider[utilities.swagger.ApiHelpController],
-  // @LINE:329
+  // @LINE:332
   Assets_9: controllers.Assets,
   val prefix: String
 ) extends GeneratedRouter {
@@ -61,9 +61,9 @@ class Routes(
     CompilationLibrariesController_7: javax.inject.Provider[controllers.CompilationLibrariesController],
     // @LINE:290
     GridController_6: javax.inject.Provider[controllers.GridController],
-    // @LINE:323
+    // @LINE:326
     ApiHelpController_3: javax.inject.Provider[utilities.swagger.ApiHelpController],
-    // @LINE:329
+    // @LINE:332
     Assets_9: controllers.Assets
   ) = this(errorHandler, SecurityController_4, WikyController_8, WebSocketController_Incoming_0, PermissionController_1, PersonController_2, OverFlowController_10, ProgramingPackageController_5, CompilationLibrariesController_7, GridController_6, ApiHelpController_3, Assets_9, "/")
 
@@ -188,36 +188,36 @@ class Routes(
     ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """project/typeOfBlock/$id<[^/]+>""", """@controllers.ProgramingPackageController@.editTypeOfBlock(id:String)"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """project/typeOfBlock""", """@controllers.ProgramingPackageController@.getAllTypeOfBlocks()"""),
     ("""DELETE""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """project/typeOfBlock/$id<[^/]+>""", """@controllers.ProgramingPackageController@.deleteTypeOfBlock(id:String)"""),
-    ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/c_program""", """@controllers.CompilationLibrariesController@.create_C_Program(project_id:String)"""),
-    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/c_program""", """@controllers.CompilationLibrariesController@.get_C_Program(c_program_id:String)"""),
-    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/c_program/project""", """@controllers.CompilationLibrariesController@.get_C_Program_All_from_Project(project_id:String)"""),
-    ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/c_program/edit""", """@controllers.CompilationLibrariesController@.edit_C_Program_Description(c_program_id:String)"""),
-    ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/c_program/update""", """@controllers.CompilationLibrariesController@.update_C_Program(c_program_id:String)"""),
-    ("""DELETE""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/c_program/c_program""", """@controllers.CompilationLibrariesController@.delete_C_Program(c_program_id:String)"""),
-    ("""DELETE""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/c_program/version""", """@controllers.CompilationLibrariesController@.delete_C_Program_Version(c_program_id:String, version_id:String)"""),
+    ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/c_program/$project_id<[^/]+>""", """@controllers.CompilationLibrariesController@.create_C_Program(project_id:String)"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/c_program/$c_program_id<[^/]+>""", """@controllers.CompilationLibrariesController@.get_C_Program(c_program_id:String)"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/c_program/project/$project_id<[^/]+>""", """@controllers.CompilationLibrariesController@.get_C_Program_All_from_Project(project_id:String)"""),
+    ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/c_program/edit/$c_program_id<[^/]+>""", """@controllers.CompilationLibrariesController@.edit_C_Program_Description(c_program_id:String)"""),
+    ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/c_program/update/$c_program_id<[^/]+>""", """@controllers.CompilationLibrariesController@.update_C_Program(c_program_id:String)"""),
+    ("""DELETE""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/c_program/c_program/$c_program_id<[^/]+>""", """@controllers.CompilationLibrariesController@.delete_C_Program(c_program_id:String)"""),
+    ("""DELETE""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/c_program/version/$c_program_id<[^/]+>/$version_id<[^/]+>""", """@controllers.CompilationLibrariesController@.delete_C_Program_Version(c_program_id:String, version_id:String)"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/c_program/eclipse""", """@controllers.CompilationLibrariesController@.generateProjectForEclipse()"""),
-    ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/c_program/upload/$id<[^/]+>/$board<[^/]+>""", """@controllers.CompilationLibrariesController@.uploadCompilationToBoard(id:String, board:String)"""),
-    ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/c_program/binary/$id<[^/]+>""", """@controllers.CompilationLibrariesController@.uploadBinaryFileToBoard(id:String)"""),
-    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/project/board/$id<[^/]+>""", """@controllers.CompilationLibrariesController@.get_Boards_from_Project(id:String)"""),
+    ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/c_program/upload/$c_program_id<[^/]+>/$board_id<[^/]+>""", """@controllers.CompilationLibrariesController@.uploadCompilationToBoard(c_program_id:String, board_id:String)"""),
+    ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/c_program/binary/$board_id<[^/]+>""", """@controllers.CompilationLibrariesController@.uploadBinaryFileToBoard(board_id:String)"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/project/board/$project_id<[^/]+>""", """@controllers.CompilationLibrariesController@.get_Boards_from_Project(project_id:String)"""),
     ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/processor""", """@controllers.CompilationLibrariesController@.new_Processor()"""),
-    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/processor""", """@controllers.CompilationLibrariesController@.get_Processor(processor_id:String)"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/processor/$processor_id<[^/]+>""", """@controllers.CompilationLibrariesController@.get_Processor(processor_id:String)"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/processor""", """@controllers.CompilationLibrariesController@.get_Processor_All()"""),
-    ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/processor""", """@controllers.CompilationLibrariesController@.update_Processor(processor_id:String)"""),
-    ("""DELETE""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/processor""", """@controllers.CompilationLibrariesController@.delete_Processor(processor_id:String)"""),
-    ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/processor/library""", """@controllers.CompilationLibrariesController@.connectProcessorWithLibrary(processor_id:String, library_id:String)"""),
-    ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/processor/libraryGroup""", """@controllers.CompilationLibrariesController@.connectProcessorWithLibraryGroup(processor_id:String, library_id:String)"""),
-    ("""DELETE""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/processor/library""", """@controllers.CompilationLibrariesController@.disconnectProcessorWithLibrary(processor_id:String, library_id:String)"""),
-    ("""DELETE""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/processor/libraryGroup""", """@controllers.CompilationLibrariesController@.disconnectProcessorWithLibraryGroup(processor_id:String, library_id:String)"""),
-    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/processor/libraryGroups""", """@controllers.CompilationLibrariesController@.getProcessorLibraryGroups(processor_id:String)"""),
-    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/processor/singleLibrary""", """@controllers.CompilationLibrariesController@.getProcessorSingleLibraries(processor_id:String)"""),
+    ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/processor/$processor_id<[^/]+>""", """@controllers.CompilationLibrariesController@.update_Processor(processor_id:String)"""),
+    ("""DELETE""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/processor/$processor_id<[^/]+>""", """@controllers.CompilationLibrariesController@.delete_Processor(processor_id:String)"""),
+    ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/processor/library/$processor_id<[^/]+>/$library_id<[^/]+>""", """@controllers.CompilationLibrariesController@.connectProcessorWithLibrary(processor_id:String, library_id:String)"""),
+    ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/processor/libraryGroup/$processor_id<[^/]+>/$library_id<[^/]+>""", """@controllers.CompilationLibrariesController@.connectProcessorWithLibraryGroup(processor_id:String, library_id:String)"""),
+    ("""DELETE""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/processor/library/$processor_id<[^/]+>/$library_id<[^/]+>""", """@controllers.CompilationLibrariesController@.disconnectProcessorWithLibrary(processor_id:String, library_id:String)"""),
+    ("""DELETE""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/processor/libraryGroup/$processor_id<[^/]+>/$library_id<[^/]+>""", """@controllers.CompilationLibrariesController@.disconnectProcessorWithLibraryGroup(processor_id:String, library_id:String)"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/processor/libraryGroups/$processor_id<[^/]+>""", """@controllers.CompilationLibrariesController@.getProcessorLibraryGroups(processor_id:String)"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/processor/singleLibrary/$processor_id<[^/]+>""", """@controllers.CompilationLibrariesController@.getProcessorSingleLibraries(processor_id:String)"""),
     ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/board""", """@controllers.CompilationLibrariesController@.new_Board()"""),
-    ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/board/userDescription""", """@controllers.CompilationLibrariesController@.edit_Board_User_Description(type_of_board_id:String)"""),
+    ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/board/userDescription/$type_of_board_id<[^/]+>""", """@controllers.CompilationLibrariesController@.edit_Board_User_Description(type_of_board_id:String)"""),
     ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/board/filter""", """@controllers.CompilationLibrariesController@.get_Board_Filter()"""),
-    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/board/$id<[^/]+>""", """@controllers.CompilationLibrariesController@.get_Board(id:String)"""),
-    ("""DELETE""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/board/deactivateBoard$id<[^/]+>""", """@controllers.CompilationLibrariesController@.deactivate_Board(id:String)"""),
-    ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/board/connect/$id<[^/]+>/$pr<[^/]+>""", """@controllers.CompilationLibrariesController@.connect_Board_with_Project(id:String, pr:String)"""),
-    ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/board/disconnect/$id<[^/]+>/$pr<[^/]+>""", """@controllers.CompilationLibrariesController@.disconnect_Board_from_Project(id:String, pr:String)"""),
-    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/board/projects/$id<[^/]+>""", """@controllers.CompilationLibrariesController@.getBoardProjects(id:String)"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/board/$board_id<[^/]+>""", """@controllers.CompilationLibrariesController@.get_Board(board_id:String)"""),
+    ("""DELETE""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/board/deactivateBoard/$board_id<[^/]+>""", """@controllers.CompilationLibrariesController@.deactivate_Board(board_id:String)"""),
+    ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/board/connect/$board_id<[^/]+>/$project_id<[^/]+>""", """@controllers.CompilationLibrariesController@.connect_Board_with_Project(board_id:String, project_id:String)"""),
+    ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/board/disconnect/$board_id<[^/]+>/$project_id<[^/]+>""", """@controllers.CompilationLibrariesController@.disconnect_Board_from_Project(board_id:String, project_id:String)"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/board/projects/$board_id<[^/]+>""", """@controllers.CompilationLibrariesController@.getBoardProjects(board_id:String)"""),
     ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/producer""", """@controllers.CompilationLibrariesController@.new_Producer()"""),
     ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/producer""", """@controllers.CompilationLibrariesController@.edit_Producer(producer_id:String)"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/producer/all""", """@controllers.CompilationLibrariesController@.get_Producers()"""),
@@ -232,43 +232,43 @@ class Routes(
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/typeOfBoard/description""", """@controllers.CompilationLibrariesController@.get_TypeOfBoard_Description(type_of_board_id:String)"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/typeOfBoard/boards""", """@controllers.CompilationLibrariesController@.getTypeOfBoardAllBoards(type_of_board_id:String)"""),
     ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/libraryGroup""", """@controllers.CompilationLibrariesController@.new_LibraryGroup()"""),
-    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/libraryGroup""", """@controllers.CompilationLibrariesController@.get_LibraryGroup(libraryGroup_id:String)"""),
-    ("""DELETE""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/libraryGroup""", """@controllers.CompilationLibrariesController@.delete_LibraryGroup(libraryGroup_id:String)"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/libraryGroup/$libraryGroup_id<[^/]+>""", """@controllers.CompilationLibrariesController@.get_LibraryGroup(libraryGroup_id:String)"""),
+    ("""DELETE""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/libraryGroup/$libraryGroup_id<[^/]+>""", """@controllers.CompilationLibrariesController@.delete_LibraryGroup(libraryGroup_id:String)"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/libraryGroup/filter""", """@controllers.CompilationLibrariesController@.get_LibraryGroup_Filter()"""),
-    ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/libraryGroup""", """@controllers.CompilationLibrariesController@.editLibraryGroup(libraryGroup_id:String)"""),
-    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/libraryGroup/generalDescription""", """@controllers.CompilationLibrariesController@.get_LibraryGroup_Description(libraryGroup_id:String)"""),
-    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/libraryGroup/processors""", """@controllers.CompilationLibrariesController@.get_LibraryGroup_Processors(libraryGroup_id:String)"""),
-    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/libraryGroup/libraries""", """@controllers.CompilationLibrariesController@.get_LibraryGroup_Libraries(libraryGroup_id:String, version_id:String)"""),
-    ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/libraryGroup/version""", """@controllers.CompilationLibrariesController@.new_LibraryGroup_Version(version_id:String)"""),
-    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/libraryGroup/versions""", """@controllers.CompilationLibrariesController@.get_LibraryGroup_Version(version_id:String)"""),
-    ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/libraryGroup/upload""", """@controllers.CompilationLibrariesController@.upload_Library_To_LibraryGroup(libraryGroup_id:String, version_id:String)"""),
+    ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/libraryGroup/$libraryGroup_id<[^/]+>""", """@controllers.CompilationLibrariesController@.editLibraryGroup(libraryGroup_id:String)"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/libraryGroup/generalDescription/$libraryGroup_id<[^/]+>""", """@controllers.CompilationLibrariesController@.get_LibraryGroup_Description(libraryGroup_id:String)"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/libraryGroup/processors/$libraryGroup_id<[^/]+>""", """@controllers.CompilationLibrariesController@.get_LibraryGroup_Processors(libraryGroup_id:String)"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/libraryGroup/libraries/$libraryGroup_id<[^/]+>/$version_id<[^/]+>""", """@controllers.CompilationLibrariesController@.get_LibraryGroup_Libraries(libraryGroup_id:String, version_id:String)"""),
+    ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/libraryGroup/version/$version_id<[^/]+>""", """@controllers.CompilationLibrariesController@.new_LibraryGroup_Version(version_id:String)"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/libraryGroup/versions/$version_id<[^/]+>""", """@controllers.CompilationLibrariesController@.get_LibraryGroup_Version(version_id:String)"""),
+    ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/libraryGroup/upload/$libraryGroup_id<[^/]+>/$version_id<[^/]+>""", """@controllers.CompilationLibrariesController@.upload_Library_To_LibraryGroup(libraryGroup_id:String, version_id:String)"""),
     ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/library""", """@controllers.CompilationLibrariesController@.new_SingleLibrary()"""),
-    ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/library/version""", """@controllers.CompilationLibrariesController@.new_SingleLibrary_Version(library_id:String)"""),
-    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/library/versions""", """@controllers.CompilationLibrariesController@.get_SingleLibrary_Versions(library_id:String)"""),
+    ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/library/version/$library_id<[^/]+>""", """@controllers.CompilationLibrariesController@.new_SingleLibrary_Version(library_id:String)"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/library/versions/$library_id<[^/]+>""", """@controllers.CompilationLibrariesController@.get_SingleLibrary_Versions(library_id:String)"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/library/filter""", """@controllers.CompilationLibrariesController@.get_SingleLibrary_Filter()"""),
-    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/library""", """@controllers.CompilationLibrariesController@.get_SingleLibrary(library_id:String)"""),
-    ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/library""", """@controllers.CompilationLibrariesController@.edit_SingleLibrary(library_id:String)"""),
-    ("""DELETE""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/library""", """@controllers.CompilationLibrariesController@.delete_SingleLibrary(library_id:String)"""),
-    ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/library/upload""", """@controllers.CompilationLibrariesController@.upload_SingleLibrary_Version(library_id:String, version_id:String)"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/library/$library_id<[^/]+>""", """@controllers.CompilationLibrariesController@.get_SingleLibrary(library_id:String)"""),
+    ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/library$library_id<[^/]+>""", """@controllers.CompilationLibrariesController@.edit_SingleLibrary(library_id:String)"""),
+    ("""DELETE""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/library$library_id<[^/]+>""", """@controllers.CompilationLibrariesController@.delete_SingleLibrary(library_id:String)"""),
+    ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """compilation/library/upload$library_id<[^/]+>/$version_id<[^/]+>""", """@controllers.CompilationLibrariesController@.upload_SingleLibrary_Version(library_id:String, version_id:String)"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """file/listOfFiles/$id<[^/]+>""", """@controllers.CompilationLibrariesController@.get_LibraryGroup_Version_Libraries(id:String)"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """file/fileRecord/$id<[^/]+>""", """@controllers.CompilationLibrariesController@.fileRecord(id:String)"""),
     ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """grid/m_project""", """@controllers.GridController@.new_M_Project(project_id:String)"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """grid/m_project/person""", """@controllers.GridController@.get_M_Projects_ByLoggedPerson()"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """grid/m_project/$m_project_id<[^/]+>""", """@controllers.GridController@.get_M_Project(m_project_id:String)"""),
     ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """grid/m_project/$m_project_id<[^/]+>""", """@controllers.GridController@.edit_M_Project(m_project_id:String)"""),
-    ("""DELETE""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """grid/m_project/$id<[^/]+>""", """@controllers.GridController@.remove_M_Project(id:String)"""),
-    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """grid/m_project/project""", """@controllers.GridController@.get_M_Projects_from_GlobalProject(project_id:String)"""),
-    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """grid/m_project/person""", """@controllers.GridController@.get_M_Projects_ByLoggedPerson()"""),
+    ("""DELETE""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """grid/m_project/$m_project_id<[^/]+>""", """@controllers.GridController@.remove_M_Project(m_project_id:String)"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """grid/m_project/project/$project_id<[^/]+>""", """@controllers.GridController@.get_M_Projects_from_GlobalProject(project_id:String)"""),
     ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """grid/m_program""", """@controllers.GridController@.new_M_Program()"""),
-    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """grid/m_program""", """@controllers.GridController@.get_M_Program(m_progrm_id:String)"""),
-    ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """grid/m_program""", """@controllers.GridController@.edit_M_Program(m_progrm_id:String)"""),
-    ("""DELETE""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """grid/m_program""", """@controllers.GridController@.remove_M_Program(m_progrm_id:String)"""),
-    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """grid/m_program/token""", """@controllers.GridController@.get_M_Program_byQR_Token_forMobile(qr_token:String)"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """grid/m_program/app/token/$qr_token<[^/]+>""", """@controllers.GridController@.get_M_Program_byQR_Token_forMobile(qr_token:String)"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """grid/m_program/app/m_programs""", """@controllers.GridController@.get_M_Program_all_forMobile()"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """grid/m_program/$m_progrm_id<[^/]+>""", """@controllers.GridController@.get_M_Program(m_progrm_id:String)"""),
+    ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """grid/m_program/$m_progrm_id<[^/]+>""", """@controllers.GridController@.edit_M_Program(m_progrm_id:String)"""),
+    ("""DELETE""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """grid/m_program/$m_progrm_id<[^/]+>""", """@controllers.GridController@.remove_M_Program(m_progrm_id:String)"""),
     ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """grid/screen_type""", """@controllers.GridController@.new_Screen_Size_Type()"""),
-    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """grid/screen_type/all""", """@controllers.GridController@.get_Screen_Size_Type_PublicList()"""),
-    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """grid/screen_type/all/$id<[^/]+>""", """@controllers.GridController@.get_Screen_Size_Type_Combination(id:String)"""),
-    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """grid/screen_type/$id<[^/]+>""", """@controllers.GridController@.get_Screen_Size_Type(id:String)"""),
-    ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """grid/screen_type/$id<[^/]+>""", """@controllers.GridController@.edit_Screen_Size_Type(id:String)"""),
-    ("""DELETE""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """grid/screen_type/$id<[^/]+>""", """@controllers.GridController@.remove_Screen_Size_Type(id:String)"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """grid/screen_type/all""", """@controllers.GridController@.get_Screen_Size_Type_Combination()"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """grid/screen_type/$screen_size_type_id<[^/]+>""", """@controllers.GridController@.get_Screen_Size_Type(screen_size_type_id:String)"""),
+    ("""PUT""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """grid/screen_type/$screen_size_type_id<[^/]+>""", """@controllers.GridController@.edit_Screen_Size_Type(screen_size_type_id:String)"""),
+    ("""DELETE""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """grid/screen_type/$screen_size_type_id<[^/]+>""", """@controllers.GridController@.remove_Screen_Size_Type(screen_size_type_id:String)"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """api-docs""", """@utilities.swagger.ApiHelpController@.getResources"""),
     ("""OPTIONS""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """$all<.+>""", """@controllers.SecurityController@.optionLink(all:String)"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """assets/$file<.+>""", """controllers.Assets.at(path:String = "/public", file:String)"""),
@@ -2136,7 +2136,7 @@ Project""",
 
   // @LINE:198
   private[this] lazy val controllers_CompilationLibrariesController_create_C_Program109_route = Route("POST",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/c_program")))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/c_program/"), DynamicPart("project_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_create_C_Program109_invoker = createInvoker(
     CompilationLibrariesController_7.get.create_C_Program(fakeValue[String]),
@@ -2147,13 +2147,13 @@ Project""",
       Seq(classOf[String]),
       "POST",
       """C:Program""",
-      this.prefix + """compilation/c_program"""
+      this.prefix + """compilation/c_program/$project_id<[^/]+>"""
     )
   )
 
   // @LINE:199
   private[this] lazy val controllers_CompilationLibrariesController_get_C_Program110_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/c_program")))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/c_program/"), DynamicPart("c_program_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_get_C_Program110_invoker = createInvoker(
     CompilationLibrariesController_7.get.get_C_Program(fakeValue[String]),
@@ -2164,13 +2164,13 @@ Project""",
       Seq(classOf[String]),
       "GET",
       """""",
-      this.prefix + """compilation/c_program"""
+      this.prefix + """compilation/c_program/$c_program_id<[^/]+>"""
     )
   )
 
   // @LINE:200
   private[this] lazy val controllers_CompilationLibrariesController_get_C_Program_All_from_Project111_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/c_program/project")))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/c_program/project/"), DynamicPart("project_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_get_C_Program_All_from_Project111_invoker = createInvoker(
     CompilationLibrariesController_7.get.get_C_Program_All_from_Project(fakeValue[String]),
@@ -2181,13 +2181,13 @@ Project""",
       Seq(classOf[String]),
       "GET",
       """""",
-      this.prefix + """compilation/c_program/project"""
+      this.prefix + """compilation/c_program/project/$project_id<[^/]+>"""
     )
   )
 
   // @LINE:202
   private[this] lazy val controllers_CompilationLibrariesController_edit_C_Program_Description112_route = Route("PUT",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/c_program/edit")))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/c_program/edit/"), DynamicPart("c_program_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_edit_C_Program_Description112_invoker = createInvoker(
     CompilationLibrariesController_7.get.edit_C_Program_Description(fakeValue[String]),
@@ -2198,13 +2198,13 @@ Project""",
       Seq(classOf[String]),
       "PUT",
       """""",
-      this.prefix + """compilation/c_program/edit"""
+      this.prefix + """compilation/c_program/edit/$c_program_id<[^/]+>"""
     )
   )
 
   // @LINE:203
   private[this] lazy val controllers_CompilationLibrariesController_update_C_Program113_route = Route("PUT",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/c_program/update")))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/c_program/update/"), DynamicPart("c_program_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_update_C_Program113_invoker = createInvoker(
     CompilationLibrariesController_7.get.update_C_Program(fakeValue[String]),
@@ -2215,13 +2215,13 @@ Project""",
       Seq(classOf[String]),
       "PUT",
       """""",
-      this.prefix + """compilation/c_program/update"""
+      this.prefix + """compilation/c_program/update/$c_program_id<[^/]+>"""
     )
   )
 
   // @LINE:205
   private[this] lazy val controllers_CompilationLibrariesController_delete_C_Program114_route = Route("DELETE",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/c_program/c_program")))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/c_program/c_program/"), DynamicPart("c_program_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_delete_C_Program114_invoker = createInvoker(
     CompilationLibrariesController_7.get.delete_C_Program(fakeValue[String]),
@@ -2232,13 +2232,13 @@ Project""",
       Seq(classOf[String]),
       "DELETE",
       """""",
-      this.prefix + """compilation/c_program/c_program"""
+      this.prefix + """compilation/c_program/c_program/$c_program_id<[^/]+>"""
     )
   )
 
   // @LINE:206
   private[this] lazy val controllers_CompilationLibrariesController_delete_C_Program_Version115_route = Route("DELETE",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/c_program/version")))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/c_program/version/"), DynamicPart("c_program_id", """[^/]+""",true), StaticPart("/"), DynamicPart("version_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_delete_C_Program_Version115_invoker = createInvoker(
     CompilationLibrariesController_7.get.delete_C_Program_Version(fakeValue[String], fakeValue[String]),
@@ -2249,7 +2249,7 @@ Project""",
       Seq(classOf[String], classOf[String]),
       "DELETE",
       """""",
-      this.prefix + """compilation/c_program/version"""
+      this.prefix + """compilation/c_program/version/$c_program_id<[^/]+>/$version_id<[^/]+>"""
     )
   )
 
@@ -2272,7 +2272,7 @@ Project""",
 
   // @LINE:209
   private[this] lazy val controllers_CompilationLibrariesController_uploadCompilationToBoard117_route = Route("POST",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/c_program/upload/"), DynamicPart("id", """[^/]+""",true), StaticPart("/"), DynamicPart("board", """[^/]+""",true)))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/c_program/upload/"), DynamicPart("c_program_id", """[^/]+""",true), StaticPart("/"), DynamicPart("board_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_uploadCompilationToBoard117_invoker = createInvoker(
     CompilationLibrariesController_7.get.uploadCompilationToBoard(fakeValue[String], fakeValue[String]),
@@ -2283,13 +2283,13 @@ Project""",
       Seq(classOf[String], classOf[String]),
       "POST",
       """""",
-      this.prefix + """compilation/c_program/upload/$id<[^/]+>/$board<[^/]+>"""
+      this.prefix + """compilation/c_program/upload/$c_program_id<[^/]+>/$board_id<[^/]+>"""
     )
   )
 
   // @LINE:210
   private[this] lazy val controllers_CompilationLibrariesController_uploadBinaryFileToBoard118_route = Route("POST",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/c_program/binary/"), DynamicPart("id", """[^/]+""",true)))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/c_program/binary/"), DynamicPart("board_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_uploadBinaryFileToBoard118_invoker = createInvoker(
     CompilationLibrariesController_7.get.uploadBinaryFileToBoard(fakeValue[String]),
@@ -2300,13 +2300,13 @@ Project""",
       Seq(classOf[String]),
       "POST",
       """""",
-      this.prefix + """compilation/c_program/binary/$id<[^/]+>"""
+      this.prefix + """compilation/c_program/binary/$board_id<[^/]+>"""
     )
   )
 
   // @LINE:212
   private[this] lazy val controllers_CompilationLibrariesController_get_Boards_from_Project119_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/project/board/"), DynamicPart("id", """[^/]+""",true)))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/project/board/"), DynamicPart("project_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_get_Boards_from_Project119_invoker = createInvoker(
     CompilationLibrariesController_7.get.get_Boards_from_Project(fakeValue[String]),
@@ -2317,7 +2317,7 @@ Project""",
       Seq(classOf[String]),
       "GET",
       """""",
-      this.prefix + """compilation/project/board/$id<[^/]+>"""
+      this.prefix + """compilation/project/board/$project_id<[^/]+>"""
     )
   )
 
@@ -2340,7 +2340,7 @@ Project""",
 
   // @LINE:216
   private[this] lazy val controllers_CompilationLibrariesController_get_Processor121_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor")))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/"), DynamicPart("processor_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_get_Processor121_invoker = createInvoker(
     CompilationLibrariesController_7.get.get_Processor(fakeValue[String]),
@@ -2351,7 +2351,7 @@ Project""",
       Seq(classOf[String]),
       "GET",
       """""",
-      this.prefix + """compilation/processor"""
+      this.prefix + """compilation/processor/$processor_id<[^/]+>"""
     )
   )
 
@@ -2374,7 +2374,7 @@ Project""",
 
   // @LINE:218
   private[this] lazy val controllers_CompilationLibrariesController_update_Processor123_route = Route("PUT",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor")))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/"), DynamicPart("processor_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_update_Processor123_invoker = createInvoker(
     CompilationLibrariesController_7.get.update_Processor(fakeValue[String]),
@@ -2385,13 +2385,13 @@ Project""",
       Seq(classOf[String]),
       "PUT",
       """""",
-      this.prefix + """compilation/processor"""
+      this.prefix + """compilation/processor/$processor_id<[^/]+>"""
     )
   )
 
   // @LINE:219
   private[this] lazy val controllers_CompilationLibrariesController_delete_Processor124_route = Route("DELETE",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor")))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/"), DynamicPart("processor_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_delete_Processor124_invoker = createInvoker(
     CompilationLibrariesController_7.get.delete_Processor(fakeValue[String]),
@@ -2402,13 +2402,13 @@ Project""",
       Seq(classOf[String]),
       "DELETE",
       """""",
-      this.prefix + """compilation/processor"""
+      this.prefix + """compilation/processor/$processor_id<[^/]+>"""
     )
   )
 
   // @LINE:221
   private[this] lazy val controllers_CompilationLibrariesController_connectProcessorWithLibrary125_route = Route("PUT",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/library")))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/library/"), DynamicPart("processor_id", """[^/]+""",true), StaticPart("/"), DynamicPart("library_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_connectProcessorWithLibrary125_invoker = createInvoker(
     CompilationLibrariesController_7.get.connectProcessorWithLibrary(fakeValue[String], fakeValue[String]),
@@ -2419,13 +2419,13 @@ Project""",
       Seq(classOf[String], classOf[String]),
       "PUT",
       """""",
-      this.prefix + """compilation/processor/library"""
+      this.prefix + """compilation/processor/library/$processor_id<[^/]+>/$library_id<[^/]+>"""
     )
   )
 
   // @LINE:222
   private[this] lazy val controllers_CompilationLibrariesController_connectProcessorWithLibraryGroup126_route = Route("PUT",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/libraryGroup")))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/libraryGroup/"), DynamicPart("processor_id", """[^/]+""",true), StaticPart("/"), DynamicPart("library_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_connectProcessorWithLibraryGroup126_invoker = createInvoker(
     CompilationLibrariesController_7.get.connectProcessorWithLibraryGroup(fakeValue[String], fakeValue[String]),
@@ -2436,13 +2436,13 @@ Project""",
       Seq(classOf[String], classOf[String]),
       "PUT",
       """""",
-      this.prefix + """compilation/processor/libraryGroup"""
+      this.prefix + """compilation/processor/libraryGroup/$processor_id<[^/]+>/$library_id<[^/]+>"""
     )
   )
 
   // @LINE:223
   private[this] lazy val controllers_CompilationLibrariesController_disconnectProcessorWithLibrary127_route = Route("DELETE",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/library")))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/library/"), DynamicPart("processor_id", """[^/]+""",true), StaticPart("/"), DynamicPart("library_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_disconnectProcessorWithLibrary127_invoker = createInvoker(
     CompilationLibrariesController_7.get.disconnectProcessorWithLibrary(fakeValue[String], fakeValue[String]),
@@ -2453,13 +2453,13 @@ Project""",
       Seq(classOf[String], classOf[String]),
       "DELETE",
       """""",
-      this.prefix + """compilation/processor/library"""
+      this.prefix + """compilation/processor/library/$processor_id<[^/]+>/$library_id<[^/]+>"""
     )
   )
 
   // @LINE:224
   private[this] lazy val controllers_CompilationLibrariesController_disconnectProcessorWithLibraryGroup128_route = Route("DELETE",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/libraryGroup")))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/libraryGroup/"), DynamicPart("processor_id", """[^/]+""",true), StaticPart("/"), DynamicPart("library_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_disconnectProcessorWithLibraryGroup128_invoker = createInvoker(
     CompilationLibrariesController_7.get.disconnectProcessorWithLibraryGroup(fakeValue[String], fakeValue[String]),
@@ -2470,13 +2470,13 @@ Project""",
       Seq(classOf[String], classOf[String]),
       "DELETE",
       """""",
-      this.prefix + """compilation/processor/libraryGroup"""
+      this.prefix + """compilation/processor/libraryGroup/$processor_id<[^/]+>/$library_id<[^/]+>"""
     )
   )
 
   // @LINE:226
   private[this] lazy val controllers_CompilationLibrariesController_getProcessorLibraryGroups129_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/libraryGroups")))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/libraryGroups/"), DynamicPart("processor_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_getProcessorLibraryGroups129_invoker = createInvoker(
     CompilationLibrariesController_7.get.getProcessorLibraryGroups(fakeValue[String]),
@@ -2487,13 +2487,13 @@ Project""",
       Seq(classOf[String]),
       "GET",
       """""",
-      this.prefix + """compilation/processor/libraryGroups"""
+      this.prefix + """compilation/processor/libraryGroups/$processor_id<[^/]+>"""
     )
   )
 
   // @LINE:227
   private[this] lazy val controllers_CompilationLibrariesController_getProcessorSingleLibraries130_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/singleLibrary")))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/processor/singleLibrary/"), DynamicPart("processor_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_getProcessorSingleLibraries130_invoker = createInvoker(
     CompilationLibrariesController_7.get.getProcessorSingleLibraries(fakeValue[String]),
@@ -2504,7 +2504,7 @@ Project""",
       Seq(classOf[String]),
       "GET",
       """""",
-      this.prefix + """compilation/processor/singleLibrary"""
+      this.prefix + """compilation/processor/singleLibrary/$processor_id<[^/]+>"""
     )
   )
 
@@ -2527,7 +2527,7 @@ Project""",
 
   // @LINE:231
   private[this] lazy val controllers_CompilationLibrariesController_edit_Board_User_Description132_route = Route("PUT",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/board/userDescription")))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/board/userDescription/"), DynamicPart("type_of_board_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_edit_Board_User_Description132_invoker = createInvoker(
     CompilationLibrariesController_7.get.edit_Board_User_Description(fakeValue[String]),
@@ -2538,7 +2538,7 @@ Project""",
       Seq(classOf[String]),
       "PUT",
       """""",
-      this.prefix + """compilation/board/userDescription"""
+      this.prefix + """compilation/board/userDescription/$type_of_board_id<[^/]+>"""
     )
   )
 
@@ -2561,7 +2561,7 @@ Project""",
 
   // @LINE:233
   private[this] lazy val controllers_CompilationLibrariesController_get_Board134_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/board/"), DynamicPart("id", """[^/]+""",true)))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/board/"), DynamicPart("board_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_get_Board134_invoker = createInvoker(
     CompilationLibrariesController_7.get.get_Board(fakeValue[String]),
@@ -2572,13 +2572,13 @@ Project""",
       Seq(classOf[String]),
       "GET",
       """""",
-      this.prefix + """compilation/board/$id<[^/]+>"""
+      this.prefix + """compilation/board/$board_id<[^/]+>"""
     )
   )
 
   // @LINE:234
   private[this] lazy val controllers_CompilationLibrariesController_deactivate_Board135_route = Route("DELETE",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/board/deactivateBoard"), DynamicPart("id", """[^/]+""",true)))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/board/deactivateBoard/"), DynamicPart("board_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_deactivate_Board135_invoker = createInvoker(
     CompilationLibrariesController_7.get.deactivate_Board(fakeValue[String]),
@@ -2589,13 +2589,13 @@ Project""",
       Seq(classOf[String]),
       "DELETE",
       """""",
-      this.prefix + """compilation/board/deactivateBoard$id<[^/]+>"""
+      this.prefix + """compilation/board/deactivateBoard/$board_id<[^/]+>"""
     )
   )
 
   // @LINE:235
   private[this] lazy val controllers_CompilationLibrariesController_connect_Board_with_Project136_route = Route("PUT",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/board/connect/"), DynamicPart("id", """[^/]+""",true), StaticPart("/"), DynamicPart("pr", """[^/]+""",true)))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/board/connect/"), DynamicPart("board_id", """[^/]+""",true), StaticPart("/"), DynamicPart("project_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_connect_Board_with_Project136_invoker = createInvoker(
     CompilationLibrariesController_7.get.connect_Board_with_Project(fakeValue[String], fakeValue[String]),
@@ -2606,13 +2606,13 @@ Project""",
       Seq(classOf[String], classOf[String]),
       "PUT",
       """""",
-      this.prefix + """compilation/board/connect/$id<[^/]+>/$pr<[^/]+>"""
+      this.prefix + """compilation/board/connect/$board_id<[^/]+>/$project_id<[^/]+>"""
     )
   )
 
   // @LINE:236
   private[this] lazy val controllers_CompilationLibrariesController_disconnect_Board_from_Project137_route = Route("PUT",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/board/disconnect/"), DynamicPart("id", """[^/]+""",true), StaticPart("/"), DynamicPart("pr", """[^/]+""",true)))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/board/disconnect/"), DynamicPart("board_id", """[^/]+""",true), StaticPart("/"), DynamicPart("project_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_disconnect_Board_from_Project137_invoker = createInvoker(
     CompilationLibrariesController_7.get.disconnect_Board_from_Project(fakeValue[String], fakeValue[String]),
@@ -2623,13 +2623,13 @@ Project""",
       Seq(classOf[String], classOf[String]),
       "PUT",
       """""",
-      this.prefix + """compilation/board/disconnect/$id<[^/]+>/$pr<[^/]+>"""
+      this.prefix + """compilation/board/disconnect/$board_id<[^/]+>/$project_id<[^/]+>"""
     )
   )
 
   // @LINE:237
   private[this] lazy val controllers_CompilationLibrariesController_getBoardProjects138_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/board/projects/"), DynamicPart("id", """[^/]+""",true)))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/board/projects/"), DynamicPart("board_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_getBoardProjects138_invoker = createInvoker(
     CompilationLibrariesController_7.get.getBoardProjects(fakeValue[String]),
@@ -2640,7 +2640,7 @@ Project""",
       Seq(classOf[String]),
       "GET",
       """""",
-      this.prefix + """compilation/board/projects/$id<[^/]+>"""
+      this.prefix + """compilation/board/projects/$board_id<[^/]+>"""
     )
   )
 
@@ -2884,7 +2884,7 @@ Project""",
 
   // @LINE:259
   private[this] lazy val controllers_CompilationLibrariesController_get_LibraryGroup153_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup")))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup/"), DynamicPart("libraryGroup_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_get_LibraryGroup153_invoker = createInvoker(
     CompilationLibrariesController_7.get.get_LibraryGroup(fakeValue[String]),
@@ -2895,13 +2895,13 @@ Project""",
       Seq(classOf[String]),
       "GET",
       """""",
-      this.prefix + """compilation/libraryGroup"""
+      this.prefix + """compilation/libraryGroup/$libraryGroup_id<[^/]+>"""
     )
   )
 
   // @LINE:260
   private[this] lazy val controllers_CompilationLibrariesController_delete_LibraryGroup154_route = Route("DELETE",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup")))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup/"), DynamicPart("libraryGroup_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_delete_LibraryGroup154_invoker = createInvoker(
     CompilationLibrariesController_7.get.delete_LibraryGroup(fakeValue[String]),
@@ -2912,7 +2912,7 @@ Project""",
       Seq(classOf[String]),
       "DELETE",
       """""",
-      this.prefix + """compilation/libraryGroup"""
+      this.prefix + """compilation/libraryGroup/$libraryGroup_id<[^/]+>"""
     )
   )
 
@@ -2935,7 +2935,7 @@ Project""",
 
   // @LINE:262
   private[this] lazy val controllers_CompilationLibrariesController_editLibraryGroup156_route = Route("PUT",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup")))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup/"), DynamicPart("libraryGroup_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_editLibraryGroup156_invoker = createInvoker(
     CompilationLibrariesController_7.get.editLibraryGroup(fakeValue[String]),
@@ -2946,13 +2946,13 @@ Project""",
       Seq(classOf[String]),
       "PUT",
       """""",
-      this.prefix + """compilation/libraryGroup"""
+      this.prefix + """compilation/libraryGroup/$libraryGroup_id<[^/]+>"""
     )
   )
 
   // @LINE:263
   private[this] lazy val controllers_CompilationLibrariesController_get_LibraryGroup_Description157_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup/generalDescription")))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup/generalDescription/"), DynamicPart("libraryGroup_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_get_LibraryGroup_Description157_invoker = createInvoker(
     CompilationLibrariesController_7.get.get_LibraryGroup_Description(fakeValue[String]),
@@ -2963,13 +2963,13 @@ Project""",
       Seq(classOf[String]),
       "GET",
       """""",
-      this.prefix + """compilation/libraryGroup/generalDescription"""
+      this.prefix + """compilation/libraryGroup/generalDescription/$libraryGroup_id<[^/]+>"""
     )
   )
 
   // @LINE:264
   private[this] lazy val controllers_CompilationLibrariesController_get_LibraryGroup_Processors158_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup/processors")))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup/processors/"), DynamicPart("libraryGroup_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_get_LibraryGroup_Processors158_invoker = createInvoker(
     CompilationLibrariesController_7.get.get_LibraryGroup_Processors(fakeValue[String]),
@@ -2980,13 +2980,13 @@ Project""",
       Seq(classOf[String]),
       "GET",
       """""",
-      this.prefix + """compilation/libraryGroup/processors"""
+      this.prefix + """compilation/libraryGroup/processors/$libraryGroup_id<[^/]+>"""
     )
   )
 
   // @LINE:265
   private[this] lazy val controllers_CompilationLibrariesController_get_LibraryGroup_Libraries159_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup/libraries")))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup/libraries/"), DynamicPart("libraryGroup_id", """[^/]+""",true), StaticPart("/"), DynamicPart("version_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_get_LibraryGroup_Libraries159_invoker = createInvoker(
     CompilationLibrariesController_7.get.get_LibraryGroup_Libraries(fakeValue[String], fakeValue[String]),
@@ -2997,13 +2997,13 @@ Project""",
       Seq(classOf[String], classOf[String]),
       "GET",
       """""",
-      this.prefix + """compilation/libraryGroup/libraries"""
+      this.prefix + """compilation/libraryGroup/libraries/$libraryGroup_id<[^/]+>/$version_id<[^/]+>"""
     )
   )
 
   // @LINE:266
   private[this] lazy val controllers_CompilationLibrariesController_new_LibraryGroup_Version160_route = Route("POST",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup/version")))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup/version/"), DynamicPart("version_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_new_LibraryGroup_Version160_invoker = createInvoker(
     CompilationLibrariesController_7.get.new_LibraryGroup_Version(fakeValue[String]),
@@ -3014,13 +3014,13 @@ Project""",
       Seq(classOf[String]),
       "POST",
       """""",
-      this.prefix + """compilation/libraryGroup/version"""
+      this.prefix + """compilation/libraryGroup/version/$version_id<[^/]+>"""
     )
   )
 
   // @LINE:267
   private[this] lazy val controllers_CompilationLibrariesController_get_LibraryGroup_Version161_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup/versions")))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup/versions/"), DynamicPart("version_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_get_LibraryGroup_Version161_invoker = createInvoker(
     CompilationLibrariesController_7.get.get_LibraryGroup_Version(fakeValue[String]),
@@ -3031,13 +3031,13 @@ Project""",
       Seq(classOf[String]),
       "GET",
       """""",
-      this.prefix + """compilation/libraryGroup/versions"""
+      this.prefix + """compilation/libraryGroup/versions/$version_id<[^/]+>"""
     )
   )
 
   // @LINE:268
   private[this] lazy val controllers_CompilationLibrariesController_upload_Library_To_LibraryGroup162_route = Route("POST",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup/upload")))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/libraryGroup/upload/"), DynamicPart("libraryGroup_id", """[^/]+""",true), StaticPart("/"), DynamicPart("version_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_upload_Library_To_LibraryGroup162_invoker = createInvoker(
     CompilationLibrariesController_7.get.upload_Library_To_LibraryGroup(fakeValue[String], fakeValue[String]),
@@ -3048,7 +3048,7 @@ Project""",
       Seq(classOf[String], classOf[String]),
       "POST",
       """""",
-      this.prefix + """compilation/libraryGroup/upload"""
+      this.prefix + """compilation/libraryGroup/upload/$libraryGroup_id<[^/]+>/$version_id<[^/]+>"""
     )
   )
 
@@ -3071,7 +3071,7 @@ Project""",
 
   // @LINE:272
   private[this] lazy val controllers_CompilationLibrariesController_new_SingleLibrary_Version164_route = Route("POST",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library/version")))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library/version/"), DynamicPart("library_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_new_SingleLibrary_Version164_invoker = createInvoker(
     CompilationLibrariesController_7.get.new_SingleLibrary_Version(fakeValue[String]),
@@ -3082,13 +3082,13 @@ Project""",
       Seq(classOf[String]),
       "POST",
       """""",
-      this.prefix + """compilation/library/version"""
+      this.prefix + """compilation/library/version/$library_id<[^/]+>"""
     )
   )
 
   // @LINE:273
   private[this] lazy val controllers_CompilationLibrariesController_get_SingleLibrary_Versions165_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library/versions")))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library/versions/"), DynamicPart("library_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_get_SingleLibrary_Versions165_invoker = createInvoker(
     CompilationLibrariesController_7.get.get_SingleLibrary_Versions(fakeValue[String]),
@@ -3099,7 +3099,7 @@ Project""",
       Seq(classOf[String]),
       "GET",
       """""",
-      this.prefix + """compilation/library/versions"""
+      this.prefix + """compilation/library/versions/$library_id<[^/]+>"""
     )
   )
 
@@ -3122,7 +3122,7 @@ Project""",
 
   // @LINE:275
   private[this] lazy val controllers_CompilationLibrariesController_get_SingleLibrary167_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library")))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library/"), DynamicPart("library_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_get_SingleLibrary167_invoker = createInvoker(
     CompilationLibrariesController_7.get.get_SingleLibrary(fakeValue[String]),
@@ -3133,13 +3133,13 @@ Project""",
       Seq(classOf[String]),
       "GET",
       """""",
-      this.prefix + """compilation/library"""
+      this.prefix + """compilation/library/$library_id<[^/]+>"""
     )
   )
 
   // @LINE:277
   private[this] lazy val controllers_CompilationLibrariesController_edit_SingleLibrary168_route = Route("PUT",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library")))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library"), DynamicPart("library_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_edit_SingleLibrary168_invoker = createInvoker(
     CompilationLibrariesController_7.get.edit_SingleLibrary(fakeValue[String]),
@@ -3150,13 +3150,13 @@ Project""",
       Seq(classOf[String]),
       "PUT",
       """""",
-      this.prefix + """compilation/library"""
+      this.prefix + """compilation/library$library_id<[^/]+>"""
     )
   )
 
   // @LINE:278
   private[this] lazy val controllers_CompilationLibrariesController_delete_SingleLibrary169_route = Route("DELETE",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library")))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library"), DynamicPart("library_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_delete_SingleLibrary169_invoker = createInvoker(
     CompilationLibrariesController_7.get.delete_SingleLibrary(fakeValue[String]),
@@ -3167,13 +3167,13 @@ Project""",
       Seq(classOf[String]),
       "DELETE",
       """""",
-      this.prefix + """compilation/library"""
+      this.prefix + """compilation/library$library_id<[^/]+>"""
     )
   )
 
   // @LINE:279
   private[this] lazy val controllers_CompilationLibrariesController_upload_SingleLibrary_Version170_route = Route("POST",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library/upload")))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("compilation/library/upload"), DynamicPart("library_id", """[^/]+""",true), StaticPart("/"), DynamicPart("version_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_CompilationLibrariesController_upload_SingleLibrary_Version170_invoker = createInvoker(
     CompilationLibrariesController_7.get.upload_SingleLibrary_Version(fakeValue[String], fakeValue[String]),
@@ -3184,7 +3184,7 @@ Project""",
       Seq(classOf[String], classOf[String]),
       "POST",
       """""",
-      this.prefix + """compilation/library/upload"""
+      this.prefix + """compilation/library/upload$library_id<[^/]+>/$version_id<[^/]+>"""
     )
   )
 
@@ -3240,78 +3240,10 @@ Project""",
   )
 
   // @LINE:291
-  private[this] lazy val controllers_GridController_get_M_Project174_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("grid/m_project/"), DynamicPart("m_project_id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_GridController_get_M_Project174_invoker = createInvoker(
-    GridController_6.get.get_M_Project(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.GridController",
-      "get_M_Project",
-      Seq(classOf[String]),
-      "GET",
-      """""",
-      this.prefix + """grid/m_project/$m_project_id<[^/]+>"""
-    )
-  )
-
-  // @LINE:292
-  private[this] lazy val controllers_GridController_edit_M_Project175_route = Route("PUT",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("grid/m_project/"), DynamicPart("m_project_id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_GridController_edit_M_Project175_invoker = createInvoker(
-    GridController_6.get.edit_M_Project(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.GridController",
-      "edit_M_Project",
-      Seq(classOf[String]),
-      "PUT",
-      """""",
-      this.prefix + """grid/m_project/$m_project_id<[^/]+>"""
-    )
-  )
-
-  // @LINE:293
-  private[this] lazy val controllers_GridController_remove_M_Project176_route = Route("DELETE",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("grid/m_project/"), DynamicPart("id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_GridController_remove_M_Project176_invoker = createInvoker(
-    GridController_6.get.remove_M_Project(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.GridController",
-      "remove_M_Project",
-      Seq(classOf[String]),
-      "DELETE",
-      """""",
-      this.prefix + """grid/m_project/$id<[^/]+>"""
-    )
-  )
-
-  // @LINE:295
-  private[this] lazy val controllers_GridController_get_M_Projects_from_GlobalProject177_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("grid/m_project/project")))
-  )
-  private[this] lazy val controllers_GridController_get_M_Projects_from_GlobalProject177_invoker = createInvoker(
-    GridController_6.get.get_M_Projects_from_GlobalProject(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.GridController",
-      "get_M_Projects_from_GlobalProject",
-      Seq(classOf[String]),
-      "GET",
-      """""",
-      this.prefix + """grid/m_project/project"""
-    )
-  )
-
-  // @LINE:296
-  private[this] lazy val controllers_GridController_get_M_Projects_ByLoggedPerson178_route = Route("GET",
+  private[this] lazy val controllers_GridController_get_M_Projects_ByLoggedPerson174_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("grid/m_project/person")))
   )
-  private[this] lazy val controllers_GridController_get_M_Projects_ByLoggedPerson178_invoker = createInvoker(
+  private[this] lazy val controllers_GridController_get_M_Projects_ByLoggedPerson174_invoker = createInvoker(
     GridController_6.get.get_M_Projects_ByLoggedPerson(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -3324,7 +3256,75 @@ Project""",
     )
   )
 
-  // @LINE:299
+  // @LINE:292
+  private[this] lazy val controllers_GridController_get_M_Project175_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("grid/m_project/"), DynamicPart("m_project_id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_GridController_get_M_Project175_invoker = createInvoker(
+    GridController_6.get.get_M_Project(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.GridController",
+      "get_M_Project",
+      Seq(classOf[String]),
+      "GET",
+      """""",
+      this.prefix + """grid/m_project/$m_project_id<[^/]+>"""
+    )
+  )
+
+  // @LINE:293
+  private[this] lazy val controllers_GridController_edit_M_Project176_route = Route("PUT",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("grid/m_project/"), DynamicPart("m_project_id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_GridController_edit_M_Project176_invoker = createInvoker(
+    GridController_6.get.edit_M_Project(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.GridController",
+      "edit_M_Project",
+      Seq(classOf[String]),
+      "PUT",
+      """""",
+      this.prefix + """grid/m_project/$m_project_id<[^/]+>"""
+    )
+  )
+
+  // @LINE:294
+  private[this] lazy val controllers_GridController_remove_M_Project177_route = Route("DELETE",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("grid/m_project/"), DynamicPart("m_project_id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_GridController_remove_M_Project177_invoker = createInvoker(
+    GridController_6.get.remove_M_Project(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.GridController",
+      "remove_M_Project",
+      Seq(classOf[String]),
+      "DELETE",
+      """""",
+      this.prefix + """grid/m_project/$m_project_id<[^/]+>"""
+    )
+  )
+
+  // @LINE:296
+  private[this] lazy val controllers_GridController_get_M_Projects_from_GlobalProject178_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("grid/m_project/project/"), DynamicPart("project_id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_GridController_get_M_Projects_from_GlobalProject178_invoker = createInvoker(
+    GridController_6.get.get_M_Projects_from_GlobalProject(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.GridController",
+      "get_M_Projects_from_GlobalProject",
+      Seq(classOf[String]),
+      "GET",
+      """""",
+      this.prefix + """grid/m_project/project/$project_id<[^/]+>"""
+    )
+  )
+
+  // @LINE:300
   private[this] lazy val controllers_GridController_new_M_Program179_route = Route("POST",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("grid/m_program")))
   )
@@ -3341,62 +3341,11 @@ Project""",
     )
   )
 
-  // @LINE:300
-  private[this] lazy val controllers_GridController_get_M_Program180_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("grid/m_program")))
-  )
-  private[this] lazy val controllers_GridController_get_M_Program180_invoker = createInvoker(
-    GridController_6.get.get_M_Program(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.GridController",
-      "get_M_Program",
-      Seq(classOf[String]),
-      "GET",
-      """""",
-      this.prefix + """grid/m_program"""
-    )
-  )
-
   // @LINE:301
-  private[this] lazy val controllers_GridController_edit_M_Program181_route = Route("PUT",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("grid/m_program")))
+  private[this] lazy val controllers_GridController_get_M_Program_byQR_Token_forMobile180_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("grid/m_program/app/token/"), DynamicPart("qr_token", """[^/]+""",true)))
   )
-  private[this] lazy val controllers_GridController_edit_M_Program181_invoker = createInvoker(
-    GridController_6.get.edit_M_Program(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.GridController",
-      "edit_M_Program",
-      Seq(classOf[String]),
-      "PUT",
-      """""",
-      this.prefix + """grid/m_program"""
-    )
-  )
-
-  // @LINE:302
-  private[this] lazy val controllers_GridController_remove_M_Program182_route = Route("DELETE",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("grid/m_program")))
-  )
-  private[this] lazy val controllers_GridController_remove_M_Program182_invoker = createInvoker(
-    GridController_6.get.remove_M_Program(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.GridController",
-      "remove_M_Program",
-      Seq(classOf[String]),
-      "DELETE",
-      """""",
-      this.prefix + """grid/m_program"""
-    )
-  )
-
-  // @LINE:303
-  private[this] lazy val controllers_GridController_get_M_Program_byQR_Token_forMobile183_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("grid/m_program/token")))
-  )
-  private[this] lazy val controllers_GridController_get_M_Program_byQR_Token_forMobile183_invoker = createInvoker(
+  private[this] lazy val controllers_GridController_get_M_Program_byQR_Token_forMobile180_invoker = createInvoker(
     GridController_6.get.get_M_Program_byQR_Token_forMobile(fakeValue[String]),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -3405,15 +3354,83 @@ Project""",
       Seq(classOf[String]),
       "GET",
       """""",
-      this.prefix + """grid/m_program/token"""
+      this.prefix + """grid/m_program/app/token/$qr_token<[^/]+>"""
+    )
+  )
+
+  // @LINE:302
+  private[this] lazy val controllers_GridController_get_M_Program_all_forMobile181_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("grid/m_program/app/m_programs")))
+  )
+  private[this] lazy val controllers_GridController_get_M_Program_all_forMobile181_invoker = createInvoker(
+    GridController_6.get.get_M_Program_all_forMobile(),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.GridController",
+      "get_M_Program_all_forMobile",
+      Nil,
+      "GET",
+      """""",
+      this.prefix + """grid/m_program/app/m_programs"""
+    )
+  )
+
+  // @LINE:305
+  private[this] lazy val controllers_GridController_get_M_Program182_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("grid/m_program/"), DynamicPart("m_progrm_id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_GridController_get_M_Program182_invoker = createInvoker(
+    GridController_6.get.get_M_Program(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.GridController",
+      "get_M_Program",
+      Seq(classOf[String]),
+      "GET",
+      """""",
+      this.prefix + """grid/m_program/$m_progrm_id<[^/]+>"""
+    )
+  )
+
+  // @LINE:306
+  private[this] lazy val controllers_GridController_edit_M_Program183_route = Route("PUT",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("grid/m_program/"), DynamicPart("m_progrm_id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_GridController_edit_M_Program183_invoker = createInvoker(
+    GridController_6.get.edit_M_Program(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.GridController",
+      "edit_M_Program",
+      Seq(classOf[String]),
+      "PUT",
+      """""",
+      this.prefix + """grid/m_program/$m_progrm_id<[^/]+>"""
     )
   )
 
   // @LINE:307
-  private[this] lazy val controllers_GridController_new_Screen_Size_Type184_route = Route("POST",
+  private[this] lazy val controllers_GridController_remove_M_Program184_route = Route("DELETE",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("grid/m_program/"), DynamicPart("m_progrm_id", """[^/]+""",true)))
+  )
+  private[this] lazy val controllers_GridController_remove_M_Program184_invoker = createInvoker(
+    GridController_6.get.remove_M_Program(fakeValue[String]),
+    HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "controllers.GridController",
+      "remove_M_Program",
+      Seq(classOf[String]),
+      "DELETE",
+      """""",
+      this.prefix + """grid/m_program/$m_progrm_id<[^/]+>"""
+    )
+  )
+
+  // @LINE:313
+  private[this] lazy val controllers_GridController_new_Screen_Size_Type185_route = Route("POST",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("grid/screen_type")))
   )
-  private[this] lazy val controllers_GridController_new_Screen_Size_Type184_invoker = createInvoker(
+  private[this] lazy val controllers_GridController_new_Screen_Size_Type185_invoker = createInvoker(
     GridController_6.get.new_Screen_Size_Type(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -3426,16 +3443,16 @@ Project""",
     )
   )
 
-  // @LINE:309
-  private[this] lazy val controllers_GridController_get_Screen_Size_Type_PublicList185_route = Route("GET",
+  // @LINE:314
+  private[this] lazy val controllers_GridController_get_Screen_Size_Type_Combination186_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("grid/screen_type/all")))
   )
-  private[this] lazy val controllers_GridController_get_Screen_Size_Type_PublicList185_invoker = createInvoker(
-    GridController_6.get.get_Screen_Size_Type_PublicList(),
+  private[this] lazy val controllers_GridController_get_Screen_Size_Type_Combination186_invoker = createInvoker(
+    GridController_6.get.get_Screen_Size_Type_Combination(),
     HandlerDef(this.getClass.getClassLoader,
       "router",
       "controllers.GridController",
-      "get_Screen_Size_Type_PublicList",
+      "get_Screen_Size_Type_Combination",
       Nil,
       "GET",
       """""",
@@ -3443,26 +3460,9 @@ Project""",
     )
   )
 
-  // @LINE:310
-  private[this] lazy val controllers_GridController_get_Screen_Size_Type_Combination186_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("grid/screen_type/all/"), DynamicPart("id", """[^/]+""",true)))
-  )
-  private[this] lazy val controllers_GridController_get_Screen_Size_Type_Combination186_invoker = createInvoker(
-    GridController_6.get.get_Screen_Size_Type_Combination(fakeValue[String]),
-    HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "controllers.GridController",
-      "get_Screen_Size_Type_Combination",
-      Seq(classOf[String]),
-      "GET",
-      """""",
-      this.prefix + """grid/screen_type/all/$id<[^/]+>"""
-    )
-  )
-
-  // @LINE:311
+  // @LINE:315
   private[this] lazy val controllers_GridController_get_Screen_Size_Type187_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("grid/screen_type/"), DynamicPart("id", """[^/]+""",true)))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("grid/screen_type/"), DynamicPart("screen_size_type_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_GridController_get_Screen_Size_Type187_invoker = createInvoker(
     GridController_6.get.get_Screen_Size_Type(fakeValue[String]),
@@ -3473,13 +3473,13 @@ Project""",
       Seq(classOf[String]),
       "GET",
       """""",
-      this.prefix + """grid/screen_type/$id<[^/]+>"""
+      this.prefix + """grid/screen_type/$screen_size_type_id<[^/]+>"""
     )
   )
 
-  // @LINE:313
+  // @LINE:316
   private[this] lazy val controllers_GridController_edit_Screen_Size_Type188_route = Route("PUT",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("grid/screen_type/"), DynamicPart("id", """[^/]+""",true)))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("grid/screen_type/"), DynamicPart("screen_size_type_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_GridController_edit_Screen_Size_Type188_invoker = createInvoker(
     GridController_6.get.edit_Screen_Size_Type(fakeValue[String]),
@@ -3490,13 +3490,13 @@ Project""",
       Seq(classOf[String]),
       "PUT",
       """""",
-      this.prefix + """grid/screen_type/$id<[^/]+>"""
+      this.prefix + """grid/screen_type/$screen_size_type_id<[^/]+>"""
     )
   )
 
-  // @LINE:314
+  // @LINE:317
   private[this] lazy val controllers_GridController_remove_Screen_Size_Type189_route = Route("DELETE",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("grid/screen_type/"), DynamicPart("id", """[^/]+""",true)))
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("grid/screen_type/"), DynamicPart("screen_size_type_id", """[^/]+""",true)))
   )
   private[this] lazy val controllers_GridController_remove_Screen_Size_Type189_invoker = createInvoker(
     GridController_6.get.remove_Screen_Size_Type(fakeValue[String]),
@@ -3507,11 +3507,11 @@ Project""",
       Seq(classOf[String]),
       "DELETE",
       """""",
-      this.prefix + """grid/screen_type/$id<[^/]+>"""
+      this.prefix + """grid/screen_type/$screen_size_type_id<[^/]+>"""
     )
   )
 
-  // @LINE:323
+  // @LINE:326
   private[this] lazy val utilities_swagger_ApiHelpController_getResources190_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("api-docs")))
   )
@@ -3528,7 +3528,7 @@ Project""",
     )
   )
 
-  // @LINE:326
+  // @LINE:329
   private[this] lazy val controllers_SecurityController_optionLink191_route = Route("OPTIONS",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), DynamicPart("all", """.+""",false)))
   )
@@ -3545,7 +3545,7 @@ Project""",
     )
   )
 
-  // @LINE:329
+  // @LINE:332
   private[this] lazy val controllers_Assets_at192_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("assets/"), DynamicPart("file", """.+""",false)))
   )
@@ -4221,43 +4221,43 @@ Project""",
   
     // @LINE:198
     case controllers_CompilationLibrariesController_create_C_Program109_route(params) =>
-      call(params.fromQuery[String]("project_id", None)) { (project_id) =>
+      call(params.fromPath[String]("project_id", None)) { (project_id) =>
         controllers_CompilationLibrariesController_create_C_Program109_invoker.call(CompilationLibrariesController_7.get.create_C_Program(project_id))
       }
   
     // @LINE:199
     case controllers_CompilationLibrariesController_get_C_Program110_route(params) =>
-      call(params.fromQuery[String]("c_program_id", None)) { (c_program_id) =>
+      call(params.fromPath[String]("c_program_id", None)) { (c_program_id) =>
         controllers_CompilationLibrariesController_get_C_Program110_invoker.call(CompilationLibrariesController_7.get.get_C_Program(c_program_id))
       }
   
     // @LINE:200
     case controllers_CompilationLibrariesController_get_C_Program_All_from_Project111_route(params) =>
-      call(params.fromQuery[String]("project_id", None)) { (project_id) =>
+      call(params.fromPath[String]("project_id", None)) { (project_id) =>
         controllers_CompilationLibrariesController_get_C_Program_All_from_Project111_invoker.call(CompilationLibrariesController_7.get.get_C_Program_All_from_Project(project_id))
       }
   
     // @LINE:202
     case controllers_CompilationLibrariesController_edit_C_Program_Description112_route(params) =>
-      call(params.fromQuery[String]("c_program_id", None)) { (c_program_id) =>
+      call(params.fromPath[String]("c_program_id", None)) { (c_program_id) =>
         controllers_CompilationLibrariesController_edit_C_Program_Description112_invoker.call(CompilationLibrariesController_7.get.edit_C_Program_Description(c_program_id))
       }
   
     // @LINE:203
     case controllers_CompilationLibrariesController_update_C_Program113_route(params) =>
-      call(params.fromQuery[String]("c_program_id", None)) { (c_program_id) =>
+      call(params.fromPath[String]("c_program_id", None)) { (c_program_id) =>
         controllers_CompilationLibrariesController_update_C_Program113_invoker.call(CompilationLibrariesController_7.get.update_C_Program(c_program_id))
       }
   
     // @LINE:205
     case controllers_CompilationLibrariesController_delete_C_Program114_route(params) =>
-      call(params.fromQuery[String]("c_program_id", None)) { (c_program_id) =>
+      call(params.fromPath[String]("c_program_id", None)) { (c_program_id) =>
         controllers_CompilationLibrariesController_delete_C_Program114_invoker.call(CompilationLibrariesController_7.get.delete_C_Program(c_program_id))
       }
   
     // @LINE:206
     case controllers_CompilationLibrariesController_delete_C_Program_Version115_route(params) =>
-      call(params.fromQuery[String]("c_program_id", None), params.fromQuery[String]("version_id", None)) { (c_program_id, version_id) =>
+      call(params.fromPath[String]("c_program_id", None), params.fromPath[String]("version_id", None)) { (c_program_id, version_id) =>
         controllers_CompilationLibrariesController_delete_C_Program_Version115_invoker.call(CompilationLibrariesController_7.get.delete_C_Program_Version(c_program_id, version_id))
       }
   
@@ -4269,20 +4269,20 @@ Project""",
   
     // @LINE:209
     case controllers_CompilationLibrariesController_uploadCompilationToBoard117_route(params) =>
-      call(params.fromPath[String]("id", None), params.fromPath[String]("board", None)) { (id, board) =>
-        controllers_CompilationLibrariesController_uploadCompilationToBoard117_invoker.call(CompilationLibrariesController_7.get.uploadCompilationToBoard(id, board))
+      call(params.fromPath[String]("c_program_id", None), params.fromPath[String]("board_id", None)) { (c_program_id, board_id) =>
+        controllers_CompilationLibrariesController_uploadCompilationToBoard117_invoker.call(CompilationLibrariesController_7.get.uploadCompilationToBoard(c_program_id, board_id))
       }
   
     // @LINE:210
     case controllers_CompilationLibrariesController_uploadBinaryFileToBoard118_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_uploadBinaryFileToBoard118_invoker.call(CompilationLibrariesController_7.get.uploadBinaryFileToBoard(id))
+      call(params.fromPath[String]("board_id", None)) { (board_id) =>
+        controllers_CompilationLibrariesController_uploadBinaryFileToBoard118_invoker.call(CompilationLibrariesController_7.get.uploadBinaryFileToBoard(board_id))
       }
   
     // @LINE:212
     case controllers_CompilationLibrariesController_get_Boards_from_Project119_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_get_Boards_from_Project119_invoker.call(CompilationLibrariesController_7.get.get_Boards_from_Project(id))
+      call(params.fromPath[String]("project_id", None)) { (project_id) =>
+        controllers_CompilationLibrariesController_get_Boards_from_Project119_invoker.call(CompilationLibrariesController_7.get.get_Boards_from_Project(project_id))
       }
   
     // @LINE:215
@@ -4293,7 +4293,7 @@ Project""",
   
     // @LINE:216
     case controllers_CompilationLibrariesController_get_Processor121_route(params) =>
-      call(params.fromQuery[String]("processor_id", None)) { (processor_id) =>
+      call(params.fromPath[String]("processor_id", None)) { (processor_id) =>
         controllers_CompilationLibrariesController_get_Processor121_invoker.call(CompilationLibrariesController_7.get.get_Processor(processor_id))
       }
   
@@ -4305,49 +4305,49 @@ Project""",
   
     // @LINE:218
     case controllers_CompilationLibrariesController_update_Processor123_route(params) =>
-      call(params.fromQuery[String]("processor_id", None)) { (processor_id) =>
+      call(params.fromPath[String]("processor_id", None)) { (processor_id) =>
         controllers_CompilationLibrariesController_update_Processor123_invoker.call(CompilationLibrariesController_7.get.update_Processor(processor_id))
       }
   
     // @LINE:219
     case controllers_CompilationLibrariesController_delete_Processor124_route(params) =>
-      call(params.fromQuery[String]("processor_id", None)) { (processor_id) =>
+      call(params.fromPath[String]("processor_id", None)) { (processor_id) =>
         controllers_CompilationLibrariesController_delete_Processor124_invoker.call(CompilationLibrariesController_7.get.delete_Processor(processor_id))
       }
   
     // @LINE:221
     case controllers_CompilationLibrariesController_connectProcessorWithLibrary125_route(params) =>
-      call(params.fromQuery[String]("processor_id", None), params.fromQuery[String]("library_id", None)) { (processor_id, library_id) =>
+      call(params.fromPath[String]("processor_id", None), params.fromPath[String]("library_id", None)) { (processor_id, library_id) =>
         controllers_CompilationLibrariesController_connectProcessorWithLibrary125_invoker.call(CompilationLibrariesController_7.get.connectProcessorWithLibrary(processor_id, library_id))
       }
   
     // @LINE:222
     case controllers_CompilationLibrariesController_connectProcessorWithLibraryGroup126_route(params) =>
-      call(params.fromQuery[String]("processor_id", None), params.fromQuery[String]("library_id", None)) { (processor_id, library_id) =>
+      call(params.fromPath[String]("processor_id", None), params.fromPath[String]("library_id", None)) { (processor_id, library_id) =>
         controllers_CompilationLibrariesController_connectProcessorWithLibraryGroup126_invoker.call(CompilationLibrariesController_7.get.connectProcessorWithLibraryGroup(processor_id, library_id))
       }
   
     // @LINE:223
     case controllers_CompilationLibrariesController_disconnectProcessorWithLibrary127_route(params) =>
-      call(params.fromQuery[String]("processor_id", None), params.fromQuery[String]("library_id", None)) { (processor_id, library_id) =>
+      call(params.fromPath[String]("processor_id", None), params.fromPath[String]("library_id", None)) { (processor_id, library_id) =>
         controllers_CompilationLibrariesController_disconnectProcessorWithLibrary127_invoker.call(CompilationLibrariesController_7.get.disconnectProcessorWithLibrary(processor_id, library_id))
       }
   
     // @LINE:224
     case controllers_CompilationLibrariesController_disconnectProcessorWithLibraryGroup128_route(params) =>
-      call(params.fromQuery[String]("processor_id", None), params.fromQuery[String]("library_id", None)) { (processor_id, library_id) =>
+      call(params.fromPath[String]("processor_id", None), params.fromPath[String]("library_id", None)) { (processor_id, library_id) =>
         controllers_CompilationLibrariesController_disconnectProcessorWithLibraryGroup128_invoker.call(CompilationLibrariesController_7.get.disconnectProcessorWithLibraryGroup(processor_id, library_id))
       }
   
     // @LINE:226
     case controllers_CompilationLibrariesController_getProcessorLibraryGroups129_route(params) =>
-      call(params.fromQuery[String]("processor_id", None)) { (processor_id) =>
+      call(params.fromPath[String]("processor_id", None)) { (processor_id) =>
         controllers_CompilationLibrariesController_getProcessorLibraryGroups129_invoker.call(CompilationLibrariesController_7.get.getProcessorLibraryGroups(processor_id))
       }
   
     // @LINE:227
     case controllers_CompilationLibrariesController_getProcessorSingleLibraries130_route(params) =>
-      call(params.fromQuery[String]("processor_id", None)) { (processor_id) =>
+      call(params.fromPath[String]("processor_id", None)) { (processor_id) =>
         controllers_CompilationLibrariesController_getProcessorSingleLibraries130_invoker.call(CompilationLibrariesController_7.get.getProcessorSingleLibraries(processor_id))
       }
   
@@ -4359,7 +4359,7 @@ Project""",
   
     // @LINE:231
     case controllers_CompilationLibrariesController_edit_Board_User_Description132_route(params) =>
-      call(params.fromQuery[String]("type_of_board_id", None)) { (type_of_board_id) =>
+      call(params.fromPath[String]("type_of_board_id", None)) { (type_of_board_id) =>
         controllers_CompilationLibrariesController_edit_Board_User_Description132_invoker.call(CompilationLibrariesController_7.get.edit_Board_User_Description(type_of_board_id))
       }
   
@@ -4371,32 +4371,32 @@ Project""",
   
     // @LINE:233
     case controllers_CompilationLibrariesController_get_Board134_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_get_Board134_invoker.call(CompilationLibrariesController_7.get.get_Board(id))
+      call(params.fromPath[String]("board_id", None)) { (board_id) =>
+        controllers_CompilationLibrariesController_get_Board134_invoker.call(CompilationLibrariesController_7.get.get_Board(board_id))
       }
   
     // @LINE:234
     case controllers_CompilationLibrariesController_deactivate_Board135_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_deactivate_Board135_invoker.call(CompilationLibrariesController_7.get.deactivate_Board(id))
+      call(params.fromPath[String]("board_id", None)) { (board_id) =>
+        controllers_CompilationLibrariesController_deactivate_Board135_invoker.call(CompilationLibrariesController_7.get.deactivate_Board(board_id))
       }
   
     // @LINE:235
     case controllers_CompilationLibrariesController_connect_Board_with_Project136_route(params) =>
-      call(params.fromPath[String]("id", None), params.fromPath[String]("pr", None)) { (id, pr) =>
-        controllers_CompilationLibrariesController_connect_Board_with_Project136_invoker.call(CompilationLibrariesController_7.get.connect_Board_with_Project(id, pr))
+      call(params.fromPath[String]("board_id", None), params.fromPath[String]("project_id", None)) { (board_id, project_id) =>
+        controllers_CompilationLibrariesController_connect_Board_with_Project136_invoker.call(CompilationLibrariesController_7.get.connect_Board_with_Project(board_id, project_id))
       }
   
     // @LINE:236
     case controllers_CompilationLibrariesController_disconnect_Board_from_Project137_route(params) =>
-      call(params.fromPath[String]("id", None), params.fromPath[String]("pr", None)) { (id, pr) =>
-        controllers_CompilationLibrariesController_disconnect_Board_from_Project137_invoker.call(CompilationLibrariesController_7.get.disconnect_Board_from_Project(id, pr))
+      call(params.fromPath[String]("board_id", None), params.fromPath[String]("project_id", None)) { (board_id, project_id) =>
+        controllers_CompilationLibrariesController_disconnect_Board_from_Project137_invoker.call(CompilationLibrariesController_7.get.disconnect_Board_from_Project(board_id, project_id))
       }
   
     // @LINE:237
     case controllers_CompilationLibrariesController_getBoardProjects138_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_CompilationLibrariesController_getBoardProjects138_invoker.call(CompilationLibrariesController_7.get.getBoardProjects(id))
+      call(params.fromPath[String]("board_id", None)) { (board_id) =>
+        controllers_CompilationLibrariesController_getBoardProjects138_invoker.call(CompilationLibrariesController_7.get.getBoardProjects(board_id))
       }
   
     // @LINE:241
@@ -4485,13 +4485,13 @@ Project""",
   
     // @LINE:259
     case controllers_CompilationLibrariesController_get_LibraryGroup153_route(params) =>
-      call(params.fromQuery[String]("libraryGroup_id", None)) { (libraryGroup_id) =>
+      call(params.fromPath[String]("libraryGroup_id", None)) { (libraryGroup_id) =>
         controllers_CompilationLibrariesController_get_LibraryGroup153_invoker.call(CompilationLibrariesController_7.get.get_LibraryGroup(libraryGroup_id))
       }
   
     // @LINE:260
     case controllers_CompilationLibrariesController_delete_LibraryGroup154_route(params) =>
-      call(params.fromQuery[String]("libraryGroup_id", None)) { (libraryGroup_id) =>
+      call(params.fromPath[String]("libraryGroup_id", None)) { (libraryGroup_id) =>
         controllers_CompilationLibrariesController_delete_LibraryGroup154_invoker.call(CompilationLibrariesController_7.get.delete_LibraryGroup(libraryGroup_id))
       }
   
@@ -4503,43 +4503,43 @@ Project""",
   
     // @LINE:262
     case controllers_CompilationLibrariesController_editLibraryGroup156_route(params) =>
-      call(params.fromQuery[String]("libraryGroup_id", None)) { (libraryGroup_id) =>
+      call(params.fromPath[String]("libraryGroup_id", None)) { (libraryGroup_id) =>
         controllers_CompilationLibrariesController_editLibraryGroup156_invoker.call(CompilationLibrariesController_7.get.editLibraryGroup(libraryGroup_id))
       }
   
     // @LINE:263
     case controllers_CompilationLibrariesController_get_LibraryGroup_Description157_route(params) =>
-      call(params.fromQuery[String]("libraryGroup_id", None)) { (libraryGroup_id) =>
+      call(params.fromPath[String]("libraryGroup_id", None)) { (libraryGroup_id) =>
         controllers_CompilationLibrariesController_get_LibraryGroup_Description157_invoker.call(CompilationLibrariesController_7.get.get_LibraryGroup_Description(libraryGroup_id))
       }
   
     // @LINE:264
     case controllers_CompilationLibrariesController_get_LibraryGroup_Processors158_route(params) =>
-      call(params.fromQuery[String]("libraryGroup_id", None)) { (libraryGroup_id) =>
+      call(params.fromPath[String]("libraryGroup_id", None)) { (libraryGroup_id) =>
         controllers_CompilationLibrariesController_get_LibraryGroup_Processors158_invoker.call(CompilationLibrariesController_7.get.get_LibraryGroup_Processors(libraryGroup_id))
       }
   
     // @LINE:265
     case controllers_CompilationLibrariesController_get_LibraryGroup_Libraries159_route(params) =>
-      call(params.fromQuery[String]("libraryGroup_id", None), params.fromQuery[String]("version_id", None)) { (libraryGroup_id, version_id) =>
+      call(params.fromPath[String]("libraryGroup_id", None), params.fromPath[String]("version_id", None)) { (libraryGroup_id, version_id) =>
         controllers_CompilationLibrariesController_get_LibraryGroup_Libraries159_invoker.call(CompilationLibrariesController_7.get.get_LibraryGroup_Libraries(libraryGroup_id, version_id))
       }
   
     // @LINE:266
     case controllers_CompilationLibrariesController_new_LibraryGroup_Version160_route(params) =>
-      call(params.fromQuery[String]("version_id", None)) { (version_id) =>
+      call(params.fromPath[String]("version_id", None)) { (version_id) =>
         controllers_CompilationLibrariesController_new_LibraryGroup_Version160_invoker.call(CompilationLibrariesController_7.get.new_LibraryGroup_Version(version_id))
       }
   
     // @LINE:267
     case controllers_CompilationLibrariesController_get_LibraryGroup_Version161_route(params) =>
-      call(params.fromQuery[String]("version_id", None)) { (version_id) =>
+      call(params.fromPath[String]("version_id", None)) { (version_id) =>
         controllers_CompilationLibrariesController_get_LibraryGroup_Version161_invoker.call(CompilationLibrariesController_7.get.get_LibraryGroup_Version(version_id))
       }
   
     // @LINE:268
     case controllers_CompilationLibrariesController_upload_Library_To_LibraryGroup162_route(params) =>
-      call(params.fromQuery[String]("libraryGroup_id", None), params.fromQuery[String]("version_id", None)) { (libraryGroup_id, version_id) =>
+      call(params.fromPath[String]("libraryGroup_id", None), params.fromPath[String]("version_id", None)) { (libraryGroup_id, version_id) =>
         controllers_CompilationLibrariesController_upload_Library_To_LibraryGroup162_invoker.call(CompilationLibrariesController_7.get.upload_Library_To_LibraryGroup(libraryGroup_id, version_id))
       }
   
@@ -4551,13 +4551,13 @@ Project""",
   
     // @LINE:272
     case controllers_CompilationLibrariesController_new_SingleLibrary_Version164_route(params) =>
-      call(params.fromQuery[String]("library_id", None)) { (library_id) =>
+      call(params.fromPath[String]("library_id", None)) { (library_id) =>
         controllers_CompilationLibrariesController_new_SingleLibrary_Version164_invoker.call(CompilationLibrariesController_7.get.new_SingleLibrary_Version(library_id))
       }
   
     // @LINE:273
     case controllers_CompilationLibrariesController_get_SingleLibrary_Versions165_route(params) =>
-      call(params.fromQuery[String]("library_id", None)) { (library_id) =>
+      call(params.fromPath[String]("library_id", None)) { (library_id) =>
         controllers_CompilationLibrariesController_get_SingleLibrary_Versions165_invoker.call(CompilationLibrariesController_7.get.get_SingleLibrary_Versions(library_id))
       }
   
@@ -4569,25 +4569,25 @@ Project""",
   
     // @LINE:275
     case controllers_CompilationLibrariesController_get_SingleLibrary167_route(params) =>
-      call(params.fromQuery[String]("library_id", None)) { (library_id) =>
+      call(params.fromPath[String]("library_id", None)) { (library_id) =>
         controllers_CompilationLibrariesController_get_SingleLibrary167_invoker.call(CompilationLibrariesController_7.get.get_SingleLibrary(library_id))
       }
   
     // @LINE:277
     case controllers_CompilationLibrariesController_edit_SingleLibrary168_route(params) =>
-      call(params.fromQuery[String]("library_id", None)) { (library_id) =>
+      call(params.fromPath[String]("library_id", None)) { (library_id) =>
         controllers_CompilationLibrariesController_edit_SingleLibrary168_invoker.call(CompilationLibrariesController_7.get.edit_SingleLibrary(library_id))
       }
   
     // @LINE:278
     case controllers_CompilationLibrariesController_delete_SingleLibrary169_route(params) =>
-      call(params.fromQuery[String]("library_id", None)) { (library_id) =>
+      call(params.fromPath[String]("library_id", None)) { (library_id) =>
         controllers_CompilationLibrariesController_delete_SingleLibrary169_invoker.call(CompilationLibrariesController_7.get.delete_SingleLibrary(library_id))
       }
   
     // @LINE:279
     case controllers_CompilationLibrariesController_upload_SingleLibrary_Version170_route(params) =>
-      call(params.fromQuery[String]("library_id", None), params.fromQuery[String]("version_id", None)) { (library_id, version_id) =>
+      call(params.fromPath[String]("library_id", None), params.fromPath[String]("version_id", None)) { (library_id, version_id) =>
         controllers_CompilationLibrariesController_upload_SingleLibrary_Version170_invoker.call(CompilationLibrariesController_7.get.upload_SingleLibrary_Version(library_id, version_id))
       }
   
@@ -4610,114 +4610,114 @@ Project""",
       }
   
     // @LINE:291
-    case controllers_GridController_get_M_Project174_route(params) =>
-      call(params.fromPath[String]("m_project_id", None)) { (m_project_id) =>
-        controllers_GridController_get_M_Project174_invoker.call(GridController_6.get.get_M_Project(m_project_id))
+    case controllers_GridController_get_M_Projects_ByLoggedPerson174_route(params) =>
+      call { 
+        controllers_GridController_get_M_Projects_ByLoggedPerson174_invoker.call(GridController_6.get.get_M_Projects_ByLoggedPerson())
       }
   
     // @LINE:292
-    case controllers_GridController_edit_M_Project175_route(params) =>
+    case controllers_GridController_get_M_Project175_route(params) =>
       call(params.fromPath[String]("m_project_id", None)) { (m_project_id) =>
-        controllers_GridController_edit_M_Project175_invoker.call(GridController_6.get.edit_M_Project(m_project_id))
+        controllers_GridController_get_M_Project175_invoker.call(GridController_6.get.get_M_Project(m_project_id))
       }
   
     // @LINE:293
-    case controllers_GridController_remove_M_Project176_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_GridController_remove_M_Project176_invoker.call(GridController_6.get.remove_M_Project(id))
+    case controllers_GridController_edit_M_Project176_route(params) =>
+      call(params.fromPath[String]("m_project_id", None)) { (m_project_id) =>
+        controllers_GridController_edit_M_Project176_invoker.call(GridController_6.get.edit_M_Project(m_project_id))
       }
   
-    // @LINE:295
-    case controllers_GridController_get_M_Projects_from_GlobalProject177_route(params) =>
-      call(params.fromQuery[String]("project_id", None)) { (project_id) =>
-        controllers_GridController_get_M_Projects_from_GlobalProject177_invoker.call(GridController_6.get.get_M_Projects_from_GlobalProject(project_id))
+    // @LINE:294
+    case controllers_GridController_remove_M_Project177_route(params) =>
+      call(params.fromPath[String]("m_project_id", None)) { (m_project_id) =>
+        controllers_GridController_remove_M_Project177_invoker.call(GridController_6.get.remove_M_Project(m_project_id))
       }
   
     // @LINE:296
-    case controllers_GridController_get_M_Projects_ByLoggedPerson178_route(params) =>
-      call { 
-        controllers_GridController_get_M_Projects_ByLoggedPerson178_invoker.call(GridController_6.get.get_M_Projects_ByLoggedPerson())
+    case controllers_GridController_get_M_Projects_from_GlobalProject178_route(params) =>
+      call(params.fromPath[String]("project_id", None)) { (project_id) =>
+        controllers_GridController_get_M_Projects_from_GlobalProject178_invoker.call(GridController_6.get.get_M_Projects_from_GlobalProject(project_id))
       }
   
-    // @LINE:299
+    // @LINE:300
     case controllers_GridController_new_M_Program179_route(params) =>
       call { 
         controllers_GridController_new_M_Program179_invoker.call(GridController_6.get.new_M_Program())
       }
   
-    // @LINE:300
-    case controllers_GridController_get_M_Program180_route(params) =>
-      call(params.fromQuery[String]("m_progrm_id", None)) { (m_progrm_id) =>
-        controllers_GridController_get_M_Program180_invoker.call(GridController_6.get.get_M_Program(m_progrm_id))
-      }
-  
     // @LINE:301
-    case controllers_GridController_edit_M_Program181_route(params) =>
-      call(params.fromQuery[String]("m_progrm_id", None)) { (m_progrm_id) =>
-        controllers_GridController_edit_M_Program181_invoker.call(GridController_6.get.edit_M_Program(m_progrm_id))
+    case controllers_GridController_get_M_Program_byQR_Token_forMobile180_route(params) =>
+      call(params.fromPath[String]("qr_token", None)) { (qr_token) =>
+        controllers_GridController_get_M_Program_byQR_Token_forMobile180_invoker.call(GridController_6.get.get_M_Program_byQR_Token_forMobile(qr_token))
       }
   
     // @LINE:302
-    case controllers_GridController_remove_M_Program182_route(params) =>
-      call(params.fromQuery[String]("m_progrm_id", None)) { (m_progrm_id) =>
-        controllers_GridController_remove_M_Program182_invoker.call(GridController_6.get.remove_M_Program(m_progrm_id))
+    case controllers_GridController_get_M_Program_all_forMobile181_route(params) =>
+      call { 
+        controllers_GridController_get_M_Program_all_forMobile181_invoker.call(GridController_6.get.get_M_Program_all_forMobile())
       }
   
-    // @LINE:303
-    case controllers_GridController_get_M_Program_byQR_Token_forMobile183_route(params) =>
-      call(params.fromQuery[String]("qr_token", None)) { (qr_token) =>
-        controllers_GridController_get_M_Program_byQR_Token_forMobile183_invoker.call(GridController_6.get.get_M_Program_byQR_Token_forMobile(qr_token))
+    // @LINE:305
+    case controllers_GridController_get_M_Program182_route(params) =>
+      call(params.fromPath[String]("m_progrm_id", None)) { (m_progrm_id) =>
+        controllers_GridController_get_M_Program182_invoker.call(GridController_6.get.get_M_Program(m_progrm_id))
+      }
+  
+    // @LINE:306
+    case controllers_GridController_edit_M_Program183_route(params) =>
+      call(params.fromPath[String]("m_progrm_id", None)) { (m_progrm_id) =>
+        controllers_GridController_edit_M_Program183_invoker.call(GridController_6.get.edit_M_Program(m_progrm_id))
       }
   
     // @LINE:307
-    case controllers_GridController_new_Screen_Size_Type184_route(params) =>
-      call { 
-        controllers_GridController_new_Screen_Size_Type184_invoker.call(GridController_6.get.new_Screen_Size_Type())
-      }
-  
-    // @LINE:309
-    case controllers_GridController_get_Screen_Size_Type_PublicList185_route(params) =>
-      call { 
-        controllers_GridController_get_Screen_Size_Type_PublicList185_invoker.call(GridController_6.get.get_Screen_Size_Type_PublicList())
-      }
-  
-    // @LINE:310
-    case controllers_GridController_get_Screen_Size_Type_Combination186_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_GridController_get_Screen_Size_Type_Combination186_invoker.call(GridController_6.get.get_Screen_Size_Type_Combination(id))
-      }
-  
-    // @LINE:311
-    case controllers_GridController_get_Screen_Size_Type187_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_GridController_get_Screen_Size_Type187_invoker.call(GridController_6.get.get_Screen_Size_Type(id))
+    case controllers_GridController_remove_M_Program184_route(params) =>
+      call(params.fromPath[String]("m_progrm_id", None)) { (m_progrm_id) =>
+        controllers_GridController_remove_M_Program184_invoker.call(GridController_6.get.remove_M_Program(m_progrm_id))
       }
   
     // @LINE:313
-    case controllers_GridController_edit_Screen_Size_Type188_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_GridController_edit_Screen_Size_Type188_invoker.call(GridController_6.get.edit_Screen_Size_Type(id))
+    case controllers_GridController_new_Screen_Size_Type185_route(params) =>
+      call { 
+        controllers_GridController_new_Screen_Size_Type185_invoker.call(GridController_6.get.new_Screen_Size_Type())
       }
   
     // @LINE:314
-    case controllers_GridController_remove_Screen_Size_Type189_route(params) =>
-      call(params.fromPath[String]("id", None)) { (id) =>
-        controllers_GridController_remove_Screen_Size_Type189_invoker.call(GridController_6.get.remove_Screen_Size_Type(id))
+    case controllers_GridController_get_Screen_Size_Type_Combination186_route(params) =>
+      call { 
+        controllers_GridController_get_Screen_Size_Type_Combination186_invoker.call(GridController_6.get.get_Screen_Size_Type_Combination())
       }
   
-    // @LINE:323
+    // @LINE:315
+    case controllers_GridController_get_Screen_Size_Type187_route(params) =>
+      call(params.fromPath[String]("screen_size_type_id", None)) { (screen_size_type_id) =>
+        controllers_GridController_get_Screen_Size_Type187_invoker.call(GridController_6.get.get_Screen_Size_Type(screen_size_type_id))
+      }
+  
+    // @LINE:316
+    case controllers_GridController_edit_Screen_Size_Type188_route(params) =>
+      call(params.fromPath[String]("screen_size_type_id", None)) { (screen_size_type_id) =>
+        controllers_GridController_edit_Screen_Size_Type188_invoker.call(GridController_6.get.edit_Screen_Size_Type(screen_size_type_id))
+      }
+  
+    // @LINE:317
+    case controllers_GridController_remove_Screen_Size_Type189_route(params) =>
+      call(params.fromPath[String]("screen_size_type_id", None)) { (screen_size_type_id) =>
+        controllers_GridController_remove_Screen_Size_Type189_invoker.call(GridController_6.get.remove_Screen_Size_Type(screen_size_type_id))
+      }
+  
+    // @LINE:326
     case utilities_swagger_ApiHelpController_getResources190_route(params) =>
       call { 
         utilities_swagger_ApiHelpController_getResources190_invoker.call(ApiHelpController_3.get.getResources)
       }
   
-    // @LINE:326
+    // @LINE:329
     case controllers_SecurityController_optionLink191_route(params) =>
       call(params.fromPath[String]("all", None)) { (all) =>
         controllers_SecurityController_optionLink191_invoker.call(SecurityController_4.get.optionLink(all))
       }
   
-    // @LINE:329
+    // @LINE:332
     case controllers_Assets_at192_route(params) =>
       call(Param[String]("path", Right("/public")), params.fromPath[String]("file", None)) { (path, file) =>
         controllers_Assets_at192_invoker.call(Assets_9.at(path, file))

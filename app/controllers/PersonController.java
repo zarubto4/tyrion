@@ -128,8 +128,6 @@ public class PersonController extends Controller {
 
             Person person =Person.find.byId(id);
             if(person == null )  return GlobalResult.notFoundObject();
-
-
             return GlobalResult.okResult(Json.toJson(person));
 
         } catch (Exception e) {
@@ -157,8 +155,6 @@ public class PersonController extends Controller {
             return GlobalResult.internalServerError();
         }
     }
-
-
 
     @Security.Authenticated(Secured.class)
     @BodyParser.Of(BodyParser.Json.class)

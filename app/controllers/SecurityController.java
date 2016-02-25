@@ -114,7 +114,7 @@ public class SecurityController extends Controller {
     }
 
     @ApiOperation(value = "get Person by token (after Oauth2 Login -> Facebook, GitHub, Twitter)",
-            tags = {"Access", "Person"},
+            tags = {"Access", "Person", "Social-GitHub", "Social-Facebook"},
             notes = "If you want login to system with social networks - you can used facebook, github or twitter api " +
                     "just ask for token, server responds with object where is token and redirection link. Redirect user " +
                     "to this link and after returning to success page that you filled in ask for token, ask again to this api " +
@@ -475,7 +475,7 @@ public class SecurityController extends Controller {
 //###### Socilání sítě - a generátory přístupů ########################################################################*/
 
     @ApiOperation(value = "login with GitHub",
-            tags = {"Access", "GitHub"},
+            tags = {"Access", "Social-GitHub"},
             notes = "For login via GitHub \n\n "+
                     "If you want login to system with social networks - you can used Facebook, GitHub, Twitter... api " +
                     "just ask via this Api and server responds with object where is token and redirection link. After that redirect user " +
@@ -526,7 +526,7 @@ public class SecurityController extends Controller {
     }
 
     @ApiOperation(value = "login with Facebook",
-            tags = {"Access", "Facebook"},
+            tags = {"Access", "Social-Facebook"},
             notes = "For login via Facebook \n\n "+
                     "If you want login to system with social networks - you can used Facebook, GitHub, Twitter... api " +
                     "just ask via this Api and server responds with object where is token and redirection link. After that redirect user " +

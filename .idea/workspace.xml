@@ -2,7 +2,66 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f6cef342-dd25-45cb-b650-fad262b8d827" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_TypeOfBoard_Combination.java" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/conf/swagger.json" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/project/target/streams/$global/dependencyPositions/$global/streams/update_cache_2.10/output_dsp" afterPath="$PROJECT_DIR$/project/target/streams/$global/dependencyPositions/$global/streams/update_cache_2.10/output_dsp" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/project/target/streams/$global/update/$global/streams/update_cache_2.10/output" afterPath="$PROJECT_DIR$/project/target/streams/$global/update/$global/streams/update_cache_2.10/output" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/controllers/SecurityController.class" afterPath="$PROJECT_DIR$/target/scala-2.11/classes/controllers/SecurityController.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1.class" afterPath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes$$anonfun$routes$1.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes.class" afterPath="$PROJECT_DIR$/target/scala-2.11/classes/router/Routes.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/streams/$global/dependencyPositions/$global/streams/update_cache_2.11/output_dsp" afterPath="$PROJECT_DIR$/target/streams/$global/dependencyPositions/$global/streams/update_cache_2.11/output_dsp" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/streams/$global/update/$global/streams/update_cache_2.11/output" afterPath="$PROJECT_DIR$/target/streams/$global/update/$global/streams/update_cache_2.11/output" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/streams/compile/copyResources/$global/streams/copy-resources" afterPath="$PROJECT_DIR$/target/streams/compile/copyResources/$global/streams/copy-resources" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/streams/compile/playRoutes/$global/streams/op-cache" afterPath="$PROJECT_DIR$/target/streams/compile/playRoutes/$global/streams/op-cache" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/controllers/CompilationLibrariesController.java" afterPath="$PROJECT_DIR$/app/controllers/CompilationLibrariesController.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/controllers/GridController.java" afterPath="$PROJECT_DIR$/app/controllers/GridController.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/controllers/PersonController.java" afterPath="$PROJECT_DIR$/app/controllers/PersonController.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/controllers/SecurityController.java" afterPath="$PROJECT_DIR$/app/controllers/SecurityController.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/models/project/global/Project.java" afterPath="$PROJECT_DIR$/app/models/project/global/Project.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/conf/routes" afterPath="$PROJECT_DIR$/conf/routes" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/logs/application.log" afterPath="$PROJECT_DIR$/logs/application.log" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/project/target/resolution-cache/default/tyrion-build/scala_2.10/sbt_0.13/0.1-SNAPSHOT/resolved.xml.properties" afterPath="$PROJECT_DIR$/project/target/resolution-cache/default/tyrion-build/scala_2.10/sbt_0.13/0.1-SNAPSHOT/resolved.xml.properties" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/project/target/resolution-cache/default/tyrion-build/scala_2.10/sbt_0.13/0.1-SNAPSHOT/resolved.xml.xml" afterPath="$PROJECT_DIR$/project/target/resolution-cache/default/tyrion-build/scala_2.10/sbt_0.13/0.1-SNAPSHOT/resolved.xml.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/project/target/resolution-cache/reports/default-tyrion-build-compile-internal.xml" afterPath="$PROJECT_DIR$/project/target/resolution-cache/reports/default-tyrion-build-compile-internal.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/project/target/resolution-cache/reports/default-tyrion-build-compile.xml" afterPath="$PROJECT_DIR$/project/target/resolution-cache/reports/default-tyrion-build-compile.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/project/target/resolution-cache/reports/default-tyrion-build-docs.xml" afterPath="$PROJECT_DIR$/project/target/resolution-cache/reports/default-tyrion-build-docs.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/project/target/resolution-cache/reports/default-tyrion-build-optional.xml" afterPath="$PROJECT_DIR$/project/target/resolution-cache/reports/default-tyrion-build-optional.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/project/target/resolution-cache/reports/default-tyrion-build-plugin.xml" afterPath="$PROJECT_DIR$/project/target/resolution-cache/reports/default-tyrion-build-plugin.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/project/target/resolution-cache/reports/default-tyrion-build-pom.xml" afterPath="$PROJECT_DIR$/project/target/resolution-cache/reports/default-tyrion-build-pom.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/project/target/resolution-cache/reports/default-tyrion-build-provided.xml" afterPath="$PROJECT_DIR$/project/target/resolution-cache/reports/default-tyrion-build-provided.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/project/target/resolution-cache/reports/default-tyrion-build-runtime-internal.xml" afterPath="$PROJECT_DIR$/project/target/resolution-cache/reports/default-tyrion-build-runtime-internal.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/project/target/resolution-cache/reports/default-tyrion-build-runtime.xml" afterPath="$PROJECT_DIR$/project/target/resolution-cache/reports/default-tyrion-build-runtime.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/project/target/resolution-cache/reports/default-tyrion-build-scala-tool.xml" afterPath="$PROJECT_DIR$/project/target/resolution-cache/reports/default-tyrion-build-scala-tool.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/project/target/resolution-cache/reports/default-tyrion-build-sources.xml" afterPath="$PROJECT_DIR$/project/target/resolution-cache/reports/default-tyrion-build-sources.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/project/target/resolution-cache/reports/default-tyrion-build-test-internal.xml" afterPath="$PROJECT_DIR$/project/target/resolution-cache/reports/default-tyrion-build-test-internal.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/project/target/resolution-cache/reports/default-tyrion-build-test.xml" afterPath="$PROJECT_DIR$/project/target/resolution-cache/reports/default-tyrion-build-test.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/project/target/streams/$global/update/$global/streams/out" afterPath="$PROJECT_DIR$/project/target/streams/$global/update/$global/streams/out" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-compile-internal.xml" afterPath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-compile-internal.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-compile.xml" afterPath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-compile.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-docs.xml" afterPath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-docs.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-optional.xml" afterPath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-optional.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-plugin.xml" afterPath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-plugin.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-pom.xml" afterPath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-pom.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-provided.xml" afterPath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-provided.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-runtime-internal.xml" afterPath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-runtime-internal.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-runtime.xml" afterPath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-runtime.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-scala-tool.xml" afterPath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-scala-tool.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-sources.xml" afterPath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-sources.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-test-internal.xml" afterPath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-test-internal.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-test.xml" afterPath="$PROJECT_DIR$/target/resolution-cache/reports/tyrion-tyrion_2.11-test.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/scala-2.11/classes/routes" afterPath="$PROJECT_DIR$/target/scala-2.11/classes/routes" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/scala-2.11/routes/main/controllers/ReverseRoutes.scala" afterPath="$PROJECT_DIR$/target/scala-2.11/routes/main/controllers/ReverseRoutes.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/scala-2.11/routes/main/controllers/javascript/JavaScriptReverseRoutes.scala" afterPath="$PROJECT_DIR$/target/scala-2.11/routes/main/controllers/javascript/JavaScriptReverseRoutes.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/scala-2.11/routes/main/controllers/routes.java" afterPath="$PROJECT_DIR$/target/scala-2.11/routes/main/controllers/routes.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/scala-2.11/routes/main/router/Routes.scala" afterPath="$PROJECT_DIR$/target/scala-2.11/routes/main/router/Routes.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/scala-2.11/routes/main/router/RoutesPrefix.scala" afterPath="$PROJECT_DIR$/target/scala-2.11/routes/main/router/RoutesPrefix.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/streams/$global/$global/$global/streams/out" afterPath="$PROJECT_DIR$/target/streams/$global/$global/$global/streams/out" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/streams/$global/update/$global/streams/out" afterPath="$PROJECT_DIR$/target/streams/$global/update/$global/streams/out" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/streams/compile/compileIncremental/$global/streams/export" afterPath="$PROJECT_DIR$/target/streams/compile/compileIncremental/$global/streams/export" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/streams/compile/incCompileSetup/$global/streams/inc_compile_2.11" afterPath="$PROJECT_DIR$/target/streams/compile/incCompileSetup/$global/streams/inc_compile_2.11" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/streams/compile/playEnhancerGenerateAccessors/$global/streams/play_instrumentation_2.11" afterPath="$PROJECT_DIR$/target/streams/compile/playEnhancerGenerateAccessors/$global/streams/play_instrumentation_2.11" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/streams/compile/playEnhancerRewriteAccessors/$global/streams/play_instrumentation_2.11" afterPath="$PROJECT_DIR$/target/streams/compile/playEnhancerRewriteAccessors/$global/streams/play_instrumentation_2.11" />
     </list>
     <ignored path="tyrion.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -103,37 +162,150 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="GridController.java" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/app/controllers/GridController.java">
+      <file leaf-file-name="ApiResponse.java" pinned="false" current-in-tab="false">
+        <entry file="jar://$USER_HOME$/.ivy2/cache/io.swagger/swagger-annotations/srcs/swagger-annotations-1.5.7-sources.jar!/io/swagger/annotations/ApiResponse.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.4719472">
-              <caret line="686" column="97" selection-start-line="686" selection-start-column="97" selection-end-line="686" selection-end-column="97" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="82" column="11" selection-start-line="82" selection-start-column="11" selection-end-line="82" selection-end-column="11" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="routes" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/conf/routes">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.62655604">
+              <caret line="248" column="88" selection-start-line="248" selection-start-column="88" selection-end-line="248" selection-end-column="88" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="CompilationLibrariesController.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/controllers/CompilationLibrariesController.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="2523" column="123" selection-start-line="2523" selection-start-column="107" selection-end-line="2523" selection-end-column="123" />
               <folding>
-                <element signature="e#983#1202#0" expanded="false" />
-                <element signature="e#4235#4805#0" expanded="false" />
-                <element signature="e#5831#6424#0" expanded="false" />
-                <element signature="e#8390#8966#0" expanded="false" />
-                <element signature="e#10213#10821#0" expanded="false" />
-                <element signature="method#get_M_Projects_from_GlobalProject#0;class#GridController#0" expanded="false" />
-                <element signature="e#11773#12417#0" expanded="false" />
-                <element signature="method#get_M_Projects_ByLoggedPerson#0;class#GridController#0" expanded="false" />
-                <element signature="e#13540#14102#0" expanded="false" />
-                <element signature="method#new_M_Program#0;class#GridController#0" expanded="false" />
-                <element signature="e#17157#17511#0" expanded="false" />
-                <element signature="e#18770#19339#0" expanded="false" />
-                <element signature="method#get_M_Program#0;class#GridController#0" expanded="false" />
-                <element signature="e#20369#20988#0" expanded="false" />
-                <element signature="method#edit_M_Program#0;class#GridController#0" expanded="false" />
-                <element signature="e#23140#23717#0" expanded="false" />
-                <element signature="e#24760#25351#0" expanded="false" />
-                <element signature="method#getAll_M_Program_from_M_Project#0;class#GridController#0" expanded="false" />
-                <element signature="e#26444#26987#0" expanded="false" />
-                <element signature="method#get_all_M_Program_from_Project#0;class#GridController#0" expanded="false" />
-                <element signature="method#get_Screen_Size_Type#0;class#GridController#0" expanded="false" />
-                <element signature="method#get_Screen_Size_Type_PublicList#0;class#GridController#0" expanded="false" />
-                <element signature="method#get_Screen_Size_Type_Combination#0;class#GridController#0" expanded="false" />
-                <element signature="method#edit_Screen_Size_Type#0;class#GridController#0" expanded="false" />
-                <element signature="method#remove_Screen_Size_Type#0;class#GridController#0" expanded="false" />
+                <element signature="docComment;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#2014#2896#0" expanded="false" />
+                <element signature="method#create_C_Program#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#5456#6177#0" expanded="false" />
+                <element signature="method#get_C_Program#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#7205#7945#0" expanded="false" />
+                <element signature="method#get_C_Program_All_from_Project#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#9017#9835#0" expanded="false" />
+                <element signature="method#edit_C_Program_Description#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#11835#12650#0" expanded="false" />
+                <element signature="method#update_C_Program#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#15668#16449#0" expanded="false" />
+                <element signature="method#delete_C_Program_Version#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#17965#18708#0" expanded="false" />
+                <element signature="method#delete_C_Program#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="method#generateProjectForEclipse#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#21720#22345#0" expanded="false" />
+                <element signature="method#new_Processor#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#24381#24965#0" expanded="false" />
+                <element signature="method#get_Processor#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#26060#26630#0" expanded="false" />
+                <element signature="method#get_Processor_All#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#27503#28172#0" expanded="false" />
+                <element signature="method#update_Processor#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#30855#31388#0" expanded="false" />
+                <element signature="method#delete_Processor#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#32429#33027#0" expanded="false" />
+                <element signature="method#get_Processor_Description#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#34351#34996#0" expanded="false" />
+                <element signature="method#getProcessorLibraryGroups#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#36241#36905#0" expanded="false" />
+                <element signature="method#getProcessorSingleLibraries#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#38164#38772#0" expanded="false" />
+                <element signature="method#connectProcessorWithLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#40233#40841#0" expanded="false" />
+                <element signature="method#connectProcessorWithLibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#42323#42937#0" expanded="false" />
+                <element signature="method#disconnectProcessorWithLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#44404#45017#0" expanded="false" />
+                <element signature="method#disconnectProcessorWithLibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#46629#47269#0" expanded="false" />
+                <element signature="method#new_LibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#49344#50031#0" expanded="false" />
+                <element signature="method#new_LibraryGroup_Version#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#52691#53378#0" expanded="false" />
+                <element signature="method#get_LibraryGroup_Version#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#54639#55309#0" expanded="false" />
+                <element signature="method#upload_Library_To_LibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#58544#59129#0" expanded="false" />
+                <element signature="method#get_LibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#60251#60844#0" expanded="false" />
+                <element signature="method#delete_LibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#62143#62793#0" expanded="false" />
+                <element signature="method#editLibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#64671#65284#0" expanded="false" />
+                <element signature="method#get_LibraryGroup_Description#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#66551#67168#0" expanded="false" />
+                <element signature="method#get_LibraryGroup_Processors#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#68346#68975#0" expanded="false" />
+                <element signature="method#get_LibraryGroup_Libraries#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#70311#70952#0" expanded="false" />
+                <element signature="method#get_LibraryGroup_Version_Libraries#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#72085#72909#0" expanded="false" />
+                <element signature="method#get_LibraryGroup_Filter#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="method#fileRecord#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="method#new_SingleLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#79239#79838#0" expanded="false" />
+                <element signature="method#new_SingleLibrary_Version#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#81838#82439#0" expanded="false" />
+                <element signature="method#get_SingleLibrary_Versions#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="method#upload_SingleLibrary_Version#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#85850#86430#0" expanded="false" />
+                <element signature="method#get_SingleLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#87520#88430#0" expanded="false" />
+                <element signature="method#get_SingleLibrary_Filter#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#89649#90258#0" expanded="false" />
+                <element signature="method#edit_SingleLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#92313#92900#0" expanded="false" />
+                <element signature="method#delete_SingleLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#94328#95085#0" expanded="false" />
+                <element signature="method#new_Producer#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#96910#97671#0" expanded="false" />
+                <element signature="method#edit_Producer#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#99650#100418#0" expanded="false" />
+                <element signature="method#get_Producers#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#101346#102090#0" expanded="false" />
+                <element signature="method#get_Producer#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#103202#103936#0" expanded="false" />
+                <element signature="method#get_Producer_Description#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#105167#105929#0" expanded="false" />
+                <element signature="method#get_Producer_TypeOfBoards#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#107209#108049#0" expanded="false" />
+                <element signature="method#new_TypeOfBoard#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#110356#111069#0" expanded="false" />
+                <element signature="method#edit_TypeOfBoard#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#113112#113855#0" expanded="false" />
+                <element signature="method#delete_TypeOfBoard#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#115199#115923#0" expanded="false" />
+                <element signature="method#get_TypeOfBoard_all#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#116856#117591#0" expanded="false" />
+                <element signature="method#get_TypeOfBoard#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#118663#119422#0" expanded="false" />
+                <element signature="method#get_TypeOfBoard_Description#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#120582#121354#0" expanded="false" />
+                <element signature="e#122752#123748#0" expanded="false" />
+                <element signature="method#new_Board#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#125872#126642#0" expanded="false" />
+                <element signature="method#edit_Board_User_Description#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#128541#129227#0" expanded="false" />
+                <element signature="method#get_Board_Filter#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#131638#132398#0" expanded="false" />
+                <element signature="method#deactivate_Board#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#133531#134352#0" expanded="false" />
+                <element signature="e#135399#136285#0" expanded="false" />
+                <element signature="e#137633#138706#0" expanded="false" />
+                <element signature="method#disconnect_Board_from_Project#0;class#CompilationLibrariesController#0" expanded="false" />
+                <element signature="e#140061#140985#0" expanded="false" />
+                <element signature="e#141956#142833#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -164,8 +336,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/app/utilities/response/response_objects/Result_NotFound.java" />
-        <option value="$PROJECT_DIR$/app/models/persons/SecurityRole.java" />
         <option value="$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_PersonPermission_list.java" />
         <option value="$PROJECT_DIR$/app/models/persons/PersonPermission.java" />
         <option value="$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_Role_New.java" />
@@ -187,22 +357,18 @@
         <option value="$PROJECT_DIR$/app/controllers/PersonCreateController.java" />
         <option value="$PROJECT_DIR$/app/utilities/loginEntities/Secured.java" />
         <option value="$PROJECT_DIR$/app/models/project/c_program/C_Program.java" />
-        <option value="$PROJECT_DIR$/app/controllers/CompilationLibrariesController.java" />
         <option value="$PROJECT_DIR$/app/utilities/swagger/documentationClass/Login_object.java" />
         <option value="$PROJECT_DIR$/app/utilities/swagger/documentationClass/Login_Social_Network.java" />
         <option value="$PROJECT_DIR$/app/models/project/m_program/M_Program.java" />
         <option value="$PROJECT_DIR$/app/utilities/response/GlobalResult.java" />
         <option value="$PROJECT_DIR$/app/utilities/response/CoreResponse.java" />
         <option value="$PROJECT_DIR$/conf/application.conf" />
-        <option value="$PROJECT_DIR$/app/controllers/PersonController.java" />
         <option value="$PROJECT_DIR$/app/utilities/swagger/documentationClass/Login_return_object.java" />
         <option value="$PROJECT_DIR$/app/utilities/swagger/documentationClass/Login_IncomingLogin.java" />
         <option value="$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_M_Program_ByToken.java" />
-        <option value="$PROJECT_DIR$/app/controllers/SecurityController.java" />
         <option value="$PROJECT_DIR$/app/Global.java" />
         <option value="$PROJECT_DIR$/app/controllers/PermissionController.java" />
         <option value="$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_M_Project_New.java" />
-        <option value="$PROJECT_DIR$/conf/routes" />
         <option value="$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_Processor.java" />
         <option value="$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_M_Program_New.java" />
         <option value="$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_LibraryGroup_New.java" />
@@ -213,8 +379,14 @@
         <option value="$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_SecurityRole_New.java" />
         <option value="$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_Producer_New.java" />
         <option value="$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_ScreeSizeType_New.java" />
-        <option value="$PROJECT_DIR$/app/controllers/GridController.java" />
         <option value="$PROJECT_DIR$/.gitignore" />
+        <option value="$PROJECT_DIR$/app/controllers/PersonController.java" />
+        <option value="$PROJECT_DIR$/app/controllers/SecurityController.java" />
+        <option value="$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_TypeOfBoard_Combination.java" />
+        <option value="$PROJECT_DIR$/app/models/project/global/Project.java" />
+        <option value="$PROJECT_DIR$/app/controllers/GridController.java" />
+        <option value="$PROJECT_DIR$/app/controllers/CompilationLibrariesController.java" />
+        <option value="$PROJECT_DIR$/conf/routes" />
       </list>
     </option>
   </component>
@@ -266,6 +438,8 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="PackagesPane" />
+      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -327,6 +501,54 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="utilities" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tyrion" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Tyrion" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="app" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="utilities" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="swagger" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tyrion" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Tyrion" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="app" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="utilities" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="swagger" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="documentationClass" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -490,8 +712,6 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="PackagesPane" />
-      <pane id="Scratches" />
       <pane id="Scope" />
     </panes>
   </component>
@@ -1027,7 +1247,7 @@
     </recent_temporary>
   </component>
   <component name="SbtLocalSettings">
-    <option name="lastUpdateTimestamp" value="1456217180419" />
+    <option name="lastUpdateTimestamp" value="1456410062618" />
     <option name="availableProjects">
       <map>
         <entry>
@@ -1110,7 +1330,9 @@
       <workItem from="1455730733520" duration="71210000" />
       <workItem from="1456015276807" duration="33383000" />
       <workItem from="1456179375337" duration="538000" />
-      <workItem from="1456217084972" duration="21527000" />
+      <workItem from="1456217084972" duration="21896000" />
+      <workItem from="1456300694296" duration="858000" />
+      <workItem from="1456409780399" duration="7659000" />
     </task>
     <task id="LOCAL-00001" summary="Version 1.04.1 - Login with social Networks">
       <created>1453797530585</created>
@@ -1208,11 +1430,17 @@
       <option name="project" value="LOCAL" />
       <updated>1456256926140</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="Develop Version 1.04.9.6&#10;">
+      <created>1456256939829</created>
+      <option name="number" value="00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1456256939829</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="559758000" />
+    <option name="totallyTimeSpent" value="568644000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1225,22 +1453,20 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="2560" height="1440" extended-state="0" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32886904" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.49255952" sideWeight="0.49841145" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.328125" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="SBT" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.21366164" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="true" internal_type="SLIDING" type="SLIDING" visible="false" show_stripe_button="true" weight="0.28977272" sideWeight="0.43923748" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32962668" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3028274" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.44270834" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" x="796" y="981" width="867" height="512" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.80965906" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.44122022" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" x="796" y="981" width="867" height="512" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.34077382" sideWeight="0.5607625" order="12" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.20174742" sideWeight="0.8693182" order="5" side_tool="false" content_ui="combo" />
-      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.030579826" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32514882" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.16679905" sideWeight="0.8693182" order="5" side_tool="false" content_ui="combo" />
+      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.09332804" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24980143" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.036139794" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -1252,8 +1478,10 @@
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Azure Activity Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.49255952" sideWeight="0.49841145" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Services Explorer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32514882" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Gradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
     </layout>
     <layout-to-restore>
@@ -1352,7 +1580,7 @@
           <option name="timeStamp" value="124" />
         </line-breakpoint>
       </breakpoints>
-      <option name="time" value="128" />
+      <option name="time" value="132" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -1361,81 +1589,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="jar://$USER_HOME$/.ivy2/cache/com.typesafe.play/play_2.11/srcs/play_2.11-2.4.6-sources.jar!/play/mvc/Security.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.22304833">
-          <caret line="23" column="22" selection-start-line="23" selection-start-column="22" selection-end-line="23" selection-end-column="22" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/utilities/deadbolt/understand/AlternativePermission.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0697026">
-          <caret line="8" column="13" selection-start-line="8" selection-start-column="13" selection-end-line="8" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/utilities/deadbolt/understand/HandlerDefaultCache.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.08364312">
-          <caret line="11" column="13" selection-start-line="11" selection-start-column="13" selection-end-line="11" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/utilities/deadbolt/understand/DefaultPermission.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.679368">
-          <caret line="183" column="67" selection-start-line="183" selection-start-column="65" selection-end-line="183" selection-end-column="67" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/.ivy2/cache/be.objectify/deadbolt-java_2.11/srcs/deadbolt-java_2.11-2.4.3-sources.jar!/be/objectify/deadbolt/java/actions/Dynamic.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.22304833">
-          <caret line="38" column="18" selection-start-line="38" selection-start-column="18" selection-end-line="38" selection-end-column="18" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/models/compiler/Board.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.2091078">
-          <caret line="23" column="131" selection-start-line="23" selection-start-column="131" selection-end-line="23" selection-end-column="131" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/models/project/c_program/C_Program.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.15334572">
-          <caret line="21" column="87" selection-start-line="21" selection-start-column="75" selection-end-line="21" selection-end-column="87" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/utilities/swagger/ApiHelpController.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-0.30855018">
-          <caret line="67" column="6" selection-start-line="67" selection-start-column="6" selection-end-line="67" selection-end-column="6" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/.ivy2/cache/com.typesafe.play/play_2.11/srcs/play_2.11-2.4.6-sources.jar!/play/mvc/Http.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.31877324">
-          <caret line="1284" column="24" selection-start-line="1284" selection-start-column="24" selection-end-line="1284" selection-end-column="24" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/models/project/m_program/M_Program.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="35" column="0" selection-start-line="35" selection-start-column="0" selection-end-line="35" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://$USER_HOME$/.ivy2/cache/io.swagger/swagger-annotations/srcs/swagger-annotations-1.5.7-sources.jar!/io/swagger/annotations/ApiParam.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -1444,29 +1597,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/models/project/m_program/M_Project.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="19" column="76" selection-start-line="19" selection-start-column="76" selection-end-line="19" selection-end-column="76" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/models/project/global/Project.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="21" column="91" selection-start-line="21" selection-start-column="82" selection-end-line="21" selection-end-column="91" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/utilities/response/CoreResponse.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.44025156">
           <caret line="14" column="27" selection-start-line="14" selection-start-column="27" selection-end-line="14" selection-end-column="27" />
-          <folding>
-            <element signature="imports" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1474,7 +1608,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.33112583">
           <caret line="10" column="0" selection-start-line="10" selection-start-column="0" selection-end-line="10" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1482,7 +1615,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.22012578">
           <caret line="12" column="22" selection-start-line="12" selection-start-column="22" selection-end-line="12" selection-end-column="22" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1490,7 +1622,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="1.1320754">
           <caret line="365" column="7" selection-start-line="365" selection-start-column="7" selection-end-line="365" selection-end-column="7" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1498,9 +1629,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="8" column="13" selection-start-line="8" selection-start-column="13" selection-end-line="8" selection-end-column="13" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1508,15 +1636,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="5" column="1" selection-start-line="5" selection-start-column="1" selection-end-line="5" selection-end-column="1" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/controllers/PersonController.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-2.8639617">
-          <caret line="84" column="19" selection-start-line="84" selection-start-column="19" selection-end-line="84" selection-end-column="19" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1524,7 +1643,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.06726457">
           <caret line="2" column="33" selection-start-line="2" selection-start-column="13" selection-end-line="2" selection-end-column="33" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1582,54 +1700,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="dbDummy://dbtable:/58931e48/8b2e8319-e534-4206-984d-3171871f0bd9/byzanceERP.public.person">
-      <provider selected="true" editor-type-id="com.intellij.database.editor.DatabaseTableFileEditorProvider">
-        <state>
-          <filtering enabled="true" />
-        </state>
-      </provider>
-      <provider editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/models/persons/Person.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.6053812">
-          <caret line="63" column="25" selection-start-line="63" selection-start-column="25" selection-end-line="63" selection-end-column="25" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/controllers/SecurityController.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.12462006">
-          <caret line="115" column="4" selection-start-line="115" selection-start-column="4" selection-end-line="115" selection-end-column="4" />
-          <folding>
-            <element signature="method#index#0;class#SecurityController#0" expanded="false" />
-            <element signature="method#login#0;class#SecurityController#0" expanded="false" />
-            <element signature="e#4556#5320#0" expanded="false" />
-            <element signature="method#getPersonByToken#0;class#SecurityController#0" expanded="false" />
-            <element signature="method#logout#0;class#SecurityController#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/.ivy2/cache/io.swagger/swagger-annotations/srcs/swagger-annotations-1.5.7-sources.jar!/io/swagger/annotations/ApiOperation.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.33282673">
-          <caret line="56" column="13" selection-start-line="56" selection-start-column="13" selection-end-line="56" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://$USER_HOME$/.ivy2/cache/scala_2.10/sbt_0.13/com.typesafe.play/sbt-plugin/srcs/sbt-plugin-2.4.4-sources.jar!/play/sbt/routes/RoutesCompiler.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.33287102">
           <caret line="151" column="0" selection-start-line="151" selection-start-column="0" selection-end-line="151" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1637,7 +1711,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.041608877">
           <caret line="2" column="13" selection-start-line="2" selection-start-column="13" selection-end-line="2" selection-end-column="13" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1645,10 +1718,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.16643551">
           <caret line="22" column="41" selection-start-line="22" selection-start-column="41" selection-end-line="22" selection-end-column="41" />
-          <folding>
-            <element signature="method#onStart#0;class#Global#0" expanded="false" />
-            <element signature="method#onStop#0;class#Global#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1664,22 +1733,337 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.18723994">
           <caret line="21" column="13" selection-start-line="21" selection-start-column="13" selection-end-line="21" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/controllers/PermissionController.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="42" column="27" selection-start-line="42" selection-start-column="27" selection-end-line="43" selection-end-column="132" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.ivy2/cache/io.swagger/swagger-annotations/srcs/swagger-annotations-1.5.7-sources.jar!/io/swagger/annotations/ApiModelProperty.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="32" column="11" selection-start-line="32" selection-start-column="11" selection-end-line="32" selection-end-column="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_PersonPermission_list.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="6" column="13" selection-start-line="6" selection-start-column="13" selection-end-line="6" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_Processor.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="8" column="0" selection-start-line="8" selection-start-column="0" selection-end-line="9" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_M_Program_New.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="12" column="39" selection-start-line="12" selection-start-column="39" selection-end-line="12" selection-end-column="39" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_C_program_New.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="9" column="39" selection-start-line="9" selection-start-column="39" selection-end-line="9" selection-end-column="39" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_Board_New.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="6" column="7" selection-start-line="6" selection-start-column="7" selection-end-line="6" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_TypeOfBoard_New.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="7" column="39" selection-start-line="7" selection-start-column="39" selection-end-line="7" selection-end-column="39" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_SingleLibrary_New.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="6" column="39" selection-start-line="6" selection-start-column="39" selection-end-line="6" selection-end-column="39" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_SecurityRole_New.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="5" column="39" selection-start-line="5" selection-start-column="39" selection-end-line="5" selection-end-column="39" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_ScreeSizeType_New.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="15" column="0" selection-start-line="15" selection-start-column="0" selection-end-line="15" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_Producer_New.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.14563107">
+          <caret line="7" column="4" selection-start-line="7" selection-start-column="4" selection-end-line="7" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_LibraryGroup_New.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.12482663">
+          <caret line="6" column="39" selection-start-line="6" selection-start-column="39" selection-end-line="6" selection-end-column="39" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_M_Program_ByToken.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.041608877">
+          <caret line="2" column="40" selection-start-line="2" selection-start-column="40" selection-end-line="2" selection-end-column="40" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.096525095">
+          <caret line="5" column="4" selection-start-line="5" selection-start-column="4" selection-end-line="5" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="dbDummy://dbtable:/58931e48/8b2e8319-e534-4206-984d-3171871f0bd9/byzanceERP.public.person">
+      <provider selected="true" editor-type-id="com.intellij.database.editor.DatabaseTableFileEditorProvider">
+        <state>
+          <filtering enabled="true" />
+        </state>
+      </provider>
+      <provider editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/controllers/SecurityController.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.186722">
+          <caret line="126" column="23" selection-start-line="126" selection-start-column="23" selection-end-line="126" selection-end-column="23" />
+          <folding>
+            <element signature="method#index#0;class#SecurityController#0" expanded="false" />
+            <element signature="e#2091#2362#0" expanded="false" />
+            <element signature="method#login#0;class#SecurityController#0" expanded="false" />
+            <element signature="method#getPersonByToken#0;class#SecurityController#0" expanded="false" />
+            <element signature="e#7037#7630#0" expanded="false" />
+            <element signature="method#logout#0;class#SecurityController#0" expanded="false" />
+            <element signature="e#8872#8993#0" expanded="false" />
+            <element signature="method#GET_github_oauth#0;class#SecurityController#0" expanded="false" />
+            <element signature="e#9747#9861#0" expanded="false" />
+            <element signature="e#12095#12205#0" expanded="false" />
+            <element signature="method#GET_facebook_oauth#0;class#SecurityController#0" expanded="false" />
+            <element signature="e#14822#14937#0" expanded="false" />
+            <element signature="e#17791#17901#0" expanded="false" />
+            <element signature="e#18635#18724#0" expanded="false" />
+            <element signature="e#20748#21472#0" expanded="false" />
+            <element signature="method#GitHub#0;class#SecurityController#0" expanded="false" />
+            <element signature="e#23287#24017#0" expanded="false" />
+            <element signature="method#Facebook#0;class#SecurityController#0" expanded="false" />
+            <element signature="method#Twitter#0;class#SecurityController#0" expanded="false" />
+            <element signature="method#Vkontakte#0;class#SecurityController#0" expanded="false" />
+            <element signature="method#optionLink#0;class#SecurityController#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/controllers/PersonController.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="140" column="4" selection-start-line="140" selection-start-column="4" selection-end-line="140" selection-end-column="4" />
+          <folding>
+            <element signature="e#673#888#0" expanded="false" />
+            <element signature="method#developerRegistration#0;class#PersonController#0" expanded="false" />
+            <element signature="method#registred_Person#0;class#PersonController#0" expanded="false" />
+            <element signature="method#email_Person_authentitaction#0;class#PersonController#0" expanded="false" />
+            <element signature="method#getPerson#0;class#PersonController#0" expanded="false" />
+            <element signature="method#deletePerson#0;class#PersonController#0" expanded="false" />
+            <element signature="e#5939#5977#0" expanded="false" />
+            <element signature="method#edit_Person_Information#0;class#PersonController#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_Board_Personal.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.041493777">
+          <caret line="2" column="13" selection-start-line="2" selection-start-column="13" selection-end-line="2" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_LibraryGroup_Libraries.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.082987554">
+          <caret line="6" column="13" selection-start-line="6" selection-start-column="13" selection-end-line="6" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_TypeOfBoard_Combination.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.12448133">
+          <caret line="6" column="46" selection-start-line="6" selection-start-column="46" selection-end-line="6" selection-end-column="46" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.ivy2/cache/io.swagger/swagger-annotations/srcs/swagger-annotations-1.5.7-sources.jar!/io/swagger/annotations/ApiOperation.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="31" column="18" selection-start-line="31" selection-start-column="18" selection-end-line="31" selection-end-column="18" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.ivy2/cache/io.swagger/swagger-annotations/srcs/swagger-annotations-1.5.7-sources.jar!/io/swagger/annotations/ApiImplicitParams.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="30" column="18" selection-start-line="30" selection-start-column="18" selection-end-line="30" selection-end-column="18" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.ivy2/cache/io.swagger/swagger-annotations/srcs/swagger-annotations-1.5.7-sources.jar!/io/swagger/annotations/ApiImplicitParam.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="128" column="20" selection-start-line="128" selection-start-column="12" selection-end-line="128" selection-end-column="20" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.ivy2/cache/io.swagger/swagger-annotations/srcs/swagger-annotations-1.5.7-sources.jar!/io/swagger/annotations/ExampleProperty.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="38" column="11" selection-start-line="38" selection-start-column="11" selection-end-line="38" selection-end-column="11" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.ivy2/cache/io.swagger/swagger-annotations/srcs/swagger-annotations-1.5.7-sources.jar!/io/swagger/annotations/Example.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="37" column="27" selection-start-line="37" selection-start-column="22" selection-end-line="37" selection-end-column="27" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.ivy2/cache/io.swagger/swagger-annotations/srcs/swagger-annotations-1.5.7-sources.jar!/io/swagger/annotations/Authorization.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="49" column="61" selection-start-line="49" selection-start-column="43" selection-end-line="49" selection-end-column="61" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/models/grid/Screen_Size_Type.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="16" column="56" selection-start-line="16" selection-start-column="56" selection-end-line="24" selection-end-column="92" />
+        <state vertical-scroll-proportion="0.3526971">
+          <caret line="25" column="75" selection-start-line="25" selection-start-column="75" selection-end-line="25" selection-end-column="75" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/conf/routes">
+    <entry file="jar://$USER_HOME$/.ivy2/cache/com.typesafe.play/play_2.11/srcs/play_2.11-2.4.6-sources.jar!/play/mvc/Security.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="301" column="59" selection-start-line="301" selection-start-column="59" selection-end-line="301" selection-end-column="59" />
+          <caret line="23" column="22" selection-start-line="23" selection-start-column="22" selection-end-line="23" selection-end-column="22" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/models/project/global/Project.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="31" column="139" selection-start-line="31" selection-start-column="139" selection-end-line="31" selection-end-column="139" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/models/persons/Person.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="22" column="13" selection-start-line="22" selection-start-column="13" selection-end-line="22" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/controllers/GridController.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.35684648">
+          <caret line="420" column="33" selection-start-line="420" selection-start-column="33" selection-end-line="420" selection-end-column="33" />
+          <folding>
+            <element signature="e#1344#2133#0" expanded="false" />
+            <element signature="method#new_M_Project#0;class#GridController#0" expanded="false" />
+            <element signature="e#4317#4887#0" expanded="false" />
+            <element signature="method#get_M_Project#0;class#GridController#0" expanded="false" />
+            <element signature="e#5956#6549#0" expanded="false" />
+            <element signature="method#edit_M_Project#0;class#GridController#0" expanded="false" />
+            <element signature="e#8558#9134#0" expanded="false" />
+            <element signature="method#remove_M_Project#0;class#GridController#0" expanded="false" />
+            <element signature="e#10424#11032#0" expanded="false" />
+            <element signature="method#get_M_Projects_from_GlobalProject#0;class#GridController#0" expanded="false" />
+            <element signature="e#12027#12671#0" expanded="false" />
+            <element signature="method#get_M_Projects_ByLoggedPerson#0;class#GridController#0" expanded="false" />
+            <element signature="e#13837#14399#0" expanded="false" />
+            <element signature="method#new_M_Program#0;class#GridController#0" expanded="false" />
+            <element signature="e#20369#20938#0" expanded="false" />
+            <element signature="method#get_M_Program#0;class#GridController#0" expanded="false" />
+            <element signature="e#22007#22626#0" expanded="false" />
+            <element signature="method#edit_M_Program#0;class#GridController#0" expanded="false" />
+            <element signature="e#24821#25398#0" expanded="false" />
+            <element signature="method#remove_M_Program#0;class#GridController#0" expanded="false" />
+            <element signature="e#26484#27075#0" expanded="false" />
+            <element signature="method#getAll_M_Program_from_M_Project#0;class#GridController#0" expanded="false" />
+            <element signature="e#28211#28754#0" expanded="false" />
+            <element signature="method#get_all_M_Program_from_Project#0;class#GridController#0" expanded="false" />
+            <element signature="e#29953#30967#0" expanded="false" />
+            <element signature="method#new_Screen_Size_Type#0;class#GridController#0" expanded="false" />
+            <element signature="e#33620#34234#0" expanded="false" />
+            <element signature="method#get_Screen_Size_Type#0;class#GridController#0" expanded="false" />
+            <element signature="e#35393#35644#0" expanded="false" />
+            <element signature="method#get_Screen_Size_Type_Combination#0;class#GridController#0" expanded="false" />
+            <element signature="e#36942#37460#0" expanded="false" />
+            <element signature="method#edit_Screen_Size_Type#0;class#GridController#0" expanded="false" />
+            <element signature="e#39820#40488#0" expanded="false" />
+            <element signature="method#remove_Screen_Size_Type#0;class#GridController#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/models/project/m_program/M_Project.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.22821577">
+          <caret line="19" column="73" selection-start-line="19" selection-start-column="73" selection-end-line="19" selection-end-column="73" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/models/project/m_program/M_Program.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.39419088">
+          <caret line="25" column="77" selection-start-line="25" selection-start-column="77" selection-end-line="25" selection-end-column="77" />
           <folding />
         </state>
       </provider>
@@ -1687,7 +2071,7 @@
     <entry file="file://$PROJECT_DIR$/app/controllers/CompilationLibrariesController.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="90" column="35" selection-start-line="90" selection-start-column="35" selection-end-line="90" selection-end-column="121" />
+          <caret line="2523" column="123" selection-start-line="2523" selection-start-column="107" selection-end-line="2523" selection-end-column="123" />
           <folding>
             <element signature="docComment;class#CompilationLibrariesController#0" expanded="false" />
             <element signature="e#2014#2896#0" expanded="false" />
@@ -1705,280 +2089,125 @@
             <element signature="e#17965#18708#0" expanded="false" />
             <element signature="method#delete_C_Program#0;class#CompilationLibrariesController#0" expanded="false" />
             <element signature="method#generateProjectForEclipse#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#uploadBinaryFileToBoard#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="method#uploadCompilationToBoard#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#21688#22313#0" expanded="false" />
+            <element signature="e#21720#22345#0" expanded="false" />
             <element signature="method#new_Processor#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#24349#24933#0" expanded="false" />
+            <element signature="e#24381#24965#0" expanded="false" />
             <element signature="method#get_Processor#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#26028#26598#0" expanded="false" />
+            <element signature="e#26060#26630#0" expanded="false" />
             <element signature="method#get_Processor_All#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#27471#28140#0" expanded="false" />
+            <element signature="e#27503#28172#0" expanded="false" />
             <element signature="method#update_Processor#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#30823#31356#0" expanded="false" />
+            <element signature="e#30855#31388#0" expanded="false" />
             <element signature="method#delete_Processor#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#32397#32995#0" expanded="false" />
+            <element signature="e#32429#33027#0" expanded="false" />
             <element signature="method#get_Processor_Description#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#34319#34964#0" expanded="false" />
+            <element signature="e#34351#34996#0" expanded="false" />
             <element signature="method#getProcessorLibraryGroups#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#36209#36873#0" expanded="false" />
+            <element signature="e#36241#36905#0" expanded="false" />
             <element signature="method#getProcessorSingleLibraries#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#38132#38740#0" expanded="false" />
+            <element signature="e#38164#38772#0" expanded="false" />
             <element signature="method#connectProcessorWithLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#40201#40809#0" expanded="false" />
+            <element signature="e#40233#40841#0" expanded="false" />
             <element signature="method#connectProcessorWithLibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#42291#42905#0" expanded="false" />
+            <element signature="e#42323#42937#0" expanded="false" />
             <element signature="method#disconnectProcessorWithLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#44372#44985#0" expanded="false" />
+            <element signature="e#44404#45017#0" expanded="false" />
             <element signature="method#disconnectProcessorWithLibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#46597#47237#0" expanded="false" />
+            <element signature="e#46629#47269#0" expanded="false" />
             <element signature="method#new_LibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#49312#49999#0" expanded="false" />
+            <element signature="e#49344#50031#0" expanded="false" />
             <element signature="method#new_LibraryGroup_Version#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#52659#53346#0" expanded="false" />
+            <element signature="e#52691#53378#0" expanded="false" />
             <element signature="method#get_LibraryGroup_Version#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#54607#55277#0" expanded="false" />
+            <element signature="e#54639#55309#0" expanded="false" />
             <element signature="method#upload_Library_To_LibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#58512#59097#0" expanded="false" />
+            <element signature="e#58544#59129#0" expanded="false" />
             <element signature="method#get_LibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#60219#60812#0" expanded="false" />
+            <element signature="e#60251#60844#0" expanded="false" />
             <element signature="method#delete_LibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#62111#62761#0" expanded="false" />
+            <element signature="e#62143#62793#0" expanded="false" />
             <element signature="method#editLibraryGroup#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#64639#65252#0" expanded="false" />
+            <element signature="e#64671#65284#0" expanded="false" />
             <element signature="method#get_LibraryGroup_Description#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#66519#67136#0" expanded="false" />
+            <element signature="e#66551#67168#0" expanded="false" />
             <element signature="method#get_LibraryGroup_Processors#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#68314#68943#0" expanded="false" />
+            <element signature="e#68346#68975#0" expanded="false" />
             <element signature="method#get_LibraryGroup_Libraries#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#70279#70920#0" expanded="false" />
+            <element signature="e#70311#70952#0" expanded="false" />
             <element signature="method#get_LibraryGroup_Version_Libraries#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#72053#72877#0" expanded="false" />
+            <element signature="e#72085#72909#0" expanded="false" />
             <element signature="method#get_LibraryGroup_Filter#0;class#CompilationLibrariesController#0" expanded="false" />
             <element signature="method#fileRecord#0;class#CompilationLibrariesController#0" expanded="false" />
             <element signature="method#new_SingleLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#79207#79806#0" expanded="false" />
+            <element signature="e#79239#79838#0" expanded="false" />
             <element signature="method#new_SingleLibrary_Version#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#81806#82407#0" expanded="false" />
+            <element signature="e#81838#82439#0" expanded="false" />
             <element signature="method#get_SingleLibrary_Versions#0;class#CompilationLibrariesController#0" expanded="false" />
             <element signature="method#upload_SingleLibrary_Version#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#85818#86398#0" expanded="false" />
+            <element signature="e#85850#86430#0" expanded="false" />
             <element signature="method#get_SingleLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#87488#88398#0" expanded="false" />
+            <element signature="e#87520#88430#0" expanded="false" />
             <element signature="method#get_SingleLibrary_Filter#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#89617#90226#0" expanded="false" />
+            <element signature="e#89649#90258#0" expanded="false" />
             <element signature="method#edit_SingleLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#92281#92868#0" expanded="false" />
+            <element signature="e#92313#92900#0" expanded="false" />
             <element signature="method#delete_SingleLibrary#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#94296#95053#0" expanded="false" />
+            <element signature="e#94328#95085#0" expanded="false" />
             <element signature="method#new_Producer#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#96878#97639#0" expanded="false" />
+            <element signature="e#96910#97671#0" expanded="false" />
             <element signature="method#edit_Producer#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#99618#100386#0" expanded="false" />
+            <element signature="e#99650#100418#0" expanded="false" />
             <element signature="method#get_Producers#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#101314#102058#0" expanded="false" />
+            <element signature="e#101346#102090#0" expanded="false" />
             <element signature="method#get_Producer#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#103170#103904#0" expanded="false" />
+            <element signature="e#103202#103936#0" expanded="false" />
             <element signature="method#get_Producer_Description#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#105135#105897#0" expanded="false" />
+            <element signature="e#105167#105929#0" expanded="false" />
             <element signature="method#get_Producer_TypeOfBoards#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#107177#108017#0" expanded="false" />
+            <element signature="e#107209#108049#0" expanded="false" />
             <element signature="method#new_TypeOfBoard#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#110324#111037#0" expanded="false" />
+            <element signature="e#110356#111069#0" expanded="false" />
             <element signature="method#edit_TypeOfBoard#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#113080#113823#0" expanded="false" />
+            <element signature="e#113112#113855#0" expanded="false" />
             <element signature="method#delete_TypeOfBoard#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#115167#115891#0" expanded="false" />
+            <element signature="e#115199#115923#0" expanded="false" />
             <element signature="method#get_TypeOfBoard_all#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#116824#117559#0" expanded="false" />
+            <element signature="e#116856#117591#0" expanded="false" />
             <element signature="method#get_TypeOfBoard#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#118631#119390#0" expanded="false" />
+            <element signature="e#118663#119422#0" expanded="false" />
             <element signature="method#get_TypeOfBoard_Description#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#120550#121322#0" expanded="false" />
-            <element signature="method#getTypeOfBoardAllBoards#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#122720#123716#0" expanded="false" />
+            <element signature="e#120582#121354#0" expanded="false" />
+            <element signature="e#122752#123748#0" expanded="false" />
             <element signature="method#new_Board#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#125840#126610#0" expanded="false" />
+            <element signature="e#125872#126642#0" expanded="false" />
             <element signature="method#edit_Board_User_Description#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#128509#129195#0" expanded="false" />
+            <element signature="e#128541#129227#0" expanded="false" />
             <element signature="method#get_Board_Filter#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#131606#132366#0" expanded="false" />
+            <element signature="e#131638#132398#0" expanded="false" />
             <element signature="method#deactivate_Board#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#133499#134320#0" expanded="false" />
-            <element signature="method#get_Board#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#135367#136253#0" expanded="false" />
-            <element signature="method#connect_Board_with_Project#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#137601#138674#0" expanded="false" />
+            <element signature="e#133531#134352#0" expanded="false" />
+            <element signature="e#135399#136285#0" expanded="false" />
+            <element signature="e#137633#138706#0" expanded="false" />
             <element signature="method#disconnect_Board_from_Project#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#140029#140953#0" expanded="false" />
-            <element signature="method#getBoardProjects#0;class#CompilationLibrariesController#0" expanded="false" />
-            <element signature="e#141924#142801#0" expanded="false" />
-            <element signature="method#get_Boards_from_Project#0;class#CompilationLibrariesController#0" expanded="false" />
+            <element signature="e#140061#140985#0" expanded="false" />
+            <element signature="e#141956#142833#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/controllers/PermissionController.java">
+    <entry file="jar://$USER_HOME$/.ivy2/cache/io.swagger/swagger-annotations/srcs/swagger-annotations-1.5.7-sources.jar!/io/swagger/annotations/ApiResponse.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="42" column="27" selection-start-line="42" selection-start-column="27" selection-end-line="43" selection-end-column="132" />
+          <caret line="82" column="11" selection-start-line="82" selection-start-column="11" selection-end-line="82" selection-end-column="11" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="jar://$USER_HOME$/.ivy2/cache/io.swagger/swagger-annotations/srcs/swagger-annotations-1.5.7-sources.jar!/io/swagger/annotations/ApiModelProperty.java">
+    <entry file="file://$PROJECT_DIR$/conf/routes">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="32" column="11" selection-start-line="32" selection-start-column="11" selection-end-line="32" selection-end-column="11" />
+        <state vertical-scroll-proportion="0.62655604">
+          <caret line="248" column="88" selection-start-line="248" selection-start-column="88" selection-end-line="248" selection-end-column="88" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_PersonPermission_list.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="6" column="13" selection-start-line="6" selection-start-column="13" selection-end-line="6" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_Processor.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="8" column="0" selection-start-line="8" selection-start-column="0" selection-end-line="9" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_M_Program_New.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="12" column="39" selection-start-line="12" selection-start-column="39" selection-end-line="12" selection-end-column="39" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_LibraryGroup_Libraries.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="6" column="13" selection-start-line="6" selection-start-column="13" selection-end-line="6" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_C_program_New.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="9" column="39" selection-start-line="9" selection-start-column="39" selection-end-line="9" selection-end-column="39" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_Board_New.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="6" column="7" selection-start-line="6" selection-start-column="7" selection-end-line="6" selection-end-column="7" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_TypeOfBoard_New.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="7" column="39" selection-start-line="7" selection-start-column="39" selection-end-line="7" selection-end-column="39" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_SingleLibrary_New.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="6" column="39" selection-start-line="6" selection-start-column="39" selection-end-line="6" selection-end-column="39" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_SecurityRole_New.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="5" column="39" selection-start-line="5" selection-start-column="39" selection-end-line="5" selection-end-column="39" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_ScreeSizeType_New.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="15" column="0" selection-start-line="15" selection-start-column="0" selection-end-line="15" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_Producer_New.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.14563107">
-          <caret line="7" column="4" selection-start-line="7" selection-start-column="4" selection-end-line="7" selection-end-column="4" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_LibraryGroup_New.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.12482663">
-          <caret line="6" column="39" selection-start-line="6" selection-start-column="39" selection-end-line="6" selection-end-column="39" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/utilities/swagger/documentationClass/Swagger_M_Program_ByToken.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.041608877">
-          <caret line="2" column="40" selection-start-line="2" selection-start-column="40" selection-end-line="2" selection-end-column="40" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/.gitignore">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.096525095">
-          <caret line="5" column="4" selection-start-line="5" selection-start-column="4" selection-end-line="5" selection-end-column="4" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/controllers/GridController.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.4719472">
-          <caret line="686" column="97" selection-start-line="686" selection-start-column="97" selection-end-line="686" selection-end-column="97" />
-          <folding>
-            <element signature="e#983#1202#0" expanded="false" />
-            <element signature="e#4235#4805#0" expanded="false" />
-            <element signature="e#5831#6424#0" expanded="false" />
-            <element signature="e#8390#8966#0" expanded="false" />
-            <element signature="e#10213#10821#0" expanded="false" />
-            <element signature="method#get_M_Projects_from_GlobalProject#0;class#GridController#0" expanded="false" />
-            <element signature="e#11773#12417#0" expanded="false" />
-            <element signature="method#get_M_Projects_ByLoggedPerson#0;class#GridController#0" expanded="false" />
-            <element signature="e#13540#14102#0" expanded="false" />
-            <element signature="method#new_M_Program#0;class#GridController#0" expanded="false" />
-            <element signature="e#17157#17511#0" expanded="false" />
-            <element signature="e#18770#19339#0" expanded="false" />
-            <element signature="method#get_M_Program#0;class#GridController#0" expanded="false" />
-            <element signature="e#20369#20988#0" expanded="false" />
-            <element signature="method#edit_M_Program#0;class#GridController#0" expanded="false" />
-            <element signature="e#23140#23717#0" expanded="false" />
-            <element signature="e#24760#25351#0" expanded="false" />
-            <element signature="method#getAll_M_Program_from_M_Project#0;class#GridController#0" expanded="false" />
-            <element signature="e#26444#26987#0" expanded="false" />
-            <element signature="method#get_all_M_Program_from_Project#0;class#GridController#0" expanded="false" />
-            <element signature="method#get_Screen_Size_Type#0;class#GridController#0" expanded="false" />
-            <element signature="method#get_Screen_Size_Type_PublicList#0;class#GridController#0" expanded="false" />
-            <element signature="method#get_Screen_Size_Type_Combination#0;class#GridController#0" expanded="false" />
-            <element signature="method#edit_Screen_Size_Type#0;class#GridController#0" expanded="false" />
-            <element signature="method#remove_Screen_Size_Type#0;class#GridController#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>

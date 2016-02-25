@@ -1,7 +1,7 @@
 
 // @GENERATOR:play-routes-compiler
 // @SOURCE:/Users/zaruba/ownCloud/Git/Tyrion/conf/routes
-// @DATE:Tue Feb 23 18:14:01 CET 2016
+// @DATE:Thu Feb 25 18:09:35 CET 2016
 
 import play.api.routing.JavaScriptReverseRoute
 import play.api.mvc.{ QueryStringBindable, PathBindable, Call, JavascriptLiteral }
@@ -85,7 +85,7 @@ package controllers.javascript {
   
   }
 
-  // @LINE:329
+  // @LINE:332
   class ReverseAssets(_prefix: => String) {
 
     def _defaultPrefix: String = {
@@ -93,7 +93,7 @@ package controllers.javascript {
     }
 
   
-    // @LINE:329
+    // @LINE:332
     def at: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.Assets.at",
       """
@@ -380,7 +380,7 @@ package controllers.javascript {
       "controllers.CompilationLibrariesController.update_Processor",
       """
         function(processor_id) {
-          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("processor_id", processor_id)])})
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("processor_id", encodeURIComponent(processor_id))})
         }
       """
     )
@@ -390,7 +390,7 @@ package controllers.javascript {
       "controllers.CompilationLibrariesController.upload_SingleLibrary_Version",
       """
         function(library_id,version_id) {
-          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/library/upload" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("library_id", library_id), (""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("version_id", version_id)])})
+          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/library/upload" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("library_id", encodeURIComponent(library_id)) + "/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("version_id", encodeURIComponent(version_id))})
         }
       """
     )
@@ -420,7 +420,7 @@ package controllers.javascript {
       "controllers.CompilationLibrariesController.get_Processor",
       """
         function(processor_id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("processor_id", processor_id)])})
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("processor_id", encodeURIComponent(processor_id))})
         }
       """
     )
@@ -430,7 +430,7 @@ package controllers.javascript {
       "controllers.CompilationLibrariesController.get_LibraryGroup_Description",
       """
         function(libraryGroup_id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup/generalDescription" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("libraryGroup_id", libraryGroup_id)])})
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup/generalDescription/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("libraryGroup_id", encodeURIComponent(libraryGroup_id))})
         }
       """
     )
@@ -450,7 +450,7 @@ package controllers.javascript {
       "controllers.CompilationLibrariesController.disconnectProcessorWithLibrary",
       """
         function(processor_id,library_id) {
-          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor/library" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("processor_id", processor_id), (""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("library_id", library_id)])})
+          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor/library/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("processor_id", encodeURIComponent(processor_id)) + "/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("library_id", encodeURIComponent(library_id))})
         }
       """
     )
@@ -460,7 +460,7 @@ package controllers.javascript {
       "controllers.CompilationLibrariesController.new_LibraryGroup_Version",
       """
         function(version_id) {
-          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup/version" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("version_id", version_id)])})
+          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup/version/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("version_id", encodeURIComponent(version_id))})
         }
       """
     )
@@ -469,8 +469,8 @@ package controllers.javascript {
     def get_Boards_from_Project: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.get_Boards_from_Project",
       """
-        function(id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/project/board/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        function(project_id) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/project/board/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("project_id", encodeURIComponent(project_id))})
         }
       """
     )
@@ -510,7 +510,7 @@ package controllers.javascript {
       "controllers.CompilationLibrariesController.delete_C_Program",
       """
         function(c_program_id) {
-          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program/c_program" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("c_program_id", c_program_id)])})
+          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program/c_program/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("c_program_id", encodeURIComponent(c_program_id))})
         }
       """
     )
@@ -530,7 +530,7 @@ package controllers.javascript {
       "controllers.CompilationLibrariesController.delete_C_Program_Version",
       """
         function(c_program_id,version_id) {
-          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program/version" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("c_program_id", c_program_id), (""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("version_id", version_id)])})
+          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program/version/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("c_program_id", encodeURIComponent(c_program_id)) + "/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("version_id", encodeURIComponent(version_id))})
         }
       """
     )
@@ -539,8 +539,8 @@ package controllers.javascript {
     def uploadBinaryFileToBoard: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.uploadBinaryFileToBoard",
       """
-        function(id) {
-          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program/binary/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        function(board_id) {
+          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program/binary/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("board_id", encodeURIComponent(board_id))})
         }
       """
     )
@@ -549,8 +549,8 @@ package controllers.javascript {
     def get_Board: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.get_Board",
       """
-        function(id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/board/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        function(board_id) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/board/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("board_id", encodeURIComponent(board_id))})
         }
       """
     )
@@ -560,7 +560,7 @@ package controllers.javascript {
       "controllers.CompilationLibrariesController.get_LibraryGroup_Processors",
       """
         function(libraryGroup_id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup/processors" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("libraryGroup_id", libraryGroup_id)])})
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup/processors/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("libraryGroup_id", encodeURIComponent(libraryGroup_id))})
         }
       """
     )
@@ -580,7 +580,7 @@ package controllers.javascript {
       "controllers.CompilationLibrariesController.get_SingleLibrary",
       """
         function(library_id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/library" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("library_id", library_id)])})
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/library/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("library_id", encodeURIComponent(library_id))})
         }
       """
     )
@@ -590,7 +590,7 @@ package controllers.javascript {
       "controllers.CompilationLibrariesController.get_LibraryGroup",
       """
         function(libraryGroup_id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("libraryGroup_id", libraryGroup_id)])})
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("libraryGroup_id", encodeURIComponent(libraryGroup_id))})
         }
       """
     )
@@ -620,7 +620,7 @@ package controllers.javascript {
       "controllers.CompilationLibrariesController.create_C_Program",
       """
         function(project_id) {
-          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("project_id", project_id)])})
+          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("project_id", encodeURIComponent(project_id))})
         }
       """
     )
@@ -630,7 +630,7 @@ package controllers.javascript {
       "controllers.CompilationLibrariesController.delete_SingleLibrary",
       """
         function(library_id) {
-          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/library" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("library_id", library_id)])})
+          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/library" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("library_id", encodeURIComponent(library_id))})
         }
       """
     )
@@ -650,7 +650,7 @@ package controllers.javascript {
       "controllers.CompilationLibrariesController.edit_SingleLibrary",
       """
         function(library_id) {
-          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/library" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("library_id", library_id)])})
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/library" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("library_id", encodeURIComponent(library_id))})
         }
       """
     )
@@ -660,7 +660,7 @@ package controllers.javascript {
       "controllers.CompilationLibrariesController.getProcessorSingleLibraries",
       """
         function(processor_id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor/singleLibrary" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("processor_id", processor_id)])})
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor/singleLibrary/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("processor_id", encodeURIComponent(processor_id))})
         }
       """
     )
@@ -670,7 +670,7 @@ package controllers.javascript {
       "controllers.CompilationLibrariesController.editLibraryGroup",
       """
         function(libraryGroup_id) {
-          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("libraryGroup_id", libraryGroup_id)])})
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("libraryGroup_id", encodeURIComponent(libraryGroup_id))})
         }
       """
     )
@@ -680,7 +680,7 @@ package controllers.javascript {
       "controllers.CompilationLibrariesController.upload_Library_To_LibraryGroup",
       """
         function(libraryGroup_id,version_id) {
-          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup/upload" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("libraryGroup_id", libraryGroup_id), (""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("version_id", version_id)])})
+          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup/upload/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("libraryGroup_id", encodeURIComponent(libraryGroup_id)) + "/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("version_id", encodeURIComponent(version_id))})
         }
       """
     )
@@ -690,7 +690,7 @@ package controllers.javascript {
       "controllers.CompilationLibrariesController.get_SingleLibrary_Versions",
       """
         function(library_id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/library/versions" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("library_id", library_id)])})
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/library/versions/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("library_id", encodeURIComponent(library_id))})
         }
       """
     )
@@ -710,7 +710,7 @@ package controllers.javascript {
       "controllers.CompilationLibrariesController.delete_LibraryGroup",
       """
         function(libraryGroup_id) {
-          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("libraryGroup_id", libraryGroup_id)])})
+          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("libraryGroup_id", encodeURIComponent(libraryGroup_id))})
         }
       """
     )
@@ -720,7 +720,7 @@ package controllers.javascript {
       "controllers.CompilationLibrariesController.disconnectProcessorWithLibraryGroup",
       """
         function(processor_id,library_id) {
-          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor/libraryGroup" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("processor_id", processor_id), (""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("library_id", library_id)])})
+          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor/libraryGroup/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("processor_id", encodeURIComponent(processor_id)) + "/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("library_id", encodeURIComponent(library_id))})
         }
       """
     )
@@ -739,8 +739,8 @@ package controllers.javascript {
     def uploadCompilationToBoard: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.uploadCompilationToBoard",
       """
-        function(id,board) {
-          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program/upload/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id)) + "/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("board", encodeURIComponent(board))})
+        function(c_program_id,board_id) {
+          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program/upload/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("c_program_id", encodeURIComponent(c_program_id)) + "/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("board_id", encodeURIComponent(board_id))})
         }
       """
     )
@@ -750,7 +750,7 @@ package controllers.javascript {
       "controllers.CompilationLibrariesController.connectProcessorWithLibrary",
       """
         function(processor_id,library_id) {
-          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor/library" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("processor_id", processor_id), (""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("library_id", library_id)])})
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor/library/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("processor_id", encodeURIComponent(processor_id)) + "/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("library_id", encodeURIComponent(library_id))})
         }
       """
     )
@@ -760,7 +760,7 @@ package controllers.javascript {
       "controllers.CompilationLibrariesController.edit_C_Program_Description",
       """
         function(c_program_id) {
-          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program/edit" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("c_program_id", c_program_id)])})
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program/edit/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("c_program_id", encodeURIComponent(c_program_id))})
         }
       """
     )
@@ -799,8 +799,8 @@ package controllers.javascript {
     def disconnect_Board_from_Project: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.disconnect_Board_from_Project",
       """
-        function(id,pr) {
-          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/board/disconnect/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id)) + "/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("pr", encodeURIComponent(pr))})
+        function(board_id,project_id) {
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/board/disconnect/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("board_id", encodeURIComponent(board_id)) + "/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("project_id", encodeURIComponent(project_id))})
         }
       """
     )
@@ -820,7 +820,7 @@ package controllers.javascript {
       "controllers.CompilationLibrariesController.edit_Board_User_Description",
       """
         function(type_of_board_id) {
-          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/board/userDescription" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("type_of_board_id", type_of_board_id)])})
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/board/userDescription/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("type_of_board_id", encodeURIComponent(type_of_board_id))})
         }
       """
     )
@@ -840,7 +840,7 @@ package controllers.javascript {
       "controllers.CompilationLibrariesController.delete_Processor",
       """
         function(processor_id) {
-          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("processor_id", processor_id)])})
+          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("processor_id", encodeURIComponent(processor_id))})
         }
       """
     )
@@ -850,7 +850,7 @@ package controllers.javascript {
       "controllers.CompilationLibrariesController.get_LibraryGroup_Version",
       """
         function(version_id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup/versions" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("version_id", version_id)])})
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup/versions/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("version_id", encodeURIComponent(version_id))})
         }
       """
     )
@@ -860,7 +860,7 @@ package controllers.javascript {
       "controllers.CompilationLibrariesController.get_LibraryGroup_Libraries",
       """
         function(libraryGroup_id,version_id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup/libraries" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("libraryGroup_id", libraryGroup_id), (""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("version_id", version_id)])})
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/libraryGroup/libraries/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("libraryGroup_id", encodeURIComponent(libraryGroup_id)) + "/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("version_id", encodeURIComponent(version_id))})
         }
       """
     )
@@ -870,7 +870,7 @@ package controllers.javascript {
       "controllers.CompilationLibrariesController.get_C_Program",
       """
         function(c_program_id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("c_program_id", c_program_id)])})
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("c_program_id", encodeURIComponent(c_program_id))})
         }
       """
     )
@@ -880,7 +880,7 @@ package controllers.javascript {
       "controllers.CompilationLibrariesController.connectProcessorWithLibraryGroup",
       """
         function(processor_id,library_id) {
-          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor/libraryGroup" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("processor_id", processor_id), (""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("library_id", library_id)])})
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor/libraryGroup/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("processor_id", encodeURIComponent(processor_id)) + "/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("library_id", encodeURIComponent(library_id))})
         }
       """
     )
@@ -899,8 +899,8 @@ package controllers.javascript {
     def getBoardProjects: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.getBoardProjects",
       """
-        function(id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/board/projects/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        function(board_id) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/board/projects/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("board_id", encodeURIComponent(board_id))})
         }
       """
     )
@@ -919,8 +919,8 @@ package controllers.javascript {
     def connect_Board_with_Project: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.connect_Board_with_Project",
       """
-        function(id,pr) {
-          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/board/connect/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id)) + "/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("pr", encodeURIComponent(pr))})
+        function(board_id,project_id) {
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/board/connect/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("board_id", encodeURIComponent(board_id)) + "/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("project_id", encodeURIComponent(project_id))})
         }
       """
     )
@@ -930,7 +930,7 @@ package controllers.javascript {
       "controllers.CompilationLibrariesController.get_C_Program_All_from_Project",
       """
         function(project_id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program/project" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("project_id", project_id)])})
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program/project/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("project_id", encodeURIComponent(project_id))})
         }
       """
     )
@@ -949,8 +949,8 @@ package controllers.javascript {
     def deactivate_Board: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.CompilationLibrariesController.deactivate_Board",
       """
-        function(id) {
-          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/board/deactivateBoard" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        function(board_id) {
+          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/board/deactivateBoard/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("board_id", encodeURIComponent(board_id))})
         }
       """
     )
@@ -960,7 +960,7 @@ package controllers.javascript {
       "controllers.CompilationLibrariesController.getProcessorLibraryGroups",
       """
         function(processor_id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor/libraryGroups" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("processor_id", processor_id)])})
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/processor/libraryGroups/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("processor_id", encodeURIComponent(processor_id))})
         }
       """
     )
@@ -980,7 +980,7 @@ package controllers.javascript {
       "controllers.CompilationLibrariesController.update_C_Program",
       """
         function(c_program_id) {
-          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program/update" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("c_program_id", c_program_id)])})
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/c_program/update/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("c_program_id", encodeURIComponent(c_program_id))})
         }
       """
     )
@@ -990,7 +990,7 @@ package controllers.javascript {
       "controllers.CompilationLibrariesController.new_SingleLibrary_Version",
       """
         function(library_id) {
-          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/library/version" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("library_id", library_id)])})
+          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "compilation/library/version/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("library_id", encodeURIComponent(library_id))})
         }
       """
     )
@@ -1065,7 +1065,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:326
+    // @LINE:329
     def optionLink: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.SecurityController.optionLink",
       """
@@ -1275,27 +1275,17 @@ package controllers.javascript {
     }
 
   
-    // @LINE:303
+    // @LINE:301
     def get_M_Program_byQR_Token_forMobile: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.GridController.get_M_Program_byQR_Token_forMobile",
       """
         function(qr_token) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/m_program/token" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("qr_token", qr_token)])})
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/m_program/app/token/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("qr_token", encodeURIComponent(qr_token))})
         }
       """
     )
   
-    // @LINE:309
-    def get_Screen_Size_Type_PublicList: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.GridController.get_Screen_Size_Type_PublicList",
-      """
-        function() {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/screen_type/all"})
-        }
-      """
-    )
-  
-    // @LINE:299
+    // @LINE:300
     def new_M_Program: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.GridController.new_M_Program",
       """
@@ -1305,7 +1295,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:296
+    // @LINE:291
     def get_M_Projects_ByLoggedPerson: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.GridController.get_M_Projects_ByLoggedPerson",
       """
@@ -1315,17 +1305,27 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:314
-    def remove_Screen_Size_Type: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.GridController.remove_Screen_Size_Type",
+    // @LINE:302
+    def get_M_Program_all_forMobile: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.GridController.get_M_Program_all_forMobile",
       """
-        function(id) {
-          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/screen_type/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        function() {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/m_program/app/m_programs"})
         }
       """
     )
   
-    // @LINE:292
+    // @LINE:317
+    def remove_Screen_Size_Type: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.GridController.remove_Screen_Size_Type",
+      """
+        function(screen_size_type_id) {
+          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/screen_type/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("screen_size_type_id", encodeURIComponent(screen_size_type_id))})
+        }
+      """
+    )
+  
+    // @LINE:293
     def edit_M_Project: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.GridController.edit_M_Project",
       """
@@ -1335,42 +1335,52 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:301
+    // @LINE:306
     def edit_M_Program: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.GridController.edit_M_Program",
       """
         function(m_progrm_id) {
-          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/m_program" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("m_progrm_id", m_progrm_id)])})
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/m_program/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("m_progrm_id", encodeURIComponent(m_progrm_id))})
         }
       """
     )
   
-    // @LINE:293
+    // @LINE:294
     def remove_M_Project: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.GridController.remove_M_Project",
       """
-        function(id) {
-          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/m_project/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        function(m_project_id) {
+          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/m_project/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("m_project_id", encodeURIComponent(m_project_id))})
         }
       """
     )
   
-    // @LINE:313
+    // @LINE:316
     def edit_Screen_Size_Type: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.GridController.edit_Screen_Size_Type",
       """
-        function(id) {
-          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/screen_type/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        function(screen_size_type_id) {
+          return _wA({method:"PUT", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/screen_type/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("screen_size_type_id", encodeURIComponent(screen_size_type_id))})
         }
       """
     )
   
-    // @LINE:300
+    // @LINE:305
     def get_M_Program: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.GridController.get_M_Program",
       """
         function(m_progrm_id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/m_program" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("m_progrm_id", m_progrm_id)])})
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/m_program/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("m_progrm_id", encodeURIComponent(m_progrm_id))})
+        }
+      """
+    )
+  
+    // @LINE:314
+    def get_Screen_Size_Type_Combination: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.GridController.get_Screen_Size_Type_Combination",
+      """
+        function() {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/screen_type/all"})
         }
       """
     )
@@ -1385,27 +1395,17 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:311
+    // @LINE:315
     def get_Screen_Size_Type: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.GridController.get_Screen_Size_Type",
       """
-        function(id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/screen_type/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
+        function(screen_size_type_id) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/screen_type/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("screen_size_type_id", encodeURIComponent(screen_size_type_id))})
         }
       """
     )
   
-    // @LINE:310
-    def get_Screen_Size_Type_Combination: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.GridController.get_Screen_Size_Type_Combination",
-      """
-        function(id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/screen_type/all/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("id", encodeURIComponent(id))})
-        }
-      """
-    )
-  
-    // @LINE:291
+    // @LINE:292
     def get_M_Project: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.GridController.get_M_Project",
       """
@@ -1415,27 +1415,27 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:302
+    // @LINE:307
     def remove_M_Program: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.GridController.remove_M_Program",
       """
         function(m_progrm_id) {
-          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/m_program" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("m_progrm_id", m_progrm_id)])})
+          return _wA({method:"DELETE", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/m_program/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("m_progrm_id", encodeURIComponent(m_progrm_id))})
         }
       """
     )
   
-    // @LINE:295
+    // @LINE:296
     def get_M_Projects_from_GlobalProject: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.GridController.get_M_Projects_from_GlobalProject",
       """
         function(project_id) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/m_project/project" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("project_id", project_id)])})
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "grid/m_project/project/" + (""" + implicitly[PathBindable[String]].javascriptUnbind + """)("project_id", encodeURIComponent(project_id))})
         }
       """
     )
   
-    // @LINE:307
+    // @LINE:313
     def new_Screen_Size_Type: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.GridController.new_Screen_Size_Type",
       """
