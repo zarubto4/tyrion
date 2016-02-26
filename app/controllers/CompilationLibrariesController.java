@@ -110,7 +110,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.created(Json.toJson(c_program));
 
         } catch (NullPointerException e) {
-            Logger.warn("Missing Json value in " + Thread.currentThread().getStackTrace());
+            Logger.warn("Missing Json value in " + Thread.currentThread().getName());
             return GlobalResult.nullPointerResult(e, "programDescription", "program_name");
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -416,7 +416,7 @@ public class CompilationLibrariesController extends Controller {
     }
 
     //TODO
-    public Result generateProjectForEclipse() {
+    public Result generateProjectForEclipse(String c_program_id) {
        // EclipseProject.createFullnewProject();
         return GlobalResult.okResult("In TODO"); //TODO
     }
@@ -1518,7 +1518,7 @@ public class CompilationLibrariesController extends Controller {
             // If contains confirms
             if (json.has("processors_id")) {
                 List<String> list = UtilTools.getListFromJson(json, "processors_id");
-                Set<String> set = new HashSet<String>(list);
+                Set<String> set = new HashSet<>(list);
                 query.where().in("processors.id", set);
             }
 
@@ -2141,6 +2141,45 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
+    @ApiOperation(value = "delete Producer",
+            tags = {"Producer"},
+            notes = "if you want delete Producer",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "producer.read", description = "Person need this permission"),
+                                    @AuthorizationScope(scope = "SuperAdmin", description = "Or person must be SuperAdmin role")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Pattern("producer.delete")
+    public Result delete_Producer(@ApiParam(required = true) @PathParam("producer_id") String producer_id) {
+        try {
+            Producer producer = Producer.find.byId(producer_id);
+
+            if(producer == null ) return GlobalResult.notFoundObject();
+
+            producer.delete();
+
+            return GlobalResult.okResult();
+
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - get_Producer ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
+        }
+    }
+
     @ApiOperation(value = "get Producer description",
             tags = {"Producer"},
             notes = "if you get Producer object his description is hiding under this link",
@@ -2694,7 +2733,7 @@ public class CompilationLibrariesController extends Controller {
             // If contains HashTags
             if(json.has("typeOfBoards") ){
                 List<String> stringList = UtilTools.getListFromJson( json, "typeOfBoards" );
-                Set<String> stringListSet = new HashSet<String>(stringList);
+                Set<String> stringListSet = new HashSet<>(stringList);
                 query.where().in("typeOfBoard.id", stringListSet);
 
             }
@@ -2708,20 +2747,20 @@ public class CompilationLibrariesController extends Controller {
             // From date
             if(json.has("projects")){
                 List<String> stringList = UtilTools.getListFromJson( json, "projects" );
-                Set<String> stringListSet = new HashSet<String>(stringList);
+                Set<String> stringListSet = new HashSet<>(stringList);
                 query.where().in("projects.projectId", stringListSet);
             }
 
 
             if(json.has("producers")){
                 List<String> stringList = UtilTools.getListFromJson( json, "producers" );
-                Set<String> stringListSet = new HashSet<String>(stringList);
+                Set<String> stringListSet = new HashSet<>(stringList);
                 query.where().in("typeOfBoard.producer.id", stringListSet);
             }
 
             if(json.has("processor")){
                 List<String> stringList = UtilTools.getListFromJson( json, "processor" );
-                Set<String> stringListSet = new HashSet<String>(stringList);
+                Set<String> stringListSet = new HashSet<>(stringList);
                 query.where().in("typeOfBoard.processor.id", stringListSet);
             }
 

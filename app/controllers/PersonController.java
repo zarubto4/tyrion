@@ -22,9 +22,9 @@ import javax.inject.Inject;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
-@Api(value = "PersonController - nezdokumentované",
-     description = "Compilation operation (Role, Permission and permissions operations",
-     authorizations = { @Authorization(value="logged_in", scopes = {} )}
+@Api(value = "Ještě neroztříděné a neupravené",
+        description = "Compilation operation (C_Program, Processor, Libraries, TypeOfBoard...",
+        authorizations = { @Authorization(value="logged_in", scopes = {} )}
 )
 public class PersonController extends Controller {
 
@@ -137,7 +137,6 @@ public class PersonController extends Controller {
         }
     }
 
-
     @Security.Authenticated(Secured.class)
     @BodyParser.Of(BodyParser.Json.class)
     public  Result deletePerson(String id){
@@ -186,5 +185,29 @@ public class PersonController extends Controller {
         }
     }
 
+
+
+
+    public  Result valid_Person_mail(String mail){
+        try{
+
+            if(Person.find.where().ieq("mail", mail).findUnique() == null ) return GlobalResult.okResult();
+            else return GlobalResult.badRequest("Its used");
+
+        }catch (Exception e){
+            return GlobalResult.internalServerError();
+        }
+    }
+
+    public  Result valid_Person_NickName(String nick_name){
+        try{
+
+            if(Person.find.where().ieq("nick_name", nick_name).findUnique() == null ) return GlobalResult.okResult();
+            else return GlobalResult.badRequest("Its used");
+
+        }catch (Exception e){
+            return GlobalResult.internalServerError();
+        }
+    }
 
 }

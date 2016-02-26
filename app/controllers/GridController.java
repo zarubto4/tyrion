@@ -300,10 +300,7 @@ public class GridController extends play.mvc.Controller {
 
     }
 
-
 //######################################################################################################################
-
-
 
     @ApiOperation(value = "Create new M_Program",
             tags = {"M_Program"},
@@ -413,7 +410,6 @@ public class GridController extends play.mvc.Controller {
        }
     }
 
-
     @ApiOperation(value = "get all M_Program b yLogged Person",
             tags = {"M_Program", "APP-Api"},
             notes = "get list of M_Programs by logged Person",
@@ -442,8 +438,6 @@ public class GridController extends play.mvc.Controller {
             return GlobalResult.internalServerError();
         }
     }
-
-
 
     @ApiOperation(value = "get M_Program",
             tags = {"M_Program"},
@@ -480,7 +474,7 @@ public class GridController extends play.mvc.Controller {
     }
 
     @ApiOperation(value = "update M_Program",
-            tags = {"M_Program", "APP-Api"},
+            tags = {"M_Program"},
             notes = "update m_program - in this case we are not support versions of m_program",
             produces = "application/json",
             response =  M_Project.class,
@@ -592,7 +586,6 @@ public class GridController extends play.mvc.Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured.class)
-    // Owner M_Program
     public Result getAll_M_Program_from_M_Project(@ApiParam(name = "m_project_id", value = "project_id String query", required = true) @PathParam("m_project_id") String m_project_id){
         try {
             M_Project project = M_Project.find.byId(m_project_id);
