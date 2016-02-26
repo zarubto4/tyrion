@@ -5,7 +5,6 @@ import be.objectify.deadbolt.core.models.Role;
 import be.objectify.deadbolt.core.models.Subject;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import models.blocko.BlockoBlock;
 import models.overflow.LinkedPost;
 import models.overflow.Post;
@@ -39,8 +38,8 @@ public class Person extends Model implements Subject {
 
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<Project>              owningProjects            = new ArrayList<>();
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<Post>                 postLiker                 = new ArrayList<>();    // Propojení, které byly uživatelem hodnoceny (jak negativně, tak pozitivně)
-   @JsonProperty @ManyToMany(cascade = CascadeType.ALL)     public List<SecurityRole>         roles                     = new ArrayList<>();
-   @JsonProperty @ManyToMany(cascade = CascadeType.ALL)     public List<PersonPermission>     permissions               = new ArrayList<>();
+    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<SecurityRole>         roles                     = new ArrayList<>();
+    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<PersonPermission>     permissions               = new ArrayList<>();
 
     @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<BlockoBlock>   blocksAuthor   = new ArrayList<>(); // Propojení, které bločky uživatel vytvořil
     @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<Post>          personPosts    = new ArrayList<>(); // Propojení, které uživatel napsal

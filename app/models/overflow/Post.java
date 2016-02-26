@@ -21,8 +21,7 @@ public class Post extends Model {
                                                                                                             public Date dateOfCreate;
                                                                                 @JsonIgnore                 public boolean deleted;
                                                                                             @ManyToOne      public Person author;
-
-
+                                                                                                            public boolean updated;
 
 
     // Počet shlédnutí - chci vracet jen tam kde to má smysl - tedy jen v "otázce" nikoli v odpovědích, kde typ postu není uveden a evidován
@@ -30,19 +29,21 @@ public class Post extends Model {
     @JsonInclude(JsonInclude.Include.NON_EMPTY) @JsonProperty public TypeOfPost type(){return type == null ? null : type;}
 
 
-
     // Počet shlédnutí - chci vracet jen tam kde to má smysl - tedy jen v "otázce" nikoli v odpovědích
-    @JsonIgnore   public int views;
+    @JsonIgnore  public int views;
     @JsonInclude(JsonInclude.Include.NON_EMPTY)  @JsonProperty public String views(){ return name == null ? null : Integer.toString(views); }
 
+
+     // Pokud má článek jméno - je to hlavní post (ten kde se někdo ptá) a to znamená, že se tento článek objevuje ve filtrech vyhledávání (a je zbytečné
+     // zasílat list objektu i s obsahem (ten by se měl dát zobrazit až "po rozkliknutí"
     @JsonIgnore @Constraints.Required @Constraints.MinLength(value = 30) @Column(columnDefinition = "TEXT")  public String textOfPost;
     @JsonProperty public String textOfPost(){ return name == null ? textOfPost : "http://localhost:9000/overflow/post/textOfPost/" + this.postId; }
 
 
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "posts")      @JoinTable(name = "hashTagsTable")      public List<HashTag>            hashTagsList = new ArrayList<>();
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "posts")      @JoinTable(name = "typePostsTable")     public List<PropertyOfPost>     propertyOfPostList = new ArrayList<>();
-     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "postLiker") @JoinTable(name = "postLikerTable")    public List<Person>             listOfLikers = new ArrayList<>();
-    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "posts")      @JoinTable(name = "postConfirmsTable")  public List<TypeOfConfirms>     typeOfConfirmses = new ArrayList<>();
+    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "postLiker")  @JoinTable(name = "postLikerTable")     public List<Person>             listOfLikers = new ArrayList<>();
+                @ManyToMany(cascade = CascadeType.ALL, mappedBy = "posts")      @JoinTable(name = "postConfirmsTable")  public List<TypeOfConfirms>     typeOfConfirms = new ArrayList<>();
 
 
 

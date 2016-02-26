@@ -2,6 +2,8 @@ package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.Authorization;
 import models.blocko.*;
 import models.compiler.Version_Object;
 import models.persons.Person;
@@ -25,6 +27,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
+@Api(value = "Ještě neroztříděné a neupravené",
+        description = "",
+        authorizations = { @Authorization(value="logged_in", scopes = {} )}
+)
 @Security.Authenticated(Secured.class)
 public class ProgramingPackageController extends Controller {
 
@@ -339,13 +345,11 @@ public class ProgramingPackageController extends Controller {
 
 // ###################################################################################################################*/
 
-    @BodyParser.Of(BodyParser.Json.class)
-    public  Result connectHomerWithProject(){
+    public  Result connectHomerWithProject(String project_id, String homer_id){
         try{
-            JsonNode json = request().body().asJson();
 
-            Project project = Project.find.byId(json.get("projectId").asText());
-            Homer homer = Homer.find.byId(json.get("homerId").asText());
+            Project project = Project.find.byId(project_id);
+            Homer homer = Homer.find.byId(homer_id);
 
             if(project == null)  return GlobalResult.notFoundObject();
             if(homer == null)  return GlobalResult.notFoundObject();
@@ -354,8 +358,7 @@ public class ProgramingPackageController extends Controller {
             homer.update();
 
             return GlobalResult.okResult(Json.toJson(project));
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "homerId - String", "projectId - String");
+
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - connectHomerWithProject ERROR");
@@ -364,26 +367,21 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-    public  Result disconnectHomerWithProject(){
+    public  Result disconnectHomerWithProject(String project_id, String homer_id){
         try{
-            JsonNode json = request().body().asJson();
 
-            Project project = Project.find.byId(json.get("projectId").asText());
-            Homer homer = Homer.find.byId(json.get("homerId").asText());
+            Project project = Project.find.byId(project_id);
+            Homer homer = Homer.find.byId(homer_id);
 
             if(project == null)  return GlobalResult.notFoundObject();
             if(homer == null)  return GlobalResult.notFoundObject();
 
 
             project.homerList.remove(homer);
-            homer.project = null;
-
             project.update();
-            homer.update();
 
             return GlobalResult.okResult(Json.toJson(project));
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "homerId - String", "projectId - String");
+
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - unConnectHomerWithProject ERROR");

@@ -21,7 +21,10 @@ import utilities.response.GlobalResult;
 
 import java.util.*;
 
-
+@Api(value = "Ještě neroztříděné a neupravené",
+        description = "Compilation operation (C_Program, Processor, Libraries, TypeOfBoard...",
+        authorizations = { @Authorization(value="logged_in", scopes = {} )}
+)
 public class OverFlowController  extends Controller {
 
 // PUBLIC **********************************************************************************************************************
@@ -126,7 +129,7 @@ public class OverFlowController  extends Controller {
             // If contains HashTags
             if(json.has("hash_tags") ){
                 List<String> hashTags = UtilTools.getListFromJson( json, "hash_tags" );
-                Set<String> HashTagset = new HashSet<String>(hashTags);
+                Set<String> HashTagset = new HashSet<>(hashTags);
                 query.where().in("hashTagsList.postHashTagId", HashTagset);
 
             }
@@ -134,7 +137,7 @@ public class OverFlowController  extends Controller {
             // If contains confirms
             if(json.has("confirms") ){
                 List<String> confirms = UtilTools.getListFromJson( json, "confirms" );
-                Set<String> confirmsSet = new HashSet<String>(confirms);
+                Set<String> confirmsSet = new HashSet<>(confirms);
                  query.where().in("hashTagsList.postHashTagId", confirmsSet);
             }
 
@@ -335,6 +338,7 @@ public class OverFlowController  extends Controller {
             post.name = json.get("name").asText();
             post.type = typeOfPost;
             post.textOfPost = json.get("comment").asText();
+            post.updated = true;
 
             post.hashTagsList.clear();
 
@@ -532,13 +536,15 @@ public class OverFlowController  extends Controller {
         }
     }
 
+//------------------------------------------------------------------------------------------------------------------------
+
+    @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Secured.class)
-    public Result newTypeOfPost(){
+    public Result new_TypeOfPost(){
         try{
             JsonNode json = request().body().asJson();
 
-
-            if( TypeOfPost.find.where().eq("type", json.get("type").asText() ).findUnique() != null) throw new Exception("Duplicate value");
+            if( TypeOfPost.find.where().ieq("type", json.get("type").asText() ).findUnique() != null) throw new Exception("Duplicate value");
 
             TypeOfPost typeOfPost = new TypeOfPost();
             typeOfPost.type = json.get("type").asText();
@@ -552,7 +558,7 @@ public class OverFlowController  extends Controller {
     }
 
     @Security.Authenticated(Secured.class)
-    public Result getTypeOfPost(){
+    public Result get_TypeOfPost_all(){
         try{
             return GlobalResult.okResult(Json.toJson( TypeOfPost.find.all() ));
         }catch (Exception e){
@@ -561,7 +567,61 @@ public class OverFlowController  extends Controller {
     }
 
     @Security.Authenticated(Secured.class)
-    public Result newTypeOfConfirms(){
+    public Result get_TypeOfPost(String type_of_post_id){
+        try{
+
+            TypeOfPost typeOfPost = TypeOfPost.find.byId(type_of_post_id);
+            if(typeOfPost == null) return GlobalResult.notFoundObject();
+
+            return GlobalResult.okResult( Json.toJson(typeOfPost) );
+
+        }catch (Exception e){
+            return GlobalResult.nullPointerResult(e);
+        }
+    }
+
+
+    @BodyParser.Of(BodyParser.Json.class)
+    @Security.Authenticated(Secured.class)
+    public Result edit_TypeOfPost(String type_of_post_id){
+        try{
+            JsonNode json = request().body().asJson();
+
+            TypeOfPost typeOfPost = TypeOfPost.find.byId(type_of_post_id);
+            if(typeOfPost == null) return GlobalResult.notFoundObject();
+
+            List<TypeOfPost> list = TypeOfPost.find.where().ieq("type",json.get("type").asText()).where().ne("id", type_of_post_id).findList();
+            if(list.size()>0) return GlobalResult.badRequest("Name is used already");
+
+
+            typeOfPost.type = json.get("type").asText();
+            typeOfPost.update();
+
+            return GlobalResult.okResult( Json.toJson(typeOfPost) );
+        }catch (Exception e){
+            return GlobalResult.nullPointerResult(e);
+        }
+    }
+
+    @Security.Authenticated(Secured.class)
+    public Result delete_TypeOfPost(String type_of_post_id){
+        try{
+
+            TypeOfPost typeOfPost = TypeOfPost.find.byId(type_of_post_id);
+            if(typeOfPost == null) return GlobalResult.notFoundObject();
+
+            typeOfPost.delete();
+
+            return GlobalResult.okResult();
+        }catch (Exception e){
+            return GlobalResult.nullPointerResult(e);
+        }
+    }
+
+//------------------------------------------------------------------------------------------------------------------------
+    @BodyParser.Of(BodyParser.Json.class)
+    @Security.Authenticated(Secured.class)
+    public Result new_TypeOfConfirms(){
         try{
             JsonNode json = request().body().asJson();
 
@@ -579,8 +639,62 @@ public class OverFlowController  extends Controller {
         }
     }
 
+    @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Secured.class)
-    public Result getTypeOfConfirms(){
+    public Result edit_TypeOfConfirms(String type_of_confirm_id){
+        try{
+            JsonNode json = request().body().asJson();
+
+            TypeOfConfirms typeOfConfirms = TypeOfConfirms.find.byId(type_of_confirm_id);
+            if(typeOfConfirms == null) return GlobalResult.notFoundObject();
+
+            typeOfConfirms.type = json.get("type").asText();
+            typeOfConfirms.color = json.get("color").asText();
+            typeOfConfirms.size = json.get("size").asInt();
+
+            typeOfConfirms.save();
+
+            return GlobalResult.okResult(Json.toJson( typeOfConfirms) );
+
+        }catch (Exception e){
+            return GlobalResult.nullPointerResult(e);
+        }
+    }
+
+    @Security.Authenticated(Secured.class)
+    public Result delete_TypeOfConfirms(String type_of_confirm_id){
+        try{
+
+            TypeOfConfirms typeOfConfirms = TypeOfConfirms.find.byId(type_of_confirm_id);
+            if(typeOfConfirms == null) return GlobalResult.notFoundObject();
+
+            typeOfConfirms.delete();
+
+            return GlobalResult.okResult();
+
+        }catch (Exception e){
+            return GlobalResult.nullPointerResult(e);
+        }
+    }
+
+
+
+    @Security.Authenticated(Secured.class)
+    public Result get_TypeOfConfirms(String type_of_confirm_id){
+        try{
+
+            TypeOfConfirms typeOfConfirms = TypeOfConfirms.find.byId(type_of_confirm_id);
+            if(typeOfConfirms == null) return GlobalResult.notFoundObject();
+
+            return GlobalResult.okResult(Json.toJson( typeOfConfirms) );
+        }catch (Exception e){
+            return GlobalResult.nullPointerResult(e);
+        }
+    }
+
+
+    @Security.Authenticated(Secured.class)
+    public Result get_TypeOfConfirms_all(){
         try{
             return GlobalResult.okResult(Json.toJson( TypeOfConfirms.find.all() ));
         }catch (Exception e){
@@ -588,18 +702,19 @@ public class OverFlowController  extends Controller {
         }
     }
 
+
     @Security.Authenticated(Secured.class)
-    public Result putTypeOfConfirmToPost(String conf, String pst){
+    public Result set_TypeOfConfirm_to_Post(String post_id, String type_of_confirm_id){
         try{
-            TypeOfConfirms typeOfConfirms = TypeOfConfirms.find.byId(conf);
-            if(typeOfConfirms == null) throw new Exception("Id not Exist");
+            TypeOfConfirms typeOfConfirms = TypeOfConfirms.find.byId(type_of_confirm_id);
+            if(typeOfConfirms == null) return GlobalResult.notFoundObject();
 
-            Post post = Post.find.byId(pst);
-            if(post == null) throw new Exception("Id not Exist");
+            Post post = Post.find.byId(post_id);
+            if(post == null)  return GlobalResult.notFoundObject();
 
+            if(!post.typeOfConfirms.contains(typeOfConfirms)) post.typeOfConfirms.add(typeOfConfirms);
 
-            post.typeOfConfirmses.add(typeOfConfirms);
-            post.save();
+            post.update();
 
             return GlobalResult.okResult(Json.toJson(post));
         }catch (Exception e){
@@ -608,50 +723,72 @@ public class OverFlowController  extends Controller {
     }
 
     @Security.Authenticated(Secured.class)
-    public Result addHashTag(){
+    public Result remove_TypeOfConfirm_to_Post(String post_id, String type_of_confirm_id){
         try{
 
-            JsonNode json = request().body().asJson();
-            if (json == null) throw new Exception("Null Json");
+            TypeOfConfirms typeOfConfirms = TypeOfConfirms.find.byId(type_of_confirm_id);
+            if(typeOfConfirms == null)  return GlobalResult.notFoundObject();
 
-            Post post = Post.find.byId(json.get("postId").asText());
-            if(post == null) throw new Exception("Post not Exist");
+            Post post = Post.find.byId(post_id);
+            if(post == null)  return GlobalResult.notFoundObject();
 
-            for (final JsonNode objNode : json.get("hashTags")) {
+            if(post.typeOfConfirms.contains(typeOfConfirms)) post.typeOfConfirms.remove(typeOfConfirms);
 
-                HashTag postHashTag = HashTag.find.byId(objNode.asText());
+            post.update();
 
-                if(postHashTag == null) {
-                    postHashTag = new HashTag(objNode.asText());
-                    postHashTag.save();
-                }
+            return GlobalResult.okResult(Json.toJson(post));
+        }catch (Exception e){
+            return GlobalResult.nullPointerResult(e);
+        }
+    }
 
-                if(!post.hashTagsList.contains(postHashTag)) post.hashTagsList.add(postHashTag);
+//------------------------------------------------------------------------------------------------------------------------
 
+    @Security.Authenticated(Secured.class)
+    public Result add_HashTag_to_Post(String post_id, String hashTag){
+        try{
+
+            Post post = Post.find.byId(post_id);
+            if(post == null) return GlobalResult.notFoundObject();
+
+
+            HashTag postHashTag = HashTag.find.byId(hashTag);
+
+            if(postHashTag == null) {
+                 postHashTag = new HashTag(hashTag);
+                 postHashTag.save();
             }
 
-            post.save();
+            if(!post.hashTagsList.contains(postHashTag)) post.hashTagsList.add(postHashTag);
+
+            post.update();
 
             return GlobalResult.okResult();
+
         }catch (Exception e){
-            return GlobalResult.nullPointerResult(e, "postId", "[hashTags]");
+            return GlobalResult.internalServerError();
         }
 
     }
 
     @Security.Authenticated(Secured.class)
-    public Result removeHashTag(){
+    public Result remove_HashTag_from_Post(String post_id, String hashTag){
         try{
-            JsonNode json = request().body().asJson();
-            if (json == null) throw new Exception("Null Json");
 
-            HashTag hashTag = HashTag.find.byId(json.get("postId").asText());
-            hashTag.posts.remove(Post.find.byId(json.get("postId").asText()));
-            hashTag.update();
+            Post post = Post.find.byId(post_id);
+            if(post == null) return GlobalResult.notFoundObject();
+
+            HashTag postHashTag = HashTag.find.byId(hashTag);
+            if(postHashTag == null) return GlobalResult.notFoundObject();
+
+
+            if(post.hashTagsList.contains(postHashTag))post.hashTagsList.remove(postHashTag);
+
+            post.update();
 
             return GlobalResult.okResult();
         }catch (Exception e){
-            return GlobalResult.nullPointerResult(e);
+            return GlobalResult.internalServerError();
         }
 
     }

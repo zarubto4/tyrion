@@ -188,6 +188,7 @@ create table post (
   date_of_create            timestamp,
   deleted                   boolean,
   author_id                 varchar(255),
+  updated                   boolean,
   type_id                   varchar(255),
   views                     integer,
   text_of_post              TEXT,
