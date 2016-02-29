@@ -2,7 +2,5 @@
 logs
 target
 /.idea
-conf/evolutions
-project
-activator
 activator-launch-1.2.10.jar
+
