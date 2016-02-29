@@ -371,7 +371,7 @@ public class SecurityController extends Controller {
 
             WSRequest wsrequest = ws.url("https://graph.facebook.com/v2.5/"+ jsonNode.get("id").asText());
             WSRequest complexRequest = wsrequest.setQueryParameter("access_token", accessToken.getToken())
-                                                .setQueryParameter("fields", "id,name,first_name,last_name,mail,birthday,languages");
+                                                .setQueryParameter("fields", "id,name,first_name,last_name,email,birthday,languages");
 
             F.Promise<JsonNode> jsonPromise = wsrequest.get().map(rsp -> { return rsp.asJson();});
             JsonNode jsonRequest = jsonPromise.get(10000);
