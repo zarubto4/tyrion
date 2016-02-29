@@ -61,7 +61,7 @@ GET            /coreClient/person/valid/mail/:mail             @controllers.Pers
 
 DELETE         /coreClient/person/person/:id               @controllers.PersonController.deletePerson(id: String)
 
-GET            /emailPersonAuthentication/                 @controllers.PersonController.email_Person_authentitaction(mail,authToken)
+GET            /mail_person_authentication                 @controllers.PersonController.email_Person_authentitaction(mail,token)
 
 
 ### PERMISSION ############ PERMISSION ############### PERMISSION ################ PERMISSION ################# PERMISSION #####################################################

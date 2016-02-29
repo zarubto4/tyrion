@@ -51,7 +51,7 @@ public class SecurityController extends Controller {
         return (Person) context.current().args.get("person");
     }
 
-///###################################################################################################################*/
+//######################################################################################################################
 
 
     @ApiOperation(value = "login",
@@ -66,7 +66,7 @@ public class SecurityController extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_C_program_New",
+                            dataType = "utilities.swagger.documentationClass.Login_IncomingLogin",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -124,17 +124,6 @@ public class SecurityController extends Controller {
             protocols = "https",
             code = 200
     )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_C_program_New",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successful logged",      response = Login_return_object.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
@@ -179,17 +168,6 @@ public class SecurityController extends Controller {
                     )
             }
     )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_C_program_New",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successful logged",      response = Result_ok.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
@@ -211,10 +189,10 @@ public class SecurityController extends Controller {
         }
     }
 
-///####################################################################################################################*/
+//#######################################################################################################################
 
 
-//#### Oaut pro příjem Requestů zvenčí ################################################################################*/
+//#### Oaut pro příjem Requestů zvenčí ##################################################################################
 
     @Inject WSClient ws;
     // Metoda slouží pro příjem autentifikačních klíču ze sociálních sítí když se přihlásí uživatel.
@@ -485,17 +463,6 @@ public class SecurityController extends Controller {
             protocols = "https",
             code = 200
     )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_C_program_New",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successful created",      response = Login_Social_Network.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
@@ -535,17 +502,6 @@ public class SecurityController extends Controller {
             response =  Login_Social_Network.class,
             protocols = "https",
             code = 200
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_C_program_New",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successful created",      response = Login_Social_Network.class),

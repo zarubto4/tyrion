@@ -24,8 +24,8 @@ public class GlobalValue {
          *
          * Zatím, se zdá vhodnější varianta přepínání v configuračním souboru. Tomáš Záruba 15.2.16
          */
-        if( Configuration.root().getBoolean("Server.developerMode"))  serverAddress = Configuration.root().getString("Server.production");
-        else                                                          serverAddress = Configuration.root().getString("Server.localhost");
+        if( Configuration.root().getBoolean("Server.developerMode"))   serverAddress = Configuration.root().getString("Server.localhost");
+        else                                                           serverAddress = Configuration.root().getString("Server.production");
 
         /**
          * 2)

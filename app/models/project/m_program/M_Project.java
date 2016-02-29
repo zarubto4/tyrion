@@ -19,6 +19,9 @@ public class M_Project extends Model {
                                                                 public Date    date_of_create;
                                        @JsonIgnore @ManyToOne   public Project project;
 
+
+
+
     @OneToMany(mappedBy="m_project", cascade = CascadeType.ALL) public List<M_Program> m_programs = new ArrayList<>();
 
 
