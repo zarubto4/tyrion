@@ -1,9 +1,6 @@
-name := """tyrion"""
+name := """Tyrion"""
 
-routesGenerator := InjectedRoutesGenerator
-herokuAppName in Compile := "byzance3"
-
-version := "1.4.X"
+version := "1.0-SNAPSHOT"
 
 lazy val root = (project in file(".")).enablePlugins(PlayJava, PlayEbean)
 
@@ -37,12 +34,3 @@ libraryDependencies ++= Seq(
 // Play provides two styles of routers, one expects its actions to be injected, the
 // other, legacy style, accesses its actions statically.
 routesGenerator := InjectedRoutesGenerator
-
-// add resolver for deadbolt and easymail snapshots
-resolvers += Resolver.sonatypeRepo("snapshots")
-resolvers += Resolver.jcenterRepo
-// display deprecated or poorly formed Java
-javacOptions ++= Seq("-Xlint:unchecked")
-javacOptions ++= Seq("-Xlint:deprecation")
-javacOptions ++= Seq("-Xdiags:verbose")
-

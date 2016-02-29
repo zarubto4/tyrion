@@ -1,6 +1,8 @@
 # Created by .ignore support plugin (hsz.mobi)
-.idea
-files
 logs
 target
-public
+/.idea
+conf/evolutions
+project
+activator
+activator-launch-1.2.10.jar
