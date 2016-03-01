@@ -64,18 +64,44 @@ public class Global extends GlobalSettings {
                person.last_name = "Byzance";
                person.mailValidated = true;
                person.mail = "admin@byzance.cz";
-               person.setSha("123456");
+               person.setSha("123456789");
                person.roles.add(SecurityRole.findByName("SuperAdmin"));
                person.save();
            }
 
-           Logger.warn("Controling of the system global permissions");
+           Logger.warn("Controlling of the system global permissions");
 
                ArrayList<String> perms = new ArrayList<>();
 
                perms.add("processor.read");
                perms.add("processor.edit");
                perms.add("processor.create");
+               perms.add("processor.delete");
+
+               perms.add("producer.edit");
+               perms.add("producer.create");
+               perms.add("producer.read");
+               perms.add("producer.delete");
+
+               perms.add("type_of_board.create");
+               perms.add("type_of_board.read");
+               perms.add("type_of_board.edit");
+               perms.add("type_of_board.delete");
+
+               perms.add("board.create");
+               perms.add("board.read");
+               perms.add("board.edit");
+               perms.add("board.delete");
+
+               perms.add("role.create");
+               perms.add("role.person");
+               perms.add("role.manager");
+               perms.add("role.delete");
+
+               perms.add("permission.connectWithPerson");
+               perms.add("permission.disconnectWithPerson");
+               perms.add("permission.edit");
+               perms.add("board.delete");
 
 
                for (String name : perms)
