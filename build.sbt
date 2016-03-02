@@ -23,8 +23,6 @@ libraryDependencies ++= Seq(
   "org.glassfish.tyrus" % "tyrus-client" % "1.12",
   "org.glassfish.tyrus" % "tyrus-container-grizzly-client" % "1.12",
   "org.glassfish.tyrus" % "tyrus-core" % "1.12",
-  "be.objectify" %% "deadbolt-java" % "2.4.3",
-
 
   javaJdbc,
   filters,

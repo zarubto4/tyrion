@@ -1,7 +1,6 @@
 
 package models.persons;
 
-import be.objectify.deadbolt.core.models.Permission;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -10,10 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-public class PersonPermission extends Model implements Permission {
+public class PersonPermission extends Model {
 
-    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)     public String id;
-                                                                public String value;
+    @Id      public String value;
+             public String description;
 
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "permissions")  @JoinTable(name = "join_prs_prm") public List<Person> persons = new ArrayList<>();
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "permissions")  @JoinTable(name = "join_group_prm") public List<SecurityRole> roles = new ArrayList<>();
@@ -24,10 +23,25 @@ public class PersonPermission extends Model implements Permission {
     }
 
     public static PersonPermission findByValue(String vale){
-        return PersonPermission.find.where().eq("value",vale).findUnique();
+        return PersonPermission.find.byId(vale);
     }
+
+
+    // Creating new permission if system not contains that
+    public PersonPermission(String key, String description){
+
+        if(PersonPermission.findByValue(key) != null) return;
+        this.value = key;
+        this.description = description;
+        this.save();
+    }
+
+
 
 
     // Finder **********************************************************************************************************
     public static final Finder<String, PersonPermission> find = new Finder<>( PersonPermission.class);
+
+
+
 }

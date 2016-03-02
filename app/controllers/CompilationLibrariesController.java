@@ -1,7 +1,5 @@
 package controllers;
 
-import be.objectify.deadbolt.java.actions.Dynamic;
-import be.objectify.deadbolt.java.actions.Pattern;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.Query;
@@ -11,18 +9,20 @@ import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import io.swagger.annotations.*;
 import models.compiler.*;
+import models.persons.PersonPermission;
 import models.project.c_program.C_Program;
 import models.project.global.Project;
 import play.Logger;
 import play.libs.Json;
 import play.mvc.*;
-import utilities.a_main_utils.Description;
 import utilities.a_main_utils.GlobalValue;
 import utilities.a_main_utils.UtilTools;
 import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
-import utilities.swagger.documentationClass.*;
+import utilities.swagger.documentationClass.Description;
+import utilities.swagger.documentationClass.Swagger_Board_List;
+import utilities.swagger.documentationClass.Swagger_LibraryGroup_Libraries;
 
 import javax.websocket.server.PathParam;
 import java.io.File;
@@ -52,6 +52,34 @@ import java.util.Set;
 @Security.Authenticated(Secured.class)
 public class CompilationLibrariesController extends Controller {
 
+
+// SYSTEM PERMISSION for this controller
+    public static void set_System_Permission(){
+
+        new PersonPermission("processor.read", "description");
+        new PersonPermission("processor.edit", "description");
+        new PersonPermission("processor.create", "description");
+        new PersonPermission("processor.delete", "description");
+
+        new PersonPermission("producer.read", "description");
+        new PersonPermission("producer.edit", "description");
+        new PersonPermission("producer.create", "description");
+        new PersonPermission("producer.delete", "description");
+
+        new PersonPermission("type_of_board.read", "description");
+        new PersonPermission("type_of_board.edit", "description");
+        new PersonPermission("type_of_board.create", "description");
+        new PersonPermission("type_of_board.delete", "description");
+
+        new PersonPermission("board.read", "description");
+        new PersonPermission("board.edit", "description");
+        new PersonPermission("board.create", "description");
+        new PersonPermission("board.delete", "description");
+
+    }
+
+
+///###################################################################################################################*/
 
     @ApiOperation(value = "Create new C_Program",
                   tags = {"C_Program"},
@@ -87,10 +115,8 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    @Dynamic("project.owner")
     public Result create_C_Program(@ApiParam(value = "project_id String query", required = true) @PathParam("project_id") String project_id) {
         try {
-            Logger.info("Creating new C_Program on project_id " + project_id);
 
             JsonNode json = request().body().asJson();
 
@@ -105,12 +131,10 @@ public class CompilationLibrariesController extends Controller {
 
             c_program.save();
 
-            Logger.info("C_Program created c_program.id " + c_program.id);
 
             return GlobalResult.created(Json.toJson(c_program));
 
         } catch (NullPointerException e) {
-            Logger.warn("Missing Json value in " + Thread.currentThread().getName());
             return GlobalResult.nullPointerResult(e, "programDescription", "program_name");
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -141,9 +165,10 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Dynamic("project.c_program_owner")
+  //  @Dynamic("project.c_program_owner")
     public Result get_C_Program(@ApiParam(value = "c_program_id String query", required = true) @PathParam("c_program_id") String c_program_id) {
         try {
+
 
             C_Program c_program = C_Program.find.byId(c_program_id);
             return GlobalResult.okResult(Json.toJson(c_program));
@@ -176,7 +201,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Dynamic("project.owner")
+    // @Dynamic("project.owner")
     public Result get_C_Program_All_from_Project(@ApiParam(value = "project_id String query", required = true) @PathParam("project_id") String project_id) {
         try {
 
@@ -224,7 +249,7 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @BodyParser.Of(BodyParser.Json.class)
-    @Dynamic("project.c_program_owner")
+    // @Dynamic("project.c_program_owner")
     public Result edit_C_Program_Description(@ApiParam(value = "c_program_id String query", required = true) @PathParam("c_program_id") String c_program_id) {
         try {
 
@@ -281,7 +306,7 @@ public class CompilationLibrariesController extends Controller {
                     )
             }
     )
-    @Dynamic("project.c_program_owner")
+    // @Dynamic("project.c_program_owner")
     @BodyParser.Of(BodyParser.Json.class)
     public Result update_C_Program(@ApiParam(value = "c_program_id String query", required = true) @PathParam("c_program_id") String c_program_id){
         try{
@@ -345,7 +370,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Dynamic("project.c_program_owner")
+    //  @Dynamic("project.c_program_owner")
     public Result delete_C_Program_Version(@ApiParam(value = "c_program_id String query", required = true) @PathParam("c_program_id") String c_program_id, @ApiParam(value = "version_id String query",   required = true) @PathParam("version_id")   String version_id){
         try{
 
@@ -388,7 +413,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Dynamic("project.c_program_owner")
+    // @Dynamic("project.c_program_owner")
     public Result delete_C_Program(@ApiParam(value = "c_program_id String query", required = true) @PathParam("c_program_id") String c_program_id){
         try{
 
@@ -492,7 +517,7 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @BodyParser.Of(BodyParser.Json.class)
-    @Pattern("processor.create")
+    //  @Pattern("processor.create")
     public Result new_Processor() {
         try {
             JsonNode json = request().body().asJson();
@@ -537,7 +562,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("processor.read")
+    // @Pattern("processor.read")
     public Result get_Processor(@ApiParam(value = "processor_id String query", required = true) @PathParam("processor_id") String processor_id) {
         try {
 
@@ -573,7 +598,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("processor.read")
+    //  @Pattern("processor.read")
     public Result get_Processor_All() {
         try {
 
@@ -619,7 +644,7 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @BodyParser.Of(BodyParser.Json.class)
-    @Pattern("processor.edit")
+    // @Pattern("processor.edit")
     public Result update_Processor(@ApiParam(value = "processor_id String query", required = true) @PathParam("processor_id") String processor_id) {
         try {
             JsonNode json = request().body().asJson();
@@ -676,7 +701,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("processor.delete")
+    // @Pattern("processor.delete")
     public Result delete_Processor(@ApiParam(value = "processor_id String query", required = true) @PathParam("processor_id")String processor_id) {
         try {
 
@@ -714,7 +739,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("processor.read")
+    //@Pattern("processor.read")
     public Result get_Processor_Description(@ApiParam(value = "processor_id String query", required = true) @PathParam("processor_id")String processor_id) {
         try {
 
@@ -754,7 +779,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("processor.read")
+    // @Pattern("processor.read")
     public Result getProcessorLibraryGroups( @ApiParam(value = "processor_id String query", required = true) @PathParam("processor_id")String processor_id) {
         try {
             Processor processor = Processor.find.byId(processor_id);
@@ -789,7 +814,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("singleLibraries.read")
+    // @Pattern("singleLibraries.read")
     public Result getProcessorSingleLibraries( @ApiParam(value = "processor_id String query", required = true) @PathParam("processor_id") String processor_id) {
         try {
             Processor processor = Processor.find.byId(processor_id);
@@ -823,7 +848,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("processor.edit")
+    //  @Pattern("processor.edit")
     public Result connectProcessorWithLibrary( @ApiParam(value = "processor_id String query", required = true) @PathParam("processor_id")String processor_id,  @ApiParam(required = true) @PathParam("library_id") String library_id) {
         try {
             Processor processor = Processor.find.byId(processor_id);
@@ -864,7 +889,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("processor.edit")
+    //  @Pattern("processor.edit")
     public Result connectProcessorWithLibraryGroup( @ApiParam(value = "processor_id String query", required = true) @PathParam("processor_id")String processor_id,  @ApiParam(required = true) @PathParam("library_group_id") String library_group_id) {
         try {
             Processor processor = Processor.find.byId(processor_id);
@@ -905,7 +930,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("processor.edit")
+    // @Pattern("processor.edit")
     public Result disconnectProcessorWithLibrary( @ApiParam(value = "processor_id String query", required = true) @PathParam("processor_id")String processor_id,  @ApiParam(required = true) @PathParam("library_id") String library_id) {
         try {
             Processor processor = Processor.find.byId(processor_id);
@@ -946,7 +971,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("processor.edit")
+    // @Pattern("processor.edit")
     public Result disconnectProcessorWithLibraryGroup( @ApiParam(value = "processor_id String query", required = true) @PathParam("processor_id")String processor_id,  @ApiParam(required = true) @PathParam("library_group_id")  String library_group_id) {
         try {
             Processor processor = Processor.find.byId(processor_id);
@@ -1003,7 +1028,7 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @BodyParser.Of(BodyParser.Json.class)
-    @Pattern("libraryGroup.create")
+    // @Pattern("libraryGroup.create")
     public Result new_LibraryGroup() {
         try {
             JsonNode json = request().body().asJson();
@@ -1058,7 +1083,7 @@ public class CompilationLibrariesController extends Controller {
                     )
             }
     )
-    @Pattern("libraryGroup.edit")
+    //  @Pattern("libraryGroup.edit")
     @BodyParser.Of(BodyParser.Json.class)
     public Result new_LibraryGroup_Version(@ApiParam(value = "libraryGroup_id String query", required = true) @PathParam("libraryGroup_id") String libraryGroup_id){
         try {
@@ -1113,7 +1138,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("libraryGroup.read")
+    // @Pattern("libraryGroup.read")
     public Result get_LibraryGroup_Version(@ApiParam(value = "libraryGroup_id String query", required = true) @PathParam("libraryGroup_id") String libraryGroup_id){
         try {
 
@@ -1149,7 +1174,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("libraryGroup.edit")
+    // @Pattern("libraryGroup.edit")
     public Result upload_Library_To_LibraryGroup(@ApiParam(value = "libraryGroup_id String query", required = true) @PathParam("libraryGroup_id") String libraryGroup_id, @ApiParam(required = true) @PathParam("version_id") String version_id) {
         try {
 
@@ -1225,7 +1250,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("libraryGroup.read")
+    //  @Pattern("libraryGroup.read")
     public Result get_LibraryGroup(@ApiParam(value = "libraryGroup_id String query", required = true) @PathParam("libraryGroup_id") String libraryGroup_id) {
         try {
 
@@ -1260,7 +1285,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("libraryGroup.delete")
+    // @Pattern("libraryGroup.delete")
     public Result delete_LibraryGroup(@ApiParam(value = "libraryGroup_id String query", required = true) @PathParam("libraryGroup_id") String libraryGroup_id) {
         try {
             LibraryGroup libraryGroup = LibraryGroup.find.byId(libraryGroup_id);
@@ -1311,7 +1336,7 @@ public class CompilationLibrariesController extends Controller {
                     )
             }
     )
-    @Pattern("libraryGroup.edit")
+    //  @Pattern("libraryGroup.edit")
     public Result editLibraryGroup(@ApiParam(value = "libraryGroup_id String query", required = true) @PathParam("libraryGroup_id") String libraryGroup_id) {
         try {
 
@@ -1354,7 +1379,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("libraryGroup.read")
+    //  @Pattern("libraryGroup.read")
     public Result get_LibraryGroup_Description(@ApiParam(value = "libraryGroup_id String query", required = true) @PathParam("libraryGroup_id") String libraryGroup_id) {
         try {
             LibraryGroup libraryGroup = LibraryGroup.find.byId(libraryGroup_id);
@@ -1392,7 +1417,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("processor.read")
+    // @Pattern("processor.read")
     public Result get_LibraryGroup_Processors(@ApiParam(value = "libraryGroup_id String query", required = true) @PathParam("libraryGroup_id") String libraryGroup_id) {
         try {
             LibraryGroup libraryGroup = LibraryGroup.find.byId(libraryGroup_id);
@@ -1427,7 +1452,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("libraryGroup.read")
+    // @Pattern("libraryGroup.read")
     public Result get_LibraryGroup_Libraries(@ApiParam(value = "libraryGroup_id String query", required = true) @PathParam("libraryGroup_id") String libraryGroup_id, @ApiParam(required = true) @PathParam("version_id") String version_id) {
         try {
 
@@ -1462,7 +1487,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("libraryGroup.read")
+    // @Pattern("libraryGroup.read")
     public Result get_LibraryGroup_Version_Libraries(@ApiParam(required = true) @PathParam("version_id") String version_id){
         try {
             Version_Object versionObject = Version_Object.find.byId(version_id);
@@ -1508,7 +1533,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("libraryGroup.read")
+    //   @Pattern("libraryGroup.read")
     public Result get_LibraryGroup_Filter() {
         try {
             JsonNode json = request().body().asJson();
@@ -1618,7 +1643,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("library.create")
+    //  @Pattern("library.create")
     @BodyParser.Of(BodyParser.Json.class)
     public Result new_SingleLibrary() {
         try {
@@ -1664,7 +1689,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("library.edit")
+    // @Pattern("library.edit")
     public Result new_SingleLibrary_Version(@ApiParam(value = "library_id String query", required = true) @PathParam("library_id")  String library_id){
         try {
             JsonNode json = request().body().asJson();
@@ -1715,7 +1740,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("library.read")
+    // @Pattern("library.read")
     public Result get_SingleLibrary_Versions(@ApiParam(value = "library_id String query", required = true) @PathParam("library_id")  String library_id) {
         try {
 
@@ -1794,7 +1819,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("library.read")
+    // @Pattern("library.read")
     public Result get_SingleLibrary(@ApiParam(value = "library_id String query", required = true) @PathParam("library_id")  String library_id) {
         try {
 
@@ -1843,12 +1868,10 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("libraryGroup.read")
+    // @Pattern("libraryGroup.read")
     public Result get_SingleLibrary_Filter() {
         try {
             JsonNode json = request().body().asJson();
-
-            //TODO
 
             return GlobalResult.okResult();
         } catch (Exception e) {
@@ -1888,7 +1911,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("library.edit")
+    // @Pattern("library.edit")
     @BodyParser.Of(BodyParser.Json.class)
     public Result edit_SingleLibrary(@ApiParam(value = "library_id String query", required = true) @PathParam("library_id") String library_id) {
         try {
@@ -1933,7 +1956,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("library.delete")
+    //  @Pattern("library.delete")
     public Result delete_SingleLibrary(@ApiParam(value = "library_id String query", required = true) @PathParam("library_id") String library_id) {
         try {
 
@@ -1987,7 +2010,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("producer.create")
+    // @Pattern("producer.create")
     @BodyParser.Of(BodyParser.Json.class)
     public Result new_Producer() {
         try {
@@ -2043,7 +2066,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("producer.edit")
+    // @Pattern("producer.edit")
     @BodyParser.Of(BodyParser.Json.class)
     public Result edit_Producer(@ApiParam(required = true) @PathParam("producer_id") String producer_id) {
         try {
@@ -2070,7 +2093,7 @@ public class CompilationLibrariesController extends Controller {
 
     @ApiOperation(value = "get all Producers",
             tags = {"Producer"},
-            notes = "if you want get list of Producers. Its list of companyes owned physical boards and we used that for filtering",
+            notes = "if you want get list of Producers. Its list of companies owned physical boards and we used that for filtering",
             produces = "application/json",
             response =  Producer.class,
             protocols = "https",
@@ -2084,14 +2107,15 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",      response = Producer.class),
+            @ApiResponse(code = 200, message = "Ok Result",      response = Producer.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("producer.read")
+    // @Pattern("producer.read")
     public Result get_Producers() {
         try {
+
             List<Producer> producers = Producer.find.all();
 
             return GlobalResult.okResult(Json.toJson(producers));
@@ -2119,12 +2143,12 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Producer.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Producer.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("producer.read")
+    //  @Pattern("producer.read")
     public Result get_Producer(@ApiParam(required = true) @PathParam("producer_id") String producer_id) {
         try {
             Producer producer = Producer.find.byId(producer_id);
@@ -2161,7 +2185,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("producer.delete")
+    // @Pattern("producer.delete")
     public Result delete_Producer(@ApiParam(required = true) @PathParam("producer_id") String producer_id) {
         try {
             Producer producer = Producer.find.byId(producer_id);
@@ -2201,7 +2225,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("producer.read")
+    // @Pattern("producer.read")
     public Result get_Producer_Description(@ApiParam(required = true) @PathParam("producer_id") String producer_id) {
         try {
             Producer producer = Producer.find.byId(producer_id);
@@ -2241,7 +2265,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("type_of_board.read")
+    // @Pattern("type_of_board.read")
     public Result get_Producer_TypeOfBoards(@ApiParam(required = true) @PathParam("producer_id") String producer_id) {
         try {
             Producer producer = Producer.find.byId(producer_id);
@@ -2296,7 +2320,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    @Pattern("type_of_board.create")
+    // @Pattern("type_of_board.create")
     public Result new_TypeOfBoard() {
         try {
             JsonNode json = request().body().asJson();
@@ -2361,7 +2385,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    @Pattern("type_of_board.edit")
+    // @Pattern("type_of_board.edit")
     public Result edit_TypeOfBoard(@ApiParam(required = true) @PathParam("type_of_board_id") String type_of_board_id) {
         try {
             JsonNode json = request().body().asJson();
@@ -2408,7 +2432,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     //TODO dokumentace Issue TYRION-88 (http://youtrack.byzance.cz/youtrack/issue/TYRION-88)
-    @Pattern("type_of_board.delete")
+    // @Pattern("type_of_board.delete")
     public Result delete_TypeOfBoard(@ApiParam(required = true) @PathParam("type_of_board_id") String type_of_board_id) {
         try {
             JsonNode json = request().body().asJson();
@@ -2450,7 +2474,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("type_of_board.read")
+    //  @Pattern("type_of_board.read")
     public Result get_TypeOfBoard_all() {
         try {
 
@@ -2485,7 +2509,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("type_of_board.read")
+    //  @Pattern("type_of_board.read")
     public Result get_TypeOfBoard(@ApiParam(required = true) @PathParam("type_of_board_id") String type_of_board_id) {
         try {
 
@@ -2522,7 +2546,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("type_of_board.read")
+    //  @Pattern("type_of_board.read")
     public Result get_TypeOfBoard_Description(@ApiParam(required = true) @PathParam("type_of_board_id") String type_of_board_id) {
         try {
 
@@ -2723,7 +2747,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    @Pattern("board.read")
+    // @Pattern("board.read")
     public Result get_Board_Filter() {
         try {
             JsonNode json = request().body().asJson();
@@ -2801,7 +2825,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("board.deactivate")
+    //  @Pattern("board.deactivate")
     public Result deactivate_Board(@ApiParam(required = true) @PathParam("board_id")  String board_id) {
         try {
             Board board = Board.find.byId(board_id);
@@ -2842,7 +2866,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Pattern("board.read")
+    // @Pattern("board.read")
     public Result get_Board(@ApiParam(required = true) @PathParam("board_id")  String board_id) {
         try {
             Board board = Board.find.byId(board_id);

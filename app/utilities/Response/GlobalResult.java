@@ -61,6 +61,7 @@ public class GlobalResult extends Controller {
     public static Result nullPointerResult(Exception e, String... args){
 
         JsonValueMissing result = new JsonValueMissing();
+        result.code = 400;
         result.state = "error";
         result.message = e.getMessage();
         for(String arg : args) result.required_jSON_parameter.add(arg);

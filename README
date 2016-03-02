@@ -1,0 +1,13 @@
+
+
+Verze 1.04.9.12 FIXED a verze 12
+
+Úprava všech link u Permission z query na {Link} - id v linku
+- Odhalena chyba že v dokumentaci se u  id v linku objevuje že je to query. Bylo plošně opraveno.
+
+
+Při návratu objektu při přihlášení uživatele bylo matoucí jak chápat permission.
+Proto ti vracím seznam rolí ve zkrácené podobě (viz dokumentace)
+a v listu Permission dělám sjednocení všech oprávnění, které uživatel má (ze všech skupin i samostatných oprávnění)
+
+

@@ -350,9 +350,9 @@ public class GridController extends play.mvc.Controller {
             m_program_.date_of_create      = new Date();
             m_program_.program_description = json.get("program_description").asText();
             m_program_.program_name        = json.get("program_name").asText();
-            m_program_.m_project           = m_project;
+            m_program_.m_project_object = m_project;
             m_program_.programInString     = json.get("m_code").toString();
-            m_program_.screen_size_type    = screen_size_type;
+            m_program_.screen_size_type_object = screen_size_type;
             m_program_.height_lock         = json.get("height_lock").asBoolean();
             m_program_.width_lock          = json.get("width_lock").asBoolean();
 
@@ -428,7 +428,7 @@ public class GridController extends play.mvc.Controller {
     public Result get_M_Program_all_forMobile(){
         try{
 
-            List<M_Program> m_programs = M_Program.find.where().eq("m_project.project.ownersOfProject.id", SecurityController.getPerson().id ).findList();
+            List<M_Program> m_programs = M_Program.find.where().eq("m_project_object.project.ownersOfProject.id", SecurityController.getPerson().id ).findList();
 
             return GlobalResult.okResult(Json.toJson(m_programs));
 
@@ -507,7 +507,7 @@ public class GridController extends play.mvc.Controller {
             m_program_.program_description = json.get("program_description").asText();
             m_program_.program_name        = json.get("program_name").asText();
             m_program_.programInString     = json.get("m_code").asText();
-            m_program_.screen_size_type    = screen_size_type;
+            m_program_.screen_size_type_object = screen_size_type;
             m_program_.height_lock         = json.get("height_lock").asBoolean();
             m_program_.width_lock          = json.get("width_lock").asBoolean();
             m_program_.last_update         = new Date();
@@ -621,7 +621,7 @@ public class GridController extends play.mvc.Controller {
     public Result get_all_M_Program_from_Project(@ApiParam(value = "project_id String query", required = true) @PathParam("project_id") String project_id){
         try {
 
-            List<M_Program> list = M_Program.find.where().eq("m_project.project.projectId", project_id).findList();
+            List<M_Program> list = M_Program.find.where().eq("m_project_object.project.projectId", project_id).findList();
             return GlobalResult.okResult(Json.toJson(list));
 
         } catch (Exception e) {

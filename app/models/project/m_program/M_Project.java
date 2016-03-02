@@ -22,7 +22,7 @@ public class M_Project extends Model {
 
 
 
-    @OneToMany(mappedBy="m_project", cascade = CascadeType.ALL) public List<M_Program> m_programs = new ArrayList<>();
+    @OneToMany(mappedBy="m_project_object", cascade = CascadeType.ALL) public List<M_Program> m_programs = new ArrayList<>();
 
 
     @JsonProperty public String project()             {  return "http://localhost:9000/project/project/" + project.projectId; }

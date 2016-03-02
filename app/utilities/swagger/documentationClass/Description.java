@@ -1,4 +1,4 @@
-package utilities.a_main_utils;
+package utilities.swagger.documentationClass;
 
 public class Description {
     public String description;

@@ -54,8 +54,7 @@ POST           /coreClient/person/person                   @controllers.PersonCo
 PUT            /coreClient/person/person                   @controllers.PersonController.edit_Person_Information()
 GET            /coreClient/person/person/:id               @controllers.PersonController.getPerson(id: String)
 
-
-GET            /coreClient/person/valid/nickname/:nickname     @controllers.PersonController.valid_Person_NickName(nickname)
+GET            /coreClient/person/valid/nickname/:nick_name    @controllers.PersonController.valid_Person_NickName(nick_name)
 GET            /coreClient/person/valid/mail/:mail             @controllers.PersonController.valid_Person_mail(mail)
 
 
@@ -67,22 +66,23 @@ GET            /mail_person_authentication                 @controllers.PersonCo
 ### PERMISSION ############ PERMISSION ############### PERMISSION ################ PERMISSION ################# PERMISSION #####################################################
 ################################################################################################################################################################################
 
-PUT            /secure/permission/person/add                @controllers.PermissionController.add_Permission_Person(person_id,permission_id)
-PUT            /secure/permission/person/remove             @controllers.PermissionController.remove_Permission_Person(person_id,permission_id)
-GET            /secure/permission                           @controllers.PermissionController.get_Permission_All()
+PUT            /secure/permission/person/:person_id/:permission_id           @controllers.PermissionController.add_Permission_Person(person_id,permission_id)
+DELETE         /secure/permission/person/:person_id/:permission_id           @controllers.PermissionController.remove_Permission_Person(person_id,permission_id)
+GET            /secure/permission                                            @controllers.PermissionController.get_Permission_All()
 
-GET            /secure/role/permission/add                  @controllers.PermissionController.add_Permission_to_Role(permission_id,role_id)
-GET            /secure/role/permission                      @controllers.PermissionController.get_Permission_in_Group(role_id)
-GET            /secure/role/permission/remove               @controllers.PermissionController.remove_Permission_from_Role(permission_id,role_id)
+PUT            /secure/role/permission/:permission_id/:role_id               @controllers.PermissionController.add_Permission_to_Role(permission_id,role_id)
+GET            /secure/role/permission/:role_id                              @controllers.PermissionController.get_Permission_in_Group(role_id)
+GET            /secure/role/person/:role_id                                  @controllers.PermissionController.get_Person_from_Role_Group(role_id)
+DELETE         /secure/role/permission/:permission_id/:role_id               @controllers.PermissionController.remove_Permission_from_Role(permission_id,role_id)
 
-POST           /secure/role                                 @controllers.PermissionController.new_Role()
-DELETE         /secure/role                                 @controllers.PermissionController.delete_Role(role_id)
+POST           /secure/role                                                  @controllers.PermissionController.new_Role()
+DELETE         /secure/role/:role_id                                         @controllers.PermissionController.delete_Role(role_id)
 
-PUT            /secure/role/person/add                      @controllers.PermissionController.add_Role_Person(person_id,role_id)
-PUT            /secure/role/person/remove                   @controllers.PermissionController.remove_Role_Person(person_id,role_id)
-GET            /secure/role/all                             @controllers.PermissionController.get_Role_All()
+PUT            /secure/role/person/:person_id/:role_id                       @controllers.PermissionController.add_Role_Person(person_id,role_id)
+DELETE         /secure/role/person/:person_id/:role_id                       @controllers.PermissionController.remove_Role_Person(person_id,role_id)
+GET            /secure/role/all                                              @controllers.PermissionController.get_Role_All()
 
-GET            /secure/person/system_acces                  @controllers.PermissionController.get_System_Acces(person_id)
+GET            /secure/person/system_acces/:person_id                        @controllers.PermissionController.get_System_Acces(person_id)
 
 ### OVERFLOW ############ OVERFLOW ############### OVERFLOW ################ OVERFLOW ################# OVERFLOW ###############################################################
 ################################################################################################################################################################################

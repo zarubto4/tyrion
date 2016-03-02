@@ -8,6 +8,7 @@ import com.github.scribejava.core.oauth.OAuthService;
 import io.swagger.annotations.*;
 import models.persons.LinkedAccount;
 import models.persons.Person;
+import models.persons.PersonPermission;
 import play.Configuration;
 import play.Logger;
 import play.libs.F;
@@ -29,6 +30,7 @@ import javax.inject.Inject;
 import javax.websocket.server.PathParam;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -99,7 +101,11 @@ public class SecurityController extends Controller {
             result.set("person", Json.toJson(person));
             result.put("authToken", authToken);
             result.set("roles", Json.toJson(person.roles));
-            result.set("permission", Json.toJson(person.permissions));
+
+
+            List<PersonPermission> list = PersonPermission.find.where().eq("roles.persons.id", person.id).findList();
+
+            result.set("permission", Json.toJson(list));
 
             return GlobalResult.okResult(result);
 
@@ -259,7 +265,7 @@ public class SecurityController extends Controller {
                     usedAccount.authToken = linkedAccount.authToken;
                     linkedAccount.delete();
                     usedAccount.update();
-                    return redirect(linkedAccount.returnUrl);
+                    return redirect( Configuration.root().getString("Becki.mainUrl") + linkedAccount.returnUrl);
 
                 }
 
@@ -300,7 +306,7 @@ public class SecurityController extends Controller {
                         linkedAccount.person = person;
                         linkedAccount.update();
 
-                        return redirect(linkedAccount.returnUrl);
+                        return redirect(Configuration.root().getString("Becki.mainUrl") + linkedAccount.returnUrl);
 
 
                 }
@@ -390,7 +396,7 @@ public class SecurityController extends Controller {
                 usedAccount.update();
                 usedAccount.person.setToken(usedAccount.authToken);
                 usedAccount.person.update();
-                return redirect(linkedAccount.returnUrl);
+                return redirect( Configuration.root().getString("Becki.mainUrl") + linkedAccount.returnUrl);
 
            }
 
@@ -435,7 +441,7 @@ public class SecurityController extends Controller {
                         linkedAccount.person = person;
                         linkedAccount.update();
 
-                        return redirect(linkedAccount.returnUrl);
+                        return redirect(Configuration.root().getString("Becki.mainUrl") + linkedAccount.returnUrl);
 
 
            }

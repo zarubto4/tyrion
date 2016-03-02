@@ -1,4 +1,4 @@
-package utilities.EclipseProject;
+package utilities.eclipseProject;
 
 import java.io.File;
 import java.math.BigInteger;
