@@ -1,6 +1,6 @@
-package utilities.a_main_utils;
+package utilities.permission;
 
-public abstract class InterfaceDynamic implements DynamicResourceHandl {
+public abstract class InterfaceDynamic implements DynamicResourceHandler {
 
     public static boolean checkPermission()
     {return false;}

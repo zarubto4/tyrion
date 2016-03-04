@@ -13,8 +13,8 @@ import javax.persistence.OneToOne;
 public class Homer extends Model {
 
 /* DATABASE VALUES ------------------------------------------------------------------------------------------------------ */
-        @Id         public String  homerId;
-                    public String  typeOfDevice;
+        @Id         public String homer_id;
+                    public String type_of_device;
                     public String  version;
 
     @JsonIgnore @ManyToOne  public Project project;

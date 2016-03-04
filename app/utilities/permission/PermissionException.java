@@ -1,3 +1,3 @@
-package utilities.a_main_utils;
+package utilities.permission;
 
 public class PermissionException extends Exception {}

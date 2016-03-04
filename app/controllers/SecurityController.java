@@ -475,7 +475,7 @@ public class SecurityController extends Controller {
             @ApiResponse(code = 401, message = "Wrong Email or Password",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result GitHub(@ApiParam(value = "this is return url address in entire format http://something.../.../.. ", required = true) @PathParam("return_link")  String return_link){
+    public Result GitHub(@ApiParam(value = "this is return url address in format  /link/link   ", required = true) @PathParam("return_link")  String return_link){
         try {
             LinkedAccount linkedAccount = LinkedAccount.setProviderKey("GitHub");
 
@@ -515,7 +515,7 @@ public class SecurityController extends Controller {
             @ApiResponse(code = 401, message = "Wrong Email or Password",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result Facebook(@ApiParam(value = "this is return url address in entire format http://something.../.../.. ", required = true) @PathParam("return_link") String return_link){
+    public Result Facebook(@ApiParam(value = "this is return url address in format  ?return_link=/link/link ", required = true) @PathParam("return_link") String return_link){
         try {
             LinkedAccount linkedAccount = LinkedAccount.setProviderKey("Facebook");
 

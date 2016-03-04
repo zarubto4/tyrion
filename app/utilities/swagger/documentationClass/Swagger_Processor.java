@@ -8,4 +8,5 @@ public class Swagger_Processor {
     @ApiModelProperty(required = true) public String  processor_code;
     @ApiModelProperty(required = true) public String  processor_name;
     @ApiModelProperty(required = true) public Integer speed;
+
 }

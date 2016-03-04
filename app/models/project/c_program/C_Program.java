@@ -20,19 +20,19 @@ public class C_Program extends Model {
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public String id;
                                                              public String program_name;
-                          @Column(columnDefinition = "TEXT") public String programDescription;
+                          @Column(columnDefinition = "TEXT") public String program_description;
                                     @JsonIgnore @ManyToOne   public Project project;
                                                @JsonIgnore   public String azurePackageLink;
                                                @JsonIgnore   public String azureStorageLink;
                                                              public Date dateOfCreate;
 
-     @OneToMany(mappedBy="c_program", cascade=CascadeType.ALL) @OrderBy("azureLinkVersion DESC") public List<Version_Object> versionObjects = new ArrayList<>();
+     @OneToMany(mappedBy="c_program", cascade=CascadeType.ALL) @OrderBy("azureLinkVersion DESC") public List<Version_Object> version_objects = new ArrayList<>();
 
 
 
-    //@JsonProperty public String  description()     { return programDescription == null     ? null : "http://localhost:9000/compilation/program/description/" +  this.id;}
-    //@JsonProperty public Integer versionObjects()  { return versionObjects.size(); }
-    //@JsonProperty public Double  lastVersion()     { return versionObjects.isEmpty()      ? null : versionObjects.get(0).azureLinkVersion; }
+    // @JsonProperty public String  description()     { return program_description == null     ? null : "http://localhost:9000/compilation/program/description/" +  this.id;}
+    // @JsonProperty public Integer version_objects()  { return version_objects.size(); }
+    // @JsonProperty public Double  lastVersion()      { return version_objects.isEmpty()      ? null : version_objects.get(0).azureLinkVersion; }
 
 
     public void setUniqueAzureStorageLink() {

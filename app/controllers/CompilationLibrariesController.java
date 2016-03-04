@@ -15,22 +15,18 @@ import models.project.global.Project;
 import play.Logger;
 import play.libs.Json;
 import play.mvc.*;
-import utilities.a_main_utils.GlobalValue;
-import utilities.a_main_utils.UtilTools;
+import utilities.Server;
+import utilities.UtilTools;
 import utilities.loginEntities.Secured;
+import utilities.permission.InterfaceDynamic;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
-import utilities.swagger.documentationClass.Description;
-import utilities.swagger.documentationClass.Swagger_Board_List;
-import utilities.swagger.documentationClass.Swagger_LibraryGroup_Libraries;
+import utilities.swagger.documentationClass.*;
 
 import javax.websocket.server.PathParam;
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Controller se zabívá správou knihoven, procesorů, desek (hardware), typů desek a jejich výrobce.
@@ -78,6 +74,22 @@ public class CompilationLibrariesController extends Controller {
 
     }
 
+    static {
+        Server.handlers.put("project.pepek", Optional.of(new InterfaceDynamic() { public boolean check_dynamic (final String name) {
+
+            System.out.println("Jsem v metodě project.owner");
+            return true;
+        }}));
+
+
+        Server.handlers.put("project.kokot",Optional.of(new InterfaceDynamic() { public boolean check_dynamic (final String name) {
+
+            System.out.println("Jsem v metodě project.creator");
+            return true;
+
+        }}));
+    }
+
 
 ///###################################################################################################################*/
 
@@ -119,11 +131,12 @@ public class CompilationLibrariesController extends Controller {
         try {
 
             JsonNode json = request().body().asJson();
+            Swagger_C_program_New help = Json.fromJson(json, Swagger_C_program_New.class );
 
             // Tvorba programu
             C_Program c_program             = new C_Program();
-            c_program.program_name          = json.get("program_name").asText();
-            c_program.programDescription    = json.get("programDescription").asText();
+            c_program.program_name          = help.program_name;
+            c_program.program_description   = help.program_description;
             c_program.azurePackageLink      = "personal-program";
             c_program.project               = Project.find.byId(json.get(project_id).asText());
             c_program.dateOfCreate          = new Date();
@@ -135,7 +148,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.created(Json.toJson(c_program));
 
         } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "programDescription", "program_name");
+            return GlobalResult.nullPointerResult(e, "program_description", "program_name");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - new_Processor ERROR");
@@ -175,7 +188,6 @@ public class CompilationLibrariesController extends Controller {
 
         } catch (Exception e) {
             Logger.error("CompilationLibrariesController - getCProgram ERROR");
-            Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
     }
@@ -210,7 +222,6 @@ public class CompilationLibrariesController extends Controller {
 
         } catch (Exception e) {
             Logger.error("CompilationLibrariesController - gellAllProgramFromProject ERROR");
-            Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
     }
@@ -254,18 +265,19 @@ public class CompilationLibrariesController extends Controller {
         try {
 
             JsonNode json = request().body().asJson();
+            Swagger_C_program_New help = Json.fromJson(json, Swagger_C_program_New.class );
 
             C_Program program = C_Program.find.byId(c_program_id);
 
-            program.program_name = json.get("program_name").asText();
-            program.programDescription = json.get("programDescription").asText();
+            program.program_name = help.program_name;
+            program.program_description = help.program_description;
 
             program.update();
 
             return GlobalResult.okResult(Json.toJson(program));
 
         } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "program_name", "programDescription" );
+            return GlobalResult.nullPointerResult(e, "program_name", "program_description" );
         } catch (Exception e) {
             Logger.error("CompilationLibrariesController - gellAllProgramFromProject ERROR");
             Logger.error(request().body().asJson().toString());
@@ -318,22 +330,22 @@ public class CompilationLibrariesController extends Controller {
             // První nová Verze
             Version_Object version_object     = new Version_Object();
             version_object.version_name = json.get("version_name").asText();
-            version_object.versionDescription  = json.get("version_description").asText();
+            version_object.version_description = json.get("version_description").asText();
 
-            if(c_program.versionObjects.isEmpty() ) version_object.azureLinkVersion = 1;
-            else version_object.azureLinkVersion    = ++c_program.versionObjects.get(0).azureLinkVersion; // Zvednu verzi o jednu
+            if(c_program.version_objects.isEmpty() ) version_object.azureLinkVersion = 1;
+            else version_object.azureLinkVersion    = ++c_program.version_objects.get(0).azureLinkVersion; // Zvednu verzi o jednu
 
-            version_object.dateOfCreate        = new Date();
+            version_object.date_of_create = new Date();
             version_object.c_program           = c_program;
             version_object.save();
 
-            c_program.versionObjects.add(version_object);
+            c_program.version_objects.add(version_object);
             c_program.update();
 
             // Nahraje do Azure a připojí do verze soubor (lze dělat i cyklem - ale název souboru musí být vždy jiný)
 
             for (final JsonNode objNode : json.get("files")){
-                UtilTools.uploadAzure_Version("c-program", objNode.get("content").asText(), objNode.get("fileName").asText(), c_program.azureStorageLink, c_program.azurePackageLink, version_object);
+                UtilTools.uploadAzure_Version("c-program", objNode.get("content").asText(), objNode.get("file_name").asText(), c_program.azureStorageLink, c_program.azurePackageLink, version_object);
             }
 
             return GlobalResult.created(Json.toJson(version_object));
@@ -379,12 +391,67 @@ public class CompilationLibrariesController extends Controller {
 
             C_Program c_program = C_Program.find.byId(c_program_id);
 
-            UtilTools.azureDelete(GlobalValue.blobClient.getContainerReference("c-program"), c_program.azurePackageLink + "/" + c_program.azureStorageLink + "/" + versionObjectObject.azureLinkVersion);
+            UtilTools.azureDelete(Server.blobClient.getContainerReference("c-program"), c_program.azurePackageLink + "/" + c_program.azureStorageLink + "/" + versionObjectObject.azureLinkVersion);
 
             versionObjectObject.delete();
 
             return GlobalResult.okResult();
 
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - deleteVersionOfCProgram ERROR");
+            return GlobalResult.internalServerError();
+        }
+    }
+
+    @ApiOperation(value = "update basic information in Version of C_program",
+            tags = {"C_Program"},
+            notes = "For update basic (name and description) information in Version of C_program. If you want update code. You have to create new version. " +
+                    "And after that you can delete previous version",
+            produces = "application/json",
+            protocols = "https",
+            response =  Result_ok.class,
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_edit_C_Program_version",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  Version_Object.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    //  @Dynamic("project.c_program_owner")
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result edit_C_Program_version( @ApiParam(value = "version_id String query",   required = true) @PathParam("version_id") String version_id){
+        try{
+
+            JsonNode json = request().body().asJson();
+            Swagger_edit_C_Program_version help = Json.fromJson(json, Swagger_edit_C_Program_version.class );
+
+            Version_Object version_object= Version_Object.find.byId(version_id);
+            if (version_object == null) return GlobalResult.notFoundObject();
+
+            version_object.version_name = help.version_name;
+            version_object.version_description = help.version_description;
+
+            return GlobalResult.okResult(Json.toJson(version_object));
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - deleteVersionOfCProgram ERROR");
@@ -419,7 +486,7 @@ public class CompilationLibrariesController extends Controller {
 
             C_Program c_program = C_Program.find.byId(c_program_id);
 
-            UtilTools.azureDelete(GlobalValue.blobClient.getContainerReference("c-program"), c_program.azurePackageLink + "/" + c_program.azureStorageLink);
+            UtilTools.azureDelete(Server.blobClient.getContainerReference("c-program"), c_program.azurePackageLink + "/" + c_program.azureStorageLink);
 
             c_program.delete();
 
@@ -521,13 +588,14 @@ public class CompilationLibrariesController extends Controller {
     public Result new_Processor() {
         try {
             JsonNode json = request().body().asJson();
+            Swagger_Processor help = Json.fromJson(json, Swagger_Processor.class );
 
             Processor processor = new Processor();
 
-            processor.description    = json.get("description").asText();
-            processor.processor_code = json.get("processor_code").asText();
-            processor.processor_name = json.get("processor_name").asText();
-            processor.speed          = json.get("speed").asInt();
+            processor.description    = help.description;
+            processor.processor_code = help.processor_code;
+            processor.processor_name = help.processor_name;
+            processor.speed          = help.speed;
 
             processor.save();
             return GlobalResult.created(Json.toJson(processor));
@@ -573,7 +641,6 @@ public class CompilationLibrariesController extends Controller {
 
         } catch (Exception e) {
             Logger.error("CompilationLibrariesController - new_Processor ERROR");
-            Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
     }
@@ -648,25 +715,17 @@ public class CompilationLibrariesController extends Controller {
     public Result update_Processor(@ApiParam(value = "processor_id String query", required = true) @PathParam("processor_id") String processor_id) {
         try {
             JsonNode json = request().body().asJson();
+            Swagger_Processor help = Json.fromJson(json, Swagger_Processor.class );
+
 
             Processor processor = Processor.find.byId(processor_id);
             if(processor == null ) return GlobalResult.notFoundObject();
 
+            processor.description    = help.description;
+            processor.processor_code = help.processor_code;
+            processor.processor_name = help.processor_name;
+            processor.speed          = help.speed;
 
-            processor.description       = json.get("description").asText();
-            processor.processor_code    = json.get("processor_code").asText();
-            processor.processor_name    = json.get("processor_name").asText();
-            processor.speed             = json.get("speed").asInt();
-
-            processor.libraryGroups.clear();
-
-            List<String> libraryGroups = UtilTools.getListFromJson(json, "libraryGroups");
-
-            for (String Lid : libraryGroups) {
-                try {
-                    processor.libraryGroups.add(LibraryGroup.find.byId(Lid));
-                } catch (Exception e) {/**nothing*/}
-            }
 
             processor.update();
 
@@ -1032,10 +1091,11 @@ public class CompilationLibrariesController extends Controller {
     public Result new_LibraryGroup() {
         try {
             JsonNode json = request().body().asJson();
+            Swagger_LibraryGroup_New help = Json.fromJson(json, Swagger_LibraryGroup_New.class );
 
             LibraryGroup libraryGroup = new LibraryGroup();
-            libraryGroup.description = json.get("description").asText();
-            libraryGroup.group_name = json.get("group_name").asText();
+            libraryGroup.description = help.description;
+            libraryGroup.group_name = help.group_name;
             libraryGroup.azurePackageLink = "libraryGroup"; // TODO? -> Nějaké třídění ??? (Private, Public,.. etc?)
             libraryGroup.setUniqueAzureStorageLink();
             libraryGroup.save();
@@ -1088,28 +1148,29 @@ public class CompilationLibrariesController extends Controller {
     public Result new_LibraryGroup_Version(@ApiParam(value = "libraryGroup_id String query", required = true) @PathParam("libraryGroup_id") String libraryGroup_id){
         try {
             JsonNode json = request().body().asJson();
+            Swagger_Version help = Json.fromJson(json, Swagger_Version.class );
 
             LibraryGroup libraryGroup = LibraryGroup.find.byId(libraryGroup_id);
             if(libraryGroup == null) return GlobalResult.notFoundObject();
 
             Version_Object versionObjectObject     = new Version_Object();
 
-            if(libraryGroup.versionObjects.isEmpty() ) versionObjectObject.azureLinkVersion = 1;
-            else versionObjectObject.azureLinkVersion    = ++libraryGroup.versionObjects.get(0).azureLinkVersion; // Zvednu verzi o jednu
+            if(libraryGroup.version_objects.isEmpty() ) versionObjectObject.azureLinkVersion = 1;
+            else versionObjectObject.azureLinkVersion    = ++libraryGroup.version_objects.get(0).azureLinkVersion; // Zvednu verzi o jednu
 
-            versionObjectObject.dateOfCreate        = new Date();
-            versionObjectObject.version_name        = json.get("version_name").asText();
-            versionObjectObject.versionDescription  = json.get("description").asText();
+            versionObjectObject.date_of_create = new Date();
+            versionObjectObject.version_name        = help.version_name;
+            versionObjectObject.version_description = help.version_description;
             versionObjectObject.libraryGroup        = libraryGroup;
             versionObjectObject.save();
 
 
-            libraryGroup.versionObjects.add(versionObjectObject);
+            libraryGroup.version_objects.add(versionObjectObject);
             libraryGroup.update();
 
             return GlobalResult.created(Json.toJson(versionObjectObject));
         } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "description", "version_name");
+            return GlobalResult.nullPointerResult(e, "version_description", "version_name");
         } catch (Exception e) {
             Logger.error("CompilationLibrariesController - new_Processor ERROR");
             Logger.error(request().body().asJson().toString());
@@ -1145,7 +1206,7 @@ public class CompilationLibrariesController extends Controller {
             LibraryGroup libraryGroup = LibraryGroup.find.byId(libraryGroup_id);
             if(libraryGroup == null) return GlobalResult.notFoundObject();
 
-            return GlobalResult.okResult(Json.toJson(libraryGroup.versionObjects));
+            return GlobalResult.okResult(Json.toJson(libraryGroup.version_objects));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -1189,7 +1250,7 @@ public class CompilationLibrariesController extends Controller {
                 LibraryGroup libraryGroup = LibraryGroup.find.byId(libraryGroup_id);
                 if (libraryGroup == null) return GlobalResult.notFoundObject();
 
-                Version_Object versionObjectObject = Version_Object.find.where().in("libraryGroup.id", libraryGroup.id).eq("id", version_id).setMaxRows(1).findUnique();
+                Version_Object versionObjectObject = Version_Object.find.where().in("libraryGroup.id", libraryGroup.id).where().eq("id", version_id).findUnique();
                 if (versionObjectObject == null) return GlobalResult.notFoundObject();
 
                 // Control lenght of name
@@ -1197,15 +1258,14 @@ public class CompilationLibrariesController extends Controller {
                 if (fileName.length() < 5) GlobalResult.forbidden_Global("Too short file name");
 
                 // Ještě kontrola souboru zda už tam není - > Version_Object a knihovny
-                FileRecord fileRecord = FileRecord.find.where().in("versionObjects.id", versionObjectObject.id).eq("fileName", fileName).setMaxRows(1).findUnique();
-                if (fileRecord != null)
-                    return GlobalResult.nullPointerResult("File exist in this version -> " + fileName + " please, create new version!");
+                FileRecord fileRecord = FileRecord.find.where().in("version_object.id", versionObjectObject.id).ieq("file_name", fileName).findUnique();
+                if (fileRecord != null) return GlobalResult.nullPointerResult("File exist in this version -> " + fileName + " please, create new version!");
 
                 // Mám soubor
                 File libraryFile = file.getFile();
 
                 // Připojuji se a tvořím cestu souboru
-                CloudBlobContainer container = GlobalValue.blobClient.getContainerReference("libraries");
+                CloudBlobContainer container = Server.blobClient.getContainerReference("libraries");
 
                 String azurePath = libraryGroup.azurePackageLink + "/" + libraryGroup.azureStorageLink + "/" + versionObjectObject.azureLinkVersion + "/" + fileName;
 
@@ -1214,11 +1274,10 @@ public class CompilationLibrariesController extends Controller {
                 blob.upload(new FileInputStream(libraryFile), libraryFile.length());
 
                 fileRecord = new FileRecord();
-                fileRecord.fileName = fileName;
+                fileRecord.file_name = fileName;
+                fileRecord.version_object = versionObjectObject;
                 fileRecord.save();
 
-
-                versionObjectObject.files.add(fileRecord);
                 versionObjectObject.save();
             }
 
@@ -1291,7 +1350,7 @@ public class CompilationLibrariesController extends Controller {
             LibraryGroup libraryGroup = LibraryGroup.find.byId(libraryGroup_id);
             if(libraryGroup == null) return GlobalResult.notFoundObject();
 
-            UtilTools.azureDelete(GlobalValue.blobClient.getContainerReference("libraries"), libraryGroup.azurePackageLink+"/"+libraryGroup.azureStorageLink);
+            UtilTools.azureDelete(Server.blobClient.getContainerReference("libraries"), libraryGroup.azurePackageLink+"/"+libraryGroup.azureStorageLink);
 
             libraryGroup.delete();
 
@@ -1337,16 +1396,19 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     //  @Pattern("libraryGroup.edit")
+    @BodyParser.Of(BodyParser.Json.class)
     public Result editLibraryGroup(@ApiParam(value = "libraryGroup_id String query", required = true) @PathParam("libraryGroup_id") String libraryGroup_id) {
         try {
+
+            JsonNode json = request().body().asJson();
+            Swagger_LibraryGroup_New help = Json.fromJson(json, Swagger_LibraryGroup_New.class );
 
             LibraryGroup libraryGroup = LibraryGroup.find.byId(libraryGroup_id);
             if(libraryGroup == null) return GlobalResult.notFoundObject();
 
-            JsonNode json = request().body().asJson();
 
-            libraryGroup.description = json.get("description").asText();
-            libraryGroup.group_name = json.get("group_name").asText();
+            libraryGroup.description = help.description;
+            libraryGroup.group_name = help.group_name;
 
             libraryGroup.save();
 
@@ -1392,7 +1454,6 @@ public class CompilationLibrariesController extends Controller {
 
         } catch (Exception e) {
             Logger.error("CompilationLibrariesController - get_LibraryGroup_Description ERROR");
-            Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
     }
@@ -1427,7 +1488,6 @@ public class CompilationLibrariesController extends Controller {
 
         } catch (Exception e) {
             Logger.error("CompilationLibrariesController - get_LibraryGroup_Processors ERROR");
-            Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
     }
@@ -1462,7 +1522,6 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.okResult(Json.toJson(versionObjectObject.files));
         } catch (Exception e) {
             Logger.error("CompilationLibrariesController - get_LibraryGroup_Libraries ERROR");
-            Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
     }
@@ -1496,7 +1555,6 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.okResult(Json.toJson(versionObject.files));
         } catch (Exception e) {
             Logger.error("CompilationLibrariesController - get_LibraryGroup_Version_Libraries ERROR");
-            Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
     }
@@ -1534,11 +1592,14 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     //   @Pattern("libraryGroup.read")
+    @BodyParser.Of(BodyParser.Json.class)
     public Result get_LibraryGroup_Filter() {
         try {
             JsonNode json = request().body().asJson();
 
+            System.out.println("JSem aspoň zde");
             Query<LibraryGroup> query = Ebean.find(LibraryGroup.class);
+
 
             // If contains confirms
             if (json.has("processors_id")) {
@@ -1562,11 +1623,10 @@ public class CompilationLibrariesController extends Controller {
                 query.setMaxRows(countTo);
             }
 
-            if (json.has("order_by")) {
-                JsonNode rdb = json.get("order_by");
+            if (json.has("order")) {
 
-                String order = rdb.get("order").asText();
-                String value = rdb.get("value").asText();
+                String order = json.get("order").asText();
+                String value = json.get("value").asText();
 
                 OrderBy<LibraryGroup> orderBy = new OrderBy<>();
 
@@ -1581,6 +1641,7 @@ public class CompilationLibrariesController extends Controller {
 
 
             return GlobalResult.okResult(Json.toJson(list));
+
         } catch (Exception e) {
             Logger.error("CompilationLibrariesController - get_LibraryGroup_Version_Libraries ERROR");
             Logger.error(request().body().asJson().toString());
@@ -1597,7 +1658,7 @@ public class CompilationLibrariesController extends Controller {
             if (fileRecord == null) return GlobalResult.notFoundObject();
 
             ObjectNode result = Json.newObject();
-            result.put("fileName", fileRecord.fileName);
+            result.put("file_name", fileRecord.file_name);
             result.put("content", fileRecord.get_fileRecord_from_Azure_inString());
 
             return GlobalResult.okResult(Json.toJson(result));
@@ -1648,10 +1709,11 @@ public class CompilationLibrariesController extends Controller {
     public Result new_SingleLibrary() {
         try {
             JsonNode json = request().body().asJson();
+            Swagger_SingleLibrary_New help = Json.fromJson(json, Swagger_SingleLibrary_New.class );
 
             SingleLibrary singleLibrary = new SingleLibrary();
-            singleLibrary.library_name = json.get("library_name").asText();
-            singleLibrary.description = json.get("description").asText();
+            singleLibrary.library_name = help.library_name;
+            singleLibrary.description = help.description;
             singleLibrary.azurePackageLink = "singleLibraries";
             singleLibrary.setUniqueAzureStorageLink();
 
@@ -1690,6 +1752,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     // @Pattern("library.edit")
+    @BodyParser.Of(BodyParser.Json.class)
     public Result new_SingleLibrary_Version(@ApiParam(value = "library_id String query", required = true) @PathParam("library_id")  String library_id){
         try {
             JsonNode json = request().body().asJson();
@@ -1699,12 +1762,12 @@ public class CompilationLibrariesController extends Controller {
 
             Version_Object versionObjectObject = new Version_Object();
 
-            if(singleLibrary.versionObjects.isEmpty() ) versionObjectObject.azureLinkVersion = 1;
-            else versionObjectObject.azureLinkVersion    = ++singleLibrary.versionObjects.get(0).azureLinkVersion; // Zvednu verzi o jednu
+            if(singleLibrary.version_objects.isEmpty() ) versionObjectObject.azureLinkVersion = 1;
+            else versionObjectObject.azureLinkVersion    = ++singleLibrary.version_objects.get(0).azureLinkVersion; // Zvednu verzi o jednu
 
-            versionObjectObject.dateOfCreate = new Date();
+            versionObjectObject.date_of_create = new Date();
             versionObjectObject.version_name = json.get("version_name").asText();
-            versionObjectObject.versionDescription = json.get("description").asText();
+            versionObjectObject.version_description = json.get("description").asText();
             versionObjectObject.singleLibrary = singleLibrary;
             versionObjectObject.save();
 
@@ -1747,7 +1810,7 @@ public class CompilationLibrariesController extends Controller {
             SingleLibrary singleLibrary = SingleLibrary.find.byId(library_id);
             if(singleLibrary == null) return GlobalResult.notFoundObject();
 
-            return GlobalResult.okResult(Json.toJson(singleLibrary.versionObjects));
+            return GlobalResult.okResult(Json.toJson(singleLibrary.version_objects));
 
         } catch (Exception e) {
             return GlobalResult.nullPointerResult(e);
@@ -1776,17 +1839,17 @@ public class CompilationLibrariesController extends Controller {
             File libraryFile = file.getFile();
 
             FileRecord fileRecord =  new FileRecord();
-            fileRecord.fileName = fileName;
+            fileRecord.file_name = fileName;
             fileRecord.save();
 
-            CloudBlobContainer container = GlobalValue.blobClient.getContainerReference("libraries");
-            String azurePath = singleLibrary.azurePackageLink + "/" + singleLibrary.azureStorageLink + "/"+ versionObjectObject.azureLinkVersion  +"/" + fileRecord.fileName;
+            CloudBlobContainer container = Server.blobClient.getContainerReference("libraries");
+            String azurePath = singleLibrary.azurePackageLink + "/" + singleLibrary.azureStorageLink + "/"+ versionObjectObject.azureLinkVersion  +"/" + fileRecord.file_name;
             CloudBlockBlob blob = container.getBlockBlobReference(azurePath);
 
             blob.upload(new FileInputStream(libraryFile), libraryFile.length());
 
             versionObjectObject.files.add(fileRecord);
-            versionObjectObject.dateOfCreate = new Date();
+            versionObjectObject.date_of_create = new Date();
             versionObjectObject.update();
 
             return GlobalResult.okResult(Json.toJson(versionObjectObject));
@@ -1855,7 +1918,7 @@ public class CompilationLibrariesController extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_LibraryGroup_Filter",
+                            dataType = "utilities.swagger.documentationClass.Swagger_SingleLibrary_Filter",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -1869,13 +1932,57 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     // @Pattern("libraryGroup.read")
+    @BodyParser.Of(BodyParser.Json.class)
     public Result get_SingleLibrary_Filter() {
         try {
             JsonNode json = request().body().asJson();
 
-            return GlobalResult.okResult();
+            Query<SingleLibrary> query = Ebean.find(SingleLibrary.class);
+
+            // If contains confirms
+            if (json.has("processors_id")) {
+                List<String> list = UtilTools.getListFromJson(json, "processors_id");
+                Set<String> set = new HashSet<>(list);
+                query.where().in("processors.id", set);
+            }
+
+            if (json.has("library_name")) {
+                String group_name = json.get("library_name").asText();
+                query.where().ieq("library_name", group_name);
+            }
+
+            if (json.has("count_from")) {
+                Integer countFrom = json.get("count_from").asInt();
+                query.setFirstRow(countFrom);
+            }
+
+            if (json.has("count_to")) {
+                Integer countTo = json.get("count_to").asInt();
+                query.setMaxRows(countTo);
+            }
+
+            if (json.has("order")) {
+
+                String order = json.get("order").asText();
+                String value = json.get("value").asText();
+
+                OrderBy<SingleLibrary> orderBy = new OrderBy<>();
+
+                if (order.equals("asc")) orderBy.asc(value);
+                else if (order.equals("desc")) orderBy.desc(value);
+
+                query.setOrder(orderBy);
+            }
+
+
+            List<SingleLibrary> list = query.findList();
+
+
+            return GlobalResult.okResult(Json.toJson(list));
         } catch (Exception e) {
-            return GlobalResult.nullPointerResult(e);
+            Logger.error("CompilationLibrariesController - get_LibraryGroup_Version_Libraries ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -1916,12 +2023,13 @@ public class CompilationLibrariesController extends Controller {
     public Result edit_SingleLibrary(@ApiParam(value = "library_id String query", required = true) @PathParam("library_id") String library_id) {
         try {
             JsonNode json = request().body().asJson();
+            Swagger_SingleLibrary_New help = Json.fromJson(json, Swagger_SingleLibrary_New.class );
 
             SingleLibrary singleLibrary = SingleLibrary.find.byId(library_id);
             if(singleLibrary == null) return GlobalResult.notFoundObject();
 
-            singleLibrary.library_name = json.get("library_name").asText();
-            singleLibrary.description = json.get("description").asText();
+            singleLibrary.library_name = help.library_name;
+            singleLibrary.description = help.description;
 
 
             singleLibrary.update();
@@ -1963,7 +2071,7 @@ public class CompilationLibrariesController extends Controller {
             SingleLibrary singleLibrary = SingleLibrary.find.byId(library_id);
             if(singleLibrary == null) return GlobalResult.notFoundObject();
 
-            UtilTools.azureDelete(GlobalValue.blobClient.getContainerReference("libraries"), singleLibrary.azurePackageLink+"/"+singleLibrary.azureStorageLink);
+            UtilTools.azureDelete(Server.blobClient.getContainerReference("libraries"), singleLibrary.azurePackageLink+"/"+singleLibrary.azureStorageLink);
 
             singleLibrary.delete();
             return GlobalResult.okResult();
@@ -2015,10 +2123,11 @@ public class CompilationLibrariesController extends Controller {
     public Result new_Producer() {
         try {
             JsonNode json = request().body().asJson();
+            Swagger_Producer_New help = Json.fromJson(json, Swagger_Producer_New.class );
 
             Producer producer = new Producer();
-            producer.name = json.get("name").asText();
-            producer.description = json.get("description").asText();
+            producer.name = help.name;
+            producer.description = help.description;
 
             producer.save();
 
@@ -2071,12 +2180,13 @@ public class CompilationLibrariesController extends Controller {
     public Result edit_Producer(@ApiParam(required = true) @PathParam("producer_id") String producer_id) {
         try {
             JsonNode json = request().body().asJson();
+            Swagger_Producer_New help = Json.fromJson(json, Swagger_Producer_New.class );
 
             Producer producer = Producer.find.byId(producer_id);
             if(producer == null ) return GlobalResult.notFoundObject();
 
-            producer.name = json.get("name").asText();
-            producer.description = json.get("description").asText();
+            producer.name = help.name;
+            producer.description = help.description;
 
             producer.update();
 
@@ -2122,7 +2232,6 @@ public class CompilationLibrariesController extends Controller {
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - get_Producers ERROR");
-            Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
     }
@@ -2160,7 +2269,6 @@ public class CompilationLibrariesController extends Controller {
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - get_Producer ERROR");
-            Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
     }
@@ -2199,7 +2307,6 @@ public class CompilationLibrariesController extends Controller {
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - get_Producer ERROR");
-            Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
     }
@@ -2239,13 +2346,12 @@ public class CompilationLibrariesController extends Controller {
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - get_Producer_Description ERROR");
-            Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
     }
 
     @ApiOperation(value = "get TypeOfBoard from Producer",
-            tags = {"Producer", "TypeOfBoard"},
+            tags = {"Producer", "Type-Of-Board"},
             notes = "if you want get TypeOfBoard from Producer. Its a list of Boards types.",
             produces = "application/json",
             response =  TypeOfBoard.class,
@@ -2255,7 +2361,8 @@ public class CompilationLibrariesController extends Controller {
                     @Authorization(
                             value="permission",
                             scopes = { @AuthorizationScope(scope = "type_of_board.read", description = "Person need this permission"),
-                                       @AuthorizationScope(scope = "SuperAdmin", description = "Or person must be SuperAdmin role")}
+                                       @AuthorizationScope(scope = "SuperAdmin", description = "Or person must be SuperAdmin role")
+                            }
                     )
             }
     )
@@ -2271,12 +2378,11 @@ public class CompilationLibrariesController extends Controller {
             Producer producer = Producer.find.byId(producer_id);
             if(producer == null ) return GlobalResult.notFoundObject();
 
-            return GlobalResult.okResult(Json.toJson(producer.typeOfBoards));
+            return GlobalResult.okResult(Json.toJson(producer.type_of_boards));
 
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - get_Producer_TypeOfBoards ERROR");
-            Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
     }
@@ -2286,7 +2392,7 @@ public class CompilationLibrariesController extends Controller {
 ///###################################################################################################################*/
 
     @ApiOperation(value = "create TypeOfBoard",
-            tags = { "TypeOfBoard"},
+            tags = { "Type-Of-Board"},
             notes = "The TypeOfBoard is category for IoT. Like Raspberry2, Arduino-Uno etc. \n\n" +
                     "We using that for compilation, sorting libraries, filtres and more..",
             produces = "application/json",
@@ -2323,17 +2429,20 @@ public class CompilationLibrariesController extends Controller {
     // @Pattern("type_of_board.create")
     public Result new_TypeOfBoard() {
         try {
+
             JsonNode json = request().body().asJson();
 
-            Producer producer = Producer.find.byId(json.get("producer_id").asText());
+            Swagger_TypeOfBoard_New help = Json.fromJson(json, Swagger_TypeOfBoard_New.class);
+
+            Producer producer = Producer.find.byId(help.producer_id);
             if(producer == null ) return GlobalResult.notFoundObject();
 
-            Processor processor = Processor.find.byId(json.get("processor_id").asText());
+            Processor processor = Processor.find.byId(help.processor_id);
             if(processor == null ) return GlobalResult.notFoundObject();
 
             TypeOfBoard typeOfBoard = new TypeOfBoard();
-            typeOfBoard.name = json.get("name").asText();
-            typeOfBoard.description = json.get("description").asText();
+            typeOfBoard.name = help.name;
+            typeOfBoard.description = help.description;
             typeOfBoard.processor = processor;
             typeOfBoard.producer = producer;
 
@@ -2352,7 +2461,7 @@ public class CompilationLibrariesController extends Controller {
     }
 
     @ApiOperation(value = "edit TypeOfBoard",
-            tags = { "TypeOfBoard"},
+            tags = { "Type-Of-Board"},
             notes = "if you want edit base TypeOfBoard information",
             produces = "application/json",
             response =  TypeOfBoard.class,
@@ -2389,12 +2498,23 @@ public class CompilationLibrariesController extends Controller {
     public Result edit_TypeOfBoard(@ApiParam(required = true) @PathParam("type_of_board_id") String type_of_board_id) {
         try {
             JsonNode json = request().body().asJson();
+            Swagger_TypeOfBoard_New json_object = Json.fromJson(json, Swagger_TypeOfBoard_New.class);
 
             TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(type_of_board_id);
             if (typeOfBoard == null) return GlobalResult.notFoundObject();
 
-            typeOfBoard.name = json.get("name").asText();
-            typeOfBoard.description = json.get("description").asText();
+            Producer producer = Producer.find.byId(json_object.producer_id);
+            if(producer == null ) return GlobalResult.notFoundObject();
+
+            Processor processor = Processor.find.byId(json_object.processor_id);
+            if(processor == null ) return GlobalResult.notFoundObject();
+
+
+            typeOfBoard.name = json_object.name;
+            typeOfBoard.description = json_object.description;
+            typeOfBoard.processor = processor;
+            typeOfBoard.producer = producer;
+
             typeOfBoard.update();
 
             return GlobalResult.okResult(Json.toJson(typeOfBoard));
@@ -2411,7 +2531,7 @@ public class CompilationLibrariesController extends Controller {
     }
 
     @ApiOperation(value = "delete TypeOfBoard",
-            tags = { "TypeOfBoard"},
+            tags = { "Type-Of-Board"},
             notes = "if you want delete TypeOfBoard object by query = type_of_board_id",
             produces = "application/json",
             response =  Result_ok.class,
@@ -2433,6 +2553,7 @@ public class CompilationLibrariesController extends Controller {
     })
     //TODO dokumentace Issue TYRION-88 (http://youtrack.byzance.cz/youtrack/issue/TYRION-88)
     // @Pattern("type_of_board.delete")
+    @BodyParser.Of(BodyParser.Json.class)
     public Result delete_TypeOfBoard(@ApiParam(required = true) @PathParam("type_of_board_id") String type_of_board_id) {
         try {
             JsonNode json = request().body().asJson();
@@ -2454,7 +2575,7 @@ public class CompilationLibrariesController extends Controller {
     }
 
     @ApiOperation(value = "get list of all TypeOfBoard",
-            tags = { "TypeOfBoard"},
+            tags = { "Type-Of-Board"},
             notes = "if you want get all TypeOfBoard objects",
             produces = "application/json",
             response =  TypeOfBoard.class,
@@ -2489,7 +2610,7 @@ public class CompilationLibrariesController extends Controller {
     }
 
     @ApiOperation(value = "get TypeOfBoard",
-            tags = { "TypeOfBoard"},
+            tags = { "Type-Of-Board"},
             notes = "if you want get TypeOfBoard object by query = type_of_board_id",
             produces = "application/json",
             response =  TypeOfBoard.class,
@@ -2526,7 +2647,7 @@ public class CompilationLibrariesController extends Controller {
     }
 
     @ApiOperation(value = "get TypeOfBoard description",
-            tags = { "TypeOfBoard"},
+            tags = { "Type-Of-Board"},
             notes = "if you want get description of TypeOfBoard object by query = type_of_board_id",
             produces = "application/json",
             response =  TypeOfBoard.class,
@@ -2558,16 +2679,15 @@ public class CompilationLibrariesController extends Controller {
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - get_Producer_TypeOfBoards ERROR");
-            Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
     }
 
     @ApiOperation(value = "get all Boards from TypeOfBoard",
-            tags = { "TypeOfBoard"},
+            tags = { "Type-Of-Board"},
             notes = "if you want get physics Boards from TypeOfBoard  by query = type_of_board_id",
             produces = "application/json",
-            response =  Swagger_Board_List.class,
+            response =  Board.class,
             protocols = "https",
             code = 200,
             authorizations = {
@@ -2579,7 +2699,7 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Board_List.class), //TODO list
+            @ApiResponse(code = 200, message = "Ok Result",               response = Board.class, responseContainer = "List"), //TODO list
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -2594,7 +2714,6 @@ public class CompilationLibrariesController extends Controller {
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - get_Producer_TypeOfBoards ERROR");
-            Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
     }
@@ -2645,13 +2764,17 @@ public class CompilationLibrariesController extends Controller {
     public Result new_Board() {
         try {
             JsonNode json = request().body().asJson();
-            if (Board.find.byId(json.get("hardware_unique_id").asText()) != null) return GlobalResult.badRequest("Duplicate database value");
+            Swagger_Board_New help = Json.fromJson(json,Swagger_Board_New.class);
 
-            TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(json.get("type_of_board_id").asText());
+
+
+            if (Board.find.byId( help.hardware_unique_id ) != null) return GlobalResult.badRequest("Duplicate database value");
+
+            TypeOfBoard typeOfBoard = TypeOfBoard.find.byId( help.type_of_board_id  );
             if(typeOfBoard == null ) return GlobalResult.notFoundObject();
 
             Board board = new Board();
-            board.id = json.get("hardware_unique_id").asText();
+            board.id =  help.hardware_unique_id;
             board.isActive = false;
          // TODO   board.type_of_board = typeOfBoard;
 
@@ -2706,11 +2829,12 @@ public class CompilationLibrariesController extends Controller {
     public Result edit_Board_User_Description(@ApiParam(required = true) @PathParam("board_id") String board_id){
         try {
             JsonNode json = request().body().asJson();
+            Swagger_Board_Personal help = Json.fromJson(json, Swagger_Board_Personal.class);
 
             Board board = Board.find.byId(board_id);
             if(board == null ) return GlobalResult.notFoundObject();
 
-            board.personal_description = json.get("personal_description").asText();
+            board.personal_description = help.personal_description;
             board.update();
 
             return GlobalResult.okResult(Json.toJson(board));
@@ -2772,7 +2896,7 @@ public class CompilationLibrariesController extends Controller {
             if(json.has("projects")){
                 List<String> stringList = UtilTools.getListFromJson( json, "projects" );
                 Set<String> stringListSet = new HashSet<>(stringList);
-                query.where().in("projects.projectId", stringListSet);
+                query.where().in("projects.id", stringListSet);
             }
 
 

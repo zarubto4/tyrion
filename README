@@ -11,3 +11,16 @@ Proto ti vracím seznam rolí ve zkrácené podobě (viz dokumentace)
 a v listu Permission dělám sjednocení všech oprávnění, které uživatel má (ze všech skupin i samostatných oprávnění)
 
 
+TypeOfBlock  je skupina pro bločky (logické, sociální atd) a aby mohl uživatel tvořit svoje bločky, má možnost vytvořit si svoje skupiny, které budou vázány na hlavní projekt.
+Pro tyto účely bli upraveny API - přidáním jendoho parametru (project_id) se z public skupiny stane private (pamatuj, že normálním uživatelům by si neměl dovolit tvořit skupiny jinak než přes privet skupiny)
+a v api GET all ti vrátím všechny veřejné skupiny a ty privátní k projektům, které uživatel vlasntí (nebo do nich byl přizván).
+
+
+Odstranil jsem getConnectedHomers -> protože když si vezmeš Homra v JSON toho objektu by mělo být kompletní info o tom v jakém stavu se nachází
+
+
+Co jsem chtěl podle módu "Developer" dodělat:
+
+    - Už nevim... měl jsem si to napsat hned...
+    - Jo Azure-DataStorage - developer
+                           - real

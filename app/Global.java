@@ -9,7 +9,7 @@ import play.Logger;
 import play.mvc.Action;
 import play.mvc.Http;
 import play.mvc.WebSocket;
-import utilities.a_main_utils.GlobalValue;
+import utilities.Server;
 import utilities.webSocket.WebSocketClientNotPlay;
 
 import java.lang.reflect.Method;
@@ -24,15 +24,15 @@ public class Global extends GlobalSettings {
 
            //1
            Logger.warn("Setting global values");
-           GlobalValue.set_Server();
+           Server.set_Server();
 
            //2
            Logger.warn("Setting main servers connections");
-           GlobalValue.set_Blocko_Server_Connection();
+           Server.set_Blocko_Server_Connection();
 
            //3
            Logger.warn("Setting system Permission");
-           GlobalValue.setPermission();
+           Server.setPermission();
 
 
 

@@ -1,4 +1,4 @@
-package utilities.a_main_utils;
+package utilities;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.microsoft.azure.storage.blob.CloudBlob;
@@ -7,6 +7,9 @@ import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import com.microsoft.azure.storage.blob.ListBlobItem;
 import models.compiler.FileRecord;
 import models.compiler.Version_Object;
+import models.overflow.HashTag;
+import models.overflow.Post;
+import org.apache.commons.io.FileUtils;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -43,6 +46,20 @@ public class UtilTools {
         return list;
     }
 
+    public static void add_hashTags_to_Post( List<String> hash_tags, Post post){
+
+        for (final String hs : hash_tags) {
+
+            HashTag hash_tag = HashTag.find.byId(hs);
+
+            if(hash_tag == null) {
+                hash_tag = new HashTag(hs);
+                hash_tag.save();
+            }
+
+            if(!post.hashTagsList.contains(hash_tag)) post.hashTagsList.add(hash_tag);
+        }
+    }
 
     /**
      *  MEtoda slouží k rekurzivnímu procháázení úrovně adresáře v Azure data storage a mazání jeho obsahu.
@@ -66,18 +83,18 @@ public class UtilTools {
         }
     }
 
-    /* TODO dodělat nahrávání souboru, jakmile se opraví PostMan
-    public static void uploadAzure_File(String containerName, String temporaryDirectory, JsonNode json, String azurePath, Version_Object versionObjectObject) throws Exception{
+
+    //TODO tohle asi nebude úplně fungovat
+    public static void upload_to_Azure_in_File_from_Json(String containerName, String temporaryDirectory, JsonNode json, String azurePath, Version_Object versionObjectObject) throws Exception{
 
          new File(temporaryDirectory).mkdirs();
-
 
             for (final JsonNode objNode : json) {
 
                 String data = objNode.get("content").asText();
-                String fileName = objNode.get("fileName").asText() + ".cs";
+                String file_name = objNode.get("file_name").asText() + ".cs";
 
-                File file = new File(temporaryDirectory +"/" + fileName);
+                File file = new File(temporaryDirectory +"/" + file_name);
                 file.createNewFile();
 
                 //true = append file
@@ -87,15 +104,15 @@ public class UtilTools {
                 bufferWritter.close();
 
                 // Připojuji se a tvořím cestu souboru
-                CloudBlobContainer container = GlobalValue.blobClient.getContainerReference(containerName);
+                CloudBlobContainer container = Server.blobClient.getContainerReference(containerName);
 
-                CloudBlockBlob blob = container.getBlockBlobReference(azurePath +"/" +fileName);
+                CloudBlockBlob blob = container.getBlockBlobReference(azurePath +"/" +file_name);
 
                 blob.upload(new FileInputStream(file), file.length());
 
 
                 FileRecord fileRecord = new FileRecord();
-                fileRecord.filename = fileName;
+                fileRecord.file_name = file_name;
                 fileRecord.save();
 
                 versionObjectObject.files.add(fileRecord);
@@ -104,7 +121,7 @@ public class UtilTools {
 
         FileUtils.deleteDirectory(new File(temporaryDirectory));
     }
-    */
+
 
     /**
      * Nahdávání souborů na Azure!
@@ -118,14 +135,14 @@ public class UtilTools {
      */
     public static void uploadAzure_Version(String container_name, String file_content, String file_name, String azureStorageLink, String azurePackageLink, Version_Object versionObjectObject) throws Exception{
 
-            CloudBlobContainer container = GlobalValue.blobClient.getContainerReference(container_name);
+            CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
             CloudBlockBlob blob = container.getBlockBlobReference(azureStorageLink +"/" + azurePackageLink  +"/" + versionObjectObject.azureLinkVersion  +"/" + file_name);
 
             InputStream is = new ByteArrayInputStream(file_content.getBytes());
             blob.upload(is, -1);
 
             FileRecord fileRecord = new FileRecord();
-            fileRecord.fileName = file_name;
+            fileRecord.file_name = file_name;
             fileRecord.version_object = versionObjectObject;
             fileRecord.save();
 
@@ -135,10 +152,10 @@ public class UtilTools {
 
     public static File file_get_File_from_Azure(String container_name, String azureStorageLink, String azurePackageLink, Integer azureLinkVersion, String filename)throws Exception{
 
-        CloudBlobContainer container = GlobalValue.blobClient.getContainerReference(container_name);
+        CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
         CloudBlob blob = container.getBlockBlobReference( azureStorageLink +"/"+ azurePackageLink  +"/"+ azureLinkVersion  +"/"+ filename);
 
-        File fileMain = new File("files/"+ azureStorageLink + azurePackageLink + azureLinkVersion + filename);
+        File fileMain = new File("files/" + azureStorageLink + azurePackageLink + azureLinkVersion + filename);
         // Tento soubor se nesmí zapomínat mazat!!!!
         OutputStream outputStreamMain = new FileOutputStream (fileMain);
 

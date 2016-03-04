@@ -13,7 +13,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-//@Security.Authenticated(Secured.class)
+
 public class WebSocketController_Incoming extends Controller {
 
 // Values  ---------------------------------------------------------------------------------------------------------
@@ -115,7 +115,7 @@ public class WebSocketController_Incoming extends Controller {
         return null;
     }
     public static boolean isConnected(Homer homer){
-        return incomingConnections_homers.containsKey(homer.homerId);
+        return incomingConnections_homers.containsKey(homer.homer_id);
     }
 
 

@@ -4,52 +4,50 @@ package controllers;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.a_main_utils.PermissionChecker;
-import utilities.a_main_utils.PermissionException;
+import utilities.Server;
 import utilities.loginEntities.Secured;
+import utilities.permission.PermissionException;
 
 @Security.Authenticated(Secured.class)
 public class WikyController extends Controller {
 
 
-
-
     public Result test1(){
 
         try {
-             System.out.println("Check dynamic: project.owner: " +  PermissionChecker.check_dynamic("project.owner")+ "\n" );
+             System.out.println("Check dynamic: project.owner: " +  Server.check_dynamic("project.owner")+ "\n" );
         }catch (PermissionException e){}
 
         try {
-            System.out.println("Check dynamic: project.creator: " +  PermissionChecker.check_dynamic("project.creator") +"\n" );
+            System.out.println("Check dynamic: project.creator: " +  Server.check_dynamic("project.creator") +"\n" );
         }catch (PermissionException e){}
 
         try {
-            System.out.println("Check dynamic: project.deleter: " +  PermissionChecker.check_dynamic("project.deleter") + "\n" );
+            System.out.println("Check dynamic: project.deleter: " +  Server.check_dynamic("project.deleter") + "\n" );
         }catch (PermissionException e){}
 
         try {
-            System.out.println("Check permission: processor.read: "   +  PermissionChecker.check_permission( "processor.read") + "\n" );
-
-        }catch (PermissionException e){}
-
-        try {
-            System.out.println("Check permission: processor.blabla:"  +  PermissionChecker.check_permission( "processor.blabla") + "\n" );
+            System.out.println("Check permission: processor.read: "   +  Server.check_permission( "processor.read") + "\n" );
 
         }catch (PermissionException e){}
 
         try {
-            System.out.println("Check Permission or Dynamic1: " + PermissionChecker.check_dynamic_OR_permission("project.owner","processor.read") + "\n");
+            System.out.println("Check permission: processor.blabla:"  +  Server.check_permission( "processor.blabla") + "\n" );
+
         }catch (PermissionException e){}
 
         try {
-            System.out.println("Check Permission or Dynamic2: " + PermissionChecker.check_dynamic_OR_permission("project.owner","processor.blabla") + "\n");
+            System.out.println("Check Permission or Dynamic1: " + Server.check_dynamic_OR_permission("project.owner","processor.read") + "\n");
+        }catch (PermissionException e){}
+
+        try {
+            System.out.println("Check Permission or Dynamic2: " + Server.check_dynamic_OR_permission("project.owner","processor.blabla") + "\n");
         }catch (PermissionException e){
             System.out.println("Toto se mělo povést");
         }
 
         try {
-            System.out.println("Check Permission or Dynamic2: " + PermissionChecker.check_dynamic_OR_permission("project.blabla","processor.blabla") + "\n");
+            System.out.println("Check Permission or Dynamic2: " + Server.check_dynamic_OR_permission("project.blabla","processor.blabla") + "\n");
         }catch (PermissionException e){
             System.out.println("Toto se nemělo povést");
         }

@@ -18,5 +18,5 @@ public class JsonValueMissing {
     public String message;
 
     @ApiModelProperty(required = true, readOnly = true)
-    public ArrayList<String> required_jSON_parameter  = new ArrayList<>();
+    public ArrayList<String> required_json_parameter  = new ArrayList<>();
 }

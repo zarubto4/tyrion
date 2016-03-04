@@ -38,24 +38,50 @@ public class GlobalResult extends Controller {
         return Controller.unauthorized(Json.toJson( new Result_Unauthorized()));
     }
 
-    public static Result nullPointerResult(Exception e){
+    public static Result unrecognizedJsonProperties(Class<?> tClass){
+        try {
+            Object object = tClass.newInstance();
 
-        System.out.println("CHYBA " + e.getMessage());
+            ObjectNode result = Json.newObject();
+            result.put("state", "Json Unrecognized Values");
+            result.put("message", "Your Json had some unrecognized fields. Please look at this example, or report it");
+            result.set("example", Json.toJson(object));
 
-        ObjectNode result = Json.newObject();
-        result.put("state", "error");
-        result.put("message", e.getMessage());
-        CoreResponse.cors();
-        return badRequest(result);
+             CoreResponse.cors();
+
+             return Controller.badRequest(result);
+
+        }catch(Exception e){
+            return Controller.internalServerError();
+        }
     }
 
-    public static Status nullPointerResult(String message){
+    public static Result nullPointerResult(){
+        return ok();
+    }
 
-        ObjectNode result = Json.newObject();
-        result.put("state", "error");
-        result.put("message", message);
-        CoreResponse.cors();
-        return Controller.badRequest(result);
+    public static Result nullPointerResult(String string){
+        return ok();
+    }
+
+    public static Result nullPointerResult(Class<?> tClass) {
+
+        try {
+            Object object = tClass.newInstance();
+
+
+            ObjectNode result = Json.newObject();
+            result.put("state", "Json Missing Values");
+            result.put("message", "Some values are missing. Please look at tgus example, or report it");
+            result.set("example", Json.toJson(object));
+
+            CoreResponse.cors();
+            return Controller.badRequest(result);
+
+
+        }catch(Exception e){
+            return Controller.internalServerError();
+        }
     }
 
     public static Result nullPointerResult(Exception e, String... args){
@@ -64,7 +90,7 @@ public class GlobalResult extends Controller {
         result.code = 400;
         result.state = "error";
         result.message = e.getMessage();
-        for(String arg : args) result.required_jSON_parameter.add(arg);
+        for(String arg : args) result.required_json_parameter.add(arg);
 
         CoreResponse.cors();
         return Controller.badRequest(Json.toJson(result));

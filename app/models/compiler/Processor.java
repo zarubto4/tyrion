@@ -3,6 +3,7 @@ package models.compiler;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import utilities.Server;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -23,8 +24,8 @@ public class Processor extends Model {
 
 
   // @JsonProperty public String description     (){return "http://localhost:9000/compilation/processor/generalDescription/"    +  this.id;}
-    @JsonProperty public String libraryGroups   (){return "http://localhost:9000/compilation/processor/libraryGroups/" +  this.id;}
-    @JsonProperty public String singleLibraries (){return "http://localhost:9000/compilation/processor/singleLibrary/" +  this.id;}
+    @JsonProperty public String libraryGroups   (){return Server.serverAddress + "/compilation/processor/libraryGroups/" +  this.id;}
+    @JsonProperty public String singleLibraries (){return Server.serverAddress + "/compilation/processor/singleLibrary/" +  this.id;}
 
 
     @JsonProperty public Integer libraryGroupsCount()  { return libraryGroups.size(); }

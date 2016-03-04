@@ -3,7 +3,7 @@ package models.persons;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import utilities.a_main_utils.GlobalValue;
+import utilities.Server;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ public class SecurityRole extends Model {
 
 
 
-    public String persons(){  return GlobalValue.serverAddress + "/secure/role/person/"+ id; }
+    public String persons(){  return Server.serverAddress + "/secure/role/person/"+ id; }
 
 
 

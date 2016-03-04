@@ -14,7 +14,7 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.a_main_utils.GlobalValue;
+import utilities.Server;
 import utilities.emails.EmailTool;
 import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
@@ -81,7 +81,7 @@ public class PersonController extends Controller {
 
             ValidationToken validationToken = new ValidationToken().setValidation(person.mail);
 
-            String link = GlobalValue.serverAddress + "/mail_person_authentication" + "?mail=" + person.mail + "&token=" + validationToken.authToken;
+            String link = Server.serverAddress + "/mail_person_authentication" + "?mail=" + person.mail + "&token=" + validationToken.authToken;
 
             try {
                 Email email = new EmailTool().sendEmailValidation(person.first_name + person.last_name, person.mail, link);
