@@ -1,4 +1,4 @@
-package utilities.EclipseProject;
+package utilities.eclipseProject;
 
 import java.io.File;
 import java.math.BigInteger;
@@ -37,16 +37,16 @@ public class EclipseProject {
             new File("files/" + generatedName + "/project/" + nameOfProject + "/SW4STM32" + "/" + nameOfProject + " Configuration").mkdir();
 
             //3) -> vytvořím všechny soubory (JSON)
-            new File("files/"+generatedName+"/project/"+nameOfProject+ "/Inc" +"/main.h").createNewFile();
-            new File("files/"+generatedName+"/project/"+nameOfProject+ "/Inc" +"/ffconf.h").createNewFile();
-            new File("files/"+generatedName+"/project/"+nameOfProject+ "/Inc/"+ libraryName + "_hal_conf.h").createNewFile();
-            new File("files/"+generatedName+"/project/"+nameOfProject+ "/Inc/"+ libraryName + "_it.h").createNewFile();
+            new File("files/" +generatedName+"/project/"+nameOfProject+ "/Inc" +"/main.h").createNewFile();
+            new File("files/" +generatedName+"/project/"+nameOfProject+ "/Inc" +"/ffconf.h").createNewFile();
+            new File("files/" +generatedName+"/project/"+nameOfProject+ "/Inc/"+ libraryName + "_hal_conf.h").createNewFile();
+            new File("files/" +generatedName+"/project/"+nameOfProject+ "/Inc/"+ libraryName + "_it.h").createNewFile();
 
-            new File("files/"+generatedName+"/project/"+nameOfProject+ "/Src/" +"main.c").createNewFile();
-            new File("files/"+generatedName+"/project/"+nameOfProject+ "/Src/" +libraryName + "_hal_msp.c").createNewFile();
-            new File("files/"+generatedName+"/project/"+nameOfProject+ "/Src/" +libraryName + "_it.c").createNewFile();
+            new File("files/" +generatedName+"/project/"+nameOfProject+ "/Src/" +"main.c").createNewFile();
+            new File("files/" +generatedName+"/project/"+nameOfProject+ "/Src/" +libraryName + "_hal_msp.c").createNewFile();
+            new File("files/" +generatedName+"/project/"+nameOfProject+ "/Src/" +libraryName + "_it.c").createNewFile();
 
-            String f_adress = "files/"+generatedName+"/project/"+nameOfProject+"/" + "SW4STM32/"+ nameOfProject +" Configuration";
+            String f_adress = "files/" +generatedName+"/project/"+nameOfProject+"/" + "SW4STM32/"+ nameOfProject +" Configuration";
             new File(f_adress).mkdir();
 
             new File(f_adress + "/.cdproject").createNewFile();

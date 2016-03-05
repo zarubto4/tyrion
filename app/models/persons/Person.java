@@ -1,8 +1,5 @@
 package models.persons;
 
-import be.objectify.deadbolt.core.models.Permission;
-import be.objectify.deadbolt.core.models.Role;
-import be.objectify.deadbolt.core.models.Subject;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import models.blocko.BlockoBlock;
@@ -19,9 +16,9 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-public class Person extends Model implements Subject {
+public class Person extends Model {
 
-    //#### DB VALUE ########################################################################################################
+
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)     public String id;
 
                    @Column(unique=true)  @Constraints.Email     public String mail;
@@ -47,26 +44,11 @@ public class Person extends Model implements Subject {
     @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL)     public List<LinkedAccount> linkedAccounts = new ArrayList<>();
 
 
-//#### DeadBolt ########################################################################################################
 
-    @Override   @JsonIgnore
-    public List<? extends Role> getRoles() { return roles; }
 
-    @Override   @JsonIgnore
-    public List<? extends Permission> getPermissions() { return permissions;}
 
-    @Override   @JsonIgnore
-    public String getIdentifier() { return nick_name; }
 
-//#### FINDER ########################################################################################################
 
-    public static Person findByEmailAddressAndPassword(String emailAddress, String password) { return find.where().eq("mail", emailAddress.toLowerCase()).eq("shaPassword", getSha512(password)).findUnique();}
-
-    public static Person findByAuthToken(String authToken) {
-        if (authToken == null) { return null; }
-        try  { return find.where().eq("authToken", authToken).findUnique(); }
-        catch (Exception e) { return null; }
-    }
 
 //#### SECURITY LOGIN ##################################################################################################
 
@@ -102,6 +84,14 @@ public class Person extends Model implements Subject {
         update();
     }
 
-    // Finder **********************************************************************************************************
+//#### FINDER ########################################################################################################
+
+    public static Person findByEmailAddressAndPassword(String emailAddress, String password) { return find.where().eq("mail", emailAddress.toLowerCase()).eq("shaPassword", getSha512(password)).findUnique();}
+
+    public static Person findByAuthToken(String authToken) {
+        if (authToken == null) { return null; }
+        try  { return find.where().eq("authToken", authToken).findUnique(); }
+        catch (Exception e) { return null; }
+    }
     public static Finder<String,Person> find = new Finder<>(Person.class);
 }

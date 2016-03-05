@@ -4,6 +4,7 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import models.project.global.Project;
+import utilities.Server;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -19,10 +20,13 @@ public class M_Project extends Model {
                                                                 public Date    date_of_create;
                                        @JsonIgnore @ManyToOne   public Project project;
 
-    @OneToMany(mappedBy="m_project", cascade = CascadeType.ALL) public List<M_Program> m_program_s = new ArrayList<>();
 
 
-    @JsonProperty public String project()             {  return "http://localhost:9000/project/project/" + project.projectId; }
+
+    @OneToMany(mappedBy="m_project_object", cascade = CascadeType.ALL) public List<M_Program> m_programs = new ArrayList<>();
+
+
+    @JsonProperty @Transient public String project()    {  return Server.serverAddress + "/project/project/" + project.id; }
 
 
     public static Finder<String,M_Project> find = new Finder<>(M_Project.class);

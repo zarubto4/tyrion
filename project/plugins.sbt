@@ -1,17 +1,12 @@
 // The Play plugin
-addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.4.4")
+addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.4.6")
 
 // Web plugins
 addSbtPlugin("com.typesafe.sbt" % "sbt-coffeescript" % "1.0.0")
-
 addSbtPlugin("com.typesafe.sbt" % "sbt-less" % "1.0.6")
-
 addSbtPlugin("com.typesafe.sbt" % "sbt-jshint" % "1.0.3")
-
 addSbtPlugin("com.typesafe.sbt" % "sbt-rjs" % "1.0.7")
-
 addSbtPlugin("com.typesafe.sbt" % "sbt-digest" % "1.1.0")
-
 addSbtPlugin("com.typesafe.sbt" % "sbt-mocha" % "1.1.0")
 
 // Play enhancer - this automatically generates getters/setters for public fields
@@ -21,11 +16,6 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-mocha" % "1.1.0")
 addSbtPlugin("com.typesafe.sbt" % "sbt-play-enhancer" % "1.1.0")
 
 // Play Ebean support, to enable, uncomment this line, and enable in your build.sbt using
-// enablePlugins(SbtEbean). Note, uncommenting this line will automatically bring in
+// enablePlugins(PlayEbean). Note, uncommenting this line will automatically bring in
 // Play enhancer, regardless of whether the line above is commented out or not.
 addSbtPlugin("com.typesafe.sbt" % "sbt-play-ebean" % "1.0.0")
-
-
-// Heroku build
-addSbtPlugin("com.heroku" % "sbt-heroku" % "0.5.1")
-

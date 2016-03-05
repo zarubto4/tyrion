@@ -4,6 +4,7 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import models.grid.Screen_Size_Type;
+import utilities.Server;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -23,13 +24,16 @@ public class M_Program extends Model{
                                                                 public Date last_update;
                                                                 public String qr_token;
 
-                                    @JsonIgnore @ManyToOne      public M_Project m_project;
-                                    @JsonIgnore @ManyToOne      public Screen_Size_Type screen_size_type;
+                                    @JsonIgnore @ManyToOne      public M_Project m_project_object;
+                                    @JsonIgnore @ManyToOne      public Screen_Size_Type screen_size_type_object;
 
+    @JsonProperty public String program()               {  return Server.serverAddress + "/grid/m_project/program/" + id;}
 
-    @JsonProperty public String program()               {  return "http://localhost:9000/grid/m_project/program?m_program=" + id;}
-    @JsonProperty public String m_project()             {  return "http://localhost:9000/grid/m_project/" + m_project.id; }
-    @JsonProperty public String screen_size_type()      {  return "http://localhost:9000/grid/screen_type/" + screen_size_type.id; }
+    @Transient
+    @JsonProperty public String m_project()             {  return Server.serverAddress + "/grid/m_project/" + m_project_object.id; }
+
+    @Transient
+    @JsonProperty public String screen_size_type()      {  return Server.serverAddress + "/grid/screen_type/" + screen_size_type_object.id; }
 
     public static Finder<String,M_Program> find = new Finder<>(M_Program.class);
 }

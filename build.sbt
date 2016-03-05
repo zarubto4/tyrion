@@ -1,9 +1,6 @@
-name := """tyrion"""
+name := """Tyrion"""
 
-routesGenerator := InjectedRoutesGenerator
-herokuAppName in Compile := "byzance3"
-
-version := "1.4.X"
+version := "1.0-SNAPSHOT"
 
 lazy val root = (project in file(".")).enablePlugins(PlayJava, PlayEbean)
 
@@ -15,9 +12,10 @@ libraryDependencies ++= Seq(
   "com.microsoft.azure" % "azure-core" % "0.9.1",
   "com.microsoft.azure" % "azure-storage" % "4.0.0",
   "com.microsoft.azure" % "azure-svc-mgmt" % "0.9.1",
+
   "io.swagger" %% "swagger-play2" % "1.5.1",
   "io.swagger" % "swagger-core" % "1.5.7",
-  "be.objectify"  %% "deadbolt-java"     % "2.4.3",
+
   "com.github.scribejava" % "scribejava-apis" % "2.1.0",
   "com.typesafe.play" %% "play-mailer" % "4.0.0-M1",
   "org.glassfish.grizzly" % "grizzly-http-server" % "2.3.23",
@@ -25,8 +23,6 @@ libraryDependencies ++= Seq(
   "org.glassfish.tyrus" % "tyrus-client" % "1.12",
   "org.glassfish.tyrus" % "tyrus-container-grizzly-client" % "1.12",
   "org.glassfish.tyrus" % "tyrus-core" % "1.12",
-  "be.objectify" %% "deadbolt-java" % "2.4.3",
-  "com.iheart" %% "play-swagger" % "0.1.10",
 
   javaJdbc,
   filters,
@@ -37,12 +33,3 @@ libraryDependencies ++= Seq(
 // Play provides two styles of routers, one expects its actions to be injected, the
 // other, legacy style, accesses its actions statically.
 routesGenerator := InjectedRoutesGenerator
-
-// add resolver for deadbolt and easymail snapshots
-resolvers += Resolver.sonatypeRepo("snapshots")
-resolvers += Resolver.jcenterRepo
-// display deprecated or poorly formed Java
-javacOptions ++= Seq("-Xlint:unchecked")
-javacOptions ++= Seq("-Xlint:deprecation")
-javacOptions ++= Seq("-Xdiags:verbose")
-

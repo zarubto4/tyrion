@@ -3,7 +3,8 @@ package models.compiler;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import utilities.a_main_utils.UtilTools;
+import utilities.Server;
+import utilities.UtilTools;
 
 import javax.persistence.*;
 import java.io.File;
@@ -14,12 +15,12 @@ import java.util.Scanner;
 public class FileRecord extends Model {
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public String id;
-                                                             public String fileName;
+                                                             public String file_name;
 
                                  @JsonIgnore  @ManyToOne     public Version_Object version_object;
 
 
-    @JsonProperty public String fileContent()   { return "http://localhost:9000/file/fileRecord/" +id; }
+    @JsonProperty public String fileContent()   { return Server.serverAddress + "/file/fileRecord/" +id; }
 
 
 
@@ -68,7 +69,7 @@ public class FileRecord extends Model {
         System.out.println("azureLinkVersion: " + azureLinkVersion);
         */
 
-        return UtilTools.file_get_File_from_Azure(container, azureStorageLink, azurePackageLink, azureLinkVersion, fileName);
+        return UtilTools.file_get_File_from_Azure(container, azureStorageLink, azurePackageLink, azureLinkVersion, file_name);
 
     }
 

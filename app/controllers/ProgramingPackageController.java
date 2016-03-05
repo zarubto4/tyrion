@@ -1,16 +1,19 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.Authorization;
-import models.blocko.*;
+import io.swagger.annotations.*;
+import models.blocko.BlockoBlock;
+import models.blocko.BlockoBlockVersion;
+import models.blocko.TypeOfBlock;
+import models.compiler.Board;
 import models.compiler.Version_Object;
 import models.persons.Person;
 import models.project.b_program.B_Program;
 import models.project.b_program.B_Program_Cloud;
+import models.project.c_program.C_Program;
 import models.project.global.Homer;
 import models.project.global.Project;
+import models.project.m_program.M_Project;
 import play.Configuration;
 import play.Logger;
 import play.libs.Json;
@@ -18,11 +21,15 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.a_main_utils.UtilTools;
+import utilities.UtilTools;
 import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
+import utilities.response.response_objects.Result_PermissionRequired;
+import utilities.response.response_objects.Result_Unauthorized;
+import utilities.response.response_objects.Result_ok;
+import utilities.swagger.documentationClass.*;
 
-import java.util.ArrayList;
+import javax.websocket.server.PathParam;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
@@ -34,22 +41,54 @@ import java.util.concurrent.TimeoutException;
 @Security.Authenticated(Secured.class)
 public class ProgramingPackageController extends Controller {
 
+    @ApiOperation(value = "create new Project",
+            tags = {"Project"},
+            notes = "create new Project",
+            produces = "application/json",
+            protocols = "https",
+            code = 201,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Project_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successfully created", response =  Project.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @BodyParser.Of(BodyParser.Json.class)
     public  Result postNewProject() {
         try{
-            JsonNode json = request().body().asJson();
+            Swagger_Project_New help = Json.fromJson(request().body().asJson() , Swagger_Project_New.class);
 
             Project project  = new Project();
-            project.projectName = json.get("projectName").asText();
-            project.projectDescription = json.get("projectDescription").asText();
-            project.ownersOfProject.add( SecurityController.getPerson() );
 
+            project.project_name = help.project_name;
+            project.project_description = help.project_description;
+
+            project.ownersOfProject.add( SecurityController.getPerson() );
             project.save();
 
             return GlobalResult.okResult( Json.toJson(project) );
 
         } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "projectName - String", "projectDescription - TEXT");
+            return GlobalResult.nullPointerResult(e, "project_name", "project_description");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - postNewProject ERROR");
@@ -58,6 +97,26 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
+    @ApiOperation(value = "get Project by logged Person",
+            tags = {"Project"},
+            notes = "get all Projects by logged Person",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  Project.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     public  Result getProjectsByUserAccount(){
         try {
 
@@ -73,14 +132,33 @@ public class ProgramingPackageController extends Controller {
 
     }
 
-    public  Result getProject(String id){
+    @ApiOperation(value = "get Project",
+            tags = {"Project"},
+            notes = "get Projects by project_id",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  Project.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public  Result getProject(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
         try {
-            Project project = Project.find.byId(id);
+
+            Project project = Project.find.byId(project_id);
             if (project == null) return GlobalResult.notFoundObject();
 
-
-
-            if (    Project.find.where().eq("ownersOfProject.mail", SecurityController.getPerson().mail).eq("projectId", id).findUnique() == null ) return GlobalResult.forbidden_Global();
+            if (    Project.find.where().eq("ownersOfProject.id", SecurityController.getPerson().id).eq("id", project_id).findUnique() == null ) return GlobalResult.forbidden_Global();
 
             return GlobalResult.okResult(Json.toJson(project));
 
@@ -91,10 +169,30 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-    public  Result deleteProject(String id){
+    @ApiOperation(value = "delete Project",
+            tags = {"Project"},
+            notes = "delete Projects by project_id",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public  Result deleteProject(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
         try {
 
-            Project project = Project.find.byId(id);
+            Project project = Project.find.byId(project_id);
             if (project == null) return GlobalResult.notFoundObject();
 
             if (!project.ownersOfProject.contains( SecurityController.getPerson() ) ) return GlobalResult.forbidden_Global();
@@ -110,24 +208,194 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-    @BodyParser.Of(BodyParser.Json.class)
-    public  Result updateProject(String id){
-        try {
-            JsonNode json = request().body().asJson();
+    @ApiOperation(value = "get Homers from Project",
+            tags = {"Project", "Homer"},
+            notes = "get List of Homers from Projects by project_id",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  Homer.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public  Result get_Project_homers(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
+        try{
 
-            Project project = Project.find.byId(id);
+            Project project  = Project.find.byId(project_id);
+            if (project == null) return GlobalResult.notFoundObject();
+
+            return GlobalResult.okResult(Json.toJson(project.homerList));
+
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - getProgramhomerList ERROR");
+            return GlobalResult.internalServerError();
+        }
+    }
+
+    @ApiOperation(value = "get B_Programs from Project",
+            tags = {"Project","B_Program"},
+            notes = "get List of B_Programs from Projects by project_id",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  B_Program.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public  Result get_Project_b_Programs(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
+        try {
+
+            Project project = Project.find.byId(project_id);
+            if(project == null) return GlobalResult.notFoundObject();
+
+            return GlobalResult.okResult(Json.toJson( project.b_programs));
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - removeProgram ERROR");
+            return GlobalResult.internalServerError();
+        }
+    }
+
+    @ApiOperation(value = "get C_Programs from Project",
+            tags = {"Project","C_Program"},
+            notes = "get List of C_Programs from Projects by project_id",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  C_Program.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public  Result get_Project_c_Programs(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
+        try {
+
+            Project project = Project.find.byId(project_id);
+            if(project == null) return GlobalResult.notFoundObject();
+
+            return GlobalResult.okResult(Json.toJson( project.c_programs));
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - removeProgram ERROR");
+            return GlobalResult.internalServerError();
+        }
+    }
+
+    @ApiOperation(value = "get M_Projects from Project",
+            tags = {"Project","M_Program"},
+            notes = "get List of M_Projects from Projects by project_id",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  M_Project.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public  Result get_Project_m_Projects(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
+        try {
+
+            Project project = Project.find.byId(project_id);
+            if(project == null) return GlobalResult.notFoundObject();
+
+
+            return GlobalResult.okResult(Json.toJson( project.m_projects));
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - removeProgram ERROR");
+            return GlobalResult.internalServerError();
+        }
+    }
+
+    @ApiOperation(value = "edit Project",
+            tags = {"Project"},
+            notes = "edit ne Project",
+            produces = "application/json",
+            protocols = "https",
+            response =  Project.class,
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Project_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  Project.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public  Result updateProject(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
+        try {
+            Swagger_Project_New help = Json.fromJson(request().body().asJson() , Swagger_Project_New.class);
+
+            Project project = Project.find.byId(project_id);
             if (project == null) return GlobalResult.notFoundObject();
 
             if (!project.ownersOfProject.contains( SecurityController.getPerson() ) ) return GlobalResult.forbidden_Global();
 
-            project.projectName = json.get("projectName").asText();
-            project.projectDescription = json.get("projectDescription").asText();
+            project.project_name = help.project_name;
+            project.project_description = help.project_description;
             project.update();
 
             return GlobalResult.okResult(Json.toJson(project));
 
         } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "projectName - String", "projectDescription - TEXT");
+            return GlobalResult.nullPointerResult(e, "project_name - String", "project_description - TEXT");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - updateProject ERROR");
@@ -136,10 +404,30 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-    public Result getProjectsBoard(String id){
+    @ApiOperation(value = "get all Boards from Project",
+            tags = {"Project", "Board"},
+            notes = "get all Boards (IoT) from Projects by project_id",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  Board.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result getProjectsBoard(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
         try {
 
-            Project project = Project.find.byId(id);
+            Project project = Project.find.byId(project_id);
             if(project == null) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(project.boards));
@@ -151,28 +439,37 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
+    @ApiOperation(value = "share Project with Users",
+            tags = {"Project", "Board"},
+            notes = "share Project with all users in list: List<person_id>",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response = Project.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result shareProjectWithUsers(String id){
+    public Result shareProjectWithUsers(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
         try {
 
-            JsonNode json = request().body().asJson();
+            Swagger_ShareProject_Person help = Json.fromJson(request().body().asJson(), Swagger_ShareProject_Person.class);
 
-            Project project = Project.find.byId(id);
+            Project project = Project.find.byId(project_id);
             if(project == null) return GlobalResult.notFoundObject();
 
 
-            List<Person> persons = new ArrayList<>();
-
-            // NEJDŘÍVE KONTROLA VŠECH UŽIVATELŮ ZDA EXISTUJÍ
-            for (final JsonNode objNode : json.get("persons")) {
-
-                Person person = Person.find.byId(objNode.asText());
-                if(person == null) return GlobalResult.nullPointerResult("User " + objNode.asText() + " not exist");
-                persons.add(person);
-            }
-
-            // POTÉ PŘIDÁVÁNÍ DO projektu
-            for (Person person : persons) {
+            for (Person person : help.get_person()) {
                 if (!person.owningProjects.contains(project)) {
                     project.ownersOfProject.add(person);
                     person.owningProjects.add(project);
@@ -185,7 +482,7 @@ public class ProgramingPackageController extends Controller {
             return GlobalResult.okResult(Json.toJson(project));
 
         } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "persons - [ids]");
+            return GlobalResult.nullPointerResult(e, "persons[id]");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - shareProjectWithUsers ERROR");
@@ -194,29 +491,36 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
+    @ApiOperation(value = "unshare Project with Persons",
+            tags = {"Project", "Board"},
+            notes = "unshare Project with all users in list: List<person_id>",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response = Project.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result unshareProjectWithUsers(String id){
+    public Result unshareProjectWithUsers(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
         try {
-            JsonNode json = request().body().asJson();
 
-            Project project = Project.find.byId(id);
+            Swagger_ShareProject_Person help = Json.fromJson(request().body().asJson(), Swagger_ShareProject_Person.class);    JsonNode json = request().body().asJson();
+
+            Project project = Project.find.byId(project_id);
             if(project == null) return GlobalResult.notFoundObject();
 
-
-            List<Person> persons = new ArrayList<>();
-
-            // NEJDŘÍVE KONTROLA VŠECH UŽIVATELŮ ZDA EXISTUJÍ
-            for (final JsonNode objNode : json.get("persons")) {
-
-                Person person = Person.find.byId(objNode.asText());
-
-                if(person == null) return GlobalResult.nullPointerResult("User " + objNode.asText() + " not exist");
-
-                persons.add(person);
-            }
-
-            // POTÉ PŘIDÁVÁNÍ DO projektu
-            for (Person person : persons) {
+            for (Person person : help.get_person()) {
                 if (person.owningProjects.contains(project)) {
                     project.ownersOfProject.remove(person);
                     person.owningProjects.remove(project);
@@ -229,7 +533,7 @@ public class ProgramingPackageController extends Controller {
             return GlobalResult.okResult(Json.toJson(project));
 
         } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "persons - [ids]");
+            return GlobalResult.nullPointerResult(e, "persons[is]");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - unshareProjectWithUsers ERROR");
@@ -238,10 +542,30 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-    public Result getProjectOwners(String id){
+    @ApiOperation(value = "get all Persons from Project",
+            tags = {"Project", "Board"},
+            notes = "unshare Project with all users in list: List<person_id>",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response = Person.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result get_Project_Owners(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
         try {
 
-            Project project = Project.find.byId(id);
+            Project project = Project.find.byId(project_id);
             if(project == null) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(project.ownersOfProject));
@@ -256,21 +580,53 @@ public class ProgramingPackageController extends Controller {
 
 ///###################################################################################################################*/
 
+    @ApiOperation(value = "create new Homer",
+            tags = {"Homer"},
+            notes = "create new Homer",
+            produces = "application/json",
+            protocols = "https",
+            code = 201,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Homer_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successfully created", response =  Homer.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @BodyParser.Of(BodyParser.Json.class)
     public  Result newHomer(){
         try{
-            JsonNode json = request().body().asJson();
+            Swagger_Homer_New help = Json.fromJson(request().body().asJson() , Swagger_Homer_New.class);
+
 
             Homer homer = new Homer();
-            homer.homerId = json.get("homerId").asText();
-            homer.typeOfDevice = json.get("typeOfDevice").asText();
+            homer.homer_id = help.homer_id;
+            homer.type_of_device = help.type_of_device;
 
             homer.save();
 
             return GlobalResult.okResult(Json.toJson(homer));
 
         } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "homerId - String", "typeOfDevice - String");
+            return GlobalResult.nullPointerResult(e, "homer_id - String", "type_of_device - String");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - newHomer ERROR");
@@ -279,6 +635,26 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
+    @ApiOperation(value = "remove Homer",
+            tags = {"Homer"},
+            notes = "remove Homer",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     public  Result removeHomer(String id){
         try{
 
@@ -296,9 +672,29 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-    public  Result getHomer(String id){
+    @ApiOperation(value = "remove Homer",
+            tags = {"Homer"},
+            notes = "remove Homer",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public  Result getHomer(String homer_id){
         try {
-            Homer homer = Homer.find.byId(id);
+            Homer homer = Homer.find.byId(homer_id);
             if (homer == null) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult( Json.toJson(homer) );
@@ -310,29 +706,14 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-    public  Result getConnectedHomers(String id){
-        try {
-            Project project = Project.find.byId(id);
-            if (project == null) return GlobalResult.notFoundObject();
 
-            List<Homer> intersection = new ArrayList<>();
-
-            for( Homer homer : project.homerList){
-                if(WebSocketController_Incoming.isConnected(homer)) intersection.add(homer);
-            }
-
-            return GlobalResult.okResult(Json.toJson(intersection));
-
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - getConnectedHomers ERROR");
-            return GlobalResult.internalServerError();
-        }
-    }
-
-    public  Result getAllHomers(){
+    public  Result get_Homers_by_Filter(){
         try {
             List<Homer> homers = Homer.find.all();
+
+            System.out.println("Filter není dodělaný...........");
+
+            // TODO dodělat filter
 
             return GlobalResult.okResult(Json.toJson(homers));
 
@@ -345,7 +726,27 @@ public class ProgramingPackageController extends Controller {
 
 // ###################################################################################################################*/
 
-    public  Result connectHomerWithProject(String project_id, String homer_id){
+    @ApiOperation(value = "connect Homer with Project",
+            tags = {"Homer", "Project"},
+            notes = "remove Homer",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  Project.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public  Result connectHomerWithProject(@ApiParam(value = "project_id String path",   required = true) @PathParam("project_id") String project_id, @ApiParam(value = "homer_id String path",   required = true) @PathParam("homer_id") String homer_id){
         try{
 
             Project project = Project.find.byId(project_id);
@@ -367,7 +768,27 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-    public  Result disconnectHomerWithProject(String project_id, String homer_id){
+    @ApiOperation(value = "connect Homer with Project",
+            tags = {"Homer", "Project"},
+            notes = "remove Homer",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  Project.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public  Result disconnectHomerWithProject(@ApiParam(value = "project_id String path",   required = true) @PathParam("project_id") String project_id, @ApiParam(value = "homer_id String path",   required = true) @PathParam("homer_id") String homer_id){
         try{
 
             Project project = Project.find.byId(project_id);
@@ -391,25 +812,53 @@ public class ProgramingPackageController extends Controller {
 
 /// ###################################################################################################################*/
 
+    @ApiOperation(value = "create new B_Program",
+            tags = {"B_Program"},
+            notes = "create new B_Program",
+            produces = "application/json",
+            protocols = "https",
+            code = 201,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_B_Program_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successfully created", response =  B_Program.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @BodyParser.Of(BodyParser.Json.class)
-    public  Result postNewBProgram(){
+    public  Result new_b_Program(String project_id){
         try{
-            JsonNode json = request().body().asJson();
+            Swagger_B_Program_New help = Json.fromJson(request().body().asJson(), Swagger_B_Program_New.class);
 
-            // Ověřím program
-            Project project = Project.find.byId(json.get("projectId").asText());
+            Project project = Project.find.byId(project_id);
             if (project == null) return GlobalResult.notFoundObject();
-
 
             // Tvorba programu
             B_Program b_program             = new B_Program();
             b_program.azurePackageLink      = "personal-program";
             b_program.dateOfCreate          = new Date();
-            b_program.programDescription    = json.get("programDescription").asText();
-            b_program.programName           = json.get("program_name").asText();
+            b_program.programDescription    = help.program_description;
+            b_program.name                  = help.name;
             b_program.project               = project;
             b_program.setUniqueAzureStorageLink();
-
 
             b_program.save();
 
@@ -424,10 +873,30 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-    public  Result getProgram(String id){
+    @ApiOperation(value = "get B Program",
+            tags = {"B_Program"},
+            notes = "get B_Program object",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  B_Program.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public  Result get_b_Program(@ApiParam(value = "b_program_id String path", required = true) @PathParam("b_program_id") String b_program_id){
         try{
 
-            B_Program program = B_Program.find.byId(id);
+            B_Program program = B_Program.find.byId(b_program_id);
             if (program == null) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(program));
@@ -438,52 +907,54 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-    public  Result getProgramInString(String version_id){
-        try{
-            Version_Object versionObject  = Version_Object.find.byId(version_id);
-            if (versionObject == null) return GlobalResult.notFoundObject();
-
-            String text = versionObject.files.get(0).get_fileRecord_from_Azure_inString();
-
-            return GlobalResult.okResult( Json.parse(text) );
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - getProgramInJson ERROR");
-            return GlobalResult.internalServerError();
-        }
-    }
-
-    public  Result getProgramhomerList(String id){
-        try{
-
-            Project project  = Project.find.byId(id);
-            if (project == null) return GlobalResult.notFoundObject();
-
-            return GlobalResult.okResult(Json.toJson(project.homerList));
-
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - getProgramhomerList ERROR");
-            return GlobalResult.internalServerError();
-        }
-    }
-
+    @ApiOperation(value = "edit B_Program",
+            tags = {"B_Program"},
+            notes = "edit basic information in B_Program object",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_B_Program_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  B_Program.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @BodyParser.Of(BodyParser.Json.class)
-    public  Result editProgram(String id){
+    public  Result edit_b_Program(@ApiParam(value = "b_program_id String path", required = true) @PathParam("b_program_id") String b_program_id){
         try{
-            JsonNode json = request().body().asJson();
+            Swagger_B_Program_New help = Json.fromJson(request().body().asJson(), Swagger_B_Program_New.class);
 
-            B_Program program  = B_Program.find.byId(id);
-            if (program == null) return GlobalResult.notFoundObject();
 
-            program.programDescription = json.get("programDescription").asText();
-            program.programName = json.get("program_name").asText();
+            B_Program b_program  = B_Program.find.byId(b_program_id);
+            if (b_program == null) return GlobalResult.notFoundObject();
 
-            program.update();
-            return GlobalResult.okResult(Json.toJson(program));
+            b_program.programDescription    = help.program_description;
+            b_program.name                  = help.name;
+
+            b_program.update();
+            return GlobalResult.okResult(Json.toJson(b_program));
 
         } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "program_name - String", "programDescription - TEXT");
+            return GlobalResult.nullPointerResult("Some Json Value missing");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - editProgram ERROR");
@@ -492,27 +963,58 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
+    @ApiOperation(value = "create new Version of B Program",
+            tags = {"B_Program"},
+            notes = "edit basic infromation in B_Program object",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_B_Program_Version_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  Version_Object.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @BodyParser.Of(BodyParser.Json.class)
-    public  Result update_b_program(String id){
+    public  Result update_b_program(@ApiParam(value = "b_program_id String path", required = true) @PathParam("b_program_id") String b_program_id){
         try{
-            JsonNode json = request().body().asJson();
+            Swagger_B_Program_Version_New help = Json.fromJson( request().body().asJson(), Swagger_B_Program_Version_New.class);
 
             // Program který budu ukládat do data Storage v Azure
-            String file_content =  json.get("program").toString();
+            String file_content =  help.program;
 
             // Ověřím program
-            B_Program b_program = B_Program.find.byId(id);
+            B_Program b_program = B_Program.find.byId(b_program_id);
             if (b_program == null) return GlobalResult.notFoundObject();
 
             // První nová Verze
-            Version_Object versionObjectObject      = new Version_Object();
-            versionObjectObject.version_name = json.get("version_name").asText();
-            versionObjectObject.versionDescription  = json.get("version_description").asText();
+            Version_Object versionObjectObject          = new Version_Object();
+            versionObjectObject.version_name            = help.version_name;
+            versionObjectObject.version_description     = help.version_description;
 
             if(b_program.versionObjects.isEmpty() ) versionObjectObject.azureLinkVersion = 1;
             else versionObjectObject.azureLinkVersion    = ++b_program.versionObjects.get(0).azureLinkVersion; // Zvednu verzi o jednu
 
-             versionObjectObject.dateOfCreate        = new Date();
+            versionObjectObject.date_of_create      = new Date();
             versionObjectObject.b_program           = b_program;
             versionObjectObject.save();
 
@@ -525,7 +1027,7 @@ public class ProgramingPackageController extends Controller {
             return GlobalResult.okResult(Json.toJson(b_program));
 
         } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "program_name - String", "programDescription - TEXT");
+            return GlobalResult.nullPointerResult(e, "program_name - String", "program_description - TEXT");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - editProgram ERROR");
@@ -534,10 +1036,30 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-    public  Result remove_b_Program(String id){
+    @ApiOperation(value = "remove B Program",
+            tags = {"B_Program"},
+            notes = "remove B_Program object",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public  Result remove_b_Program(@ApiParam(value = "b_program_id String path", required = true) @PathParam("b_program_id") String b_program_id){
         try{
 
-            B_Program program  = B_Program.find.byId(id);
+            B_Program program  = B_Program.find.byId(b_program_id);
             if (program == null) return GlobalResult.notFoundObject();
 
 
@@ -552,55 +1074,12 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-    public  Result getAll_b_Programs(String id){
-        try {
-
-            Project project = Project.find.byId(id);
-            if(project == null) return GlobalResult.notFoundObject();
-
-            return GlobalResult.okResult(Json.toJson( project.b_programs));
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - removeProgram ERROR");
-            return GlobalResult.internalServerError();
-        }
-    }
-
-    public  Result getAll_c_Programs(String id){
-        try {
-
-            Project project = Project.find.byId(id);
-            if(project == null) return GlobalResult.notFoundObject();
-
-            return GlobalResult.okResult(Json.toJson( project.c_programs));
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - removeProgram ERROR");
-            return GlobalResult.internalServerError();
-        }
-    }
-
-    public  Result getAll_m_Projects(String id){
-        try {
-
-            Project project = Project.find.byId(id);
-            if(project == null) return GlobalResult.notFoundObject();
-
-
-            return GlobalResult.okResult(Json.toJson( project.m_projects));
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - removeProgram ERROR");
-            return GlobalResult.internalServerError();
-        }
-    }
-
-    @BodyParser.Of(BodyParser.Json.class)
-    public  Result uploadProgramToHomer_Immediately(String homerId, String version_id){
+    //TODO SWAGGER  a taky celá logika nahrávání do homera
+    public  Result uploadProgramToHomer_Immediately(String homer_id, String version_id){
         try {
             JsonNode json = request().body().asJson();
 
-            Homer homer = Homer.find.byId(json.get("homerId").asText());
+            Homer homer = Homer.find.byId(homer_id);
             if (homer == null) return GlobalResult.notFoundObject();
 
             Version_Object versionObject  = Version_Object.find.byId(version_id);
@@ -619,11 +1098,31 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-    public  Result uploadProgramToCloud(String program_id, String version_id){
+    @ApiOperation(value = "upload B Program to cloud",
+            tags = {"B_Program"},
+            notes = "upload version of B Program to cloud. Its possible have only one version from B program in cloud. If you uploud new one - old one will be replaced",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public  Result upload_b_Program_ToCloud(@ApiParam(value = "b_program_id String path", required = true) @PathParam("b_program_id") String b_program_id, @ApiParam(value = "version_id String path", required = true) @PathParam("version_id") String version_id){
         try {
 
             // B program, který chci nahrát do Cloudu na Blocko server
-            B_Program b_program = B_Program.find.byId(program_id);
+            B_Program b_program = B_Program.find.byId(b_program_id);
             if (b_program == null) return GlobalResult.notFoundObject();
 
             // Verze B programu kterou budu nahrávat do cloudu
@@ -660,6 +1159,7 @@ public class ProgramingPackageController extends Controller {
 
             return GlobalResult.okResult();
         } catch (NullPointerException a) {
+            // TODO dopřeložit a nějak definovat????
             return GlobalResult.nullPointerResult("Server není nastartován");
          } catch (TimeoutException a) {
             return GlobalResult.nullPointerResult("Nepodařilo se včas nahrát na server");
@@ -674,64 +1174,161 @@ public class ProgramingPackageController extends Controller {
 
     //TODO
     public Result listOfUploadedHomers(String id) {
-        //Na projectId B_Program vezmu všechny Houmry na kterých je program nahrán
+        //Na id B_Program vezmu všechny Houmry na kterých je program nahrán
         return GlobalResult.ok("Nutné dodělat - listOfUploadedHomers");
     }
 
     //TODO
     public Result listOfHomersWaitingForUpload(String id){
-        //Na projectId B_Program vezmu všechny Houmry na které jsem program ještě nenahrál
+        //Na id B_Program vezmu všechny Houmry na které jsem program ještě nenahrál
         return GlobalResult.ok("Nutné dodělat - listOfHomersWaitingForUpload");
     }
 
 ///###################################################################################################################*/
 
+    @ApiOperation(value = "create new Type of Block",
+            tags = {"Type of Block"},
+            notes = "creating group for BlockoBlocks -> Type of block",
+            produces = "application/json",
+            protocols = "https",
+            response =  TypeOfBlock.class,
+            code = 201,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_BlockoBlock_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successfully created", response =  TypeOfBlock.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @BodyParser.Of(BodyParser.Json.class)
     public Result newTypeOfBlock(){
         try{
-            JsonNode json = request().body().asJson();
+            Swagger_TypeOfBlock_New help = Json.fromJson(request().body().asJson(), Swagger_TypeOfBlock_New.class);
 
             TypeOfBlock typeOfBlock = new TypeOfBlock();
-            typeOfBlock.generalDescription  = json.get("generalDescription").asText();
-            typeOfBlock.name                = json.get("name").asText();
+            typeOfBlock.generalDescription  = help.general_description;
+            typeOfBlock.name                = help.name;
+
+
+            if(help.project_id != null){
+
+                Project project = Project.find.byId(help.project_id);
+                if(project == null) return GlobalResult.notFoundObject();
+
+                typeOfBlock.project = project;
+
+            }
 
             typeOfBlock.save();
 
             return GlobalResult.created( Json.toJson(typeOfBlock));
         } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "name - String", "generalDescription - TEXT");
+            return GlobalResult.nullPointerResult(e, "name - String", "general_description - TEXT");
         } catch (Exception e) {
             Logger.error("Error", e);
             return GlobalResult.internalServerError();
         }
     }
 
+    @ApiOperation(value = "edit Type of Block",
+            tags = {"Type of Block"},
+            notes = "edit Type of block object",
+            produces = "application/json",
+            protocols = "https",
+            response =  TypeOfBlock.class,
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_BlockoBlock_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  TypeOfBlock.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result editTypeOfBlock(String id){
+    public Result editTypeOfBlock(@ApiParam(value = "type_of_block_id String path",   required = true) @PathParam("type_of_block_id") String type_of_block_id){
         try{
-            JsonNode json = request().body().asJson();
 
-            TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(id);
+            Swagger_TypeOfBlock_New help = Json.fromJson(request().body().asJson(), Swagger_TypeOfBlock_New.class);
+
+            TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(type_of_block_id);
             if(typeOfBlock == null) return GlobalResult.notFoundObject();
 
-            typeOfBlock.generalDescription  = json.get("generalDescription").asText();
-            typeOfBlock.name                = json.get("name").asText();
+            typeOfBlock.generalDescription  = help.general_description;
+            typeOfBlock.name                = help.name;
+
 
             typeOfBlock.update();
-
             return GlobalResult.update( Json.toJson(typeOfBlock));
         } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "name - String", "generalDescription - TEXT");
+            return GlobalResult.nullPointerResult(e, "name - String", "general_description - TEXT");
         } catch (Exception e) {
             Logger.error("Error", e);
             return GlobalResult.internalServerError();
         }
     }
 
-    public Result deleteTypeOfBlock(String id){
+    @ApiOperation(value = "delete Type of Block",
+            tags = {"Type of Block"},
+            notes = "delete group for BlockoBlocks -> Type of block",
+            produces = "application/json",
+            protocols = "https",
+            response =  Result_ok.class,
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result deleteTypeOfBlock(@ApiParam(value = "type_of_block_id String path",   required = true) @PathParam("type_of_block_id") String type_of_block_id){
         try{
 
-            TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(id);
+            TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(type_of_block_id);
             if(typeOfBlock == null) return GlobalResult.notFoundObject();
 
             typeOfBlock.delete();
@@ -744,39 +1341,130 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-    public Result getAllTypeOfBlocks(){
-        try {
-            List<TypeOfBlock> typeOfBlocks = TypeOfBlock.find.all();
-            return GlobalResult.okResult(Json.toJson(typeOfBlocks));
+    @ApiOperation(value = "get all Type of Block from Project",
+            tags = {"Type of Block", "Project"},
+            notes = "get all Type of Block from project",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                      @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  TypeOfBlock.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result get_TypeOfBlock_by_Project(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
+        try{
+
+            Project project = Project.find.byId(project_id);
+            if(project == null) return GlobalResult.notFoundObject();
+
+            return GlobalResult.okResult(Json.toJson(project.type_of_blocks));
+
         } catch (Exception e) {
             Logger.error("Error", e);
             return GlobalResult.internalServerError();
         }
     }
+
+    @ApiOperation(value = "get all Type of Block list",
+            tags = {"Type of Block"},
+            notes = "delete group for BlockoBlocks -> Type of block",
+            produces = "application/json",
+            protocols = "https",
+            response =  Result_ok.class,
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  TypeOfBlock.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result getAllTypeOfBlocks(){
+        try {
+            return GlobalResult.okResult(Json.toJson(TypeOfBlock.find.all()));
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            return GlobalResult.internalServerError();
+        }
+    }
+
 ///###################################################################################################################*/
 
+
+    @ApiOperation(value = "create new Block",
+            tags = {"Blocko-Block"},
+            notes = "creating new independent Block object for Blocko tools",
+            produces = "application/json",
+            protocols = "https",
+            response =  BlockoBlock.class,
+            code = 201,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_BlockoBlock_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successfully created", response =  BlockoBlock.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result newBlock(){
+    public Result new_Block(){
        try{
-            JsonNode json = request().body().asJson();
+
+           Swagger_BlockoBlock_New help = Json.fromJson(request().body().asJson(), Swagger_BlockoBlock_New.class);
 
 
             BlockoBlock blockoBlock = new BlockoBlock();
-            blockoBlock.generalDescription  = json.get("generalDescription").asText();
-            blockoBlock.name                = json.get("name").asText();
+            blockoBlock.general_description = help.general_description;
+            blockoBlock.name                = help.name;
             blockoBlock.author              = SecurityController.getPerson();
 
 
-           TypeOfBlock typeOfBlock = TypeOfBlock.find.byId( json.get("typeOfBlockId").asText());
+           TypeOfBlock typeOfBlock = TypeOfBlock.find.byId( help.type_of_blocko_id );
            if(typeOfBlock == null) return GlobalResult.notFoundObject();
 
-           blockoBlock.typeOfBlock = typeOfBlock;
+           blockoBlock.type_of_block = typeOfBlock;
            blockoBlock.save();
 
 
             return GlobalResult.okResult( Json.toJson(blockoBlock) );
        } catch (NullPointerException e) {
-           return GlobalResult.nullPointerResult(e, "name - String", "generalDescription - TEXT", "typeOfBlockId - String");
+           return GlobalResult.nullPointerResult(e, "name", "general_description", "type_of_blocko_id");
        } catch (Exception e) {
            Logger.error("Error", e);
            Logger.error("ProgramingPackageController - newBlock ERROR");
@@ -784,27 +1472,59 @@ public class ProgramingPackageController extends Controller {
        }
     }
 
+    @ApiOperation(value = "edit basic information of the BlockoBlock",
+            tags = {"Blocko-Block"},
+            notes = "update basic information (name, and desription) of the independent BlockoBlock",
+            produces = "application/json",
+            protocols = "https",
+            response =  BlockoBlock.class,
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_BlockoBlock_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Ok Result", response =  BlockoBlock.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result editBlock(String id){
+    public Result edit_Block(@ApiParam(value = "blocko_block_id String path",   required = true) @PathParam("blocko_block_id") String blocko_block_id){
         try {
-            JsonNode json = request().body().asJson();
+                Swagger_BlockoBlock_New help = Json.fromJson(request().body().asJson(), Swagger_BlockoBlock_New.class);
 
-                BlockoBlock blockoBlock = BlockoBlock.find.byId(id);
+                BlockoBlock blockoBlock = BlockoBlock.find.byId(blocko_block_id);
                 if (blockoBlock == null) return GlobalResult.notFoundObject();
 
-                blockoBlock.generalDescription  = json.get("generalDescription").asText();
-                blockoBlock.name                = json.get("name").asText();
+                blockoBlock.general_description = help.general_description;
+                blockoBlock.name                = help.name;
 
-                TypeOfBlock typeOfBlock = TypeOfBlock.find.byId( json.get("typeOfBlockId").asText());
+                TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(  help.type_of_blocko_id );
                 if(typeOfBlock == null) return GlobalResult.notFoundObject();
 
-                blockoBlock.typeOfBlock = typeOfBlock;
+                blockoBlock.type_of_block = typeOfBlock;
 
                 blockoBlock.update();
 
                 return GlobalResult.okResult(Json.toJson(blockoBlock));
         } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "name - String", "versionDescription - TEXT", "typeOfBlockId - String");
+            return GlobalResult.nullPointerResult(e, "name", "version_description", "type_of_blocko_id");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - getBlockLast ERROR");
@@ -813,12 +1533,33 @@ public class ProgramingPackageController extends Controller {
 
     }
 
-    public Result getBlockVersions(String id){
+    @ApiOperation(value = "get version of the BlockoBlock",
+            tags = {"Blocko-Block"},
+            notes = "get version (content) from independent BlockoBlock",
+            produces = "application/json",
+            protocols = "https",
+            response =  BlockoBlockVersion.class,
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  BlockoBlockVersion.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result get_BlockoBlock_Version(String blocko_version_id){
         try {
-                BlockoBlock blockoBlock = BlockoBlock.find.byId(id);
-                if(blockoBlock == null) return GlobalResult.notFoundObject();
+                BlockoBlockVersion blocko_version = BlockoBlockVersion.find.byId(blocko_version_id);
+                if(blocko_version == null) return GlobalResult.notFoundObject();
 
-                return GlobalResult.okResult(Json.toJson(blockoBlock.contentBlocks));
+                return GlobalResult.okResult(Json.toJson(blocko_version));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -828,9 +1569,30 @@ public class ProgramingPackageController extends Controller {
 
     }
 
-    public Result getBlockBlock(String id){
+    @ApiOperation(value = "get BlockoBlock",
+            tags = {"Blocko-Block"},
+            notes = "get independent BlockoBlock object",
+            produces = "application/json",
+            protocols = "https",
+            response =  BlockoBlock.class,
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  BlockoBlock.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result getBlockBlock(@ApiParam(value = "blocko_block_id String path",   required = true) @PathParam("blocko_block_id") String blocko_block_id){
         try {
-            BlockoBlock blockoBlock = BlockoBlock.find.byId(id);
+            BlockoBlock blockoBlock = BlockoBlock.find.byId(blocko_block_id);
             if(blockoBlock == null) return GlobalResult.notFoundObject();
 
             return GlobalResult.okResult(Json.toJson(blockoBlock));
@@ -843,26 +1605,32 @@ public class ProgramingPackageController extends Controller {
 
     }
 
-
-    public Result getByCategory(){
-
+    @ApiOperation(value = "get Block from Category",
+            tags = {"Blocko-Block"},
+            notes = "get list of BlockoBlocks objects",
+            produces = "application/json",
+            protocols = "https",
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                       @AuthorizationScope(scope = "Project_Editor",   description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  BlockoBlock.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result get_BlockoBlocks_from_Category(String type_of_block_id){
         try {
 
-            ObjectNode result = Json.newObject();
-            List<TypeOfBlock> typeOfBlocks = TypeOfBlock.find.all();
+            TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(type_of_block_id);
+            if(typeOfBlock == null) return GlobalResult.notFoundObject();
 
-            for (TypeOfBlock typeOfBlock : typeOfBlocks) {
-
-                ObjectNode blocks = Json.newObject();
-
-                blocks.set("typeOfBlock", Json.toJson(typeOfBlock));
-                blocks.set("Blocks", Json.toJson(typeOfBlock.blockoBlocks));
-
-                result.set(typeOfBlock.name, blocks);
-
-            }
-
-            return GlobalResult.okResult(result);
+            return GlobalResult.okResult(Json.toJson(typeOfBlock.blockoBlocks));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -873,9 +1641,28 @@ public class ProgramingPackageController extends Controller {
 
     }
 
-    public Result deleteBlock(String id){
+    @ApiOperation(value = "delete BlockoBlock",
+            tags = {"Blocko-Block"},
+            notes = "delete BlockoBlock",
+            produces = "application/json",
+            protocols = "https",
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                       @AuthorizationScope(scope = "Project_Editor",   description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result deleteBlock(@ApiParam(value = "blocko_block_id String path",   required = true) @PathParam("blocko_block_id") String blocko_block_id){
         try {
-            BlockoBlock blockoBlock = BlockoBlock.find.byId(id);
+            BlockoBlock blockoBlock = BlockoBlock.find.byId(blocko_block_id);
             if(blockoBlock == null) return GlobalResult.notFoundObject();
             blockoBlock.delete();
 
@@ -887,10 +1674,29 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-    public Result deleteBlockVersion(String id){
+    @ApiOperation(value = "delete BlockoBlock version",
+            tags = {"Blocko-Block"},
+            notes = "delete BlockoBlock version",
+            produces = "application/json",
+            protocols = "https",
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                       @AuthorizationScope(scope = "Project_Editor",   description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result delete_BlockoBlock_Version(String blocko_block_version_id){
         try {
 
-            BlockoContentBlock blockoContentBlock = BlockoContentBlock.find.byId(id);
+            BlockoBlockVersion blockoContentBlock = BlockoBlockVersion.find.byId(blocko_block_version_id);
             if(blockoContentBlock == null) return GlobalResult.notFoundObject();
 
             blockoContentBlock.delete();
@@ -900,32 +1706,64 @@ public class ProgramingPackageController extends Controller {
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - shareProjectWithUsers ERROR");
-            Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
     }
 
+    @ApiOperation(value = "create BlockoBlock version",
+            tags = {"Blocko-Block"},
+            notes = "new BlockoBlock version",
+            produces = "application/json",
+            protocols = "https",
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor",   description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_BlockoBlock_BlockoVersion_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successfully created", response =  BlockoBlockVersion.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result updateOfBlock(String id){
+    public Result new_BlockoBlock_Version(@ApiParam(value = "blocko_block_id String path",   required = true) @PathParam("blocko_block_id") String blocko_block_id){
         try {
-            JsonNode json = request().body().asJson();
-            BlockoBlock blockoBlock = BlockoBlock.find.byId(id);
 
-            BlockoContentBlock contentBlock = new BlockoContentBlock();
-            contentBlock.dateOfCreate = new Date();
+            Swagger_BlockoBlock_BlockoVersion_New help = Json.fromJson( request().body().asJson() , Swagger_BlockoBlock_BlockoVersion_New.class);
 
-            contentBlock.versionName = json.findValue("version_name").asText();
-            contentBlock.versionDescription = json.findValue("versionDescription").asText();
-            contentBlock.designJson = json.findValue("designJson").toString();
-            contentBlock.logicJson = json.findValue("logicJson").toString();
-            contentBlock.blockoBlock = blockoBlock;
-            contentBlock.save();
 
-            //blockoBlock.contentBlocks.add(contentBlock);
+            BlockoBlock blockoBlock = BlockoBlock.find.byId(blocko_block_id);
+
+            BlockoBlockVersion version = new BlockoBlockVersion();
+            version.dateOfCreate = new Date();
+
+            version.version_name = help.version_name;
+            version.version_description = help.version_description;
+            version.design_json = help.design_json;
+            version.logic_json = help.logic_json;
+            version.blocko_block = blockoBlock;
+            version.save();
+
+            //blocko_block.blocko_versions.add(version);
             return GlobalResult.okResult(Json.toJson(blockoBlock));
 
         } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "version_name - String", "versionDescription - TEXT", "designJson - TEXT", "logicJson - TEXT");
+            return GlobalResult.nullPointerResult(e, "version_name - String", "version_description - TEXT", "design_json - TEXT", "logic_json - TEXT");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - shareProjectWithUsers ERROR");
@@ -934,42 +1772,102 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-    public Result allPrevVersions(String id){
+    @ApiOperation(value = "edit BlockoBlock version",
+            tags = {"Blocko-Block"},
+            notes = "You can adit only basic information of version. If you wnat update code, " +
+                    "you have to create new version!",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor",   description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_BlockoBlock_BlockoVersion_Edit",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  BlockoBlockVersion.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result edit_BlockBlock_version(String blocko_block_version_id){
         try {
-            BlockoBlock blockoBlock = BlockoBlock.find.byId(id);
+            Swagger_BlockoBlock_BlockoVersion_Edit help = Json.fromJson( request().body().asJson() , Swagger_BlockoBlock_BlockoVersion_Edit.class);
+
+            BlockoBlockVersion version = BlockoBlockVersion.find.byId(blocko_block_version_id);
+
+            version.version_name = help.version_name;
+            version.version_description = help.version_description;
+
+            version.update();
+            return GlobalResult.okResult(Json.toJson(version));
+
+        } catch (NullPointerException e) {
+            return GlobalResult.nullPointerResult(e, "version_name", "version_description");
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - shareProjectWithUsers ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
+        }
+    }
+
+    @ApiOperation(value = "edit BlockoBlock version",
+            tags = {"Blocko-Block"},
+            notes = "You can adit only basic infromation of version. If you wnat update code, " +
+                    "you have to create new version!",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor",   description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_BlockoBlock_BlockoVersion_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  BlockoBlockVersion.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result get_BlockoBlock_all_versions(String blocko_block_id){
+        try {
+            BlockoBlock blockoBlock = BlockoBlock.find.byId(blocko_block_id);
             if (blockoBlock == null) return GlobalResult.notFoundObject();
-            return GlobalResult.ok(Json.toJson(blockoBlock.contentBlocks));
+            return GlobalResult.ok(Json.toJson(blockoBlock.blocko_versions));
 
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - allPrevVersions ERROR");
-            return GlobalResult.internalServerError();
-        }
-    }
-
-    public Result generalDescription(String id) {
-        try {
-            BlockoBlock block = BlockoBlock.find.byId(id);
-            if (block == null) return GlobalResult.notFoundObject();
-            return GlobalResult.ok(Json.toJson(block.generalDescription));
-
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - generalDescription ERROR");
-            return GlobalResult.internalServerError();
-        }
-    }
-
-    public Result versionDescription(String id) {
-        try {
-            BlockoContentBlock block = BlockoContentBlock.find.byId(id);
-            if (block == null) return GlobalResult.notFoundObject();
-
-            return GlobalResult.ok(Json.toJson(block.versionDescription));
-
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - versionDescription ERROR");
             return GlobalResult.internalServerError();
         }
     }

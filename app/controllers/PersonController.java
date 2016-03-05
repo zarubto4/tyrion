@@ -14,6 +14,7 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import utilities.Server;
 import utilities.emails.EmailTool;
 import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
@@ -63,8 +64,10 @@ public class PersonController extends Controller {
         try {
             JsonNode json = request().body().asJson();
 
-            if (Person.find.where().eq("nick_name", json.get("nick_name").asText()).findUnique()  != null) return GlobalResult.badRequest("nick name is used");
-            if (Person.find.where().eq("mail", json.get("mail").asText()).findUnique() != null)  return GlobalResult.badRequest("Email is registered");
+            if (Person.find.where().eq("nick_name", json.get("nick_name").asText()).findUnique() != null)
+                return GlobalResult.badRequest("nick name is used");
+            if (Person.find.where().eq("mail", json.get("mail").asText()).findUnique() != null)
+                return GlobalResult.badRequest("Email is registered");
 
 
             Person person = new Person();
@@ -78,19 +81,22 @@ public class PersonController extends Controller {
 
             ValidationToken validationToken = new ValidationToken().setValidation(person.mail);
 
-            String link = Configuration.root().getString("serverLink.Production") + "/mailPersonAuthentication/" + "?mail=" + person.mail + "&authToken=" + validationToken.authToken;
+            String link = Server.serverAddress + "/mail_person_authentication" + "?mail=" + person.mail + "&token=" + validationToken.authToken;
 
             try {
                 Email email = new EmailTool().sendEmailValidation(person.first_name + person.last_name, person.mail, link);
                 mailerClient.send(email);
 
-            }catch (Exception e){
+            } catch (Exception e) {
                 // TODO vhodně zalogovat tento problém
                 System.out.println("Odesílání emailu se nezdařilo");
                 e.printStackTrace();
             }
 
             return GlobalResult.okResult(Json.toJson(person));
+
+        }catch (NullPointerException e){
+            return GlobalResult.nullPointerResult(e, "nick_name","mail", "password" );
 
         } catch (Exception e) {
             Logger.error("Error", e);

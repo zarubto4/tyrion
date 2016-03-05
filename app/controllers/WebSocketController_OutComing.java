@@ -19,7 +19,6 @@ public class WebSocketController_OutComing extends Controller {
 
 
 
-
 // PRIVATE API ---------------------------------------------------------------------------------------------------------
 
     /** incoming Json from Server where Play is only client */

@@ -5,9 +5,9 @@ import com.avaje.ebean.Ebean;
 import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.Query;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.Authorization;
+import io.swagger.annotations.*;
 import models.overflow.*;
 import play.Logger;
 import play.libs.Json;
@@ -15,10 +15,16 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.a_main_utils.UtilTools;
+import utilities.UtilTools;
 import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
+import utilities.response.response_objects.JsonValueMissing;
+import utilities.response.response_objects.Result_PermissionRequired;
+import utilities.response.response_objects.Result_Unauthorized;
+import utilities.response.response_objects.Result_ok;
+import utilities.swagger.documentationClass.*;
 
+import javax.websocket.server.PathParam;
 import java.util.*;
 
 @Api(value = "Ještě neroztříděné a neupravené",
@@ -30,94 +36,36 @@ public class OverFlowController  extends Controller {
 // PUBLIC **********************************************************************************************************************
 
 
-    public Result getPost(String id){
+    @ApiOperation(value = "get Post",
+            tags = {"Blocko-OverFlow", "Post"},
+            notes = "create new Project",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  Post.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result get_Post(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id){
         try{
-            Post post = Post.find.byId(id);
+
+            Post post = Post.find.byId(post_id);
             if(post == null) return GlobalResult.notFoundObject();
 
             post.views++;
             post.update();
 
-
             return GlobalResult.okResult( Json.toJson(post) );
 
         } catch (Exception e) {
             Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - newBlock ERROR");
             return GlobalResult.internalServerError();
         }
     }
 
-
-   public Result hashTagsListOnPost(String id){
-        try{
-            Post post = Post.find.byId(id);
-            if(post == null) return GlobalResult.notFoundObject();
-            return GlobalResult.okResult(Json.toJson(post.hashTagsList));
-        }catch (Exception e){
-            return GlobalResult.nullPointerResult(e);
-        }
-    }
-
-    public Result commentsListOnPost(String id){
-        try{
-            Post post = Post.find.byId(id);
-            if(post == null) return GlobalResult.notFoundObject();
-
-            return GlobalResult.okResult(Json.toJson(post.comments));
-
-        }catch (Exception e){
-            return GlobalResult.nullPointerResult(e);
-        }
-    }
-
-    public Result answereListOnPost(String id){
-        try{
-            Post post = Post.find.byId(id);
-            if(post == null) return GlobalResult.notFoundObject();
-
-            return GlobalResult.okResult(Json.toJson(post.answers));
-        }catch (Exception e){
-            return GlobalResult.nullPointerResult(e);
-        }
-    }
-
-    public Result textOfPost(String id){
-        try{
-            Post post = Post.find.byId(id);
-            if(post == null) return GlobalResult.notFoundObject();
-            return GlobalResult.okResult(Json.toJson(post.textOfPost));
-        }catch (Exception e){
-            return GlobalResult.nullPointerResult(e);
-        }
-    }
-
-
-    /**
-     Example Predicates
-
-     eq(...) = equals
-     ne(...) = not equals
-     ieq(...) = case insensitve equals
-     between(...) = between
-     gt(...) = greater than
-     ge(...) = greater than or equals
-     lt(...) = less than or equals
-     le(...) = less than or equals
-     isNull(...) = is null
-     isNotNull(...) = is not null
-     like(...) = like
-     startsWith(...) = string starts with
-     endswith(...) = string ends with
-     contains(...) = string conains
-     in(...) = in a subquery, collection or array
-     exists(...) = at least one row exists in a subquery
-     notExists(...) = no row exists in a subquery
-     more...
-     */
-
     @BodyParser.Of(BodyParser.Json.class)
-    public Result getPostByFilter(){
+    public Result get_Post_ByFilter(){
         try {
             JsonNode json = request().body().asJson();
 
@@ -144,13 +92,13 @@ public class OverFlowController  extends Controller {
             // From date
             if(json.has("date_from")){
                 Date dateFrom = UtilTools.returnDateFromMillis( json.get("date_from").asText());
-                query.where().ge("dateOfCreate", dateFrom);
+                query.where().ge("date_of_create", dateFrom);
             }
 
             // To date
             if(json.has("date_to")){
                 Date dateTo = UtilTools.returnDateFromMillis( json.get("date_to").asText() );
-                query.where().le("dateOfCreate", dateTo);
+                query.where().le("date_of_create", dateTo);
             }
 
             if(json.has("type")){
@@ -204,10 +152,9 @@ public class OverFlowController  extends Controller {
 
     }
 
-
-    public Result getPostLinkedAnswers(String id){
+    public Result get_Post_links(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id){
         try {
-            Post postMain = Post.find.byId(id);
+            Post postMain = Post.find.byId(post_id);
             if(postMain == null) return GlobalResult.notFoundObject();
 
             List<ObjectNode> list = new ArrayList<>();
@@ -221,13 +168,13 @@ public class OverFlowController  extends Controller {
 
                     json.put("post", "http://localhost:9000/overflow/post/"  +  post.postId);
                     json.put("name", post.name);
-                    json.put("question", post.textOfPost);
+                    json.put("question", post.text_of_post);
 
                     List<ObjectNode> answerJson = new ArrayList<>();
 
                     for(Post answer : post.answers){
                         ObjectNode j = Json.newObject();
-                        j.put("textOfAnswer", answer.textOfPost);
+                        j.put("textOfAnswer", answer.text_of_post);
                         answerJson.add(j);
                     }
 
@@ -236,19 +183,6 @@ public class OverFlowController  extends Controller {
                 }
                 return GlobalResult.okResult(Json.toJson(list));
 
-        } catch (Exception e){
-            return GlobalResult.nullPointerResult(e);
-        }
-    }
-
-
-// SECURED **********************************************************************************************************************
-    @Security.Authenticated(Secured.class)
-    public Result getAllPersonPost(){
-        try {
-
-          return GlobalResult.okResult( Json.toJson(SecurityController.getPerson().personPosts)  );
-
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("OverFlowController - newPost ERROR");
@@ -256,58 +190,102 @@ public class OverFlowController  extends Controller {
         }
     }
 
+
+// SECURED **********************************************************************************************************************
+
+    @ApiOperation(value = "Create new Post",
+            tags = {"Blocko-OverFlow", "Post"},
+            notes = "Create new Post. ",
+            produces = "application/json",
+            protocols = "https",
+            code = 201,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
+                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Post_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successful created",      response = Post.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @Security.Authenticated(Secured.class)
     @BodyParser.Of(BodyParser.Json.class)
-    public Result newPost(){
+    public Result new_Post(){
         try {
-            JsonNode json = request().body().asJson();
+            Swagger_Post_New help = Json.fromJson(request().body().asJson(), Swagger_Post_New.class);
 
-            TypeOfPost typeOfPost = TypeOfPost.find.byId(json.get("type").asText());
-            if(typeOfPost == null) return GlobalResult.notFoundObject();
+            TypeOfPost typeOfPost = TypeOfPost.find.byId(help.type_of_post_id);
+            if (typeOfPost == null) return GlobalResult.notFoundObject();
 
             Post post = new Post();
             post.author = SecurityController.getPerson();
-            post.name = json.get("name").asText();
+
             post.type = typeOfPost;
             post.views = 0;
             post.likes = 0;
-            post.textOfPost = json.get("comment").asText();
-            post.dateOfCreate = new Date();
+            post.text_of_post = help.text_of_post;
+            post.date_of_create = new Date();
 
-
-           for (final JsonNode objNode : json.get("hashTags")) {
-
-                HashTag postHashTag = HashTag.find.byId(objNode.asText());
-
-                if(postHashTag == null) {
-                    postHashTag = new HashTag(objNode.asText());
-                    postHashTag.save();
-                }
-
-                if(!post.hashTagsList.contains(postHashTag)) post.hashTagsList.add(postHashTag);
-
-            }
+            UtilTools.add_hashTags_to_Post(help.hash_tags, post);
 
             post.save();
 
             SecurityController.getPerson().personPosts.add(post);
             SecurityController.getPerson().update();
 
-            return GlobalResult.created( Json.toJson(post) );
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "name - String", "comment - TEXT", "hashTags - [String, String..]");
+            return GlobalResult.created(Json.toJson(post));
+
+
         } catch (Exception e) {
+            if( e.getCause() != null && e.getCause() instanceof UnrecognizedPropertyException) return GlobalResult.unrecognizedJsonProperties( Swagger_Post_New.class);
+            if( e instanceof NullPointerException) return GlobalResult.nullPointerResult( Swagger_Post_New.class);
+
             Logger.error("Error", e);
-            Logger.error("OverFlowController - newPost ERROR");
             return GlobalResult.internalServerError();
         }
     }
 
+    @ApiOperation(value = "delete Post",
+            tags = {"Blocko-OverFlow"},
+            notes = "You can delete Main Post, Answers to post and comments.. ",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
+                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",      response = Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @Security.Authenticated(Secured.class)
-    public  Result deletePost(String postId){
+    public  Result delete_Post(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id){
         try {
 
-            Post post = Post.find.byId(postId);
+            Post post = Post.find.byId(post_id);
             if (post == null ) return GlobalResult.notFoundObject();
             if (!post.author.id.equals( SecurityController.getPerson().id) ) return GlobalResult.forbidden_Global();
 
@@ -319,60 +297,112 @@ public class OverFlowController  extends Controller {
         }
     }
 
+    @ApiOperation(value = "edit Post",
+            tags = {"Blocko-OverFlow", "Post"},
+            notes = "You can edit main post",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Post_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",      response = Post.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @Security.Authenticated(Secured.class)
     @BodyParser.Of(BodyParser.Json.class)
-    public Result editPost(String id){
+    public Result edit_Post(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id){
         try {
-            JsonNode json = request().body().asJson();
+            Swagger_Post_New help = Json.fromJson( request().body().asJson(), Swagger_Post_New.class);
 
-            System.out.println("Jsem zde");
-
-            Post post = Post.find.byId(id);
+            Post post = Post.find.byId(post_id);
             if (post == null) return GlobalResult.notFoundObject();
 
             if (!post.author.id.equals( SecurityController.getPerson().id) ) return GlobalResult.forbidden_Global();
 
-            TypeOfPost typeOfPost = TypeOfPost.find.byId(json.get("type").asText());
+            TypeOfPost typeOfPost = TypeOfPost.find.byId( help.type_of_post_id);
             if(typeOfPost == null) return GlobalResult.notFoundObject();
 
-            post.name = json.get("name").asText();
+            post.name = help.name;
             post.type = typeOfPost;
-            post.textOfPost = json.get("comment").asText();
+            post.text_of_post = help.text_of_post;
             post.updated = true;
 
             post.hashTagsList.clear();
 
-            for (final JsonNode objNode : json.get("hashTags")) {
-
-                HashTag postHashTag = HashTag.find.byId(objNode.asText());
-                System.out.println("3");
-
-                if(postHashTag == null) {
-                    postHashTag = new HashTag(objNode.asText());
-                    postHashTag.save();
-                }
-
-                if(!post.hashTagsList.contains(postHashTag)) post.hashTagsList.add(postHashTag);
-
-            }
+            UtilTools.add_hashTags_to_Post( help.hash_tags, post );
 
             post.update();
 
-           return GlobalResult.okResult();
+           return GlobalResult.okResult(Json.toJson(post));
 
-        }catch (Exception e){
-            return GlobalResult.nullPointerResult(e);
+        } catch (NullPointerException e) {
+            return GlobalResult.nullPointerResult(e, "name - String", "comment - TEXT", "hashTags - [String, String..]");
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("OverFlowController - newPost ERROR");
+            return GlobalResult.internalServerError();
         }
-
     }
 
+    @ApiOperation(value = "add comment to the Post",
+            tags = {"Blocko-OverFlow", "Post"},
+            notes = "You can comment Main Post and all answers in Main Post. But you cannot comment another comment!",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
+                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Post_Comment",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",      response = Post.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @Security.Authenticated(Secured.class)
     @BodyParser.Of(BodyParser.Json.class)
-    public Result addComment(){
+    public Result addComment(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id){
        try {
-           JsonNode json = request().body().asJson();
+           Swagger_Post_Comment help = Json.fromJson( request().body().asJson(), Swagger_Post_Comment.class);
 
-           Post parentPost = Post.find.byId(json.get("postId").asText());
+           Post parentPost = Post.find.byId(post_id);
            if (parentPost == null) return GlobalResult.notFoundObject();
 
            if( parentPost.postParentComment != null)  return GlobalResult.nullPointerResult("You cannot comment another comment");
@@ -380,22 +410,10 @@ public class OverFlowController  extends Controller {
            Post post = new Post();
            post.author = SecurityController.getPerson();
            post.likes = 0;
-           post.textOfPost = json.get("comment").asText();
-           post.dateOfCreate = new Date();
+           post.text_of_post = help.text_of_post;
+           post.date_of_create = new Date();
 
-
-           for (final JsonNode objNode : json.get("hashTags")) {
-
-               HashTag postHashTag = HashTag.find.byId(objNode.asText());
-
-               if(postHashTag == null) {
-                   postHashTag = new HashTag(objNode.asText());
-                   postHashTag.save();
-               }
-
-               if(!post.hashTagsList.contains(postHashTag)) post.hashTagsList.add(postHashTag);
-
-           }
+           UtilTools.add_hashTags_to_Post(help.hash_tags, post );
 
            parentPost.comments.add(post);
            post.postParentComment = parentPost;
@@ -404,42 +422,65 @@ public class OverFlowController  extends Controller {
            post.save();
 
            return GlobalResult.okResult( Json.newObject().put( "postId", post.postId ));
-       }catch (Exception e){
-           return GlobalResult.nullPointerResult(e);
+       } catch (NullPointerException e) {
+           return GlobalResult.nullPointerResult(e, "name - String", "comment - TEXT", "hashTags - [String, String..]");
+       } catch (Exception e) {
+           Logger.error("Error", e);
+           Logger.error("OverFlowController - newPost ERROR");
+           return GlobalResult.internalServerError();
        }
     }
 
+    @ApiOperation(value = "add Answer to the Post",
+            tags = {"Blocko-OverFlow"},
+            notes = "You can  answer to Main Post. But you cannot answer another answer!",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Post_Answer",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",      response = Post.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @Security.Authenticated(Secured.class)
     @BodyParser.Of(BodyParser.Json.class)
-    public Result addAnswer(){
+    public Result addAnswer(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id){
         try {
-            JsonNode json = request().body().asJson();
+            Swagger_Post_Answer help = Json.fromJson( request().body().asJson(), Swagger_Post_Answer.class);
 
-            Post parentPost = Post.find.byId(json.get("postId").asText());
+            Post parentPost = Post.find.byId(post_id);
             if (parentPost == null) throw new Exception("Post not Exist");
 
             if( parentPost.postParentComment != null)  return GlobalResult.nullPointerResult("You cannot answer to comment");
-            if( parentPost.postParentAnswer != null)   return GlobalResult.nullPointerResult("You cannot answer to another  answer");
+            if( parentPost.postParentAnswer  != null)  return GlobalResult.nullPointerResult("You cannot answer to another answer");
 
             Post post = new Post();
             post.author = SecurityController.getPerson();
             post.likes = 0;
-            post.textOfPost = json.get("comment").asText();
-            post.dateOfCreate = new Date();
+            post.text_of_post = help.text_of_post;
+            post.date_of_create = new Date();
 
-
-            for (final JsonNode objNode : json.get("hashTags")) {
-
-                HashTag postHashTag = HashTag.find.byId(objNode.asText());
-
-                if(postHashTag == null) {
-                    postHashTag = new HashTag(objNode.asText());
-                    postHashTag.save();
-                }
-
-                if(!post.hashTagsList.contains(postHashTag)) post.hashTagsList.add(postHashTag);
-
-            }
+            UtilTools.add_hashTags_to_Post(help.hash_tags, post );
 
             parentPost.answers.add(post);
             post.postParentAnswer = parentPost;
@@ -447,62 +488,106 @@ public class OverFlowController  extends Controller {
             parentPost.save();
             post.save();
 
-            return GlobalResult.okResult( Json.newObject().put( "postId", post.postId ));
+            return GlobalResult.okResult(Json.toJson(post));
 
-        }catch (Exception e){
-
-            return GlobalResult.nullPointerResult(e);
-
+        } catch (NullPointerException e) {
+            return GlobalResult.nullPointerResult(e, "text_of_post", "[hash_tags]");
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("OverFlowController - newPost ERROR");
+            return GlobalResult.internalServerError();
         }
     }
 
-    @Security.Authenticated(Secured.class)
-    public Result updateComment(String id){
-        try {
-            JsonNode json = request().body().asJson();
-            if (json == null) throw new Exception("Null Json");
-
-            Post comment = Post.find.byId(id);
-            if (comment == null) throw new Exception("Comment not Exist");
-
-            comment.textOfPost = json.get("comment").asText();
-
-            comment.hashTags().clear();
-
-            for (final JsonNode objNode : json.get("hashTags")) {
-
-                HashTag postHashTag = HashTag.find.byId(objNode.asText());
-
-                if(postHashTag == null) {
-                    postHashTag = new HashTag(objNode.asText());
-                    postHashTag.save();
-                }
-
-                if(!comment.hashTagsList.contains(postHashTag)) comment.hashTagsList.add(postHashTag);
-
+    @ApiOperation(value = "edit Comment or Answer Post",
+            tags = {"Blocko-OverFlow", "Post"},
+            notes = "You can update Comment post",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
+                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
             }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Post_Comment",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",      response = Post.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured.class)
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result edit_Comment_or_Answer(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id){
+        try {
+            Swagger_Post_Comment help = Json.fromJson( request().body().asJson(), Swagger_Post_Comment.class);
 
-            comment.save();
+            Post post = Post.find.byId(post_id);
+            if (post == null) throw new Exception("Comment not Exist");
 
-            return GlobalResult.okResult();
-        }catch (Exception e){
-            return GlobalResult.nullPointerResult(e);
+            post.text_of_post = help.text_of_post;
+
+            post.hashTags().clear();
+
+            UtilTools.add_hashTags_to_Post(help.hash_tags, post );
+
+            post.update();
+            return GlobalResult.okResult(Json.toJson(post));
+
+        } catch (NullPointerException e) {
+            return GlobalResult.nullPointerResult(e, "name - String", "comment - TEXT", "hashTags - [String, String..]");
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("OverFlowController - newPost ERROR");
+            return GlobalResult.internalServerError();
         }
     }
 
+    @ApiOperation(value = "answer to Post with link",
+            tags = {"Blocko-OverFlow"},
+            notes = "You can connect question (main Post) with previous version",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
+                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",      response = LinkedPost.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @Security.Authenticated(Secured.class)
-    public Result linkWithPreviousAnswer(){
+    public Result linkWithPreviousAnswer(@ApiParam(value = "question_post_id String path", required = true) @PathParam("question_post_id") String question_post_id, @ApiParam(value = "This is Answer Id (main post)", required = true) @PathParam("post_id") String answer_post_id){
         try {
-            JsonNode json = request().body().asJson();
-            if (json == null) throw new Exception("Null Json");
 
-            Post question = Post.find.byId(json.get("postId").asText());
-            Post answer = Post.find.byId(json.get("linkId").asText());
+            Post question = Post.find.byId(question_post_id);
+            Post answer = Post.find.byId(answer_post_id);
 
-            if (question == null)   return GlobalResult.nullPointerResult(new Exception(" Overflow post not Exist"));
-            if (answer == null)     return GlobalResult.nullPointerResult(new Exception(" Overflow link post not Exist"));
-            if (question.postParentComment != null)     throw new Exception("You can link only main post");
-            if (answer.postParentComment != null)       throw new Exception("You can link only main post");
+            if (question == null)   return GlobalResult.notFoundObject();
+            if (answer == null)     return GlobalResult.notFoundObject();
+            if (question.postParentComment != null)   return GlobalResult.badRequest("You can link only main post");
+            if (answer.postParentComment != null)     return GlobalResult.badRequest("You can link only main post");
 
             LinkedPost linkedPost = new LinkedPost();
             linkedPost.answer = answer;
@@ -511,19 +596,38 @@ public class OverFlowController  extends Controller {
 
             linkedPost.save();
 
-            ObjectNode result = Json.newObject();
-            result.put("connectionId", linkedPost.linkId);
-
-            return GlobalResult.okResult(result);
-        }catch (Exception e){
-            return GlobalResult.nullPointerResult(e, "postId", "linkId");
+            return GlobalResult.okResult(Json.toJson(linkedPost));
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("OverFlowController - newPost ERROR");
+            return GlobalResult.internalServerError();
         }
     }
 
+    @ApiOperation(value = "remove link to Post",
+            tags = {"Blocko-OverFlow", "Post"},
+            notes = "Remove connection (Link) between Posts",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",      response = Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @Security.Authenticated(Secured.class)
-    public Result unlinkWithPreviousAnswer(String id){
+    public Result unlinkWithPreviousAnswer(String linked_post_id){
         try {
-            LinkedPost post = LinkedPost.find.byId(id);
+            LinkedPost post = LinkedPost.find.byId(linked_post_id);
 
             if (post == null ) throw new Exception("Linked connection not Exist");
             if (!post.author.id.equals( SecurityController.getPerson().id) ) return GlobalResult.forbidden_Global();
@@ -531,43 +635,123 @@ public class OverFlowController  extends Controller {
             post.delete();
 
             return GlobalResult.okResult();
-        }catch (Exception e){
-            return GlobalResult.nullPointerResult(e);
+
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("OverFlowController - newPost ERROR");
+            return GlobalResult.internalServerError();
         }
     }
 
-//------------------------------------------------------------------------------------------------------------------------
+/// TYPE OF POST ###################################################################################################################*/
 
-    @BodyParser.Of(BodyParser.Json.class)
+
+    @ApiOperation(value = "new Type of Post",
+            tags = {"Blocko-OverFlow", "Type-Of-Post"},
+            notes = "Create new type of post. Its only for Blocko-OverFlow Administrators!",
+            produces = "application/json",
+            protocols = "https",
+            code = 201,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
+                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_TypeOfPost_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successful created",      response = TypeOfPost.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @Security.Authenticated(Secured.class)
+    @BodyParser.Of(BodyParser.Json.class)
     public Result new_TypeOfPost(){
         try{
-            JsonNode json = request().body().asJson();
+            Swagger_TypeOfPost_New help = Json.fromJson( request().body().asJson(), Swagger_TypeOfPost_New.class);
 
-            if( TypeOfPost.find.where().ieq("type", json.get("type").asText() ).findUnique() != null) throw new Exception("Duplicate value");
+            if( TypeOfPost.find.where().ieq("type", help.type ).findUnique() != null) return GlobalResult.badRequest("Duplicate Value");
 
             TypeOfPost typeOfPost = new TypeOfPost();
-            typeOfPost.type = json.get("type").asText();
+            typeOfPost.type =  help.type;
 
             typeOfPost.save();
 
             return GlobalResult.okResult( Json.toJson(typeOfPost) );
-        }catch (Exception e){
-            return GlobalResult.nullPointerResult(e);
+
+        }catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("OverFlowController - newPost ERROR");
+            return GlobalResult.internalServerError();
         }
     }
 
+    @ApiOperation(value = "get all Type of Post",
+            tags = {"Blocko-OverFlow", "Type-Of-Post"},
+            notes = "get All Type of Post. (Its for all logged users)",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",      response = TypeOfPost.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @Security.Authenticated(Secured.class)
     public Result get_TypeOfPost_all(){
         try{
             return GlobalResult.okResult(Json.toJson( TypeOfPost.find.all() ));
-        }catch (Exception e){
-            return GlobalResult.nullPointerResult(e);
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("OverFlowController - newPost ERROR");
+            return GlobalResult.internalServerError();
         }
     }
 
+
+    @ApiOperation(value = "get Type of Post",
+            tags = {"Blocko-OverFlow", "Type-Of-Post"},
+            notes = "get Type of Post by path id. (Its for all logged users)",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
+                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",      response = TypeOfPost.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @Security.Authenticated(Secured.class)
-    public Result get_TypeOfPost(String type_of_post_id){
+    public Result get_TypeOfPost(@ApiParam(value = "type_of_post_id String path", required = true) @PathParam("type_of_post_id") String type_of_post_id){
         try{
 
             TypeOfPost typeOfPost = TypeOfPost.find.byId(type_of_post_id);
@@ -575,15 +759,49 @@ public class OverFlowController  extends Controller {
 
             return GlobalResult.okResult( Json.toJson(typeOfPost) );
 
-        }catch (Exception e){
-            return GlobalResult.nullPointerResult(e);
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("OverFlowController - newPost ERROR");
+            return GlobalResult.internalServerError();
         }
     }
 
 
+    @ApiOperation(value = "edit Type of Post",
+                 tags = {"Blocko-OverFlow", "Type-Of-Post"},
+    notes = "edit type of post. Its required special permission!",
+    produces = "application/json",
+    protocols = "https",
+    code = 200,
+    authorizations = {
+        @Authorization(
+                value="permission",
+                scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
+                        @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+        )
+    }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_TypeOfPost_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Ok Result",      response = TypeOfPost.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Secured.class)
-    public Result edit_TypeOfPost(String type_of_post_id){
+    public Result edit_TypeOfPost(@ApiParam(value = "type_of_post_id String path", required = true) @PathParam("type_of_post_id") String type_of_post_id){
         try{
             JsonNode json = request().body().asJson();
 
@@ -598,13 +816,47 @@ public class OverFlowController  extends Controller {
             typeOfPost.update();
 
             return GlobalResult.okResult( Json.toJson(typeOfPost) );
-        }catch (Exception e){
-            return GlobalResult.nullPointerResult(e);
+
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("OverFlowController - newPost ERROR");
+            return GlobalResult.internalServerError();
         }
     }
 
+    @ApiOperation(value = "delete Type of Post",
+            tags = {"Blocko-OverFlow", "Type-Of-Post"},
+            notes = "delete type of post. Its required special permission!",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_TypeOfPost_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",      response = Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @Security.Authenticated(Secured.class)
-    public Result delete_TypeOfPost(String type_of_post_id){
+    public Result delete_TypeOfPost(@ApiParam(value = "type_of_post_id String path", required = true) @PathParam("type_of_post_id") String type_of_post_id){
         try{
 
             TypeOfPost typeOfPost = TypeOfPost.find.byId(type_of_post_id);
@@ -613,22 +865,59 @@ public class OverFlowController  extends Controller {
             typeOfPost.delete();
 
             return GlobalResult.okResult();
-        }catch (Exception e){
-            return GlobalResult.nullPointerResult(e);
+
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("OverFlowController - newPost ERROR");
+            return GlobalResult.internalServerError();
         }
     }
 
-//------------------------------------------------------------------------------------------------------------------------
-    @BodyParser.Of(BodyParser.Json.class)
+/// TYPE OF CONFIRMS ###################################################################################################################*/
+
+
+    @ApiOperation(value = "new Type of Confirms",
+            tags = {"Blocko-OverFlow", "Type-Of-Confirms"},
+            notes = "Create new type of Confirms. Its only for Blocko-OverFlow Administrators!",
+            produces = "application/json",
+            protocols = "https",
+            code = 201,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_TypeOfConfirms_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successful created",      response = TypeOfConfirms.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @Security.Authenticated(Secured.class)
+    @BodyParser.Of(BodyParser.Json.class)
     public Result new_TypeOfConfirms(){
         try{
-            JsonNode json = request().body().asJson();
+            Swagger_TypeOfConfirms_New help = Json.fromJson( request().body().asJson(), Swagger_TypeOfConfirms_New.class);
 
             TypeOfConfirms typeOfConfirms = new TypeOfConfirms();
-            typeOfConfirms.type = json.get("type").asText();
-            typeOfConfirms.color = json.get("color").asText();
-            typeOfConfirms.size = json.get("size").asInt();
+            typeOfConfirms.type = help.type;
+            typeOfConfirms.color = help.color;
+            typeOfConfirms.size =  help.size;
 
             typeOfConfirms.save();
 
@@ -639,18 +928,50 @@ public class OverFlowController  extends Controller {
         }
     }
 
+    @ApiOperation(value = "edit Type of Confirms",
+            tags = {"Blocko-OverFlow", "Type-Of-Confirms"},
+            notes = "edit  type of Confirms. Its only for Blocko-OverFlow Administrators!",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
+                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_TypeOfConfirms_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",      response = TypeOfConfirms.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Secured.class)
-    public Result edit_TypeOfConfirms(String type_of_confirm_id){
+    public Result edit_TypeOfConfirms(@ApiParam(value = "type_of_confirm_id String path", required = true) @PathParam("type_of_confirm_id") String  type_of_confirm_id){
         try{
-            JsonNode json = request().body().asJson();
+            Swagger_TypeOfConfirms_New help = Json.fromJson( request().body().asJson(), Swagger_TypeOfConfirms_New.class);
 
             TypeOfConfirms typeOfConfirms = TypeOfConfirms.find.byId(type_of_confirm_id);
             if(typeOfConfirms == null) return GlobalResult.notFoundObject();
 
-            typeOfConfirms.type = json.get("type").asText();
-            typeOfConfirms.color = json.get("color").asText();
-            typeOfConfirms.size = json.get("size").asInt();
+            typeOfConfirms.type = help.type;
+            typeOfConfirms.color = help.color;
+            typeOfConfirms.size =  help.size;
 
             typeOfConfirms.save();
 
@@ -661,8 +982,41 @@ public class OverFlowController  extends Controller {
         }
     }
 
+    @ApiOperation(value = "edit Type of Confirms",
+            tags = {"Blocko-OverFlow", "Type-Of-Confirms"},
+            notes = "edit  type of Confirms. Its only for Blocko-OverFlow Administrators!",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
+                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_TypeOfConfirms_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response = TypeOfConfirms.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Secured.class)
-    public Result delete_TypeOfConfirms(String type_of_confirm_id){
+    public Result delete_TypeOfConfirms(@ApiParam(value = "type_of_confirm_id String path", required = true) @PathParam("type_of_confirm_id") String  type_of_confirm_id){
         try{
 
             TypeOfConfirms typeOfConfirms = TypeOfConfirms.find.byId(type_of_confirm_id);
@@ -677,10 +1031,28 @@ public class OverFlowController  extends Controller {
         }
     }
 
-
-
+    @ApiOperation(value = "get Type of Confirms",
+            tags = {"Blocko-OverFlow", "Type-Of-Confirms"},
+            notes = "get  type of Confirms. Its only for Blocko-OverFlow Administrators!",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
+                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response = TypeOfConfirms.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @Security.Authenticated(Secured.class)
-    public Result get_TypeOfConfirms(String type_of_confirm_id){
+    public Result get_TypeOfConfirms(@ApiParam(value = "type_of_confirm_id String path", required = true) @PathParam("type_of_confirm_id") String  type_of_confirm_id){
         try{
 
             TypeOfConfirms typeOfConfirms = TypeOfConfirms.find.byId(type_of_confirm_id);
@@ -692,7 +1064,26 @@ public class OverFlowController  extends Controller {
         }
     }
 
-
+    @ApiOperation(value = "get Type of Confirms",
+            tags = {"Blocko-OverFlow", "Type-Of-Confirms"},
+            notes = "get  type of Confirms. Its only for Blocko-OverFlow Administrators!",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
+                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response = TypeOfConfirms.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @Security.Authenticated(Secured.class)
     public Result get_TypeOfConfirms_all(){
         try{
@@ -702,9 +1093,28 @@ public class OverFlowController  extends Controller {
         }
     }
 
-
+    @ApiOperation(value = "set Type of Confirms to Post",
+            tags = {"Blocko-OverFlow", "Type-Of-Confirms", "Post"},
+            notes = "set type of Confirms to post. Its allowed only for system or Blocko-OverFlow Administrators",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
+                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response = Post.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @Security.Authenticated(Secured.class)
-    public Result set_TypeOfConfirm_to_Post(String post_id, String type_of_confirm_id){
+    public Result set_TypeOfConfirm_to_Post(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id, @ApiParam(value = "type_of_confirm_id String path", required = true) @PathParam("type_of_confirm_id") String  type_of_confirm_id){
         try{
             TypeOfConfirms typeOfConfirms = TypeOfConfirms.find.byId(type_of_confirm_id);
             if(typeOfConfirms == null) return GlobalResult.notFoundObject();
@@ -722,8 +1132,28 @@ public class OverFlowController  extends Controller {
         }
     }
 
+    @ApiOperation(value = "remove Type of Confirms from Post",
+            tags = {"Blocko-OverFlow", "Type-Of-Confirms", "Post"},
+            notes = "set type of Confirms to post. Its allowed only for system or Blocko-OverFlow Administrators",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
+                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response = Post.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @Security.Authenticated(Secured.class)
-    public Result remove_TypeOfConfirm_to_Post(String post_id, String type_of_confirm_id){
+    public Result remove_TypeOfConfirm_to_Post(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id,@ApiParam(value = "type_of_confirm_id String path", required = true) @PathParam("type_of_confirm_id") String  type_of_confirm_id){
         try{
 
             TypeOfConfirms typeOfConfirms = TypeOfConfirms.find.byId(type_of_confirm_id);
@@ -742,20 +1172,40 @@ public class OverFlowController  extends Controller {
         }
     }
 
-//------------------------------------------------------------------------------------------------------------------------
+/// OTHER ###################################################################################################################*/
 
+    @ApiOperation(value = "add HashTag to Post",
+            tags = {"Blocko-OverFlow", "Post"},
+            notes = "add HashTag to post",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response = TypeOfConfirms.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @Security.Authenticated(Secured.class)
-    public Result add_HashTag_to_Post(String post_id, String hashTag){
+    public Result add_HashTag_to_Post(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id, @ApiParam(value = "hash_tag String path", required = true) @PathParam("hash_tag")String hash_tag){
         try{
 
             Post post = Post.find.byId(post_id);
             if(post == null) return GlobalResult.notFoundObject();
 
 
-            HashTag postHashTag = HashTag.find.byId(hashTag);
+            HashTag postHashTag = HashTag.find.byId(hash_tag);
 
             if(postHashTag == null) {
-                 postHashTag = new HashTag(hashTag);
+                 postHashTag = new HashTag(hash_tag);
                  postHashTag.save();
             }
 
@@ -771,14 +1221,34 @@ public class OverFlowController  extends Controller {
 
     }
 
+    @ApiOperation(value = "remove HashTag from Post",
+            tags = {"Blocko-OverFlow", "Post"},
+            notes = "add HashTag to post",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response = TypeOfConfirms.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @Security.Authenticated(Secured.class)
-    public Result remove_HashTag_from_Post(String post_id, String hashTag){
+    public Result remove_HashTag_from_Post(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id, @ApiParam(value = "hash_tag String path", required = true) @PathParam("hash_tag")String hash_tag){
         try{
 
             Post post = Post.find.byId(post_id);
             if(post == null) return GlobalResult.notFoundObject();
 
-            HashTag postHashTag = HashTag.find.byId(hashTag);
+            HashTag postHashTag = HashTag.find.byId(hash_tag);
             if(postHashTag == null) return GlobalResult.notFoundObject();
 
 
@@ -793,10 +1263,30 @@ public class OverFlowController  extends Controller {
 
     }
 
-        @Security.Authenticated(Secured.class)
-    public Result likePlus(String postId){
+    @ApiOperation(value = "like plus on Post",
+            tags = {"Blocko-OverFlow", "Post"},
+            notes = "touch like plus - And user can do that only once! ",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response = TypeOfConfirms.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured.class)
+    public Result likePlus(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id){
         try {
-            Post post = Post.find.where().eq("postId", postId).findUnique();
+            Post post = Post.find.where().eq("postId", post_id).findUnique();
 
             if(post.listOfLikers != null &&  post.listOfLikers.contains(  SecurityController.getPerson()  ) ) throw new Exception("You have decided");
 
@@ -811,10 +1301,31 @@ public class OverFlowController  extends Controller {
         }
     }
 
+
+    @ApiOperation(value = "like minus on Post",
+            tags = {"Blocko-OverFlow", "Post"},
+            notes = "touch like minus - And user can do that only once! ",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner",  description = "For create new C_program, you have to own project"),
+                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response = TypeOfConfirms.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @Security.Authenticated(Secured.class)
-    public Result likeMinus(String postId){
+    public Result likeMinus(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id){
         try {
-            Post post = Post.find.where().eq("postId", postId).findUnique();
+            Post post = Post.find.where().eq("postId", post_id).findUnique();
 
             if(post.listOfLikers != null &&  post.listOfLikers.contains(  SecurityController.getPerson()  ) ) return GlobalResult.forbidden_Global();
 

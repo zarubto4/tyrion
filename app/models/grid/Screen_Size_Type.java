@@ -26,9 +26,7 @@ public class Screen_Size_Type extends Model {
                                      @JsonIgnore @ManyToOne     public Project project;
 
 
-    @JsonIgnore  @OneToMany(mappedBy="screen_size_type", cascade = CascadeType.ALL)     public List<M_Program> m_program_s;
-
-
+    @JsonIgnore  @OneToMany(mappedBy="screen_size_type_object", cascade = CascadeType.ALL)     public List<M_Program> m_program_s;
 
 
 

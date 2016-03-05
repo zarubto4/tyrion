@@ -3,6 +3,7 @@ package models.compiler;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import utilities.Server;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -22,12 +23,12 @@ public class LibraryGroup extends Model {
          @JsonIgnore @ManyToMany(cascade = CascadeType.ALL) public List<Processor> processors = new ArrayList<>();
 
 
-    @JsonIgnore @OneToMany(mappedBy="libraryGroup", cascade=CascadeType.ALL) @OrderBy("azureLinkVersion DESC") public List<Version_Object> versionObjects = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="libraryGroup", cascade=CascadeType.ALL) @OrderBy("azureLinkVersion DESC") public List<Version_Object> version_objects = new ArrayList<>();
 
 
-    @JsonProperty public Integer versionsCount() { return versionObjects.size(); }
-    @JsonProperty public String  versions()      { return                                   "http://localhost:9000/compilation/libraryGroup/versions/"   + id; }
-    @JsonProperty public String  processors()    { return processors.isEmpty()    ? null :  "http://localhost:9000/compilation/libraryGroup/processors/" +  id;}
+    @JsonProperty public Integer versionsCount() { return version_objects.size(); }
+    @JsonProperty public String  versions()      { return                                   Server.serverAddress + "/compilation/libraryGroup/versions/"   + id; }
+    @JsonProperty public String  processors()    { return processors.isEmpty()    ? null :  Server.serverAddress + "/compilation/libraryGroup/processors/" +  id;}
 
 
     @JsonIgnore

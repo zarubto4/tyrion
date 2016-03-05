@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.compiler.Version_Object;
 import models.project.global.Project;
 import play.libs.Json;
+import utilities.Server;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Date;
@@ -20,7 +22,7 @@ public class B_Program extends Model {
 
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public String programId;
-                                                             public String programName;
+                                                             public String name;
                         @Column(columnDefinition = "TEXT")   public String programDescription;
                                                              public Date lastUpdate;
                                                              public Date dateOfCreate;
@@ -46,7 +48,7 @@ public class B_Program extends Model {
 
                     // Uložím do jména ID homera
                     ObjectNode json = Json.newObject();
-                    json.put("homer",   b_program_homer.homer.homerId );
+                    json.put("homer",   b_program_homer.homer.homer_id);
                     json.put("version", versionObject.azureLinkVersion );
                     json.put("state",   b_program_homer.state());
                     homer_list.add(json);
@@ -74,7 +76,7 @@ public class B_Program extends Model {
 
         return result;
     }
-    @JsonProperty public String project()                       {  return "http://localhost:9000/project/project/" + this.project.projectId; }
+    @JsonProperty public String   project()                     {  return Server.serverAddress + "/project/project/" + this.project.id; }
 
 
     public static Finder<String,B_Program> find = new Finder<>(B_Program.class);

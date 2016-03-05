@@ -19,7 +19,8 @@ public class WebSocketClientNotPlay extends Thread {
     public Session session = null;
 
     public  Map<String, JsonNode> message_out = new HashMap<>(); // (meessageId, JsonNode)
-    public  Map<String, JsonNode> message_in = new HashMap<>(); // (meessageId, JsonNode)
+    public  Map<String, JsonNode> message_in  = new HashMap<>(); // (meessageId, JsonNode)
+
 
     public WebSocketClientNotPlay(String identificator, URI serverURI , Thread thread) throws Exception {
         this.identificator = identificator;
@@ -33,7 +34,6 @@ public class WebSocketClientNotPlay extends Thread {
     @OnOpen
     public void onOpen(Session session) {
         this.session = session;
-
         WebSocketController_OutComing.servers.put(identificator, this);
     }
 

@@ -30,10 +30,10 @@ POST             /websocket/sendTo/:id                      @controllers.WebSock
 POST            /coreClient/person/permission/login         @controllers.SecurityController.login()
 POST            /coreClient/person/permission/logout        @controllers.SecurityController.logout
 
-GET             /login/facebook                             @controllers.SecurityController.Facebook(returnLink)
-GET             /login/twitter                              @controllers.SecurityController.Twitter(returnLink)
-GET             /login/github                               @controllers.SecurityController.GitHub(returnLink)
-GET             /login/vkontakte                            @controllers.SecurityController.Vkontakte(returnLink)
+GET             /login/facebook                             @controllers.SecurityController.Facebook(return_link)
+GET             /login/twitter                              @controllers.SecurityController.Twitter(return_link)
+GET             /login/github                               @controllers.SecurityController.GitHub(return_link)
+GET             /login/vkontakte                            @controllers.SecurityController.Vkontakte(return_link)
 
 GET             /login/person                               @controllers.SecurityController.getPersonByToken
 
@@ -54,50 +54,46 @@ POST           /coreClient/person/person                   @controllers.PersonCo
 PUT            /coreClient/person/person                   @controllers.PersonController.edit_Person_Information()
 GET            /coreClient/person/person/:id               @controllers.PersonController.getPerson(id: String)
 
-
-GET            /coreClient/person/valid/nickname/:nickname     @controllers.PersonController.valid_Person_NickName(nickname)
+GET            /coreClient/person/valid/nickname/:nick_name    @controllers.PersonController.valid_Person_NickName(nick_name)
 GET            /coreClient/person/valid/mail/:mail             @controllers.PersonController.valid_Person_mail(mail)
 
 
 DELETE         /coreClient/person/person/:id               @controllers.PersonController.deletePerson(id: String)
 
-GET            /emailPersonAuthentication/                 @controllers.PersonController.email_Person_authentitaction(mail,authToken)
+GET            /mail_person_authentication                 @controllers.PersonController.email_Person_authentitaction(mail,token)
 
 
 ### PERMISSION ############ PERMISSION ############### PERMISSION ################ PERMISSION ################# PERMISSION #####################################################
 ################################################################################################################################################################################
 
-PUT            /secure/permission/person/add                @controllers.PermissionController.add_Permission_Person(person_id,permission_id)
-PUT            /secure/permission/person/remove             @controllers.PermissionController.remove_Permission_Person(person_id,permission_id)
-GET            /secure/permission                           @controllers.PermissionController.get_Permission_All()
+PUT            /secure/permission/person/:person_id/:permission_id           @controllers.PermissionController.add_Permission_Person(person_id,permission_id)
+DELETE         /secure/permission/person/:person_id/:permission_id           @controllers.PermissionController.remove_Permission_Person(person_id,permission_id)
+GET            /secure/permission                                            @controllers.PermissionController.get_Permission_All()
 
-GET            /secure/role/permission/add                  @controllers.PermissionController.add_Permission_to_Role(permission_id,role_id)
-GET            /secure/role/permission                      @controllers.PermissionController.get_Permission_in_Group(role_id)
-GET            /secure/role/permission/remove               @controllers.PermissionController.remove_Permission_from_Role(permission_id,role_id)
+PUT            /secure/role/permission/:permission_id/:role_id               @controllers.PermissionController.add_Permission_to_Role(permission_id,role_id)
+GET            /secure/role/permission/:role_id                              @controllers.PermissionController.get_Permission_in_Group(role_id)
+GET            /secure/role/person/:role_id                                  @controllers.PermissionController.get_Person_from_Role_Group(role_id)
+DELETE         /secure/role/permission/:permission_id/:role_id               @controllers.PermissionController.remove_Permission_from_Role(permission_id,role_id)
 
-POST           /secure/role                                 @controllers.PermissionController.new_Role()
-DELETE         /secure/role                                 @controllers.PermissionController.delete_Role(role_id)
+POST           /secure/role                                                  @controllers.PermissionController.new_Role()
+DELETE         /secure/role/:role_id                                         @controllers.PermissionController.delete_Role(role_id)
 
-PUT            /secure/role/person/add                      @controllers.PermissionController.add_Role_Person(person_id,role_id)
-PUT            /secure/role/person/remove                   @controllers.PermissionController.remove_Role_Person(person_id,role_id)
-GET            /secure/role/all                             @controllers.PermissionController.get_Role_All()
+PUT            /secure/role/person/:person_id/:role_id                       @controllers.PermissionController.add_Role_Person(person_id,role_id)
+DELETE         /secure/role/person/:person_id/:role_id                       @controllers.PermissionController.remove_Role_Person(person_id,role_id)
+GET            /secure/role/all                                              @controllers.PermissionController.get_Role_All()
 
-GET            /secure/person/system_acces                  @controllers.PermissionController.get_System_Acces(person_id)
+GET            /secure/person/system_acces/:person_id                        @controllers.PermissionController.get_System_Acces(person_id)
 
 ### OVERFLOW ############ OVERFLOW ############### OVERFLOW ################ OVERFLOW ################# OVERFLOW ###############################################################
 ################################################################################################################################################################################
 
-POST           /overflow/post                              @controllers.OverFlowController.newPost()
-GET            /overflow/post/:id                          @controllers.OverFlowController.getPost(id: String)
-DELETE         /overflow/post/:id                          @controllers.OverFlowController.deletePost(id: String)
-PUT            /overflow/post/:id                          @controllers.OverFlowController.editPost(id: String)
-POST           /overflow/postFilter                        @controllers.OverFlowController.getPostByFilter
-GET            /overflow/linkedAnswers/:id                 @controllers.OverFlowController.getPostLinkedAnswers(id: String)
+POST           /overflow/post                              @controllers.OverFlowController.new_Post()
+GET            /overflow/post/:post_id                     @controllers.OverFlowController.get_Post(post_id)
+DELETE         /overflow/post/:post_id                     @controllers.OverFlowController.delete_Post(post_id)
+PUT            /overflow/post/:post_id                     @controllers.OverFlowController.edit_Post(post_id)
+POST           /overflow/postFilter                        @controllers.OverFlowController.get_Post_ByFilter()
+GET            /overflow/linkedAnswers/:post_id            @controllers.OverFlowController.get_Post_links(post_id)
 
-GET           /overflow/post/hashTags/:id                  @controllers.OverFlowController.hashTagsListOnPost(id: String)
-GET           /overflow/post/comments/:id                  @controllers.OverFlowController.commentsListOnPost(id: String)
-GET           /overflow/post/answers/:id                   @controllers.OverFlowController.answereListOnPost(id: String)
-GET           /overflow/post/textOfPost/:id                @controllers.OverFlowController.textOfPost(id: String)
 
 POST           /overflow/typeOfPost                                         @controllers.OverFlowController.new_TypeOfPost()
 GET            /overflow/typeOfPost/all                                     @controllers.OverFlowController.get_TypeOfPost_all()
@@ -115,18 +111,17 @@ PUT            /overflow/typeOfConfirm/:post_id/:type_of_confirm_id         @con
 DELETE         /overflow/typeOfConfirm/:post_id/:type_of_confirm_id         @controllers.OverFlowController.remove_TypeOfConfirm_to_Post(post_id, type_of_confirm_id)
 
 
-POST           /overflow/comment                           @controllers.OverFlowController.addComment()
-PUT            /overflow/comment/:id                       @controllers.OverFlowController.updateComment(id: String)
-DELETE         /overflow/comment/:id                       @controllers.OverFlowController.deletePost(id: String)
+POST           /overflow/comment/:post_id                       @controllers.OverFlowController.addComment(post_id)
+PUT            /overflow/comment/:post_id                       @controllers.OverFlowController.edit_Comment_or_Answer(post_id)
 
-POST           /overflow/answer                            @controllers.OverFlowController.addAnswer()
-PUT            /overflow/answer/:id                        @controllers.OverFlowController.updateComment(id: String)
-DELETE         /overflow/answer/:id                        @controllers.OverFlowController.deletePost(id: String)
+POST           /overflow/answer/:post_id                        @controllers.OverFlowController.addAnswer(post_id)
+PUT            /overflow/answer/:post_id                        @controllers.OverFlowController.edit_Comment_or_Answer(post_id)
 
-PUT            /overflow/likePlus/:id                      @controllers.OverFlowController.likePlus(id: String)
-PUT            /overflow/likeMinus/:id                     @controllers.OverFlowController.likeMinus(id: String)
-POST           /overflow/link                              @controllers.OverFlowController.linkWithPreviousAnswer()
-DELETE         /overflow/link/:id                          @controllers.OverFlowController.unlinkWithPreviousAnswer(id: String)
+
+PUT            /overflow/likePlus/:post_id                                       @controllers.OverFlowController.likePlus(post_id)
+PUT            /overflow/likeMinus/:post_id                                      @controllers.OverFlowController.likeMinus(post_id)
+POST           /overflow/link/:question_post_id/:answer_post_id             @controllers.OverFlowController.linkWithPreviousAnswer(question_post_id, answer_post_id)
+DELETE         /overflow/link/:linked_post_id                               @controllers.OverFlowController.unlinkWithPreviousAnswer(linked_post_id)
 
 
 PUT           /overflow/hashTag/:post_id/:hashTag          @controllers.OverFlowController.add_HashTag_to_Post(post_id,hashTag)
@@ -139,64 +134,65 @@ DELETE        /overflow/hashTag/:post_id/:hashTag          @controllers.OverFlow
 ### PROJECT ############ PROJECT ############### PROJECT ################ PROJECT ################# PROJECT ####################################################################
 ################################################################################################################################################################################
 #Project
-POST           /project/project                            @controllers.ProgramingPackageController.postNewProject()
-PUT            /project/project/:id                        @controllers.ProgramingPackageController.updateProject(id: String)
-GET            /project/project/:id                        @controllers.ProgramingPackageController.getProject(id: String)
-GET            /project/project                            @controllers.ProgramingPackageController.getProjectsByUserAccount
-DELETE         /project/project/:id                        @controllers.ProgramingPackageController.deleteProject(id: String)
-PUT            /project/project/shareProject/:id           @controllers.ProgramingPackageController.shareProjectWithUsers(id: String)
-PUT            /project/project/unshareProject/:id         @controllers.ProgramingPackageController.unshareProjectWithUsers(id: String)
-GET            /project/project/b_programs/:id             @controllers.ProgramingPackageController.getAll_b_Programs(id: String)
-GET            /project/project/c_programs/:id             @controllers.ProgramingPackageController.getAll_c_Programs(id: String)
-GET            /project/project/m_projects/:id             @controllers.ProgramingPackageController.getAll_m_Projects(id: String)
+POST           /project/project                                     @controllers.ProgramingPackageController.postNewProject()
+PUT            /project/project/:project_id                         @controllers.ProgramingPackageController.updateProject(project_id)
+GET            /project/project/:project_id                         @controllers.ProgramingPackageController.getProject(project_id)
+GET            /project/project                                     @controllers.ProgramingPackageController.getProjectsByUserAccount
+DELETE         /project/project/:project_id                         @controllers.ProgramingPackageController.deleteProject(project_id)
+PUT            /project/project/shareProject/:project_id            @controllers.ProgramingPackageController.shareProjectWithUsers(project_id)
+PUT            /project/project/unshareProject/:project_id          @controllers.ProgramingPackageController.unshareProjectWithUsers(project_id)
 
-GET            /project/project/homerList/:id              @controllers.ProgramingPackageController.getProgramhomerList(id: String)
-GET            /project/project/owners/:id                 @controllers.ProgramingPackageController.getProjectOwners(id: String)
+GET            /project/project/b_programs/:project_id              @controllers.ProgramingPackageController.get_Project_b_Programs(project_id)
+GET            /project/project/c_programs/:project_id              @controllers.ProgramingPackageController.get_Project_c_Programs(project_id)
+GET            /project/project/m_projects/:project_id              @controllers.ProgramingPackageController.get_Project_m_Projects(project_id)
+GET            /project/project/homers/:project_id                  @controllers.ProgramingPackageController.get_Project_homers(project_id)
+GET            /project/project/owners/:project_id                  @controllers.ProgramingPackageController.get_Project_Owners(project_id)
+GET            /project/project/boards/:project_id                  @controllers.ProgramingPackageController.getProjectsBoard(project_id)
 
 #Homer
-POST           /project/homer                              @controllers.ProgramingPackageController.newHomer()
-DELETE         /project/homer/:id                          @controllers.ProgramingPackageController.removeHomer(id: String)
-GET            /project/homer/:id                          @controllers.ProgramingPackageController.getHomer(id: String)
-GET            /project/homer                              @controllers.ProgramingPackageController.getAllHomers
-GET            /project/homer/getAllConnectedHomers/:id    @controllers.ProgramingPackageController.getConnectedHomers(id: String)
+POST           /project/homer                                       @controllers.ProgramingPackageController.newHomer()
+GET            /project/homer/filter                                @controllers.ProgramingPackageController.get_Homers_by_Filter()
+DELETE         /project/homer/:id                                   @controllers.ProgramingPackageController.removeHomer(id: String)
+GET            /project/homer/:id                                   @controllers.ProgramingPackageController.getHomer(id: String)
 
 
 #Project - connection
-PUT            /project/connect/homer/:project_id/:homer_id    @controllers.ProgramingPackageController.connectHomerWithProject(project_id, homer_id)
-PUT            /project/disconnect/homer/:project_id/:homer_id @controllers.ProgramingPackageController.disconnectHomerWithProject(project_id, homer_id)
+PUT            /project/homer/:project_id/:homer_id         @controllers.ProgramingPackageController.connectHomerWithProject(project_id, homer_id)
+DELETE         /project/homer/:project_id/:homer_id         @controllers.ProgramingPackageController.disconnectHomerWithProject(project_id, homer_id)
 
 
 #Program
-POST           /project/b_program                               @controllers.ProgramingPackageController.postNewBProgram()
-GET            /project/b_program/:id                           @controllers.ProgramingPackageController.getProgram(id: String)
-PUT            /project/b_program/:id                           @controllers.ProgramingPackageController.editProgram(id: String)
-PUT            /project/b_program/update/:id                    @controllers.ProgramingPackageController.update_b_program(id: String)
-DELETE         /project/b_program/:id                           @controllers.ProgramingPackageController.remove_b_Program(id: String)
-GET            /project/b_programInJson/:id                     @controllers.ProgramingPackageController.getProgramInString(id: String)
-PUT            /project/b_program/upload/:id/:ver               @controllers.ProgramingPackageController.uploadProgramToHomer_Immediately(id: String, ver: String)
-PUT            /project/b_program/uploadToCloud/:id/:ver        @controllers.ProgramingPackageController.uploadProgramToCloud(id: String, ver: String)
+POST           /project/b_program/:project_id                                   @controllers.ProgramingPackageController.new_b_Program(project_id)
+GET            /project/b_program/:b_program_id                                 @controllers.ProgramingPackageController.get_b_Program(b_program_id)
+PUT            /project/b_program/:b_program_id                                 @controllers.ProgramingPackageController.edit_b_Program(b_program_id)
+PUT            /project/b_program/update/:b_program_id                          @controllers.ProgramingPackageController.update_b_program(b_program_id)
+DELETE         /project/b_program/:b_program_id                                 @controllers.ProgramingPackageController.remove_b_Program(b_program_id)
+PUT            /project/b_program/upload/:b_program_id/:version_id              @controllers.ProgramingPackageController.uploadProgramToHomer_Immediately(b_program_id, version_id)
+PUT            /project/b_program/uploadToCloud/:b_program_id/:version_id       @controllers.ProgramingPackageController.upload_b_Program_ToCloud(b_program_id, version_id)
 
 GET            /project/listOfUploadedHomers/:id                @controllers.ProgramingPackageController.listOfUploadedHomers(id: String)
 GET            /project/listOfHomersWaitingForUpload/:id        @controllers.ProgramingPackageController.listOfHomersWaitingForUpload(id: String)
-GET            /project/boards/:id                              @controllers.ProgramingPackageController.getProjectsBoard(id: String)
+
 
 #Blocks
-POST           /project/blockoBlock                             @controllers.ProgramingPackageController.newBlock()
-POST           /project/blockoBlock/:id                         @controllers.ProgramingPackageController.updateOfBlock(id: String)
-PUT            /project/blockoBlock/:id                         @controllers.ProgramingPackageController.editBlock(id: String)
-GET            /project/blockoBlock/:id                         @controllers.ProgramingPackageController.getBlockBlock(id: String)
-GET            /project/blockoBlock/versions/:id                @controllers.ProgramingPackageController.getBlockVersions(id: String)
+POST           /project/blockoBlock                                         @controllers.ProgramingPackageController.new_Block()
+PUT            /project/blockoBlock/:blocko_block_id                        @controllers.ProgramingPackageController.edit_Block(blocko_block_id)
+GET            /project/blockoBlock/:blocko_block_id                        @controllers.ProgramingPackageController.getBlockBlock(blocko_block_id)
+DELETE         /project/blockoBlock/:blocko_block_id                        @controllers.ProgramingPackageController.deleteBlock(blocko_block_id)
+
+POST           /project/blockoBlock/version/:blocko_block_id                @controllers.ProgramingPackageController.new_BlockoBlock_Version(blocko_block_id)
+GET            /project/blockoBlock/version/all/:blocko_block_id            @controllers.ProgramingPackageController.get_BlockoBlock_all_versions(blocko_block_id)
+GET            /project/blockoBlock/version/:blocko_block_version_id        @controllers.ProgramingPackageController.get_BlockoBlock_Version(blocko_block_version_id)
+DELETE         /project/blockoBlock/version/:blocko_block_version_id        @controllers.ProgramingPackageController.delete_BlockoBlock_Version(blocko_block_version_id)
 
 
-GET            /project/blockoBlock/allPrevVersions/:id         @controllers.ProgramingPackageController.allPrevVersions(id: String)
-DELETE         /project/blockoBlock/version/:id                 @controllers.ProgramingPackageController.deleteBlockVersion(id: String)
-DELETE         /project/blockoBlock/block/id                    @controllers.ProgramingPackageController.deleteBlock(id: String)
 
-POST           /project/typeOfBlock                             @controllers.ProgramingPackageController.newTypeOfBlock()
-GET            /project/typeOfBlock/filter                      @controllers.ProgramingPackageController.getByCategory
-PUT            /project/typeOfBlock/:id                         @controllers.ProgramingPackageController.editTypeOfBlock(id: String)
-GET            /project/typeOfBlock                             @controllers.ProgramingPackageController.getAllTypeOfBlocks
-DELETE         /project/typeOfBlock/:id                         @controllers.ProgramingPackageController.deleteTypeOfBlock(id: String)
+POST           /project/typeOfBlock                                         @controllers.ProgramingPackageController.newTypeOfBlock()
+GET            /project/blockoBlock/project/:project_id                     @controllers.ProgramingPackageController.get_TypeOfBlock_by_Project(project_id)
+GET            /project/typeOfBlock/:type_of_block_id                       @controllers.ProgramingPackageController.get_BlockoBlocks_from_Category(type_of_block_id)
+PUT            /project/typeOfBlock/:type_of_block_id                       @controllers.ProgramingPackageController.editTypeOfBlock(type_of_block_id)
+GET            /project/typeOfBlock                                         @controllers.ProgramingPackageController.getAllTypeOfBlocks
+DELETE         /project/typeOfBlock/:type_of_block_id                       @controllers.ProgramingPackageController.deleteTypeOfBlock(type_of_block_id)
 
 
 
@@ -214,6 +210,7 @@ GET             /compilation/c_program/project/:project_id                      
 
 PUT             /compilation/c_program/edit/:c_program_id                                   @controllers.CompilationLibrariesController.edit_C_Program_Description(c_program_id)
 PUT             /compilation/c_program/update/:c_program_id                                 @controllers.CompilationLibrariesController.update_C_Program(c_program_id)
+PUT             /compilation/c_program/version/:version_id                                  @controllers.CompilationLibrariesController.edit_C_Program_version(version_id)
 
 DELETE          /compilation/c_program/c_program/:c_program_id                              @controllers.CompilationLibrariesController.delete_C_Program(c_program_id)
 DELETE          /compilation/c_program/version/:c_program_id/:version_id                    @controllers.CompilationLibrariesController.delete_C_Program_Version(c_program_id, version_id)
@@ -270,22 +267,22 @@ GET             /compilation/typeOfBoard/boards/:type_of_board_id               
 
 #LibraryGroups
 POST            /compilation/libraryGroup                                           @controllers.CompilationLibrariesController.new_LibraryGroup()
-GET             /compilation/libraryGroup/:libraryGroup_id                          @controllers.CompilationLibrariesController.get_LibraryGroup(libraryGroup_id)
-DELETE          /compilation/libraryGroup/:libraryGroup_id                          @controllers.CompilationLibrariesController.delete_LibraryGroup(libraryGroup_id)
-GET             /compilation/libraryGroup/filter                                    @controllers.CompilationLibrariesController.get_LibraryGroup_Filter
-PUT             /compilation/libraryGroup/:libraryGroup_id                          @controllers.CompilationLibrariesController.editLibraryGroup(libraryGroup_id)
+PUT             /compilation/libraryGroup/filter                                    @controllers.CompilationLibrariesController.get_LibraryGroup_Filter
 GET             /compilation/libraryGroup/generalDescription/:libraryGroup_id       @controllers.CompilationLibrariesController.get_LibraryGroup_Description(libraryGroup_id)
 GET             /compilation/libraryGroup/processors/:libraryGroup_id               @controllers.CompilationLibrariesController.get_LibraryGroup_Processors(libraryGroup_id)
 GET             /compilation/libraryGroup/libraries/:libraryGroup_id/:version_id    @controllers.CompilationLibrariesController.get_LibraryGroup_Libraries(libraryGroup_id, version_id)
 POST            /compilation/libraryGroup/version/:version_id                       @controllers.CompilationLibrariesController.new_LibraryGroup_Version(version_id)
 GET             /compilation/libraryGroup/versions/:version_id                      @controllers.CompilationLibrariesController.get_LibraryGroup_Version(version_id)
 POST            /compilation/libraryGroup/upload/:libraryGroup_id/:version_id       @controllers.CompilationLibrariesController.upload_Library_To_LibraryGroup(libraryGroup_id, version_id)
+GET             /compilation/libraryGroup/:libraryGroup_id                          @controllers.CompilationLibrariesController.get_LibraryGroup(libraryGroup_id)
+DELETE          /compilation/libraryGroup/:libraryGroup_id                          @controllers.CompilationLibrariesController.delete_LibraryGroup(libraryGroup_id)
+PUT             /compilation/libraryGroup/:libraryGroup_id                          @controllers.CompilationLibrariesController.editLibraryGroup(libraryGroup_id)
 
 #Single Library
 POST            /compilation/library                                    @controllers.CompilationLibrariesController.new_SingleLibrary()
+PUT             /compilation/library/filter                             @controllers.CompilationLibrariesController.get_SingleLibrary_Filter()
 POST            /compilation/library/version/:library_id                @controllers.CompilationLibrariesController.new_SingleLibrary_Version(library_id)
 GET             /compilation/library/versions/:library_id               @controllers.CompilationLibrariesController.get_SingleLibrary_Versions(library_id)
-GET             /compilation/library/filter                             @controllers.CompilationLibrariesController.get_SingleLibrary_Filter()
 GET             /compilation/library/:library_id                        @controllers.CompilationLibrariesController.get_SingleLibrary(library_id)
 
 PUT             /compilation/library:library_id                         @controllers.CompilationLibrariesController.edit_SingleLibrary(library_id)
@@ -323,6 +320,7 @@ DELETE          /grid/m_program/:m_progrm_id               @controllers.GridCont
 #M Screen Type
 POST            /grid/screen_type                          @controllers.GridController.new_Screen_Size_Type()
 GET             /grid/screen_type/all                      @controllers.GridController.get_Screen_Size_Type_Combination()
+GET             /grid/screen_type/project/:project_id      @controllers.GridController.get_Screen_Size_Type_from_Project(project_id)
 GET             /grid/screen_type/:screen_size_type_id     @controllers.GridController.get_Screen_Size_Type(screen_size_type_id)
 PUT             /grid/screen_type/:screen_size_type_id     @controllers.GridController.edit_Screen_Size_Type(screen_size_type_id)
 DELETE          /grid/screen_type/:screen_size_type_id     @controllers.GridController.remove_Screen_Size_Type(screen_size_type_id)

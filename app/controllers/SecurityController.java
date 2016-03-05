@@ -8,6 +8,7 @@ import com.github.scribejava.core.oauth.OAuthService;
 import io.swagger.annotations.*;
 import models.persons.LinkedAccount;
 import models.persons.Person;
+import models.persons.PersonPermission;
 import play.Configuration;
 import play.Logger;
 import play.libs.F;
@@ -29,6 +30,7 @@ import javax.inject.Inject;
 import javax.websocket.server.PathParam;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -51,7 +53,7 @@ public class SecurityController extends Controller {
         return (Person) context.current().args.get("person");
     }
 
-///###################################################################################################################*/
+//######################################################################################################################
 
 
     @ApiOperation(value = "login",
@@ -66,7 +68,7 @@ public class SecurityController extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_C_program_New",
+                            dataType = "utilities.swagger.documentationClass.Login_IncomingLogin",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -99,7 +101,11 @@ public class SecurityController extends Controller {
             result.set("person", Json.toJson(person));
             result.put("authToken", authToken);
             result.set("roles", Json.toJson(person.roles));
-            result.set("permission", Json.toJson(person.permissions));
+
+
+            List<PersonPermission> list = PersonPermission.find.where().eq("roles.persons.id", person.id).findList();
+
+            result.set("permission", Json.toJson(list));
 
             return GlobalResult.okResult(result);
 
@@ -123,17 +129,6 @@ public class SecurityController extends Controller {
             response =  Login_return_object.class,
             protocols = "https",
             code = 200
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_C_program_New",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successful logged",      response = Login_return_object.class),
@@ -179,17 +174,6 @@ public class SecurityController extends Controller {
                     )
             }
     )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_C_program_New",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successful logged",      response = Result_ok.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
@@ -211,10 +195,10 @@ public class SecurityController extends Controller {
         }
     }
 
-///####################################################################################################################*/
+//#######################################################################################################################
 
 
-//#### Oaut pro příjem Requestů zvenčí ################################################################################*/
+//#### Oaut pro příjem Requestů zvenčí ##################################################################################
 
     @Inject WSClient ws;
     // Metoda slouží pro příjem autentifikačních klíču ze sociálních sítí když se přihlásí uživatel.
@@ -281,7 +265,7 @@ public class SecurityController extends Controller {
                     usedAccount.authToken = linkedAccount.authToken;
                     linkedAccount.delete();
                     usedAccount.update();
-                    return redirect(linkedAccount.returnUrl);
+                    return redirect( Configuration.root().getString("Becki.mainUrl") + linkedAccount.returnUrl);
 
                 }
 
@@ -322,7 +306,7 @@ public class SecurityController extends Controller {
                         linkedAccount.person = person;
                         linkedAccount.update();
 
-                        return redirect(linkedAccount.returnUrl);
+                        return redirect(Configuration.root().getString("Becki.mainUrl") + linkedAccount.returnUrl);
 
 
                 }
@@ -393,7 +377,7 @@ public class SecurityController extends Controller {
 
             WSRequest wsrequest = ws.url("https://graph.facebook.com/v2.5/"+ jsonNode.get("id").asText());
             WSRequest complexRequest = wsrequest.setQueryParameter("access_token", accessToken.getToken())
-                                                .setQueryParameter("fields", "id,name,first_name,last_name,mail,birthday,languages");
+                                                .setQueryParameter("fields", "id,name,first_name,last_name,email,birthday,languages");
 
             F.Promise<JsonNode> jsonPromise = wsrequest.get().map(rsp -> { return rsp.asJson();});
             JsonNode jsonRequest = jsonPromise.get(10000);
@@ -412,7 +396,7 @@ public class SecurityController extends Controller {
                 usedAccount.update();
                 usedAccount.person.setToken(usedAccount.authToken);
                 usedAccount.person.update();
-                return redirect(linkedAccount.returnUrl);
+                return redirect( Configuration.root().getString("Becki.mainUrl") + linkedAccount.returnUrl);
 
            }
 
@@ -457,7 +441,7 @@ public class SecurityController extends Controller {
                         linkedAccount.person = person;
                         linkedAccount.update();
 
-                        return redirect(linkedAccount.returnUrl);
+                        return redirect(Configuration.root().getString("Becki.mainUrl") + linkedAccount.returnUrl);
 
 
            }
@@ -485,24 +469,13 @@ public class SecurityController extends Controller {
             protocols = "https",
             code = 200
     )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_C_program_New",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successful created",      response = Login_Social_Network.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Wrong Email or Password",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result GitHub(@ApiParam(value = "this is return url address in entire format http://something.../.../.. ", required = true) @PathParam("return_link")  String return_link){
+    public Result GitHub(@ApiParam(value = "this is return url address in format  /link/link   ", required = true) @PathParam("return_link")  String return_link){
         try {
             LinkedAccount linkedAccount = LinkedAccount.setProviderKey("GitHub");
 
@@ -536,24 +509,13 @@ public class SecurityController extends Controller {
             protocols = "https",
             code = 200
     )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_C_program_New",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successful created",      response = Login_Social_Network.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Wrong Email or Password",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result Facebook(@ApiParam(value = "this is return url address in entire format http://something.../.../.. ", required = true) @PathParam("return_link") String return_link){
+    public Result Facebook(@ApiParam(value = "this is return url address in format  ?return_link=/link/link ", required = true) @PathParam("return_link") String return_link){
         try {
             LinkedAccount linkedAccount = LinkedAccount.setProviderKey("Facebook");
 
