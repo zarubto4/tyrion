@@ -1,10 +1,21 @@
 
 
+Verze 1.05
+
+Pro davida musí vzniknout možnost připojit Grid a připojení Homera.
+
+
+Z Gridu je nutné přenášet příkazy na konkrétního homera, který je propojený s b_programem.
+
+
+
+
+
+
 Verze 1.04.9.12 FIXED a verze 12
 
 Úprava všech link u Permission z query na {Link} - id v linku
 - Odhalena chyba že v dokumentaci se u  id v linku objevuje že je to query. Bylo plošně opraveno.
-
 
 Při návratu objektu při přihlášení uživatele bylo matoucí jak chápat permission.
 Proto ti vracím seznam rolí ve zkrácené podobě (viz dokumentace)

@@ -391,8 +391,6 @@ create sequence linked_account_seq;
 
 create sequence linked_post_seq;
 
-create sequence m_program_seq;
-
 create sequence m_project_seq;
 
 create sequence person_seq;
@@ -639,8 +637,6 @@ drop sequence if exists library_group_seq;
 drop sequence if exists linked_account_seq;
 
 drop sequence if exists linked_post_seq;
-
-drop sequence if exists m_program_seq;
 
 drop sequence if exists m_project_seq;
 

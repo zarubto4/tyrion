@@ -1,6 +1,5 @@
 package controllers;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.*;
 import models.grid.Screen_Size_Type;
@@ -9,6 +8,7 @@ import models.project.global.Project;
 import models.project.m_program.M_Program;
 import models.project.m_program.M_Project;
 import play.Logger;
+import play.data.Form;
 import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Result;
@@ -19,13 +19,15 @@ import utilities.response.response_objects.JsonValueMissing;
 import utilities.response.response_objects.Result_PermissionRequired;
 import utilities.response.response_objects.Result_Unauthorized;
 import utilities.response.response_objects.Result_ok;
+import utilities.swagger.documentationClass.Swagger_M_Program_New;
+import utilities.swagger.documentationClass.Swagger_M_Project_New;
+import utilities.swagger.documentationClass.Swagger_ScreeSizeType_New;
 import utilities.swagger.outboundClass.Swagger_M_Program_ByToken;
 import utilities.swagger.outboundClass.Swagger_TypeOfBoard_Combination;
 
 import javax.websocket.server.PathParam;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 
 @Api(value = "Not Documented API - InProgress or Stuck")
@@ -69,14 +71,16 @@ public class GridController extends play.mvc.Controller {
     @Security.Authenticated(Secured.class)
     public Result new_M_Project(String project_id) {
         try{
-            JsonNode json = request().body().asJson();
+            final Form<Swagger_M_Project_New> form = Form.form(Swagger_M_Project_New.class).bindFromRequest();
+            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_M_Project_New help = form.get();
 
             Project project = Project.find.byId( project_id );
             if(project == null) return GlobalResult.notFoundObject();
 
             M_Project m_project = new M_Project();
-            m_project.program_description = json.get("program_description").asText();
-            m_project.program_name = json.get("program_name").asText();
+            m_project.program_description = help.program_description;
+            m_project.program_name = help.program_name;
             m_project.date_of_create = new Date();
             m_project.project = project;
 
@@ -84,8 +88,6 @@ public class GridController extends play.mvc.Controller {
 
             return GlobalResult.created( Json.toJson(m_project));
 
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "program_name - String", "program_description - TEXT");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - postNewProject ERROR");
@@ -164,19 +166,20 @@ public class GridController extends play.mvc.Controller {
     @Security.Authenticated(Secured.class)
     public Result edit_M_Project(@ApiParam(value = "m_project_id String query", required = true) @PathParam("m_project_id") String m_project_id){
         try{
-            JsonNode json = request().body().asJson();
+            final Form<Swagger_M_Project_New> form = Form.form(Swagger_M_Project_New.class).bindFromRequest();
+            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_M_Project_New help = form.get();
+
 
             M_Project m_project = M_Project.find.byId(m_project_id);
             if(m_project == null) return GlobalResult.notFoundObject();
 
-            m_project.program_description = json.get("program_description").asText();
-            m_project.program_name = json.get("program_name").asText();
+            m_project.program_description = help.program_description;
+            m_project.program_name = help.program_name;
 
             m_project.update();
             return GlobalResult.update( Json.toJson(m_project));
 
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "project_id - String", "program_name - String", "program_description - TEXT");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - postNewProject ERROR");
@@ -316,7 +319,7 @@ public class GridController extends play.mvc.Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_M_Project_New",
+                            dataType = "utilities.swagger.documentationClass.Swagger_M_Program_New",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -334,37 +337,34 @@ public class GridController extends play.mvc.Controller {
     @Security.Authenticated(Secured.class)
     public Result new_M_Program() {
         try {
-            JsonNode json = request().body().asJson();
+            final Form<Swagger_M_Program_New> form = Form.form(Swagger_M_Program_New.class).bindFromRequest();
+            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_M_Program_New help = form.get();
 
-            M_Project m_project = M_Project.find.byId( json.get("m_program_id").asText() );
+            M_Project m_project = M_Project.find.byId( help.m_program_id );
             if(m_project == null) return GlobalResult.notFoundObject();
 
-            Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId(json.get("screen_type_id").asText());
+            Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId( help.screen_type_id);
             if(screen_size_type == null) return GlobalResult.notFoundObject();
 
-            M_Program m_program_ = new M_Program();
-            m_program_.date_of_create      = new Date();
-            m_program_.program_description = json.get("program_description").asText();
-            m_program_.program_name        = json.get("program_name").asText();
-            m_program_.m_project_object = m_project;
-            m_program_.programInString     = json.get("m_code").toString();
-            m_program_.screen_size_type_object = screen_size_type;
-            m_program_.height_lock         = json.get("height_lock").asBoolean();
-            m_program_.width_lock          = json.get("width_lock").asBoolean();
+            M_Program m_program = new M_Program();
 
-            while(true){ // I need Unique Value
-                m_program_.qr_token  = UUID.randomUUID().toString();
-                if (M_Program.find.where().eq("qr_token", m_program_.qr_token).findUnique() == null) break;
-            }
+            m_program.set_Unique_hash_Id();
+            m_program.date_of_create      = new Date();
+            m_program.program_description = help.program_description;
+            m_program.program_name        = help.program_name;
+            m_program.m_project_object = m_project;
+            m_program.programInString     = help.m_code;
+            m_program.screen_size_type_object = screen_size_type;
+            m_program.height_lock         = help.height_lock;
+            m_program.width_lock          = help.width_lock;
 
-            m_program_.save();
+            m_program.set_QR_Token();
 
-            return GlobalResult.created(Json.toJson(m_program_));
 
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "m_program_id - String", "screen_type_id - String",
-                     "program_description - String", "program_name - String", "m_code - String",
-                    "height_lock - boolean", "width_lock - boolean");
+            m_program.save();
+
+            return GlobalResult.created(Json.toJson(m_program));
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - postNewProject ERROR");
@@ -483,6 +483,17 @@ public class GridController extends play.mvc.Controller {
                     )
             }
     )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_M_Program_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response = M_Project.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -494,28 +505,26 @@ public class GridController extends play.mvc.Controller {
     public Result edit_M_Program(@ApiParam(value = "m_program_id String query", required = true) @PathParam("m_program_id") String m_program_id){
         try {
 
-            JsonNode json = request().body().asJson();
+            final Form<Swagger_M_Program_New> form = Form.form(Swagger_M_Program_New.class).bindFromRequest();
+            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_M_Program_New help = form.get();
 
-            Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId(json.get("screen_type_id").asText());
+            Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId(help.screen_type_id);
             if(screen_size_type == null) return GlobalResult.notFoundObject();
 
-            M_Program m_program_ = M_Program.find.byId(m_program_id);
-            m_program_.program_description = json.get("program_description").asText();
-            m_program_.program_name        = json.get("program_name").asText();
-            m_program_.programInString     = json.get("m_code").asText();
-            m_program_.screen_size_type_object = screen_size_type;
-            m_program_.height_lock         = json.get("height_lock").asBoolean();
-            m_program_.width_lock          = json.get("width_lock").asBoolean();
-            m_program_.last_update         = new Date();
+            M_Program m_program = M_Program.find.byId(m_program_id);
+            m_program.date_of_create      = new Date();
+            m_program.program_description = help.program_description;
+            m_program.program_name        = help.program_name;
+            m_program.programInString     = help.m_code;
+            m_program.screen_size_type_object = screen_size_type;
+            m_program.height_lock         = help.height_lock;
+            m_program.width_lock          = help.width_lock;
+            m_program.last_update         = new Date();
 
-            m_program_.update();
+            m_program.update();
 
-            return GlobalResult.created(Json.toJson(m_program_));
-
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "screen_type_id - String",
-                    "program_description - String", "program_name - String", "m_code - String",
-                    "height_lock - boolean", "width_lock - boolean");
+            return GlobalResult.created(Json.toJson(m_program));
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - postNewProject ERROR");
@@ -669,19 +678,20 @@ public class GridController extends play.mvc.Controller {
     public Result new_Screen_Size_Type(){
         try {
 
-            // TODO Chybí ochrana před ukládáním nesmyslů jako mínusové velikosti + nezapomenout to zdokumentovat v objektu Swagger_ScreeSizeType_New
+            final Form<Swagger_ScreeSizeType_New> form = Form.form(Swagger_ScreeSizeType_New.class).bindFromRequest();
+            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_ScreeSizeType_New help = form.get();
 
-            JsonNode json = request().body().asJson();
             Screen_Size_Type screen_size_type = new Screen_Size_Type();
-            screen_size_type.name = json.get("name").asText();
-            screen_size_type.height = json.get("height").asInt();
-            screen_size_type.width = json.get("width").asInt();
-            screen_size_type.height_lock = json.get("height_lock").asBoolean();
-            screen_size_type.width_lock = json.get("width_lock").asBoolean();
-            screen_size_type.touch_screen = json.get("touch_screen").asBoolean();
+            screen_size_type.name = help.name;
+            screen_size_type.height = help.height;
+            screen_size_type.width = help.width;
+            screen_size_type.height_lock = help.height_lock;
+            screen_size_type.width_lock = help.width_lock;
+            screen_size_type.touch_screen = help.touch_screen;
 
-            if( json.has("project_id")) {
-                Project project = Project.find.byId(json.get("project_id").asText());
+            if( help.project_id != null) {
+                Project project = Project.find.byId(help.project_id);
                 if (project == null) return GlobalResult.notFoundObject();
 
                 screen_size_type.project = project;
@@ -691,8 +701,6 @@ public class GridController extends play.mvc.Controller {
 
             return GlobalResult.created(Json.toJson(screen_size_type));
 
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "name - String", "height - Integer", "width - Integer", "height_lock - boolean", "width_lock - boolean", "touch_screen boolean");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - postNewProject ERROR");
@@ -804,6 +812,19 @@ public class GridController extends play.mvc.Controller {
             )
     }
     )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_ScreeSizeType_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+
+            }
+
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Ok Result",               response = Screen_Size_Type.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -814,33 +835,33 @@ public class GridController extends play.mvc.Controller {
     @Security.Authenticated(Secured.class)
     public Result edit_Screen_Size_Type(@ApiParam(value = "screen_size_type_id String query", required = true) @PathParam("screen_size_type_id") String screen_size_type_id){
         try {
-            JsonNode json = request().body().asJson();
+
+            final Form<Swagger_ScreeSizeType_New> form = Form.form(Swagger_ScreeSizeType_New.class).bindFromRequest();
+            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_ScreeSizeType_New help = form.get();
 
             Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId(screen_size_type_id);
             if(screen_size_type == null) return GlobalResult.notFoundObject();
 
-            screen_size_type.name           = json.get("name").asText();
-            screen_size_type.height         = json.get("height").asInt();
-            screen_size_type.width          = json.get("width").asInt();
-            screen_size_type.height_lock    = json.get("height_lock").asBoolean();
-            screen_size_type.width_lock     = json.get("width_lock").asBoolean();
-            screen_size_type.touch_screen   = json.get("touch_screen").asBoolean();
+            screen_size_type.name = help.name;
+            screen_size_type.height = help.height;
+            screen_size_type.width = help.width;
+            screen_size_type.height_lock = help.height_lock;
+            screen_size_type.width_lock = help.width_lock;
+            screen_size_type.touch_screen = help.touch_screen;
 
 
-            if( json.has("project_id")) {
-                Project project = Project.find.byId(json.get("project_id").asText());
+            if( help.project_id != null) {
+                Project project = Project.find.byId(help.project_id);
                 if (project == null) return GlobalResult.notFoundObject();
 
                 screen_size_type.project = project;
             }
 
-            screen_size_type.save();
-
             screen_size_type.update();
+
             return GlobalResult.update(Json.toJson(screen_size_type));
 
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "name - String", "height - Integer", "width - Integer", "height_lock - boolean", "width_lock - boolean", "touch_screen boolean");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - postNewProject ERROR");

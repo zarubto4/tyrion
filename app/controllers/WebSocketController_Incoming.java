@@ -1,6 +1,5 @@
 package controllers;
 
-import models.project.global.Homer;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -23,7 +22,7 @@ public class WebSocketController_Incoming extends Controller {
 
 // PUBLIC API ---------------------------------------------------------------------------------------------------------
     public WebSocket<String> homer_connection(String homer_mac_address){
-        System.out.println("Příchozí připojení " + homer_mac_address);
+        System.out.println("Příchozí připojení Homer" + homer_mac_address);
         return  WebSocketPlayServer.connection(incomingConnections_homers, homer_mac_address);
     }
 
@@ -39,6 +38,10 @@ public class WebSocketController_Incoming extends Controller {
     public static void incomingJson_PLAY_As_Server(String identificator, String string){
         System.out.println("Zpráva od " + identificator + " Obsah " + string );
     }
+
+
+
+
 
 
 // Test & Control API ---------------------------------------------------------------------------------------------------------
@@ -109,14 +112,6 @@ public class WebSocketController_Incoming extends Controller {
         }
     }
 
-
-    // Historicky podporavné metody?? --------------------------------------------
-    public static WebSocket.Out<String> getConnection(Homer homer){
-        return null;
-    }
-    public static boolean isConnected(Homer homer){
-        return incomingConnections_homers.containsKey(homer.homer_id);
-    }
 
 
 }

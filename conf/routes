@@ -18,8 +18,8 @@ GET             /test6                                      @controllers.WikyCon
 
 
 #  WEB SOCET  //////////////////////////////////////////////////////////////////////////////
-GET              /websocket/homer/:id                       @controllers.WebSocketController_Incoming.homer_connection(id: String)
-GET              /websocket/mobile/:id                      @controllers.WebSocketController_Incoming.mobile_connection(id: String)
+GET              /websocket/homer/:mac_adress               @controllers.WebSocketController_Incoming.homer_connection(mac_adress)
+GET              /websocket/mobile/:mac_adress              @controllers.WebSocketController_Incoming.mobile_connection(mac_adress)
 
 POST             /websocket/webSocketStats                  @controllers.WebSocketController_Incoming.getWebSocketStats
 POST             /websocket/sendTo/:id                      @controllers.WebSocketController_Incoming.sendTo(id: String)
