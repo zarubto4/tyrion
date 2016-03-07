@@ -38,14 +38,13 @@ public class GlobalResult extends Controller {
         return Controller.unauthorized(Json.toJson( new Result_Unauthorized()));
     }
 
-    public static Result unrecognizedJsonProperties(Class<?> tClass){
+    public static Result formExcepting(JsonNode json){
         try {
-            Object object = tClass.newInstance();
 
             ObjectNode result = Json.newObject();
             result.put("state", "Json Unrecognized Values");
             result.put("message", "Your Json had some unrecognized fields. Please look at this example, or report it");
-            result.set("example", Json.toJson(object));
+            result.set("exception", json);
 
              CoreResponse.cors();
 

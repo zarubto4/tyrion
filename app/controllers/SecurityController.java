@@ -23,8 +23,8 @@ import utilities.response.GlobalResult;
 import utilities.response.response_objects.JsonValueMissing;
 import utilities.response.response_objects.Result_Unauthorized;
 import utilities.response.response_objects.Result_ok;
-import utilities.swagger.documentationClass.Login_Social_Network;
-import utilities.swagger.documentationClass.Login_return_object;
+import utilities.swagger.outboundClass.Login_Social_Network;
+import utilities.swagger.outboundClass.Login_return_object;
 
 import javax.inject.Inject;
 import javax.websocket.server.PathParam;
@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-@Api(value = "Ještě neroztříděné a neupravené")
+@Api(value = "Not Documented API - InProgress or Stuck")
 public class SecurityController extends Controller {
 
     // Úvodní metoda - // TODO - nasadit základní zobrazovací šablonu o stavu serveru
@@ -54,7 +54,6 @@ public class SecurityController extends Controller {
     }
 
 //######################################################################################################################
-
 
     @ApiOperation(value = "login",
             tags = {"Access", "Person", "APP-Api"},
@@ -195,10 +194,7 @@ public class SecurityController extends Controller {
         }
     }
 
-//#######################################################################################################################
-
-
-//#### Oaut pro příjem Requestů zvenčí ##################################################################################
+//#### Oaut pro příjem Requestů zvenčí ################################################################################
 
     @Inject WSClient ws;
     // Metoda slouží pro příjem autentifikačních klíču ze sociálních sítí když se přihlásí uživatel.
@@ -456,7 +452,7 @@ public class SecurityController extends Controller {
     }
 
 
-//###### Socilání sítě - a generátory přístupů ########################################################################*/
+//###### Socilání sítě - a generátory přístupů ########################################################################
 
     @ApiOperation(value = "login with GitHub",
             tags = {"Access", "Social-GitHub"},
@@ -475,7 +471,7 @@ public class SecurityController extends Controller {
             @ApiResponse(code = 401, message = "Wrong Email or Password",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result GitHub(@ApiParam(value = "this is return url address in format  /link/link   ", required = true) @PathParam("return_link")  String return_link){
+    public Result GitHub( @ApiParam(value = "this is return url address in format  /link/link", required = true) @PathParam("return_link")  String return_link){
         try {
             LinkedAccount linkedAccount = LinkedAccount.setProviderKey("GitHub");
 
@@ -515,7 +511,7 @@ public class SecurityController extends Controller {
             @ApiResponse(code = 401, message = "Wrong Email or Password",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result Facebook(@ApiParam(value = "this is return url address in format  ?return_link=/link/link ", required = true) @PathParam("return_link") String return_link){
+    public Result Facebook(@ApiParam(value = "this is return url address in format  ?return_link=/link/link", required = true) @PathParam("return_link") String return_link){
         try {
             LinkedAccount linkedAccount = LinkedAccount.setProviderKey("Facebook");
 
@@ -587,7 +583,7 @@ public class SecurityController extends Controller {
     }
 
 
-//###### Option########################################################################*/
+///###### Option########################################################################################################
 
     @ApiOperation( value = "option", hidden = true)
     public Result option(){

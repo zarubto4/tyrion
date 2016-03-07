@@ -1,4 +1,4 @@
-package utilities.swagger.documentationClass;
+package utilities.swagger.outboundClass;
 
 import models.grid.Screen_Size_Type;
 

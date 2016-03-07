@@ -21,10 +21,7 @@ import utilities.response.response_objects.Result_ok;
 import javax.websocket.server.PathParam;
 import java.util.List;
 
-@Api(value = "PermissionController - nezdokumentované",
-        description = "Compilation operation (Role, Permission and permissions operations",
-        authorizations = { @Authorization(value="logged_in", scopes = {} )}
-)
+@Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Secured.class)
 public class PermissionController extends Controller {
 

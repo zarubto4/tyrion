@@ -1,22 +1,23 @@
 package utilities.swagger.documentationClass;
 
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 
+@ApiModel(description = "Json Model for new Version for LibraryGroup",
+        value = "LibraryGroup_Version")
+public class Swagger_LibraryGroup_Version {
 
-@ApiModel(description = "Json Model for new C_Program",
-          value = "C_Program_New")
-public class Swagger_C_program_New {
 
     @Constraints.Required
     @Constraints.MinLength(value = 8)
     @ApiModelProperty(required = true, value = "MinLength >= 8")
-    public String program_name;
+    public String version_name;
 
 
     @Constraints.Required
-    @ApiModelProperty(required = true, value = "program_description can be null, but must be in JSON")
-    public String program_description;
+    @Constraints.MinLength(value = 8)
+    @ApiModelProperty(required = true, value = "MinLength >= 8")
+    public String version_description;
 }
-

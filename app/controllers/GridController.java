@@ -19,8 +19,8 @@ import utilities.response.response_objects.JsonValueMissing;
 import utilities.response.response_objects.Result_PermissionRequired;
 import utilities.response.response_objects.Result_Unauthorized;
 import utilities.response.response_objects.Result_ok;
-import utilities.swagger.documentationClass.Swagger_M_Program_ByToken;
-import utilities.swagger.documentationClass.Swagger_TypeOfBoard_Combination;
+import utilities.swagger.outboundClass.Swagger_M_Program_ByToken;
+import utilities.swagger.outboundClass.Swagger_TypeOfBoard_Combination;
 
 import javax.websocket.server.PathParam;
 import java.util.Date;
@@ -28,11 +28,7 @@ import java.util.List;
 import java.util.UUID;
 
 
-@Api(value = "GridController - nezdokumentované",
-        description = "Compilation operation (Role, Permission and permissions operations",
-        authorizations = { @Authorization(value="logged_in", scopes = {} )}
-)
-
+@Api(value = "Not Documented API - InProgress or Stuck")
 public class GridController extends play.mvc.Controller {
 
     @ApiOperation(value = "Create new M_Project",

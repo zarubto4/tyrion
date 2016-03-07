@@ -49,7 +49,6 @@ GET             /login/github/*url                          @controllers.Securit
 ################################################################################################################################################################################
 
 #Peron CRUD
-POST           /coreClient/person/developer                @controllers.PersonController.developerRegistration()
 POST           /coreClient/person/person                   @controllers.PersonController.registred_Person()
 PUT            /coreClient/person/person                   @controllers.PersonController.edit_Person_Information()
 GET            /coreClient/person/person/:id               @controllers.PersonController.getPerson(id: String)
@@ -60,72 +59,72 @@ GET            /coreClient/person/valid/mail/:mail             @controllers.Pers
 
 DELETE         /coreClient/person/person/:id               @controllers.PersonController.deletePerson(id: String)
 
-GET            /mail_person_authentication                 @controllers.PersonController.email_Person_authentitaction(mail,token)
+GET            /mail_person_authentication                                                  @controllers.PersonController.email_Person_authentitaction(mail,token)
 
 
 ### PERMISSION ############ PERMISSION ############### PERMISSION ################ PERMISSION ################# PERMISSION #####################################################
 ################################################################################################################################################################################
 
-PUT            /secure/permission/person/:person_id/:permission_id           @controllers.PermissionController.add_Permission_Person(person_id,permission_id)
-DELETE         /secure/permission/person/:person_id/:permission_id           @controllers.PermissionController.remove_Permission_Person(person_id,permission_id)
-GET            /secure/permission                                            @controllers.PermissionController.get_Permission_All()
+PUT            /secure/permission/person/:person_id/:permission_id                          @controllers.PermissionController.add_Permission_Person(person_id,permission_id)
+DELETE         /secure/permission/person/:person_id/:permission_id                          @controllers.PermissionController.remove_Permission_Person(person_id,permission_id)
+GET            /secure/permission                                                           @controllers.PermissionController.get_Permission_All()
 
-PUT            /secure/role/permission/:permission_id/:role_id               @controllers.PermissionController.add_Permission_to_Role(permission_id,role_id)
-GET            /secure/role/permission/:role_id                              @controllers.PermissionController.get_Permission_in_Group(role_id)
-GET            /secure/role/person/:role_id                                  @controllers.PermissionController.get_Person_from_Role_Group(role_id)
-DELETE         /secure/role/permission/:permission_id/:role_id               @controllers.PermissionController.remove_Permission_from_Role(permission_id,role_id)
+PUT            /secure/role/permission/:permission_id/:role_id                              @controllers.PermissionController.add_Permission_to_Role(permission_id,role_id)
+GET            /secure/role/permission/:role_id                                             @controllers.PermissionController.get_Permission_in_Group(role_id)
+GET            /secure/role/person/:role_id                                                 @controllers.PermissionController.get_Person_from_Role_Group(role_id)
+DELETE         /secure/role/permission/:permission_id/:role_id                              @controllers.PermissionController.remove_Permission_from_Role(permission_id,role_id)
 
-POST           /secure/role                                                  @controllers.PermissionController.new_Role()
-DELETE         /secure/role/:role_id                                         @controllers.PermissionController.delete_Role(role_id)
+POST           /secure/role                                                                 @controllers.PermissionController.new_Role()
+DELETE         /secure/role/:role_id                                                        @controllers.PermissionController.delete_Role(role_id)
 
-PUT            /secure/role/person/:person_id/:role_id                       @controllers.PermissionController.add_Role_Person(person_id,role_id)
-DELETE         /secure/role/person/:person_id/:role_id                       @controllers.PermissionController.remove_Role_Person(person_id,role_id)
-GET            /secure/role/all                                              @controllers.PermissionController.get_Role_All()
+PUT            /secure/role/person/:person_id/:role_id                                      @controllers.PermissionController.add_Role_Person(person_id,role_id)
+DELETE         /secure/role/person/:person_id/:role_id                                      @controllers.PermissionController.remove_Role_Person(person_id,role_id)
+GET            /secure/role/all                                                             @controllers.PermissionController.get_Role_All()
 
-GET            /secure/person/system_acces/:person_id                        @controllers.PermissionController.get_System_Acces(person_id)
+GET            /secure/person/system_acces/:person_id                                       @controllers.PermissionController.get_System_Acces(person_id)
 
 ### OVERFLOW ############ OVERFLOW ############### OVERFLOW ################ OVERFLOW ################# OVERFLOW ###############################################################
 ################################################################################################################################################################################
 
-POST           /overflow/post                              @controllers.OverFlowController.new_Post()
-GET            /overflow/post/:post_id                     @controllers.OverFlowController.get_Post(post_id)
-DELETE         /overflow/post/:post_id                     @controllers.OverFlowController.delete_Post(post_id)
-PUT            /overflow/post/:post_id                     @controllers.OverFlowController.edit_Post(post_id)
-POST           /overflow/postFilter                        @controllers.OverFlowController.get_Post_ByFilter()
-GET            /overflow/linkedAnswers/:post_id            @controllers.OverFlowController.get_Post_links(post_id)
+POST           /overflow/post                                                               @controllers.OverFlowController.new_Post()
+GET            /overflow/post/:post_id                                                      @controllers.OverFlowController.get_Post(post_id)
+DELETE         /overflow/post/:post_id                                                      @controllers.OverFlowController.delete_Post(post_id)
+PUT            /overflow/post/:post_id                                                      @controllers.OverFlowController.edit_Post(post_id)
+POST           /overflow/postFilter                                                         @controllers.OverFlowController.get_Post_ByFilter()
+GET            /overflow/linkedAnswers/:post_id                                             @controllers.OverFlowController.get_Post_links(post_id)
 
 
-POST           /overflow/typeOfPost                                         @controllers.OverFlowController.new_TypeOfPost()
-GET            /overflow/typeOfPost/all                                     @controllers.OverFlowController.get_TypeOfPost_all()
-GET            /overflow/typeOfPost/:type_of_post_id                        @controllers.OverFlowController.get_TypeOfPost(type_of_post_id)
-PUT            /overflow/typeOfPost/:type_of_post_id                        @controllers.OverFlowController.edit_TypeOfPost(type_of_post_id)
-DELETE         /overflow/typeOfPost/:type_of_post_id                        @controllers.OverFlowController.delete_TypeOfPost(type_of_post_id)
+POST           /overflow/typeOfPost                                                         @controllers.OverFlowController.new_TypeOfPost()
+GET            /overflow/typeOfPost/all                                                     @controllers.OverFlowController.get_TypeOfPost_all()
+GET            /overflow/typeOfPost/:type_of_post_id                                        @controllers.OverFlowController.get_TypeOfPost(type_of_post_id)
+PUT            /overflow/typeOfPost/:type_of_post_id                                        @controllers.OverFlowController.edit_TypeOfPost(type_of_post_id)
+DELETE         /overflow/typeOfPost/:type_of_post_id                                        @controllers.OverFlowController.delete_TypeOfPost(type_of_post_id)
 
-POST           /overflow/typeOfConfirm                                      @controllers.OverFlowController.new_TypeOfConfirms()
-PUT            /overflow/typeOfConfirm/:type_of_confirm_id                  @controllers.OverFlowController.edit_TypeOfConfirms(type_of_confirm_id)
-GET            /overflow/typeOfConfirm/all                                  @controllers.OverFlowController.get_TypeOfConfirms_all()
-GET            /overflow/typeOfConfirm/:type_of_confirm_id                  @controllers.OverFlowController.get_TypeOfConfirms(type_of_confirm_id)
-DELETE         /overflow/typeOfConfirm/:type_of_confirm_id                  @controllers.OverFlowController.delete_TypeOfConfirms(type_of_confirm_id)
+POST           /overflow/typeOfConfirm                                                      @controllers.OverFlowController.new_TypeOfConfirms()
+PUT            /overflow/typeOfConfirm/:type_of_confirm_id                                  @controllers.OverFlowController.edit_TypeOfConfirms(type_of_confirm_id)
+GET            /overflow/typeOfConfirm/all                                                  @controllers.OverFlowController.get_TypeOfConfirms_all()
+GET            /overflow/typeOfConfirm/:type_of_confirm_id                                  @controllers.OverFlowController.get_TypeOfConfirms(type_of_confirm_id)
+DELETE         /overflow/typeOfConfirm/:type_of_confirm_id                                  @controllers.OverFlowController.delete_TypeOfConfirms(type_of_confirm_id)
 
-PUT            /overflow/typeOfConfirm/:post_id/:type_of_confirm_id         @controllers.OverFlowController.set_TypeOfConfirm_to_Post(post_id, type_of_confirm_id)
-DELETE         /overflow/typeOfConfirm/:post_id/:type_of_confirm_id         @controllers.OverFlowController.remove_TypeOfConfirm_to_Post(post_id, type_of_confirm_id)
-
-
-POST           /overflow/comment/:post_id                       @controllers.OverFlowController.addComment(post_id)
-PUT            /overflow/comment/:post_id                       @controllers.OverFlowController.edit_Comment_or_Answer(post_id)
-
-POST           /overflow/answer/:post_id                        @controllers.OverFlowController.addAnswer(post_id)
-PUT            /overflow/answer/:post_id                        @controllers.OverFlowController.edit_Comment_or_Answer(post_id)
+PUT            /overflow/typeOfConfirm/:post_id/:type_of_confirm_id                         @controllers.OverFlowController.set_TypeOfConfirm_to_Post(post_id, type_of_confirm_id)
+DELETE         /overflow/typeOfConfirm/:post_id/:type_of_confirm_id                         @controllers.OverFlowController.remove_TypeOfConfirm_to_Post(post_id, type_of_confirm_id)
 
 
-PUT            /overflow/likePlus/:post_id                                       @controllers.OverFlowController.likePlus(post_id)
-PUT            /overflow/likeMinus/:post_id                                      @controllers.OverFlowController.likeMinus(post_id)
-POST           /overflow/link/:question_post_id/:answer_post_id             @controllers.OverFlowController.linkWithPreviousAnswer(question_post_id, answer_post_id)
-DELETE         /overflow/link/:linked_post_id                               @controllers.OverFlowController.unlinkWithPreviousAnswer(linked_post_id)
+POST           /overflow/comment/:post_id                                                   @controllers.OverFlowController.addComment(post_id)
+PUT            /overflow/comment/:post_id                                                   @controllers.OverFlowController.edit_Comment_or_Answer(post_id)
+
+POST           /overflow/answer/:post_id                                                    @controllers.OverFlowController.addAnswer(post_id)
+PUT            /overflow/answer/:post_id                                                    @controllers.OverFlowController.edit_Comment_or_Answer(post_id)
 
 
-PUT           /overflow/hashTag/:post_id/:hashTag          @controllers.OverFlowController.add_HashTag_to_Post(post_id,hashTag)
-DELETE        /overflow/hashTag/:post_id/:hashTag          @controllers.OverFlowController.remove_HashTag_from_Post(post_id,hashTag)
+PUT            /overflow/likePlus/:post_id                                                  @controllers.OverFlowController.likePlus(post_id)
+PUT            /overflow/likeMinus/:post_id                                                 @controllers.OverFlowController.likeMinus(post_id)
+POST           /overflow/link/:question_post_id/:answer_post_id                             @controllers.OverFlowController.linkWithPreviousAnswer(question_post_id, answer_post_id)
+DELETE         /overflow/link/:linked_post_id                                               @controllers.OverFlowController.unlinkWithPreviousAnswer(linked_post_id)
+
+
+PUT           /overflow/hashTag/:post_id/:hashTag                                           @controllers.OverFlowController.add_HashTag_to_Post(post_id,hashTag)
+DELETE        /overflow/hashTag/:post_id/:hashTag                                           @controllers.OverFlowController.remove_HashTag_from_Post(post_id,hashTag)
 
 
 
@@ -134,65 +133,65 @@ DELETE        /overflow/hashTag/:post_id/:hashTag          @controllers.OverFlow
 ### PROJECT ############ PROJECT ############### PROJECT ################ PROJECT ################# PROJECT ####################################################################
 ################################################################################################################################################################################
 #Project
-POST           /project/project                                     @controllers.ProgramingPackageController.postNewProject()
-PUT            /project/project/:project_id                         @controllers.ProgramingPackageController.updateProject(project_id)
-GET            /project/project/:project_id                         @controllers.ProgramingPackageController.getProject(project_id)
-GET            /project/project                                     @controllers.ProgramingPackageController.getProjectsByUserAccount
-DELETE         /project/project/:project_id                         @controllers.ProgramingPackageController.deleteProject(project_id)
-PUT            /project/project/shareProject/:project_id            @controllers.ProgramingPackageController.shareProjectWithUsers(project_id)
-PUT            /project/project/unshareProject/:project_id          @controllers.ProgramingPackageController.unshareProjectWithUsers(project_id)
+POST           /project/project                                                             @controllers.ProgramingPackageController.postNewProject()
+PUT            /project/project/:project_id                                                 @controllers.ProgramingPackageController.updateProject(project_id)
+GET            /project/project/:project_id                                                 @controllers.ProgramingPackageController.getProject(project_id)
+GET            /project/project                                                             @controllers.ProgramingPackageController.getProjectsByUserAccount
+DELETE         /project/project/:project_id                                                 @controllers.ProgramingPackageController.deleteProject(project_id)
+PUT            /project/project/shareProject/:project_id                                    @controllers.ProgramingPackageController.shareProjectWithUsers(project_id)
+PUT            /project/project/unshareProject/:project_id                                  @controllers.ProgramingPackageController.unshareProjectWithUsers(project_id)
 
-GET            /project/project/b_programs/:project_id              @controllers.ProgramingPackageController.get_Project_b_Programs(project_id)
-GET            /project/project/c_programs/:project_id              @controllers.ProgramingPackageController.get_Project_c_Programs(project_id)
-GET            /project/project/m_projects/:project_id              @controllers.ProgramingPackageController.get_Project_m_Projects(project_id)
-GET            /project/project/homers/:project_id                  @controllers.ProgramingPackageController.get_Project_homers(project_id)
-GET            /project/project/owners/:project_id                  @controllers.ProgramingPackageController.get_Project_Owners(project_id)
-GET            /project/project/boards/:project_id                  @controllers.ProgramingPackageController.getProjectsBoard(project_id)
+GET            /project/project/b_programs/:project_id                                      @controllers.ProgramingPackageController.get_Project_b_Programs(project_id)
+GET            /project/project/c_programs/:project_id                                      @controllers.ProgramingPackageController.get_Project_c_Programs(project_id)
+GET            /project/project/m_projects/:project_id                                      @controllers.ProgramingPackageController.get_Project_m_Projects(project_id)
+GET            /project/project/homers/:project_id                                          @controllers.ProgramingPackageController.get_Project_homers(project_id)
+GET            /project/project/owners/:project_id                                          @controllers.ProgramingPackageController.get_Project_Owners(project_id)
+GET            /project/project/boards/:project_id                                          @controllers.ProgramingPackageController.getProjectsBoard(project_id)
 
 #Homer
-POST           /project/homer                                       @controllers.ProgramingPackageController.newHomer()
-GET            /project/homer/filter                                @controllers.ProgramingPackageController.get_Homers_by_Filter()
-DELETE         /project/homer/:id                                   @controllers.ProgramingPackageController.removeHomer(id: String)
-GET            /project/homer/:id                                   @controllers.ProgramingPackageController.getHomer(id: String)
+POST           /project/homer                                                               @controllers.ProgramingPackageController.newHomer()
+GET            /project/homer/filter                                                        @controllers.ProgramingPackageController.get_Homers_by_Filter()
+DELETE         /project/homer/:homer_id                                                     @controllers.ProgramingPackageController.removeHomer(homer_id)
+GET            /project/homer/:homer_id                                                     @controllers.ProgramingPackageController.getHomer(homer_id)
 
 
 #Project - connection
-PUT            /project/homer/:project_id/:homer_id         @controllers.ProgramingPackageController.connectHomerWithProject(project_id, homer_id)
-DELETE         /project/homer/:project_id/:homer_id         @controllers.ProgramingPackageController.disconnectHomerWithProject(project_id, homer_id)
+PUT            /project/homer/:project_id/:homer_id                                         @controllers.ProgramingPackageController.connectHomerWithProject(project_id, homer_id)
+DELETE         /project/homer/:project_id/:homer_id                                         @controllers.ProgramingPackageController.disconnectHomerWithProject(project_id, homer_id)
 
 
 #Program
-POST           /project/b_program/:project_id                                   @controllers.ProgramingPackageController.new_b_Program(project_id)
-GET            /project/b_program/:b_program_id                                 @controllers.ProgramingPackageController.get_b_Program(b_program_id)
-PUT            /project/b_program/:b_program_id                                 @controllers.ProgramingPackageController.edit_b_Program(b_program_id)
-PUT            /project/b_program/update/:b_program_id                          @controllers.ProgramingPackageController.update_b_program(b_program_id)
-DELETE         /project/b_program/:b_program_id                                 @controllers.ProgramingPackageController.remove_b_Program(b_program_id)
-PUT            /project/b_program/upload/:b_program_id/:version_id              @controllers.ProgramingPackageController.uploadProgramToHomer_Immediately(b_program_id, version_id)
-PUT            /project/b_program/uploadToCloud/:b_program_id/:version_id       @controllers.ProgramingPackageController.upload_b_Program_ToCloud(b_program_id, version_id)
+POST           /project/b_program/:project_id                                               @controllers.ProgramingPackageController.new_b_Program(project_id)
+GET            /project/b_program/:b_program_id                                             @controllers.ProgramingPackageController.get_b_Program(b_program_id)
+PUT            /project/b_program/:b_program_id                                             @controllers.ProgramingPackageController.edit_b_Program(b_program_id)
+PUT            /project/b_program/update/:b_program_id                                      @controllers.ProgramingPackageController.update_b_program(b_program_id)
+DELETE         /project/b_program/:b_program_id                                             @controllers.ProgramingPackageController.remove_b_Program(b_program_id)
+PUT            /project/b_program/upload/:b_program_id/:version_id                          @controllers.ProgramingPackageController.uploadProgramToHomer_Immediately(b_program_id, version_id)
+PUT            /project/b_program/uploadToCloud/:b_program_id/:version_id                   @controllers.ProgramingPackageController.upload_b_Program_ToCloud(b_program_id, version_id)
 
-GET            /project/listOfUploadedHomers/:id                @controllers.ProgramingPackageController.listOfUploadedHomers(id: String)
-GET            /project/listOfHomersWaitingForUpload/:id        @controllers.ProgramingPackageController.listOfHomersWaitingForUpload(id: String)
+GET            /project/listOfUploadedHomers/:id                                            @controllers.ProgramingPackageController.listOfUploadedHomers(id: String)
+GET            /project/listOfHomersWaitingForUpload/:id                                    @controllers.ProgramingPackageController.listOfHomersWaitingForUpload(id: String)
 
 
 #Blocks
-POST           /project/blockoBlock                                         @controllers.ProgramingPackageController.new_Block()
-PUT            /project/blockoBlock/:blocko_block_id                        @controllers.ProgramingPackageController.edit_Block(blocko_block_id)
-GET            /project/blockoBlock/:blocko_block_id                        @controllers.ProgramingPackageController.getBlockBlock(blocko_block_id)
-DELETE         /project/blockoBlock/:blocko_block_id                        @controllers.ProgramingPackageController.deleteBlock(blocko_block_id)
+POST           /project/blockoBlock                                                         @controllers.ProgramingPackageController.new_Block()
+PUT            /project/blockoBlock/:blocko_block_id                                        @controllers.ProgramingPackageController.edit_Block(blocko_block_id)
+GET            /project/blockoBlock/:blocko_block_id                                        @controllers.ProgramingPackageController.getBlockBlock(blocko_block_id)
+DELETE         /project/blockoBlock/:blocko_block_id                                        @controllers.ProgramingPackageController.deleteBlock(blocko_block_id)
 
-POST           /project/blockoBlock/version/:blocko_block_id                @controllers.ProgramingPackageController.new_BlockoBlock_Version(blocko_block_id)
-GET            /project/blockoBlock/version/all/:blocko_block_id            @controllers.ProgramingPackageController.get_BlockoBlock_all_versions(blocko_block_id)
-GET            /project/blockoBlock/version/:blocko_block_version_id        @controllers.ProgramingPackageController.get_BlockoBlock_Version(blocko_block_version_id)
-DELETE         /project/blockoBlock/version/:blocko_block_version_id        @controllers.ProgramingPackageController.delete_BlockoBlock_Version(blocko_block_version_id)
+POST           /project/blockoBlock/version/:blocko_block_id                                @controllers.ProgramingPackageController.new_BlockoBlock_Version(blocko_block_id)
+GET            /project/blockoBlock/version/all/:blocko_block_id                            @controllers.ProgramingPackageController.get_BlockoBlock_all_versions(blocko_block_id)
+GET            /project/blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.get_BlockoBlock_Version(blocko_block_version_id)
+DELETE         /project/blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.delete_BlockoBlock_Version(blocko_block_version_id)
 
 
 
-POST           /project/typeOfBlock                                         @controllers.ProgramingPackageController.newTypeOfBlock()
-GET            /project/blockoBlock/project/:project_id                     @controllers.ProgramingPackageController.get_TypeOfBlock_by_Project(project_id)
-GET            /project/typeOfBlock/:type_of_block_id                       @controllers.ProgramingPackageController.get_BlockoBlocks_from_Category(type_of_block_id)
-PUT            /project/typeOfBlock/:type_of_block_id                       @controllers.ProgramingPackageController.editTypeOfBlock(type_of_block_id)
-GET            /project/typeOfBlock                                         @controllers.ProgramingPackageController.getAllTypeOfBlocks
-DELETE         /project/typeOfBlock/:type_of_block_id                       @controllers.ProgramingPackageController.deleteTypeOfBlock(type_of_block_id)
+POST           /project/typeOfBlock                                                         @controllers.ProgramingPackageController.newTypeOfBlock()
+GET            /project/blockoBlock/project/:project_id                                     @controllers.ProgramingPackageController.get_TypeOfBlock_by_Project(project_id)
+GET            /project/typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.get_BlockoBlocks_from_Category(type_of_block_id)
+PUT            /project/typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.editTypeOfBlock(type_of_block_id)
+GET            /project/typeOfBlock                                                         @controllers.ProgramingPackageController.getAllTypeOfBlocks
+DELETE         /project/typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.deleteTypeOfBlock(type_of_block_id)
 
 
 
@@ -209,7 +208,7 @@ GET             /compilation/c_program/:c_program_id                            
 GET             /compilation/c_program/project/:project_id                                  @controllers.CompilationLibrariesController.get_C_Program_All_from_Project(project_id)
 
 PUT             /compilation/c_program/edit/:c_program_id                                   @controllers.CompilationLibrariesController.edit_C_Program_Description(c_program_id)
-PUT             /compilation/c_program/update/:c_program_id                                 @controllers.CompilationLibrariesController.update_C_Program(c_program_id)
+PUT             /compilation/c_program/update/:c_program_id                                 @controllers.CompilationLibrariesController.new_C_Program_Version(c_program_id)
 PUT             /compilation/c_program/version/:version_id                                  @controllers.CompilationLibrariesController.edit_C_Program_version(version_id)
 
 DELETE          /compilation/c_program/c_program/:c_program_id                              @controllers.CompilationLibrariesController.delete_C_Program(c_program_id)
@@ -237,93 +236,92 @@ GET            /compilation/processor/libraryGroups/:processor_id               
 GET            /compilation/processor/singleLibrary/:processor_id                           @controllers.CompilationLibrariesController.getProcessorSingleLibraries(processor_id)
 
 #Board
-POST            /compilation/board                                          @controllers.CompilationLibrariesController.new_Board()
-PUT             /compilation/board/userDescription/:type_of_board_id        @controllers.CompilationLibrariesController.edit_Board_User_Description(type_of_board_id)
-PUT             /compilation/board/filter                                   @controllers.CompilationLibrariesController.get_Board_Filter()
-GET             /compilation/board/:board_id                                @controllers.CompilationLibrariesController.get_Board(board_id)
-DELETE          /compilation/board/deactivateBoard/:board_id                @controllers.CompilationLibrariesController.deactivate_Board(board_id)
-PUT             /compilation/board/connect/:board_id/:project_id            @controllers.CompilationLibrariesController.connect_Board_with_Project(board_id, project_id)
-PUT             /compilation/board/disconnect/:board_id/:project_id         @controllers.CompilationLibrariesController.disconnect_Board_from_Project(board_id, project_id)
-GET             /compilation/board/projects/:board_id                       @controllers.CompilationLibrariesController.getBoardProjects(board_id)
+POST            /compilation/board                                                          @controllers.CompilationLibrariesController.new_Board()
+PUT             /compilation/board/userDescription/:type_of_board_id                        @controllers.CompilationLibrariesController.edit_Board_User_Description(type_of_board_id)
+PUT             /compilation/board/filter                                                   @controllers.CompilationLibrariesController.get_Board_Filter()
+GET             /compilation/board/:board_id                                                @controllers.CompilationLibrariesController.get_Board(board_id)
+DELETE          /compilation/board/deactivateBoard/:board_id                                @controllers.CompilationLibrariesController.deactivate_Board(board_id)
+PUT             /compilation/board/:board_id/:project_id                                    @controllers.CompilationLibrariesController.connect_Board_with_Project(board_id, project_id)
+DELETE          /compilation/board/:board_id/:project_id                                    @controllers.CompilationLibrariesController.disconnect_Board_from_Project(board_id, project_id)
+GET             /compilation/board/projects/:board_id                                       @controllers.CompilationLibrariesController.getBoardProjects(board_id)
 
 
 #Producer
-POST            /compilation/producer                                           @controllers.CompilationLibrariesController.new_Producer()
-PUT             /compilation/producer/:producer_id                              @controllers.CompilationLibrariesController.edit_Producer(producer_id)
-GET             /compilation/producer/all                                       @controllers.CompilationLibrariesController.get_Producers()
-GET             /compilation/producer/:producer_id                              @controllers.CompilationLibrariesController.get_Producer(producer_id)
-DELETE          /compilation/producer/:producer_id                              @controllers.CompilationLibrariesController.delete_Producer(producer_id)
-GET             /compilation/producer/description/:producer_id                  @controllers.CompilationLibrariesController.get_Producer_Description(producer_id)
-GET             /compilation/producer/typeOfBoards/:producer_id                 @controllers.CompilationLibrariesController.get_Producer_TypeOfBoards(producer_id)
+POST            /compilation/producer                                                       @controllers.CompilationLibrariesController.new_Producer()
+PUT             /compilation/producer/:producer_id                                          @controllers.CompilationLibrariesController.edit_Producer(producer_id)
+GET             /compilation/producer/all                                                   @controllers.CompilationLibrariesController.get_Producers()
+GET             /compilation/producer/:producer_id                                          @controllers.CompilationLibrariesController.get_Producer(producer_id)
+DELETE          /compilation/producer/:producer_id                                          @controllers.CompilationLibrariesController.delete_Producer(producer_id)
+GET             /compilation/producer/description/:producer_id                              @controllers.CompilationLibrariesController.get_Producer_Description(producer_id)
+GET             /compilation/producer/typeOfBoards/:producer_id                             @controllers.CompilationLibrariesController.get_Producer_TypeOfBoards(producer_id)
 
 #TypeOfBoard
-POST            /compilation/typeOfBoard                                                @controllers.CompilationLibrariesController.new_TypeOfBoard()
-PUT             /compilation/typeOfBoard/:type_of_board_id                              @controllers.CompilationLibrariesController.edit_TypeOfBoard(type_of_board_id)
-DELETE          /compilation/typeOfBoard/:type_of_board_id                              @controllers.CompilationLibrariesController.delete_TypeOfBoard(type_of_board_id)
-GET             /compilation/typeOfBoard/all                                            @controllers.CompilationLibrariesController.get_TypeOfBoard_all()
-GET             /compilation/typeOfBoard/:type_of_board_id                              @controllers.CompilationLibrariesController.get_TypeOfBoard(type_of_board_id)
-GET             /compilation/typeOfBoard/description/:type_of_board_id                  @controllers.CompilationLibrariesController.get_TypeOfBoard_Description(type_of_board_id)
-GET             /compilation/typeOfBoard/boards/:type_of_board_id                       @controllers.CompilationLibrariesController.getTypeOfBoardAllBoards(type_of_board_id)
+POST            /compilation/typeOfBoard                                                    @controllers.CompilationLibrariesController.new_TypeOfBoard()
+PUT             /compilation/typeOfBoard/:type_of_board_id                                  @controllers.CompilationLibrariesController.edit_TypeOfBoard(type_of_board_id)
+DELETE          /compilation/typeOfBoard/:type_of_board_id                                  @controllers.CompilationLibrariesController.delete_TypeOfBoard(type_of_board_id)
+GET             /compilation/typeOfBoard/all                                                @controllers.CompilationLibrariesController.get_TypeOfBoard_all()
+GET             /compilation/typeOfBoard/filter                                             @controllers.CompilationLibrariesController.get_TypeOfBoard_Filter()
+GET             /compilation/typeOfBoard/:type_of_board_id                                  @controllers.CompilationLibrariesController.get_TypeOfBoard(type_of_board_id)
+GET             /compilation/typeOfBoard/description/:type_of_board_id                      @controllers.CompilationLibrariesController.get_TypeOfBoard_Description(type_of_board_id)
+GET             /compilation/typeOfBoard/boards/:type_of_board_id                           @controllers.CompilationLibrariesController.getTypeOfBoardAllBoards(type_of_board_id)
 
 #LibraryGroups
-POST            /compilation/libraryGroup                                           @controllers.CompilationLibrariesController.new_LibraryGroup()
-PUT             /compilation/libraryGroup/filter                                    @controllers.CompilationLibrariesController.get_LibraryGroup_Filter
-GET             /compilation/libraryGroup/generalDescription/:libraryGroup_id       @controllers.CompilationLibrariesController.get_LibraryGroup_Description(libraryGroup_id)
-GET             /compilation/libraryGroup/processors/:libraryGroup_id               @controllers.CompilationLibrariesController.get_LibraryGroup_Processors(libraryGroup_id)
-GET             /compilation/libraryGroup/libraries/:libraryGroup_id/:version_id    @controllers.CompilationLibrariesController.get_LibraryGroup_Libraries(libraryGroup_id, version_id)
-POST            /compilation/libraryGroup/version/:version_id                       @controllers.CompilationLibrariesController.new_LibraryGroup_Version(version_id)
-GET             /compilation/libraryGroup/versions/:version_id                      @controllers.CompilationLibrariesController.get_LibraryGroup_Version(version_id)
-POST            /compilation/libraryGroup/upload/:libraryGroup_id/:version_id       @controllers.CompilationLibrariesController.upload_Library_To_LibraryGroup(libraryGroup_id, version_id)
-GET             /compilation/libraryGroup/:libraryGroup_id                          @controllers.CompilationLibrariesController.get_LibraryGroup(libraryGroup_id)
-DELETE          /compilation/libraryGroup/:libraryGroup_id                          @controllers.CompilationLibrariesController.delete_LibraryGroup(libraryGroup_id)
-PUT             /compilation/libraryGroup/:libraryGroup_id                          @controllers.CompilationLibrariesController.editLibraryGroup(libraryGroup_id)
+POST            /compilation/libraryGroup                                                   @controllers.CompilationLibrariesController.new_LibraryGroup()
+PUT             /compilation/libraryGroup/filter                                            @controllers.CompilationLibrariesController.get_LibraryGroup_Filter
+GET             /compilation/libraryGroup/generalDescription/:libraryGroup_id               @controllers.CompilationLibrariesController.get_LibraryGroup_Description(libraryGroup_id)
+GET             /compilation/libraryGroup/processors/:libraryGroup_id                       @controllers.CompilationLibrariesController.get_LibraryGroup_Processors(libraryGroup_id)
+GET             /compilation/libraryGroup/libraries/:libraryGroup_id/:version_id            @controllers.CompilationLibrariesController.get_LibraryGroup_Libraries(libraryGroup_id, version_id)
+POST            /compilation/libraryGroup/version/:version_id                               @controllers.CompilationLibrariesController.new_LibraryGroup_Version(version_id)
+GET             /compilation/libraryGroup/versions/:version_id                              @controllers.CompilationLibrariesController.get_LibraryGroup_Version(version_id)
+POST            /compilation/libraryGroup/upload/:libraryGroup_id/:version_id               @controllers.CompilationLibrariesController.upload_Library_To_LibraryGroup(libraryGroup_id, version_id)
+GET             /compilation/libraryGroup/:libraryGroup_id                                  @controllers.CompilationLibrariesController.get_LibraryGroup(libraryGroup_id)
+DELETE          /compilation/libraryGroup/:libraryGroup_id                                  @controllers.CompilationLibrariesController.delete_LibraryGroup(libraryGroup_id)
+PUT             /compilation/libraryGroup/:libraryGroup_id                                  @controllers.CompilationLibrariesController.editLibraryGroup(libraryGroup_id)
 
 #Single Library
-POST            /compilation/library                                    @controllers.CompilationLibrariesController.new_SingleLibrary()
-PUT             /compilation/library/filter                             @controllers.CompilationLibrariesController.get_SingleLibrary_Filter()
-POST            /compilation/library/version/:library_id                @controllers.CompilationLibrariesController.new_SingleLibrary_Version(library_id)
-GET             /compilation/library/versions/:library_id               @controllers.CompilationLibrariesController.get_SingleLibrary_Versions(library_id)
-GET             /compilation/library/:library_id                        @controllers.CompilationLibrariesController.get_SingleLibrary(library_id)
+POST            /compilation/library                                                        @controllers.CompilationLibrariesController.new_SingleLibrary()
+PUT             /compilation/library/filter                                                 @controllers.CompilationLibrariesController.get_SingleLibrary_Filter()
+POST            /compilation/library/version/:library_id                                    @controllers.CompilationLibrariesController.new_SingleLibrary_Version(library_id)
+GET             /compilation/library/versions/:library_id                                   @controllers.CompilationLibrariesController.get_SingleLibrary_Versions(library_id)
+GET             /compilation/library/:library_id                                            @controllers.CompilationLibrariesController.get_SingleLibrary(library_id)
 
-PUT             /compilation/library:library_id                         @controllers.CompilationLibrariesController.edit_SingleLibrary(library_id)
-DELETE          /compilation/library:library_id                         @controllers.CompilationLibrariesController.delete_SingleLibrary(library_id)
-POST            /compilation/library/upload:library_id/:version_id      @controllers.CompilationLibrariesController.upload_SingleLibrary_Version(library_id, version_id)
+PUT             /compilation/library:library_id                                             @controllers.CompilationLibrariesController.edit_SingleLibrary(library_id)
+DELETE          /compilation/library:library_id                                             @controllers.CompilationLibrariesController.delete_SingleLibrary(library_id)
+POST            /compilation/library/upload:library_id/:version_id                          @controllers.CompilationLibrariesController.upload_SingleLibrary_Version(library_id, version_id)
 
 #File
-GET             /file/listOfFiles/:id                           @controllers.CompilationLibrariesController.get_LibraryGroup_Version_Libraries(id: String)
-GET             /file/fileRecord/:id                            @controllers.CompilationLibrariesController.fileRecord(id: String)
+GET             /file/listOfFiles/:id                                                       @controllers.CompilationLibrariesController.get_LibraryGroup_Version_Libraries(id: String)
+GET             /file/fileRecord/:id                                                        @controllers.CompilationLibrariesController.fileRecord(id: String)
 
 
 ### GRIDS ############ GRIDS ############### GRIDS ################ GRIDS ######################################################################################################
 ################################################################################################################################################################################
 
 #M Project
-POST            /grid/m_project                            @controllers.GridController.new_M_Project(project_id)
-GET             /grid/m_project/person                     @controllers.GridController.get_M_Projects_ByLoggedPerson()
-GET             /grid/m_project/:m_project_id              @controllers.GridController.get_M_Project(m_project_id)
-PUT             /grid/m_project/:m_project_id              @controllers.GridController.edit_M_Project(m_project_id)
-DELETE          /grid/m_project/:m_project_id              @controllers.GridController.remove_M_Project(m_project_id)
-
-GET             /grid/m_project/project/:project_id        @controllers.GridController.get_M_Projects_from_GlobalProject(project_id)
-
+POST            /grid/m_project                                                             @controllers.GridController.new_M_Project(project_id)
+GET             /grid/m_project/person                                                      @controllers.GridController.get_M_Projects_ByLoggedPerson()
+GET             /grid/m_project/project/:project_id                                         @controllers.GridController.get_M_Projects_from_GlobalProject(project_id)
+GET             /grid/m_project/:m_project_id                                               @controllers.GridController.get_M_Project(m_project_id)
+PUT             /grid/m_project/:m_project_id                                               @controllers.GridController.edit_M_Project(m_project_id)
+DELETE          /grid/m_project/:m_project_id                                               @controllers.GridController.remove_M_Project(m_project_id)
 
 #M Program
-POST            /grid/m_program                            @controllers.GridController.new_M_Program()
-GET             /grid/m_program/app/token/:qr_token        @controllers.GridController.get_M_Program_byQR_Token_forMobile(qr_token)
-GET             /grid/m_program/app/m_programs             @controllers.GridController.get_M_Program_all_forMobile()
+POST            /grid/m_program                                                             @controllers.GridController.new_M_Program()
+GET             /grid/m_program/app/token/:qr_token                                         @controllers.GridController.get_M_Program_byQR_Token_forMobile(qr_token)
+GET             /grid/m_program/app/m_programs                                              @controllers.GridController.get_M_Program_all_forMobile()
 
-GET             /grid/m_program/:m_progrm_id               @controllers.GridController.get_M_Program(m_progrm_id)
-PUT             /grid/m_program/:m_progrm_id               @controllers.GridController.edit_M_Program(m_progrm_id)
-DELETE          /grid/m_program/:m_progrm_id               @controllers.GridController.remove_M_Program(m_progrm_id)
+GET             /grid/m_program/:m_progrm_id                                                @controllers.GridController.get_M_Program(m_progrm_id)
+PUT             /grid/m_program/:m_progrm_id                                                @controllers.GridController.edit_M_Program(m_progrm_id)
+DELETE          /grid/m_program/:m_progrm_id                                                @controllers.GridController.remove_M_Program(m_progrm_id)
 
 
 #M Screen Type
-POST            /grid/screen_type                          @controllers.GridController.new_Screen_Size_Type()
-GET             /grid/screen_type/all                      @controllers.GridController.get_Screen_Size_Type_Combination()
-GET             /grid/screen_type/project/:project_id      @controllers.GridController.get_Screen_Size_Type_from_Project(project_id)
-GET             /grid/screen_type/:screen_size_type_id     @controllers.GridController.get_Screen_Size_Type(screen_size_type_id)
-PUT             /grid/screen_type/:screen_size_type_id     @controllers.GridController.edit_Screen_Size_Type(screen_size_type_id)
-DELETE          /grid/screen_type/:screen_size_type_id     @controllers.GridController.remove_Screen_Size_Type(screen_size_type_id)
+POST            /grid/screen_type                                                           @controllers.GridController.new_Screen_Size_Type()
+GET             /grid/screen_type/all                                                       @controllers.GridController.get_Screen_Size_Type_Combination()
+GET             /grid/screen_type/project/:project_id                                       @controllers.GridController.get_Screen_Size_Type_from_Project(project_id)
+GET             /grid/screen_type/:screen_size_type_id                                      @controllers.GridController.get_Screen_Size_Type(screen_size_type_id)
+PUT             /grid/screen_type/:screen_size_type_id                                      @controllers.GridController.edit_Screen_Size_Type(screen_size_type_id)
+DELETE          /grid/screen_type/:screen_size_type_id                                      @controllers.GridController.remove_Screen_Size_Type(screen_size_type_id)
 
 
 
@@ -339,4 +337,5 @@ OPTIONS        /*all                                       @controllers.Security
 
 # Map static resources from the /public folder to the /assets URL path
 GET           /assets/*file                                controllers.Assets.at(path="/public", file)
+
 

@@ -19,8 +19,7 @@ public class Homer extends Model {
 
     @JsonIgnore @ManyToOne  public Project project;
 
-    @JsonIgnore  @OneToOne(mappedBy="homer")
-    B_Program_Homer b_program_homer;
+    @JsonIgnore  @OneToOne(mappedBy="homer") public B_Program_Homer b_program_homer;
 
 /* FINDER & WEBSOCKET --------------------------------------------------------------------------------------------------------*/
         public static Finder<String,Homer> find = new Finder<>(Homer.class);

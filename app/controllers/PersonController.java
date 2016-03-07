@@ -1,8 +1,7 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.Authorization;
+import io.swagger.annotations.*;
 import models.persons.Person;
 import models.persons.ValidationToken;
 import play.Configuration;
@@ -18,65 +17,64 @@ import utilities.Server;
 import utilities.emails.EmailTool;
 import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
+import utilities.response.response_objects.JsonValueMissing;
+import utilities.response.response_objects.Result_PermissionRequired;
+import utilities.response.response_objects.Result_Unauthorized;
+import utilities.swagger.documentationClass.Swagger_Person_New;
 
 import javax.inject.Inject;
+import javax.websocket.server.PathParam;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
-@Api(value = "Ještě neroztříděné a neupravené",
-        description = "Compilation operation (C_Program, Processor, Libraries, TypeOfBoard...",
-        authorizations = { @Authorization(value="logged_in", scopes = {} )}
-)
+@Api(value = "Not Documented API - InProgress or Stuck")
 public class PersonController extends Controller {
-
     @Inject MailerClient mailerClient;
 
 
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result developerRegistration() {
-        try{
-            JsonNode json = request().body().asJson();
-
-            if ( Person.find.where().eq("nick_name", json.get("nick_name").asText()).findUnique() != null) return GlobalResult.badRequest("nick name is used");
-            if ( Person.find.where().eq("mail", json.get("mail").asText()).findUnique()  != null) return GlobalResult.badRequest("Email is registered");
-
-            Person person = new Person();
-            person.mail = json.get("mail").asText();
-            person.mailValidated = true;
-            person.nick_name = json.get("nick_name").asText();
-
-            person.setSha(json.get("password").asText());
-            person.save();
-
-            return GlobalResult.okResult();
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "mail",  "password");
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("PersonController - edit_Person_Information ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
-        }
-    }
-
+    @ApiOperation(value = "register new Person",
+            tags = {"Person"},
+            notes = "create new Person with unique email and nick_name",
+            produces = "application/json",
+            protocols = "https",
+            code = 201
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Person_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successful created",      response = Person.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @BodyParser.Of(BodyParser.Json.class)
     public Result registred_Person() {
         try {
-            JsonNode json = request().body().asJson();
+            Swagger_Person_New help = Json.fromJson( request().body().asJson() ,Swagger_Person_New.class);
 
-            if (Person.find.where().eq("nick_name", json.get("nick_name").asText()).findUnique() != null)
+            if (Person.find.where().eq("nick_name", help.nick_name).findUnique() != null)
                 return GlobalResult.badRequest("nick name is used");
-            if (Person.find.where().eq("mail", json.get("mail").asText()).findUnique() != null)
+            if (Person.find.where().eq("mail", help.mail).findUnique() != null)
                 return GlobalResult.badRequest("Email is registered");
 
 
             Person person = new Person();
 
-            person.nick_name = json.get("nick_name").asText();
-            person.mail = json.get("mail").asText();
+            person.nick_name =  help.nick_name;
+            person.mail = help.mail;
             person.mailValidated = false;
 
-            person.setSha(json.get("password").asText());
+            person.setSha(help.password);
             person.save();
 
             ValidationToken validationToken = new ValidationToken().setValidation(person.mail);
@@ -84,7 +82,7 @@ public class PersonController extends Controller {
             String link = Server.serverAddress + "/mail_person_authentication" + "?mail=" + person.mail + "&token=" + validationToken.authToken;
 
             try {
-                Email email = new EmailTool().sendEmailValidation(person.first_name + person.last_name, person.mail, link);
+                Email email = new EmailTool().sendEmailValidation(help.nick_name , person.mail, link);
                 mailerClient.send(email);
 
             } catch (Exception e) {
@@ -106,7 +104,7 @@ public class PersonController extends Controller {
         }
     }
 
-
+    @ApiOperation(value = "Email verification of registration", hidden = true)
     public Result email_Person_authentitaction(String mail, String authToken) {
         try{
 
@@ -129,10 +127,10 @@ public class PersonController extends Controller {
     }
 
     @Security.Authenticated(Secured.class)
-    public  Result getPerson(String id){
+    public  Result getPerson(@ApiParam(value = "person_id String query", required = true) @PathParam("person_id")  String person_id){
         try{
 
-            Person person =Person.find.byId(id);
+            Person person =Person.find.byId(person_id);
             if(person == null )  return GlobalResult.notFoundObject();
             return GlobalResult.okResult(Json.toJson(person));
 
@@ -145,10 +143,10 @@ public class PersonController extends Controller {
 
     @Security.Authenticated(Secured.class)
     @BodyParser.Of(BodyParser.Json.class)
-    public  Result deletePerson(String id){
+    public  Result deletePerson(@ApiParam(value = "person_id String query", required = true) @PathParam("person_id") String person_id){
         try{
 
-            Person person = Person.find.byId(id);
+            Person person = Person.find.byId(person_id);
             if(person == null ) return GlobalResult.notFoundObject();
             person.delete();
 
@@ -194,7 +192,7 @@ public class PersonController extends Controller {
 
 
 
-    public  Result valid_Person_mail(String mail){
+    public  Result valid_Person_mail(@ApiParam(value = "mail value for server side unique control", required = true) @PathParam("person_id") String mail){
         try{
 
             if(Person.find.where().ieq("mail", mail).findUnique() == null ) return GlobalResult.okResult();
@@ -205,7 +203,7 @@ public class PersonController extends Controller {
         }
     }
 
-    public  Result valid_Person_NickName(String nick_name){
+    public  Result valid_Person_NickName(@ApiParam(value = "nick_name value for server side unique control", required = true) @PathParam("person_id")  String nick_name){
         try{
 
             if(Person.find.where().ieq("nick_name", nick_name).findUnique() == null ) return GlobalResult.okResult();
