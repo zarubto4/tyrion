@@ -1,4 +1,16 @@
 
+nová verze (ZMĚNIT NA AKTUÁLNÍ)
+
+utilities/EclipseProject přejmenováno na utilities/eclipseProject
+utilities/Response přejmenováno na utilities/response
+-kvůli názvům jejich package, intellij si stěžovalo
+
+přihlašovací údaje k databázy změněny na
+db.default.username=tyrion
+db.default.password=lannister
+-na linuxu je uživatel postgres propojený do systému jako superuser a má unikátní heslo
+
+
 
 Verze 1.04.9.12 FIXED a verze 12
 
