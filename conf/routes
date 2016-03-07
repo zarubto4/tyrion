@@ -166,7 +166,7 @@ GET            /project/b_program/:b_program_id                                 
 PUT            /project/b_program/:b_program_id                                             @controllers.ProgramingPackageController.edit_b_Program(b_program_id)
 PUT            /project/b_program/update/:b_program_id                                      @controllers.ProgramingPackageController.update_b_program(b_program_id)
 DELETE         /project/b_program/:b_program_id                                             @controllers.ProgramingPackageController.remove_b_Program(b_program_id)
-PUT            /project/b_program/upload/:b_program_id/:version_id                          @controllers.ProgramingPackageController.uploadProgramToHomer_Immediately(b_program_id, version_id)
+PUT            /project/b_program/uploadToHomer/:b_program_id/:version_id/:homer_id         @controllers.ProgramingPackageController.uploadProgramToHomer_Immediately(b_program_id, version_id,homer_id)
 PUT            /project/b_program/uploadToCloud/:b_program_id/:version_id                   @controllers.ProgramingPackageController.upload_b_Program_ToCloud(b_program_id, version_id)
 
 GET            /project/listOfUploadedHomers/:id                                            @controllers.ProgramingPackageController.listOfUploadedHomers(id: String)
@@ -298,7 +298,7 @@ GET             /file/fileRecord/:id                                            
 ################################################################################################################################################################################
 
 #M Project
-POST            /grid/m_project                                                             @controllers.GridController.new_M_Project(project_id)
+POST            /grid/m_project/:project_id                                                 @controllers.GridController.new_M_Project(project_id)
 GET             /grid/m_project/person                                                      @controllers.GridController.get_M_Projects_ByLoggedPerson()
 GET             /grid/m_project/project/:project_id                                         @controllers.GridController.get_M_Projects_from_GlobalProject(project_id)
 GET             /grid/m_project/:m_project_id                                               @controllers.GridController.get_M_Project(m_project_id)

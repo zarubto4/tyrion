@@ -6,7 +6,7 @@ import play.mvc.Result;
 import play.mvc.WebSocket;
 import utilities.response.GlobalResult;
 import utilities.webSocket.WebSocketClientNotPlay;
-import utilities.webSocket.WebSocketPlayServer;
+import utilities.webSocket.WebSocketPlayServer_Homer;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -17,30 +17,58 @@ public class WebSocketController_Incoming extends Controller {
 
 // Values  ---------------------------------------------------------------------------------------------------------
 
-    public static Map<String, WebSocket.Out<String> > incomingConnections_homers        = new HashMap<>(); // (Identificator, Websocket)
-    public static Map<String, WebSocket.Out<String> > incomingConnections_mobileDevice  = new HashMap<>(); // (Identificator, Websocket)
+    private static Map<String, WebSocket.Out<String> > incomingConnections_homers        = new HashMap<>(); // (Identificator, Websocket)
+    private static Map<String, WebSocket.Out<String> > incomingConnections_mobileDevice  = new HashMap<>(); // (Identificator, Websocket)
 
 // PUBLIC API ---------------------------------------------------------------------------------------------------------
     public WebSocket<String> homer_connection(String homer_mac_address){
         System.out.println("Příchozí připojení Homer" + homer_mac_address);
-        return  WebSocketPlayServer.connection(incomingConnections_homers, homer_mac_address);
+        return  WebSocketPlayServer_Homer.connection(incomingConnections_homers, homer_mac_address);
     }
 
     public WebSocket<String> mobile_connection(String m_program_name){
         System.out.println("Příchozí připojení mobilního telefonu na programu" + m_program_name);
-        return  WebSocketPlayServer.connection(incomingConnections_mobileDevice, m_program_name);
+        return  WebSocketPlayServer_Homer.connection(incomingConnections_mobileDevice, m_program_name);
     }
 
-// PRIVATE API ---------------------------------------------------------------------------------------------------------
+
+
+
+// PRIVATE Homer ---------------------------------------------------------------------------------------------------------
 
 
     /** incoming Json from Cliens - (users, Homers, mob. apps) */
-    public static void incomingJson_PLAY_As_Server(String identificator, String string){
-        System.out.println("Zpráva od " + identificator + " Obsah " + string );
+    public static void incoming_homer(String homer_id, String string){
+        System.out.println("Zpráva Homer od " + homer_id + " Obsah " + string );
     }
 
 
+    public static void homer_KillInstance(String homer_id){
+        incomingConnections_homers.get(homer_id).write( "Kill Instance");
+    }
 
+    public static void homer_UploadInstance(String homer_id, String program){
+        incomingConnections_homers.get(homer_id).write( "Program: " + program);
+    }
+
+    public static boolean homer_is_online(String homer_id){
+        return incomingConnections_homers.containsKey(homer_id);
+    }
+
+    public static void remove_homer(String homer_id){
+        if( incomingConnections_homers.containsKey(homer_id))incomingConnections_homers.remove(homer_id);
+    }
+
+
+// PRIVATE Mobile ---------------------------------------------------------------------------------------------------------
+
+    public static void incoming_mobile(String mobile_id, String string){
+        System.out.println("Zpráva Mobile od " + mobile_id + " Obsah " + string );
+    }
+
+    public static void remove_mobile(String mobile_id){
+        if( incomingConnections_mobileDevice.containsKey(mobile_id))incomingConnections_homers.remove(mobile_id);
+    }
 
 
 
@@ -112,6 +140,19 @@ public class WebSocketController_Incoming extends Controller {
         }
     }
 
+    public static void disconnect_all_homers(){
+        for (Map.Entry<String, WebSocket.Out<String>> entry :  WebSocketController_Incoming.incomingConnections_homers.entrySet())
+        {
+            entry.getValue().close();
+        }
+    }
+
+    public static void disconnect_all_mobiles() {
+        for (Map.Entry<String, WebSocket.Out<String>> entry :  WebSocketController_Incoming.incomingConnections_mobileDevice.entrySet())
+        {
+            entry.getValue().close();
+        }
+    }
 
 
 }

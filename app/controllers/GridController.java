@@ -13,6 +13,7 @@ import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Result;
 import play.mvc.Security;
+import utilities.Server;
 import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.JsonValueMissing;
@@ -396,6 +397,9 @@ public class GridController extends play.mvc.Controller {
 
            Swagger_M_Program_ByToken program = new Swagger_M_Program_ByToken();
            program.program = m_program.programInString;
+
+           program.websocket_address = Server.serverAddress + "/websocket/mobile/" + m_program.id;
+
 
            return GlobalResult.okResult(Json.toJson(program));
 
