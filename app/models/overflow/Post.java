@@ -1,6 +1,7 @@
 package models.overflow;
 
 import com.avaje.ebean.Model;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -19,7 +20,7 @@ public class Post extends Model {
                                                    @Id  @GeneratedValue(strategy = GenerationType.SEQUENCE)     public String postId;
        @Constraints.Required @Constraints.MinLength(value = 12) @JsonInclude(JsonInclude.Include.NON_EMPTY)     public String name;
                                                                                                                 public int likes;
-                                                                                                                public Date date_of_create;
+                                @JsonFormat(shape=JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")    public Date date_of_create;
                                                                                                 @JsonIgnore     public boolean deleted;
                                                                                                                 public boolean updated;
 
