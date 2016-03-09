@@ -5,4 +5,5 @@ target
 .idea
 activator-launch-1.2.10.jar
 logs
-
+project.project
+project.target
