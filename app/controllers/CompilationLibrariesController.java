@@ -605,8 +605,6 @@ public class CompilationLibrariesController extends Controller {
             processor.save();
             return GlobalResult.created(Json.toJson(processor));
 
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "description", "processor_code", "processor_name ", "speed");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - new_Processor ERROR");
@@ -2897,7 +2895,7 @@ public class CompilationLibrariesController extends Controller {
             Board board = new Board();
             board.id =  help.hardware_unique_id;
             board.isActive = false;
-         // TODO   board.type_of_board = typeOfBoard;
+            board.type_of_board = typeOfBoard;
 
             board.save();
 

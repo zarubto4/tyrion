@@ -10,12 +10,14 @@ import models.compiler.Version_Object;
 import models.persons.Person;
 import models.project.b_program.B_Program;
 import models.project.b_program.B_Program_Cloud;
+import models.project.b_program.B_Program_Homer;
 import models.project.c_program.C_Program;
 import models.project.global.Homer;
 import models.project.global.Project;
 import models.project.m_program.M_Project;
 import play.Configuration;
 import play.Logger;
+import play.data.Form;
 import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
@@ -72,7 +74,10 @@ public class ProgramingPackageController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public  Result postNewProject() {
         try{
-            Swagger_Project_New help = Json.fromJson(request().body().asJson() , Swagger_Project_New.class);
+
+            final Form<Swagger_Project_New> form = Form.form(Swagger_Project_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Project_New help = form.get();
 
             Project project  = new Project();
 
@@ -84,8 +89,7 @@ public class ProgramingPackageController extends Controller {
 
             return GlobalResult.okResult( Json.toJson(project) );
 
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "project_name", "project_description");
+
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - postNewProject ERROR");
@@ -611,7 +615,10 @@ public class ProgramingPackageController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public  Result newHomer(){
         try{
-            Swagger_Homer_New help = Json.fromJson(request().body().asJson() , Swagger_Homer_New.class);
+            final Form<Swagger_Homer_New> form = Form.form(Swagger_Homer_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Homer_New help = form.get();
+
 
             if ( Homer.find.where().eq("homer_id", help.homer_id).findUnique() != null ) return GlobalResult.badRequest("Homer with this id exist");
 
@@ -623,8 +630,6 @@ public class ProgramingPackageController extends Controller {
 
             return GlobalResult.okResult(Json.toJson(homer));
 
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "homer_id - String", "type_of_device - String");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - newHomer ERROR");
@@ -704,7 +709,7 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-
+    //TODO http://youtrack.byzance.cz/youtrack/issue/TYRION-142
     public  Result get_Homers_by_Filter(){
         try {
             List<Homer> homers = Homer.find.all();
@@ -845,7 +850,10 @@ public class ProgramingPackageController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public  Result new_b_Program(String project_id){
         try{
-            Swagger_B_Program_New help = Json.fromJson(request().body().asJson(), Swagger_B_Program_New.class);
+
+            final Form<Swagger_B_Program_New> form = Form.form(Swagger_B_Program_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_B_Program_New help = form.get();
 
             Project project = Project.find.byId(project_id);
             if (project == null) return GlobalResult.notFoundObject();
@@ -854,7 +862,7 @@ public class ProgramingPackageController extends Controller {
             B_Program b_program             = new B_Program();
             b_program.azurePackageLink      = "personal-program";
             b_program.dateOfCreate          = new Date();
-            b_program.programDescription    = help.program_description;
+            b_program.program_description   = help.program_description;
             b_program.name                  = help.name;
             b_program.project               = project;
             b_program.setUniqueAzureStorageLink();
@@ -862,8 +870,6 @@ public class ProgramingPackageController extends Controller {
             b_program.save();
 
             return GlobalResult.okResult(Json.toJson(b_program));
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult("Some value in Json missing");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - postNewBProgram ERROR");
@@ -906,6 +912,43 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
+
+
+    @ApiOperation(value = "get B Program version",
+            tags = {"B_Program"},
+            notes = "get B_Program version object",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  B_Program.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public  Result get_b_Program_verison(@ApiParam(value = "version_id String path", required = true) @PathParam("version_id") String version_id){
+        try{
+
+            Version_Object program = Version_Object.find.byId(version_id);
+            if (program == null) return GlobalResult.notFoundObject();
+
+            return GlobalResult.okResult(Json.toJson(program));
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - getProgram ERROR");
+            return GlobalResult.internalServerError();
+        }
+    }
+
+
     @ApiOperation(value = "edit B_Program",
             tags = {"B_Program"},
             notes = "edit basic information in B_Program object",
@@ -946,7 +989,7 @@ public class ProgramingPackageController extends Controller {
             B_Program b_program  = B_Program.find.byId(b_program_id);
             if (b_program == null) return GlobalResult.notFoundObject();
 
-            b_program.programDescription    = help.program_description;
+            b_program.program_description = help.program_description;
             b_program.name                  = help.name;
 
             b_program.update();
@@ -1074,25 +1117,58 @@ public class ProgramingPackageController extends Controller {
     }
 
     //TODO SWAGGER  a taky celá logika nahrávání do homera
-    public  Result uploadProgramToHomer_Immediately(String homer_id, String version_id){
+    public  Result uploadProgramToHomer_Immediately(@ApiParam(value = "b_program_id String path", required = true) @PathParam("b_program_id") String b_program_id,
+                                                    @ApiParam(value = "version_id String path", required = true) @PathParam("version_id") String version_id,
+                                                    @ApiParam(value = "homer_id String path", required = true) @PathParam("homer_id") String homer_id){
         try {
-            JsonNode json = request().body().asJson();
 
+            // B program, který chci nahrát do Cloudu na Blocko server
+            B_Program b_program = B_Program.find.byId(b_program_id);
+            if (b_program == null) return GlobalResult.notFoundObject();
+
+            // Verze B programu kterou budu nahrávat do cloudu
+            Version_Object version_object = Version_Object.find.byId(version_id);
+            if (version_object == null) return GlobalResult.notFoundObject();
+
+            // Homer na který budu nahrávatb_program_cloud
             Homer homer = Homer.find.byId(homer_id);
-            if (homer == null) return GlobalResult.notFoundObject();
+            if (homer == null)  return GlobalResult.notFoundObject();
 
-            Version_Object versionObject  = Version_Object.find.byId(version_id);
-            if (versionObject == null) return GlobalResult.notFoundObject();
+            //*********************//
+
+            System.out.println("Homer je online?");
+            if(! WebSocketController_Incoming.homer_is_online(homer_id)) return GlobalResult.badResult("Homer není online");
 
 
-           String b_program_in_String = versionObject.files.get(0).get_fileRecord_from_Azure_inString();
-           // TODO nahrát tento string na homera - inspirace nahrátí do cloudu
+            B_Program_Homer old_one =  B_Program_Homer.find.where().eq("homer.homer_id", homer.homer_id).findUnique();
+            // Na homerovi musím zabít a smazat předchozí program!!!
+            if( old_one  != null )  {
+                System.out.println("Homer měl předchozí program a proto ho mažu");
+                WebSocketController_Incoming.homer_KillInstance( homer.homer_id);
+                old_one.delete();
+             }
 
-            return GlobalResult.okResult("Program was upload To Homer succesfuly and started");
+            System.out.println("Vytvářím nový program");
+            B_Program_Homer program_homer = new B_Program_Homer();
+            program_homer.homer = homer;
+
+            program_homer.running_from = new Date();
+            program_homer.version_object = version_object;
+            program_homer.save();
+
+
+            System.out.println("teď nahraju program");
+            WebSocketController_Incoming.homer_UploadInstance(homer.homer_id,  version_object.files.get(0).get_fileRecord_from_Azure_inString()  );
+
+
+            version_object.b_program_homer = program_homer;
+            version_object.update();
+
+
+            return GlobalResult.okResult( Json.toJson("Program was upload To Homer successfully and started"));
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - uploadProgramToHomer_Immediately ERROR");
-            Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
         }
     }
@@ -1120,6 +1196,7 @@ public class ProgramingPackageController extends Controller {
     public  Result upload_b_Program_ToCloud(@ApiParam(value = "b_program_id String path", required = true) @PathParam("b_program_id") String b_program_id, @ApiParam(value = "version_id String path", required = true) @PathParam("version_id") String version_id){
         try {
 
+
             // B program, který chci nahrát do Cloudu na Blocko server
             B_Program b_program = B_Program.find.byId(b_program_id);
             if (b_program == null) return GlobalResult.notFoundObject();
@@ -1128,18 +1205,19 @@ public class ProgramingPackageController extends Controller {
             Version_Object version_object = Version_Object.find.byId(version_id);
             if (version_object == null) return GlobalResult.notFoundObject();
 
+
+
             // Pokud už nějaká instance běžela, tak jí zabiju a z databáze odstraním vazbu na běžící instanci b programu
-            if( b_program.b_program_cloud != null ) {
+            if( version_object.b_program_cloud != null ) {
 
-               WebSocketController_OutComing.blockoServerKillInstance(b_program.b_program_cloud.blocko_server_name,  b_program.b_program_cloud.blocko_instance_name);
+               WebSocketController_OutComing.blockoServerKillInstance(version_object.b_program_cloud.blocko_server_name,  version_object.b_program_cloud.blocko_instance_name);
 
-               B_Program_Cloud b_program_cloud = b_program.b_program_cloud;
+               B_Program_Cloud b_program_cloud = version_object.b_program_cloud;
                b_program_cloud.delete();
             }
 
             // Vytvářím nový záznam v databázi pro běžící instanci b programu na blocko serveru
             B_Program_Cloud program_cloud       = new B_Program_Cloud();
-            program_cloud.b_program             = b_program;
             program_cloud.running_from          = new Date();
             program_cloud.version_object        = version_object;
             program_cloud.blocko_server_name    = Configuration.root().getString("Servers.blocko.server1.name");
@@ -1220,7 +1298,10 @@ public class ProgramingPackageController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result newTypeOfBlock(){
         try{
-            Swagger_TypeOfBlock_New help = Json.fromJson(request().body().asJson(), Swagger_TypeOfBlock_New.class);
+            final Form<Swagger_TypeOfBlock_New> form = Form.form(Swagger_TypeOfBlock_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_TypeOfBlock_New help = form.get();
+
 
             TypeOfBlock typeOfBlock = new TypeOfBlock();
             typeOfBlock.generalDescription  = help.general_description;
@@ -1239,8 +1320,6 @@ public class ProgramingPackageController extends Controller {
             typeOfBlock.save();
 
             return GlobalResult.created( Json.toJson(typeOfBlock));
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "name - String", "general_description - TEXT");
         } catch (Exception e) {
             Logger.error("Error", e);
             return GlobalResult.internalServerError();
@@ -1266,7 +1345,7 @@ public class ProgramingPackageController extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_BlockoBlock_New",
+                            dataType = "utilities.swagger.documentationClass.Swagger_TypeOfBlock_New",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -1283,7 +1362,9 @@ public class ProgramingPackageController extends Controller {
     public Result editTypeOfBlock(@ApiParam(value = "type_of_block_id String path",   required = true) @PathParam("type_of_block_id") String type_of_block_id){
         try{
 
-            Swagger_TypeOfBlock_New help = Json.fromJson(request().body().asJson(), Swagger_TypeOfBlock_New.class);
+            final Form<Swagger_TypeOfBlock_New> form = Form.form(Swagger_TypeOfBlock_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_TypeOfBlock_New help = form.get();
 
             TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(type_of_block_id);
             if(typeOfBlock == null) return GlobalResult.notFoundObject();
@@ -1291,6 +1372,14 @@ public class ProgramingPackageController extends Controller {
             typeOfBlock.generalDescription  = help.general_description;
             typeOfBlock.name                = help.name;
 
+            if(help.project_id != null){
+
+                Project project = Project.find.byId(help.project_id);
+                if(project == null) return GlobalResult.notFoundObject();
+
+                typeOfBlock.project = project;
+
+            }
 
             typeOfBlock.update();
             return GlobalResult.update( Json.toJson(typeOfBlock));
@@ -1444,8 +1533,9 @@ public class ProgramingPackageController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result new_Block(){
        try{
-
-           Swagger_BlockoBlock_New help = Json.fromJson(request().body().asJson(), Swagger_BlockoBlock_New.class);
+           final Form<Swagger_BlockoBlock_New> form = Form.form(Swagger_BlockoBlock_New.class).bindFromRequest();
+           if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+           Swagger_BlockoBlock_New help = form.get();
 
 
             BlockoBlock blockoBlock = new BlockoBlock();
@@ -1462,8 +1552,6 @@ public class ProgramingPackageController extends Controller {
 
 
             return GlobalResult.okResult( Json.toJson(blockoBlock) );
-       } catch (NullPointerException e) {
-           return GlobalResult.nullPointerResult(e, "name", "general_description", "type_of_block_id");
        } catch (Exception e) {
            Logger.error("Error", e);
            Logger.error("ProgramingPackageController - newBlock ERROR");
@@ -1506,7 +1594,11 @@ public class ProgramingPackageController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result edit_Block(@ApiParam(value = "blocko_block_id String path",   required = true) @PathParam("blocko_block_id") String blocko_block_id){
         try {
-                Swagger_BlockoBlock_New help = Json.fromJson(request().body().asJson(), Swagger_BlockoBlock_New.class);
+
+                final Form<Swagger_BlockoBlock_New> form = Form.form(Swagger_BlockoBlock_New.class).bindFromRequest();
+                if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+                Swagger_BlockoBlock_New help = form.get();
+
 
                 BlockoBlock blockoBlock = BlockoBlock.find.byId(blocko_block_id);
                 if (blockoBlock == null) return GlobalResult.notFoundObject();

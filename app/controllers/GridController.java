@@ -2,8 +2,10 @@ package controllers;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.*;
+import models.compiler.Version_Object;
 import models.grid.Screen_Size_Type;
 import models.persons.Person;
+import models.project.b_program.B_Program;
 import models.project.global.Project;
 import models.project.m_program.M_Program;
 import models.project.m_program.M_Project;
@@ -300,6 +302,56 @@ public class GridController extends play.mvc.Controller {
 
     }
 
+
+    @ApiOperation(value = "connect M_Project with B_program",
+            tags = {"M_Program"},
+            notes = "connect M_project with B_program ( respectively with version of B_program - where is Blocko-Code)",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "Person need this value of permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response = M_Project.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result connect_M_Program_with_B_Program(@ApiParam(value = "m_project_id String query", required = true) @PathParam("m_project_id") String m_project_id,
+                                                   @ApiParam(value = "b_program_id String query", required = true) @PathParam("b_program_id") String b_program_id,
+                                                   @ApiParam(value = "version_id   String query", required = true) @PathParam("version_id")   String version_id){
+        try {
+
+            M_Project m_project = M_Project.find.byId(m_project_id);
+            if (m_project == null) return GlobalResult.notFoundObject();
+
+            B_Program b_program = B_Program.find.byId(b_program_id);
+            if (b_program == null) return GlobalResult.notFoundObject();
+
+            Version_Object version_object = Version_Object.find.byId(version_id);
+            if (version_object == null) return GlobalResult.notFoundObject();
+
+
+            if(!b_program.versionObjects.contains(version_object)) return GlobalResult.badResult("Version is not from same B_program!");
+
+            m_project.b_program_version = version_object;
+            m_project.update();
+
+            return GlobalResult.okResult();
+
+        }catch (Exception e){
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - get_Screen_Size_Type ERROR");
+            return GlobalResult.internalServerError();
+        }
+    }
+
+
 //######################################################################################################################
 
     @ApiOperation(value = "Create new M_Program",
@@ -350,7 +402,6 @@ public class GridController extends play.mvc.Controller {
 
             M_Program m_program = new M_Program();
 
-            m_program.set_Unique_hash_Id();
             m_program.date_of_create      = new Date();
             m_program.program_description = help.program_description;
             m_program.program_name        = help.program_name;
@@ -398,7 +449,7 @@ public class GridController extends play.mvc.Controller {
            Swagger_M_Program_ByToken program = new Swagger_M_Program_ByToken();
            program.program = m_program.programInString;
 
-           program.websocket_address = Server.serverAddress + "/websocket/mobile/" + m_program.id;
+           program.websocket_address = Server.serverAddress + "/websocket/mobile/" + m_program.m_project_object.id;
 
 
            return GlobalResult.okResult(Json.toJson(program));
@@ -649,6 +700,7 @@ public class GridController extends play.mvc.Controller {
                     "If json not contain project_id - you need Permission For that!!",
             produces = "application/json",
             protocols = "https",
+            code = 201,
             authorizations = {
                     @Authorization(
                             value="permission",

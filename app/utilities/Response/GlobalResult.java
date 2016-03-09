@@ -14,7 +14,6 @@ public class GlobalResult extends Controller {
         return ok(json);
     }
 
-
     public static Result okResult(){
 
         CoreResponse.cors();
@@ -31,6 +30,15 @@ public class GlobalResult extends Controller {
 
     }
 
+    public static Result badResult(String message){
+
+        Result_ok resultOk = new Result_ok();
+        resultOk.message = message;
+
+        CoreResponse.cors();
+        return ok(Json.toJson(resultOk));
+
+    }
 
 
     public static Result unauthorizedResult(){

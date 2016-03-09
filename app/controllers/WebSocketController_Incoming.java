@@ -1,83 +1,408 @@
 package controllers;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import models.project.m_program.M_Project;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.WebSocket;
 import utilities.response.GlobalResult;
 import utilities.webSocket.WebSocketClientNotPlay;
-import utilities.webSocket.WebSocketPlayServer_Homer;
+import utilities.webSocket.developing.WS_Homer_Local;
+import utilities.webSocket.developing.WS_Terminal_Local;
+import utilities.webSocket.developing.WebSCType;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.TimeoutException;
 
 
 public class WebSocketController_Incoming extends Controller {
 
-// Values  ---------------------------------------------------------------------------------------------------------
+// Values  -------------------------------------------------------------------------------------------------------------
 
-    private static Map<String, WebSocket.Out<String> > incomingConnections_homers        = new HashMap<>(); // (Identificator, Websocket)
-    private static Map<String, WebSocket.Out<String> > incomingConnections_mobileDevice  = new HashMap<>(); // (Identificator, Websocket)
+    private static Map<String, WebSCType > incomingConnections_homers        = new HashMap<>(); // (Identificator, Websocket)
+    private static Map<String, WebSCType > incomingConnections_terminal = new HashMap<>(); // (Identificator, Websocket)
+    private static Map<String,  ArrayList<String> > terminal_lost_connection_homer = new HashMap< String , ArrayList<String> >(); // Sem podle ID homera uložím seznam zařízení, na která by se měl opět připojit
 
 // PUBLIC API ---------------------------------------------------------------------------------------------------------
+
     public WebSocket<String> homer_connection(String homer_mac_address){
-        System.out.println("Příchozí připojení Homer" + homer_mac_address);
-        return  WebSocketPlayServer_Homer.connection(incomingConnections_homers, homer_mac_address);
-    }
 
-    public WebSocket<String> mobile_connection(String m_program_name){
-        System.out.println("Příchozí připojení mobilního telefonu na programu" + m_program_name);
-        return  WebSocketPlayServer_Homer.connection(incomingConnections_mobileDevice, m_program_name);
-    }
+        System.out.println("Příchozí připojení Homer " + homer_mac_address);
 
+        // Inicializuji Websocket pro Homera
+        WS_Homer_Local homer = new WS_Homer_Local(homer_mac_address, incomingConnections_homers);
+
+        // Připojím se
+        WebSocket<String> webSocket = homer.connection();
+
+        // Podívám se, zda nemám už připojené a čekající terminály. se kterými bych chtěl komunikovat
+        if(  terminal_lost_connection_homer.containsKey(homer_mac_address)  ){
+            System.out.println("Pro Homer existuje ztracené připojení a tak se pokusím navázat spojení");
+
+            // Pookud ano, tak na seznamu jmen terminálů vázajících se k tomuto Homerovi provedu
+            for(String terminal_name : terminal_lost_connection_homer.get(homer_mac_address) ){
+
+                // kontrolu zda terminál je stále přopojený
+                if( incomingConnections_terminal.containsKey(terminal_name)){
+
+                    // V případě že tedy nějaké temrinály jsou připravené komunikovat, musím upozornit homera, že chci odebírat jeho změny
+                    // Takže ho u prvního oběratele budu informovat
+                    if( homer.subscribers.isEmpty()){
+
+                        System.out.println("Spojení bylo obnoveno mezi Homer: " + homer_mac_address + " a terminalem: " + terminal_name);
+                        System.out.println("Budu taktéž Homera informovat o tom, že má odběratele");
+                        ask_for_receiving(homer);
+                        homer.subscribers.add(incomingConnections_terminal.get(terminal_name));
+                        incomingConnections_terminal.get(terminal_name).subscribers.add(homer);
+
+                    }else {
+
+                        System.out.println("Spojení bylo obnoveno mezi Homer: " + homer_mac_address + " a terminalem: " + terminal_name);
+                        homer.subscribers.add(incomingConnections_terminal.get(terminal_name));
+                        incomingConnections_terminal.get(terminal_name).subscribers.add(homer);
+
+
+                    }
+
+                    System.out.println("Upozorňuji terminál o znovu připojení: ");
+                    homer_reconnection ( incomingConnections_terminal.get(terminal_name) );
+                }
+                // Pokud není připojený - vyřadím ho ze seznamu
+                else {
+                    System.out.println("Terminál se mezitím odpojil, tak ho vyřazuji z listu: ");
+                    terminal_lost_connection_homer.get(homer_mac_address).remove(terminal_name);
+                }
+            }
+
+            // Po obnově spojení se všem ztracenými připojeními vyhazuji objekt ztraceného spojení z mapy vázaný na tento Homer
+            System.out.println ("Odstraňuji ze seznamu ztracených spojení");
+            terminal_lost_connection_homer.remove(homer_mac_address);
+        }
+
+
+        return webSocket;
+    }
+    public WebSocket<String> mobile_connection(String m_project_id, String terminal_id){
+        System.out.println ("Příchozí připojení Terminal " + m_project_id + " a zařízení se jménem " + terminal_id);
+
+        M_Project m_project = M_Project.find.byId(m_project_id);
+        if(m_project == null ) {
+            System.out.println("Příchozí M_Projekt neexistuje");
+            return WebSocket.reject(forbidden());
+        }
+
+        if(m_project.b_program_version == null){
+            System.out.println("Příchozí připojení M_Projektu - M_programu není propojeno s Blocko Programem");
+            return WebSocket.reject(forbidden());
+        }
+
+
+        if( m_project.b_program_version.b_program_cloud != null) {
+            System.out.println ("Blocko Program je v Cloudu a to tady úplně chybí!!");
+
+            // TODO
+            //   WS_Terminal_Cloud ws = new WS_Terminal_Cloud(mobile_mac_address, incomingConnections_terminal);
+            //  return ws.connection();
+
+            return  WebSocket.reject(forbidden());
+
+        } else {
+            System.out.println("Blocko Program je na počítači");
+
+            String homer_id = m_project.b_program_version.b_program_homer.homer.homer_id;
+
+            System.out.println("Budu propojovat s Homer: " + homer_id);
+
+            if(!incomingConnections_homers.containsKey(homer_id)) {
+                System.out.println ("Homer na který se chci připojit není připojen a proto budu zařazovat do mapy ztracených spojení");
+                WS_Terminal_Local terminal = new WS_Terminal_Local(terminal_id, incomingConnections_terminal);
+                WebSocket<String> ws = terminal.connection();
+                if(terminal_lost_connection_homer.containsKey(homer_id)){
+                    System.out.println("Ztracené spojení už bylo dávno vytvořeno ale pořád nejsem spojen a tak přidávám další hodnotu: " + homer_id );
+                    terminal_lost_connection_homer.get(homer_id).add(terminal_id);
+
+                }else  {
+                    System.out.println("Ještě žádné ztracené spojení nebylo vytvořeno s " + homer_id  + " A tak vytvářím a přidávám první hodnotu");
+                    ArrayList<String> list = new ArrayList<>(4);
+                    list.add(terminal_id);
+                    terminal_lost_connection_homer.put(homer_id, list);
+                }
+
+                System.out.println("Chystám se upozornit terminál že není připojený");
+                homer_is_not_connected_yet(terminal);
+                System.out.println("Upozornil jsem terminál že Homer není připojený");
+
+                return ws;
+            }
+
+            System.out.println("Budu propojovat s Homer protože je připojený: " + homer_id);
+
+            WebSCType homer = incomingConnections_homers.get(homer_id);
+
+            WS_Terminal_Local terminal = new WS_Terminal_Local(terminal_id, incomingConnections_terminal);
+            WebSocket<String> ws = terminal.connection();
+
+            terminal.subscribers.add(incomingConnections_homers.get(homer_id));
+
+            if(homer.subscribers.isEmpty()) ask_for_receiving(homer);
+
+            homer.subscribers.add(terminal);
+
+            return ws;
+        }
+
+
+
+    }
 
 
 
 // PRIVATE Homer ---------------------------------------------------------------------------------------------------------
 
+    /** incoming Json from Homer */
+    public static void incoming_message_homer(WebSCType homer, JsonNode json){
+        System.out.println ("Zpráva od Homera" + homer.identifikator +  " Obsah " + json.toString());
 
-    /** incoming Json from Cliens - (users, Homers, mob. apps) */
-    public static void incoming_homer(String homer_id, String string){
-        System.out.println("Zpráva Homer od " + homer_id + " Obsah " + string );
+        if(json.has("messageChannel")){
+            System.out.println("Zpráva obsahuje message channel: " + json.get("messageChannel").asText());
+
+            switch (json.get("messageChannel").asText()){
+
+                case "the-grid" : {
+                    System.out.println("the-grid -the-grid Přeposílám 1:1 na všechny odběratele");
+
+                    for( WebSCType webSCType :  homer.subscribers) {
+                        System.out.println("Zasílám na odběratele " + webSCType.identifikator );
+                        webSCType.write_without_confirmation(json);
+                    }
+                    return;
+                }
+                case "tyrion" : {
+                    System.out.println ("Tyrion Dále zpracovávám -- ale nic tu zatím není!!");
+
+                }
+            }
+        }
+
+        System.out.println("Příchozí zpráva neobsahovala messageChannel a tak se nic neprovedlo");
     }
 
+    public static void homer_KillInstance(String homer_id) throws TimeoutException, InterruptedException {
+        System.out.println("homer_KillInstance " + homer_id);
+        incomingConnections_homers.get(homer_id).write_without_confirmation( Json.toJson("Kill Instance") );
 
-    public static void homer_KillInstance(String homer_id){
-        incomingConnections_homers.get(homer_id).write( "Kill Instance");
+        String messageId =  UUID.randomUUID().toString();
+
+        ObjectNode result = Json.newObject();
+        result.put("messageType", "Kill Instance");
+        result.put("messageId", messageId);
+        result.put("messageChannel", "tyrion");
+
+        JsonNode answare = incomingConnections_homers.get(homer_id).write_with_confirmation(messageId ,result );
     }
 
-    public static void homer_UploadInstance(String homer_id, String program){
-        incomingConnections_homers.get(homer_id).write( "Program: " + program);
+    public static void homer_UploadInstance(String homer_id, String program) throws TimeoutException, InterruptedException {
+
+        System.out.println ("homer_UploadInstance " + homer_id);
+
+        String messageId =  UUID.randomUUID().toString();
+
+        ObjectNode result = Json.newObject();
+        result.put("messageType", "loadProgram");
+        result.put("messageId", messageId);
+        result.put("messageChannel", "tyrion");
+        result.put("program", program);
+
+        JsonNode answare =  incomingConnections_homers.get(homer_id).write_with_confirmation(messageId ,result );
     }
 
     public static boolean homer_is_online(String homer_id){
         return incomingConnections_homers.containsKey(homer_id);
     }
 
-    public static void remove_homer(String homer_id){
-        if( incomingConnections_homers.containsKey(homer_id))incomingConnections_homers.remove(homer_id);
+    // Homer se odpojil
+    public static void homer_is_disconnect(WebSCType homer) {
+        System.out.println("Homer se odlásil - mažu z mapy připojení ale přidávám do mapy ztracených připojení" + homer.identifikator);
+        homer.maps.remove(homer);
+
+        ArrayList<String> list = new ArrayList<>();
+
+        for (WebSCType terminal : homer.subscribers) {
+            list.add(terminal.identifikator);
+            terminal.subscribers.remove(homer);
+
+            echo_that_home_was_disconnect(terminal);
+        }
+
+        System.out.println("Vloženo do mapy připojení" + homer.identifikator);
+        terminal_lost_connection_homer.put(homer.identifikator, list);
     }
 
+    public static void homer_all_terminals_are_gone(WebSCType homer)  throws TimeoutException, InterruptedException {
+        System.out.println("homer nemá  už žádného odběratele: " + homer.identifikator);
 
-// PRIVATE Mobile ---------------------------------------------------------------------------------------------------------
 
-    public static void incoming_mobile(String mobile_id, String string){
-        System.out.println("Zpráva Mobile od " + mobile_id + " Obsah " + string );
+        String messageId =  UUID.randomUUID().toString();
+
+        ObjectNode result = Json.newObject();
+        result.put("messageType", "nemáš_žádné_oběratele");
+        result.put("messageId", messageId);
+        result.put("messageChannel", "tyrion");
+
+        JsonNode answare =  homer.write_with_confirmation(messageId ,result );
     }
 
-    public static void remove_mobile(String mobile_id){
-        if( incomingConnections_mobileDevice.containsKey(mobile_id))incomingConnections_homers.remove(mobile_id);
+    public static void ask_for_receiving(WebSCType homer){
+        System.out.println ("Chci upozornit Homera: " + homer.identifikator + " že má prvního odběratele");
+
+        Thread thread = new Thread(){
+             @Override
+            public void run() {
+                try {
+                    System.out.println("Zapínám čekací vlákno");
+
+                    Integer breaker = 10;
+
+                    while(breaker > 0){
+                        breaker--;
+                        Thread.sleep(250);
+                        if(homer.isReady()) {
+                            homer.write_without_confirmation( Json.toJson("Máš prvního odběratele! breaker"));
+                            System.out.println("Upozornil jsem terminál že homer má odběratele ");
+                            break;
+                        }
+                    }
+
+                }catch (Exception e){
+                    System.out.println("Během informování terminlu, že homer není připojen se to pokazilo ");
+                    // e.printStackTrace();
+                }
+
+            }
+        };
+
+        thread.start();
+
     }
 
+    public static void invalid_json_message(WebSCType homer){
+        System.out.println ("NEvalidní příchozí JSON formát ve zprávě na Homerovi: " + homer.identifikator);
+        homer.write_without_confirmation(Json.toJson("Posílej jen JSONy ty pačmunde!"));
+    }
 
+// PRIVATE Terminal ---------------------------------------------------------------------------------------------------------
+
+    /** incoming Json from Terminal */
+    public static void incoming_message_terminal(WebSCType terminal, JsonNode json){
+        System.out.println("Zpráva Mobile od " + terminal );
+
+        System.out.println("Json: " + json.getNodeType().toString());
+
+
+        System.out.println("Json: " + json.toString());
+        System.out.println("Json: " + json.get("messageChannel").asText() );
+
+        // To Terminals
+        if(json.has("messageChannel")){
+
+
+            System.out.println("messageChannel je: " + json.get("messageChannel").asText()  );
+            switch ( json.get("messageChannel").asText() ){
+
+                case "the-grid" : {
+                    System.out.println("the-grid - Přeposílám na Homera neočekávám odpověď");
+
+                    if(terminal.subscribers.isEmpty()) terminal_you_havent_folowers(terminal);
+                    for( WebSCType webSCType :  terminal.subscribers) webSCType.write_without_confirmation(json);
+                    return;
+                }
+                case "tyrion" : {
+                    System.out.println("Zprávu jsem poslal na Tyrion");
+
+                }
+            }
+        }
+
+
+        System.out.println("Příchozí zpráva neobsahuje messageChannel");
+    }
+
+    public static void terminal_you_havent_folowers(WebSCType terminal){
+        System.out.println("Terminál se pokusil zaslat zpváu na Blocko ale žádné blocko nemá na sobě připojené - tedy zbyteční a packet zahazuji");
+        terminal.write_without_confirmation(Json.toJson("NEmáš žádné Grid odběratele - zprává nebyla přeposlána "));
+    }
+
+    public static void terminal_is_disconnected(WebSCType terminal){
+
+        terminal.maps.remove(terminal.identifikator);
+
+        for(WebSCType subscriber : terminal.subscribers){
+            System.out.println("Remove from subscriber list  " + subscriber.identifikator);
+            subscriber.subscribers.remove(terminal);
+            if(subscriber.subscribers.isEmpty()){
+                System.out.println("Koncový subscribers nemá žádné  odposlouchávače: " + subscriber.identifikator);
+
+                try {
+
+                    WebSocketController_Incoming.homer_all_terminals_are_gone(subscriber);
+                }catch (Exception e){ System.out.println("Při odesílání informace so tom, že Homera, už nikoho neposlouchá se něco posralo");}
+            }
+        }
+
+    }
+
+    public static void homer_reconnection(WebSCType terminal){
+        System.out.println("Chci upozornit terminál že se Homer Připojil: ");
+        terminal.write_without_confirmation( Json.toJson("Homer se znovu připojil!!"));
+    }
+
+    public static void homer_is_not_connected_yet(WebSCType terminal){
+
+        System.out.println("Chci zaslat zprávu že homer není propojen a jsem v metodě homer_is_not_connected_yet");
+
+        Thread t1 = new Thread(){
+            @Override
+            public void run() {
+                try {
+                    System.out.println("Zapínám čekací vlákno");
+
+                    Integer breaker = 10;
+
+                    while(breaker > 0){
+                        breaker--;
+                        Thread.sleep(250);
+                        if(terminal.isReady()) {
+                            terminal.write_without_confirmation(Json.toJson("homer není propojen a stihnul jsem to do breaker: " + breaker));
+                            System.out.println("Upozornil jsem terminál že homer není propojen ");
+                            break;
+                        }
+                    }
+
+                }catch (Exception e){
+                    System.out.println("Během informování terminlu, že homer není připojen se to pokazilo ");
+                    // e.printStackTrace();
+                }
+
+            }
+        };
+
+        t1.start();
+
+
+    }
+
+    public static void echo_that_home_was_disconnect(WebSCType terminal){
+        terminal.write_without_confirmation(Json.toJson("Home se odpojil"));
+    }
 
 // Test & Control API ---------------------------------------------------------------------------------------------------------
 
     public Result getWebSocketStats(){
 
         System.out.println("IncomingConnections  homer           count= " + incomingConnections_homers.size());
-        System.out.println("IncomingConnections  mobile device   count= " + incomingConnections_mobileDevice.size());
+        System.out.println("IncomingConnections  mobile device   count= " + incomingConnections_terminal.size());
         System.out.println("OutcomingConnections servers         count= " + WebSocketController_OutComing.servers.size());
 
 
@@ -85,7 +410,7 @@ public class WebSocketController_Incoming extends Controller {
         System.out.println("\n");
         System.out.println("IncomingConnections Homers.......................................................... ");
         int k = 1;
-        for (Map.Entry<String, WebSocket.Out<String>> entry : incomingConnections_homers.entrySet()) {
+        for (Map.Entry<String, WebSCType> entry : incomingConnections_homers.entrySet()) {
             System.out.println(k++ + ". Connection name = " + entry.getKey());
         }
 
@@ -98,7 +423,7 @@ public class WebSocketController_Incoming extends Controller {
         System.out.println("\n");
         System.out.println("IncomingConnections Mobile device................................................... ");
         int j = 1;
-        for (Map.Entry<String, WebSocket.Out<String>> entry : incomingConnections_mobileDevice.entrySet()) {
+        for (Map.Entry<String, WebSCType> entry : incomingConnections_terminal.entrySet()) {
             System.out.println(j++ + ". Connection name = " + entry.getKey());
         }
 
@@ -120,35 +445,15 @@ public class WebSocketController_Incoming extends Controller {
         return  GlobalResult.okResult();
     }
 
-    public Result sendTo(String key){
-        try {
-            System.out.println("I am sending to " + key);
-            if (!incomingConnections_homers.containsKey(key) && !WebSocketController_OutComing.servers.containsKey(key)) {
-                System.out.println("No connection with this key");
-                return GlobalResult.okResult();
-            }
-
-            if (incomingConnections_homers.containsKey(key)) incomingConnections_homers.get(key).write((new Date()).toString());
-            if (WebSocketController_OutComing.servers.containsKey(key))
-                WebSocketController_OutComing.servers.get(key).write("50000", Json.toJson(new Date()));
-
-            return ok();
-        }catch (Exception e){
-            System.out.println("Něco se pokazilo");
-            e.printStackTrace();
-            return badRequest();
-        }
-    }
-
     public static void disconnect_all_homers(){
-        for (Map.Entry<String, WebSocket.Out<String>> entry :  WebSocketController_Incoming.incomingConnections_homers.entrySet())
+        for (Map.Entry<String, WebSCType> entry :  WebSocketController_Incoming.incomingConnections_homers.entrySet())
         {
             entry.getValue().close();
         }
     }
 
     public static void disconnect_all_mobiles() {
-        for (Map.Entry<String, WebSocket.Out<String>> entry :  WebSocketController_Incoming.incomingConnections_mobileDevice.entrySet())
+        for (Map.Entry<String, WebSCType> entry :  WebSocketController_Incoming.incomingConnections_terminal.entrySet())
         {
             entry.getValue().close();
         }

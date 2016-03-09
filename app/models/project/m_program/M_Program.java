@@ -13,7 +13,7 @@ import java.util.UUID;
 @Entity
 public class M_Program extends Model{
 
-    @Id                                                         public String id;
+    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)     public String id;
                                                                 public String program_name;
                             @Column(columnDefinition = "TEXT")  public String program_description;
                 @JsonIgnore @Column(columnDefinition = "TEXT")  public String programInString;
@@ -25,32 +25,15 @@ public class M_Program extends Model{
                                                                 public Date last_update;
                                                                 public String qr_token;
 
-                                    @JsonIgnore @ManyToOne      public M_Project m_project_object;
+                                    @JsonIgnore @ManyToOne      public M_Project m_project_object; // TODO přejmenovat zpět
                                     @JsonIgnore @ManyToOne      public Screen_Size_Type screen_size_type_object;
 
-    @JsonProperty public String program()               {  return Server.serverAddress + "/grid/m_project/program/" + id;}
-
-    @Transient
-    @JsonProperty public String m_project()             {  return Server.serverAddress + "/grid/m_project/" + m_project_object.id; }
-
-    @Transient
-    @JsonProperty public String screen_size_type()      {  return Server.serverAddress + "/grid/screen_type/" + screen_size_type_object.id; }
-
-
-
-
+               @JsonProperty public String program()               {  return Server.serverAddress + "/grid/m_project/program/" + id;}
+    @Transient @JsonProperty public String m_project()             {  return Server.serverAddress + "/grid/m_project/" + m_project_object.id; }
+    @Transient @JsonProperty public String screen_size_type()      {  return Server.serverAddress + "/grid/screen_type/" + screen_size_type_object.id; }
 
 
     //***** Private ****************************************************************************************************
-
-
-    @JsonIgnore
-    public void set_Unique_hash_Id() {
-        while(true){ // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            if (M_Program.find.byId(this.id) == null) break;
-        }
-    }
 
     @JsonIgnore
     public void set_QR_Token() {

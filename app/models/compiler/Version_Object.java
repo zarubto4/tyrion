@@ -8,6 +8,7 @@ import models.project.b_program.B_Program;
 import models.project.b_program.B_Program_Cloud;
 import models.project.b_program.B_Program_Homer;
 import models.project.c_program.C_Program;
+import models.project.m_program.M_Project;
 import utilities.Server;
 
 import javax.persistence.*;
@@ -22,7 +23,7 @@ public class Version_Object extends Model {
                                                              public String version_name;
                      @Column(columnDefinition = "TEXT")      public String version_description;
                                                              public Date date_of_create;
-                                           @JsonIgnore       public Integer azureLinkVersion;
+                                               @JsonIgnore   public Integer azureLinkVersion;
 
     @JsonIgnore  @OneToMany(mappedBy="version_object", cascade=CascadeType.ALL)  public List<FileRecord> files = new ArrayList<>();
 
@@ -34,9 +35,8 @@ public class Version_Object extends Model {
                                     @JsonIgnore  @ManyToOne  public B_Program     b_program;
 
     @JsonIgnore   @OneToOne(mappedBy="version_object",  cascade=CascadeType.ALL)  public B_Program_Cloud b_program_cloud;
-    @JsonIgnore   @OneToMany(mappedBy="version_object", cascade=CascadeType.ALL)  public List<B_Program_Homer> b_program_homers = new ArrayList<>();
-
-    //@JsonIgnore  @ManyToOne  public B_Program_Homer b_program_homer;
+    @JsonIgnore   @OneToOne(mappedBy="version_object",  cascade=CascadeType.ALL)  public B_Program_Homer b_program_homer;
+    @JsonIgnore   @OneToOne(mappedBy="b_program_version",cascade=CascadeType.ALL) M_Project m_program;
 
     @JsonProperty  @JsonInclude(JsonInclude.Include.NON_EMPTY) public String   allFiles()    { return Server.serverAddress + "/file/listOfFiles/" +  this.id;}
     @JsonProperty  @JsonInclude(JsonInclude.Include.NON_EMPTY) public Integer  files()       { return files.size(); }

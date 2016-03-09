@@ -8,7 +8,6 @@ import play.GlobalSettings;
 import play.Logger;
 import play.mvc.Action;
 import play.mvc.Http;
-import play.mvc.WebSocket;
 import utilities.Server;
 import utilities.webSocket.WebSocketClientNotPlay;
 
@@ -75,16 +74,11 @@ public class Global extends GlobalSettings {
         Logger.warn("Restartuji server!");
 
         Logger.warn("Odpojuji připojené Homery!");
-        for (Map.Entry<String, WebSocket.Out<String>> entry :  WebSocketController_Incoming.incomingConnections_homers.entrySet())
-        {
-           entry.getValue().close();
-        }
+        WebSocketController_Incoming.disconnect_all_homers();
 
         Logger.warn("Odpojuji připojené mobilní zařízení!");
-        for (Map.Entry<String, WebSocket.Out<String>> entry :  WebSocketController_Incoming.incomingConnections_mobileDevice.entrySet())
-        {
-            entry.getValue().close();
-        }
+        WebSocketController_Incoming.disconnect_all_mobiles();
+
 
         Logger.warn("Odpojuji připojené servery Blocko!");
         for (Map.Entry<String, WebSocketClientNotPlay> entry :  WebSocketController_OutComing.servers.entrySet())

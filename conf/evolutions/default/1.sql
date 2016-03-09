@@ -30,7 +30,6 @@ create table b_program_homer (
   vrs_obj_id                varchar(255),
   BProgramHomer_id          varchar(255),
   running_from              timestamp,
-  state_of_progam           varchar(255),
   constraint uq_b_program_homer_vrs_obj_id unique (vrs_obj_id),
   constraint uq_b_program_homer_BProgramHomer unique (BProgramHomer_id),
   constraint pk_b_program_homer primary key (id))
@@ -391,6 +390,8 @@ create sequence linked_account_seq;
 
 create sequence linked_post_seq;
 
+create sequence m_program_seq;
+
 create sequence m_project_seq;
 
 create sequence person_seq;
@@ -637,6 +638,8 @@ drop sequence if exists library_group_seq;
 drop sequence if exists linked_account_seq;
 
 drop sequence if exists linked_post_seq;
+
+drop sequence if exists m_program_seq;
 
 drop sequence if exists m_project_seq;
 

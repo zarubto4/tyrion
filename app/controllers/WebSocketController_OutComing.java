@@ -35,9 +35,6 @@ public class WebSocketController_OutComing extends Controller {
         new WebSocketClientNotPlay(identificator, new URI(adress), thread);
     }
 
-
-
-
     public static void blockoServerCreateInstance(String server_name, String instance_name) throws TimeoutException, InterruptedException{
         String messageId =  UUID.randomUUID().toString();
 
@@ -57,7 +54,7 @@ public class WebSocketController_OutComing extends Controller {
         result.put("messageId", messageId);
         result.put("instanceId", instance_name);
 
-        JsonNode answare = WebSocketController_OutComing.servers.get(server_name).write(messageId, result);
+          JsonNode answare = WebSocketController_OutComing.servers.get(server_name).write(messageId, result);
     }
 
     public static void blockoServerUploadProgram(String server_name, String instance_name, String program_in_string) throws TimeoutException, InterruptedException{
@@ -71,7 +68,6 @@ public class WebSocketController_OutComing extends Controller {
 
         JsonNode answare = WebSocketController_OutComing.servers.get(server_name).write(messageId, result);
     }
-
 
     public static boolean blockoServer_is_Instance_Running(String server_name, String instance_name) {
         try {
@@ -146,7 +142,7 @@ public class WebSocketController_OutComing extends Controller {
     }
 
 
-
-
-
+    public static void send_blocko_Instruction(String server_name, String instance_name, JsonNode json) {
+        System.out.println("Tato metoda je prázdná, ale poslala by na Cloud server toto " + json.toString());
+    }
 }

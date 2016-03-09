@@ -21,16 +21,14 @@ import java.util.UUID;
 public class B_Program extends Model {
 
 
-    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public String programId;
+    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public String b_program_id;
                                                              public String name;
-                        @Column(columnDefinition = "TEXT")   public String programDescription;
+                        @Column(columnDefinition = "TEXT")   public String program_description;
                                                              public Date lastUpdate;
                                                              public Date dateOfCreate;
                                     @JsonIgnore @ManyToOne   public Project project;
                                                 @JsonIgnore  public String azurePackageLink;
                                                 @JsonIgnore  public String azureStorageLink;
-
-    @JsonIgnore @OneToOne   @JoinColumn(name="bcloud_id")    public B_Program_Cloud b_program_cloud;
 
     @OneToMany(mappedBy="b_program", cascade=CascadeType.ALL) @OrderBy("azureLinkVersion DESC") public List<Version_Object> versionObjects = new ArrayList<>();
 
@@ -38,44 +36,35 @@ public class B_Program extends Model {
 
         ObjectNode result = Json.newObject();
 
-        List<ObjectNode>  homer_list = new ArrayList<>();
-
-        // Každý program může mít N verzí a každá verze může být nahrána na m Homerech
-        // Ale každý homer mám jen jeden program - tedy jednu verzi programu!
-        if(!versionObjects.isEmpty()){
-            for(Version_Object versionObject : versionObjects) {
-                for(B_Program_Homer b_program_homer : versionObject.b_program_homers){
-
-                    // Uložím do jména ID homera
-                    ObjectNode json = Json.newObject();
-                    json.put("homer",   b_program_homer.homer.homer_id);
-                    json.put("version", versionObject.azureLinkVersion );
-                    json.put("state",   b_program_homer.state());
-                    homer_list.add(json);
-                }
-            }
-
-            result.set("in_homer", Json.toJson(homer_list));
-
-        } else  result.put("in_homer", "null" );
+            Version_Object version_object = Version_Object.find.where().eq("b_program.b_program_id", b_program_id).where().or(
+                    com.avaje.ebean.Expr.isNotNull("b_program_cloud"),
+                    com.avaje.ebean.Expr.isNotNull("b_program_homer")
+            ).findUnique();
 
 
-        if(b_program_cloud != null){
-            ObjectNode json = Json.newObject();
-
-            json.put("version", b_program_cloud.version_object.id);
-            json.put("state", b_program_cloud.state());
-
-            result.set("in_cloud", json);
-
+        if(version_object == null){
+            result.put("version", "null" );
+            return  result;
         }
-        else                        result.put("in_cloud", "not uploaded to cloud");
 
 
+        result.put("version_id", version_object.id);
 
+        if( version_object.b_program_cloud != null ) {
+            result.put("where", "cloud");
+            result.put("b_program_cloud_id", version_object.b_program_cloud.id );
+        }
+        else {
+            result.put("where", "homer");
+            result.put("b_program_homer_id", version_object.b_program_homer.id );
+            result.put("homer_id", version_object.b_program_homer.homer.homer_id );
+            result.put("homer_online", version_object.b_program_homer.homer.online() );
+        }
 
         return result;
     }
+
+
     @JsonProperty public String   project()                     {  return Server.serverAddress + "/project/project/" + this.project.id; }
 
 

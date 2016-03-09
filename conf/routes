@@ -18,11 +18,10 @@ GET             /test6                                      @controllers.WikyCon
 
 
 #  WEB SOCET  //////////////////////////////////////////////////////////////////////////////
-GET              /websocket/homer/:mac_adress               @controllers.WebSocketController_Incoming.homer_connection(mac_adress)
-GET              /websocket/mobile/:mac_adress              @controllers.WebSocketController_Incoming.mobile_connection(mac_adress)
+GET              /websocket/homer/:mac_adress                   @controllers.WebSocketController_Incoming.homer_connection(mac_adress)
+GET              /websocket/mobile/:m_project_id/:mac_adress    @controllers.WebSocketController_Incoming.mobile_connection(m_project_id, mac_adress)
 
 POST             /websocket/webSocketStats                  @controllers.WebSocketController_Incoming.getWebSocketStats
-POST             /websocket/sendTo/:id                      @controllers.WebSocketController_Incoming.sendTo(id: String)
 
 #API - CoreClient ##############################################################################################################################################################
 
@@ -165,6 +164,7 @@ POST           /project/b_program/:project_id                                   
 GET            /project/b_program/:b_program_id                                             @controllers.ProgramingPackageController.get_b_Program(b_program_id)
 PUT            /project/b_program/:b_program_id                                             @controllers.ProgramingPackageController.edit_b_Program(b_program_id)
 PUT            /project/b_program/update/:b_program_id                                      @controllers.ProgramingPackageController.update_b_program(b_program_id)
+GET            /project/b_program/version/:version_id                                       @controllers.ProgramingPackageController.get_b_Program_verison(version_id)
 DELETE         /project/b_program/:b_program_id                                             @controllers.ProgramingPackageController.remove_b_Program(b_program_id)
 PUT            /project/b_program/uploadToHomer/:b_program_id/:version_id/:homer_id         @controllers.ProgramingPackageController.uploadProgramToHomer_Immediately(b_program_id, version_id,homer_id)
 PUT            /project/b_program/uploadToCloud/:b_program_id/:version_id                   @controllers.ProgramingPackageController.upload_b_Program_ToCloud(b_program_id, version_id)
@@ -283,11 +283,11 @@ POST            /compilation/library                                            
 PUT             /compilation/library/filter                                                 @controllers.CompilationLibrariesController.get_SingleLibrary_Filter()
 POST            /compilation/library/version/:library_id                                    @controllers.CompilationLibrariesController.new_SingleLibrary_Version(library_id)
 GET             /compilation/library/versions/:library_id                                   @controllers.CompilationLibrariesController.get_SingleLibrary_Versions(library_id)
-GET             /compilation/library/:library_id                                            @controllers.CompilationLibrariesController.get_SingleLibrary(library_id)
 
-PUT             /compilation/library:library_id                                             @controllers.CompilationLibrariesController.edit_SingleLibrary(library_id)
-DELETE          /compilation/library:library_id                                             @controllers.CompilationLibrariesController.delete_SingleLibrary(library_id)
-POST            /compilation/library/upload:library_id/:version_id                          @controllers.CompilationLibrariesController.upload_SingleLibrary_Version(library_id, version_id)
+GET             /compilation/library/:library_id                                            @controllers.CompilationLibrariesController.get_SingleLibrary(library_id)
+PUT             /compilation/library/:library_id                                             @controllers.CompilationLibrariesController.edit_SingleLibrary(library_id)
+DELETE          /compilation/library/:library_id                                             @controllers.CompilationLibrariesController.delete_SingleLibrary(library_id)
+POST            /compilation/library/upload/:library_id/:version_id                          @controllers.CompilationLibrariesController.upload_SingleLibrary_Version(library_id, version_id)
 
 #File
 GET             /file/listOfFiles/:id                                                       @controllers.CompilationLibrariesController.get_LibraryGroup_Version_Libraries(id: String)
@@ -304,6 +304,8 @@ GET             /grid/m_project/project/:project_id                             
 GET             /grid/m_project/:m_project_id                                               @controllers.GridController.get_M_Project(m_project_id)
 PUT             /grid/m_project/:m_project_id                                               @controllers.GridController.edit_M_Project(m_project_id)
 DELETE          /grid/m_project/:m_project_id                                               @controllers.GridController.remove_M_Project(m_project_id)
+
+PUT             /grid/m_project/connect/:m_project_id/:b_program_id/:version_id              @controllers.GridController.connect_M_Program_with_B_Program(m_project_id, b_program_id, version_id)
 
 #M Program
 POST            /grid/m_program                                                             @controllers.GridController.new_M_Program()

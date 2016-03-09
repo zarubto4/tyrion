@@ -4,8 +4,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 
-@ApiModel(description = "Json Model for new Processor",
-          value = "Processor_New")
+@ApiModel(description = "Json Model for new Producer",
+          value = "Producer_New")
 public class Swagger_Producer_New {
 
     @Constraints.Required

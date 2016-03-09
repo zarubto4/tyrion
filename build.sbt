@@ -14,7 +14,7 @@ libraryDependencies ++= Seq(
   "com.microsoft.azure" % "azure-svc-mgmt" % "0.9.1",
 
   "io.swagger" %% "swagger-play2" % "1.5.1",
-  "io.swagger" % "swagger-core" % "1.5.7",
+  "io.swagger" % "swagger-core"  % "1.5.7",
 
   "com.github.scribejava" % "scribejava-apis" % "2.1.0",
   "com.typesafe.play" %% "play-mailer" % "4.0.0-M1",

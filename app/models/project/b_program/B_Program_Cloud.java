@@ -14,17 +14,14 @@ import java.util.UUID;
 public class B_Program_Cloud extends Model {
 
         @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)     public String id;
-              @JsonIgnore  @OneToOne(mappedBy="b_program_cloud")    public B_Program b_program;
 
                                                      @JsonIgnore    public String blocko_server_name;
                                                      @JsonIgnore    public String blocko_instance_name;
           @JsonIgnore @OneToOne   @JoinColumn(name="vrs_obj_id")    public Version_Object version_object;
 
                                                                     public Date     running_from;
-                                                                    public String   state_of_progam;
 
-    @JsonProperty public boolean state()       { return  WebSocketController_OutComing.blockoServer_is_Instance_Running(blocko_server_name , blocko_instance_name ); }
-
+    @JsonProperty public boolean state()  { return  WebSocketController_OutComing.blockoServer_is_Instance_Running(blocko_server_name , blocko_instance_name ); }
 
 
     public void setUnique_blocko_instance_name() {
@@ -35,5 +32,10 @@ public class B_Program_Cloud extends Model {
             }
 
     }
-    public static Finder<String, B_Program_Cloud> find = new Finder<>(B_Program_Cloud.class);
+
+
+
+
+
+    public static Model.Finder<String, B_Program_Cloud> find = new Finder<>(B_Program_Cloud.class);
 }

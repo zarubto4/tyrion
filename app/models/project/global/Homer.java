@@ -2,6 +2,8 @@ package models.project.global;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import controllers.WebSocketController_Incoming;
 import models.project.b_program.B_Program_Homer;
 
 import javax.persistence.Entity;
@@ -21,10 +23,21 @@ public class Homer extends Model {
 
     @JsonIgnore  @OneToOne(mappedBy="homer") public B_Program_Homer b_program_homer;
 
+
+
+    @JsonProperty public boolean online(){return WebSocketController_Incoming.homer_is_online(homer_id);}
+
+
+
+/* METHODS ----------------------------------------------------------------------------------------------------------------*/
+
+
+
+
+
 /* FINDER & WEBSOCKET --------------------------------------------------------------------------------------------------------*/
         public static Finder<String,Homer> find = new Finder<>(Homer.class);
 
-/* METHODS ----------------------------------------------------------------------------------------------------------------*/
 
 
 }

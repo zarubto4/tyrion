@@ -11,7 +11,7 @@ import java.util.List;
 public class Swagger_Post_New {
 
       @Constraints.Required
-      @Constraints.MinLength(value = 8, message = "T ")
+      @Constraints.MinLength(value = 8, message = "The name must have at least 8 characters")
       @ApiModelProperty(required = true)
       public String name;
 
@@ -25,6 +25,7 @@ public class Swagger_Post_New {
       public String type_of_post_id;
 
       @Constraints.Required
+      @ApiModelProperty(value = "can be empty, but value is required", required = true)
       public List<String> hash_tags;
 
 }

@@ -3,6 +3,7 @@ package models.project.m_program;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import models.compiler.Version_Object;
 import models.project.global.Project;
 import utilities.Server;
 
@@ -20,14 +21,15 @@ public class M_Project extends Model {
                                                                 public Date    date_of_create;
                                        @JsonIgnore @ManyToOne   public Project project;
 
-
+    @JsonIgnore @OneToOne   @JoinColumn(name="vrs_obj_id")    public Version_Object b_program_version;
 
 
     @OneToMany(mappedBy="m_project_object", cascade = CascadeType.ALL) public List<M_Program> m_programs = new ArrayList<>();
 
 
-    @JsonProperty @Transient public String project()    {  return Server.serverAddress + "/project/project/" + project.id; }
-
+    @JsonProperty @Transient public String project()                    {  return Server.serverAddress + "/project/project/" + project.id; }
+    @JsonProperty @Transient public String b_progam_connected_version() {  return b_program_version == null ? null : Server.serverAddress + "/project/b_program/version/" + b_program_version.id;}
+    @JsonProperty @Transient public String b_program()                  {  return b_program_version == null ? null : Server.serverAddress + "/project/b_program/" + b_program_version.b_program.b_program_id; }
 
     public static Finder<String,M_Project> find = new Finder<>(M_Project.class);
 }
