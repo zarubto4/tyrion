@@ -1074,7 +1074,7 @@ public class ProgramingPackageController extends Controller {
     }
 
     //TODO SWAGGER  a taky celá logika nahrávání do homera
-    public  Result uploadProgramToHomer_Immediately(String homer_id, String version_id){
+    public  Result uploadProgramToHomer_Immediately(String b_program_id, String version_id, String homer_id){
         try {
             JsonNode json = request().body().asJson();
 

@@ -262,7 +262,9 @@ public class OverFlowController  extends Controller {
             post.text_of_post = help.text_of_post;
             post.date_of_create = new Date();
 
-            UtilTools.add_hashTags_to_Post(form.get().hash_tags, post);
+            if (form.get().hash_tags != null) {
+                UtilTools.add_hashTags_to_Post(form.get().hash_tags, post);
+            }
 
             post.save();
 
@@ -435,7 +437,9 @@ public class OverFlowController  extends Controller {
            post.text_of_post = help.text_of_post;
            post.date_of_create = new Date();
 
-           UtilTools.add_hashTags_to_Post(help.hash_tags, post );
+           if (form.get().hash_tags != null) {
+               UtilTools.add_hashTags_to_Post(form.get().hash_tags, post);
+           }
 
            parentPost.comments.add(post);
            post.postParentComment = parentPost;
@@ -505,7 +509,9 @@ public class OverFlowController  extends Controller {
             post.text_of_post = help.text_of_post;
             post.date_of_create = new Date();
 
-            UtilTools.add_hashTags_to_Post(help.hash_tags, post );
+            if (form.get().hash_tags != null) {
+                UtilTools.add_hashTags_to_Post(form.get().hash_tags, post);
+            }
 
             parentPost.answers.add(post);
             post.postParentAnswer = parentPost;

@@ -11,4 +11,6 @@ public class Swagger_M_Program_ByToken {
     @ApiModelProperty(required = true, value = "Program in Json -> in String")
     public String program;
 
+    public String websocket_address; // TODO řešení compilation erroru, přepsat
+
 }

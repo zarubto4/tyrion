@@ -17,8 +17,8 @@ public class WebSocketController_Incoming extends Controller {
 
 // Values  ---------------------------------------------------------------------------------------------------------
 
-    private static Map<String, WebSocket.Out<String> > incomingConnections_homers        = new HashMap<>(); // (Identificator, Websocket)
-    private static Map<String, WebSocket.Out<String> > incomingConnections_mobileDevice  = new HashMap<>(); // (Identificator, Websocket)
+    public static Map<String, WebSocket.Out<String> > incomingConnections_homers        = new HashMap<>(); // (Identificator, Websocket)
+    public static Map<String, WebSocket.Out<String> > incomingConnections_mobileDevice  = new HashMap<>(); // (Identificator, Websocket)
 
 // PUBLIC API ---------------------------------------------------------------------------------------------------------
     public WebSocket<String> homer_connection(String homer_mac_address){
