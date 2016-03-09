@@ -285,9 +285,9 @@ POST            /compilation/library/version/:library_id                        
 GET             /compilation/library/versions/:library_id                                   @controllers.CompilationLibrariesController.get_SingleLibrary_Versions(library_id)
 GET             /compilation/library/:library_id                                            @controllers.CompilationLibrariesController.get_SingleLibrary(library_id)
 
-PUT             /compilation/library:library_id                         @controllers.CompilationLibrariesController.edit_SingleLibrary(library_id)
-DELETE          /compilation/library:library_id                         @controllers.CompilationLibrariesController.delete_SingleLibrary(library_id)
-POST            /compilation/library/upload/:library_id/:version_id     @controllers.CompilationLibrariesController.upload_SingleLibrary_Version(library_id, version_id)
+PUT             /compilation/library:library_id                                             @controllers.CompilationLibrariesController.edit_SingleLibrary(library_id)
+DELETE          /compilation/library:library_id                                             @controllers.CompilationLibrariesController.delete_SingleLibrary(library_id)
+POST            /compilation/library/upload/:library_id/:version_id                         @controllers.CompilationLibrariesController.upload_SingleLibrary_Version(library_id, version_id)
 
 #File
 GET             /file/listOfFiles/:id                                                       @controllers.CompilationLibrariesController.get_LibraryGroup_Version_Libraries(id: String)
