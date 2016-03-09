@@ -124,7 +124,7 @@ public class UtilTools {
 
 
     /**
-     * Nahdávání souborů na Azure!
+     * Nahrávání souborů na Azure!
      * @param container_name = jméno kontejneru - tyto kontejnery je nutné vytvořit dopředu v Azure data storage.
      * @param file_content   = první úroveň adresáře v kontejneru (library, groupOfLibrary, private, public atd.)
      * @param file_name      = jméno samotného souboru

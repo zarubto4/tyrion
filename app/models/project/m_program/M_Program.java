@@ -8,11 +8,12 @@ import utilities.Server;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.UUID;
 
 @Entity
 public class M_Program extends Model{
 
-    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)     public String id;
+    @Id                                                         public String id;
                                                                 public String program_name;
                             @Column(columnDefinition = "TEXT")  public String program_description;
                 @JsonIgnore @Column(columnDefinition = "TEXT")  public String programInString;
@@ -35,5 +36,31 @@ public class M_Program extends Model{
     @Transient
     @JsonProperty public String screen_size_type()      {  return Server.serverAddress + "/grid/screen_type/" + screen_size_type_object.id; }
 
+
+
+
+
+
+    //***** Private ****************************************************************************************************
+
+
+    @JsonIgnore
+    public void set_Unique_hash_Id() {
+        while(true){ // I need Unique Value
+            this.id = UUID.randomUUID().toString();
+            if (M_Program.find.byId(this.id) == null) break;
+        }
+    }
+
+    @JsonIgnore
+    public void set_QR_Token() {
+        while(true){ // I need Unique Value
+            this.qr_token  = UUID.randomUUID().toString();
+            if (M_Program.find.where().eq("qr_token", this.qr_token ).findUnique() == null) break;
+        }
+    }
+
     public static Finder<String,M_Program> find = new Finder<>(M_Program.class);
+
+
 }

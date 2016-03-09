@@ -4,14 +4,9 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 
-@ApiModel(description = "Json Model for new M_Program",
-        value = "M_Program_New")
-public class Swagger_M_Program_New {
-
-    @Constraints.Required
-    @ApiModelProperty(required = true, value = "Required valid m_program_id")
-    public String  m_program_id;
-
+@ApiModel(description = "Json Model for update M_Program",
+          value = "M_Program_Update")
+public class Swagger_M_Program_Update {
 
     @Constraints.Required
     @ApiModelProperty(required = true, value = "Required valid screen_type_id")

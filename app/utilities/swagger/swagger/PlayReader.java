@@ -78,7 +78,7 @@ public class PlayReader {
 
         final boolean readable = (api != null && readHidden) || (api != null && !api.hidden());
 
-        // TODO possibly allow parsing also without @Api annotation
+
         if (readable) {
             // the value will be used as a tag for 2.0 UNLESS a Tags annotation is present
             Set<String> tagStrings = extractTags(api);

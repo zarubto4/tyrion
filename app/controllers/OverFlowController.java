@@ -4,12 +4,11 @@ package controllers;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.Query;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.*;
 import models.overflow.*;
 import play.Logger;
+import play.data.Form;
 import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
@@ -27,10 +26,7 @@ import utilities.swagger.documentationClass.*;
 import javax.websocket.server.PathParam;
 import java.util.*;
 
-@Api(value = "Ještě neroztříděné a neupravené",
-        description = "Compilation operation (C_Program, Processor, Libraries, TypeOfBoard...",
-        authorizations = { @Authorization(value="logged_in", scopes = {} )}
-)
+@Api(value = "Not Documented API - InProgress or Stuck")
 public class OverFlowController  extends Controller {
 
 // PUBLIC **********************************************************************************************************************
@@ -64,10 +60,37 @@ public class OverFlowController  extends Controller {
         }
     }
 
+
+    @ApiOperation(value = "get Posts by Filter",
+            tags = {"Blocko-OverFlow", "Post"},
+            notes = "get Post by Filter parameters in JSON. ",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Post_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response = Post.class, responseContainer =  "List"),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+
     @BodyParser.Of(BodyParser.Json.class)
     public Result get_Post_ByFilter(){
         try {
-            JsonNode json = request().body().asJson();
+
+            final Form<Swagger_Post_Filter> form = Form.form(Swagger_Post_Filter.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Post_Filter help = form.get();
 
             Query<Post> query = Ebean.find(Post.class);
             query.where().eq("postParentAnswer", null);
@@ -75,58 +98,51 @@ public class OverFlowController  extends Controller {
 
 
             // If contains HashTags
-            if(json.has("hash_tags") ){
-                List<String> hashTags = UtilTools.getListFromJson( json, "hash_tags" );
+            if(help.hash_tags != null ){
+                List<String> hashTags =help.hash_tags;
                 Set<String> HashTagset = new HashSet<>(hashTags);
                 query.where().in("hashTagsList.postHashTagId", HashTagset);
 
             }
 
             // If contains confirms
-            if(json.has("confirms") ){
-                List<String> confirms = UtilTools.getListFromJson( json, "confirms" );
+            if(help.confirms != null){
+                List<String> confirms = help.confirms;
                 Set<String> confirmsSet = new HashSet<>(confirms);
                  query.where().in("hashTagsList.postHashTagId", confirmsSet);
             }
 
             // From date
-            if(json.has("date_from")){
-                Date dateFrom = UtilTools.returnDateFromMillis( json.get("date_from").asText());
-                query.where().ge("date_of_create", dateFrom);
+            if(help.date_from != null){
+                query.where().ge("date_of_create", help.date_from );
             }
 
             // To date
-            if(json.has("date_to")){
-                Date dateTo = UtilTools.returnDateFromMillis( json.get("date_to").asText() );
-                query.where().le("date_of_create", dateTo);
+            if(help.date_to != null ){
+                query.where().le("date_of_create", help.date_to);
             }
 
-            if(json.has("type")){
-                List<String> type=  UtilTools.getListFromJson( json, "type" );
-                query.where().in("type.id", type);
+            if(help.types != null){
+                query.where().in("type.id", help.types );
             }
 
-            if(json.has("nick_name")){
-                String authorId = json.get("nick_name").asText();
-                query.where().ieq("author.nick_name", authorId);
+            if(help.nick_name != null){
+                query.where().ieq("author.nick_name", help.nick_name);
             }
 
 
-            if(json.has("count_from")){
-                Integer countFrom = json.get("count_from").asInt();
-                query.setFirstRow(countFrom);
+            if(help.count_from != null){
+                query.setFirstRow(help.count_from);
             }
 
-            if(json.has("count_to")){
-                Integer countTo = json.get("count_to").asInt();
-                query.setMaxRows(countTo);
+            if(help.count_to != null){
+                query.setMaxRows(help.count_to);
             }
 
-            if(json.has("order_by")){
-                JsonNode rdb = json.get("order_by");
+            if(help.order != null){
 
-               String order = rdb.get("order").asText();
-               String value = rdb.get("value").asText();
+               String order = help.order;
+               String value = help.value;
 
                 OrderBy<Post> orderBy = new OrderBy<>();
 
@@ -228,7 +244,10 @@ public class OverFlowController  extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result new_Post(){
         try {
-            Swagger_Post_New help = Json.fromJson(request().body().asJson(), Swagger_Post_New.class);
+
+            final Form<Swagger_Post_New> form = Form.form(Swagger_Post_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Post_New help = form.get();
 
             TypeOfPost typeOfPost = TypeOfPost.find.byId(help.type_of_post_id);
             if (typeOfPost == null) return GlobalResult.notFoundObject();
@@ -236,13 +255,14 @@ public class OverFlowController  extends Controller {
             Post post = new Post();
             post.author = SecurityController.getPerson();
 
+            post.name = help.name;
             post.type = typeOfPost;
             post.views = 0;
             post.likes = 0;
             post.text_of_post = help.text_of_post;
             post.date_of_create = new Date();
 
-            UtilTools.add_hashTags_to_Post(help.hash_tags, post);
+            UtilTools.add_hashTags_to_Post(form.get().hash_tags, post);
 
             post.save();
 
@@ -252,12 +272,9 @@ public class OverFlowController  extends Controller {
             return GlobalResult.created(Json.toJson(post));
 
 
-        } catch (Exception e) {
-            if( e.getCause() != null && e.getCause() instanceof UnrecognizedPropertyException) return GlobalResult.unrecognizedJsonProperties( Swagger_Post_New.class);
-            if( e instanceof NullPointerException) return GlobalResult.nullPointerResult( Swagger_Post_New.class);
-
-            Logger.error("Error", e);
-            return GlobalResult.internalServerError();
+          } catch (Exception e) {
+                Logger.error("Error", e);
+                return GlobalResult.internalServerError();
         }
     }
 
@@ -333,7 +350,9 @@ public class OverFlowController  extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result edit_Post(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id){
         try {
-            Swagger_Post_New help = Json.fromJson( request().body().asJson(), Swagger_Post_New.class);
+            final Form<Swagger_Post_New> form = Form.form(Swagger_Post_New.class).bindFromRequest();
+            if(form.hasErrors()) {return badRequest(form.errorsAsJson());}
+            Swagger_Post_New help = form.get();
 
             Post post = Post.find.byId(post_id);
             if (post == null) return GlobalResult.notFoundObject();
@@ -400,7 +419,10 @@ public class OverFlowController  extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result addComment(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id){
        try {
-           Swagger_Post_Comment help = Json.fromJson( request().body().asJson(), Swagger_Post_Comment.class);
+
+           final Form<Swagger_Post_Comment> form = Form.form(Swagger_Post_Comment.class).bindFromRequest();
+           if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+           Swagger_Post_Comment help = form.get();
 
            Post parentPost = Post.find.byId(post_id);
            if (parentPost == null) return GlobalResult.notFoundObject();
@@ -466,7 +488,10 @@ public class OverFlowController  extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result addAnswer(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id){
         try {
-            Swagger_Post_Answer help = Json.fromJson( request().body().asJson(), Swagger_Post_Answer.class);
+            final Form<Swagger_Post_Answer> form = Form.form(Swagger_Post_Answer.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Post_Answer help = form.get();
+
 
             Post parentPost = Post.find.byId(post_id);
             if (parentPost == null) throw new Exception("Post not Exist");
@@ -535,7 +560,12 @@ public class OverFlowController  extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result edit_Comment_or_Answer(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id){
         try {
-            Swagger_Post_Comment help = Json.fromJson( request().body().asJson(), Swagger_Post_Comment.class);
+
+            final Form<Swagger_Post_Comment> form = Form.form(Swagger_Post_Comment.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Post_Comment help = form.get();
+
+
 
             Post post = Post.find.byId(post_id);
             if (post == null) throw new Exception("Comment not Exist");
@@ -682,7 +712,10 @@ public class OverFlowController  extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result new_TypeOfPost(){
         try{
-            Swagger_TypeOfPost_New help = Json.fromJson( request().body().asJson(), Swagger_TypeOfPost_New.class);
+
+            final Form<Swagger_TypeOfPost_New> form = Form.form(Swagger_TypeOfPost_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_TypeOfPost_New help = form.get();
 
             if( TypeOfPost.find.where().ieq("type", help.type ).findUnique() != null) return GlobalResult.badRequest("Duplicate Value");
 
@@ -803,16 +836,20 @@ public class OverFlowController  extends Controller {
     @Security.Authenticated(Secured.class)
     public Result edit_TypeOfPost(@ApiParam(value = "type_of_post_id String path", required = true) @PathParam("type_of_post_id") String type_of_post_id){
         try{
-            JsonNode json = request().body().asJson();
+
+            final Form<Swagger_TypeOfPost_New> form = Form.form(Swagger_TypeOfPost_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_TypeOfPost_New help = form.get();
+
 
             TypeOfPost typeOfPost = TypeOfPost.find.byId(type_of_post_id);
             if(typeOfPost == null) return GlobalResult.notFoundObject();
 
-            List<TypeOfPost> list = TypeOfPost.find.where().ieq("type",json.get("type").asText()).where().ne("id", type_of_post_id).findList();
+            List<TypeOfPost> list = TypeOfPost.find.where().ieq("type", help.type ).where().ne("id", type_of_post_id).findList();
             if(list.size()>0) return GlobalResult.badRequest("Name is used already");
 
 
-            typeOfPost.type = json.get("type").asText();
+            typeOfPost.type = help.type;
             typeOfPost.update();
 
             return GlobalResult.okResult( Json.toJson(typeOfPost) );
@@ -912,7 +949,9 @@ public class OverFlowController  extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result new_TypeOfConfirms(){
         try{
-            Swagger_TypeOfConfirms_New help = Json.fromJson( request().body().asJson(), Swagger_TypeOfConfirms_New.class);
+            final Form<Swagger_TypeOfConfirms_New> form = Form.form(Swagger_TypeOfConfirms_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_TypeOfConfirms_New help = form.get();
 
             TypeOfConfirms typeOfConfirms = new TypeOfConfirms();
             typeOfConfirms.type = help.type;
@@ -964,7 +1003,10 @@ public class OverFlowController  extends Controller {
     @Security.Authenticated(Secured.class)
     public Result edit_TypeOfConfirms(@ApiParam(value = "type_of_confirm_id String path", required = true) @PathParam("type_of_confirm_id") String  type_of_confirm_id){
         try{
-            Swagger_TypeOfConfirms_New help = Json.fromJson( request().body().asJson(), Swagger_TypeOfConfirms_New.class);
+
+            final Form<Swagger_TypeOfConfirms_New> form = Form.form(Swagger_TypeOfConfirms_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_TypeOfConfirms_New help = form.get();
 
             TypeOfConfirms typeOfConfirms = TypeOfConfirms.find.byId(type_of_confirm_id);
             if(typeOfConfirms == null) return GlobalResult.notFoundObject();

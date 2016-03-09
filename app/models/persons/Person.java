@@ -6,7 +6,6 @@ import models.blocko.BlockoBlock;
 import models.overflow.LinkedPost;
 import models.overflow.Post;
 import models.project.global.Project;
-import play.data.validation.Constraints;
 
 import javax.persistence.*;
 import java.security.MessageDigest;
@@ -21,8 +20,8 @@ public class Person extends Model {
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)     public String id;
 
-                   @Column(unique=true)  @Constraints.Email     public String mail;
-                   @Column(unique=true)  @Constraints.Min(5)    public String nick_name;
+                                       @Column(unique=true)     public String mail;
+                                       @Column(unique=true)     public String nick_name;
                                                                 public String first_name;
                                                                 public String middle_name;
                                                                 public String last_name;

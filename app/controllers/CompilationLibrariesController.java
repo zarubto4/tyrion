@@ -3,7 +3,6 @@ package controllers;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.Query;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
@@ -13,6 +12,7 @@ import models.persons.PersonPermission;
 import models.project.c_program.C_Program;
 import models.project.global.Project;
 import play.Logger;
+import play.data.Form;
 import play.libs.Json;
 import play.mvc.*;
 import utilities.Server;
@@ -22,6 +22,7 @@ import utilities.permission.InterfaceDynamic;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
+import utilities.swagger.outboundClass.Description;
 
 import javax.websocket.server.PathParam;
 import java.io.File;
@@ -41,10 +42,7 @@ import java.util.*;
  */
 
 
-@Api(value = "Ještě neroztříděné a neupravené",
-     description = "Compilation operation (C_Program, Processor, Libraries, TypeOfBoard...",
-     authorizations = { @Authorization(value="logged_in", scopes = {} )}
-    )
+@Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Secured.class)
 public class CompilationLibrariesController extends Controller {
 
@@ -90,7 +88,6 @@ public class CompilationLibrariesController extends Controller {
         }}));
     }
 
-
 ///###################################################################################################################*/
 
     @ApiOperation(value = "Create new C_Program",
@@ -130,15 +127,17 @@ public class CompilationLibrariesController extends Controller {
     public Result create_C_Program(@ApiParam(value = "project_id String query", required = true) @PathParam("project_id") String project_id) {
         try {
 
-            JsonNode json = request().body().asJson();
-            Swagger_C_program_New help = Json.fromJson(json, Swagger_C_program_New.class );
+
+            final Form<Swagger_C_program_New> form = Form.form(Swagger_C_program_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_C_program_New help = form.get();
 
             // Tvorba programu
             C_Program c_program             = new C_Program();
             c_program.program_name          = help.program_name;
             c_program.program_description   = help.program_description;
             c_program.azurePackageLink      = "personal-program";
-            c_program.project               = Project.find.byId(json.get(project_id).asText());
+            c_program.project               = Project.find.byId(project_id);
             c_program.dateOfCreate          = new Date();
             c_program.setUniqueAzureStorageLink();
 
@@ -147,8 +146,6 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.created(Json.toJson(c_program));
 
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "program_description", "program_name");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - new_Processor ERROR");
@@ -264,8 +261,9 @@ public class CompilationLibrariesController extends Controller {
     public Result edit_C_Program_Description(@ApiParam(value = "c_program_id String query", required = true) @PathParam("c_program_id") String c_program_id) {
         try {
 
-            JsonNode json = request().body().asJson();
-            Swagger_C_program_New help = Json.fromJson(json, Swagger_C_program_New.class );
+            final Form<Swagger_C_program_New> form = Form.form(Swagger_C_program_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_C_program_New help = form.get();
 
             C_Program program = C_Program.find.byId(c_program_id);
 
@@ -285,7 +283,7 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
-    @ApiOperation(value = "update C_Program",
+    @ApiOperation(value = "new Version of C_Program",
             tags = {"C_Program"},
             notes = "If you want add new code to C_program by query = c_program_id. Send required json values and server respond with new object",
             produces = "application/json",
@@ -311,7 +309,7 @@ public class CompilationLibrariesController extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Version",
+                            dataType = "utilities.swagger.documentationClass.Swagger_C_Program_Version",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -320,17 +318,19 @@ public class CompilationLibrariesController extends Controller {
     )
     // @Dynamic("project.c_program_owner")
     @BodyParser.Of(BodyParser.Json.class)
-    public Result update_C_Program(@ApiParam(value = "c_program_id String query", required = true) @PathParam("c_program_id") String c_program_id){
+    public Result new_C_Program_Version(@ApiParam(value = "c_program_id String query", required = true) @PathParam("c_program_id") String c_program_id){
         try{
 
-            JsonNode json = request().body().asJson();
+            final Form<Swagger_C_Program_Version> form = Form.form(Swagger_C_Program_Version.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_C_Program_Version help = form.get();
 
             C_Program c_program = C_Program.find.byId(c_program_id);
 
             // První nová Verze
             Version_Object version_object     = new Version_Object();
-            version_object.version_name = json.get("version_name").asText();
-            version_object.version_description = json.get("version_description").asText();
+            version_object.version_name = help.version_name;
+            version_object.version_description = help.version_description;
 
             if(c_program.version_objects.isEmpty() ) version_object.azureLinkVersion = 1;
             else version_object.azureLinkVersion    = ++c_program.version_objects.get(0).azureLinkVersion; // Zvednu verzi o jednu
@@ -344,8 +344,8 @@ public class CompilationLibrariesController extends Controller {
 
             // Nahraje do Azure a připojí do verze soubor (lze dělat i cyklem - ale název souboru musí být vždy jiný)
 
-            for (final JsonNode objNode : json.get("files")){
-                UtilTools.uploadAzure_Version("c-program", objNode.get("content").asText(), objNode.get("file_name").asText(), c_program.azureStorageLink, c_program.azurePackageLink, version_object);
+            for (final Swagger_C_Program_Version.VersionFiles file : help.files){
+                UtilTools.uploadAzure_Version("c-program", file.content, file.file_name, c_program.azureStorageLink, c_program.azurePackageLink, version_object);
             }
 
             return GlobalResult.created(Json.toJson(version_object));
@@ -424,7 +424,7 @@ public class CompilationLibrariesController extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_edit_C_Program_version",
+                            dataType = "utilities.swagger.documentationClass.Swagger_C_Program_Version_Edit",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -442,8 +442,10 @@ public class CompilationLibrariesController extends Controller {
     public Result edit_C_Program_version( @ApiParam(value = "version_id String query",   required = true) @PathParam("version_id") String version_id){
         try{
 
-            JsonNode json = request().body().asJson();
-            Swagger_edit_C_Program_version help = Json.fromJson(json, Swagger_edit_C_Program_version.class );
+            final Form<Swagger_C_Program_Version_Edit> form = Form.form(Swagger_C_Program_Version_Edit.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_C_Program_Version_Edit help = form.get();
+
 
             Version_Object version_object= Version_Object.find.byId(version_id);
             if (version_object == null) return GlobalResult.notFoundObject();
@@ -501,19 +503,19 @@ public class CompilationLibrariesController extends Controller {
 
 ///###################################################################################################################*/
 
-    //TODO
+    //TODO swagger Documentation
     @BodyParser.Of(BodyParser.Json.class)
     public Result compileCProgram(){
         return GlobalResult.okResult("Compiled!"); //TODO
     }
 
-    //TODO
+    //TODO swagger Documentation
     public Result generateProjectForEclipse(String c_program_id) {
        // EclipseProject.createFullnewProject();
         return GlobalResult.okResult("In TODO"); //TODO
     }
 
-    //TODO
+    //TODO swagger Documentation
     public Result uploadBinaryFileToBoard(String board_id) {
         try{
 
@@ -536,7 +538,7 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
-    //TODO
+    //TODO swagger Documentation
     public Result uploadCompilationToBoard(String c_program_id, String boardId) {
 
         Board board = Board.find.byId(boardId);
@@ -576,7 +578,7 @@ public class CompilationLibrariesController extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Processor",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Processor_New",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -587,8 +589,11 @@ public class CompilationLibrariesController extends Controller {
     //  @Pattern("processor.create")
     public Result new_Processor() {
         try {
-            JsonNode json = request().body().asJson();
-            Swagger_Processor help = Json.fromJson(json, Swagger_Processor.class );
+
+            final Form<Swagger_Processor_New> form = Form.form(Swagger_Processor_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Processor_New help = form.get();
+
 
             Processor processor = new Processor();
 
@@ -703,7 +708,7 @@ public class CompilationLibrariesController extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Processor",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Processor_New",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -714,8 +719,10 @@ public class CompilationLibrariesController extends Controller {
     // @Pattern("processor.edit")
     public Result update_Processor(@ApiParam(value = "processor_id String query", required = true) @PathParam("processor_id") String processor_id) {
         try {
-            JsonNode json = request().body().asJson();
-            Swagger_Processor help = Json.fromJson(json, Swagger_Processor.class );
+
+            final Form<Swagger_Processor_New> form = Form.form(Swagger_Processor_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Processor_New help = form.get();
 
 
             Processor processor = Processor.find.byId(processor_id);
@@ -1090,8 +1097,10 @@ public class CompilationLibrariesController extends Controller {
     // @Pattern("libraryGroup.create")
     public Result new_LibraryGroup() {
         try {
-            JsonNode json = request().body().asJson();
-            Swagger_LibraryGroup_New help = Json.fromJson(json, Swagger_LibraryGroup_New.class );
+
+            final Form<Swagger_LibraryGroup_New> form = Form.form(Swagger_LibraryGroup_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_LibraryGroup_New help = form.get();
 
             LibraryGroup libraryGroup = new LibraryGroup();
             libraryGroup.description = help.description;
@@ -1136,7 +1145,7 @@ public class CompilationLibrariesController extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Version",
+                            dataType = "utilities.swagger.documentationClass.Swagger_LibraryGroup_Version",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -1147,8 +1156,10 @@ public class CompilationLibrariesController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result new_LibraryGroup_Version(@ApiParam(value = "libraryGroup_id String query", required = true) @PathParam("libraryGroup_id") String libraryGroup_id){
         try {
-            JsonNode json = request().body().asJson();
-            Swagger_Version help = Json.fromJson(json, Swagger_Version.class );
+
+            final Form<Swagger_LibraryGroup_Version> form = Form.form(Swagger_LibraryGroup_Version.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_LibraryGroup_Version help = form.get();
 
             LibraryGroup libraryGroup = LibraryGroup.find.byId(libraryGroup_id);
             if(libraryGroup == null) return GlobalResult.notFoundObject();
@@ -1172,6 +1183,7 @@ public class CompilationLibrariesController extends Controller {
         } catch (NullPointerException e) {
             return GlobalResult.nullPointerResult(e, "version_description", "version_name");
         } catch (Exception e) {
+            e.printStackTrace();
             Logger.error("CompilationLibrariesController - new_Processor ERROR");
             Logger.error(request().body().asJson().toString());
             return GlobalResult.internalServerError();
@@ -1400,8 +1412,9 @@ public class CompilationLibrariesController extends Controller {
     public Result editLibraryGroup(@ApiParam(value = "libraryGroup_id String query", required = true) @PathParam("libraryGroup_id") String libraryGroup_id) {
         try {
 
-            JsonNode json = request().body().asJson();
-            Swagger_LibraryGroup_New help = Json.fromJson(json, Swagger_LibraryGroup_New.class );
+            final Form<Swagger_LibraryGroup_New> form = Form.form(Swagger_LibraryGroup_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_LibraryGroup_New help = form.get();
 
             LibraryGroup libraryGroup = LibraryGroup.find.byId(libraryGroup_id);
             if(libraryGroup == null) return GlobalResult.notFoundObject();
@@ -1496,7 +1509,6 @@ public class CompilationLibrariesController extends Controller {
             tags = {"LibraryGroup"},
             notes = "If you want get Processors from LibraryGroup by query = libraryGroup_id",
             produces = "application/json",
-            response =  Swagger_LibraryGroup_Libraries.class,
             protocols = "https",
             code = 200,
             authorizations = {
@@ -1507,7 +1519,7 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result",      response = Swagger_LibraryGroup_Libraries.class),
+            @ApiResponse(code = 200, message = "Ok result",      response = FileRecord.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1530,7 +1542,6 @@ public class CompilationLibrariesController extends Controller {
             tags = {"LibraryGroup"},
             notes = "If you want get Libraries from LibraryGroup.Version by query = version_id",
             produces = "application/json",
-            response =  Swagger_LibraryGroup_Libraries.class,
             protocols = "https",
             code = 200,
             authorizations = {
@@ -1541,7 +1552,7 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result",      response = Swagger_LibraryGroup_Libraries.class),
+            @ApiResponse(code = 200, message = "Ok result",  response = FileRecord.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1595,38 +1606,41 @@ public class CompilationLibrariesController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result get_LibraryGroup_Filter() {
         try {
-            JsonNode json = request().body().asJson();
+
+            final Form<Swagger_LibraryGroup_Filter> form = Form.form(Swagger_LibraryGroup_Filter.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_LibraryGroup_Filter help = form.get();
 
             System.out.println("JSem aspoň zde");
             Query<LibraryGroup> query = Ebean.find(LibraryGroup.class);
 
 
             // If contains confirms
-            if (json.has("processors_id")) {
-                List<String> list = UtilTools.getListFromJson(json, "processors_id");
+            if (help.processors_id != null) {
+                List<String> list = help.processors_id;
                 Set<String> set = new HashSet<>(list);
                 query.where().in("processors.id", set);
             }
 
-            if (json.has("group_name")) {
-                String group_name = json.get("group_name").asText();
+            if (help.group_name != null) {
+                String group_name = help.group_name;
                 query.where().ieq("group_name", group_name);
             }
 
-            if (json.has("count_from")) {
-                Integer countFrom = json.get("count_from").asInt();
+            if (help.count_from != null) {
+                Integer countFrom = help.count_from;
                 query.setFirstRow(countFrom);
             }
 
-            if (json.has("count_to")) {
-                Integer countTo = json.get("count_to").asInt();
+            if (help.count_to !=null) {
+                Integer countTo = help.count_to;
                 query.setMaxRows(countTo);
             }
 
-            if (json.has("order")) {
+            if (help.order != null) {
 
-                String order = json.get("order").asText();
-                String value = json.get("value").asText();
+                String order = help.order;
+                String value = help.value;
 
                 OrderBy<LibraryGroup> orderBy = new OrderBy<>();
 
@@ -1708,8 +1722,11 @@ public class CompilationLibrariesController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result new_SingleLibrary() {
         try {
-            JsonNode json = request().body().asJson();
-            Swagger_SingleLibrary_New help = Json.fromJson(json, Swagger_SingleLibrary_New.class );
+
+            final Form<Swagger_SingleLibrary_New> form = Form.form(Swagger_SingleLibrary_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_SingleLibrary_New help = form.get();
+
 
             SingleLibrary singleLibrary = new SingleLibrary();
             singleLibrary.library_name = help.library_name;
@@ -1744,6 +1761,17 @@ public class CompilationLibrariesController extends Controller {
                     )
             }
     )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_SingleLibrary_Version",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
     @ApiResponses(value = {
 
             @ApiResponse(code = 201, message = "Successful created",      response = Version_Object.class),
@@ -1755,7 +1783,10 @@ public class CompilationLibrariesController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result new_SingleLibrary_Version(@ApiParam(value = "library_id String query", required = true) @PathParam("library_id")  String library_id){
         try {
-            JsonNode json = request().body().asJson();
+            final Form<Swagger_SingleLibrary_Version> form = Form.form(Swagger_SingleLibrary_Version.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_SingleLibrary_Version help = form.get();
+
 
             SingleLibrary singleLibrary = SingleLibrary.find.byId(library_id);
             if(singleLibrary == null)  return GlobalResult.notFoundObject();
@@ -1766,8 +1797,8 @@ public class CompilationLibrariesController extends Controller {
             else versionObjectObject.azureLinkVersion    = ++singleLibrary.version_objects.get(0).azureLinkVersion; // Zvednu verzi o jednu
 
             versionObjectObject.date_of_create = new Date();
-            versionObjectObject.version_name = json.get("version_name").asText();
-            versionObjectObject.version_description = json.get("description").asText();
+            versionObjectObject.version_name = help.version_name;
+            versionObjectObject.version_description = help.version_description;
             versionObjectObject.singleLibrary = singleLibrary;
             versionObjectObject.save();
 
@@ -1936,36 +1967,39 @@ public class CompilationLibrariesController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result get_SingleLibrary_Filter() {
         try {
-            JsonNode json = request().body().asJson();
+
+            final Form<Swagger_SingleLibrary_Filter> form = Form.form(Swagger_SingleLibrary_Filter.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_SingleLibrary_Filter help = form.get();
 
             Query<SingleLibrary> query = Ebean.find(SingleLibrary.class);
 
             // If contains confirms
-            if (json.has("processors_id")) {
-                List<String> list = UtilTools.getListFromJson(json, "processors_id");
+            if (help.processors_id != null) {
+                List<String> list = help.processors_id;
                 Set<String> set = new HashSet<>(list);
                 query.where().in("processors.id", set);
             }
 
-            if (json.has("library_name")) {
-                String group_name = json.get("library_name").asText();
+            if (help.library_name != null) {
+                String group_name = help.library_name;
                 query.where().ieq("library_name", group_name);
             }
 
-            if (json.has("count_from")) {
-                Integer countFrom = json.get("count_from").asInt();
+            if (help.count_from != null) {
+                Integer countFrom = help.count_from;
                 query.setFirstRow(countFrom);
             }
 
-            if (json.has("count_to")) {
-                Integer countTo = json.get("count_to").asInt();
-                query.setMaxRows(countTo);
+            if (help.count_to != null) {
+                Integer count_to = help.count_to;
+                query.setMaxRows(count_to);
             }
 
-            if (json.has("order")) {
+            if (help.order != null) {
 
-                String order = json.get("order").asText();
-                String value = json.get("value").asText();
+                String order = help.order;
+                String value = help.value;
 
                 OrderBy<SingleLibrary> orderBy = new OrderBy<>();
 
@@ -2023,8 +2057,10 @@ public class CompilationLibrariesController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result edit_SingleLibrary(@ApiParam(value = "library_id String query", required = true) @PathParam("library_id") String library_id) {
         try {
-            JsonNode json = request().body().asJson();
-            Swagger_SingleLibrary_New help = Json.fromJson(json, Swagger_SingleLibrary_New.class );
+
+            final Form<Swagger_SingleLibrary_New> form = Form.form(Swagger_SingleLibrary_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_SingleLibrary_New help = form.get();
 
             SingleLibrary singleLibrary = SingleLibrary.find.byId(library_id);
             if(singleLibrary == null) return GlobalResult.notFoundObject();
@@ -2123,8 +2159,9 @@ public class CompilationLibrariesController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result new_Producer() {
         try {
-            JsonNode json = request().body().asJson();
-            Swagger_Producer_New help = Json.fromJson(json, Swagger_Producer_New.class );
+            final Form<Swagger_Producer_New> form = Form.form(Swagger_Producer_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Producer_New help = form.get();
 
             Producer producer = new Producer();
             producer.name = help.name;
@@ -2180,8 +2217,10 @@ public class CompilationLibrariesController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result edit_Producer(@ApiParam(required = true) @PathParam("producer_id") String producer_id) {
         try {
-            JsonNode json = request().body().asJson();
-            Swagger_Producer_New help = Json.fromJson(json, Swagger_Producer_New.class );
+            final Form<Swagger_Producer_New> form = Form.form(Swagger_Producer_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Producer_New help = form.get();
+
 
             Producer producer = Producer.find.byId(producer_id);
             if(producer == null ) return GlobalResult.notFoundObject();
@@ -2427,13 +2466,11 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    // @Pattern("type_of_board.create")
     public Result new_TypeOfBoard() {
         try {
-
-            JsonNode json = request().body().asJson();
-
-            Swagger_TypeOfBoard_New help = Json.fromJson(json, Swagger_TypeOfBoard_New.class);
+            final Form<Swagger_TypeOfBoard_New> form = Form.form(Swagger_TypeOfBoard_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_TypeOfBoard_New help = form.get();
 
             Producer producer = Producer.find.byId(help.producer_id);
             if(producer == null ) return GlobalResult.notFoundObject();
@@ -2498,21 +2535,22 @@ public class CompilationLibrariesController extends Controller {
     // @Pattern("type_of_board.edit")
     public Result edit_TypeOfBoard(@ApiParam(required = true) @PathParam("type_of_board_id") String type_of_board_id) {
         try {
-            JsonNode json = request().body().asJson();
-            Swagger_TypeOfBoard_New json_object = Json.fromJson(json, Swagger_TypeOfBoard_New.class);
+            final Form<Swagger_TypeOfBoard_New> form = Form.form(Swagger_TypeOfBoard_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_TypeOfBoard_New help = form.get();
 
             TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(type_of_board_id);
             if (typeOfBoard == null) return GlobalResult.notFoundObject();
 
-            Producer producer = Producer.find.byId(json_object.producer_id);
+            Producer producer = Producer.find.byId(help.producer_id);
             if(producer == null ) return GlobalResult.notFoundObject();
 
-            Processor processor = Processor.find.byId(json_object.processor_id);
+            Processor processor = Processor.find.byId(help.processor_id);
             if(processor == null ) return GlobalResult.notFoundObject();
 
 
-            typeOfBoard.name = json_object.name;
-            typeOfBoard.description = json_object.description;
+            typeOfBoard.name = help.name;
+            typeOfBoard.description = help.description;
             typeOfBoard.processor = processor;
             typeOfBoard.producer = producer;
 
@@ -2554,10 +2592,8 @@ public class CompilationLibrariesController extends Controller {
     })
     //TODO dokumentace Issue TYRION-88 (http://youtrack.byzance.cz/youtrack/issue/TYRION-88)
     // @Pattern("type_of_board.delete")
-    @BodyParser.Of(BodyParser.Json.class)
     public Result delete_TypeOfBoard(@ApiParam(required = true) @PathParam("type_of_board_id") String type_of_board_id) {
         try {
-            JsonNode json = request().body().asJson();
 
             TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(type_of_board_id);
             if(typeOfBoard == null ) return GlobalResult.notFoundObject();
@@ -2688,7 +2724,6 @@ public class CompilationLibrariesController extends Controller {
             tags = { "Type-Of-Board"},
             notes = "if you want get physics Boards from TypeOfBoard  by query = type_of_board_id",
             produces = "application/json",
-            response =  Board.class,
             protocols = "https",
             code = 200,
             authorizations = {
@@ -2719,9 +2754,94 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
-    //TODO http://youtrack.byzance.cz/youtrack/issue/TYRION-100
+    @ApiOperation(value = "get TypeOfBoard by Filter",
+            tags = { "Type-Of-Board"},
+            notes = "get List of TypeOfBoard by filter",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "type_of_board.edit", description = "Person need this permission"),
+                                    @AuthorizationScope(scope = "SuperAdmin", description = "Or person must be SuperAdmin role")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_TypeOfBoard_Filter",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = TypeOfBoard.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
     public Result get_TypeOfBoard_Filter(){
-        return null;
+        try {
+
+            final Form<Swagger_TypeOfBoard_Filter> form = Form.form(Swagger_TypeOfBoard_Filter.class).bindFromRequest();
+            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_TypeOfBoard_Filter help = form.get();
+
+
+            Query<Swagger_TypeOfBoard_Filter> query = Ebean.find(Swagger_TypeOfBoard_Filter.class);
+
+
+            if(help.producer_name != null){
+                query.where().eq("producer.name", help.producer_name);
+            }
+
+            if(help.processor_name != null){
+                query.where().eq("processor.processor_name", help.processor_name);
+            }
+
+            if(help.count_from != null){
+                query.setFirstRow(help.count_from);
+            }
+
+            if(help.count_to != null){
+                query.setMaxRows(help.count_to);
+            }
+
+            if(help.order != null){
+
+                String order = help.order;
+                String value = help.value;
+
+                OrderBy<Swagger_TypeOfBoard_Filter> orderBy = new OrderBy<>();
+
+                if(order.equals("asc")) orderBy.asc(value);
+                else if (order.equals("desc")) orderBy.desc(value);
+
+                query.setOrder(orderBy);
+            }
+
+
+
+            List<Swagger_TypeOfBoard_Filter> list = query.findList();
+
+
+
+            return GlobalResult.okResult(Json.toJson(list));
+
+
+
+
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            return GlobalResult.internalServerError();
+        }
     }
 
     ///###################################################################################################################*/
@@ -2764,9 +2884,10 @@ public class CompilationLibrariesController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result new_Board() {
         try {
-            JsonNode json = request().body().asJson();
-            Swagger_Board_New help = Json.fromJson(json,Swagger_Board_New.class);
 
+            final Form<Swagger_Board_New> form = Form.form(Swagger_Board_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Board_New help = form.get();
 
 
             if (Board.find.byId( help.hardware_unique_id ) != null) return GlobalResult.badRequest("Duplicate database value");
@@ -2783,8 +2904,6 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.okResult(Json.toJson(board));
 
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "hardware_unique_id", "type_of_board_id");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - newBoard ERROR");
@@ -2829,8 +2948,10 @@ public class CompilationLibrariesController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result edit_Board_User_Description(@ApiParam(required = true) @PathParam("board_id") String board_id){
         try {
-            JsonNode json = request().body().asJson();
-            Swagger_Board_Personal help = Json.fromJson(json, Swagger_Board_Personal.class);
+
+            final Form<Swagger_Board_Personal> form = Form.form(Swagger_Board_Personal.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Board_Personal help = form.get();
 
             Board board = Board.find.byId(board_id);
             if(board == null ) return GlobalResult.notFoundObject();
@@ -2865,6 +2986,17 @@ public class CompilationLibrariesController extends Controller {
                     )
             }
     )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Board_Filter",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Board.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -2875,45 +3007,51 @@ public class CompilationLibrariesController extends Controller {
     // @Pattern("board.read")
     public Result get_Board_Filter() {
         try {
-            JsonNode json = request().body().asJson();
+
+            final Form<Swagger_Board_Filter> form = Form.form(Swagger_Board_Filter.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Board_Filter help = form.get();
+
 
             Query<Board> query = Ebean.find(Board.class);
 
             // If contains HashTags
-            if(json.has("typeOfBoards") ){
-                List<String> stringList = UtilTools.getListFromJson( json, "typeOfBoards" );
+            if(help.typeOfBoards != null ){
+                List<String> stringList = help.typeOfBoards;
                 Set<String> stringListSet = new HashSet<>(stringList);
                 query.where().in("type_of_board.id", stringListSet);
 
             }
 
             // If contains confirms
-            if(json.has("active") ){
-                Boolean isActive = json.get("active").asBoolean();
+            if(help.active != null){
+                Boolean isActive = help.active.equals("true");
                 query.where().eq("isActive", isActive);
             }
 
             // From date
-            if(json.has("projects")){
-                List<String> stringList = UtilTools.getListFromJson( json, "projects" );
+            if(help.projects != null){
+                List<String> stringList = help.projects;
                 Set<String> stringListSet = new HashSet<>(stringList);
                 query.where().in("projects.id", stringListSet);
             }
 
 
-            if(json.has("producers")){
-                List<String> stringList = UtilTools.getListFromJson( json, "producers" );
+            if(help.producers != null){
+                List<String> stringList = help.producers;
                 Set<String> stringListSet = new HashSet<>(stringList);
                 query.where().in("type_of_board.producer.id", stringListSet);
             }
 
-            if(json.has("processor")){
-                List<String> stringList = UtilTools.getListFromJson( json, "processor" );
+            if(help.processors != null){
+                List<String> stringList = help.processors;
                 Set<String> stringListSet = new HashSet<>(stringList);
                 query.where().in("type_of_board.processor.id", stringListSet);
             }
 
             List<Board> list = query.findList();
+
+
 
             return GlobalResult.okResult(Json.toJson(list));
 

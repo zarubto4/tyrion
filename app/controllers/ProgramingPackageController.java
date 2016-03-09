@@ -34,10 +34,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
-@Api(value = "Ještě neroztříděné a neupravené",
-        description = "",
-        authorizations = { @Authorization(value="logged_in", scopes = {} )}
-)
+@Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Secured.class)
 public class ProgramingPackageController extends Controller {
 
@@ -616,6 +613,7 @@ public class ProgramingPackageController extends Controller {
         try{
             Swagger_Homer_New help = Json.fromJson(request().body().asJson() , Swagger_Homer_New.class);
 
+            if ( Homer.find.where().eq("homer_id", help.homer_id).findUnique() != null ) return GlobalResult.badRequest("Homer with this id exist");
 
             Homer homer = new Homer();
             homer.homer_id = help.homer_id;
@@ -655,10 +653,10 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result removeHomer(String id){
+    public  Result removeHomer(@ApiParam(value = "homer_id String path",   required = true) @PathParam("homer_id") String homer_id){
         try{
 
-           Homer homer = Homer.find.byId(id);
+           Homer homer = Homer.find.byId(homer_id);
            if(homer == null) return GlobalResult.notFoundObject();
 
            homer.delete();
@@ -692,7 +690,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result getHomer(String homer_id){
+    public  Result getHomer(@ApiParam(value = "homer_id String path",   required = true) @PathParam("homer_id")String homer_id){
         try {
             Homer homer = Homer.find.byId(homer_id);
             if (homer == null) return GlobalResult.notFoundObject();
@@ -798,8 +796,9 @@ public class ProgramingPackageController extends Controller {
             if(homer == null)  return GlobalResult.notFoundObject();
 
 
+            if( project.homerList.contains(homer)) homer.project = null;
+            homer.update();
             project.homerList.remove(homer);
-            project.update();
 
             return GlobalResult.okResult(Json.toJson(project));
 
@@ -1454,7 +1453,7 @@ public class ProgramingPackageController extends Controller {
             blockoBlock.author              = SecurityController.getPerson();
 
 
-           TypeOfBlock typeOfBlock = TypeOfBlock.find.byId( help.type_of_blocko_id );
+           TypeOfBlock typeOfBlock = TypeOfBlock.find.byId( help.type_of_block_id);
            if(typeOfBlock == null) return GlobalResult.notFoundObject();
 
            blockoBlock.type_of_block = typeOfBlock;
@@ -1463,7 +1462,7 @@ public class ProgramingPackageController extends Controller {
 
             return GlobalResult.okResult( Json.toJson(blockoBlock) );
        } catch (NullPointerException e) {
-           return GlobalResult.nullPointerResult(e, "name", "general_description", "type_of_blocko_id");
+           return GlobalResult.nullPointerResult(e, "name", "general_description", "type_of_block_id");
        } catch (Exception e) {
            Logger.error("Error", e);
            Logger.error("ProgramingPackageController - newBlock ERROR");
@@ -1514,7 +1513,7 @@ public class ProgramingPackageController extends Controller {
                 blockoBlock.general_description = help.general_description;
                 blockoBlock.name                = help.name;
 
-                TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(  help.type_of_blocko_id );
+                TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(  help.type_of_block_id);
                 if(typeOfBlock == null) return GlobalResult.notFoundObject();
 
                 blockoBlock.type_of_block = typeOfBlock;
@@ -1523,7 +1522,7 @@ public class ProgramingPackageController extends Controller {
 
                 return GlobalResult.okResult(Json.toJson(blockoBlock));
         } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "name", "version_description", "type_of_blocko_id");
+            return GlobalResult.nullPointerResult(e, "name", "version_description", "type_of_block_id");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - getBlockLast ERROR");
@@ -1661,6 +1660,7 @@ public class ProgramingPackageController extends Controller {
     })
     public Result deleteBlock(@ApiParam(value = "blocko_block_id String path",   required = true) @PathParam("blocko_block_id") String blocko_block_id){
         try {
+
             BlockoBlock blockoBlock = BlockoBlock.find.byId(blocko_block_id);
             if(blockoBlock == null) return GlobalResult.notFoundObject();
             blockoBlock.delete();

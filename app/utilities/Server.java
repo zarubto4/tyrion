@@ -36,7 +36,7 @@ public class Server {
          * --- >@JsonProperty public String  versions()  { return Server.serverAddress + "/project/blocko_block/versions/"  + this.id;}
          * --- >@JsonProperty public String  versions()  { return "http//www.byzance.cz/project/blocko_block/versions/"  + this.id;}
          *
-         * Zatím, se zdá vhodnější varianta přepínání v configuračním souboru. Tomáš Záruba 15.2.16
+         * Zatím se zdá vhodnější varianta přepínání v configuračním souboru. Tomáš Záruba 15.2.16
          */
         if( Configuration.root().getBoolean("Server.developerMode"))   serverAddress = Configuration.root().getString("Server.localhost");
         else                                                           serverAddress = Configuration.root().getString("Server.production");
@@ -46,7 +46,10 @@ public class Server {
          * Nastavení Azure připojení
          * jelikož v době vývoje nebylo možné realizovat různá připojení, bylo nutné zajistit pouze jedno připojení v počátku
          */
-        String azureConnection = Configuration.root().getString("Azure.azureConnectionSecret");
+        String azureConnection;
+        if( Configuration.root().getBoolean("Server.developerMode"))   azureConnection = Configuration.root().getString("Azure.developer.azureConnectionSecret");
+        else                                                           azureConnection = Configuration.root().getString("Azure.production.azureConnectionSecret");
+
         storageAccount = CloudStorageAccount.parse(azureConnection);
         blobClient = storageAccount.createCloudBlobClient();
 
@@ -84,9 +87,9 @@ public class Server {
 
 
     private static final DynamicResourceHandler denied_permission = s -> {
-        System.out.println("Mapa neobsahuje dinamický klíč!!!");
+        System.out.println("Mapa neobsahuje dynamický klíč!!!");
         // TODO zalogování problému
-        return false;
+        throw new PermissionException();
     };
 
 
@@ -99,7 +102,7 @@ public class Server {
         try {
 
             //Zde porovnávám zda uživatel má oprávnění na přímo
-            // nebo je ve skupině, která dané oprávnění vlasntí
+            // nebo je ve skupině, která dané oprávnění vlastní
 
             if (PersonPermission.find.where().or(
                     com.avaje.ebean.Expr.and(
