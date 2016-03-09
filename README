@@ -1,4 +1,13 @@
 
+Verze 1.05
+
+Pro davida musí vzniknout možnost připojit Grid a připojení Homera.
+
+Z Gridu je nutné přenášet příkazy na konkrétního homera, který je propojený s b_programem.
+
+
+
+
 Verze 1.04.9.19
 
 partly fixed TYRION-118
@@ -16,16 +25,6 @@ přihlašovací údaje k databázy změněny na
 db.default.username=tyrion
 db.default.password=lannister
 -na linuxu je uživatel postgres propojený do systému jako superuser a má unikátní heslo
-
-
-
-Verze 1.05
-
-Pro davida musí vzniknout možnost připojit Grid a připojení Homera.
-
-Z Gridu je nutné přenášet příkazy na konkrétního homera, který je propojený s b_programem.
-
-
 
 
 
