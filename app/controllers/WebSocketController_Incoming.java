@@ -6,7 +6,7 @@ import play.mvc.Result;
 import play.mvc.WebSocket;
 import utilities.response.GlobalResult;
 import utilities.webSocket.WebSocketClientNotPlay;
-import utilities.webSocket.WebSocketPlayServer_Homer;
+
 
 import java.util.Date;
 import java.util.HashMap;
@@ -23,12 +23,12 @@ public class WebSocketController_Incoming extends Controller {
 // PUBLIC API ---------------------------------------------------------------------------------------------------------
     public WebSocket<String> homer_connection(String homer_mac_address){
         System.out.println("Příchozí připojení Homer" + homer_mac_address);
-        return  WebSocketPlayServer_Homer.connection(incomingConnections_homers, homer_mac_address);
+        return null;
     }
 
     public WebSocket<String> mobile_connection(String m_program_name){
         System.out.println("Příchozí připojení mobilního telefonu na programu" + m_program_name);
-        return  WebSocketPlayServer_Homer.connection(incomingConnections_mobileDevice, m_program_name);
+        return null;
     }
 
 
