@@ -5,7 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 
 @ApiModel(description = "Json Model for crating new BlockoBlock Model",
-        value = "BlockoBlock_BlockoVersion_New")
+        value = "BlockoBlock_New")
 public class Swagger_BlockoBlock_New {
 
     @Constraints.Required

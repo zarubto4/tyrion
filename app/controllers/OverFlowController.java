@@ -1062,7 +1062,6 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Secured.class)
     public Result delete_TypeOfConfirms(@ApiParam(value = "type_of_confirm_id String path", required = true) @PathParam("type_of_confirm_id") String  type_of_confirm_id){
         try{

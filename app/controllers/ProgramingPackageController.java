@@ -450,6 +450,17 @@ public class ProgramingPackageController extends Controller {
                     )
             }
     )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_ShareProject_Person",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response = Project.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -499,6 +510,17 @@ public class ProgramingPackageController extends Controller {
                             value="permission",
                             scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
                                     @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_ShareProject_Person",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
                     )
             }
     )
