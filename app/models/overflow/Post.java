@@ -45,12 +45,12 @@ public class Post extends Model {
 
 
 
-        @JsonInclude(JsonInclude.Include.NON_EMPTY)  @JsonProperty  public TypeOfPost           type()     { return type == null ? null : type;}
-        @JsonInclude(JsonInclude.Include.NON_NULL)   @JsonProperty  public List<TypeOfConfirms> type_of_confirms()     { return name == null  ? null : typeOfConfirms;}
-        @JsonInclude(JsonInclude.Include.NON_NULL)   @JsonProperty  public Integer              views()     { return name == null ? null : views; }
-        @JsonInclude(JsonInclude.Include.NON_NULL)   @JsonProperty  public List<Post>           answers()   { return name == null ? null : answers; }
-        @JsonInclude(JsonInclude.Include.NON_NULL)   @JsonProperty  public List<Post>           comments()  { return name == null ? null : comments;}
-        @JsonInclude(JsonInclude.Include.NON_NULL)   @JsonProperty  public List<String>         hashTags(){ return hashTagsList.stream().map(tag -> tag.postHashTagId).collect(Collectors.toList());}
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)  @JsonProperty  public TypeOfPost           type()                  { return type == null ? null : type;}
+        @JsonInclude(JsonInclude.Include.NON_NULL)   @JsonProperty  public List<TypeOfConfirms> type_of_confirms()      { return name == null  ? null : typeOfConfirms;}
+        @JsonInclude(JsonInclude.Include.NON_NULL)   @JsonProperty  public Integer              views()                 { return name == null ? null : views; }
+        @JsonInclude(JsonInclude.Include.NON_NULL)   @JsonProperty  public List<Post>           answers()               { return name == null ? null : answers; }
+        @JsonInclude(JsonInclude.Include.NON_NULL)   @JsonProperty  public List<Post>           comments()              { return comments.size() == 0 ? null : comments;}
+        @JsonInclude(JsonInclude.Include.NON_NULL)   @JsonProperty  public List<String>         hashTags()              { return hashTagsList.stream().map(tag -> tag.postHashTagId).collect(Collectors.toList());}
 
 
 

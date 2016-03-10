@@ -24,8 +24,7 @@ public class Swagger_Post_New {
       @ApiModelProperty(value = "Required valid type_of_post_id", required = true)
       public String type_of_post_id;
 
-      @Constraints.Required
-      @ApiModelProperty(value = "can be empty, but value is required", required = true)
+      @ApiModelProperty(required = false)
       public List<String> hash_tags;
 
 }

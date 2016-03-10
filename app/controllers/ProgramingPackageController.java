@@ -454,6 +454,17 @@ public class ProgramingPackageController extends Controller {
                     )
             }
     )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_ShareProject_Person",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response = Project.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -503,6 +514,17 @@ public class ProgramingPackageController extends Controller {
                             value="permission",
                             scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
                                     @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_ShareProject_Person",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
                     )
             }
     )
@@ -1196,7 +1218,6 @@ public class ProgramingPackageController extends Controller {
     public  Result upload_b_Program_ToCloud(@ApiParam(value = "b_program_id String path", required = true) @PathParam("b_program_id") String b_program_id, @ApiParam(value = "version_id String path", required = true) @PathParam("version_id") String version_id){
         try {
 
-
             // B program, který chci nahrát do Cloudu na Blocko server
             B_Program b_program = B_Program.find.byId(b_program_id);
             if (b_program == null) return GlobalResult.notFoundObject();
@@ -1204,8 +1225,6 @@ public class ProgramingPackageController extends Controller {
             // Verze B programu kterou budu nahrávat do cloudu
             Version_Object version_object = Version_Object.find.byId(version_id);
             if (version_object == null) return GlobalResult.notFoundObject();
-
-
 
             // Pokud už nějaká instance běžela, tak jí zabiju a z databáze odstraním vazbu na běžící instanci b programu
             if( version_object.b_program_cloud != null ) {
