@@ -8,12 +8,15 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.WebSocket;
 import utilities.response.GlobalResult;
-import utilities.webSocket.WebSocketClientNotPlay;
+import utilities.webSocket.developing.WS_Homer_Cloud;
 import utilities.webSocket.developing.WS_Homer_Local;
 import utilities.webSocket.developing.WS_Terminal_Local;
 import utilities.webSocket.developing.WebSCType;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
 
@@ -21,9 +24,13 @@ public class WebSocketController_Incoming extends Controller {
 
 // Values  -------------------------------------------------------------------------------------------------------------
 
-    private static Map<String, WebSCType > incomingConnections_homers        = new HashMap<>(); // (Identificator, Websocket)
-    private static Map<String, WebSCType > incomingConnections_terminal = new HashMap<>(); // (Identificator, Websocket)
-    private static Map<String,  ArrayList<String> > terminal_lost_connection_homer = new HashMap< String , ArrayList<String> >(); // Sem podle ID homera uložím seznam zařízení, na která by se měl opět připojit
+    private static Map<String, WebSCType > incomingConnections_homers              = new HashMap<>(); // (Identificator, Websocket)
+    private static Map<String, WebSCType > incomingConnections_terminals           = new HashMap<>(); // (Identificator, Websocket)
+    public static  Map< String, Map<String, WebSCType> > cloud_servers             = new HashMap<>(); // (Identificator, Websocket)
+
+    // Sem podle ID homera uložím seznam zařízení, na která by se měl opět připojit
+    private static Map<String,  ArrayList<String> > terminal_lost_connection_homer = new HashMap< String , ArrayList<String> >();  // (Homer Identificator, List<Terminal Identifikator>)
+
 
 // PUBLIC API ---------------------------------------------------------------------------------------------------------
 
@@ -45,7 +52,7 @@ public class WebSocketController_Incoming extends Controller {
             for(String terminal_name : terminal_lost_connection_homer.get(homer_mac_address) ){
 
                 // kontrolu zda terminál je stále přopojený
-                if( incomingConnections_terminal.containsKey(terminal_name)){
+                if( incomingConnections_terminals.containsKey(terminal_name)){
 
                     // V případě že tedy nějaké temrinály jsou připravené komunikovat, musím upozornit homera, že chci odebírat jeho změny
                     // Takže ho u prvního oběratele budu informovat
@@ -54,20 +61,20 @@ public class WebSocketController_Incoming extends Controller {
                         System.out.println("Spojení bylo obnoveno mezi Homer: " + homer_mac_address + " a terminalem: " + terminal_name);
                         System.out.println("Budu taktéž Homera informovat o tom, že má odběratele");
                         ask_for_receiving(homer);
-                        homer.subscribers.add(incomingConnections_terminal.get(terminal_name));
-                        incomingConnections_terminal.get(terminal_name).subscribers.add(homer);
+                        homer.subscribers.add(incomingConnections_terminals.get(terminal_name));
+                        incomingConnections_terminals.get(terminal_name).subscribers.add(homer);
 
                     }else {
 
                         System.out.println("Spojení bylo obnoveno mezi Homer: " + homer_mac_address + " a terminalem: " + terminal_name);
-                        homer.subscribers.add(incomingConnections_terminal.get(terminal_name));
-                        incomingConnections_terminal.get(terminal_name).subscribers.add(homer);
+                        homer.subscribers.add(incomingConnections_terminals.get(terminal_name));
+                        incomingConnections_terminals.get(terminal_name).subscribers.add(homer);
 
 
                     }
 
                     System.out.println("Upozorňuji terminál o znovu připojení: ");
-                    homer_reconnection ( incomingConnections_terminal.get(terminal_name) );
+                    homer_reconnection ( incomingConnections_terminals.get(terminal_name) );
                 }
                 // Pokud není připojený - vyřadím ho ze seznamu
                 else {
@@ -84,6 +91,7 @@ public class WebSocketController_Incoming extends Controller {
 
         return webSocket;
     }
+
     public WebSocket<String> mobile_connection(String m_project_id, String terminal_id){
         System.out.println ("Příchozí připojení Terminal " + m_project_id + " a zařízení se jménem " + terminal_id);
 
@@ -98,16 +106,57 @@ public class WebSocketController_Incoming extends Controller {
             return WebSocket.reject(forbidden());
         }
 
-
+        // POKUD JE B_PROGRAM V CLOUDU
         if( m_project.b_program_version.b_program_cloud != null) {
-            System.out.println ("Blocko Program je v Cloudu a to tady úplně chybí!!");
 
-            // TODO
-            //   WS_Terminal_Cloud ws = new WS_Terminal_Cloud(mobile_mac_address, incomingConnections_terminal);
-            //  return ws.connection();
 
-            return  WebSocket.reject(forbidden());
+            System.out.println ("Blocko Program je v Cloudu a to zatím není plně otestované!!");
 
+            String instance_name = m_project.b_program_version.b_program_cloud.blocko_instance_name;
+            String server_name   = m_project.b_program_version.b_program_cloud.blocko_server_name;
+
+
+            WebSCType terminal = new WS_Terminal_Local(terminal_id, incomingConnections_terminals);
+            WebSocket<String> ws = terminal.connection();
+
+            if(!cloud_servers.containsKey(server_name)) {
+                System.out.println("BLocko program je provozován na serveru, který není připojen...");
+                System.out.println ("Měl bych ho zařadit terminál do seznamu ztracených připojení");
+
+                if(terminal_lost_connection_homer.containsKey(instance_name)){
+                    System.out.println("Ztracené spojení už bylo dávno vytvořeno s cloud programem s jiným prvkem ale pořád nejsem spojen a tak přidávám další hodnotu: " + instance_name );
+                    terminal_lost_connection_homer.get(instance_name).add(terminal_id);
+                }else {
+                    System.out.println("Ještě žádné ztracené spojení nebylo vytvořeno s " + instance_name  + " A tak vytvářím a přidávám první hodnotu");
+                    ArrayList<String> list = new ArrayList<>(4);
+                    list.add(terminal_id);
+                    terminal_lost_connection_homer.put(instance_name, list);
+                }
+                System.out.println("Chystám se upozornit terminál že Cloud Homer není připojený");
+                homer_is_not_connected_yet(terminal);
+                System.out.println("Upozornil jsem terminál že Homer není připojený");
+                return ws;
+            }
+
+            if(!cloud_servers.get(server_name).containsKey(instance_name)){
+                System.out.println("Konkrétní instance B_programu není na serveru zprovozněna!");
+                System.out.println ("Měl bych ho zprovoznit? Ještě asi nejsem na to připraven"); // TODO - zprovoznit připojení
+
+                return WebSocket.reject(badRequest());
+            }
+
+            System.out.println("Budu propojovat s Homererem v cloudu protože je připojený a instance běží: ");
+
+            WS_Homer_Cloud homer = (WS_Homer_Cloud) cloud_servers.get(server_name).get(instance_name);
+
+
+            terminal.subscribers.add(homer);
+            if(homer.subscribers.isEmpty()) ask_for_receiving(homer);
+            homer.subscribers.add(terminal);
+
+            return ws;
+
+        // POKUD JE B_PROGRAM NA RPI
         } else {
             System.out.println("Blocko Program je na počítači");
 
@@ -117,8 +166,9 @@ public class WebSocketController_Incoming extends Controller {
 
             if(!incomingConnections_homers.containsKey(homer_id)) {
                 System.out.println ("Homer na který se chci připojit není připojen a proto budu zařazovat do mapy ztracených spojení");
-                WS_Terminal_Local terminal = new WS_Terminal_Local(terminal_id, incomingConnections_terminal);
+                WS_Terminal_Local terminal = new WS_Terminal_Local(terminal_id, incomingConnections_terminals);
                 WebSocket<String> ws = terminal.connection();
+
                 if(terminal_lost_connection_homer.containsKey(homer_id)){
                     System.out.println("Ztracené spojení už bylo dávno vytvořeno ale pořád nejsem spojen a tak přidávám další hodnotu: " + homer_id );
                     terminal_lost_connection_homer.get(homer_id).add(terminal_id);
@@ -130,7 +180,7 @@ public class WebSocketController_Incoming extends Controller {
                     terminal_lost_connection_homer.put(homer_id, list);
                 }
 
-                System.out.println("Chystám se upozornit terminál že není připojený");
+                System.out.println("Chystám se upozornit terminál že Local Homer není připojený");
                 homer_is_not_connected_yet(terminal);
                 System.out.println("Upozornil jsem terminál že Homer není připojený");
 
@@ -141,7 +191,7 @@ public class WebSocketController_Incoming extends Controller {
 
             WebSCType homer = incomingConnections_homers.get(homer_id);
 
-            WS_Terminal_Local terminal = new WS_Terminal_Local(terminal_id, incomingConnections_terminal);
+            WS_Terminal_Local terminal = new WS_Terminal_Local(terminal_id, incomingConnections_terminals);
             WebSocket<String> ws = terminal.connection();
 
             terminal.subscribers.add(incomingConnections_homers.get(homer_id));
@@ -156,8 +206,6 @@ public class WebSocketController_Incoming extends Controller {
 
 
     }
-
-
 
 // PRIVATE Homer ---------------------------------------------------------------------------------------------------------
 
@@ -314,7 +362,7 @@ public class WebSocketController_Incoming extends Controller {
                 case "the-grid" : {
                     System.out.println("the-grid - Přeposílám na Homera neočekávám odpověď");
 
-                    if(terminal.subscribers.isEmpty()) terminal_you_havent_folowers(terminal);
+                    if(terminal.subscribers.isEmpty()) terminal_you_have_not_folowers(terminal);
                     for( WebSCType webSCType :  terminal.subscribers) webSCType.write_without_confirmation(json);
                     return;
                 }
@@ -329,9 +377,15 @@ public class WebSocketController_Incoming extends Controller {
         System.out.println("Příchozí zpráva neobsahuje messageChannel");
     }
 
-    public static void terminal_you_havent_folowers(WebSCType terminal){
+    public static void server_violently_terminate_terminal(WebSCType terminal){
         System.out.println("Terminál se pokusil zaslat zpváu na Blocko ale žádné blocko nemá na sobě připojené - tedy zbyteční a packet zahazuji");
         terminal.write_without_confirmation(Json.toJson("NEmáš žádné Grid odběratele - zprává nebyla přeposlána "));
+        terminal.close();
+    }
+
+    public static void server_plained_terminate_terminal(WebSCType terminal){
+        System.out.println("Server odesílá zprávu, že bude plánované odstavení a ");
+        terminal.write_without_confirmation(Json.toJson("Ahoj, server se restartuje mezi 5 a 9"));
     }
 
     public static void terminal_is_disconnected(WebSCType terminal){
@@ -397,13 +451,18 @@ public class WebSocketController_Incoming extends Controller {
         terminal.write_without_confirmation(Json.toJson("Home se odpojil"));
     }
 
+    public static void terminal_you_have_not_folowers(WebSCType terminal){
+        System.out.println("Terminál se pokusil zaslat zpváu na Blocko ale žádné blocko nemá na sobě připojené - tedy zbyteční a packet zahazuji");
+        terminal.write_without_confirmation(Json.toJson("NEmáš žádné Grid odběratele - zprává nebyla přeposlána "));
+    }
+
 // Test & Control API ---------------------------------------------------------------------------------------------------------
 
     public Result getWebSocketStats(){
 
         System.out.println("IncomingConnections  homer           count= " + incomingConnections_homers.size());
-        System.out.println("IncomingConnections  mobile device   count= " + incomingConnections_terminal.size());
-        System.out.println("OutcomingConnections servers         count= " + WebSocketController_OutComing.servers.size());
+        System.out.println("IncomingConnections  mobile device   count= " + incomingConnections_terminals.size());
+        System.out.println("OutcomingConnections servers         count= " + cloud_servers.size());
 
 
         //1
@@ -423,7 +482,7 @@ public class WebSocketController_Incoming extends Controller {
         System.out.println("\n");
         System.out.println("IncomingConnections Mobile device................................................... ");
         int j = 1;
-        for (Map.Entry<String, WebSCType> entry : incomingConnections_terminal.entrySet()) {
+        for (Map.Entry<String, WebSCType> entry : incomingConnections_terminals.entrySet()) {
             System.out.println(j++ + ". Connection name = " + entry.getKey());
         }
 
@@ -435,8 +494,13 @@ public class WebSocketController_Incoming extends Controller {
         System.out.println("\n");
         System.out.println("OutcomingConnections.......................................................... ");
         int i = 1;
-        for (Map.Entry<String, WebSocketClientNotPlay> entry : WebSocketController_OutComing.servers.entrySet()) {
-            System.out.println(i++ + ". Connection name = " + entry.getKey());
+        for (Map.Entry< String, Map<String, WebSCType> > entry : cloud_servers.entrySet()) {
+
+            System.out.println(i++ + ". Server Name name = " + entry.getKey());
+
+            for (Map.Entry<String, WebSCType> ss : entry.getValue().entrySet() ) {
+                System.out.println("     " + i++ + ". Connection name = " + entry.getKey());
+            }
         }
 
         System.out.println("............................................................................. ");
@@ -448,14 +512,14 @@ public class WebSocketController_Incoming extends Controller {
     public static void disconnect_all_homers(){
         for (Map.Entry<String, WebSCType> entry :  WebSocketController_Incoming.incomingConnections_homers.entrySet())
         {
-            entry.getValue().close();
+            server_violently_terminate_terminal(entry.getValue());
         }
     }
 
     public static void disconnect_all_mobiles() {
-        for (Map.Entry<String, WebSCType> entry :  WebSocketController_Incoming.incomingConnections_terminal.entrySet())
+        for (Map.Entry<String, WebSCType> entry :  WebSocketController_Incoming.incomingConnections_terminals.entrySet())
         {
-            entry.getValue().close();
+            server_violently_terminate_terminal(entry.getValue());
         }
     }
 

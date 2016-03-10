@@ -1,5 +1,4 @@
 import controllers.WebSocketController_Incoming;
-import controllers.WebSocketController_OutComing;
 import models.persons.Person;
 import models.persons.PersonPermission;
 import models.persons.SecurityRole;
@@ -9,10 +8,8 @@ import play.Logger;
 import play.mvc.Action;
 import play.mvc.Http;
 import utilities.Server;
-import utilities.webSocket.WebSocketClientNotPlay;
 
 import java.lang.reflect.Method;
-import java.util.Map;
 
 
 public class Global extends GlobalSettings {
@@ -81,10 +78,10 @@ public class Global extends GlobalSettings {
 
 
         Logger.warn("Odpojuji připojené servery Blocko!");
-        for (Map.Entry<String, WebSocketClientNotPlay> entry :  WebSocketController_OutComing.servers.entrySet())
+       /* for (Map.Entry<String, WebSocketClientNotPlay> entry :  WebSocketController_Incoming.cloud_servers.entrySet())
         {
             entry.getValue().interrupt();
-        }
+        }*/
     }
 
 

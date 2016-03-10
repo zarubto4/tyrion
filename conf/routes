@@ -16,11 +16,15 @@ GET             /test5                                      @controllers.WikyCon
 GET             /test6                                      @controllers.WikyController.test6()
 
 
+### TERMINAL ############ TERMINAL ############### TERMINAL ################ TERMINAL #####################################################################################
+############################################################################################################################################################################
 
-#  WEB SOCET  //////////////////////////////////////////////////////////////////////////////
 GET              /websocket/homer/:mac_adress                   @controllers.WebSocketController_Incoming.homer_connection(mac_adress)
 GET              /websocket/mobile/:m_project_id/:mac_adress    @controllers.WebSocketController_Incoming.mobile_connection(m_project_id, mac_adress)
 
+PUT              /websocket/terminal/identificator              @controllers.GridController.get_identificator()
+
+# Pro vývojáře
 POST             /websocket/webSocketStats                  @controllers.WebSocketController_Incoming.getWebSocketStats
 
 #API - CoreClient ##############################################################################################################################################################
@@ -38,10 +42,6 @@ GET             /login/person                               @controllers.Securit
 
 GET             /login/facebook/*url                        @controllers.SecurityController.GET_facebook_oauth(url)
 GET             /login/github/*url                          @controllers.SecurityController.GET_github_oauth(url)
-
-
-### PERMISSION ############ PERMISSION ############### PERMISSION ################ PERMISSION ################# PERMISSION ############ PERMISSION #####################################################
-################################################################################################################################################################################
 
 
 ### PERSON ############ PERSON ############### PERSON ################ PERSON ################# PERSON ############ PERSON #####################################################

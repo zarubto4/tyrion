@@ -7,16 +7,27 @@ import play.mvc.Controller;
 import utilities.webSocket.WebSocketClientNotPlay;
 
 import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
 
 public class WebSocketController_OutComing extends Controller {
 
-    public static Map<String, WebSocketClientNotPlay> servers = new HashMap<>(); // (Identificator, Websocket)
+    //public static Map<String, WebSocketClientNotPlay> servers = new HashMap<>(); // (Identificator, Websocket)
 
+
+    /**
+     * TODO
+     * Důležitý komentář. Momentálně je bez otestování dopsáno jak se má chovat připojený terminál když je B_program
+     * nahrán v cloudu nebo na lokálním PC (RPI). Umí se různě odpojovat připojovat, navazovat spojení atd... Program v clodu
+     * je překryt vlastním WS_HOMER_Cloud objektem (který by se měl pro vnější obsluhu chovat naprosto totožně. Takže je do něj
+     * potřeba dopsat jednak vazbu na server, vazbu na instanci a další ptákoviny...
+     *
+     * Takže zde uvedené metody postrádají zatím smysl protože WebSocketClientNotPlay by měl být obsah WS_HOMER_Cloud objektu!!
+     *
+     *
+     *
+     */
 
 
 // PRIVATE API ---------------------------------------------------------------------------------------------------------
@@ -36,25 +47,42 @@ public class WebSocketController_OutComing extends Controller {
     }
 
     public static void blockoServerCreateInstance(String server_name, String instance_name) throws TimeoutException, InterruptedException{
-        String messageId =  UUID.randomUUID().toString();
+        try {
 
-        ObjectNode result = Json.newObject();
-        result.put("messageType", "createInstance");
-        result.put("messageId", messageId);
-        result.put("instanceId", instance_name);
+            String messageId =  UUID.randomUUID().toString();
 
-        JsonNode answare = WebSocketController_OutComing.servers.get(server_name).write(messageId, result);
+            ObjectNode result = Json.newObject();
+            result.put("messageType", "createInstance");
+            result.put("messageId", messageId);
+            result.put("instanceId", instance_name);
+
+            JsonNode answare = WebSocketController_Incoming.cloud_servers.get(server_name).get(instance_name).write_with_confirmation(messageId, result);
+
+        } catch (TimeoutException e){
+            System.out.println("TimeoutException");
+        } catch (InterruptedException e){
+            System.out.println("InterruptedException");
+        }
     }
 
     public static void blockoServerKillInstance(String server_name, String instance_name) throws TimeoutException, InterruptedException{
-        String messageId =  UUID.randomUUID().toString();
+        try {
 
-        ObjectNode result = Json.newObject();
-        result.put("messageType", "destroyInstance");
-        result.put("messageId", messageId);
-        result.put("instanceId", instance_name);
+            String messageId =  UUID.randomUUID().toString();
 
-          JsonNode answare = WebSocketController_OutComing.servers.get(server_name).write(messageId, result);
+            ObjectNode result = Json.newObject();
+            result.put("messageType", "destroyInstance");
+            result.put("messageId", messageId);
+            result.put("instanceId", instance_name);
+
+            JsonNode answare = WebSocketController_Incoming.cloud_servers.get(server_name).get(instance_name).write_with_confirmation(messageId, result);
+
+        } catch (TimeoutException e){
+            System.out.println("TimeoutException");
+        } catch (InterruptedException e){
+            System.out.println("InterruptedException");
+        }
+
     }
 
     public static void blockoServerUploadProgram(String server_name, String instance_name, String program_in_string) throws TimeoutException, InterruptedException{
@@ -66,7 +94,7 @@ public class WebSocketController_OutComing extends Controller {
         result.put("messageId", messageId);
         result.put("program", program_in_string);
 
-        JsonNode answare = WebSocketController_OutComing.servers.get(server_name).write(messageId, result);
+        JsonNode answare = WebSocketController_Incoming.cloud_servers.get(server_name).get(instance_name).write_with_confirmation(messageId, result);
     }
 
     public static boolean blockoServer_is_Instance_Running(String server_name, String instance_name) {
@@ -79,7 +107,7 @@ public class WebSocketController_OutComing extends Controller {
             result.put("messageId", messageId);
             result.put("instanceId", instance_name);
 
-            JsonNode answare = WebSocketController_OutComing.servers.get(server_name).write(messageId, result);
+            JsonNode answare = WebSocketController_Incoming.cloud_servers.get(server_name).get(instance_name).write_with_confirmation(messageId, result);
             return answare.get("exist").asBoolean();
 
         } catch (TimeoutException e){
@@ -101,7 +129,7 @@ public class WebSocketController_OutComing extends Controller {
         result.put("hwId", hwId);
         result.put("value", value);
 
-        JsonNode answare = WebSocketController_OutComing.servers.get(server_name).write(messageId, result);
+        JsonNode answare = WebSocketController_Incoming.cloud_servers.get(server_name).get(instance_name).write_with_confirmation(messageId, result);
     }
 
     public static void blockoServer_set_AnalogValue (String server_name, String instance_name, String hwId, String value ) throws TimeoutException, InterruptedException{
@@ -114,7 +142,7 @@ public class WebSocketController_OutComing extends Controller {
         result.put("hwId", hwId);
         result.put("value", value);
 
-        JsonNode answare = WebSocketController_OutComing.servers.get(server_name).write(messageId, result);
+        JsonNode answare = WebSocketController_Incoming.cloud_servers.get(server_name).get(instance_name).write_with_confirmation(messageId, result);
     }
 
     public static JsonNode blockoServer_get_Inputs(String server_name, String instance_name) throws TimeoutException, InterruptedException{
@@ -125,7 +153,7 @@ public class WebSocketController_OutComing extends Controller {
         result.put("messageId", messageId);
         result.put("instanceId", instance_name);
 
-        JsonNode answare = WebSocketController_OutComing.servers.get(server_name).write(messageId, result);
+        JsonNode answare = WebSocketController_Incoming.cloud_servers.get(server_name).get(instance_name).write_with_confirmation(messageId, result);
         return answare;
     }
 
@@ -137,10 +165,9 @@ public class WebSocketController_OutComing extends Controller {
         result.put("messageId", messageId);
         result.put("instanceId", instance_name);
 
-        JsonNode answare = WebSocketController_OutComing.servers.get(server_name).write(messageId, result);
+        JsonNode answare = WebSocketController_Incoming.cloud_servers.get(server_name).get(instance_name).write_with_confirmation(messageId, result);
         return answare;
     }
-
 
     public static void send_blocko_Instruction(String server_name, String instance_name, JsonNode json) {
         System.out.println("Tato metoda je prázdná, ale poslala by na Cloud server toto " + json.toString());

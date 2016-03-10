@@ -1,8 +1,10 @@
 package utilities.webSocket;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import controllers.WebSocketController_Incoming;
 import controllers.WebSocketController_OutComing;
 import play.libs.Json;
+import utilities.webSocket.developing.WebSCType;
 
 import javax.websocket.*;
 import java.net.URI;
@@ -11,7 +13,7 @@ import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 @ClientEndpoint
-public class WebSocketClientNotPlay extends Thread {
+public class WebSocketClientNotPlay extends WebSCType {
 
     private String identificator;
     private Thread thread;
@@ -34,14 +36,19 @@ public class WebSocketClientNotPlay extends Thread {
     @OnOpen
     public void onOpen(Session session) {
         this.session = session;
-        WebSocketController_OutComing.servers.put(identificator, this);
+        WebSocketController_Incoming.cloud_servers.put(identificator, null);
     }
 
     @OnClose
     public void onClose(Session session, CloseReason reason) {
         System.out.println( "You have been disconnected: " + reason + "\n" );
-        WebSocketController_OutComing.servers.remove(identificator);
+        WebSocketController_Incoming.cloud_servers.remove(identificator);
         thread.interrupt();
+    }
+
+    @Override
+    public void onClose() {
+
     }
 
     @OnMessage
@@ -64,7 +71,6 @@ public class WebSocketClientNotPlay extends Thread {
            System.out.println("Chyba!!!!");
         }
     }
-
 
     // TODO dopsat proč to je takto implementováno!!!
     public JsonNode write(String messageId, JsonNode json) throws TimeoutException, InterruptedException {
@@ -96,5 +102,9 @@ public class WebSocketClientNotPlay extends Thread {
     }
 
 
+    @Override
+    public void onMessage(JsonNode json) {
+
+    }
 }
 

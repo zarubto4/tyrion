@@ -81,6 +81,13 @@ create table file_record (
   constraint pk_file_record primary key (id))
 ;
 
+create table grid_terminal (
+  unique_token              varchar(255) not null,
+  device_type               varchar(255),
+  device_name               varchar(255),
+  constraint pk_grid_terminal primary key (unique_token))
+;
+
 create table hash_tag (
   post_hash_tag_id          varchar(255) not null,
   constraint pk_hash_tag primary key (post_hash_tag_id))
@@ -548,6 +555,8 @@ drop table if exists board_project cascade;
 drop table if exists c_program cascade;
 
 drop table if exists file_record cascade;
+
+drop table if exists grid_terminal cascade;
 
 drop table if exists hash_tag cascade;
 

@@ -7,6 +7,7 @@ import models.grid.Screen_Size_Type;
 import models.persons.Person;
 import models.project.b_program.B_Program;
 import models.project.global.Project;
+import models.project.m_program.Grid_Terminal;
 import models.project.m_program.M_Program;
 import models.project.m_program.M_Project;
 import play.Logger;
@@ -22,6 +23,7 @@ import utilities.response.response_objects.JsonValueMissing;
 import utilities.response.response_objects.Result_PermissionRequired;
 import utilities.response.response_objects.Result_Unauthorized;
 import utilities.response.response_objects.Result_ok;
+import utilities.swagger.documentationClass.Swagger_Grid_Terminal_Identf;
 import utilities.swagger.documentationClass.Swagger_M_Program_New;
 import utilities.swagger.documentationClass.Swagger_M_Project_New;
 import utilities.swagger.documentationClass.Swagger_ScreeSizeType_New;
@@ -350,7 +352,6 @@ public class GridController extends play.mvc.Controller {
             return GlobalResult.internalServerError();
         }
     }
-
 
 //######################################################################################################################
 
@@ -959,6 +960,61 @@ public class GridController extends play.mvc.Controller {
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - get_Screen_Size_Type ERROR");
+            return GlobalResult.internalServerError();
+        }
+    }
+
+//######################################################################################################################
+
+    @ApiOperation(value = "get Terminal identificator",
+            tags = {"APP-Api"},
+            notes = "Only for Grid Terminals! Before when you want connect terminal (grid) application with Tyrion throw WebSocker. " +
+                    "You need unique identification key. If Person loggs to you application Tyrion connects this device with Person. Try to " +
+                    "save this key to cookies or on mobile device, or you have to ask every time again",
+            produces = "application/json",
+            protocols = "https",
+            code = 201
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Grid_Terminal_Identf",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successful created",      response = Grid_Terminal.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result get_identificator(){
+        try{
+
+            final Form<Swagger_Grid_Terminal_Identf> form = Form.form(Swagger_Grid_Terminal_Identf.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Grid_Terminal_Identf help = form.get();
+
+            Grid_Terminal terminal = new Grid_Terminal();
+            terminal.device_name = help.device_name;
+            terminal. device_type = help.device_type;
+            terminal.set_unique_token();
+
+
+            if(SecurityController.getPerson() !=  null) {
+                System.out.println("Uživatel je přihlášen");
+                terminal.person = SecurityController.getPerson();
+            }
+
+            terminal.save();
+            return GlobalResult.created(Json.toJson("token nepřihlášený"));
+
+        }catch (Exception e){
+            Logger.error("Error", e);
             return GlobalResult.internalServerError();
         }
     }
