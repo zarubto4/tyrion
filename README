@@ -1,13 +1,27 @@
 
-Verze 1.05
-
-Pro davida musí vzniknout možnost připojit Grid a připojení Homera.
-
-Z Gridu je nutné přenášet příkazy na konkrétního homera, který je propojený s b_programem.
-
-Fixnul jsem 118 a možná něco podobného nemám youtrack!!!
 
 
+
+
+
+
+Verze 1.04.9.19
+
+partly fixed TYRION-118
+fixed TYRION-151
+
+
+
+Verze 1.04.9.18
+
+utilities/EclipseProject přejmenováno na utilities/eclipseProject
+utilities/Response přejmenováno na utilities/response
+-kvůli názvům jejich package, intellij si stěžovalo
+
+přihlašovací údaje k databázy změněny na
+db.default.username=tyrion
+db.default.password=lannister
+-na linuxu je uživatel postgres propojený do systému jako superuser a má unikátní heslo
 
 
 

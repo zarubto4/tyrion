@@ -30,6 +30,7 @@ create table b_program_homer (
   vrs_obj_id                varchar(255),
   BProgramHomer_id          varchar(255),
   running_from              timestamp,
+  state_of_progam           varchar(255),
   constraint uq_b_program_homer_vrs_obj_id unique (vrs_obj_id),
   constraint uq_b_program_homer_BProgramHomer unique (BProgramHomer_id),
   constraint pk_b_program_homer primary key (id))
@@ -79,13 +80,6 @@ create table file_record (
   file_name                 varchar(255),
   version_object_id         varchar(255),
   constraint pk_file_record primary key (id))
-;
-
-create table grid_terminal (
-  unique_token              varchar(255) not null,
-  device_type               varchar(255),
-  device_name               varchar(255),
-  constraint pk_grid_terminal primary key (unique_token))
 ;
 
 create table hash_tag (
@@ -397,8 +391,6 @@ create sequence linked_account_seq;
 
 create sequence linked_post_seq;
 
-create sequence m_program_seq;
-
 create sequence m_project_seq;
 
 create sequence person_seq;
@@ -556,8 +548,6 @@ drop table if exists c_program cascade;
 
 drop table if exists file_record cascade;
 
-drop table if exists grid_terminal cascade;
-
 drop table if exists hash_tag cascade;
 
 drop table if exists hash_tag_post cascade;
@@ -647,8 +637,6 @@ drop sequence if exists library_group_seq;
 drop sequence if exists linked_account_seq;
 
 drop sequence if exists linked_post_seq;
-
-drop sequence if exists m_program_seq;
 
 drop sequence if exists m_project_seq;
 

@@ -1846,9 +1846,10 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
+    @BodyParser.Of(BodyParser.Json.class)
     public Result upload_SingleLibrary_Version(@ApiParam(value = "library_id String query", required = true) @PathParam("library_id")  String library_id, @ApiParam(required = true) @PathParam("version_id") String version_id){
+        // TODO dokumentace, automatická generace nové verze, asi víc věcí...
         try{
-
             Http.MultipartFormData body = request().body().asMultipartFormData();
             Http.MultipartFormData.FilePart file = body.getFile("file");
 

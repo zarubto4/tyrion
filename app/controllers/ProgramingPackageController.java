@@ -1449,10 +1449,9 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result get_TypeOfBlock_by_Project(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
-        try{
 
+    public Result get_TypeOfBlock_by_Project(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
+        try {
             Project project = Project.find.byId(project_id);
             if(project == null) return GlobalResult.notFoundObject();
 
