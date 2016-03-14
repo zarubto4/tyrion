@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 
+import javax.validation.Valid;
 import java.util.List;
 
 
@@ -21,15 +22,20 @@ public class Swagger_C_Program_Version{
     @ApiModelProperty(required = false)
     public String version_description;
 
-
+    @Valid
     public List<VersionFiles> files;
 
 
-    @ApiModel(description = "Json Model for files in new C program Version",
-              value = "File")
-    public class VersionFiles {
-        public String file_name;
-        public String content;
-    }
+           public Swagger_C_Program_Version(){}
+
+            @ApiModel(description = "Json Model for files in new C program Version", value = "Files")
+            public static class VersionFiles {
+
+                public String file_name;
+                public String content;
+
+                public VersionFiles(){}
+
+            }
 
 }

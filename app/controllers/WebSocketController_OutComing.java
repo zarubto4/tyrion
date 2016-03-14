@@ -48,7 +48,7 @@ public class WebSocketController_OutComing extends Controller {
 
     public static void blockoServerCreateInstance(String server_name, String instance_name) throws TimeoutException, InterruptedException{
         try {
-
+            System.out.println("Pokus o vytvoření nové instance");
             String messageId =  UUID.randomUUID().toString();
 
             ObjectNode result = Json.newObject();
@@ -67,6 +67,8 @@ public class WebSocketController_OutComing extends Controller {
 
     public static void blockoServerKillInstance(String server_name, String instance_name) throws TimeoutException, InterruptedException{
         try {
+
+            System.out.println("Pokus o zabití předchozí instance");
 
             String messageId =  UUID.randomUUID().toString();
 

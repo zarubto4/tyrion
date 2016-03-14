@@ -771,6 +771,7 @@ public class GridController extends play.mvc.Controller {
             notes = "get ScreenType. If you want get private ScreenType you have to owned that. Public are without permissions",
             produces = "application/json",
             protocols = "https",
+            code = 200,
             authorizations = {
                     @Authorization(
                             value="permission",
@@ -779,7 +780,7 @@ public class GridController extends play.mvc.Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Ok Result",               response = Screen_Size_Type.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Screen_Size_Type.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -802,10 +803,11 @@ public class GridController extends play.mvc.Controller {
             tags = {"Screen_Size_Type"},
             notes = "get all ScreenType. Private_types areon every Persons projects",
             produces = "application/json",
+            code = 200,
             protocols = "https"
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Ok Result", response = Swagger_TypeOfBoard_Combination.class),
+            @ApiResponse(code = 200, message = "Ok Result", response = Swagger_TypeOfBoard_Combination.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -822,6 +824,7 @@ public class GridController extends play.mvc.Controller {
             result.set("public_types", Json.toJson(public_list));
 
             return GlobalResult.okResult(result);
+
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - get_Screen_Size_Type ERROR");

@@ -321,11 +321,13 @@ public class CompilationLibrariesController extends Controller {
     public Result new_C_Program_Version(@ApiParam(value = "c_program_id String query", required = true) @PathParam("c_program_id") String c_program_id){
         try{
 
-            final Form<Swagger_C_Program_Version> form = Form.form(Swagger_C_Program_Version.class).bindFromRequest();
+            Form<Swagger_C_Program_Version> form = Form.form(Swagger_C_Program_Version.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_C_Program_Version help = form.get();
 
+
             C_Program c_program = C_Program.find.byId(c_program_id);
+            if(c_program == null) return GlobalResult.notFoundObject();
 
             // První nová Verze
             Version_Object version_object     = new Version_Object();
@@ -349,6 +351,7 @@ public class CompilationLibrariesController extends Controller {
             }
 
             return GlobalResult.created(Json.toJson(version_object));
+
 
         } catch (NullPointerException e) {
             e.printStackTrace(); //TODO

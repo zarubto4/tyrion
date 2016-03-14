@@ -237,33 +237,48 @@ public class WebSocketController_Incoming extends Controller {
         System.out.println("Příchozí zpráva neobsahovala messageChannel a tak se nic neprovedlo");
     }
 
-    public static void homer_KillInstance(String homer_id) throws TimeoutException, InterruptedException {
-        System.out.println("homer_KillInstance " + homer_id);
-        incomingConnections_homers.get(homer_id).write_without_confirmation( Json.toJson("Kill Instance") );
+    public static void homer_KillInstance(String homer_id) {
+        try {
 
-        String messageId =  UUID.randomUUID().toString();
+            System.out.println("homer_KillInstance " + homer_id);
+            incomingConnections_homers.get(homer_id).write_without_confirmation(Json.toJson("Kill Instance"));
 
-        ObjectNode result = Json.newObject();
-        result.put("messageType", "Kill Instance");
-        result.put("messageId", messageId);
-        result.put("messageChannel", "tyrion");
+            String messageId = UUID.randomUUID().toString();
 
-        JsonNode answare = incomingConnections_homers.get(homer_id).write_with_confirmation(messageId ,result );
+            ObjectNode result = Json.newObject();
+            result.put("messageType", "Kill Instance");
+            result.put("messageId", messageId);
+           // result.put("messageChannel", "tyrion");
+
+            JsonNode answare = incomingConnections_homers.get(homer_id).write_with_confirmation(messageId, result);
+
+        } catch (TimeoutException e){
+            System.out.println("TimeoutException");
+        } catch (InterruptedException e){
+            System.out.println("InterruptedException");
+        }
     }
 
     public static void homer_UploadInstance(String homer_id, String program) throws TimeoutException, InterruptedException {
+        try {
 
-        System.out.println ("homer_UploadInstance " + homer_id);
+            System.out.println ("homer_UploadInstance " + homer_id);
 
-        String messageId =  UUID.randomUUID().toString();
+            String messageId =  UUID.randomUUID().toString();
 
-        ObjectNode result = Json.newObject();
-        result.put("messageType", "loadProgram");
-        result.put("messageId", messageId);
-        result.put("messageChannel", "tyrion");
-        result.put("program", program);
+            ObjectNode result = Json.newObject();
+            result.put("messageType", "loadProgram");
+            result.put("messageId", messageId);
+          //  result.put("messageChannel", "tyrion");
+            result.put("program", program);
 
-        JsonNode answare =  incomingConnections_homers.get(homer_id).write_with_confirmation(messageId ,result );
+            JsonNode answare =  incomingConnections_homers.get(homer_id).write_with_confirmation(messageId ,result );
+
+        } catch (TimeoutException e){
+            System.out.println("TimeoutException");
+        } catch (InterruptedException e){
+            System.out.println("InterruptedException");
+        }
     }
 
     public static boolean homer_is_online(String homer_id){

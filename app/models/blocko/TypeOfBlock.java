@@ -26,7 +26,7 @@ public class TypeOfBlock extends Model {
 
 
     @ApiModelProperty(value = "This value will be in Json only if TypeOfBlock is private! And its also only proxy address to get Objects \"Project\"\" ", readOnly =true, required = false, allowableValues = "http://server_url/{id}")
-    @JsonInclude(JsonInclude.Include.NON_EMPTY) @JsonProperty @Transient public String project() {  return Server.serverAddress + "/project/project/" + this.project.id; }
+    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty @Transient public String project() {  return project == null ? null : Server.serverAddress + "/project/project/" + this.project.id; }
 
 
     public static Finder<String,TypeOfBlock> find = new Finder<>(TypeOfBlock.class);

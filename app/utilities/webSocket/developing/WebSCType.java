@@ -86,15 +86,12 @@ public abstract class WebSCType {
         Integer breaker = 10;
 
         while(true){
-            System.out.println("Vstupuji do samostatného vlákna odesílání");
             breaker--;
             Thread.sleep(250);
 
             if( message_in.containsKey(messageId)){
-                System.out.println("Zásobník obsahuje klíč k odeslané zprávě");
                 JsonNode result =  message_in.get(messageId);
                 message_in.remove(messageId);
-                System.out.println("Co příjmám za instrukci: " + result.toString());
                 return result;
             }
 
