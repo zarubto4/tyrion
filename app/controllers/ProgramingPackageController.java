@@ -1156,9 +1156,8 @@ public class ProgramingPackageController extends Controller {
             Homer homer = Homer.find.byId(homer_id);
             if (homer == null)  return GlobalResult.notFoundObject();
 
-            //*********************//
 
-            System.out.println("Homer je online?");
+            //*********************//
             if(! WebSocketController_Incoming.homer_is_online(homer_id)) return GlobalResult.badResult("Homer není online");
 
 

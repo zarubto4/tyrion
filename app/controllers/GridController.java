@@ -5,7 +5,6 @@ import io.swagger.annotations.*;
 import models.compiler.Version_Object;
 import models.grid.Screen_Size_Type;
 import models.persons.Person;
-import models.project.b_program.B_Program;
 import models.project.global.Project;
 import models.project.m_program.Grid_Terminal;
 import models.project.m_program.M_Program;
@@ -324,24 +323,19 @@ public class GridController extends play.mvc.Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result connect_M_Program_with_B_Program(@ApiParam(value = "m_project_id String query", required = true) @PathParam("m_project_id") String m_project_id,
-                                                   @ApiParam(value = "b_program_id String query", required = true) @PathParam("b_program_id") String b_program_id,
-                                                   @ApiParam(value = "version_id   String query", required = true) @PathParam("version_id")   String version_id){
+    public Result connect_M_Program_with_B_Program(@ApiParam(value = "m_project_id String", required = true) @PathParam("m_project_id") String m_project_id,
+                                                   @ApiParam(value = "version_id String", required = true) @PathParam("version_id")     String version_id,
+                                                   @ApiParam(value = "auto_incrementing Boolean value", required = true) @PathParam("auto_incrementing")   Boolean auto_incrementing ){
         try {
 
             M_Project m_project = M_Project.find.byId(m_project_id);
             if (m_project == null) return GlobalResult.notFoundObject();
 
-            B_Program b_program = B_Program.find.byId(b_program_id);
-            if (b_program == null) return GlobalResult.notFoundObject();
-
             Version_Object version_object = Version_Object.find.byId(version_id);
             if (version_object == null) return GlobalResult.notFoundObject();
 
-
-            if(!b_program.versionObjects.contains(version_object)) return GlobalResult.badResult("Version is not from same B_program!");
-
             m_project.b_program_version = version_object;
+            m_project.auto_incrementing = auto_incrementing;
             m_project.update();
 
             return GlobalResult.okResult();
@@ -389,13 +383,13 @@ public class GridController extends play.mvc.Controller {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Secured.class)
-    public Result new_M_Program() {
+    public Result new_M_Program( @ApiParam(value = "m_project_id", required = true) @PathParam("m_project_id") String m_project_id ) {
         try {
             final Form<Swagger_M_Program_New> form = Form.form(Swagger_M_Program_New.class).bindFromRequest();
             if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_M_Program_New help = form.get();
 
-            M_Project m_project = M_Project.find.byId( help.m_program_id );
+            M_Project m_project = M_Project.find.byId( m_project_id );
             if(m_project == null) return GlobalResult.notFoundObject();
 
             Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId( help.screen_type_id);
@@ -450,7 +444,7 @@ public class GridController extends play.mvc.Controller {
            Swagger_M_Program_ByToken program = new Swagger_M_Program_ByToken();
            program.program = m_program.programInString;
 
-           program.websocket_address = Server.serverAddress + "/websocket/mobile/" + m_program.m_project_object.id;
+           program.websocket_address = Server.webSocketAddress + "/websocket/mobile/" + m_program.m_project_object.id + "/{terminal_id}";
 
 
            return GlobalResult.okResult(Json.toJson(program));
@@ -1005,7 +999,7 @@ public class GridController extends play.mvc.Controller {
             Grid_Terminal terminal = new Grid_Terminal();
             terminal.device_name = help.device_name;
             terminal. device_type = help.device_type;
-            terminal.set_unique_token();
+            terminal.set_terminal_id();
 
 
             if(SecurityController.getPerson() !=  null) {
@@ -1013,8 +1007,9 @@ public class GridController extends play.mvc.Controller {
                 terminal.person = SecurityController.getPerson();
             }
 
+
             terminal.save();
-            return GlobalResult.created(Json.toJson("token nepřihlášený"));
+            return GlobalResult.created(Json.toJson(terminal));
 
         }catch (Exception e){
             Logger.error("Error", e);

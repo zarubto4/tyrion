@@ -30,6 +30,10 @@ public class Global extends GlobalSettings {
            Logger.warn("Setting system Permission");
            Server.setPermission();
 
+           //4
+           Logger.warn("Setting Directory for Files");
+           Server.setDirectory();
+
 
 
     //****************************************************************************************************************************

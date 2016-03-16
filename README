@@ -1,5 +1,25 @@
 
 
+
+1.05.3.3
+- Opravena chyba v tvorbě m_programu kde jsem vyžadoval field  m_program_id (Chyba v kopírování - mělo se to jmenovat m_project_id)
+  Přesunuto do url linku
+
+
+
+
+Verze 1.05.3.2
+
+- Oprava chybějícího adresáře na public serveru.
+- Nová funkce autoopravy špatně nastaveného propojení mezi M_Project a Blocko-Version (Zejména pak možnost při propojení M_Program
+    s B_Program automatické posunování verzí vždy na nejnovější bez nutnosti zásahu ze strany uživatele.
+
+    -> PUT  {url}/grid/m_project/connect/:m_project_id/:version_id/:auto_incrementing
+     auto_incrementing je boolean (Pokud není, Play automaticky odmínte request) a značí, že uživatel si přeje automatické posunování verzí.
+     Viz https://wiki.byzance.cz/wiki/doku.php?id=schema_tyrion
+
+------------------------------------------------------------------------------------------------------------------------
+
 Verze 1.05.3
 fixed TYRION-154 ( Chybně zaznamenaný code=200 ve swagger dokumentaci )
 fixed TYRION-129

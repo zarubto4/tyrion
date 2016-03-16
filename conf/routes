@@ -25,7 +25,7 @@ GET              /websocket/mobile/:m_project_id/:mac_adress    @controllers.Web
 PUT              /websocket/terminal/identificator              @controllers.GridController.get_identificator()
 
 # Pro vývojáře
-POST             /websocket/webSocketStats                  @controllers.WebSocketController_Incoming.getWebSocketStats
+POST             /websocket/webSocketStats                      @controllers.WebSocketController_Incoming.getWebSocketStats
 
 #API - CoreClient ##############################################################################################################################################################
 
@@ -48,17 +48,17 @@ GET             /login/github/*url                          @controllers.Securit
 ################################################################################################################################################################################
 
 #Peron CRUD
-POST           /coreClient/person/person                   @controllers.PersonController.registred_Person()
-PUT            /coreClient/person/person                   @controllers.PersonController.edit_Person_Information()
-GET            /coreClient/person/person/:id               @controllers.PersonController.getPerson(id: String)
+POST           /coreClient/person/person                        @controllers.PersonController.registred_Person()
+PUT            /coreClient/person/person                        @controllers.PersonController.edit_Person_Information()
+GET            /coreClient/person/person/:id                    @controllers.PersonController.getPerson(id: String)
 
-GET            /coreClient/person/valid/nickname/:nick_name    @controllers.PersonController.valid_Person_NickName(nick_name)
-GET            /coreClient/person/valid/mail/:mail             @controllers.PersonController.valid_Person_mail(mail)
+GET            /coreClient/person/valid/nickname/:nick_name     @controllers.PersonController.valid_Person_NickName(nick_name)
+GET            /coreClient/person/valid/mail/:mail              @controllers.PersonController.valid_Person_mail(mail)
 
 
-DELETE         /coreClient/person/person/:id               @controllers.PersonController.deletePerson(id: String)
+DELETE         /coreClient/person/person/:id                    @controllers.PersonController.deletePerson(id: String)
 
-GET            /mail_person_authentication                                                  @controllers.PersonController.email_Person_authentitaction(mail,token)
+GET            /mail_person_authentication                      @controllers.PersonController.email_Person_authentitaction(mail,token)
 
 
 ### PERMISSION ############ PERMISSION ############### PERMISSION ################ PERMISSION ################# PERMISSION #####################################################
@@ -305,10 +305,10 @@ GET             /grid/m_project/:m_project_id                                   
 PUT             /grid/m_project/:m_project_id                                               @controllers.GridController.edit_M_Project(m_project_id)
 DELETE          /grid/m_project/:m_project_id                                               @controllers.GridController.remove_M_Project(m_project_id)
 
-PUT             /grid/m_project/connect/:m_project_id/:b_program_id/:version_id              @controllers.GridController.connect_M_Program_with_B_Program(m_project_id, b_program_id, version_id)
+PUT             /grid/m_project/connect/:m_project_id/:version_id/:auto_incrementing        @controllers.GridController.connect_M_Program_with_B_Program(m_project_id, version_id, auto_incrementing: Boolean)
 
 #M Program
-POST            /grid/m_program                                                             @controllers.GridController.new_M_Program()
+POST            /grid/m_program/:m_project_id                                               @controllers.GridController.new_M_Program(m_project_id)
 GET             /grid/m_program/app/token/:qr_token                                         @controllers.GridController.get_M_Program_byQR_Token_forMobile(qr_token)
 GET             /grid/m_program/app/m_programs                                              @controllers.GridController.get_M_Program_all_forMobile()
 

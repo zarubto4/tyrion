@@ -21,7 +21,8 @@ public class M_Project extends Model {
                                                                 public Date    date_of_create;
                                        @JsonIgnore @ManyToOne   public Project project;
 
-    @JsonIgnore @OneToOne   @JoinColumn(name="vrs_obj_id")    public Version_Object b_program_version;
+    @JsonIgnore @OneToOne   @JoinColumn(name="vrs_obj_id")      public Version_Object b_program_version;
+                                                                public boolean auto_incrementing;
 
 
     @OneToMany(mappedBy="m_project_object", cascade = CascadeType.ALL) public List<M_Program> m_programs = new ArrayList<>();

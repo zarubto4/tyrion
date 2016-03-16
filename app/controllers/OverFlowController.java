@@ -14,6 +14,7 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import utilities.Server;
 import utilities.UtilTools;
 import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
@@ -182,7 +183,7 @@ public class OverFlowController  extends Controller {
                     ObjectNode json = Json.newObject();
                     json.put("linkId", linkedPost.linkId);
 
-                    json.put("post", "http://localhost:9000/overflow/post/"  +  post.postId);
+                    json.put("post", Server.serverAddress +  "/overflow/post/"  +  post.postId);
                     json.put("name", post.name);
                     json.put("question", post.text_of_post);
 

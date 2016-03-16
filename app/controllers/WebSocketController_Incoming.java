@@ -2,6 +2,8 @@ package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import models.project.b_program.B_Program;
+import models.project.b_program.B_Program_Homer;
 import models.project.m_program.M_Project;
 import play.libs.Json;
 import play.mvc.Controller;
@@ -35,7 +37,6 @@ public class WebSocketController_Incoming extends Controller {
 // PUBLIC API ---------------------------------------------------------------------------------------------------------
 
     public WebSocket<String> homer_connection(String homer_mac_address){
-
         System.out.println("Příchozí připojení Homer " + homer_mac_address);
 
         // Inicializuji Websocket pro Homera
@@ -86,7 +87,7 @@ public class WebSocketController_Incoming extends Controller {
             // Po obnově spojení se všem ztracenými připojeními vyhazuji objekt ztraceného spojení z mapy vázaný na tento Homer
             System.out.println ("Odstraňuji ze seznamu ztracených spojení");
             terminal_lost_connection_homer.remove(homer_mac_address);
-        }
+        }else homer_all_terminals_are_gone(homer);
 
 
         return webSocket;
@@ -160,8 +161,28 @@ public class WebSocketController_Incoming extends Controller {
         } else {
             System.out.println("Blocko Program je na počítači");
 
-            String homer_id = m_project.b_program_version.b_program_homer.homer.homer_id;
+            if(m_project.b_program_version.b_program_homer == null) {
+                System.out.println("Grid program byl navázán na jinou verzi, než aktuálně běží v Homerovi!");
 
+                System.out.println("Byl Grid projekt  nastaven tak, aby sám iteroval na nejvyšší verzi? ");
+                if(!m_project.auto_incrementing)  return WebSocket.reject(forbidden());
+
+                System.out.println("Ano byl a tak beru nejvyšší verzi a přepisuju propojení");
+
+                B_Program b_program = m_project.b_program_version.b_program;
+                B_Program_Homer b_program_homer =  b_program.versionObjects.get(0).b_program_homer;
+
+                System.out.println("Budu posunovat na vyšší verzi! a to na id: " + b_program_homer.id);
+
+                m_project.b_program_version = b_program.versionObjects.get(0);
+                m_project.update();
+
+
+            }
+
+
+
+            String homer_id = m_project.b_program_version.b_program_homer.homer.homer_id;
             System.out.println("Budu propojovat s Homer: " + homer_id);
 
             if(!incomingConnections_homers.containsKey(homer_id)) {
@@ -219,18 +240,15 @@ public class WebSocketController_Incoming extends Controller {
             switch (json.get("messageChannel").asText()){
 
                 case "the-grid" : {
-                    System.out.println("the-grid -the-grid Přeposílám 1:1 na všechny odběratele");
-
-                    for( WebSCType webSCType :  homer.subscribers) {
-                        System.out.println("Zasílám na odběratele " + webSCType.identifikator );
-                        webSCType.write_without_confirmation(json);
-                    }
+                    for( WebSCType webSCType : homer.subscribers) webSCType.write_without_confirmation(json);
                     return;
                 }
+
                 case "tyrion" : {
                     System.out.println ("Tyrion Dále zpracovávám -- ale nic tu zatím není!!");
 
                 }
+
             }
         }
 
@@ -269,7 +287,7 @@ public class WebSocketController_Incoming extends Controller {
             ObjectNode result = Json.newObject();
             result.put("messageType", "loadProgram");
             result.put("messageId", messageId);
-          //  result.put("messageChannel", "tyrion");
+            result.put("messageChannel", "tyrion");
             result.put("program", program);
 
             JsonNode answare =  incomingConnections_homers.get(homer_id).write_with_confirmation(messageId ,result );
@@ -303,50 +321,15 @@ public class WebSocketController_Incoming extends Controller {
         terminal_lost_connection_homer.put(homer.identifikator, list);
     }
 
-    public static void homer_all_terminals_are_gone(WebSCType homer)  throws TimeoutException, InterruptedException {
-        System.out.println("homer nemá  už žádného odběratele: " + homer.identifikator);
-
-
-        String messageId =  UUID.randomUUID().toString();
-
-        ObjectNode result = Json.newObject();
-        result.put("messageType", "nemáš_žádné_oběratele");
-        result.put("messageId", messageId);
-        result.put("messageChannel", "tyrion");
-
-        JsonNode answare =  homer.write_with_confirmation(messageId ,result );
+    public static void homer_all_terminals_are_gone(WebSCType homer) {
+         System.out.println("homer nemá  už žádného odběratele: " + homer.identifikator);
+         homer.write_without_confirmation(Json.toJson("NEMÁŠ ŽÁDNÉ ODBĚRATELE"));
     }
 
     public static void ask_for_receiving(WebSCType homer){
+
         System.out.println ("Chci upozornit Homera: " + homer.identifikator + " že má prvního odběratele");
-
-        Thread thread = new Thread(){
-             @Override
-            public void run() {
-                try {
-                    System.out.println("Zapínám čekací vlákno");
-
-                    Integer breaker = 10;
-
-                    while(breaker > 0){
-                        breaker--;
-                        Thread.sleep(250);
-                        if(homer.isReady()) {
-                            homer.write_without_confirmation( Json.toJson("Máš prvního odběratele! breaker"));
-                            System.out.println("Upozornil jsem terminál že homer má odběratele ");
-                            break;
-                        }
-                    }
-
-                }catch (Exception e){
-                    System.out.println("Během informování terminlu, že homer není připojen se to pokazilo ");
-                    // e.printStackTrace();
-                }
-
-            }
-        };
-
-        thread.start();
+        homer.write_without_confirmation( Json.toJson("Máš prvního odběratele! breaker"));
 
     }
 
@@ -359,14 +342,6 @@ public class WebSocketController_Incoming extends Controller {
 
     /** incoming Json from Terminal */
     public static void incoming_message_terminal(WebSCType terminal, JsonNode json){
-        System.out.println("Zpráva Mobile od " + terminal );
-
-        System.out.println("Json: " + json.getNodeType().toString());
-
-
-        System.out.println("Json: " + json.toString());
-        System.out.println("Json: " + json.get("messageChannel").asText() );
-
         // To Terminals
         if(json.has("messageChannel")){
 
@@ -375,10 +350,14 @@ public class WebSocketController_Incoming extends Controller {
             switch ( json.get("messageChannel").asText() ){
 
                 case "the-grid" : {
-                    System.out.println("the-grid - Přeposílám na Homera neočekávám odpověď");
+                    System.out.println("the-grid - Přeposílám na odběratele");
 
                     if(terminal.subscribers.isEmpty()) terminal_you_have_not_folowers(terminal);
-                    for( WebSCType webSCType :  terminal.subscribers) webSCType.write_without_confirmation(json);
+                    for( WebSCType webSCType :  terminal.subscribers) {
+
+                        System.out.println( "Zpráva je přeposílána na + " + webSCType.identifikator);
+                        webSCType.write_without_confirmation(json);
+                    }
                     return;
                 }
                 case "tyrion" : {
@@ -399,7 +378,7 @@ public class WebSocketController_Incoming extends Controller {
     }
 
     public static void server_plained_terminate_terminal(WebSCType terminal){
-        System.out.println("Server odesílá zprávu, že bude plánované odstavení a ");
+        System.out.println("Server odesílá zprávu, že bude plánované odstavení");
         terminal.write_without_confirmation(Json.toJson("Ahoj, server se restartuje mezi 5 a 9"));
     }
 
@@ -411,10 +390,8 @@ public class WebSocketController_Incoming extends Controller {
             System.out.println("Remove from subscriber list  " + subscriber.identifikator);
             subscriber.subscribers.remove(terminal);
             if(subscriber.subscribers.isEmpty()){
-                System.out.println("Koncový subscribers nemá žádné  odposlouchávače: " + subscriber.identifikator);
 
                 try {
-
                     WebSocketController_Incoming.homer_all_terminals_are_gone(subscriber);
                 }catch (Exception e){ System.out.println("Při odesílání informace so tom, že Homera, už nikoho neposlouchá se něco posralo");}
             }
@@ -463,11 +440,12 @@ public class WebSocketController_Incoming extends Controller {
     }
 
     public static void echo_that_home_was_disconnect(WebSCType terminal){
-        terminal.write_without_confirmation(Json.toJson("Home se odpojil"));
+        System.out.println("Chci zaslat zprávu že se homer odpojil");
+        terminal.write_without_confirmation(Json.toJson("Homer se odpojil"));
     }
 
     public static void terminal_you_have_not_folowers(WebSCType terminal){
-        System.out.println("Terminál se pokusil zaslat zpváu na Blocko ale žádné blocko nemá na sobě připojené - tedy zbyteční a packet zahazuji");
+        System.out.println("Terminál se pokusil zaslat zpváu na Blocko ale žádné blocko nemá na sobě připojené - tedy zbytečné a packet zahazuji");
         terminal.write_without_confirmation(Json.toJson("NEmáš žádné Grid odběratele - zprává nebyla přeposlána "));
     }
 

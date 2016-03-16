@@ -12,6 +12,7 @@ import utilities.permission.DynamicResourceHandler;
 import utilities.permission.PermissionException;
 import utilities.webSocket.ClientThreadChecker;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -21,8 +22,8 @@ public class Server {
     public static CloudStorageAccount storageAccount;
     public static CloudBlobClient blobClient;
     public static String serverAddress;
+    public static String webSocketAddress;
     public static Map<String, Optional<DynamicResourceHandler> > handlers = new HashMap<>();
-
 
     public static void set_Server() throws Exception{
 
@@ -38,8 +39,15 @@ public class Server {
          *
          * Zatím se zdá vhodnější varianta přepínání v configuračním souboru. Tomáš Záruba 15.2.16
          */
-        if( Configuration.root().getBoolean("Server.developerMode"))   serverAddress = Configuration.root().getString("Server.localhost");
-        else                                                           serverAddress = Configuration.root().getString("Server.production");
+        if( Configuration.root().getBoolean("Server.developerMode")) {
+            serverAddress = "http://" + Configuration.root().getString("Server.localhost");
+            webSocketAddress ="http://" + Configuration.root().getString("Server.localhost");
+        }
+        else   {
+            serverAddress = "http://" +  Configuration.root().getString("Server.production");
+            webSocketAddress = "ws://" + Configuration.root().getString("Server.production");
+        }
+
 
         /**
          * 2)
@@ -136,7 +144,11 @@ public class Server {
     }
 
 
+    public static void setDirectory() {
 
-
-
+        File file = new File("files");
+        if (!file.exists()) {
+            if (file.mkdir())  Logger.warn("Directory \"file\" is created!");
+        }
+    }
 }

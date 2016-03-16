@@ -15,7 +15,7 @@ public class Grid_Terminal extends Model {
 
     @Id
     @ApiModelProperty(required = true, readOnly = true, example = "Mobile, WebBrowser")
-    public String unique_token;
+    public String terminal_id;
 
 
     @ApiModelProperty(required = true, example = "Mobile, WebBrowser")
@@ -30,10 +30,10 @@ public class Grid_Terminal extends Model {
     //***** Private ****************************************************************************************************
 
     @JsonIgnore
-    public void set_unique_token() {
+    public void set_terminal_id() {
         while(true){ // I need Unique Value
-            this.unique_token  = UUID.randomUUID().toString();
-            if (Grid_Terminal.find.where().eq("qr_token", this.unique_token ).findUnique() == null) break;
+            this.terminal_id  = UUID.randomUUID().toString();
+            if (Grid_Terminal.find.where().eq("qr_token", this.terminal_id ).findUnique() == null) break;
         }
     }
 

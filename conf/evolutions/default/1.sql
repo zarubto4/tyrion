@@ -82,10 +82,10 @@ create table file_record (
 ;
 
 create table grid_terminal (
-  unique_token              varchar(255) not null,
+  terminal_id               varchar(255) not null,
   device_type               varchar(255),
   device_name               varchar(255),
-  constraint pk_grid_terminal primary key (unique_token))
+  constraint pk_grid_terminal primary key (terminal_id))
 ;
 
 create table hash_tag (
@@ -159,6 +159,7 @@ create table m_project (
   date_of_create            timestamp,
   project_id                varchar(255),
   vrs_obj_id                varchar(255),
+  auto_incrementing         boolean,
   constraint uq_m_project_vrs_obj_id unique (vrs_obj_id),
   constraint pk_m_project primary key (id))
 ;

@@ -8,10 +8,6 @@ import play.data.validation.Constraints;
         value = "M_Program_New")
 public class Swagger_M_Program_New {
 
-    @Constraints.Required
-    @ApiModelProperty(required = true, value = "Required valid m_program_id")
-    public String  m_program_id;
-
 
     @Constraints.Required
     @ApiModelProperty(required = true, value = "Required valid screen_type_id")
