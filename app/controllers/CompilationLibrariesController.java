@@ -3,7 +3,6 @@ package controllers;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.Query;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import io.swagger.annotations.*;
@@ -23,6 +22,7 @@ import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Description;
+import utilities.swagger.outboundClass.Swagger_File_Content;
 
 import javax.websocket.server.PathParam;
 import java.io.File;
@@ -118,7 +118,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successful created",      response = C_Program.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -181,7 +181,7 @@ public class CompilationLibrariesController extends Controller {
 
 
             C_Program c_program = C_Program.find.byId(c_program_id);
-            return GlobalResult.okResult(Json.toJson(c_program));
+            return GlobalResult.result_ok(Json.toJson(c_program));
 
         } catch (Exception e) {
             Logger.error("CompilationLibrariesController - getCProgram ERROR");
@@ -215,7 +215,7 @@ public class CompilationLibrariesController extends Controller {
         try {
 
             Project project = Project.find.byId(project_id);
-            return GlobalResult.okResult(Json.toJson(project.c_programs));
+            return GlobalResult.result_ok(Json.toJson(project.c_programs));
 
         } catch (Exception e) {
             Logger.error("CompilationLibrariesController - gellAllProgramFromProject ERROR");
@@ -240,7 +240,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = C_Program.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -272,10 +272,8 @@ public class CompilationLibrariesController extends Controller {
 
             program.update();
 
-            return GlobalResult.okResult(Json.toJson(program));
+            return GlobalResult.result_ok(Json.toJson(program));
 
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "program_name", "program_description" );
         } catch (Exception e) {
             Logger.error("CompilationLibrariesController - gellAllProgramFromProject ERROR");
             Logger.error(request().body().asJson().toString());
@@ -300,7 +298,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successful created",      response = C_Program.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -327,7 +325,7 @@ public class CompilationLibrariesController extends Controller {
 
 
             C_Program c_program = C_Program.find.byId(c_program_id);
-            if(c_program == null) return GlobalResult.notFoundObject();
+            if(c_program == null) return GlobalResult.notFoundObject("C_Program c_program_id not found");
 
             // První nová Verze
             Version_Object version_object     = new Version_Object();
@@ -353,9 +351,6 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.created(Json.toJson(version_object));
 
 
-        } catch (NullPointerException e) {
-            e.printStackTrace(); //TODO
-            return GlobalResult.nullPointerResult(e, "version_description", "version_name", "files {}");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - new_Processor ERROR");
@@ -390,7 +385,7 @@ public class CompilationLibrariesController extends Controller {
         try{
 
             Version_Object versionObjectObject = Version_Object.find.byId(version_id);
-            if (versionObjectObject == null) return GlobalResult.notFoundObject();
+            if (versionObjectObject == null) return GlobalResult.notFoundObject("Version version_id not found");
 
             C_Program c_program = C_Program.find.byId(c_program_id);
 
@@ -398,7 +393,7 @@ public class CompilationLibrariesController extends Controller {
 
             versionObjectObject.delete();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -451,12 +446,12 @@ public class CompilationLibrariesController extends Controller {
 
 
             Version_Object version_object= Version_Object.find.byId(version_id);
-            if (version_object == null) return GlobalResult.notFoundObject();
+            if (version_object == null) return GlobalResult.notFoundObject("Version version_id not found");
 
             version_object.version_name = help.version_name;
             version_object.version_description = help.version_description;
 
-            return GlobalResult.okResult(Json.toJson(version_object));
+            return GlobalResult.result_ok(Json.toJson(version_object));
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - deleteVersionOfCProgram ERROR");
@@ -495,7 +490,7 @@ public class CompilationLibrariesController extends Controller {
 
             c_program.delete();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -509,13 +504,13 @@ public class CompilationLibrariesController extends Controller {
     //TODO swagger Documentation
     @BodyParser.Of(BodyParser.Json.class)
     public Result compileCProgram(){
-        return GlobalResult.okResult("Compiled!"); //TODO
+        return GlobalResult.result_ok("Compiled!"); //TODO
     }
 
     //TODO swagger Documentation
     public Result generateProjectForEclipse(String c_program_id) {
        // EclipseProject.createFullnewProject();
-        return GlobalResult.okResult("In TODO"); //TODO
+        return GlobalResult.result_ok("In TODO"); //TODO
     }
 
     //TODO swagger Documentation
@@ -523,7 +518,7 @@ public class CompilationLibrariesController extends Controller {
         try{
 
             Board board = Board.find.byId(board_id);
-            if(board == null ) return GlobalResult.notFoundObject();
+            if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
 
             // Přijmu soubor
             Http.MultipartFormData body = request().body().asMultipartFormData();
@@ -532,7 +527,7 @@ public class CompilationLibrariesController extends Controller {
             // Its file not null
             if (file == null) return GlobalResult.notFound("File not found");
 
-            return GlobalResult.okResult("Vše v pořádku další operace in In TODO"); //TODO
+            return GlobalResult.result_ok("Vše v pořádku další operace in In TODO"); //TODO
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -545,13 +540,13 @@ public class CompilationLibrariesController extends Controller {
     public Result uploadCompilationToBoard(String c_program_id, String boardId) {
 
         Board board = Board.find.byId(boardId);
-        if(board == null ) return GlobalResult.notFoundObject();
+        if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
 
         C_Program c_program = C_Program.find.byId(c_program_id);
-        if (c_program == null) return GlobalResult.notFoundObject();
+        if (c_program == null) return GlobalResult.notFoundObject("C_Program c_program_id not found");
 
         //TODO Chybí kompilování atd... tohle bude mega metoda!!!
-        return GlobalResult.okResult();
+        return GlobalResult.result_ok();
     }
 
 ///###################################################################################################################*/
@@ -572,7 +567,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successful created",      response = Processor.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -641,9 +636,9 @@ public class CompilationLibrariesController extends Controller {
         try {
 
             Processor processor = Processor.find.byId(processor_id);
-            if(processor == null ) return GlobalResult.notFoundObject();
+            if(processor == null ) return GlobalResult.notFoundObject("Processor processor_id not found");
 
-            return GlobalResult.okResult(Json.toJson(processor));
+            return GlobalResult.result_ok(Json.toJson(processor));
 
         } catch (Exception e) {
             Logger.error("CompilationLibrariesController - new_Processor ERROR");
@@ -676,7 +671,7 @@ public class CompilationLibrariesController extends Controller {
         try {
 
            List<Processor> processors = Processor.find.all();
-            return GlobalResult.okResult(Json.toJson(processors));
+            return GlobalResult.result_ok(Json.toJson(processors));
 
         } catch (Exception e) {
             Logger.error("CompilationLibrariesController - new_Processor ERROR");
@@ -700,7 +695,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Processor.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -727,7 +722,7 @@ public class CompilationLibrariesController extends Controller {
 
 
             Processor processor = Processor.find.byId(processor_id);
-            if(processor == null ) return GlobalResult.notFoundObject();
+            if(processor == null ) return GlobalResult.notFoundObject("Processor processor_id not found");
 
             processor.description    = help.description;
             processor.processor_code = help.processor_code;
@@ -737,10 +732,8 @@ public class CompilationLibrariesController extends Controller {
 
             processor.update();
 
-            return GlobalResult.update(Json.toJson(processor));
+            return GlobalResult.result_ok(Json.toJson(processor));
 
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "description - TEXT", "processor_code - String", "processor_name - String", "speed - Integer", "libraryGroups [Id,Id..]");
         } catch (Exception e) {
             Logger.error("Error", e.getMessage());
             Logger.error("CompilationLibrariesController - update_Processor ERROR");
@@ -773,11 +766,11 @@ public class CompilationLibrariesController extends Controller {
         try {
 
             Processor processor = Processor.find.byId(processor_id);
-            if(processor == null ) return GlobalResult.notFoundObject();
+            if(processor == null ) return GlobalResult.notFoundObject("Processor processor_id not found");
 
             processor.delete();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - new_Processor ERROR");
@@ -811,12 +804,12 @@ public class CompilationLibrariesController extends Controller {
         try {
 
             Processor processor = Processor.find.byId(processor_id);
-            if(processor == null ) return GlobalResult.notFoundObject();
+            if(processor == null ) return GlobalResult.notFoundObject("Processor processor_id not found");
 
             Description description = new Description();
             description.description = processor.description;
 
-            return GlobalResult.okResult(Json.toJson(description));
+            return GlobalResult.result_ok(Json.toJson(description));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -850,9 +843,9 @@ public class CompilationLibrariesController extends Controller {
     public Result getProcessorLibraryGroups( @ApiParam(value = "processor_id String query", required = true) @PathParam("processor_id")String processor_id) {
         try {
             Processor processor = Processor.find.byId(processor_id);
-            if(processor == null ) return GlobalResult.notFoundObject();
+            if(processor == null ) return GlobalResult.notFoundObject("Processor processor_id not found");
 
-            return GlobalResult.okResult(Json.toJson(processor.libraryGroups));
+            return GlobalResult.result_ok(Json.toJson(processor.libraryGroups));
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - getProcessorLibraryGroups ERROR");
@@ -885,9 +878,9 @@ public class CompilationLibrariesController extends Controller {
     public Result getProcessorSingleLibraries( @ApiParam(value = "processor_id String query", required = true) @PathParam("processor_id") String processor_id) {
         try {
             Processor processor = Processor.find.byId(processor_id);
-            if(processor == null ) return GlobalResult.notFoundObject();
+            if(processor == null ) return GlobalResult.notFoundObject("Processor processor_id not found");
 
-            return GlobalResult.okResult(Json.toJson(processor.singleLibraries));
+            return GlobalResult.result_ok(Json.toJson(processor.singleLibraries));
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - getProcessorSingleLibraries ERROR");
@@ -919,16 +912,16 @@ public class CompilationLibrariesController extends Controller {
     public Result connectProcessorWithLibrary( @ApiParam(value = "processor_id String query", required = true) @PathParam("processor_id")String processor_id,  @ApiParam(required = true) @PathParam("library_id") String library_id) {
         try {
             Processor processor = Processor.find.byId(processor_id);
-            if(processor == null ) return GlobalResult.notFoundObject();
+            if(processor == null ) return GlobalResult.notFoundObject("Processor processor_id not found");
 
             SingleLibrary singleLibrary = SingleLibrary.find.byId(library_id);
-            if(singleLibrary == null ) return GlobalResult.notFoundObject();
+            if(singleLibrary == null ) return GlobalResult.notFoundObject("SingleLibrary library_id not found");
 
 
             processor.singleLibraries.add(singleLibrary);
             processor.update();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - connectProcessorWithLibrary ERROR");
@@ -960,16 +953,16 @@ public class CompilationLibrariesController extends Controller {
     public Result connectProcessorWithLibraryGroup( @ApiParam(value = "processor_id String query", required = true) @PathParam("processor_id")String processor_id,  @ApiParam(required = true) @PathParam("library_group_id") String library_group_id) {
         try {
             Processor processor = Processor.find.byId(processor_id);
-            if(processor == null ) return GlobalResult.notFoundObject();
+            if(processor == null ) return GlobalResult.notFoundObject("Processor processor_id not found");
 
             LibraryGroup libraryGroup = LibraryGroup.find.byId(library_group_id);
-            if(libraryGroup == null ) return GlobalResult.notFoundObject();
+            if(libraryGroup == null ) return GlobalResult.notFoundObject("LibraryGroup library_group_id not found");
 
 
             processor.libraryGroups.add(libraryGroup);
             processor.update();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - connectProcessorWithLibraryGroup ERROR");
@@ -1001,16 +994,16 @@ public class CompilationLibrariesController extends Controller {
     public Result disconnectProcessorWithLibrary( @ApiParam(value = "processor_id String query", required = true) @PathParam("processor_id")String processor_id,  @ApiParam(required = true) @PathParam("library_id") String library_id) {
         try {
             Processor processor = Processor.find.byId(processor_id);
-            if(processor == null ) return GlobalResult.notFoundObject();
+            if(processor == null ) return GlobalResult.notFoundObject("Processor processor_id not found");
 
             SingleLibrary singleLibrary = SingleLibrary.find.byId(library_id);
-            if(singleLibrary == null ) return GlobalResult.notFoundObject();
+            if(singleLibrary == null ) return GlobalResult.notFoundObject("SingleLibrary library_id not found");
 
 
             processor.singleLibraries.remove(singleLibrary);
             processor.update();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - connectProcessorWithLibrary ERROR");
@@ -1042,16 +1035,16 @@ public class CompilationLibrariesController extends Controller {
     public Result disconnectProcessorWithLibraryGroup( @ApiParam(value = "processor_id String query", required = true) @PathParam("processor_id")String processor_id,  @ApiParam(required = true) @PathParam("library_group_id")  String library_group_id) {
         try {
             Processor processor = Processor.find.byId(processor_id);
-            if(processor == null ) return GlobalResult.notFoundObject();
+            if(processor == null ) return GlobalResult.notFoundObject("Processor processor_id not found");
 
             LibraryGroup libraryGroup = LibraryGroup.find.byId(library_group_id);
-            if(libraryGroup == null ) return GlobalResult.notFoundObject();
+            if(libraryGroup == null ) return GlobalResult.notFoundObject("LibraryGroup library_group_id not found");
 
 
             processor.libraryGroups.remove(libraryGroup);
             processor.update();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - connectProcessorWithLibraryGroup ERROR");
@@ -1078,7 +1071,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successful created",      response = LibraryGroup.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1111,8 +1104,6 @@ public class CompilationLibrariesController extends Controller {
             libraryGroup.save();
 
             return GlobalResult.created(Json.toJson(libraryGroup));
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "description", "group_name");
         }catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - connectProcessorWithLibraryGroup ERROR");
@@ -1137,7 +1128,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successful created",      response = Version_Object.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1163,7 +1154,7 @@ public class CompilationLibrariesController extends Controller {
             Swagger_LibraryGroup_Version help = form.get();
 
             LibraryGroup libraryGroup = LibraryGroup.find.byId(libraryGroup_id);
-            if(libraryGroup == null) return GlobalResult.notFoundObject();
+            if(libraryGroup == null) return GlobalResult.notFoundObject("LibraryGroup library_group_id not found");
 
             Version_Object versionObjectObject     = new Version_Object();
 
@@ -1181,8 +1172,7 @@ public class CompilationLibrariesController extends Controller {
             libraryGroup.update();
 
             return GlobalResult.created(Json.toJson(versionObjectObject));
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "version_description", "version_name");
+
         } catch (Exception e) {
             e.printStackTrace();
             Logger.error("CompilationLibrariesController - new_Processor ERROR");
@@ -1207,7 +1197,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok result",      response = Version_Object.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1217,9 +1207,9 @@ public class CompilationLibrariesController extends Controller {
         try {
 
             LibraryGroup libraryGroup = LibraryGroup.find.byId(libraryGroup_id);
-            if(libraryGroup == null) return GlobalResult.notFoundObject();
+            if(libraryGroup == null) return GlobalResult.notFoundObject("LibraryGroup library_group_id not found");
 
-            return GlobalResult.okResult(Json.toJson(libraryGroup.version_objects));
+            return GlobalResult.result_ok(Json.toJson(libraryGroup.version_objects));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -1261,18 +1251,18 @@ public class CompilationLibrariesController extends Controller {
 
                 // If fileRecord group is not null
                 LibraryGroup libraryGroup = LibraryGroup.find.byId(libraryGroup_id);
-                if (libraryGroup == null) return GlobalResult.notFoundObject();
+                if (libraryGroup == null) return GlobalResult.notFoundObject("LibraryGroup libraryGroup_id not found");
 
                 Version_Object versionObjectObject = Version_Object.find.where().in("libraryGroup.id", libraryGroup.id).where().eq("id", version_id).findUnique();
-                if (versionObjectObject == null) return GlobalResult.notFoundObject();
+                if (versionObjectObject == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
                 // Control lenght of name
                 String fileName = file.getFilename();
-                if (fileName.length() < 5) GlobalResult.forbidden_Global("Too short file name");
+                if (fileName.length() < 5) GlobalResult.result_BadRequest("Too short file name");
 
                 // Ještě kontrola souboru zda už tam není - > Version_Object a knihovny
                 FileRecord fileRecord = FileRecord.find.where().in("version_object.id", versionObjectObject.id).ieq("file_name", fileName).findUnique();
-                if (fileRecord != null) return GlobalResult.nullPointerResult("File exist in this version -> " + fileName + " please, create new version!");
+                if (fileRecord != null) return GlobalResult.result_BadRequest("File exist in this version -> " + fileName + " please, create new version!");
 
                 // Mám soubor
                 File libraryFile = file.getFile();
@@ -1294,7 +1284,7 @@ public class CompilationLibrariesController extends Controller {
                 versionObjectObject.save();
             }
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
         } catch (Exception e) {
             e.printStackTrace();
             Logger.error("CompilationLibrariesController - upload_Library_To_LibraryGroup ERROR");
@@ -1327,9 +1317,9 @@ public class CompilationLibrariesController extends Controller {
         try {
 
             LibraryGroup libraryGroup = LibraryGroup.find.byId(libraryGroup_id);
-            if(libraryGroup == null) return GlobalResult.notFoundObject();
+            if(libraryGroup == null) return GlobalResult.notFoundObject("LibraryGroup libraryGroup_id not found");
 
-            return GlobalResult.okResult(Json.toJson(libraryGroup));
+            return GlobalResult.result_ok(Json.toJson(libraryGroup));
         } catch (Exception e) {
             Logger.error("CompilationLibrariesController - getLibraryGroup ERROR");
             Logger.error(request().body().asJson().toString());
@@ -1361,13 +1351,13 @@ public class CompilationLibrariesController extends Controller {
     public Result delete_LibraryGroup(@ApiParam(value = "libraryGroup_id String query", required = true) @PathParam("libraryGroup_id") String libraryGroup_id) {
         try {
             LibraryGroup libraryGroup = LibraryGroup.find.byId(libraryGroup_id);
-            if(libraryGroup == null) return GlobalResult.notFoundObject();
+            if(libraryGroup == null) return GlobalResult.notFoundObject("LibraryGroup libraryGroup_id not found");
 
             UtilTools.azureDelete(Server.blobClient.getContainerReference("libraries"), libraryGroup.azurePackageLink+"/"+libraryGroup.azureStorageLink);
 
             libraryGroup.delete();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
 
         } catch (Exception e) {
             Logger.error("CompilationLibrariesController - delete_LibraryGroup ERROR");
@@ -1392,7 +1382,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successful created",      response = LibraryGroup.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1418,7 +1408,7 @@ public class CompilationLibrariesController extends Controller {
             Swagger_LibraryGroup_New help = form.get();
 
             LibraryGroup libraryGroup = LibraryGroup.find.byId(libraryGroup_id);
-            if(libraryGroup == null) return GlobalResult.notFoundObject();
+            if(libraryGroup == null) return GlobalResult.notFoundObject("LibraryGroup libraryGroup_id not found");
 
 
             libraryGroup.description = help.description;
@@ -1426,7 +1416,7 @@ public class CompilationLibrariesController extends Controller {
 
             libraryGroup.save();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
 
         } catch (Exception e) {
             Logger.error("CompilationLibrariesController - updateLibraryGroup ERROR");
@@ -1459,12 +1449,12 @@ public class CompilationLibrariesController extends Controller {
     public Result get_LibraryGroup_Description(@ApiParam(value = "libraryGroup_id String query", required = true) @PathParam("libraryGroup_id") String libraryGroup_id) {
         try {
             LibraryGroup libraryGroup = LibraryGroup.find.byId(libraryGroup_id);
-            if(libraryGroup == null) return GlobalResult.notFoundObject();
+            if(libraryGroup == null) return GlobalResult.notFoundObject("LibraryGroup libraryGroup_id not found");
 
             Description description = new Description();
             description.description = libraryGroup.description;
 
-            return GlobalResult.okResult(Json.toJson(description));
+            return GlobalResult.result_ok(Json.toJson(description));
 
         } catch (Exception e) {
             Logger.error("CompilationLibrariesController - get_LibraryGroup_Description ERROR");
@@ -1496,9 +1486,9 @@ public class CompilationLibrariesController extends Controller {
     public Result get_LibraryGroup_Processors(@ApiParam(value = "libraryGroup_id String query", required = true) @PathParam("libraryGroup_id") String libraryGroup_id) {
         try {
             LibraryGroup libraryGroup = LibraryGroup.find.byId(libraryGroup_id);
-            if(libraryGroup == null) return GlobalResult.notFoundObject();
+            if(libraryGroup == null) return GlobalResult.notFoundObject("LibraryGroup libraryGroup_id not found");
 
-            return GlobalResult.okResult(Json.toJson(libraryGroup.processors));
+            return GlobalResult.result_ok(Json.toJson(libraryGroup.processors));
 
         } catch (Exception e) {
             Logger.error("CompilationLibrariesController - get_LibraryGroup_Processors ERROR");
@@ -1530,9 +1520,9 @@ public class CompilationLibrariesController extends Controller {
         try {
 
             Version_Object versionObjectObject = Version_Object.find.where().in("libraryGroup.id", libraryGroup_id).eq("id",version_id).setMaxRows(1).findUnique();
-            if(versionObjectObject == null ) return GlobalResult.notFoundObject();
+            if(versionObjectObject == null ) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
-            return GlobalResult.okResult(Json.toJson(versionObjectObject.files));
+            return GlobalResult.result_ok(Json.toJson(versionObjectObject.files));
         } catch (Exception e) {
             Logger.error("CompilationLibrariesController - get_LibraryGroup_Libraries ERROR");
             return GlobalResult.internalServerError();
@@ -1562,9 +1552,9 @@ public class CompilationLibrariesController extends Controller {
     public Result get_LibraryGroup_Version_Libraries(@ApiParam(required = true) @PathParam("version_id") String version_id){
         try {
             Version_Object versionObject = Version_Object.find.byId(version_id);
-            if(versionObject == null) return GlobalResult.notFoundObject();
+            if(versionObject == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
-            return GlobalResult.okResult(Json.toJson(versionObject.files));
+            return GlobalResult.result_ok(Json.toJson(versionObject.files));
         } catch (Exception e) {
             Logger.error("CompilationLibrariesController - get_LibraryGroup_Version_Libraries ERROR");
             return GlobalResult.internalServerError();
@@ -1655,7 +1645,7 @@ public class CompilationLibrariesController extends Controller {
             List<LibraryGroup> list = query.findList();
 
 
-            return GlobalResult.okResult(Json.toJson(list));
+            return GlobalResult.result_ok(Json.toJson(list));
 
         } catch (Exception e) {
             Logger.error("CompilationLibrariesController - get_LibraryGroup_Version_Libraries ERROR");
@@ -1666,17 +1656,31 @@ public class CompilationLibrariesController extends Controller {
 
 ///###################################################################################################################*/
 
-    public Result fileRecord(String id){
-
+    @ApiOperation(value = "get FileRecord",
+            tags = {"File"},
+            notes = "if you want create new SingleLibrary for C_program compilation",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = FileRecord.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result fileRecord(@ApiParam(value = "file_record_id String query", required = true) @PathParam("file_record_id")  String file_record_id){
         try {
-            FileRecord fileRecord = FileRecord.find.byId(id);
-            if (fileRecord == null) return GlobalResult.notFoundObject();
 
-            ObjectNode result = Json.newObject();
-            result.put("file_name", fileRecord.file_name);
-            result.put("content", fileRecord.get_fileRecord_from_Azure_inString());
+            FileRecord fileRecord = FileRecord.find.byId(file_record_id);
+            if (fileRecord == null) return GlobalResult.notFoundObject("FileRecord file_record_id not found");
 
-            return GlobalResult.okResult(Json.toJson(result));
+            Swagger_File_Content file_content = new Swagger_File_Content();
+            file_content.file_name = fileRecord.file_name;
+            file_content.content =  fileRecord.get_fileRecord_from_Azure_inString();
+
+
+            return GlobalResult.result_ok(Json.toJson(file_content));
 
         } catch (Exception e) {
             Logger.error("CompilationLibrariesController - get_LibraryGroup_Version_Libraries ERROR");
@@ -1714,7 +1718,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successful created",      response = SingleLibrary.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1739,8 +1743,6 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.created(Json.toJson(singleLibrary));
 
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "library_name", "description");
         } catch (Exception e) {
             Logger.error("CompilationLibrariesController - get_LibraryGroup_Version_Libraries ERROR");
             Logger.error(request().body().asJson().toString());
@@ -1790,7 +1792,7 @@ public class CompilationLibrariesController extends Controller {
 
 
             SingleLibrary singleLibrary = SingleLibrary.find.byId(library_id);
-            if(singleLibrary == null)  return GlobalResult.notFoundObject();
+            if(singleLibrary == null)  return GlobalResult.notFoundObject("SingleLibrary library_id not found");
 
             Version_Object versionObjectObject = new Version_Object();
 
@@ -1805,8 +1807,6 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.created(Json.toJson(versionObjectObject));
 
-        } catch (NullPointerException a) {
-            return GlobalResult.nullPointerResult(a, "description", "version_name - String");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - new_Processor ERROR");
@@ -1840,34 +1840,35 @@ public class CompilationLibrariesController extends Controller {
         try {
 
             SingleLibrary singleLibrary = SingleLibrary.find.byId(library_id);
-            if(singleLibrary == null) return GlobalResult.notFoundObject();
+            if(singleLibrary == null) return GlobalResult.notFoundObject("SingleLibrary library_id not found");
 
-            return GlobalResult.okResult(Json.toJson(singleLibrary.version_objects));
+            return GlobalResult.result_ok(Json.toJson(singleLibrary.version_objects));
 
         } catch (Exception e) {
-            return GlobalResult.nullPointerResult(e);
+            return GlobalResult.internalServerError();
         }
     }
 
+
+
     @BodyParser.Of(BodyParser.Json.class)
     public Result upload_SingleLibrary_Version(@ApiParam(value = "library_id String query", required = true) @PathParam("library_id")  String library_id, @ApiParam(required = true) @PathParam("version_id") String version_id){
-        // TODO dokumentace
         try{
             Http.MultipartFormData body = request().body().asMultipartFormData();
             Http.MultipartFormData.FilePart file = body.getFile("file");
 
             SingleLibrary singleLibrary = SingleLibrary.find.byId(library_id);
-            if(singleLibrary == null ) return GlobalResult.notFoundObject();
+            if(singleLibrary == null ) return GlobalResult.notFoundObject("SingleLibrary library_id not found");
 
             // If fileRecord group is not null
             Version_Object versionObjectObject = Version_Object.find.where().in("singleLibrary.id", library_id).eq("azureLinkVersion",version_id).setMaxRows(1).findUnique();
-            if(versionObjectObject == null ) return GlobalResult.badRequest("Version_Object in library not Exist: -> " +version_id);
+            if(versionObjectObject == null ) return GlobalResult.result_BadRequest("Version_Object in library not Exist: -> " +version_id);
 
-            if (versionObjectObject.files.size() > 0) return GlobalResult.badRequest("Version_Object has file already.. Create new Version_Object ");
+            if (versionObjectObject.files.size() > 0) return GlobalResult.result_BadRequest("Version_Object has file already.. Create new Version_Object ");
 
             // Control lenght of name
             String fileName = file.getFilename();
-            if(fileName.length()< 5 )return GlobalResult.badRequest("Too short FileName -> " + fileName);
+            if(fileName.length()< 5 )return GlobalResult.result_BadRequest("Too short FileName -> " + fileName);
 
             File libraryFile = file.getFile();
 
@@ -1885,7 +1886,7 @@ public class CompilationLibrariesController extends Controller {
             versionObjectObject.date_of_create = new Date();
             versionObjectObject.update();
 
-            return GlobalResult.okResult(Json.toJson(versionObjectObject));
+            return GlobalResult.result_ok(Json.toJson(versionObjectObject));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -1920,9 +1921,9 @@ public class CompilationLibrariesController extends Controller {
         try {
 
             SingleLibrary singleLibrary = SingleLibrary.find.byId(library_id);
-            if(singleLibrary == null) return GlobalResult.notFoundObject();
+            if(singleLibrary == null) return GlobalResult.notFoundObject("SingleLibrary library_id not found" );
 
-            return GlobalResult.okResult(Json.toJson(singleLibrary));
+            return GlobalResult.result_ok(Json.toJson(singleLibrary));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -2014,7 +2015,7 @@ public class CompilationLibrariesController extends Controller {
             List<SingleLibrary> list = query.findList();
 
 
-            return GlobalResult.okResult(Json.toJson(list));
+            return GlobalResult.result_ok(Json.toJson(list));
         } catch (Exception e) {
             Logger.error("CompilationLibrariesController - get_LibraryGroup_Version_Libraries ERROR");
             Logger.error(request().body().asJson().toString());
@@ -2049,7 +2050,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok result",               response = SingleLibrary.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -2064,7 +2065,7 @@ public class CompilationLibrariesController extends Controller {
             Swagger_SingleLibrary_New help = form.get();
 
             SingleLibrary singleLibrary = SingleLibrary.find.byId(library_id);
-            if(singleLibrary == null) return GlobalResult.notFoundObject();
+            if(singleLibrary == null) return GlobalResult.notFoundObject("SingleLibrary library_id not found" );
 
             singleLibrary.library_name = help.library_name;
             singleLibrary.description = help.description;
@@ -2072,9 +2073,8 @@ public class CompilationLibrariesController extends Controller {
 
             singleLibrary.update();
 
-            return GlobalResult.okResult();
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "library_name", "description");
+            return GlobalResult.result_ok();
+
         } catch (Exception e) {
             Logger.error("CompilationLibrariesController - get_LibraryGroup_Version_Libraries ERROR");
             Logger.error(request().body().asJson().toString());
@@ -2107,12 +2107,12 @@ public class CompilationLibrariesController extends Controller {
         try {
 
             SingleLibrary singleLibrary = SingleLibrary.find.byId(library_id);
-            if(singleLibrary == null) return GlobalResult.notFoundObject();
+            if(singleLibrary == null) return GlobalResult.notFoundObject("SingleLibrary library_id not found" );
 
             UtilTools.azureDelete(Server.blobClient.getContainerReference("libraries"), singleLibrary.azurePackageLink+"/"+singleLibrary.azureStorageLink);
 
             singleLibrary.delete();
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
 
         } catch (Exception e) {
             Logger.error("CompilationLibrariesController - get_LibraryGroup_Version_Libraries ERROR");
@@ -2151,7 +2151,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successful created",      response = Producer.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -2171,8 +2171,7 @@ public class CompilationLibrariesController extends Controller {
             producer.save();
 
             return GlobalResult.created(Json.toJson(producer));
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "description", "name");
+
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - new_Processor ERROR");
@@ -2209,7 +2208,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",      response = Producer.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -2224,16 +2223,15 @@ public class CompilationLibrariesController extends Controller {
 
 
             Producer producer = Producer.find.byId(producer_id);
-            if(producer == null ) return GlobalResult.notFoundObject();
+            if(producer == null ) return GlobalResult.notFoundObject("Producer producer_id not found");
 
             producer.name = help.name;
             producer.description = help.description;
 
             producer.update();
 
-            return GlobalResult.okResult(Json.toJson(producer));
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "description", "name");
+            return GlobalResult.result_ok(Json.toJson(producer));
+
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - edit_Producer ERROR");
@@ -2268,8 +2266,8 @@ public class CompilationLibrariesController extends Controller {
         try {
 
             List<Producer> producers = Producer.find.all();
+            return GlobalResult.result_ok(Json.toJson(producers));
 
-            return GlobalResult.okResult(Json.toJson(producers));
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - get_Producers ERROR");
@@ -2303,9 +2301,9 @@ public class CompilationLibrariesController extends Controller {
         try {
             Producer producer = Producer.find.byId(producer_id);
 
-            if(producer == null ) return GlobalResult.notFoundObject();
+            if(producer == null ) return GlobalResult.notFoundObject("Producer producer_id not found");
 
-            return GlobalResult.okResult(Json.toJson(producer));
+            return GlobalResult.result_ok(Json.toJson(producer));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -2339,11 +2337,11 @@ public class CompilationLibrariesController extends Controller {
         try {
             Producer producer = Producer.find.byId(producer_id);
 
-            if(producer == null ) return GlobalResult.notFoundObject();
+            if(producer == null ) return GlobalResult.notFoundObject("Producer producer_id not found");
 
             producer.delete();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -2378,12 +2376,12 @@ public class CompilationLibrariesController extends Controller {
         try {
             Producer producer = Producer.find.byId(producer_id);
 
-            if(producer == null ) return GlobalResult.notFoundObject();
+            if(producer == null ) return GlobalResult.notFoundObject("Producer producer_id not found");
 
             Description description = new Description();
             description.description = producer.description;
 
-            return GlobalResult.okResult(Json.toJson(description));
+            return GlobalResult.result_ok(Json.toJson(description));
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - get_Producer_Description ERROR");
@@ -2417,9 +2415,9 @@ public class CompilationLibrariesController extends Controller {
     public Result get_Producer_TypeOfBoards(@ApiParam(required = true) @PathParam("producer_id") String producer_id) {
         try {
             Producer producer = Producer.find.byId(producer_id);
-            if(producer == null ) return GlobalResult.notFoundObject();
+            if(producer == null ) return GlobalResult.notFoundObject("Producer producer_id not found");
 
-            return GlobalResult.okResult(Json.toJson(producer.type_of_boards));
+            return GlobalResult.result_ok(Json.toJson(producer.type_of_boards));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -2461,7 +2459,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successful created",      response = TypeOfBoard.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -2474,10 +2472,10 @@ public class CompilationLibrariesController extends Controller {
             Swagger_TypeOfBoard_New help = form.get();
 
             Producer producer = Producer.find.byId(help.producer_id);
-            if(producer == null ) return GlobalResult.notFoundObject();
+            if(producer == null ) return GlobalResult.notFoundObject("Producer producer_id not found");
 
             Processor processor = Processor.find.byId(help.processor_id);
-            if(processor == null ) return GlobalResult.notFoundObject();
+            if(processor == null ) return GlobalResult.notFoundObject("Processor processor_id not found");
 
             TypeOfBoard typeOfBoard = new TypeOfBoard();
             typeOfBoard.name = help.name;
@@ -2487,10 +2485,8 @@ public class CompilationLibrariesController extends Controller {
 
             typeOfBoard.save();
 
-            return GlobalResult.okResult(Json.toJson(typeOfBoard));
+            return GlobalResult.result_ok(Json.toJson(typeOfBoard));
 
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "description","name", "processor_id", "producer_id");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - new_TypeOfBoard ERROR");
@@ -2527,7 +2523,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = TypeOfBoard.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -2541,13 +2537,13 @@ public class CompilationLibrariesController extends Controller {
             Swagger_TypeOfBoard_New help = form.get();
 
             TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(type_of_board_id);
-            if (typeOfBoard == null) return GlobalResult.notFoundObject();
+            if (typeOfBoard == null) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
 
             Producer producer = Producer.find.byId(help.producer_id);
-            if(producer == null ) return GlobalResult.notFoundObject();
+            if(producer == null ) return GlobalResult.notFoundObject("Producer producer_id not found");
 
             Processor processor = Processor.find.byId(help.processor_id);
-            if(processor == null ) return GlobalResult.notFoundObject();
+            if(processor == null ) return GlobalResult.notFoundObject("Processor processor_id not found");
 
 
             typeOfBoard.name = help.name;
@@ -2557,10 +2553,8 @@ public class CompilationLibrariesController extends Controller {
 
             typeOfBoard.update();
 
-            return GlobalResult.okResult(Json.toJson(typeOfBoard));
+            return GlobalResult.result_ok(Json.toJson(typeOfBoard));
 
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "description", "name");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - edit_TypeOfBoard ERROR");
@@ -2597,14 +2591,12 @@ public class CompilationLibrariesController extends Controller {
         try {
 
             TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(type_of_board_id);
-            if(typeOfBoard == null ) return GlobalResult.notFoundObject();
+            if(typeOfBoard == null ) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found") ;
 
             typeOfBoard.delete();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
 
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "description","name");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - edit_TypeOfBoard ERROR");
@@ -2638,7 +2630,7 @@ public class CompilationLibrariesController extends Controller {
         try {
 
             List<TypeOfBoard> typeOfBoards = TypeOfBoard.find.all();
-            return  GlobalResult.okResult(Json.toJson(typeOfBoards));
+            return  GlobalResult.result_ok(Json.toJson(typeOfBoards));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -2673,9 +2665,9 @@ public class CompilationLibrariesController extends Controller {
         try {
 
             TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(type_of_board_id);
-            if(typeOfBoard == null ) return GlobalResult.notFoundObject();
+            if(typeOfBoard == null ) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
 
-            return GlobalResult.okResult(Json.toJson(typeOfBoard));
+            return GlobalResult.result_ok(Json.toJson(typeOfBoard));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -2710,9 +2702,9 @@ public class CompilationLibrariesController extends Controller {
         try {
 
             TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(type_of_board_id);
-            if(typeOfBoard == null ) return GlobalResult.notFoundObject();
+            if(typeOfBoard == null ) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
 
-            return GlobalResult.okResult(Json.toJson(typeOfBoard.description));
+            return GlobalResult.result_ok(Json.toJson(typeOfBoard.description));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -2745,9 +2737,9 @@ public class CompilationLibrariesController extends Controller {
         try {
 
             TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(type_of_board_id);
-            if(typeOfBoard == null ) return GlobalResult.notFoundObject();
+            if(typeOfBoard == null ) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
 
-            return GlobalResult.okResult(Json.toJson(typeOfBoard.boards));
+            return GlobalResult.result_ok(Json.toJson(typeOfBoard.boards));
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - get_Producer_TypeOfBoards ERROR");
@@ -2782,7 +2774,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = TypeOfBoard.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -2834,7 +2826,7 @@ public class CompilationLibrariesController extends Controller {
 
 
 
-            return GlobalResult.okResult(Json.toJson(list));
+            return GlobalResult.result_ok(Json.toJson(list));
 
 
 
@@ -2877,7 +2869,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successful created",      response = Board.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -2891,10 +2883,10 @@ public class CompilationLibrariesController extends Controller {
             Swagger_Board_New help = form.get();
 
 
-            if (Board.find.byId( help.hardware_unique_id ) != null) return GlobalResult.badRequest("Duplicate database value");
+            if (Board.find.byId( help.hardware_unique_id ) != null) return GlobalResult.result_BadRequest("Duplicate database value");
 
             TypeOfBoard typeOfBoard = TypeOfBoard.find.byId( help.type_of_board_id  );
-            if(typeOfBoard == null ) return GlobalResult.notFoundObject();
+            if(typeOfBoard == null ) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
 
             Board board = new Board();
             board.id =  help.hardware_unique_id;
@@ -2903,7 +2895,7 @@ public class CompilationLibrariesController extends Controller {
 
             board.save();
 
-            return GlobalResult.okResult(Json.toJson(board));
+            return GlobalResult.result_ok(Json.toJson(board));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -2941,7 +2933,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Board.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -2955,15 +2947,14 @@ public class CompilationLibrariesController extends Controller {
             Swagger_Board_Personal help = form.get();
 
             Board board = Board.find.byId(board_id);
-            if(board == null ) return GlobalResult.notFoundObject();
+            if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
 
             board.personal_description = help.personal_description;
             board.update();
 
-            return GlobalResult.okResult(Json.toJson(board));
+            return GlobalResult.result_ok(Json.toJson(board));
 
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "personal_description");
+
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - newBoard ERROR");
@@ -3052,16 +3043,11 @@ public class CompilationLibrariesController extends Controller {
 
             List<Board> list = query.findList();
 
-
-
-            return GlobalResult.okResult(Json.toJson(list));
-
-
+            return GlobalResult.result_ok(Json.toJson(list));
 
 
         } catch (Exception e){
-            e.printStackTrace();
-            return GlobalResult.nullPointerResult(e);
+            return GlobalResult.internalServerError();
         }
 
 
@@ -3093,12 +3079,12 @@ public class CompilationLibrariesController extends Controller {
     public Result deactivate_Board(@ApiParam(required = true) @PathParam("board_id")  String board_id) {
         try {
             Board board = Board.find.byId(board_id);
-            if(board == null ) return GlobalResult.notFoundObject();
+            if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
 
             board.isActive = false;
             board.update();
 
-            return GlobalResult.okResult(Json.toJson(board));
+            return GlobalResult.result_ok(Json.toJson(board));
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - deactivate_Board ERROR");
@@ -3134,9 +3120,9 @@ public class CompilationLibrariesController extends Controller {
     public Result get_Board(@ApiParam(required = true) @PathParam("board_id")  String board_id) {
         try {
             Board board = Board.find.byId(board_id);
-            if(board == null ) return GlobalResult.notFoundObject();
+            if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
 
-            return GlobalResult.okResult(Json.toJson(board));
+            return GlobalResult.result_ok(Json.toJson(board));
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - get_Board ERROR");
@@ -3170,17 +3156,17 @@ public class CompilationLibrariesController extends Controller {
     public Result connect_Board_with_Project(@ApiParam(required = true) @PathParam("board_id")  String board_id, @ApiParam(required = true) @PathParam("project_id")  String project_id){
         try {
             Board board = Board.find.byId(board_id);
-            if(board == null ) return GlobalResult.notFoundObject();
+            if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
 
             Project project = Project.find.byId(project_id);
-            if(project == null) return GlobalResult.notFoundObject();
+            if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
-            if( board.projects.contains(project)) return  GlobalResult.okResult(Json.toJson(board));
+            if( board.projects.contains(project)) return  GlobalResult.result_ok(Json.toJson(board));
             board.projects.add(project);
 
             board.update();
 
-            return GlobalResult.okResult(Json.toJson(board));
+            return GlobalResult.result_ok(Json.toJson(board));
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - get_Board ERROR");
@@ -3214,16 +3200,16 @@ public class CompilationLibrariesController extends Controller {
     public Result disconnect_Board_from_Project(@ApiParam(required = true) @PathParam("board_id")  String board_id, @ApiParam(required = true) @PathParam("project_id")  String project_id){
         try {
             Board board = Board.find.byId(board_id);
-            if(board == null ) return GlobalResult.notFoundObject();
+            if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
 
             Project project = Project.find.byId(project_id);
-            if(project == null) return GlobalResult.notFoundObject();
+            if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
-            if( !board.projects.contains(project)) return  GlobalResult.okResult(Json.toJson(board));
+            if( !board.projects.contains(project)) return  GlobalResult.result_ok(Json.toJson(board));
             board.projects.remove(project);
 
             board.update();
-            return GlobalResult.okResult(Json.toJson(board));
+            return GlobalResult.result_ok(Json.toJson(board));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -3257,9 +3243,9 @@ public class CompilationLibrariesController extends Controller {
     public Result getBoardProjects(@ApiParam(required = true) @PathParam("board_id")  String board_id){
         try {
             Board board = Board.find.byId(board_id);
-            if(board == null ) return GlobalResult.notFoundObject();
+            if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
 
-            return GlobalResult.okResult(Json.toJson(board.projects));
+            return GlobalResult.result_ok(Json.toJson(board.projects));
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - get_Board ERROR");
@@ -3293,9 +3279,9 @@ public class CompilationLibrariesController extends Controller {
         try {
 
             Project project = Project.find.byId(project_id);
-            if (project == null) return GlobalResult.notFoundObject();
+            if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
-            return GlobalResult.okResult(Json.toJson(project.boards));
+            return GlobalResult.result_ok(Json.toJson(project.boards));
 
         } catch (Exception e) {
             Logger.error("Error", e);

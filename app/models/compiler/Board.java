@@ -25,10 +25,10 @@ public class Board extends Model {
 
 
     @ApiModelProperty(value = "Proxy address to get Objects \"Project\"", readOnly =true, allowableValues = "http://server_url/{id}")
-    @JsonProperty  @Transient public String projects()          { return Server.serverAddress + "/compilation/board/projects/" + id; }
+    @JsonProperty  @Transient public String projects()          { return Server.tyrion_serverAddress + "/compilation/board/projects/" + id; }
 
     @ApiModelProperty(value = "Proxy address to get Objects \"TypeOfBoard\"", readOnly =true, allowableValues = "http://server_url/{id}")
-    @JsonProperty  @Transient public String type_of_board()       { return Server.serverAddress + "/compilation/type_of_board/" +  type_of_board.id; }
+    @JsonProperty  @Transient public String type_of_board()       { return Server.tyrion_serverAddress + "/compilation/type_of_board/" +  type_of_board.id; }
 
 
 

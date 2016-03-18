@@ -17,6 +17,8 @@ public class Grid_Terminal extends Model {
     @ApiModelProperty(required = true, readOnly = true, example = "Mobile, WebBrowser")
     public String terminal_id;
 
+    @ApiModelProperty(required = false, readOnly = true)
+    public String user_agent;
 
     @ApiModelProperty(required = true, example = "Mobile, WebBrowser")
     public String device_type;
@@ -33,7 +35,7 @@ public class Grid_Terminal extends Model {
     public void set_terminal_id() {
         while(true){ // I need Unique Value
             this.terminal_id  = UUID.randomUUID().toString();
-            if (Grid_Terminal.find.where().eq("qr_token", this.terminal_id ).findUnique() == null) break;
+            if (Grid_Terminal.find.where().eq("terminal_id", this.terminal_id ).findUnique() == null) break;
         }
     }
 

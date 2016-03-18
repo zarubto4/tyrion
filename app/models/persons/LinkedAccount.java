@@ -18,11 +18,9 @@ public class LinkedAccount extends Model {
 															 public Date dateOfCreate;
 
 									@JsonIgnore	@ManyToOne   public Person person;
+															 public String user_agent;
 															 public String authToken;
 															 public boolean tokenVerified;
-
-	public static final Finder<String, LinkedAccount> find = new Finder<>(LinkedAccount.class);
-
 
 	@JsonIgnore
 	public static LinkedAccount setProviderKey(String typeOfConnection ){
@@ -50,14 +48,8 @@ public class LinkedAccount extends Model {
 		return linkedAccount;
 	}
 
+
 	//#### SECURITY LOGIN ##################################################################################################
-
-
-	// If userDB/system make log out
-	public void deleteAuthToken() {
-		authToken = null;
-		save();
-	}
-
+	public static final Finder<String, LinkedAccount> find = new Finder<>(LinkedAccount.class);
 
 }

@@ -24,8 +24,8 @@ public class Processor extends Model {
 
 
   // @JsonProperty public String description     (){return "http://localhost:9000/compilation/processor/generalDescription/"    +  this.id;}
-    @JsonProperty public String libraryGroups   (){return Server.serverAddress + "/compilation/processor/libraryGroups/" +  this.id;}
-    @JsonProperty public String singleLibraries (){return Server.serverAddress + "/compilation/processor/singleLibrary/" +  this.id;}
+    @JsonProperty public String libraryGroups   (){return Server.tyrion_serverAddress + "/compilation/processor/libraryGroups/" +  this.id;}
+    @JsonProperty public String singleLibraries (){return Server.tyrion_serverAddress + "/compilation/processor/singleLibrary/" +  this.id;}
 
 
     @JsonProperty public Integer libraryGroupsCount()  { return libraryGroups.size(); }

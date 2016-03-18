@@ -2,7 +2,9 @@ package models.project.m_program;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModelProperty;
 import models.grid.Screen_Size_Type;
 import utilities.Server;
 
@@ -28,9 +30,19 @@ public class M_Program extends Model{
                                     @JsonIgnore @ManyToOne      public M_Project m_project_object; // TODO přejmenovat zpět
                                     @JsonIgnore @ManyToOne      public Screen_Size_Type screen_size_type_object;
 
-               @JsonProperty public String program()               {  return Server.serverAddress + "/grid/m_project/program/" + id;}
-    @Transient @JsonProperty public String m_project()             {  return Server.serverAddress + "/grid/m_project/" + m_project_object.id; }
-    @Transient @JsonProperty public String screen_size_type()      {  return Server.serverAddress + "/grid/screen_type/" + screen_size_type_object.id; }
+                                    @Transient @JsonProperty public String m_project()             {  return Server.tyrion_serverAddress + "/grid/m_project/" + m_project_object.id; }
+                                    @Transient @JsonProperty public String screen_size_type()      {  return Server.tyrion_serverAddress + "/grid/screen_type/" + screen_size_type_object.id; }
+
+    @ApiModelProperty(required = false, value = "Visible here only when the object is NOT specifically required. Inversion value for \"m_code\" ")
+    @JsonInclude(JsonInclude.Include.NON_NULL)  @JsonProperty public String m_code_url()            {  return m_code == null ? Server.tyrion_serverAddress + "/grid/m_program/m_code/" + qr_token : null ; }
+
+    @ApiModelProperty(required = false, value = "Its here only if its possible to connect to B_Program")
+    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty public String websocket_address()      {  return m_project_object.b_program_version == null ? null :  Server.tyrion_webSocketAddress + "/websocket/mobile/" + m_project_object.id + "/{terminal_id} "; }
+
+    // Pokud nastavím M_Code
+    @Transient @JsonIgnore public String m_code;
+    @ApiModelProperty(required = false, value = "Visible here only when the object IS specifically required. Inversion value for \"m_code_url\" THIS or THAT!")
+    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty public String m_code() {  return m_code == null ? null : m_code; }
 
 
     //***** Private ****************************************************************************************************

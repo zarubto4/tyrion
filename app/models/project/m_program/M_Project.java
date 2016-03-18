@@ -28,9 +28,9 @@ public class M_Project extends Model {
     @OneToMany(mappedBy="m_project_object", cascade = CascadeType.ALL) public List<M_Program> m_programs = new ArrayList<>();
 
 
-    @JsonProperty @Transient public String project()                    {  return Server.serverAddress + "/project/project/" + project.id; }
-    @JsonProperty @Transient public String b_progam_connected_version() {  return b_program_version == null ? null : Server.serverAddress + "/project/b_program/version/" + b_program_version.id;}
-    @JsonProperty @Transient public String b_program()                  {  return b_program_version == null ? null : Server.serverAddress + "/project/b_program/" + b_program_version.b_program.b_program_id; }
+    @JsonProperty @Transient public String project()                    {  return Server.tyrion_serverAddress + "/project/project/" + project.id; }
+    @JsonProperty @Transient public String b_progam_connected_version() {  return b_program_version == null ? null : Server.tyrion_serverAddress + "/project/b_program/version/" + b_program_version.id;}
+    @JsonProperty @Transient public String b_program()                  {  return b_program_version == null ? null : Server.tyrion_serverAddress + "/project/b_program/" + b_program_version.b_program.b_program_id; }
 
     public static Finder<String,M_Project> find = new Finder<>(M_Project.class);
 }

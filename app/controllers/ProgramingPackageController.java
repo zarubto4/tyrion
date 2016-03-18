@@ -1,6 +1,5 @@
 package controllers;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.*;
 import models.blocko.BlockoBlock;
 import models.blocko.BlockoBlockVersion;
@@ -8,6 +7,7 @@ import models.blocko.TypeOfBlock;
 import models.compiler.Board;
 import models.compiler.Version_Object;
 import models.persons.Person;
+import models.persons.PersonPermission;
 import models.project.b_program.B_Program;
 import models.project.b_program.B_Program_Cloud;
 import models.project.b_program.B_Program_Homer;
@@ -26,9 +26,7 @@ import play.mvc.Security;
 import utilities.UtilTools;
 import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
-import utilities.response.response_objects.Result_PermissionRequired;
-import utilities.response.response_objects.Result_Unauthorized;
-import utilities.response.response_objects.Result_ok;
+import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
 
 import javax.websocket.server.PathParam;
@@ -39,6 +37,15 @@ import java.util.concurrent.TimeoutException;
 @Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Secured.class)
 public class ProgramingPackageController extends Controller {
+
+//### SYSTEM PERMISSION ################################################################################################
+
+    public static void set_System_Permission(){
+        new PersonPermission("role.read", "description");
+        //
+    }
+
+// GENERAL PROJECT #####################################################################################################
 
     @ApiOperation(value = "create new Project",
             tags = {"Project"},
@@ -87,7 +94,7 @@ public class ProgramingPackageController extends Controller {
             project.ownersOfProject.add( SecurityController.getPerson() );
             project.save();
 
-            return GlobalResult.okResult( Json.toJson(project) );
+            return GlobalResult.result_ok( Json.toJson(project) );
 
 
         } catch (Exception e) {
@@ -123,7 +130,7 @@ public class ProgramingPackageController extends Controller {
 
             List<Project> projects = SecurityController.getPerson().owningProjects;
 
-            return GlobalResult.okResult(Json.toJson( projects ));
+            return GlobalResult.result_ok(Json.toJson( projects ));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -157,11 +164,11 @@ public class ProgramingPackageController extends Controller {
         try {
 
             Project project = Project.find.byId(project_id);
-            if (project == null) return GlobalResult.notFoundObject();
+            if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
             if (    Project.find.where().eq("ownersOfProject.id", SecurityController.getPerson().id).eq("id", project_id).findUnique() == null ) return GlobalResult.forbidden_Global();
 
-            return GlobalResult.okResult(Json.toJson(project));
+            return GlobalResult.result_ok(Json.toJson(project));
 
          } catch (Exception e) {
             Logger.error("Error", e);
@@ -194,13 +201,13 @@ public class ProgramingPackageController extends Controller {
         try {
 
             Project project = Project.find.byId(project_id);
-            if (project == null) return GlobalResult.notFoundObject();
+            if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
             if (!project.ownersOfProject.contains( SecurityController.getPerson() ) ) return GlobalResult.forbidden_Global();
 
             project.delete();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -233,9 +240,9 @@ public class ProgramingPackageController extends Controller {
         try{
 
             Project project  = Project.find.byId(project_id);
-            if (project == null) return GlobalResult.notFoundObject();
+            if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
-            return GlobalResult.okResult(Json.toJson(project.homerList));
+            return GlobalResult.result_ok(Json.toJson(project.homerList));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -268,9 +275,9 @@ public class ProgramingPackageController extends Controller {
         try {
 
             Project project = Project.find.byId(project_id);
-            if(project == null) return GlobalResult.notFoundObject();
+            if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
-            return GlobalResult.okResult(Json.toJson( project.b_programs));
+            return GlobalResult.result_ok(Json.toJson( project.b_programs));
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - removeProgram ERROR");
@@ -302,9 +309,9 @@ public class ProgramingPackageController extends Controller {
         try {
 
             Project project = Project.find.byId(project_id);
-            if(project == null) return GlobalResult.notFoundObject();
+            if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
-            return GlobalResult.okResult(Json.toJson( project.c_programs));
+            return GlobalResult.result_ok(Json.toJson( project.c_programs));
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - removeProgram ERROR");
@@ -336,10 +343,10 @@ public class ProgramingPackageController extends Controller {
         try {
 
             Project project = Project.find.byId(project_id);
-            if(project == null) return GlobalResult.notFoundObject();
+            if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
 
-            return GlobalResult.okResult(Json.toJson( project.m_projects));
+            return GlobalResult.result_ok(Json.toJson( project.m_projects));
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - removeProgram ERROR");
@@ -382,10 +389,13 @@ public class ProgramingPackageController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public  Result updateProject(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
         try {
-            Swagger_Project_New help = Json.fromJson(request().body().asJson() , Swagger_Project_New.class);
+
+            final Form<Swagger_Project_New> form = Form.form(Swagger_Project_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Project_New help = form.get();
 
             Project project = Project.find.byId(project_id);
-            if (project == null) return GlobalResult.notFoundObject();
+            if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
             if (!project.ownersOfProject.contains( SecurityController.getPerson() ) ) return GlobalResult.forbidden_Global();
 
@@ -393,10 +403,9 @@ public class ProgramingPackageController extends Controller {
             project.project_description = help.project_description;
             project.update();
 
-            return GlobalResult.okResult(Json.toJson(project));
+            return GlobalResult.result_ok(Json.toJson(project));
 
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "project_name - String", "project_description - TEXT");
+
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - updateProject ERROR");
@@ -429,9 +438,9 @@ public class ProgramingPackageController extends Controller {
         try {
 
             Project project = Project.find.byId(project_id);
-            if(project == null) return GlobalResult.notFoundObject();
+            if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
-            return GlobalResult.okResult(Json.toJson(project.boards));
+            return GlobalResult.result_ok(Json.toJson(project.boards));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -474,11 +483,12 @@ public class ProgramingPackageController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result shareProjectWithUsers(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
         try {
-
-            Swagger_ShareProject_Person help = Json.fromJson(request().body().asJson(), Swagger_ShareProject_Person.class);
+            final Form<Swagger_ShareProject_Person> form = Form.form(Swagger_ShareProject_Person.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_ShareProject_Person help = form.get();
 
             Project project = Project.find.byId(project_id);
-            if(project == null) return GlobalResult.notFoundObject();
+            if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
 
             for (Person person : help.get_person()) {
@@ -491,10 +501,8 @@ public class ProgramingPackageController extends Controller {
 
             project.update();
 
-            return GlobalResult.okResult(Json.toJson(project));
+            return GlobalResult.result_ok(Json.toJson(project));
 
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "persons[id]");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - shareProjectWithUsers ERROR");
@@ -537,11 +545,12 @@ public class ProgramingPackageController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result unshareProjectWithUsers(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
         try {
-
-            Swagger_ShareProject_Person help = Json.fromJson(request().body().asJson(), Swagger_ShareProject_Person.class);    JsonNode json = request().body().asJson();
+            final Form<Swagger_ShareProject_Person> form = Form.form(Swagger_ShareProject_Person.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_ShareProject_Person help = form.get();
 
             Project project = Project.find.byId(project_id);
-            if(project == null) return GlobalResult.notFoundObject();
+            if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
             for (Person person : help.get_person()) {
                 if (person.owningProjects.contains(project)) {
@@ -553,10 +562,8 @@ public class ProgramingPackageController extends Controller {
 
             project.update();
 
-            return GlobalResult.okResult(Json.toJson(project));
+            return GlobalResult.result_ok(Json.toJson(project));
 
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "persons[is]");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - unshareProjectWithUsers ERROR");
@@ -589,9 +596,9 @@ public class ProgramingPackageController extends Controller {
         try {
 
             Project project = Project.find.byId(project_id);
-            if(project == null) return GlobalResult.notFoundObject();
+            if(project == null) return GlobalResult.result_BadRequest("Project project_id not found");
 
-            return GlobalResult.okResult(Json.toJson(project.ownersOfProject));
+            return GlobalResult.result_ok(Json.toJson(project.ownersOfProject));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -601,7 +608,7 @@ public class ProgramingPackageController extends Controller {
     }
 
 
-///###################################################################################################################*/
+// HOMER   #############################################################################################################
 
     @ApiOperation(value = "create new Homer",
             tags = {"Homer"},
@@ -642,7 +649,7 @@ public class ProgramingPackageController extends Controller {
             Swagger_Homer_New help = form.get();
 
 
-            if ( Homer.find.where().eq("homer_id", help.homer_id).findUnique() != null ) return GlobalResult.badRequest("Homer with this id exist");
+            if ( Homer.find.where().eq("homer_id", help.homer_id).findUnique() != null ) return GlobalResult.result_BadRequest("Homer with this id exist");
 
             Homer homer = new Homer();
             homer.homer_id = help.homer_id;
@@ -650,7 +657,7 @@ public class ProgramingPackageController extends Controller {
 
             homer.save();
 
-            return GlobalResult.okResult(Json.toJson(homer));
+            return GlobalResult.result_ok(Json.toJson(homer));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -684,11 +691,11 @@ public class ProgramingPackageController extends Controller {
         try{
 
            Homer homer = Homer.find.byId(homer_id);
-           if(homer == null) return GlobalResult.notFoundObject();
+           if(homer == null) return GlobalResult.notFoundObject("Homer homer_id not found");
 
            homer.delete();
 
-           return GlobalResult.okResult();
+           return GlobalResult.result_ok();
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -720,9 +727,9 @@ public class ProgramingPackageController extends Controller {
     public  Result getHomer(@ApiParam(value = "homer_id String path",   required = true) @PathParam("homer_id")String homer_id){
         try {
             Homer homer = Homer.find.byId(homer_id);
-            if (homer == null) return GlobalResult.notFoundObject();
+            if (homer == null) return GlobalResult.notFoundObject("Homer homer_id not found");
 
-            return GlobalResult.okResult( Json.toJson(homer) );
+            return GlobalResult.result_ok( Json.toJson(homer) );
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -740,7 +747,7 @@ public class ProgramingPackageController extends Controller {
 
             // TODO dodělat filter
 
-            return GlobalResult.okResult(Json.toJson(homers));
+            return GlobalResult.result_ok(Json.toJson(homers));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -749,7 +756,7 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-// ###################################################################################################################*/
+// HOMMER CONNECTIONS ##################################################################################################
 
     @ApiOperation(value = "connect Homer with Project",
             tags = {"Homer", "Project"},
@@ -777,13 +784,13 @@ public class ProgramingPackageController extends Controller {
             Project project = Project.find.byId(project_id);
             Homer homer = Homer.find.byId(homer_id);
 
-            if(project == null)  return GlobalResult.notFoundObject();
-            if(homer == null)  return GlobalResult.notFoundObject();
+            if(project == null)  return GlobalResult.notFoundObject("Project project_id not found");
+            if(homer == null)  return GlobalResult.notFoundObject("Homer homer_id not found");
 
             homer.project = project;
             homer.update();
 
-            return GlobalResult.okResult(Json.toJson(project));
+            return GlobalResult.result_ok(Json.toJson(project));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -819,15 +826,15 @@ public class ProgramingPackageController extends Controller {
             Project project = Project.find.byId(project_id);
             Homer homer = Homer.find.byId(homer_id);
 
-            if(project == null)  return GlobalResult.notFoundObject();
-            if(homer == null)  return GlobalResult.notFoundObject();
+            if(project == null)  return GlobalResult.notFoundObject("Project project_id not found");
+            if(homer == null)  return GlobalResult.notFoundObject("Homer homer_id not found");
 
 
             if( project.homerList.contains(homer)) homer.project = null;
             homer.update();
             project.homerList.remove(homer);
 
-            return GlobalResult.okResult(Json.toJson(project));
+            return GlobalResult.result_ok(Json.toJson(project));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -836,7 +843,7 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-/// ###################################################################################################################*/
+// B PROGRAM ############################################################################################################
 
     @ApiOperation(value = "create new B_Program",
             tags = {"B_Program"},
@@ -878,7 +885,7 @@ public class ProgramingPackageController extends Controller {
             Swagger_B_Program_New help = form.get();
 
             Project project = Project.find.byId(project_id);
-            if (project == null) return GlobalResult.notFoundObject();
+            if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
             // Tvorba programu
             B_Program b_program             = new B_Program();
@@ -891,7 +898,7 @@ public class ProgramingPackageController extends Controller {
 
             b_program.save();
 
-            return GlobalResult.okResult(Json.toJson(b_program));
+            return GlobalResult.result_ok(Json.toJson(b_program));
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - postNewBProgram ERROR");
@@ -924,9 +931,9 @@ public class ProgramingPackageController extends Controller {
         try{
 
             B_Program program = B_Program.find.byId(b_program_id);
-            if (program == null) return GlobalResult.notFoundObject();
+            if (program == null) return GlobalResult.notFoundObject("B_Program b_program_id not found");
 
-            return GlobalResult.okResult(Json.toJson(program));
+            return GlobalResult.result_ok(Json.toJson(program));
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - getProgram ERROR");
@@ -960,9 +967,9 @@ public class ProgramingPackageController extends Controller {
         try{
 
             Version_Object program = Version_Object.find.byId(version_id);
-            if (program == null) return GlobalResult.notFoundObject();
+            if (program == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
-            return GlobalResult.okResult(Json.toJson(program));
+            return GlobalResult.result_ok(Json.toJson(program));
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - getProgram ERROR");
@@ -1009,16 +1016,15 @@ public class ProgramingPackageController extends Controller {
 
 
             B_Program b_program  = B_Program.find.byId(b_program_id);
-            if (b_program == null) return GlobalResult.notFoundObject();
+            if (b_program == null) return GlobalResult.notFoundObject("B_Program b_program_id not found");
 
             b_program.program_description = help.program_description;
             b_program.name                  = help.name;
 
             b_program.update();
-            return GlobalResult.okResult(Json.toJson(b_program));
+            return GlobalResult.result_ok(Json.toJson(b_program));
 
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult("Some Json Value missing");
+
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - editProgram ERROR");
@@ -1068,7 +1074,7 @@ public class ProgramingPackageController extends Controller {
 
             // Ověřím program
             B_Program b_program = B_Program.find.byId(b_program_id);
-            if (b_program == null) return GlobalResult.notFoundObject();
+            if (b_program == null) return GlobalResult.notFoundObject("B_Program b_program_id not found");
 
             // První nová Verze
             Version_Object versionObjectObject          = new Version_Object();
@@ -1088,10 +1094,8 @@ public class ProgramingPackageController extends Controller {
             // Nahraje do Azure a připojí do verze soubor (lze dělat i cyklem - ale název souboru musí být vždy jiný)
             UtilTools.uploadAzure_Version("b-program", file_content, "b-program-file", b_program.azureStorageLink, b_program.azurePackageLink, versionObjectObject);
 
-            return GlobalResult.okResult(Json.toJson(b_program));
+            return GlobalResult.result_ok(Json.toJson(b_program));
 
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "program_name - String", "program_description - TEXT");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - editProgram ERROR");
@@ -1124,12 +1128,12 @@ public class ProgramingPackageController extends Controller {
         try{
 
             B_Program program  = B_Program.find.byId(b_program_id);
-            if (program == null) return GlobalResult.notFoundObject();
+            if (program == null) return GlobalResult.notFoundObject("B_Program b_program_id not found");
 
 
             program.delete();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -1138,27 +1142,42 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-    //TODO SWAGGER  a taky celá logika nahrávání do homera
-    public  Result uploadProgramToHomer_Immediately(@ApiParam(value = "b_program_id String path", required = true) @PathParam("b_program_id") String b_program_id,
-                                                    @ApiParam(value = "version_id String path", required = true) @PathParam("version_id") String version_id,
-                                                    @ApiParam(value = "homer_id String path", required = true) @PathParam("homer_id") String homer_id){
+
+    @ApiOperation(value = "upload B_Program (version) to Homer",
+            tags = {"B_Program", "Homer"},
+            notes = "If you want upload program (!Immediately!) to Homer -> Homer must be online and connect to Cloud Server, " +
+                    "you are uploading B_program version. And if connected M_Project is set to \"Auto_update\", it will automatically update all Grid Terminals.",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successful Uploaded",                       response = B_Program_Homer.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",                      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",                  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public  Result uploadProgramToHomer_Immediately(@ApiParam(value = "b_program_id", required = true) @PathParam("b_program_id") String b_program_id,
+                                                    @ApiParam(value = "version_id", required = true) @PathParam("version_id") String version_id,
+                                                    @ApiParam(value = "homer_id", required = true) @PathParam("homer_id") String homer_id){
         try {
 
             // B program, který chci nahrát do Cloudu na Blocko server
             B_Program b_program = B_Program.find.byId(b_program_id);
-            if (b_program == null) return GlobalResult.notFoundObject();
+            if (b_program == null) return GlobalResult.notFoundObject("B_Program b_program_id not found");
 
             // Verze B programu kterou budu nahrávat do cloudu
             Version_Object version_object = Version_Object.find.byId(version_id);
-            if (version_object == null) return GlobalResult.notFoundObject();
+            if (version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
             // Homer na který budu nahrávatb_program_cloud
             Homer homer = Homer.find.byId(homer_id);
-            if (homer == null)  return GlobalResult.notFoundObject();
+            if (homer == null)  return GlobalResult.notFoundObject("Homer homer_id not found");
 
 
-            //*********************//
-            if(! WebSocketController_Incoming.homer_is_online(homer_id)) return GlobalResult.badResult("Homer není online");
+            if(! WebSocketController_Incoming.homer_is_online(homer_id)) return GlobalResult.result_BadRequest("Device is not online");
 
 
             B_Program_Homer old_one =  B_Program_Homer.find.where().eq("homer.homer_id", homer.homer_id).findUnique();
@@ -1186,7 +1205,7 @@ public class ProgramingPackageController extends Controller {
             version_object.update();
 
 
-            return GlobalResult.okResult( Json.toJson("Program was upload To Homer successfully and started"));
+            return GlobalResult.result_ok( Json.toJson( program_homer) );
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - uploadProgramToHomer_Immediately ERROR");
@@ -1194,24 +1213,19 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-    @ApiOperation(value = "upload B Program to cloud",
+    @ApiOperation(value = "upload B Program (version) to cloud",
             tags = {"B_Program"},
             notes = "upload version of B Program to cloud. Its possible have only one version from B program in cloud. If you uploud new one - old one will be replaced",
             produces = "application/json",
             protocols = "https",
-            code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
-            }
+            code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Result_ok.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 200, message = "Successful Uploaded",                       response = B_Program_Homer.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",                      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",                  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public  Result upload_b_Program_ToCloud(@ApiParam(value = "b_program_id String path", required = true) @PathParam("b_program_id") String b_program_id, @ApiParam(value = "version_id String path", required = true) @PathParam("version_id") String version_id){
@@ -1219,11 +1233,11 @@ public class ProgramingPackageController extends Controller {
 
             // B program, který chci nahrát do Cloudu na Blocko server
             B_Program b_program = B_Program.find.byId(b_program_id);
-            if (b_program == null) return GlobalResult.notFoundObject();
+            if (b_program == null) return GlobalResult.notFoundObject("B_Program b_program_id not found");
 
             // Verze B programu kterou budu nahrávat do cloudu
             Version_Object version_object = Version_Object.find.byId(version_id);
-            if (version_object == null) return GlobalResult.notFoundObject();
+            if (version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
             // Pokud už nějaká instance běžela, tak jí zabiju a z databáze odstraním vazbu na běžící instanci b programu
             if( version_object.b_program_cloud != null ) {
@@ -1252,14 +1266,14 @@ public class ProgramingPackageController extends Controller {
             // Ukládám po úspěšné nastartvoání programu v cloudu jeho databázový ekvivalent
             program_cloud.save();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
         } catch (NullPointerException a) {
             // TODO dopřeložit a nějak definovat????
-            return GlobalResult.nullPointerResult("Server není nastartován");
+            return GlobalResult.result_BadRequest("Server není nastartován");
          } catch (TimeoutException a) {
-            return GlobalResult.nullPointerResult("Nepodařilo se včas nahrát na server");
+            return GlobalResult.result_BadRequest("Nepodařilo se včas nahrát na server");
          } catch (InterruptedException a) {
-            return GlobalResult.nullPointerResult("Vlákno nahrávání bylo přerušeno ");
+            return GlobalResult.result_BadRequest("Vlákno nahrávání bylo přerušeno ");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - removeProgram ERROR");
@@ -1279,7 +1293,7 @@ public class ProgramingPackageController extends Controller {
         return GlobalResult.ok("Nutné dodělat - listOfHomersWaitingForUpload");
     }
 
-///###################################################################################################################*/
+// TYPE OF BLOCK #######################################################################################################
 
     @ApiOperation(value = "create new Type of Block",
             tags = {"Type of Block"},
@@ -1329,7 +1343,7 @@ public class ProgramingPackageController extends Controller {
             if(help.project_id != null){
 
                 Project project = Project.find.byId(help.project_id);
-                if(project == null) return GlobalResult.notFoundObject();
+                if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
                 typeOfBlock.project = project;
 
@@ -1385,7 +1399,7 @@ public class ProgramingPackageController extends Controller {
             Swagger_TypeOfBlock_New help = form.get();
 
             TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(type_of_block_id);
-            if(typeOfBlock == null) return GlobalResult.notFoundObject();
+            if(typeOfBlock == null) return GlobalResult.notFoundObject("TypeOfBlock type_of_block_id not found");
 
             typeOfBlock.generalDescription  = help.general_description;
             typeOfBlock.name                = help.name;
@@ -1393,16 +1407,15 @@ public class ProgramingPackageController extends Controller {
             if(help.project_id != null){
 
                 Project project = Project.find.byId(help.project_id);
-                if(project == null) return GlobalResult.notFoundObject();
+                if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
                 typeOfBlock.project = project;
 
             }
 
             typeOfBlock.update();
-            return GlobalResult.update( Json.toJson(typeOfBlock));
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "name - String", "general_description - TEXT");
+            return GlobalResult.result_ok( Json.toJson(typeOfBlock));
+
         } catch (Exception e) {
             Logger.error("Error", e);
             return GlobalResult.internalServerError();
@@ -1435,11 +1448,11 @@ public class ProgramingPackageController extends Controller {
         try{
 
             TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(type_of_block_id);
-            if(typeOfBlock == null) return GlobalResult.notFoundObject();
+            if(typeOfBlock == null) return GlobalResult.notFoundObject("TypeOfBlock type_of_block_id not found");
 
             typeOfBlock.delete();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -1467,13 +1480,12 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-
     public Result get_TypeOfBlock_by_Project(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
         try {
             Project project = Project.find.byId(project_id);
-            if(project == null) return GlobalResult.notFoundObject();
+            if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
-            return GlobalResult.okResult(Json.toJson(project.type_of_blocks));
+            return GlobalResult.result_ok(Json.toJson(project.type_of_blocks));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -1502,17 +1514,16 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @BodyParser.Of(BodyParser.Json.class)
     public Result getAllTypeOfBlocks(){
         try {
-            return GlobalResult.okResult(Json.toJson(TypeOfBlock.find.all()));
+            return GlobalResult.result_ok(Json.toJson(TypeOfBlock.find.all()));
         } catch (Exception e) {
             Logger.error("Error", e);
             return GlobalResult.internalServerError();
         }
     }
 
-///###################################################################################################################*/
+// BLOCK ###############################################################################################################
 
 
     @ApiOperation(value = "create new Block",
@@ -1562,13 +1573,13 @@ public class ProgramingPackageController extends Controller {
 
 
            TypeOfBlock typeOfBlock = TypeOfBlock.find.byId( help.type_of_block_id);
-           if(typeOfBlock == null) return GlobalResult.notFoundObject();
+           if(typeOfBlock == null) return GlobalResult.notFoundObject("TypeOfBlock type_of_block_id not found");
 
            blockoBlock.type_of_block = typeOfBlock;
            blockoBlock.save();
 
 
-            return GlobalResult.okResult( Json.toJson(blockoBlock) );
+            return GlobalResult.result_ok( Json.toJson(blockoBlock) );
        } catch (Exception e) {
            Logger.error("Error", e);
            Logger.error("ProgramingPackageController - newBlock ERROR");
@@ -1618,21 +1629,20 @@ public class ProgramingPackageController extends Controller {
 
 
                 BlockoBlock blockoBlock = BlockoBlock.find.byId(blocko_block_id);
-                if (blockoBlock == null) return GlobalResult.notFoundObject();
+                if (blockoBlock == null) return GlobalResult.notFoundObject("BlockoBlock blocko_block_id not found");
 
                 blockoBlock.general_description = help.general_description;
                 blockoBlock.name                = help.name;
 
                 TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(  help.type_of_block_id);
-                if(typeOfBlock == null) return GlobalResult.notFoundObject();
+                if(typeOfBlock == null) return GlobalResult.notFoundObject("TypeOfBlock type_of_block_id not found");
 
                 blockoBlock.type_of_block = typeOfBlock;
 
                 blockoBlock.update();
 
-                return GlobalResult.okResult(Json.toJson(blockoBlock));
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "name", "version_description", "type_of_block_id");
+                return GlobalResult.result_ok(Json.toJson(blockoBlock));
+
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - getBlockLast ERROR");
@@ -1665,9 +1675,9 @@ public class ProgramingPackageController extends Controller {
     public Result get_BlockoBlock_Version(String blocko_version_id){
         try {
                 BlockoBlockVersion blocko_version = BlockoBlockVersion.find.byId(blocko_version_id);
-                if(blocko_version == null) return GlobalResult.notFoundObject();
+                if(blocko_version == null) return GlobalResult.notFoundObject("BlockoBlock blocko_block_id not found");
 
-                return GlobalResult.okResult(Json.toJson(blocko_version));
+                return GlobalResult.result_ok(Json.toJson(blocko_version));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -1701,9 +1711,9 @@ public class ProgramingPackageController extends Controller {
     public Result getBlockBlock(@ApiParam(value = "blocko_block_id String path",   required = true) @PathParam("blocko_block_id") String blocko_block_id){
         try {
             BlockoBlock blockoBlock = BlockoBlock.find.byId(blocko_block_id);
-            if(blockoBlock == null) return GlobalResult.notFoundObject();
+            if(blockoBlock == null) return GlobalResult.notFoundObject("BlockoBlock blocko_block_id not found");
 
-            return GlobalResult.okResult(Json.toJson(blockoBlock));
+            return GlobalResult.result_ok(Json.toJson(blockoBlock));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -1736,9 +1746,9 @@ public class ProgramingPackageController extends Controller {
         try {
 
             TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(type_of_block_id);
-            if(typeOfBlock == null) return GlobalResult.notFoundObject();
+            if(typeOfBlock == null) return GlobalResult.notFoundObject("TypeOfBlock type_of_block_id not found");
 
-            return GlobalResult.okResult(Json.toJson(typeOfBlock.blockoBlocks));
+            return GlobalResult.result_ok(Json.toJson(typeOfBlock.blockoBlocks));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -1772,10 +1782,10 @@ public class ProgramingPackageController extends Controller {
         try {
 
             BlockoBlock blockoBlock = BlockoBlock.find.byId(blocko_block_id);
-            if(blockoBlock == null) return GlobalResult.notFoundObject();
+            if(blockoBlock == null) return GlobalResult.notFoundObject("BlockoBlock blocko_block_id not found");
             blockoBlock.delete();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - shareProjectWithUsers ERROR");
@@ -1806,11 +1816,11 @@ public class ProgramingPackageController extends Controller {
         try {
 
             BlockoBlockVersion blockoContentBlock = BlockoBlockVersion.find.byId(blocko_block_version_id);
-            if(blockoContentBlock == null) return GlobalResult.notFoundObject();
+            if(blockoContentBlock == null) return GlobalResult.notFoundObject("BlockoBlockVersion blocko_block_version_id not found");
 
             blockoContentBlock.delete();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -1853,8 +1863,9 @@ public class ProgramingPackageController extends Controller {
     public Result new_BlockoBlock_Version(@ApiParam(value = "blocko_block_id String path",   required = true) @PathParam("blocko_block_id") String blocko_block_id){
         try {
 
-            Swagger_BlockoBlock_BlockoVersion_New help = Json.fromJson( request().body().asJson() , Swagger_BlockoBlock_BlockoVersion_New.class);
-
+            final Form<Swagger_BlockoBlock_BlockoVersion_New> form = Form.form(Swagger_BlockoBlock_BlockoVersion_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_BlockoBlock_BlockoVersion_New help = form.get();
 
             BlockoBlock blockoBlock = BlockoBlock.find.byId(blocko_block_id);
 
@@ -1869,10 +1880,9 @@ public class ProgramingPackageController extends Controller {
             version.save();
 
             //blocko_block.blocko_versions.add(version);
-            return GlobalResult.okResult(Json.toJson(blockoBlock));
+            return GlobalResult.result_ok(Json.toJson(blockoBlock));
 
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "version_name - String", "version_description - TEXT", "design_json - TEXT", "logic_json - TEXT");
+
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - shareProjectWithUsers ERROR");
@@ -1916,7 +1926,10 @@ public class ProgramingPackageController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result edit_BlockBlock_version(String blocko_block_version_id){
         try {
-            Swagger_BlockoBlock_BlockoVersion_Edit help = Json.fromJson( request().body().asJson() , Swagger_BlockoBlock_BlockoVersion_Edit.class);
+            final Form<Swagger_BlockoBlock_BlockoVersion_Edit> form = Form.form(Swagger_BlockoBlock_BlockoVersion_Edit.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_BlockoBlock_BlockoVersion_Edit help = form.get();
+
 
             BlockoBlockVersion version = BlockoBlockVersion.find.byId(blocko_block_version_id);
 
@@ -1924,10 +1937,8 @@ public class ProgramingPackageController extends Controller {
             version.version_description = help.version_description;
 
             version.update();
-            return GlobalResult.okResult(Json.toJson(version));
+            return GlobalResult.result_ok(Json.toJson(version));
 
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "version_name", "version_description");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - shareProjectWithUsers ERROR");
@@ -1971,7 +1982,7 @@ public class ProgramingPackageController extends Controller {
     public Result get_BlockoBlock_all_versions(String blocko_block_id){
         try {
             BlockoBlock blockoBlock = BlockoBlock.find.byId(blocko_block_id);
-            if (blockoBlock == null) return GlobalResult.notFoundObject();
+            if (blockoBlock == null) return GlobalResult.notFoundObject("BlockoBlock blocko_block_id not found");
             return GlobalResult.ok(Json.toJson(blockoBlock.blocko_versions));
 
         } catch (Exception e) {

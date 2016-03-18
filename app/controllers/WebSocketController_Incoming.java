@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.project.b_program.B_Program;
 import models.project.b_program.B_Program_Homer;
+import models.project.m_program.Grid_Terminal;
 import models.project.m_program.M_Project;
 import play.libs.Json;
 import play.mvc.Controller;
@@ -96,6 +97,16 @@ public class WebSocketController_Incoming extends Controller {
     public WebSocket<String> mobile_connection(String m_project_id, String terminal_id){
         System.out.println ("Příchozí připojení Terminal " + m_project_id + " a zařízení se jménem " + terminal_id);
 
+        if(incomingConnections_terminals.containsKey(terminal_id )){
+            System.out.println("Příchozí jméno terminálu už je aktuálně přihlášené!!");
+        }
+
+
+        if(Grid_Terminal.find.where().eq("terminal_id",terminal_id).findUnique() == null){
+            System.out.println("Příchozí jméno zařízení není uloženo v databázi a je odmítnuto!!");
+        }
+
+
         M_Project m_project = M_Project.find.byId(m_project_id);
         if(m_project == null ) {
             System.out.println("Příchozí M_Projekt neexistuje");
@@ -176,11 +187,7 @@ public class WebSocketController_Incoming extends Controller {
 
                 m_project.b_program_version = b_program.versionObjects.get(0);
                 m_project.update();
-
-
             }
-
-
 
             String homer_id = m_project.b_program_version.b_program_homer.homer.homer_id;
             System.out.println("Budu propojovat s Homer: " + homer_id);
@@ -499,7 +506,7 @@ public class WebSocketController_Incoming extends Controller {
         System.out.println("............................................................................. ");
         System.out.println("\n");
 
-        return  GlobalResult.okResult();
+        return  GlobalResult.result_ok();
     }
 
     public static void disconnect_all_homers(){

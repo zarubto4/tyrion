@@ -47,14 +47,15 @@ public class Project extends Model {
     @JsonProperty public Integer count_type_of_blocks()     { return type_of_blocks.size();     }
     @JsonProperty public Integer count_screen_size_types()  { return screen_size_types.size();  }
 
-    @JsonProperty public String  homers()           { return Server.serverAddress + "/project/project/homers/"     + id; }
-    @JsonProperty public String  boards()           { return Server.serverAddress + "/project/boards/"             + id; }
-    @JsonProperty public String  b_programs()       { return Server.serverAddress + "/project/project/b_programs/" + id; }
-    @JsonProperty public String  c_programs()       { return Server.serverAddress + "/project/project/c_programs/" + id; }
-    @JsonProperty public String  m_projects()       { return Server.serverAddress + "/project/project/m_projects/" + id; }
-    @JsonProperty public String  owners()           { return Server.serverAddress + "/project/project/owners/"     + id; }
-    @JsonProperty public String  type_of_blocks()   { return Server.serverAddress + "/project/blockoBlock/project/"+ id; }
-    @JsonProperty public String  screen_size_types(){ return Server.serverAddress + "/grid/screen_type/project/"   + id; }
+    @JsonProperty public String  homers()           { return Server.tyrion_serverAddress + "/project/project/homers/"     + id; }
+    @JsonProperty public String  boards()           { return Server.tyrion_serverAddress + "/project/boards/"             + id; }
+    @JsonProperty public String  b_programs()       { return Server.tyrion_serverAddress + "/project/project/b_programs/" + id; }
+    @JsonProperty public String  c_programs()       { return Server.tyrion_serverAddress + "/project/project/c_programs/" + id; }
+    @JsonProperty public String  m_projects()       { return Server.tyrion_serverAddress + "/project/project/m_projects/" + id; }
+    @JsonProperty public String  owners()           { return Server.tyrion_serverAddress + "/project/project/owners/"     + id; }
+    @JsonProperty public String  type_of_blocks()   { return Server.tyrion_serverAddress + "/project/blockoBlock/project/"+ id; }
+    @JsonProperty public String  screen_size_types(){ return Server.tyrion_serverAddress + "/grid/screen_type/project/"   + id; }
+
 
  /* FINDER --------------------------------------------------------------------------------------------------------*/
     public static Finder<String,Project> find = new Finder<>(Project.class);

@@ -22,7 +22,7 @@ public class SecurityRole extends Model {
 
 
 
-    public String persons(){  return Server.serverAddress + "/secure/role/person/"+ id; }
+    public String persons(){  return Server.tyrion_serverAddress + "/secure/role/person/"+ id; }
 
 
 

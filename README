@@ -1,12 +1,44 @@
 
 
+1.05.3.4
+- Bylo nutné zajistit přihlášení více uživatelů naráz. Proto byla změněna koncepce správy klíčů (tokenů).
+  Každý uživatel se může přihlásit na libovolné množství zařízení - klíč má datum přidělení a určenou životnost (Několik týdnů).
+  Pro přihlášení se nic nemění. Uživatel stejně jako teď dostane svůj token. Odhlášení probíhá taktéž úplně stejně.
+  Jen je vyžadováno při přihlášení přiložit k emailu a heslu ještě "user_agent" informace o prohlížeči do hlavičky HTML reqestu!!.
+  (pro jistotu pokud nebude možné to zjistit na straně frontendu, bude nahrazena defaultní hodnotou "unknown browser")
+
+  Navíc přibyly API na zjištění aktuálních platných připojení a možnost jejich deaktivace na dálku. (Zneplatní se konkrétní token)
+  TODO: Bude potřeba dodělat řešení pro prodlužování platnosti tokenu (Buď nějak magicky na Tyrionovi nebo ze strany frontendu)
+
+- Úprava nových API pro Davida - Pro sdílení M_programu mezi zařízeními
+    M_Project respektive M_Program. Pokud je požádáno o M_Project tak jeho obsah je i seznam M_Programů.
+    Aby nvýsledný JSON nebyl veliký M_program neobsahuje M_code ale pouze odkaz na něj.
+    To se změní ve chvíli, kdy je dotaz na konkrétní M_Program. Json v tomto případě obsahuje m_code.
+    Viz dokumentace.
+
+- Přidání api dotazů pro validaci nick_name a emailu při registraci nového uživatele na žádost Radka + Přidání nové dokumentace
+
+
+
+
+TODO Tomáš Z.: Do dalšího buildu - úprava GLOBAL RESULT - některý věci tam nedávají smysl
+TODO Tomáš Z.: Zdokumentovat response - a přejmenovat na Result na response u všech - je to zmatečné!
+TODO Tomáš Z.: Zdokumentovat všechny Models pro Swagger
+TODO Tomáš Z.: Přidat cyklické odmazávání BLOB v Azure, na které už neexistuje databázová vazba
+TODO Tomáš Z.: Přidat cyklické odmazávání Vygenerovaných nezrealizovaných spojení na sociální sítě (Linkded Account)
+TODO Tomáš Z.: Pokud se uživatel přihlásí přes facebook, k jeho účtu bude přidělen plovoucí token. Pokud se přihlásí znova a znova..
+                budou se vtvářet další a další připojení. Je žádoucí mazat předchozí spojení pokud poznám, že je to ze stejného prohlížeče?
+                PS: Vyžaduje to tak půl dne (+ ideálně přepsat třídu s přihlášení přes facebook a odzkoušet github..
+
+
+------------------------------------------------------------------------------------------------------------------------
 
 1.05.3.3
-- Opravena chyba v tvorbě m_programu kde jsem vyžadoval field  m_program_id (Chyba v kopírování - mělo se to jmenovat m_project_id)
+- Opravena chyba v tvorbě m_programu kde bylo vyžadováno field  m_program_id (Chyba v kopírování - mělo se to jmenovat m_project_id)
   Přesunuto do url linku
 
 
-
+------------------------------------------------------------------------------------------------------------------------
 
 Verze 1.05.3.2
 

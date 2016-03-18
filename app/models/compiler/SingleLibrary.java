@@ -25,7 +25,7 @@ public class SingleLibrary  extends Model {
 
 
     @JsonProperty public Integer versionsCount()   { return version_objects.size(); }
-    @JsonProperty public String  versions()        { return Server.serverAddress + "/compilation/library/versions/"   + id; }
+    @JsonProperty public String  versions()        { return Server.tyrion_serverAddress + "/compilation/library/versions/"   + id; }
 
 
 

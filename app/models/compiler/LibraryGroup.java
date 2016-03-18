@@ -27,8 +27,8 @@ public class LibraryGroup extends Model {
 
 
     @JsonProperty public Integer versionsCount() { return version_objects.size(); }
-    @JsonProperty public String  versions()      { return                                   Server.serverAddress + "/compilation/libraryGroup/versions/"   + id; }
-    @JsonProperty public String  processors()    { return processors.isEmpty()    ? null :  Server.serverAddress + "/compilation/libraryGroup/processors/" +  id;}
+    @JsonProperty public String  versions()      { return                                   Server.tyrion_serverAddress + "/compilation/libraryGroup/versions/"   + id; }
+    @JsonProperty public String  processors()    { return processors.isEmpty()    ? null :  Server.tyrion_serverAddress + "/compilation/libraryGroup/processors/" +  id;}
 
 
     @JsonIgnore

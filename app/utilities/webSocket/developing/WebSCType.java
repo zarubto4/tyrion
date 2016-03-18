@@ -125,7 +125,7 @@ public abstract class WebSCType {
                         }
 
                     }catch (Exception e){
-                        e.printStackTrace();
+                        System.out.println("JSON Nebylo možné odeslat: " + json.toString());
                     }
 
                 }

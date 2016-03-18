@@ -12,7 +12,6 @@ import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 public class Person extends Model {
@@ -28,7 +27,8 @@ public class Person extends Model {
                                                                 public String first_title;
                                                                 public String last_title;
                                                                 public Date date_of_birth;
-                                                @JsonIgnore     private String authToken;
+
+
                                                 @JsonIgnore     public boolean mailValidated;
                                        @Column(length = 64)     private byte[] shaPassword;
 
@@ -41,8 +41,7 @@ public class Person extends Model {
     @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<Post>          personPosts    = new ArrayList<>(); // Propojení, které uživatel napsal
     @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<LinkedPost>    linkedPosts    = new ArrayList<>(); // Propojení, které uživatel nalinkoval
     @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL)     public List<LinkedAccount> linkedAccounts = new ArrayList<>();
-
-
+    @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL)     public List<FloatingPersonToken> floatingPersonTokens = new ArrayList<>(); // Propojení, které uživatel napsal
 
 
 
@@ -62,25 +61,12 @@ public class Person extends Model {
         this.shaPassword = getSha512(value);
     }
 
-    public void setToken(String token){
-        authToken = token;
-    }
-
-    public String createToken() throws Exception{
-
-        while(true){ // I need Unique Value
-            authToken = UUID.randomUUID().toString();
-            if (LinkedAccount.find.where().eq("authToken",authToken).findUnique() == null) break;
-        }
-
-        update();
-        return authToken;
-    }
-
-    // If userDB/system make log out
-    public void deleteAuthToken() {
-        authToken = null;
-        update();
+    public void setToken(String token, String user_agent){
+        FloatingPersonToken floatingPersonToken = new FloatingPersonToken();
+        floatingPersonToken.set_basic_values(token);
+        floatingPersonToken.person = this;
+        floatingPersonToken.user_agent = user_agent;
+        floatingPersonToken.save();
     }
 
 //#### FINDER ########################################################################################################
@@ -89,8 +75,12 @@ public class Person extends Model {
 
     public static Person findByAuthToken(String authToken) {
         if (authToken == null) { return null; }
-        try  { return find.where().eq("authToken", authToken).findUnique(); }
-        catch (Exception e) { return null; }
+        try  {
+
+            return find.where().eq("floatingPersonTokens.authToken", authToken).findUnique(); }
+
+        catch (Exception e) {
+            return null; }
     }
     public static Finder<String,Person> find = new Finder<>(Person.class);
 }

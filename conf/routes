@@ -31,7 +31,7 @@ POST             /websocket/webSocketStats                      @controllers.Web
 
 #Login page
 POST            /coreClient/person/permission/login         @controllers.SecurityController.login()
-POST            /coreClient/person/permission/logout        @controllers.SecurityController.logout
+POST            /coreClient/person/permission/logout        @controllers.SecurityController.logout()
 
 GET             /login/facebook                             @controllers.SecurityController.Facebook(return_link)
 GET             /login/twitter                              @controllers.SecurityController.Twitter(return_link)
@@ -49,11 +49,14 @@ GET             /login/github/*url                          @controllers.Securit
 
 #Peron CRUD
 POST           /coreClient/person/person                        @controllers.PersonController.registred_Person()
-PUT            /coreClient/person/person                        @controllers.PersonController.edit_Person_Information()
-GET            /coreClient/person/person/:id                    @controllers.PersonController.getPerson(id: String)
+PUT            /coreClient/person/person/:person_id             @controllers.PersonController.edit_Person_Information(person_id)
+GET            /coreClient/person/person/:person_id             @controllers.PersonController.getPerson(person_id)
 
 GET            /coreClient/person/valid/nickname/:nick_name     @controllers.PersonController.valid_Person_NickName(nick_name)
 GET            /coreClient/person/valid/mail/:mail              @controllers.PersonController.valid_Person_mail(mail)
+
+GET             /coreClient/connections                          @controllers.PersonController.get_Person_Connections()
+DELETE          /coreClient/connection/:connection_id            @controllers.PersonController.remove_Person_Connection(connection_id)
 
 
 DELETE         /coreClient/person/person/:id                    @controllers.PersonController.deletePerson(id: String)
@@ -90,8 +93,6 @@ GET            /overflow/post/:post_id                                          
 DELETE         /overflow/post/:post_id                                                      @controllers.OverFlowController.delete_Post(post_id)
 PUT            /overflow/post/:post_id                                                      @controllers.OverFlowController.edit_Post(post_id)
 POST           /overflow/postFilter                                                         @controllers.OverFlowController.get_Post_ByFilter()
-GET            /overflow/linkedAnswers/:post_id                                             @controllers.OverFlowController.get_Post_links(post_id)
-
 
 POST           /overflow/typeOfPost                                                         @controllers.OverFlowController.new_TypeOfPost()
 GET            /overflow/typeOfPost/all                                                     @controllers.OverFlowController.get_TypeOfPost_all()
@@ -187,10 +188,11 @@ DELETE         /project/blockoBlock/version/:blocko_block_version_id            
 
 
 POST           /project/typeOfBlock                                                         @controllers.ProgramingPackageController.newTypeOfBlock()
+GET            /project/typeOfBlock                                                         @controllers.ProgramingPackageController.getAllTypeOfBlocks
 GET            /project/blockoBlock/project/:project_id                                     @controllers.ProgramingPackageController.get_TypeOfBlock_by_Project(project_id)
 GET            /project/typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.get_BlockoBlocks_from_Category(type_of_block_id)
 PUT            /project/typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.editTypeOfBlock(type_of_block_id)
-GET            /project/typeOfBlock                                                         @controllers.ProgramingPackageController.getAllTypeOfBlocks
+
 DELETE         /project/typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.deleteTypeOfBlock(type_of_block_id)
 
 
@@ -285,13 +287,13 @@ POST            /compilation/library/version/:library_id                        
 GET             /compilation/library/versions/:library_id                                   @controllers.CompilationLibrariesController.get_SingleLibrary_Versions(library_id)
 
 GET             /compilation/library/:library_id                                            @controllers.CompilationLibrariesController.get_SingleLibrary(library_id)
-PUT             /compilation/library/:library_id                                             @controllers.CompilationLibrariesController.edit_SingleLibrary(library_id)
-DELETE          /compilation/library/:library_id                                             @controllers.CompilationLibrariesController.delete_SingleLibrary(library_id)
-POST            /compilation/library/upload/:library_id/:version_id                          @controllers.CompilationLibrariesController.upload_SingleLibrary_Version(library_id, version_id)
+PUT             /compilation/library/:library_id                                            @controllers.CompilationLibrariesController.edit_SingleLibrary(library_id)
+DELETE          /compilation/library/:library_id                                            @controllers.CompilationLibrariesController.delete_SingleLibrary(library_id)
+POST            /compilation/library/upload/:library_id/:version_id                         @controllers.CompilationLibrariesController.upload_SingleLibrary_Version(library_id, version_id)
 
 #File
-GET             /file/listOfFiles/:id                                                       @controllers.CompilationLibrariesController.get_LibraryGroup_Version_Libraries(id: String)
-GET             /file/fileRecord/:id                                                        @controllers.CompilationLibrariesController.fileRecord(id: String)
+GET             /file/listOfFiles/:version_id                                               @controllers.CompilationLibrariesController.get_LibraryGroup_Version_Libraries(version_id)
+GET             /file/fileRecord/:file_record_id                                            @controllers.CompilationLibrariesController.fileRecord(file_record_id)
 
 
 ### GRIDS ############ GRIDS ############### GRIDS ################ GRIDS ######################################################################################################
@@ -311,6 +313,7 @@ PUT             /grid/m_project/connect/:m_project_id/:version_id/:auto_incremen
 POST            /grid/m_program/:m_project_id                                               @controllers.GridController.new_M_Program(m_project_id)
 GET             /grid/m_program/app/token/:qr_token                                         @controllers.GridController.get_M_Program_byQR_Token_forMobile(qr_token)
 GET             /grid/m_program/app/m_programs                                              @controllers.GridController.get_M_Program_all_forMobile()
+GET             /grid/m_program/m_code/:qr_token                                            @controllers.GridController.get_M_Program_m_code(qr_token)
 
 GET             /grid/m_program/:m_progrm_id                                                @controllers.GridController.get_M_Program(m_progrm_id)
 PUT             /grid/m_program/:m_progrm_id                                                @controllers.GridController.edit_M_Program(m_progrm_id)

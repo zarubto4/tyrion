@@ -20,7 +20,7 @@ public class FileRecord extends Model {
                                  @JsonIgnore  @ManyToOne     public Version_Object version_object;
 
 
-    @JsonProperty public String fileContent()   { return Server.serverAddress + "/file/fileRecord/" +id; }
+    @JsonProperty public String fileContent()   { return Server.tyrion_serverAddress + "/file/fileRecord/" +id; }
 
 
 

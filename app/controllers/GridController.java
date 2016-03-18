@@ -1,10 +1,10 @@
 package controllers;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.*;
 import models.compiler.Version_Object;
 import models.grid.Screen_Size_Type;
 import models.persons.Person;
+import models.persons.PersonPermission;
 import models.project.global.Project;
 import models.project.m_program.Grid_Terminal;
 import models.project.m_program.M_Program;
@@ -13,12 +13,12 @@ import play.Logger;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.BodyParser;
+import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.Server;
 import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
-import utilities.response.response_objects.JsonValueMissing;
+import utilities.response.response_objects.Result_JsonValueMissing;
 import utilities.response.response_objects.Result_PermissionRequired;
 import utilities.response.response_objects.Result_Unauthorized;
 import utilities.response.response_objects.Result_ok;
@@ -27,7 +27,7 @@ import utilities.swagger.documentationClass.Swagger_M_Program_New;
 import utilities.swagger.documentationClass.Swagger_M_Project_New;
 import utilities.swagger.documentationClass.Swagger_ScreeSizeType_New;
 import utilities.swagger.outboundClass.Swagger_M_Program_ByToken;
-import utilities.swagger.outboundClass.Swagger_TypeOfBoard_Combination;
+import utilities.swagger.outboundClass.Swagger_Screen_Size_Type_Combination;
 
 import javax.websocket.server.PathParam;
 import java.util.Date;
@@ -36,6 +36,16 @@ import java.util.List;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class GridController extends play.mvc.Controller {
+
+//### SYSTEM PERMISSION ################################################################################################
+
+    public static void set_System_Permission(){
+        new PersonPermission("role.read", "description");
+       //
+    }
+
+//######################################################################################################################
+
 
     @ApiOperation(value = "Create new M_Project",
             tags = {"M_Program"},
@@ -65,7 +75,7 @@ public class GridController extends play.mvc.Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successful created",      response = M_Project.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -80,7 +90,7 @@ public class GridController extends play.mvc.Controller {
             Swagger_M_Project_New help = form.get();
 
             Project project = Project.find.byId( project_id );
-            if(project == null) return GlobalResult.notFoundObject();
+            if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
             M_Project m_project = new M_Project();
             m_project.program_description = help.program_description;
@@ -124,9 +134,9 @@ public class GridController extends play.mvc.Controller {
     public Result get_M_Project(@ApiParam(value = "m_project_id String query", required = true) @PathParam("m_project_id") String m_project_id){
         try {
             M_Project m_project = M_Project.find.byId(m_project_id);
-            if (m_project == null) return GlobalResult.notFoundObject();
+            if (m_project == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
 
-            return GlobalResult.okResult(Json.toJson(m_project));
+            return GlobalResult.result_ok(Json.toJson(m_project));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -176,13 +186,13 @@ public class GridController extends play.mvc.Controller {
 
 
             M_Project m_project = M_Project.find.byId(m_project_id);
-            if(m_project == null) return GlobalResult.notFoundObject();
+            if(m_project == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
 
             m_project.program_description = help.program_description;
             m_project.program_name = help.program_name;
 
             m_project.update();
-            return GlobalResult.update( Json.toJson(m_project));
+            return GlobalResult.result_ok( Json.toJson(m_project));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -215,15 +225,13 @@ public class GridController extends play.mvc.Controller {
     @Security.Authenticated(Secured.class)
     public Result remove_M_Project(@ApiParam(value = "m_project_id String query", required = true) @PathParam("m_project_id") String m_project_id){
         try{
+
             M_Project m_project = M_Project.find.byId(m_project_id);
-            if(m_project == null) return GlobalResult.notFoundObject();
+            if(m_project == null) return GlobalResult.notFoundObject("SecurityRole role_id not found");
 
             m_project.delete();
 
-            return GlobalResult.okResult();
-
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "project_name - String", "project_description - TEXT");
+            return GlobalResult.result_ok();
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - postNewProject ERROR");
@@ -257,7 +265,7 @@ public class GridController extends play.mvc.Controller {
         try {
 
             List<M_Project> m_projects = M_Project.find.where().eq("project.id", project_id).findList();
-            return GlobalResult.okResult(Json.toJson(m_projects));
+            return GlobalResult.result_ok(Json.toJson(m_projects));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -293,7 +301,7 @@ public class GridController extends play.mvc.Controller {
             Person person = SecurityController.getPerson();
             List<M_Project> m_projects = M_Project.find.where().eq("project.ownersOfProject.id", person.id).findList();
 
-            return GlobalResult.okResult(Json.toJson(m_projects));
+            return GlobalResult.result_ok(Json.toJson(m_projects));
 
         }catch (Exception e){
             Logger.error("Error", e);
@@ -329,16 +337,16 @@ public class GridController extends play.mvc.Controller {
         try {
 
             M_Project m_project = M_Project.find.byId(m_project_id);
-            if (m_project == null) return GlobalResult.notFoundObject();
+            if (m_project == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
 
             Version_Object version_object = Version_Object.find.byId(version_id);
-            if (version_object == null) return GlobalResult.notFoundObject();
+            if (version_object == null) return GlobalResult.notFoundObject("Project project_id not found");
 
             m_project.b_program_version = version_object;
             m_project.auto_incrementing = auto_incrementing;
             m_project.update();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
 
         }catch (Exception e){
             Logger.error("Error", e);
@@ -376,7 +384,7 @@ public class GridController extends play.mvc.Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successful created",      response = M_Program.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -390,10 +398,10 @@ public class GridController extends play.mvc.Controller {
             Swagger_M_Program_New help = form.get();
 
             M_Project m_project = M_Project.find.byId( m_project_id );
-            if(m_project == null) return GlobalResult.notFoundObject();
+            if(m_project == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
 
             Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId( help.screen_type_id);
-            if(screen_size_type == null) return GlobalResult.notFoundObject();
+            if(screen_size_type == null) return GlobalResult.notFoundObject("Screen_Size_Type screen_type_id not found");
 
             M_Program m_program = new M_Program();
 
@@ -423,14 +431,13 @@ public class GridController extends play.mvc.Controller {
 
     @ApiOperation(value = "get M_Program by generated token",
             tags = {"M_Program", "APP-Api"},
-            notes = "get M_Program by token - it will return only native M_Program code",
+            notes = "get M_Program by token",
             produces = "application/json",
-            response =  Swagger_M_Program_ByToken.class,
             protocols = "https",
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Swagger_M_Program_ByToken.class),
+            @ApiResponse(code = 200, message = "Ok Result", response = M_Program.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -439,15 +446,11 @@ public class GridController extends play.mvc.Controller {
        try{
 
            M_Program m_program = M_Program.find.where().eq("qr_token", qr_token).findUnique();
-           if(m_program == null) return GlobalResult.notFoundObject();
-
-           Swagger_M_Program_ByToken program = new Swagger_M_Program_ByToken();
-           program.program = m_program.programInString;
-
-           program.websocket_address = Server.webSocketAddress + "/websocket/mobile/" + m_program.m_project_object.id + "/{terminal_id}";
+           if(m_program == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
+           m_program.m_code = m_program.programInString;
 
 
-           return GlobalResult.okResult(Json.toJson(program));
+           return GlobalResult.result_ok(Json.toJson(m_program));
 
        }catch (Exception e){
            Logger.error("Error", e);
@@ -476,11 +479,41 @@ public class GridController extends play.mvc.Controller {
 
             List<M_Program> m_programs = M_Program.find.where().eq("m_project_object.project.ownersOfProject.id", SecurityController.getPerson().id ).findList();
 
-            return GlobalResult.okResult(Json.toJson(m_programs));
+            return GlobalResult.result_ok(Json.toJson(m_programs));
 
         }catch (Exception e){
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - postNewProject ERROR");
+            return GlobalResult.internalServerError();
+        }
+    }
+
+
+    @ApiOperation(value = "get M_Program content",
+            tags = {"M_Program", "APP-Api"},
+            notes = "get M_Program by token",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response = M_Program.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result get_M_Program_m_code(@ApiParam(value = "qr_token String query", required = true) @PathParam("qr_token") String qr_token ){
+        try{
+
+            M_Program m_program = M_Program.find.where().eq("qr_token", qr_token).findUnique();
+            if(m_program == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
+
+            Swagger_M_Program_ByToken help = new Swagger_M_Program_ByToken();
+            help.m_code = m_program.programInString;
+
+
+            return GlobalResult.result_ok(Json.toJson(m_program));
+        }catch (Exception e){
             return GlobalResult.internalServerError();
         }
     }
@@ -509,9 +542,9 @@ public class GridController extends play.mvc.Controller {
     public Result get_M_Program(@ApiParam(value = "m_program_id String query", required = true) @PathParam("m_program_id") String m_program_id) {
         try {
             M_Program m_program = M_Program.find.byId(m_program_id);
-            if (m_program == null) return GlobalResult.notFoundObject();
+            if (m_program == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
 
-            return GlobalResult.okResult(Json.toJson(m_program));
+            return GlobalResult.result_ok(Json.toJson(m_program));
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - get_Screen_Size_Type ERROR");
@@ -560,7 +593,7 @@ public class GridController extends play.mvc.Controller {
             Swagger_M_Program_New help = form.get();
 
             Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId(help.screen_type_id);
-            if(screen_size_type == null) return GlobalResult.notFoundObject();
+            if(screen_size_type == null) return GlobalResult.notFoundObject("Screen_Size_Type screen_type_id not found");
 
             M_Program m_program = M_Program.find.byId(m_program_id);
             m_program.date_of_create      = new Date();
@@ -607,11 +640,11 @@ public class GridController extends play.mvc.Controller {
     public Result remove_M_Program(@ApiParam(value = "m_program_id String query", required = true) @PathParam("m_program_id") String m_program_id){
         try {
             M_Program m_program_ = M_Program.find.byId(m_program_id);
-            if (m_program_ == null) return GlobalResult.notFoundObject();
+            if (m_program_ == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
 
             m_program_.delete();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -644,9 +677,9 @@ public class GridController extends play.mvc.Controller {
     public Result getAll_M_Program_from_M_Project(@ApiParam(name = "m_project_id", value = "project_id String query", required = true) @PathParam("m_project_id") String m_project_id){
         try {
             M_Project project = M_Project.find.byId(m_project_id);
-            if (project == null) return GlobalResult.notFoundObject();
+            if (project == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
 
-            return GlobalResult.okResult(Json.toJson(project.m_programs));
+            return GlobalResult.result_ok(Json.toJson(project.m_programs));
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - get_Screen_Size_Type ERROR");
@@ -677,7 +710,7 @@ public class GridController extends play.mvc.Controller {
         try {
 
             List<M_Program> list = M_Program.find.where().eq("m_project_object.project.id", project_id).findList();
-            return GlobalResult.okResult(Json.toJson(list));
+            return GlobalResult.result_ok(Json.toJson(list));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -743,7 +776,7 @@ public class GridController extends play.mvc.Controller {
 
             if( help.project_id != null) {
                 Project project = Project.find.byId(help.project_id);
-                if (project == null) return GlobalResult.notFoundObject();
+                if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
                 screen_size_type.project = project;
             }
@@ -783,9 +816,9 @@ public class GridController extends play.mvc.Controller {
     public Result get_Screen_Size_Type(@ApiParam(value = "screen_size_type_id String query", required = true) @PathParam("screen_size_type_id") String screen_size_type_id){
         try {
             Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId(screen_size_type_id);
-            if (screen_size_type == null) return GlobalResult.notFoundObject();
+            if (screen_size_type == null) return GlobalResult.notFoundObject("Screen_Size_Type screen_type_id not found");
 
-            return GlobalResult.okResult(Json.toJson(screen_size_type));
+            return GlobalResult.result_ok(Json.toJson(screen_size_type));
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - get_Screen_Size_Type ERROR");
@@ -801,7 +834,7 @@ public class GridController extends play.mvc.Controller {
             protocols = "https"
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Swagger_TypeOfBoard_Combination.class),
+            @ApiResponse(code = 200, message = "Ok Result", response = Swagger_Screen_Size_Type_Combination.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -813,11 +846,12 @@ public class GridController extends play.mvc.Controller {
             List<Screen_Size_Type> public_list = Screen_Size_Type.find.where().eq("project", null).findList();
             List<Screen_Size_Type> private_list = Screen_Size_Type.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).findList();
 
-            ObjectNode result = Json.newObject();
-            result.set("private_types", Json.toJson(private_list));
-            result.set("public_types", Json.toJson(public_list));
 
-            return GlobalResult.okResult(result);
+            Swagger_Screen_Size_Type_Combination help = new Swagger_Screen_Size_Type_Combination();
+            help.private_types = private_list;
+            help.public_types = public_list;
+
+            return GlobalResult.result_ok(Json.toJson(help));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -825,7 +859,6 @@ public class GridController extends play.mvc.Controller {
             return GlobalResult.internalServerError();
         }
     }
-
 
     @ApiOperation(value = "get all ScreenType from Project",
             tags = {"Screen_Size_Type", "Project"},
@@ -846,7 +879,7 @@ public class GridController extends play.mvc.Controller {
 
             List<Screen_Size_Type> screen_size_types = Screen_Size_Type.find.where().eq("project.id", project_id).findList();
 
-            return GlobalResult.okResult(Json.toJson(screen_size_types));
+            return GlobalResult.result_ok(Json.toJson(screen_size_types));
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - get_Screen_Size_Type ERROR");
@@ -895,7 +928,7 @@ public class GridController extends play.mvc.Controller {
             Swagger_ScreeSizeType_New help = form.get();
 
             Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId(screen_size_type_id);
-            if(screen_size_type == null) return GlobalResult.notFoundObject();
+            if(screen_size_type == null) return GlobalResult.notFoundObject("Screen_Size_Type screen_type_id not found");
 
             screen_size_type.name = help.name;
             screen_size_type.height = help.height;
@@ -907,14 +940,14 @@ public class GridController extends play.mvc.Controller {
 
             if( help.project_id != null) {
                 Project project = Project.find.byId(help.project_id);
-                if (project == null) return GlobalResult.notFoundObject();
+                if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
                 screen_size_type.project = project;
             }
 
             screen_size_type.update();
 
-            return GlobalResult.update(Json.toJson(screen_size_type));
+            return GlobalResult.result_ok(Json.toJson(screen_size_type));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -923,7 +956,6 @@ public class GridController extends play.mvc.Controller {
             return GlobalResult.internalServerError();
         }
     }
-
 
     @ApiOperation(value = "remove ScreenType",
             tags = {"Screen_Size_Type"},
@@ -949,11 +981,11 @@ public class GridController extends play.mvc.Controller {
     public Result remove_Screen_Size_Type(@ApiParam(value = "screen_size_type_id String query", required = true) @PathParam("screen_size_type_id") String screen_size_type_id){
         try {
             Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId(screen_size_type_id);
-            if(screen_size_type == null) return GlobalResult.notFoundObject();
+            if(screen_size_type == null) return GlobalResult.notFoundObject("Screen_Size_Type screen_type_id not found");
 
             screen_size_type.delete();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - get_Screen_Size_Type ERROR");
@@ -985,7 +1017,7 @@ public class GridController extends play.mvc.Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successful created",      response = Grid_Terminal.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -998,15 +1030,17 @@ public class GridController extends play.mvc.Controller {
 
             Grid_Terminal terminal = new Grid_Terminal();
             terminal.device_name = help.device_name;
-            terminal. device_type = help.device_type;
+            terminal.device_type = help.device_type;
+
+            if( Http.Context.current().request().headers().get("User-Agent")[0] != null) terminal.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
+            else  terminal.user_agent = "Unknown browser";
+
             terminal.set_terminal_id();
 
 
             if(SecurityController.getPerson() !=  null) {
-                System.out.println("Uživatel je přihlášen");
                 terminal.person = SecurityController.getPerson();
             }
-
 
             terminal.save();
             return GlobalResult.created(Json.toJson(terminal));

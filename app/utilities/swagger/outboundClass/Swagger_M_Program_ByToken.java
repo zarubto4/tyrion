@@ -9,9 +9,6 @@ import io.swagger.annotations.ApiModelProperty;
 public class Swagger_M_Program_ByToken {
 
     @ApiModelProperty(required = true, readOnly = true, value = "Program in Json -> in String")
-    public String program;
-
-    @ApiModelProperty(required = true, readOnly = true, value = "Program in Json -> in String")
-    public String websocket_address;
+    public String m_code;
 
 }

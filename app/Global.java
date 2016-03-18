@@ -20,7 +20,7 @@ public class Global extends GlobalSettings {
 
            //1
            Logger.warn("Setting global values");
-           Server.set_Server();
+           Server.set_Server_address();
 
            //2
            Logger.warn("Setting main servers connections");
@@ -33,6 +33,8 @@ public class Global extends GlobalSettings {
            //4
            Logger.warn("Setting Directory for Files");
            Server.setDirectory();
+
+
 
 
 
@@ -82,6 +84,7 @@ public class Global extends GlobalSettings {
 
 
         Logger.warn("Odpojuji připojené servery Blocko!");
+        // TODO
        /* for (Map.Entry<String, WebSocketClientNotPlay> entry :  WebSocketController_Incoming.cloud_servers.entrySet())
         {
             entry.getValue().interrupt();

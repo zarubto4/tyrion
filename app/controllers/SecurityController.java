@@ -6,23 +6,27 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.scribejava.core.model.*;
 import com.github.scribejava.core.oauth.OAuthService;
 import io.swagger.annotations.*;
+import models.persons.FloatingPersonToken;
 import models.persons.LinkedAccount;
 import models.persons.Person;
 import models.persons.PersonPermission;
 import play.Configuration;
 import play.Logger;
+import play.data.Form;
 import play.libs.F;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSRequest;
 import play.mvc.*;
+import utilities.Server;
 import utilities.loginEntities.Secured;
 import utilities.loginEntities.Socials;
 import utilities.response.CoreResponse;
 import utilities.response.GlobalResult;
-import utilities.response.response_objects.JsonValueMissing;
+import utilities.response.response_objects.Result_JsonValueMissing;
 import utilities.response.response_objects.Result_Unauthorized;
 import utilities.response.response_objects.Result_ok;
+import utilities.swagger.documentationClass.Login_IncomingLogin;
 import utilities.swagger.outboundClass.Login_Social_Network;
 import utilities.swagger.outboundClass.Login_return_object;
 
@@ -30,15 +34,24 @@ import javax.inject.Inject;
 import javax.websocket.server.PathParam;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class SecurityController extends Controller {
 
+//### SYSTEM PERMISSION ################################################################################################
+
+    public static void set_System_Permission(){
+        new PersonPermission("role.read", "description");
+        //
+    }
+
+//######################################################################################################################
+
     // Úvodní metoda - // TODO - nasadit základní zobrazovací šablonu o stavu serveru
     public Result index() {
+
         String link = "";
         link += "Server version: " + Configuration.root().getString("api.version") + "\n";
         link += "Developer mode = " + Configuration.root().getString("Server.developerMode") +"\n";
@@ -46,6 +59,7 @@ public class SecurityController extends Controller {
         return ok( link );
     }
 
+//######################################################################################################################
     public static Person getPerson() {
         return (Person) Http.Context.current().args.get("person");
     }
@@ -76,7 +90,7 @@ public class SecurityController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successful logged",      response = Login_return_object.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Wrong Email or Password",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
@@ -84,32 +98,36 @@ public class SecurityController extends Controller {
     public Result login() {
         try {
 
-            // There is Login_return_object for swagger //
+            final Form<Login_IncomingLogin> form = Form.form(Login_IncomingLogin.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Login_IncomingLogin help = form.get();
 
-            JsonNode json = request().body().asJson();
 
-            Person person = Person.findByEmailAddressAndPassword(json.get("mail").asText(), json.get("password").asText());
+            Person person = Person.findByEmailAddressAndPassword(help.mail, help.password);
             if (person == null) return GlobalResult.forbidden_Global("Email or password are wrong");
 
 
             if (!person.mailValidated) return GlobalResult.forbidden_Global("Account is not authorized");
 
-            String authToken = person.createToken();
-
-            ObjectNode result = Json.newObject();
-            result.set("person", Json.toJson(person));
-            result.put("authToken", authToken);
-            result.set("roles", Json.toJson(person.roles));
+            FloatingPersonToken floatingPersonToken = new FloatingPersonToken();
+            floatingPersonToken.set_basic_values();
+            floatingPersonToken.person = person;
 
 
-            List<PersonPermission> list = PersonPermission.find.where().eq("roles.persons.id", person.id).findList();
+            if( Http.Context.current().request().headers().get("User-Agent")[0] != null) floatingPersonToken.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
+            else  floatingPersonToken.user_agent = "Unknown browser";
 
-            result.set("permission", Json.toJson(list));
 
-            return GlobalResult.okResult(result);
+            floatingPersonToken.save();
 
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "mail - String", "password - String");
+            Login_return_object result = new Login_return_object();
+            result.person = person;
+            result.authToken = floatingPersonToken.authToken;
+            result.roles = person.roles;
+            result.permissions = PersonPermission.find.where().eq("roles.persons.id", person.id).findList();
+
+            return GlobalResult.result_ok(Json.toJson( result ) );
+
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("SecurityController - login ERROR");
@@ -131,7 +149,7 @@ public class SecurityController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successful logged",      response = Login_return_object.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Wrong Email or Password",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
@@ -150,7 +168,7 @@ public class SecurityController extends Controller {
             result.set("permission", Json.toJson(person.permissions));
 
 
-            return GlobalResult.okResult(result);
+            return GlobalResult.result_ok(result);
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -175,7 +193,7 @@ public class SecurityController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successful logged",      response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Wrong Email or Password",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
@@ -183,9 +201,13 @@ public class SecurityController extends Controller {
     public Result logout() {
         try {
 
-            getPerson().deleteAuthToken();
+            try {
+                String token = request().getHeader("X-AUTH-TOKEN");
+                FloatingPersonToken.find.where().eq("authToken", token).findUnique().deleteAuthToken();
+            }catch (Exception e){}
 
-            return GlobalResult.okResult();
+
+            return GlobalResult.result_ok();
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -222,13 +244,13 @@ public class SecurityController extends Controller {
 
                 if(key.equals("error")){
                     if(state.length() > 1) LinkedAccount.find.where().eq("providerKey", state).findUnique().delete();
-                    return redirect(Configuration.root().getString("Becki.redirectFail"));
+                    return redirect( Server.becki_redirectFail );
                 }
 
             }
 
             LinkedAccount linkedAccount = LinkedAccount.find.where().eq("providerKey", state).findUnique();
-            if (linkedAccount == null) return redirect(Configuration.root().getString("Becki.redirectFail"));
+            if (linkedAccount == null) return redirect( Server.becki_redirectFail );
             linkedAccount.tokenVerified = true;
 
             OAuthService service = Socials.GitHub(state);
@@ -237,13 +259,13 @@ public class SecurityController extends Controller {
             Token accessToken = service.getAccessToken(null, verifier);
 
 
-            OAuthRequest request = new OAuthRequest(Verb.GET, Configuration.root().getString(linkedAccount.typeOfConnection + ".url"), service);
+            OAuthRequest request = new OAuthRequest(Verb.GET, Configuration.root().getString( "GitHub.url" ), service);
             service.signRequest(accessToken, request);
 
             Response response = request.send();
             if (!response.isSuccessful()) {
                 Logger.error("Incoming state: " + state + " not found in database");
-                redirect(Configuration.root().getString("Becki.redirectFail"));
+                redirect( Server.becki_redirectFail );
             }
 
             System.out.println("Body = " + response.getBody());
@@ -261,7 +283,7 @@ public class SecurityController extends Controller {
                     usedAccount.authToken = linkedAccount.authToken;
                     linkedAccount.delete();
                     usedAccount.update();
-                    return redirect( Configuration.root().getString("Becki.mainUrl") + linkedAccount.returnUrl);
+                    return redirect( Server.becki_mainUrl  + linkedAccount.returnUrl);
 
                 }
 
@@ -296,13 +318,13 @@ public class SecurityController extends Controller {
                         }
 
 
-                        person.setToken(linkedAccount.authToken); // update je v metodě už zahrnut!
+                        person.setToken(linkedAccount.authToken, linkedAccount.user_agent); // update je v metodě už zahrnut!
                         person.save();
 
                         linkedAccount.person = person;
                         linkedAccount.update();
 
-                        return redirect(Configuration.root().getString("Becki.mainUrl") + linkedAccount.returnUrl);
+                        return redirect(Server.becki_mainUrl + linkedAccount.returnUrl);
 
 
                 }
@@ -342,13 +364,13 @@ public class SecurityController extends Controller {
 
                 if(key.equals("error")){
                     if(state.length() > 1) LinkedAccount.find.where().eq("providerKey", state).findUnique().delete();
-                    return redirect(Configuration.root().getString("Becki.redirectFail"));
+                    return redirect(Server.becki_redirectFail );
                 }
 
             }
 
             LinkedAccount linkedAccount = LinkedAccount.find.where().eq("providerKey", state).findUnique();
-            if (linkedAccount == null) return redirect(Configuration.root().getString("Becki.redirectFail"));
+            if (linkedAccount == null) return redirect(Server.becki_redirectFail );
             linkedAccount.tokenVerified = true;
 
             OAuthService  service = Socials.Facebook(state);
@@ -356,20 +378,19 @@ public class SecurityController extends Controller {
             Verifier verifier = new Verifier(code);
             Token accessToken = service.getAccessToken(null, verifier);
 
-            OAuthRequest request = new OAuthRequest(Verb.GET, Configuration.root().getString(linkedAccount.typeOfConnection + ".url"), service);
+            OAuthRequest request = new OAuthRequest(Verb.GET, Configuration.root().getString("Facebook.url"), service);
             service.signRequest(accessToken, request);
 
             Response response = request.send();
             if (!response.isSuccessful()) {
                 Logger.error("Incoming state: " + state + " not found in database");
-                redirect(Configuration.root().getString("Becki.redirectFail"));
+                redirect(Server.becki_redirectFail );
             }
 
             System.out.println("Body = " + response.getBody());
 
             JsonNode jsonNode = Json.parse(response.getBody());
 
-           // System.out.println("Acces token je: " + accessToken.getToken());
 
             WSRequest wsrequest = ws.url("https://graph.facebook.com/v2.5/"+ jsonNode.get("id").asText());
             WSRequest complexRequest = wsrequest.setQueryParameter("access_token", accessToken.getToken())
@@ -390,9 +411,9 @@ public class SecurityController extends Controller {
                 usedAccount.authToken = linkedAccount.authToken;
                 linkedAccount.delete();
                 usedAccount.update();
-                usedAccount.person.setToken(usedAccount.authToken);
+                usedAccount.person.setToken(usedAccount.authToken, linkedAccount.user_agent);
                 usedAccount.person.update();
-                return redirect( Configuration.root().getString("Becki.mainUrl") + linkedAccount.returnUrl);
+                return redirect( Server.becki_mainUrl + linkedAccount.returnUrl);
 
            }
 
@@ -431,13 +452,13 @@ public class SecurityController extends Controller {
                             }
                         }
 
-                        person.setToken(linkedAccount.authToken);
+                        person.setToken(linkedAccount.authToken, linkedAccount.user_agent);
                         person.save();
 
                         linkedAccount.person = person;
                         linkedAccount.update();
 
-                        return redirect(Configuration.root().getString("Becki.mainUrl") + linkedAccount.returnUrl);
+                        return redirect(Server.becki_mainUrl + linkedAccount.returnUrl);
 
 
            }
@@ -467,7 +488,7 @@ public class SecurityController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successful created",      response = Login_Social_Network.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Wrong Email or Password",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
@@ -476,6 +497,10 @@ public class SecurityController extends Controller {
             LinkedAccount linkedAccount = LinkedAccount.setProviderKey("GitHub");
 
             linkedAccount.returnUrl = return_link;
+
+            if( Http.Context.current().request().headers().get("User-Agent")[0] != null) linkedAccount.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
+            else  linkedAccount.user_agent = "Unknown browser";
+
             linkedAccount.update();
 
             OAuthService service = Socials.GitHub(linkedAccount.providerKey);
@@ -485,7 +510,7 @@ public class SecurityController extends Controller {
             result.redirect_url = service.getAuthorizationUrl(null);
             result.authToken = linkedAccount.authToken;
 
-            return GlobalResult.okResult(Json.toJson(result));
+            return GlobalResult.result_ok(Json.toJson(result));
 
         }catch (Exception e) {
             Logger.error("Error", e);
@@ -507,7 +532,7 @@ public class SecurityController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successful created",      response = Login_Social_Network.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Wrong Email or Password",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
@@ -516,6 +541,10 @@ public class SecurityController extends Controller {
             LinkedAccount linkedAccount = LinkedAccount.setProviderKey("Facebook");
 
             linkedAccount.returnUrl = return_link;
+
+            if( Http.Context.current().request().headers().get("User-Agent")[0] != null) linkedAccount.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
+            else  linkedAccount.user_agent = "Unknown browser";
+
             linkedAccount.update();
 
             OAuthService service = Socials.Facebook(linkedAccount.providerKey);
@@ -525,7 +554,7 @@ public class SecurityController extends Controller {
             result.redirect_url = service.getAuthorizationUrl(null);
             result.authToken = linkedAccount.authToken;
 
-            return GlobalResult.okResult(Json.toJson(result));
+            return GlobalResult.result_ok(Json.toJson(result));
 
         }catch (Exception e) {
             Logger.error("Error", e);
@@ -551,7 +580,7 @@ public class SecurityController extends Controller {
             result.redirect_url = service.getAuthorizationUrl(null);
             result.authToken = linkedAccount.authToken;
 
-            return GlobalResult.okResult(Json.toJson(result));
+            return GlobalResult.result_ok(Json.toJson(result));
 
         }catch (Exception e) {
             Logger.error("Error", e);
@@ -573,7 +602,7 @@ public class SecurityController extends Controller {
             result.put("url", service.getAuthorizationUrl(null));
             result.put("authToken", linkedAccount.authToken);
 
-            return GlobalResult.okResult(result);
+            return GlobalResult.result_ok(result);
 
         }catch (Exception e) {
             Logger.error("Error", e);
@@ -587,7 +616,7 @@ public class SecurityController extends Controller {
 
     @ApiOperation( value = "option", hidden = true)
     public Result option(){
-        return GlobalResult.okResult();
+        return GlobalResult.result_ok();
     }
 
     @ApiOperation( value = "optionLink", hidden = true)

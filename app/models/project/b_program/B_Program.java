@@ -65,7 +65,7 @@ public class B_Program extends Model {
     }
 
 
-    @JsonProperty public String   project()                     {  return Server.serverAddress + "/project/project/" + this.project.id; }
+    @JsonProperty public String   project()                     {  return Server.tyrion_serverAddress + "/project/project/" + this.project.id; }
 
 
     public static Finder<String,B_Program> find = new Finder<>(B_Program.class);

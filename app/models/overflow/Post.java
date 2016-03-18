@@ -58,8 +58,11 @@ public class Post extends Model {
     @ApiModelProperty(required = false, value = "Only if Post is Main")
     @JsonInclude(JsonInclude.Include.NON_NULL)   @JsonProperty  public List<Post>           answers()               { return name == null ? null : answers; }
 
+    @ApiModelProperty(required = false, value = "Only if Post is Main")
+    @JsonInclude(JsonInclude.Include.NON_NULL)   @JsonProperty  public List<LinkedPost>     linked_answers()        { return name == null ? null : linkedQuestions; }
+
     @ApiModelProperty(required = false, value = "Only if Post is Main or Answare")
-    @JsonInclude(JsonInclude.Include.NON_NULL)   @JsonProperty  public List<Post>           comments()              { return name == null ? null : comments;}
+    @JsonInclude(JsonInclude.Include.NON_NULL)   @JsonProperty  public List<Post>           comments()              { return name == null && postParentAnswer == null ? null : comments;}
 
     @ApiModelProperty(required = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)   @JsonProperty  public List<String>         hashTags()              { return hashTagsList.stream().map(tag -> tag.postHashTagId).collect(Collectors.toList());}
@@ -73,9 +76,5 @@ public class Post extends Model {
     // Pro zjednodušení čtení ze strany front-end se linkované odpovědi profiltrují (jednak kvuli zac
     // a je zasílán jen přehled (Pole linkovaných odpovědí) tedy
     // Jména Main postu s ID a jeho otázkou a pak následně pouze odpovědi na kontrkétní otázku odfiltrováno naprosto od všeho
-
-    @JsonInclude(JsonInclude.Include.NON_EMPTY) @JsonProperty public String linkedAnswers   (){return linkedQuestions.isEmpty()  ? null : "http://localhost:9000/overflow/linkedAnswers/" + postId;}
-
-
 
 }

@@ -2,9 +2,7 @@ package utilities;
 
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
-import controllers.CompilationLibrariesController;
-import controllers.PermissionController;
-import controllers.SecurityController;
+import controllers.*;
 import models.persons.PersonPermission;
 import play.Configuration;
 import play.Logger;
@@ -21,11 +19,19 @@ public class Server {
 
     public static CloudStorageAccount storageAccount;
     public static CloudBlobClient blobClient;
-    public static String serverAddress;
-    public static String webSocketAddress;
+    public static String tyrion_serverAddress;
+    public static String tyrion_webSocketAddress;
+
+    public static String becki_mainUrl;
+    public static String becki_redirectOk;
+    public static String becki_redirectFail;
+    public static String becki_accountAuthorizedSuccessful;
+    public static String becki_accountAuthorizedFailed;
+    public static String becki_passwordReset;
     public static Map<String, Optional<DynamicResourceHandler> > handlers = new HashMap<>();
 
-    public static void set_Server() throws Exception{
+
+    public static void set_Server_address() throws Exception{
 
         /**
          * 1)
@@ -34,20 +40,41 @@ public class Server {
          * skrze PostMan, nebo http://tyrion.byzance.cz
          *
          * Předpokládá se, že v rámci výpočetních úspor by bylo vhodnější mít pevné řetězce v objektech to jest nahradit
-         * --- >@JsonProperty public String  versions()  { return Server.serverAddress + "/project/blocko_block/versions/"  + this.id;}
+         * --- >@JsonProperty public String  versions()  { return Server.tyrion_serverAddress + "/project/blocko_block/versions/"  + this.id;}
          * --- >@JsonProperty public String  versions()  { return "http//www.byzance.cz/project/blocko_block/versions/"  + this.id;}
          *
          * Zatím se zdá vhodnější varianta přepínání v configuračním souboru. Tomáš Záruba 15.2.16
          */
         if( Configuration.root().getBoolean("Server.developerMode")) {
-            serverAddress = "http://" + Configuration.root().getString("Server.localhost");
-            webSocketAddress ="http://" + Configuration.root().getString("Server.localhost");
+
+            // Nastavení pro Tyrion Adresy
+            tyrion_serverAddress = "http://" + Configuration.root().getString("Server.localhost");
+            tyrion_webSocketAddress ="ws://" + Configuration.root().getString("Server.localhost");
+
+            // Nastavení pro Becki Adresy
+            becki_mainUrl                       = "http://" + Configuration.root().getString("Becki.localhost.mainUrl");
+            becki_redirectOk                    = "http://" + Configuration.root().getString("Becki.localhost.redirectOk");
+            becki_redirectFail                  = "http://" + Configuration.root().getString("Becki.localhost.redirectFail");
+            becki_accountAuthorizedSuccessful   = "http://" + Configuration.root().getString("Becki.localhost.accountAuthorizedSuccessful");
+            becki_accountAuthorizedFailed       = "http://" + Configuration.root().getString("Becki.localhost.accountAuthorizedFailed");
+            becki_passwordReset                 = "http://" + Configuration.root().getString("Becki.localhost.passwordReset ");
+
         }
         else   {
-            serverAddress = "http://" +  Configuration.root().getString("Server.production");
-            webSocketAddress = "ws://" + Configuration.root().getString("Server.production");
-        }
 
+            // Nastavení pro Tyrion Adresy
+            tyrion_serverAddress = "http://" +  Configuration.root().getString("Server.production");
+            tyrion_webSocketAddress = "ws://" + Configuration.root().getString("Server.production");
+
+            // Nastavení pro Becki Adresy
+            becki_mainUrl                       = "http://" + Configuration.root().getString("Becki.production.mainUrl");
+            becki_redirectOk                    = "http://" + Configuration.root().getString("Becki.production.redirectOk");
+            becki_redirectFail                  = "http://" + Configuration.root().getString("Becki.production.redirectFail");
+            becki_accountAuthorizedSuccessful   = "http://" + Configuration.root().getString("Becki.production.accountAuthorizedSuccessful");
+            becki_accountAuthorizedFailed       = "http://" + Configuration.root().getString("Becki.production.accountAuthorizedFailed");
+            becki_passwordReset                 = "http://" + Configuration.root().getString("Becki.production.passwordReset ");
+
+        }
 
         /**
          * 2)
@@ -90,6 +117,11 @@ public class Server {
 
         CompilationLibrariesController.set_System_Permission();
         PermissionController.set_System_Permission();
+        GridController.set_System_Permission();
+        OverFlowController.set_System_Permission();
+        PersonController.set_System_Permission();
+        ProgramingPackageController.set_System_Permission();
+        SecurityController.set_System_Permission();
 
     }
 
@@ -130,10 +162,13 @@ public class Server {
     }
 
     public static boolean check_dynamic_OR_permission(String value, String... args) throws PermissionException{
-
         try{
+
             System.out.println("Kontroluji permission");
-            if(check_permission()) return true;
+
+            if(check_permission(args)) return true;
+
+
 
         }catch (PermissionException e){
             System.out.println("permission selhalo - Kontroluji dynamic");

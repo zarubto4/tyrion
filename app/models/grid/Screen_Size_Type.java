@@ -2,8 +2,6 @@ package models.grid;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import models.project.global.Project;
 import models.project.m_program.M_Program;
 
@@ -27,12 +25,6 @@ public class Screen_Size_Type extends Model {
 
 
     @JsonIgnore  @OneToMany(mappedBy="screen_size_type_object", cascade = CascadeType.ALL)     public List<M_Program> m_program_s;
-
-
-
-    // Pokud je Screen Size type privátní pro jeden určitý uživatelský projekt
-    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) public String private_type(){  return project==null? null:"true";}
-
 
 
 
