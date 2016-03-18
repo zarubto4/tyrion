@@ -941,8 +941,6 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-
-
     @ApiOperation(value = "get B Program version",
             tags = {"B_Program"},
             notes = "get B_Program version object",
@@ -976,7 +974,6 @@ public class ProgramingPackageController extends Controller {
             return GlobalResult.internalServerError();
         }
     }
-
 
     @ApiOperation(value = "edit B_Program",
             tags = {"B_Program"},
@@ -1094,7 +1091,7 @@ public class ProgramingPackageController extends Controller {
             // Nahraje do Azure a připojí do verze soubor (lze dělat i cyklem - ale název souboru musí být vždy jiný)
             UtilTools.uploadAzure_Version("b-program", file_content, "b-program-file", b_program.azureStorageLink, b_program.azurePackageLink, versionObjectObject);
 
-            return GlobalResult.result_ok(Json.toJson(b_program));
+            return GlobalResult.result_ok(Json.toJson(versionObjectObject));
 
         } catch (Exception e) {
             Logger.error("Error", e);

@@ -23,8 +23,8 @@ public class M_Program extends Model{
                                                                 public boolean height_lock;
                                                                 public boolean width_lock;
 
-                                                                public Date date_of_create;
-                                                                public Date last_update;
+    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1458315085338") public Date date_of_create;
+    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1458315085338") public Date last_update;
                                                                 public String qr_token;
 
                                     @JsonIgnore @ManyToOne      public M_Project m_project_object; // TODO přejmenovat zpět

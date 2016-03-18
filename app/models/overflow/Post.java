@@ -1,7 +1,6 @@
 package models.overflow;
 
 import com.avaje.ebean.Model;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -21,8 +20,8 @@ public class Post extends Model {
 @ApiModelProperty(required = false, value = "Only if Post is Main (not answers or comments)")
 @JsonInclude(JsonInclude.Include.NON_EMPTY)                                                          public String name;
 @ApiModelProperty(required = true)                                                                   public int likes;
-@ApiModelProperty(required = true)
-@JsonFormat(shape=JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")                         public Date date_of_create;
+@ApiModelProperty(required = true, dataType = "integer", readOnly = true,
+        value = "UNIX time stamp", example = "1458315085338")                                        public Date date_of_create;
 @JsonIgnore                                                                                          public boolean deleted;
 @ApiModelProperty(required = true)                                                                   public boolean updated;
 

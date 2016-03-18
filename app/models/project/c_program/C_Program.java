@@ -3,6 +3,7 @@ package models.project.c_program;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import models.compiler.Version_Object;
 import models.project.global.Project;
 
@@ -24,7 +25,7 @@ public class C_Program extends Model {
                                     @JsonIgnore @ManyToOne   public Project project;
                                                @JsonIgnore   public String azurePackageLink;
                                                @JsonIgnore   public String azureStorageLink;
-                                                             public Date dateOfCreate;
+    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1458315085338") public Date dateOfCreate;
 
      @OneToMany(mappedBy="c_program", cascade=CascadeType.ALL) @OrderBy("azureLinkVersion DESC") public List<Version_Object> version_objects = new ArrayList<>();
 

@@ -2,6 +2,7 @@ package models.persons;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModelProperty;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -15,7 +16,9 @@ public class LinkedAccount extends Model {
 						@Column(columnDefinition = "TEXT")   public String providerKey;
 										 					 public String typeOfConnection;
 															 public String returnUrl;
-															 public Date dateOfCreate;
+	@ApiModelProperty(required = true,
+	dataType = "integer", readOnly = true,
+	value = "UNIX time stamp", example = "1458315085338") 	 public Date dateOfCreate;
 
 									@JsonIgnore	@ManyToOne   public Person person;
 															 public String user_agent;

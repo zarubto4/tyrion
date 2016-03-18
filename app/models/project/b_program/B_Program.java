@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.swagger.annotations.ApiModelProperty;
 import models.compiler.Version_Object;
 import models.project.global.Project;
 import play.libs.Json;
@@ -24,8 +25,9 @@ public class B_Program extends Model {
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public String b_program_id;
                                                              public String name;
                         @Column(columnDefinition = "TEXT")   public String program_description;
-                                                             public Date lastUpdate;
-                                                             public Date dateOfCreate;
+
+    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1458315085338") public Date lastUpdate;
+    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1458315085338") public Date dateOfCreate;
                                     @JsonIgnore @ManyToOne   public Project project;
                                                 @JsonIgnore  public String azurePackageLink;
                                                 @JsonIgnore  public String azureStorageLink;

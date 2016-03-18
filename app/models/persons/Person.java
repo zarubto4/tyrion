@@ -2,6 +2,7 @@ package models.persons;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModelProperty;
 import models.blocko.BlockoBlock;
 import models.overflow.LinkedPost;
 import models.overflow.Post;
@@ -26,7 +27,9 @@ public class Person extends Model {
                                                                 public String last_name;
                                                                 public String first_title;
                                                                 public String last_title;
-                                                                public Date date_of_birth;
+    @ApiModelProperty(required = true,
+    dataType = "integer", readOnly = true,
+    value = "UNIX time stamp", example = "1458315085338")      public Date date_of_birth;
 
 
                                                 @JsonIgnore     public boolean mailValidated;

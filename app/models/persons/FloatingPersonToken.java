@@ -2,6 +2,7 @@ package models.persons;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModelProperty;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -16,8 +17,14 @@ public class FloatingPersonToken extends Model {
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) public String connection_id;
                                      @JsonIgnore            public String authToken;
          @JsonIgnore @ManyToOne                             public Person person;
-                                                            public Date created;
-                                                            public Date access_age;
+
+    @ApiModelProperty(required = true,
+    dataType = "integer", readOnly = true,
+    value = "UNIX time stamp", example = "1458315085338")   public Date created;
+
+    @ApiModelProperty(required = true,
+    dataType = "integer", readOnly = true,
+    value = "UNIX time stamp", example = "1458315085338")   public Date access_age;
                                                             public String user_agent;
 
 

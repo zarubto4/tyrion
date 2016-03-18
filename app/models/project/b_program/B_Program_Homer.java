@@ -2,6 +2,7 @@ package models.project.b_program;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModelProperty;
 import models.compiler.Version_Object;
 import models.project.global.Homer;
 
@@ -15,7 +16,7 @@ public class B_Program_Homer extends Model {
                 @OneToOne @JoinColumn(name="vrs_obj_id")        public Version_Object version_object;
 
                 @OneToOne @JoinColumn(name="BProgramHomer_id")  public Homer homer;
-                                                                public Date running_from;
+    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1458315085338") public Date running_from;
 
 
     @JsonProperty public boolean homer_online()  { return homer.online();}
