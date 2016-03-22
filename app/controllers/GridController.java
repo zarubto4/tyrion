@@ -18,15 +18,11 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
-import utilities.response.response_objects.Result_JsonValueMissing;
-import utilities.response.response_objects.Result_PermissionRequired;
-import utilities.response.response_objects.Result_Unauthorized;
-import utilities.response.response_objects.Result_ok;
+import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.Swagger_Grid_Terminal_Identf;
 import utilities.swagger.documentationClass.Swagger_M_Program_New;
 import utilities.swagger.documentationClass.Swagger_M_Project_New;
 import utilities.swagger.documentationClass.Swagger_ScreeSizeType_New;
-import utilities.swagger.outboundClass.Swagger_M_Program_ByToken;
 import utilities.swagger.outboundClass.Swagger_Screen_Size_Type_Combination;
 
 import javax.websocket.server.PathParam;
@@ -488,36 +484,6 @@ public class GridController extends play.mvc.Controller {
         }
     }
 
-
-    @ApiOperation(value = "get M_Program content",
-            tags = {"M_Program", "APP-Api"},
-            notes = "get M_Program by token",
-            produces = "application/json",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = M_Program.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public Result get_M_Program_m_code(@ApiParam(value = "qr_token String query", required = true) @PathParam("qr_token") String qr_token ){
-        try{
-
-            M_Program m_program = M_Program.find.where().eq("qr_token", qr_token).findUnique();
-            if(m_program == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
-
-            Swagger_M_Program_ByToken help = new Swagger_M_Program_ByToken();
-            help.m_code = m_program.programInString;
-
-
-            return GlobalResult.result_ok(Json.toJson(m_program));
-        }catch (Exception e){
-            return GlobalResult.internalServerError();
-        }
-    }
-
     @ApiOperation(value = "get M_Program",
             tags = {"M_Program"},
             notes = "get M_Program by quarry m_program_id",
@@ -543,6 +509,8 @@ public class GridController extends play.mvc.Controller {
         try {
             M_Program m_program = M_Program.find.byId(m_program_id);
             if (m_program == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
+
+            m_program.m_code = m_program.programInString;
 
             return GlobalResult.result_ok(Json.toJson(m_program));
         } catch (Exception e) {
@@ -995,7 +963,7 @@ public class GridController extends play.mvc.Controller {
 
 //######################################################################################################################
 
-    @ApiOperation(value = "get Terminal identificator",
+    @ApiOperation(value = "get Terminal terminal_id",
             tags = {"APP-Api"},
             notes = "Only for Grid Terminals! Before when you want connect terminal (grid) application with Tyrion throw WebSocker. " +
                     "You need unique identification key. If Person loggs to you application Tyrion connects this device with Person. Try to " +
@@ -1031,6 +999,7 @@ public class GridController extends play.mvc.Controller {
             Grid_Terminal terminal = new Grid_Terminal();
             terminal.device_name = help.device_name;
             terminal.device_type = help.device_type;
+            terminal.date_of_create = new Date();
 
             if( Http.Context.current().request().headers().get("User-Agent")[0] != null) terminal.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
             else  terminal.user_agent = "Unknown browser";
@@ -1044,6 +1013,67 @@ public class GridController extends play.mvc.Controller {
 
             terminal.save();
             return GlobalResult.created(Json.toJson(terminal));
+
+        }catch (Exception e){
+            Logger.error("Error", e);
+            return GlobalResult.internalServerError();
+        }
+    }
+
+
+    @ApiOperation(value = "check Terminal terminal_id",
+            tags = {"APP-Api"},
+            notes = "For every app (terminal) opening you have to valid your terminal_id.",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Grid_Terminal_Identf",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Valid Identification",      response = Grid_Terminal.class),
+            @ApiResponse(code = 400, message = "Invalid Identification",    response = Result_BadRequest.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result check_identifiactor(String terminal_id){
+        try{
+
+            final Form<Swagger_Grid_Terminal_Identf> form = Form.form(Swagger_Grid_Terminal_Identf.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Grid_Terminal_Identf help = form.get();
+
+
+            Grid_Terminal terminal = Grid_Terminal.find.byId(terminal_id);
+            if(terminal == null){
+
+                terminal = new Grid_Terminal();
+                terminal.set_terminal_id();
+                terminal.device_name = help.device_name;
+                terminal.device_type = help.device_type;
+                terminal.date_of_create = new Date();
+                terminal.save();
+
+                return GlobalResult.created(Json.toJson(terminal));
+
+            }else {
+
+                terminal.ws_permission = true;
+                terminal.m_program_access = true;
+                terminal.up_to_date = true;
+                terminal.date_of_last_update = new Date();
+                terminal.update();
+                return GlobalResult.result_ok(Json.toJson(terminal));
+            }
 
         }catch (Exception e){
             Logger.error("Error", e);

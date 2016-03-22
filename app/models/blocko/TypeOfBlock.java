@@ -22,7 +22,7 @@ public class TypeOfBlock extends Model {
 
                                     @JsonIgnore @ManyToOne  public Project project;
 
-    @JsonIgnore @OneToMany(mappedBy="type_of_block", cascade = CascadeType.ALL) public List<BlockoBlock> blockoBlocks = new ArrayList<>();
+    @OneToMany(mappedBy="type_of_block", cascade = CascadeType.ALL) public List<BlockoBlock> blockoBlocks = new ArrayList<>();
 
 
     @ApiModelProperty(value = "This value will be in Json only if TypeOfBlock is private! And its also only proxy address to get Objects \"Project\"\" ", readOnly =true, required = false, allowableValues = "http://server_url/{id}")

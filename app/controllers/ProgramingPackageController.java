@@ -1568,7 +1568,6 @@ public class ProgramingPackageController extends Controller {
             blockoBlock.name                = help.name;
             blockoBlock.author              = SecurityController.getPerson();
 
-
            TypeOfBlock typeOfBlock = TypeOfBlock.find.byId( help.type_of_block_id);
            if(typeOfBlock == null) return GlobalResult.notFoundObject("TypeOfBlock type_of_block_id not found");
 
@@ -1720,32 +1719,26 @@ public class ProgramingPackageController extends Controller {
 
     }
 
-    @ApiOperation(value = "get Block from Category",
+    @ApiOperation(value = "get TypeOfBlock ",
             tags = {"Blocko-Block"},
-            notes = "get list of BlockoBlocks objects",
+            notes = "get BlockoBlock ",
             produces = "application/json",
             protocols = "https",
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                       @AuthorizationScope(scope = "Project_Editor",   description = "You need Project_Editor permission")}
-                    )
-            }
+            code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  BlockoBlock.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "Ok Result",               response =  TypeOfBlock.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_BlockoBlocks_from_Category(String type_of_block_id){
+    public Result get_TypeOfBlock(String type_of_block_id){
         try {
 
             TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(type_of_block_id);
             if(typeOfBlock == null) return GlobalResult.notFoundObject("TypeOfBlock type_of_block_id not found");
 
-            return GlobalResult.result_ok(Json.toJson(typeOfBlock.blockoBlocks));
+            return GlobalResult.result_ok(Json.toJson(typeOfBlock));
 
         } catch (Exception e) {
             Logger.error("Error", e);

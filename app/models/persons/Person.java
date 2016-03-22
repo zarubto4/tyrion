@@ -43,7 +43,6 @@ public class Person extends Model {
     @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<BlockoBlock>   blocksAuthor   = new ArrayList<>(); // Propojení, které bločky uživatel vytvořil
     @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<Post>          personPosts    = new ArrayList<>(); // Propojení, které uživatel napsal
     @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<LinkedPost>    linkedPosts    = new ArrayList<>(); // Propojení, které uživatel nalinkoval
-    @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL)     public List<LinkedAccount> linkedAccounts = new ArrayList<>();
     @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL)     public List<FloatingPersonToken> floatingPersonTokens = new ArrayList<>(); // Propojení, které uživatel napsal
 
 
@@ -70,6 +69,7 @@ public class Person extends Model {
         floatingPersonToken.person = this;
         floatingPersonToken.user_agent = user_agent;
         floatingPersonToken.save();
+        this.floatingPersonTokens.add(floatingPersonToken);
     }
 
 //#### FINDER ########################################################################################################

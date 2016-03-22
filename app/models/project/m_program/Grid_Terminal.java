@@ -7,6 +7,7 @@ import models.persons.Person;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import java.util.Date;
 import java.util.UUID;
 
 
@@ -28,6 +29,18 @@ public class Grid_Terminal extends Model {
 
     @ApiModelProperty(required = false, readOnly = true, value = "Only if Device is connected with logged Person")
     @JsonIgnore public Person person;
+
+    @JsonIgnore  public Date date_of_create;
+    @JsonIgnore  public Date date_of_last_update;
+
+    public Boolean ws_permission;
+
+    public Boolean m_program_access;
+
+    public Boolean up_to_date;
+
+
+
 
     //***** Private ****************************************************************************************************
 

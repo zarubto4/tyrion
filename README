@@ -1,6 +1,8 @@
 
 
-1.05.3.4
+1.05.5.4
+
+-> Programové změny Tyrion <-
 - Bylo nutné zajistit přihlášení více uživatelů naráz. Proto byla změněna koncepce správy klíčů (tokenů).
   Každý uživatel se může přihlásit na libovolné množství zařízení - klíč má datum přidělení a určenou životnost (Několik týdnů).
   Pro přihlášení se nic nemění. Uživatel stejně jako teď dostane svůj token. Odhlášení probíhá taktéž úplně stejně.
@@ -18,8 +20,8 @@
 
 - Přidání api dotazů pro validaci nick_name a emailu při registraci nového uživatele na žádost Radka + Přidání nové dokumentace
 
-
-
+- Uprava revalidace ztraceného terminal identifikátoru (Hlavně při vývoji a developerském modu, kdy se dá očekávat
+  že temrinal id může z databáze zmizel, ale zařízení se s Tyrionem nadále bude bavit s neznalým id..
 
 TODO Tomáš Z.: Do dalšího buildu - úprava GLOBAL RESULT - některý věci tam nedávají smysl
 TODO Tomáš Z.: Zdokumentovat response - a přejmenovat na Result na response u všech - je to zmatečné!

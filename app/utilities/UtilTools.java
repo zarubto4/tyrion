@@ -12,7 +12,7 @@ import models.overflow.Post;
 import org.apache.commons.io.FileUtils;
 
 import java.io.*;
-import java.util.List;
+import java.util.*;
 
 /**
  * Pomocná třída, realizující jednoúčelové metody. Zde si odkládám cokoliv, co by bylo v kódu zbytečně duplicitní.
@@ -139,4 +139,19 @@ public class UtilTools {
 
         return fileMain;
     }
+
+
+    public static Map<String, String> getMap_From_querry(Set<Map.Entry<String, String[]>> url){
+        Map<String, String> map = new HashMap<>();
+
+        for (Map.Entry<String,String[]> entry : url) {
+
+            final String key = entry.getKey();
+            final String value = Arrays.toString(entry.getValue());
+            map.put(key, value);
+        }
+        return  map;
+    }
+
+
 }

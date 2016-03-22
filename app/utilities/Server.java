@@ -28,6 +28,18 @@ public class Server {
     public static String becki_accountAuthorizedSuccessful;
     public static String becki_accountAuthorizedFailed;
     public static String becki_passwordReset;
+
+    public static String GitHub_callBack;
+    public static String GitHub_clientSecret;
+    public static String GitHub_url;
+    public static String GitHub_apiKey;
+
+    public static String Facebook_callBack;
+    public static String Facebook_clientSecret;
+    public static String Facebook_url;
+    public static String Facebook_apiKey;
+
+
     public static Map<String, Optional<DynamicResourceHandler> > handlers = new HashMap<>();
 
 
@@ -59,6 +71,16 @@ public class Server {
             becki_accountAuthorizedFailed       = "http://" + Configuration.root().getString("Becki.localhost.accountAuthorizedFailed");
             becki_passwordReset                 = "http://" + Configuration.root().getString("Becki.localhost.passwordReset ");
 
+            GitHub_callBack                     = tyrion_serverAddress + Configuration.root().getString("GitHub.localhost.callBack");
+            GitHub_clientSecret                 = Configuration.root().getString("GitHub.localhost.clientSecret");
+            GitHub_url                          = Configuration.root().getString("GitHub.localhost.url");
+            GitHub_apiKey                       = Configuration.root().getString("GitHub.localhost.apiKey  ");
+
+            Facebook_callBack                   = tyrion_serverAddress + Configuration.root().getString("Facebook.localhost.callBack");
+            Facebook_clientSecret               = Configuration.root().getString("Facebook.localhost.clientSecret");
+            Facebook_url                        = Configuration.root().getString("Facebook.localhost.url");
+            Facebook_apiKey                     = Configuration.root().getString("Facebook.localhost.apiKey  ");
+
         }
         else   {
 
@@ -73,6 +95,18 @@ public class Server {
             becki_accountAuthorizedSuccessful   = "http://" + Configuration.root().getString("Becki.production.accountAuthorizedSuccessful");
             becki_accountAuthorizedFailed       = "http://" + Configuration.root().getString("Becki.production.accountAuthorizedFailed");
             becki_passwordReset                 = "http://" + Configuration.root().getString("Becki.production.passwordReset ");
+
+
+            GitHub_callBack                     = tyrion_serverAddress + Configuration.root().getString("GitHub.production.callBack");
+            GitHub_clientSecret                 = Configuration.root().getString("GitHub.production.clientSecret");
+            GitHub_url                          = Configuration.root().getString("GitHub.production.url");
+            GitHub_apiKey                       = Configuration.root().getString("GitHub.production.apiKey  ");
+
+            Facebook_callBack                   = tyrion_serverAddress + Configuration.root().getString("Facebook.production.callBack");
+            Facebook_clientSecret               = Configuration.root().getString("Facebook.production.clientSecret");
+            Facebook_url                        = Configuration.root().getString("Facebook.production.url");
+            Facebook_apiKey                     = Configuration.root().getString("Facebook.production.apiKey  ");
+
 
         }
 

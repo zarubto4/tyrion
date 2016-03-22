@@ -34,7 +34,7 @@ public class M_Program extends Model{
                                     @Transient @JsonProperty public String screen_size_type()      {  return Server.tyrion_serverAddress + "/grid/screen_type/" + screen_size_type_object.id; }
 
     @ApiModelProperty(required = false, value = "Visible here only when the object is NOT specifically required. Inversion value for \"m_code\" ")
-    @JsonInclude(JsonInclude.Include.NON_NULL)  @JsonProperty public String m_code_url()            {  return m_code == null ? Server.tyrion_serverAddress + "/grid/m_program/m_code/" + qr_token : null ; }
+    @JsonInclude(JsonInclude.Include.NON_NULL)  @JsonProperty public String m_code_url()            {  return m_code == null ? Server.tyrion_serverAddress + "/grid/m_program/token/" + qr_token : null ; }
 
     @ApiModelProperty(required = false, value = "Its here only if its possible to connect to B_Program")
     @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty public String websocket_address()      {  return m_project_object.b_program_version == null ? null :  Server.tyrion_webSocketAddress + "/websocket/mobile/" + m_project_object.id + "/{terminal_id} "; }

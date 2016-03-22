@@ -17,12 +17,11 @@ GET             /test6                                      @controllers.WikyCon
 
 
 ### TERMINAL ############ TERMINAL ############### TERMINAL ################ TERMINAL #####################################################################################
-############################################################################################################################################################################
+###################################################################################f#########################################################################################
 
 GET              /websocket/homer/:mac_adress                   @controllers.WebSocketController_Incoming.homer_connection(mac_adress)
 GET              /websocket/mobile/:m_project_id/:mac_adress    @controllers.WebSocketController_Incoming.mobile_connection(m_project_id, mac_adress)
 
-PUT              /websocket/terminal/identificator              @controllers.GridController.get_identificator()
 
 # Pro vývojáře
 POST             /websocket/webSocketStats                      @controllers.WebSocketController_Incoming.getWebSocketStats
@@ -190,7 +189,7 @@ DELETE         /project/blockoBlock/version/:blocko_block_version_id            
 POST           /project/typeOfBlock                                                         @controllers.ProgramingPackageController.newTypeOfBlock()
 GET            /project/typeOfBlock                                                         @controllers.ProgramingPackageController.getAllTypeOfBlocks
 GET            /project/blockoBlock/project/:project_id                                     @controllers.ProgramingPackageController.get_TypeOfBlock_by_Project(project_id)
-GET            /project/typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.get_BlockoBlocks_from_Category(type_of_block_id)
+GET            /project/typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.get_TypeOfBlock(type_of_block_id)
 PUT            /project/typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.editTypeOfBlock(type_of_block_id)
 
 DELETE         /project/typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.deleteTypeOfBlock(type_of_block_id)
@@ -313,12 +312,10 @@ PUT             /grid/m_project/connect/:m_project_id/:version_id/:auto_incremen
 POST            /grid/m_program/:m_project_id                                               @controllers.GridController.new_M_Program(m_project_id)
 GET             /grid/m_program/app/token/:qr_token                                         @controllers.GridController.get_M_Program_byQR_Token_forMobile(qr_token)
 GET             /grid/m_program/app/m_programs                                              @controllers.GridController.get_M_Program_all_forMobile()
-GET             /grid/m_program/m_code/:qr_token                                            @controllers.GridController.get_M_Program_m_code(qr_token)
 
 GET             /grid/m_program/:m_progrm_id                                                @controllers.GridController.get_M_Program(m_progrm_id)
 PUT             /grid/m_program/:m_progrm_id                                                @controllers.GridController.edit_M_Program(m_progrm_id)
 DELETE          /grid/m_program/:m_progrm_id                                                @controllers.GridController.remove_M_Program(m_progrm_id)
-
 
 #M Screen Type
 POST            /grid/screen_type                                                           @controllers.GridController.new_Screen_Size_Type()
@@ -329,6 +326,8 @@ PUT             /grid/screen_type/:screen_size_type_id                          
 DELETE          /grid/screen_type/:screen_size_type_id                                      @controllers.GridController.remove_Screen_Size_Type(screen_size_type_id)
 
 
+PUT             /websocket/terminal/identificator                                           @controllers.GridController.get_identificator()
+PUT             /websocket/terminal/identificator/:terminal_id                              @controllers.GridController.check_identifiactor(terminal_id)
 
 
 ### TOOLS ############ TOOLS ############### TOOLS ################ TOOLS ######################################################################################################

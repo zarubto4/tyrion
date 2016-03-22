@@ -27,7 +27,7 @@ public class BlockoBlock extends Model {
                 @JsonProperty public String  versions()           { return Server.tyrion_serverAddress + "/project/blocko_block/version/all/"  + this.id;}
                 @JsonProperty public Integer countOfversions()    { return blocko_versions.size(); }
                 @JsonProperty public String  author()             { return Server.tyrion_serverAddress + "/coreClient/person/person/"  + this.id;}
-    @Transient  @JsonProperty public String  type_of_block()      { return Server.tyrion_serverAddress + "/project/typeOfBlock/"  + type_of_block.id; }
+    @Transient  @JsonProperty public String  type_of_block()      { return type_of_block.id; }
 
 
 

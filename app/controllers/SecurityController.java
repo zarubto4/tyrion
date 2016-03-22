@@ -7,7 +7,6 @@ import com.github.scribejava.core.model.*;
 import com.github.scribejava.core.oauth.OAuthService;
 import io.swagger.annotations.*;
 import models.persons.FloatingPersonToken;
-import models.persons.LinkedAccount;
 import models.persons.Person;
 import models.persons.PersonPermission;
 import play.Configuration;
@@ -17,9 +16,12 @@ import play.libs.F;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSRequest;
-import play.mvc.*;
+import play.mvc.BodyParser;
+import play.mvc.Controller;
+import play.mvc.Http;
+import play.mvc.Result;
 import utilities.Server;
-import utilities.loginEntities.Secured;
+import utilities.UtilTools;
 import utilities.loginEntities.Socials;
 import utilities.response.CoreResponse;
 import utilities.response.GlobalResult;
@@ -33,9 +35,8 @@ import utilities.swagger.outboundClass.Login_return_object;
 import javax.inject.Inject;
 import javax.websocket.server.PathParam;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class SecurityController extends Controller {
@@ -183,13 +184,7 @@ public class SecurityController extends Controller {
             produces = "application/json",
             response =  Result_ok.class,
             protocols = "https",
-            code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "Logged in system", description = "Person must be logged in server")}
-                    )
-            }
+            code = 200
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successful logged",      response = Result_ok.class),
@@ -197,7 +192,6 @@ public class SecurityController extends Controller {
             @ApiResponse(code = 401, message = "Wrong Email or Password",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
     public Result logout() {
         try {
 
@@ -226,117 +220,78 @@ public class SecurityController extends Controller {
     @ApiOperation( value = "GET_github_oauth", hidden = true)
     public Result GET_github_oauth(String url) {
         try {
-            String state = "";
-            String code = "";
 
-            // Z důvodů nemožnosti nastavit tandartně matici query v hlavičce metody v routes (když se to povede vrací to jiné
-            // parametry než když se to nepovede - bylo nutné přistoupit k trochu hloupému řešení, které však funguje za všech předpokladů
+            Map<String, String> map = UtilTools.getMap_From_querry(request().queryString().entrySet());
 
-            final Set<Map.Entry<String,String[]>> entries = request().queryString().entrySet();
-            for (Map.Entry<String,String[]> entry : entries) {
-
-                final String key = entry.getKey();
-                final String value = Arrays.toString(entry.getValue());
-
-                // Kontrola obsahu
-                if(key.equals("code")) code = value.replace("[", "").replace("]", "");
-                if(key.equals("state")) state = value.replace("[", "").replace("]", "");
-
-                if(key.equals("error")){
-                    if(state.length() > 1) LinkedAccount.find.where().eq("providerKey", state).findUnique().delete();
-                    return redirect( Server.becki_redirectFail );
-                }
-
+            if (map.containsKey("error")) {
+                if (map.containsKey("state"))
+                    FloatingPersonToken.find.where().eq("providerKey", map.get("state")).findUnique().delete();
+                return redirect(Server.becki_redirectFail);
             }
 
-            LinkedAccount linkedAccount = LinkedAccount.find.where().eq("providerKey", state).findUnique();
-            if (linkedAccount == null) return redirect( Server.becki_redirectFail );
-            linkedAccount.tokenVerified = true;
+            String state = map.get("state").replace("[", "").replace("]", "");
+            String code = map.get("code").replace("[", "").replace("]", "");
+
+
+            FloatingPersonToken floatingPersonToken = FloatingPersonToken.find.where().eq("providerKey", state).findUnique();
+            if (floatingPersonToken == null) return redirect(Server.becki_redirectFail);
+            floatingPersonToken.social_tokenVerified = true;
 
             OAuthService service = Socials.GitHub(state);
+            Token accessToken = service.getAccessToken(null, new Verifier(code));
 
-            Verifier verifier = new Verifier(code);
-            Token accessToken = service.getAccessToken(null, verifier);
-
-
-            OAuthRequest request = new OAuthRequest(Verb.GET, Configuration.root().getString( "GitHub.url" ), service);
+            OAuthRequest request = new OAuthRequest(Verb.GET, Server.GitHub_url, service);
             service.signRequest(accessToken, request);
 
             Response response = request.send();
-            if (!response.isSuccessful()) {
-                Logger.error("Incoming state: " + state + " not found in database");
-                redirect( Server.becki_redirectFail );
-            }
 
-            System.out.println("Body = " + response.getBody());
+
+            if (!response.isSuccessful()) redirect(Server.becki_redirectFail);
+
 
             JsonNode jsonNode = Json.parse(response.getBody());
 
+            floatingPersonToken.providerUserId = jsonNode.get("id").asText();
+            floatingPersonToken.update();
 
-                // Zkontroluji zda už takové id nemám náhodou v databázi a pokud ano, zamezuji duplicitě
-                LinkedAccount usedAccount = LinkedAccount.find.where().eq("providerUserId", jsonNode.get("id").asText()).findUnique();
 
-                // Ovařím zda už v databázi není - pokud ano provedu následující metodu, ve které smažu poslední LinkedAccount
-                // a používám už ten předchozí, jen prohodím a aktualizuji token! Poté přesměruji
-                if (usedAccount != null) {
+            List<FloatingPersonToken> before_registred = FloatingPersonToken.find.where().eq("providerUserId", floatingPersonToken.providerUserId).where().ne("connection_id", floatingPersonToken.connection_id).findList();
+            if (!before_registred.isEmpty()) {
+                System.out.println("Tento uživatel se nepřihlašuje poprvné");
+                floatingPersonToken.person = before_registred.get(0).person;
+                floatingPersonToken.update();
 
-                    usedAccount.authToken = linkedAccount.authToken;
-                    linkedAccount.delete();
-                    usedAccount.update();
-                    return redirect( Server.becki_mainUrl  + linkedAccount.returnUrl);
+            } else {
 
+                Person person = new Person();
+
+                if (jsonNode.has("mail")) person.mail = jsonNode.get("mail").asText();
+                if (jsonNode.has("login")) person.nick_name = jsonNode.get("login").asText();
+                // TODO  + další info co lze z JSONu dostat
+
+
+                if (jsonNode.has("name")) {
+                    try {
+                        System.out.println("name: " + jsonNode.get("login").asText());
+                        String[] parts = jsonNode.get("name").asText().split("\\s+");
+                        person.first_name = parts[0];
+                        person.last_name = parts[1];
+                    } catch (ArrayIndexOutOfBoundsException e) {
+                        System.out.println("Uživatel nemá vyplněné jméno a příjmení s mezerou .. nebo jiná TODO aktivita");
+                    }
                 }
 
-                // Pokud se uživatel přihlásí poprvé
-                else {
+                person.save();
+                floatingPersonToken.person = person;
+                floatingPersonToken.update();
 
-                    // Přiřadím do záznamu id uživatele ze sociální sítě
-                    linkedAccount.providerUserId = jsonNode.get("id").asText();
-                    linkedAccount.update();
+            }
 
+            return redirect(Server.becki_mainUrl + floatingPersonToken.returnUrl);
 
-
-                        Person person = new Person();
-
-                        if (jsonNode.has("mail")) {
-                            person.mail = jsonNode.get("mail").asText();
-                        }
-
-                        if (jsonNode.has("login")) {
-                            person.nick_name = jsonNode.get("login").asText();
-                        }
-
-                        if (jsonNode.has("name")) {
-                            try {
-                                System.out.println("name: " + jsonNode.get("login").asText());
-                                String[] parts = jsonNode.get("name").asText().split("\\s+");
-                                person.first_name = parts[0];
-                                person.last_name = parts[1];
-                            }catch (ArrayIndexOutOfBoundsException e){
-                                System.out.println("Uživatel nemá vyplněné jméno a příjmení s mezerou .. nebo jiná TODO aktivita");
-                            }
-                        }
-
-
-                        person.setToken(linkedAccount.authToken, linkedAccount.user_agent); // update je v metodě už zahrnut!
-                        person.save();
-
-                        linkedAccount.person = person;
-                        linkedAccount.update();
-
-                        return redirect(Server.becki_mainUrl + linkedAccount.returnUrl);
-
-
-                }
 
         } catch (Exception e) {
-
-            Logger.error("Error ");
-            Logger.error("Error - Příchozí JSON v metodě GEToauth_callback neobsahuje identifikačnmí ID!");
-            Logger.error("Error \n");
-            Logger.error("Error", e);
-            Logger.error("SecurityController - GEToauth_callback ERROR");
-            return GlobalResult.internalServerError();
+            return redirect( Server.becki_redirectFail );
         }
 
 
@@ -347,50 +302,34 @@ public class SecurityController extends Controller {
     public Result GET_facebook_oauth(String url) {
         try {
 
-            String code = "";
-            String state = "";
+            Map<String, String> map = UtilTools.getMap_From_querry(request().queryString().entrySet());
 
-            // Z důvodů nemožnosti nastavit standartně matici query v hlavičce metody v routes (když se to povede vrací to jiné
-            // parametry než když se to nepovede - bylo nutné přistoupit k trochu hloupému řešení, které však funguje za všech předpokladů
-            final Set<Map.Entry<String,String[]>> entries = request().queryString().entrySet();
-            for (Map.Entry<String,String[]> entry : entries) {
-
-                final String key = entry.getKey();
-                final String value = Arrays.toString(entry.getValue());
-
-
-                if(key.equals("code")) code = value.replace("[", "").replace("]", "");
-                if(key.equals("state")) state = value.replace("[", "").replace("]", "");
-
-                if(key.equals("error")){
-                    if(state.length() > 1) LinkedAccount.find.where().eq("providerKey", state).findUnique().delete();
-                    return redirect(Server.becki_redirectFail );
-                }
-
+            if (map.containsKey("error")) {
+                if (map.containsKey("state"))
+                FloatingPersonToken.find.where().eq("providerKey", map.get("state")).findUnique().delete();
+                return redirect(Server.becki_redirectFail);
             }
 
-            LinkedAccount linkedAccount = LinkedAccount.find.where().eq("providerKey", state).findUnique();
-            if (linkedAccount == null) return redirect(Server.becki_redirectFail );
-            linkedAccount.tokenVerified = true;
+            String state = map.get("state").replace("[", "").replace("]", "");
+            String code  = map.get("code").replace("[", "").replace("]", "");
+
+
+            FloatingPersonToken floatingPersonToken = FloatingPersonToken.find.where().eq("providerKey", state).findUnique();
+            if (floatingPersonToken == null) return redirect(Server.becki_redirectFail);
+            floatingPersonToken.social_tokenVerified = true;
 
             OAuthService  service = Socials.Facebook(state);
 
-            Verifier verifier = new Verifier(code);
-            Token accessToken = service.getAccessToken(null, verifier);
+            Token accessToken = service.getAccessToken(null, new Verifier(code) );
 
-            OAuthRequest request = new OAuthRequest(Verb.GET, Configuration.root().getString("Facebook.url"), service);
+            OAuthRequest request = new OAuthRequest(Verb.GET, Server.Facebook_url, service);
             service.signRequest(accessToken, request);
 
             Response response = request.send();
-            if (!response.isSuccessful()) {
-                Logger.error("Incoming state: " + state + " not found in database");
-                redirect(Server.becki_redirectFail );
-            }
+            if (!response.isSuccessful()) redirect(Server.becki_redirectFail );
 
-            System.out.println("Body = " + response.getBody());
 
             JsonNode jsonNode = Json.parse(response.getBody());
-
 
             WSRequest wsrequest = ws.url("https://graph.facebook.com/v2.5/"+ jsonNode.get("id").asText());
             WSRequest complexRequest = wsrequest.setQueryParameter("access_token", accessToken.getToken())
@@ -401,74 +340,40 @@ public class SecurityController extends Controller {
 
             System.out.println("Příchozí JSON: " + jsonRequest.toString());
 
-            // Zkontroluji zda už takové id nemám náhodou v databázi a pokud ano, zamezuji duplicitě
-           LinkedAccount usedAccount = LinkedAccount.find.where().eq("providerUserId", jsonRequest.get("id").asText()).findUnique();
 
-           // Ověřím zda už v databázi není - pokud ano provedu následující metodu, ve které smažu poslední LinkedAccount
-           // a používám už ten předchozí, jen prohodím a aktualizuji token! Poté přesměruji
-           if (usedAccount != null) {
-
-                usedAccount.authToken = linkedAccount.authToken;
-                linkedAccount.delete();
-                usedAccount.update();
-                usedAccount.person.setToken(usedAccount.authToken, linkedAccount.user_agent);
-                usedAccount.person.update();
-                return redirect( Server.becki_mainUrl + linkedAccount.returnUrl);
-
-           }
-
-           // Pokud se uživatel přihlásí poprvé
-           else {
-
-                // Přiřadím do záznamu id uživatele ze sociální sítě
-                linkedAccount.providerUserId = jsonRequest.get("id").asText();
-                linkedAccount.update();
-
-                // A vytvářím osobu - Je nutné se podívat, zda náhodou už neexistuje daná osoba v systému
-                // - pak bych tento LinkedAccount napojil na ní.
+            List<FloatingPersonToken> before_registred = FloatingPersonToken.find.where().eq("providerUserId", floatingPersonToken.providerUserId).where().ne("connection_id", floatingPersonToken.connection_id).findList();
+            if (!before_registred.isEmpty()){
+                System.out.println("Tento uživatel se nepřihlašuje poprvné");
+                floatingPersonToken.person = before_registred.get(0).person;
+                floatingPersonToken.update();
 
 
-                // V ostatních případech - kdy mail nemám a tedy nemám šanci najít osobu pro marge
+            }
+            else {
 
-                        Person person = new Person();
-                        if (jsonRequest.has("mail")) {
-                            person.mail = jsonRequest.get("mail").asText();
-                        }
+                Person person = new Person();
+                if (jsonRequest.has("mail")) person.mail = jsonRequest.get("mail").asText();
+                if (jsonRequest.has("first_name")) person.first_name = jsonRequest.get("first_name").asText();
 
-                        if (jsonRequest.has("first_name")) {
-                            person.first_name = jsonRequest.get("first_name").asText();
-                        }
-                        if (jsonRequest.has("last_name")) {
-                            person.last_name = jsonRequest.get("last_name").asText();
-                        }
-                        if (jsonRequest.has("birthday")) {
-                            try {
-                                SimpleDateFormat sdf = new SimpleDateFormat("MM/DD/YYYY");
-                                person.date_of_birth = sdf.parse(jsonRequest.get("birthday").asText());
-                            }catch (Exception e){
-                                Logger.error("Error FACEBOOK");
-                                Logger.error("Error - Příchozí JSON Obsahoval narozeniny - ale něco se pokazilo! " + jsonRequest.toString());
-                                Logger.error("Error '");
-                            }
-                        }
+                if (jsonRequest.has("last_name")) person.last_name = jsonRequest.get("last_name").asText();
 
-                        person.setToken(linkedAccount.authToken, linkedAccount.user_agent);
-                        person.save();
+                if (jsonRequest.has("birthday")) {
+                    try {
+                        SimpleDateFormat sdf = new SimpleDateFormat("MM/DD/YYYY");
+                        person.date_of_birth = sdf.parse(jsonRequest.get("birthday").asText());
+                    }catch (Exception e){}
+                }
 
-                        linkedAccount.person = person;
-                        linkedAccount.update();
+                person.save();
+                floatingPersonToken.person = person;
+                floatingPersonToken.update();
+            }
 
-                        return redirect(Server.becki_mainUrl + linkedAccount.returnUrl);
-
-
-           }
-
+            return redirect(Server.becki_mainUrl + floatingPersonToken.returnUrl);
 
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("SecurityController - GET_facebook_oauth ERROR");
-            return GlobalResult.internalServerError();
+            return redirect( Server.becki_redirectFail );
         }
     }
 
@@ -494,21 +399,21 @@ public class SecurityController extends Controller {
     })
     public Result GitHub( @ApiParam(value = "this is return url address in format  /link/link", required = true) @PathParam("return_link")  String return_link){
         try {
-            LinkedAccount linkedAccount = LinkedAccount.setProviderKey("GitHub");
+            FloatingPersonToken floatingPersonToken = FloatingPersonToken.setProviderKey("GitHub");
 
-            linkedAccount.returnUrl = return_link;
+            floatingPersonToken.returnUrl = return_link;
 
-            if( Http.Context.current().request().headers().get("User-Agent")[0] != null) linkedAccount.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
-            else  linkedAccount.user_agent = "Unknown browser";
+            if( Http.Context.current().request().headers().get("User-Agent")[0] != null) floatingPersonToken.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
+            else  floatingPersonToken.user_agent = "Unknown browser";
 
-            linkedAccount.update();
+            floatingPersonToken.update();
 
-            OAuthService service = Socials.GitHub(linkedAccount.providerKey);
+            OAuthService service = Socials.GitHub( floatingPersonToken.providerKey);
 
             Login_Social_Network result = new Login_Social_Network();
             result.type = "GitHub";
             result.redirect_url = service.getAuthorizationUrl(null);
-            result.authToken = linkedAccount.authToken;
+            result.authToken = floatingPersonToken.authToken;
 
             return GlobalResult.result_ok(Json.toJson(result));
 
@@ -538,21 +443,21 @@ public class SecurityController extends Controller {
     })
     public Result Facebook(@ApiParam(value = "this is return url address in format  ?return_link=/link/link", required = true) @PathParam("return_link") String return_link){
         try {
-            LinkedAccount linkedAccount = LinkedAccount.setProviderKey("Facebook");
+            FloatingPersonToken floatingPersonToken = FloatingPersonToken.setProviderKey("Facebook");
 
-            linkedAccount.returnUrl = return_link;
+            floatingPersonToken.returnUrl = return_link;
 
-            if( Http.Context.current().request().headers().get("User-Agent")[0] != null) linkedAccount.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
-            else  linkedAccount.user_agent = "Unknown browser";
+            if( Http.Context.current().request().headers().get("User-Agent")[0] != null) floatingPersonToken.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
+            else  floatingPersonToken.user_agent = "Unknown browser";
 
-            linkedAccount.update();
+            floatingPersonToken.update();
 
-            OAuthService service = Socials.Facebook(linkedAccount.providerKey);
+            OAuthService service = Socials.Facebook(floatingPersonToken.providerKey);
 
             Login_Social_Network result = new Login_Social_Network();
             result.type = "Facebook";
             result.redirect_url = service.getAuthorizationUrl(null);
-            result.authToken = linkedAccount.authToken;
+            result.authToken = floatingPersonToken.authToken;
 
             return GlobalResult.result_ok(Json.toJson(result));
 
@@ -568,9 +473,9 @@ public class SecurityController extends Controller {
     @ApiOperation( value = "login via Twitter", hidden = true)
     public Result Twitter(String returnLink){
         try {
-            LinkedAccount linkedAccount = LinkedAccount.setProviderKey("Twitter");
+            FloatingPersonToken floatingPersonToken = FloatingPersonToken.setProviderKey("Twitter");
 
-            OAuthService service = Socials.Twitter(linkedAccount.providerKey);
+            OAuthService service = Socials.Twitter(floatingPersonToken.providerKey);
 
         // Kraviny
             Token requestToken = service.getRequestToken();
@@ -578,7 +483,7 @@ public class SecurityController extends Controller {
             Login_Social_Network result = new Login_Social_Network();
             result.type = "GitHub";
             result.redirect_url = service.getAuthorizationUrl(null);
-            result.authToken = linkedAccount.authToken;
+            result.authToken = floatingPersonToken.authToken;
 
             return GlobalResult.result_ok(Json.toJson(result));
 
@@ -593,14 +498,14 @@ public class SecurityController extends Controller {
     @ApiOperation( value = "login via Vkontakte", hidden = true)
     public Result Vkontakte(String returnLink){
         try {
-            LinkedAccount linkedAccount = LinkedAccount.setProviderKey("Vkontakte");
+            FloatingPersonToken floatingPersonToken = FloatingPersonToken.setProviderKey("Vkontakte");
 
-            OAuthService service = Socials.Vkontakte(linkedAccount.providerKey);
+            OAuthService service = Socials.Vkontakte(floatingPersonToken.providerKey);
 
             ObjectNode result = Json.newObject();
             result.put("type", "Vkontakte");
             result.put("url", service.getAuthorizationUrl(null));
-            result.put("authToken", linkedAccount.authToken);
+            result.put("authToken", floatingPersonToken.authToken);
 
             return GlobalResult.result_ok(result);
 
