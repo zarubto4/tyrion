@@ -9,6 +9,7 @@ import io.swagger.annotations.*;
 import models.compiler.*;
 import models.persons.PersonPermission;
 import models.project.c_program.C_Program;
+import models.project.global.Homer;
 import models.project.global.Project;
 import play.Logger;
 import play.data.Form;
@@ -520,18 +521,26 @@ public class CompilationLibrariesController extends Controller {
             Board board = Board.find.byId(board_id);
             if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
 
+            Homer homer;
+            // TODO Trochu problém té nejednoznačnosti
+            try {
+                homer = board.projects.get(0).homerList.get(0);
+                if (homer == null) return GlobalResult.notFoundObject("Homer not found");
+            }catch (Exception e){ return GlobalResult.result_BadRequest("Hardware is not connected with Homer (cloud or physic) ");}
+
             // Přijmu soubor
             Http.MultipartFormData body = request().body().asMultipartFormData();
             Http.MultipartFormData.FilePart file = body.getFile("file");
 
             // Its file not null
-            if (file == null) return GlobalResult.notFound("File not found");
+            if (file == null) return GlobalResult.notFoundObject("File not found");
+            if(!homer.online()) return GlobalResult.result_BadRequest("Homer is not online");
 
-            return GlobalResult.result_ok("Vše v pořádku další operace in In TODO"); //TODO
 
+
+            return GlobalResult.result_ok();
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - deleteCProgram ERROR");
+            e.printStackTrace();
             return GlobalResult.internalServerError();
         }
     }
