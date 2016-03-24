@@ -13,14 +13,29 @@ public class Screen_Size_Type extends Model {
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)     public String id;
                                                                 public String name;
-                                                                public Integer height;
-                                                                public Integer width;
+
+
+                                                                public Integer portrait_height;
+                                                                public Integer portrait_width;
+                                                                public Integer portrait_square_height;
+                                                                public Integer portrait_square_width;
+                                                                public Integer portrait_min_screens;
+                                                                public Integer portrait_max_screens;
+
+                                                                public Integer landscape_height;
+                                                                public Integer landscape_width;
+                                                                public Integer landscape_square_height;
+                                                                public Integer landscape_square_width;
+                                                                public Integer landscape_min_screens;
+                                                                public Integer landscape_max_screens;
+
 
                                                                 // Informace zda daný typ obrazovky podporuje režim
                                                                 // na výšku i na šířku
-                                                                public boolean height_lock;
+                                                                public boolean height_lock  ;
                                                                 public boolean width_lock;
                                                                 public boolean touch_screen;
+
                                      @JsonIgnore @ManyToOne     public Project project;
 
 

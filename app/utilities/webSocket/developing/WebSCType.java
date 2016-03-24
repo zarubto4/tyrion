@@ -5,6 +5,7 @@ import controllers.WebSocketController_Incoming;
 import play.libs.Json;
 import play.mvc.WebSocket;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -102,6 +103,11 @@ public abstract class WebSCType {
             }
 
         }
+    }
+
+    public void send_file(File file){
+        out.write("asdfsd");
+
     }
 
     public void write_without_confirmation(JsonNode json) {

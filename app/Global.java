@@ -1,4 +1,5 @@
 import controllers.WebSocketController_Incoming;
+import models.grid.Screen_Size_Type;
 import models.persons.Person;
 import models.persons.PersonPermission;
 import models.persons.SecurityRole;
@@ -61,6 +62,34 @@ public class Global extends GlobalSettings {
                person.roles.add(SecurityRole.findByName("SuperAdmin"));
 
                person.save();
+           }
+
+
+           if(Screen_Size_Type.find.where().eq("name","iPhone6") == null){
+               Logger.warn("Creating screen size type for developers iPhone`s");
+               Screen_Size_Type screen_size_type = new Screen_Size_Type();
+
+               screen_size_type.name = "iPhone6";
+
+               screen_size_type.landscape_height = 375;
+               screen_size_type.landscape_width = 667;
+               screen_size_type.landscape_square_height = 6;
+               screen_size_type.landscape_square_width = 11;
+               screen_size_type.landscape_max_screens = 10;
+               screen_size_type.landscape_min_screens = 1;
+
+               screen_size_type.portrait_height = 667;
+               screen_size_type.portrait_width = 375;
+               screen_size_type.portrait_square_height = 11;
+               screen_size_type.portrait_square_width = 6;
+               screen_size_type.portrait_max_screens = 10;
+               screen_size_type.portrait_min_screens = 1;
+
+
+               screen_size_type.height_lock  = true;
+               screen_size_type.width_lock   = true;
+               screen_size_type.touch_screen = true;
+
            }
 
 

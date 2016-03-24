@@ -736,8 +736,21 @@ public class GridController extends play.mvc.Controller {
 
             Screen_Size_Type screen_size_type = new Screen_Size_Type();
             screen_size_type.name = help.name;
-            screen_size_type.height = help.height;
-            screen_size_type.width = help.width;
+
+            screen_size_type.landscape_height = help.landscape_height;
+            screen_size_type.landscape_width = help.landscape_width;
+            screen_size_type.landscape_square_height = help.landscape_square_height;
+            screen_size_type.landscape_square_width = help.landscape_square_width;
+            screen_size_type.landscape_max_screens = help.landscape_max_screens;
+            screen_size_type.landscape_min_screens = help.landscape_min_screens;
+
+            screen_size_type.portrait_height = help.portrait_height;
+            screen_size_type.portrait_width = help.portrait_width;
+            screen_size_type.portrait_square_height = help.portrait_square_height;
+            screen_size_type.portrait_square_width = help.portrait_square_width;
+            screen_size_type.portrait_max_screens = help.portrait_max_screens;
+            screen_size_type.portrait_min_screens = help.portrait_min_screens;
+
             screen_size_type.height_lock = help.height_lock;
             screen_size_type.width_lock = help.width_lock;
             screen_size_type.touch_screen = help.touch_screen;
@@ -899,8 +912,22 @@ public class GridController extends play.mvc.Controller {
             if(screen_size_type == null) return GlobalResult.notFoundObject("Screen_Size_Type screen_type_id not found");
 
             screen_size_type.name = help.name;
-            screen_size_type.height = help.height;
-            screen_size_type.width = help.width;
+
+            screen_size_type.landscape_height = help.landscape_height;
+            screen_size_type.landscape_width = help.landscape_width;
+            screen_size_type.landscape_square_height = help.landscape_square_height;
+            screen_size_type.landscape_square_width = help.landscape_square_width;
+            screen_size_type.landscape_max_screens = help.landscape_max_screens;
+            screen_size_type.landscape_min_screens = help.landscape_min_screens;
+
+            screen_size_type.portrait_height = help.portrait_height;
+            screen_size_type.portrait_width = help.portrait_width;
+            screen_size_type.portrait_square_height = help.portrait_square_height;
+            screen_size_type.portrait_square_width = help.portrait_square_width;
+            screen_size_type.portrait_max_screens = help.portrait_max_screens;
+            screen_size_type.portrait_min_screens = help.portrait_min_screens;
+
+
             screen_size_type.height_lock = help.height_lock;
             screen_size_type.width_lock = help.width_lock;
             screen_size_type.touch_screen = help.touch_screen;

@@ -140,6 +140,11 @@ public class UtilTools {
         return fileMain;
     }
 
+    public static byte[] loadFile(File file) throws IOException {
+        byte[] data = FileUtils.readFileToByteArray(file);
+        return  Base64.getEncoder().encode(data);
+    }
+
 
     public static Map<String, String> getMap_From_querry(Set<Map.Entry<String, String[]>> url){
         Map<String, String> map = new HashMap<>();

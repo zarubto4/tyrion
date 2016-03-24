@@ -10,12 +10,15 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.WebSocket;
+import utilities.UtilTools;
 import utilities.response.GlobalResult;
 import utilities.webSocket.developing.WS_Homer_Cloud;
 import utilities.webSocket.developing.WS_Homer_Local;
 import utilities.webSocket.developing.WS_Terminal_Local;
 import utilities.webSocket.developing.WebSCType;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -266,7 +269,7 @@ public class WebSocketController_Incoming extends Controller {
         try {
 
             System.out.println("homer_KillInstance " + homer_id);
-            incomingConnections_homers.get(homer_id).write_without_confirmation(Json.toJson("Kill Instance"));
+
 
             String messageId = UUID.randomUUID().toString();
 
@@ -279,6 +282,33 @@ public class WebSocketController_Incoming extends Controller {
 
         } catch (TimeoutException e){
             System.out.println("TimeoutException");
+        } catch (InterruptedException e){
+            System.out.println("InterruptedException");
+        }
+    }
+
+    public static void homer_update_embeddedHW(String homer_id, String board_id, File file){
+        try {
+            System.out.println("Chci nahrát binární soubor na hardware ");
+
+            String messageId = UUID.randomUUID().toString();
+
+            ArrayList<String> board_id_list = new ArrayList<>();
+            board_id_list.add(board_id);
+
+
+            ObjectNode result = Json.newObject();
+            result.put("messageType", "update_device");
+            result.put("messageId", messageId);
+            result.set("hardwareId", Json.toJson(board_id_list));
+            result.put("program", UtilTools.loadFile(file));
+
+            incomingConnections_homers.get(homer_id).write_with_confirmation(messageId, result);
+
+        } catch (TimeoutException e){
+            System.out.println("TimeoutException");
+        } catch (IOException e){
+            System.out.println("IOException");
         } catch (InterruptedException e){
             System.out.println("InterruptedException");
         }

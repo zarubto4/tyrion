@@ -15,16 +15,6 @@ public class Swagger_ScreeSizeType_New {
     public String name;
 
     @Constraints.Required
-    @Constraints.Min(value = 0)
-    @ApiModelProperty(required = true)
-    public Integer height;
-
-    @Constraints.Required
-    @Constraints.Min(value = 0)
-    @ApiModelProperty(required = true)
-    public Integer width;
-
-    @Constraints.Required
     @ApiModelProperty(required = true)
     public boolean height_lock;
 
@@ -38,5 +28,30 @@ public class Swagger_ScreeSizeType_New {
 
     @ApiModelProperty(value = "When you want create private screen", required = false)
     public String project_id;
+
+
+    //---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    @Constraints.Required @Constraints.Min(value = 0) @ApiModelProperty(required = true) public Integer landscape_height;
+    @Constraints.Required @Constraints.Min(value = 0) @ApiModelProperty(required = true) public Integer landscape_width;
+    @Constraints.Required @Constraints.Min(value = 0) @ApiModelProperty(required = true) public Integer landscape_square_height;
+    @Constraints.Required @Constraints.Min(value = 0) @ApiModelProperty(required = true) public Integer landscape_square_width;
+
+    @Constraints.Required @Constraints.Min(value = 1) @Constraints.Max(value = 10) @ApiModelProperty(required = true) public Integer landscape_max_screens;
+    @Constraints.Required @Constraints.Min(value = 0) @ApiModelProperty(required = true) public Integer landscape_min_screens;
+
+    //---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    @Constraints.Required @Constraints.Min(value = 0) @ApiModelProperty(required = true) public Integer portrait_height;
+    @Constraints.Required @Constraints.Min(value = 0) @ApiModelProperty(required = true) public Integer portrait_width;
+    @Constraints.Required @Constraints.Min(value = 0) @ApiModelProperty(required = true) public Integer portrait_square_height;
+    @Constraints.Required @Constraints.Min(value = 0) @ApiModelProperty(required = true) public Integer portrait_square_width;
+
+
+    @Constraints.Required @Constraints.Min(value = 1) @Constraints.Max(value = 10)  @ApiModelProperty(required = true) public Integer portrait_max_screens;
+    @Constraints.Required @Constraints.Min(value = 0) @ApiModelProperty(required = true) public Integer portrait_min_screens;
+
+    //---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 }

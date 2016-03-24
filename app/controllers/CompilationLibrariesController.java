@@ -532,11 +532,13 @@ public class CompilationLibrariesController extends Controller {
             Http.MultipartFormData body = request().body().asMultipartFormData();
             Http.MultipartFormData.FilePart file = body.getFile("file");
 
+
+
             // Its file not null
             if (file == null) return GlobalResult.notFoundObject("File not found");
             if(!homer.online()) return GlobalResult.result_BadRequest("Homer is not online");
 
-
+            WebSocketController_Incoming.homer_update_embeddedHW(homer.homer_id, board_id, file.getFile() );
 
             return GlobalResult.result_ok();
         } catch (Exception e) {

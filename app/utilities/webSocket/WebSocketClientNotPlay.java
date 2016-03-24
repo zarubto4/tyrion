@@ -20,6 +20,7 @@ public class WebSocketClientNotPlay extends WebSCType {
 
         WebSocketContainer container = ContainerProvider.getWebSocketContainer();
         container.connectToServer(this, serverURI);
+
     }
 
     @OnOpen
