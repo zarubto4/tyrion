@@ -37,7 +37,7 @@ public class M_Program extends Model{
     @JsonInclude(JsonInclude.Include.NON_NULL)  @JsonProperty public String m_code_url()            {  return m_code == null ? Server.tyrion_serverAddress + "/grid/m_program/token/" + qr_token : null ; }
 
     @ApiModelProperty(required = false, value = "Its here only if its possible to connect to B_Program")
-    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty public String websocket_address()      {  return m_project_object.b_program_version == null ? null :  Server.tyrion_webSocketAddress + "/websocket/mobile/" + m_project_object.id + "/{terminal_id} "; }
+    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty public String websocket_address()      {  return m_project_object.b_program_version == null ? null :  Server.tyrion_webSocketAddress + "/websocket/mobile/" + m_project_object.id + "/{terminal_id}"; }
 
     // Pokud nastavím M_Code
     @Transient @JsonIgnore public String m_code;

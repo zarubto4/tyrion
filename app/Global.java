@@ -65,7 +65,8 @@ public class Global extends GlobalSettings {
            }
 
 
-           if(Screen_Size_Type.find.where().eq("name","iPhone6") == null){
+           if( Screen_Size_Type.find.where().eq("name","iPhone6").findUnique() == null){
+
                Logger.warn("Creating screen size type for developers iPhone`s");
                Screen_Size_Type screen_size_type = new Screen_Size_Type();
 
@@ -85,10 +86,11 @@ public class Global extends GlobalSettings {
                screen_size_type.portrait_max_screens = 10;
                screen_size_type.portrait_min_screens = 1;
 
-
                screen_size_type.height_lock  = true;
                screen_size_type.width_lock   = true;
                screen_size_type.touch_screen = true;
+
+               screen_size_type.save();
 
            }
 
