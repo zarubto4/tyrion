@@ -108,7 +108,7 @@ public class SecurityController extends Controller {
             if (person == null) return GlobalResult.forbidden_Global("Email or password are wrong");
 
 
-            if (!person.mailValidated) return GlobalResult.forbidden_Global("Account is not authorized");
+            if (!person.mailValidated) return GlobalResult.result_BadRequest("Your account is not validated");
 
             FloatingPersonToken floatingPersonToken = new FloatingPersonToken();
             floatingPersonToken.set_basic_values();

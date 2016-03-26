@@ -327,7 +327,9 @@ public class GridController extends play.mvc.Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
+    @Security.Authenticated(Secured.class)
     public Result connect_M_Program_with_B_Program(@ApiParam(value = "m_project_id String", required = true) @PathParam("m_project_id") String m_project_id,
+                                                   @ApiParam(value = "b_program_id String", required = true) @PathParam("b_program_id") String b_program_id,
                                                    @ApiParam(value = "version_id String", required = true) @PathParam("version_id")     String version_id,
                                                    @ApiParam(value = "auto_incrementing Boolean value", required = true) @PathParam("auto_incrementing")   Boolean auto_incrementing ){
         try {
@@ -340,6 +342,7 @@ public class GridController extends play.mvc.Controller {
 
             m_project.b_program_version = version_object;
             m_project.auto_incrementing = auto_incrementing;
+            m_project.b_program = version_object.b_program;
             m_project.update();
 
             return GlobalResult.result_ok();

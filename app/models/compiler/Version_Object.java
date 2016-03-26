@@ -42,7 +42,7 @@ public class Version_Object extends Model {
 
     @JsonIgnore   @OneToOne(mappedBy="version_object",  cascade=CascadeType.ALL)  public B_Program_Cloud b_program_cloud;
     @JsonIgnore   @OneToOne(mappedBy="version_object",  cascade=CascadeType.ALL)  public B_Program_Homer b_program_homer;
-    @JsonIgnore   @OneToOne(mappedBy="b_program_version",cascade=CascadeType.ALL) M_Project m_program;
+    @JsonIgnore   @OneToOne(mappedBy="b_program_version",cascade=CascadeType.ALL) public M_Project m_program;
 
     @JsonProperty  @JsonInclude(JsonInclude.Include.NON_EMPTY) public String   allFiles()    { return Server.tyrion_serverAddress + "/file/listOfFiles/" +  this.id;}
     @JsonProperty  @JsonInclude(JsonInclude.Include.NON_EMPTY) public Integer  files()       { return files.size(); }

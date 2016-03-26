@@ -5,7 +5,7 @@
 # Home page - for testing connected device
 # Home page
 
-GET             /                                           @controllers.SecurityController.index
+#GET             /                                           @controllers.SecurityController.index
 
 # -> Testovací
 GET             /test1                                      @controllers.WikyController.test1()
@@ -16,7 +16,7 @@ GET             /test5                                      @controllers.WikyCon
 GET             /test6                                      @controllers.WikyController.test6()
 
 
-### TERMINAL ############ TERMINAL ############### TERMINAL ################ TERMINAL #####################################################################################
+### TERMINAL ############ TERMINAL ############### TERMINAL ################ TERMINAL #######################################################################################
 ###################################################################################f#########################################################################################
 
 GET              /websocket/homer/:mac_adress                   @controllers.WebSocketController_Incoming.homer_connection(mac_adress)
@@ -41,6 +41,16 @@ GET             /login/person                               @controllers.Securit
 
 GET             /login/facebook/*url                        @controllers.SecurityController.GET_facebook_oauth(url)
 GET             /login/github/*url                          @controllers.SecurityController.GET_github_oauth(url)
+
+### NOTIFICATION ############ NOTIFICATION ############### NOTIFICATION ################ NOTIFICATION ##########################################################################
+###################################################################################f############################################################################################
+
+
+GET         /                                               @controllers.NotificationController.index()
+GET         /notification/:identificator                    @controllers.NotificationController.subscribe_notification(identificator)
+POST        /notification                                   @controllers.NotificationController.postMessage()
+
+PUT         /notification                                   @controllers.NotificationController.sendSomething()
 
 
 ### PERSON ############ PERSON ############### PERSON ################ PERSON ################# PERSON ############ PERSON #####################################################
@@ -306,7 +316,7 @@ GET             /grid/m_project/:m_project_id                                   
 PUT             /grid/m_project/:m_project_id                                               @controllers.GridController.edit_M_Project(m_project_id)
 DELETE          /grid/m_project/:m_project_id                                               @controllers.GridController.remove_M_Project(m_project_id)
 
-PUT             /grid/m_project/connect/:m_project_id/:version_id/:auto_incrementing        @controllers.GridController.connect_M_Program_with_B_Program(m_project_id, version_id, auto_incrementing: Boolean)
+PUT             /grid/m_project/connect/:m_project_id/:b_program_id/:version_id/:auto_incrementing @controllers.GridController.connect_M_Program_with_B_Program(m_project_id, b_program_id, version_id, auto_incrementing: Boolean)
 
 #M Program
 POST            /grid/m_program/:m_project_id                                               @controllers.GridController.new_M_Program(m_project_id)
@@ -324,7 +334,6 @@ GET             /grid/screen_type/project/:project_id                           
 GET             /grid/screen_type/:screen_size_type_id                                      @controllers.GridController.get_Screen_Size_Type(screen_size_type_id)
 PUT             /grid/screen_type/:screen_size_type_id                                      @controllers.GridController.edit_Screen_Size_Type(screen_size_type_id)
 DELETE          /grid/screen_type/:screen_size_type_id                                      @controllers.GridController.remove_Screen_Size_Type(screen_size_type_id)
-
 
 PUT             /websocket/terminal/identificator                                           @controllers.GridController.get_identificator()
 PUT             /websocket/terminal/identificator/:terminal_id                              @controllers.GridController.check_identifiactor(terminal_id)

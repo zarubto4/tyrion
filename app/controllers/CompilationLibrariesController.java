@@ -515,7 +515,24 @@ public class CompilationLibrariesController extends Controller {
     }
 
     //TODO swagger Documentation
-    public Result uploadBinaryFileToBoard(String board_id) {
+
+    @ApiOperation(value = "update Embedded Hardware with your binary file",
+            tags = {"C_Program - Binary Files"},
+            notes = "Upload Binary file and choose hardware_id for update. Result (HTML code) will be every time 200. - Its because upload, restart, etc.. operation need more than ++30 second " +
+                    "There is also problem / chance that Tyrion didn't find where Embedded hardware is. So you have to listening Server Sent Events (SSE) and show \"future\" message to the user!",
+            produces = "application/json",
+            protocols = "https",
+            consumes = "multipart/form-data",
+            response =  Result_ok.class,
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result uploadBinaryFileToBoard(@ApiParam(value = "board_id String path", required = true) @PathParam("board_id") String board_id) {
         try{
 
             Board board = Board.find.byId(board_id);

@@ -35,11 +35,7 @@ public class Global extends GlobalSettings {
            Logger.warn("Setting Directory for Files");
            Server.setDirectory();
 
-
-
-
-
-    //****************************************************************************************************************************
+    /****************************************************************************************************************************/
 
            // For Developing
            if(SecurityRole.findByName("SuperAdmin") == null){
@@ -112,7 +108,6 @@ public class Global extends GlobalSettings {
 
         Logger.warn("Odpojuji připojené mobilní zařízení!");
         WebSocketController_Incoming.disconnect_all_mobiles();
-
 
         Logger.warn("Odpojuji připojené servery Blocko!");
         // TODO

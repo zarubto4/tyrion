@@ -35,6 +35,10 @@ public class FloatingPersonToken extends Model {
 
                                                             public boolean social_tokenVerified;  // Pro ověření, že token byl sociální sítí ověřen
 
+                                                            public boolean notification_subscriber;  // Pokud se s tímto tokenem frontend přihlásí k odebírání notifikací nastaví se mu hodnota true
+                                                                                                     // a to z důvodů rychlého filtrování, protože uživatel může být přihlášen na 50 zařízeních a na 15 odebírá notifikace
+                                                                                                     // v případě uzavření notifikačního kanálu se musí token přenastavit na false!
+
     public void set_basic_values(){
         this.setToken( createToken() );
         this.setDate();
