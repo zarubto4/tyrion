@@ -331,13 +331,23 @@ DELETE          /grid/screen_type/:screen_size_type_id                          
 ### TOOLS ############ TOOLS ############### TOOLS ################ TOOLS ######################################################################################################
 ################################################################################################################################################################################
 
+#LOGGY
+GET             /loggy                                      @controllers.LoggyController.mainViewDefault()
+GET             /loggy/deleteAll                            @controllers.LoggyController.deleteAll()
+GET             /loggy/error/:content                       @controllers.LoggyController.error(content)
+GET             /loggy/upload/:id                           @controllers.LoggyController.upload(id: Int)
+GET             /loggy/login                                @controllers.LoggyController.login()
+
+GET             /loggy/:errorCount                          @controllers.LoggyController.mainView(errorCount: Int)
+
+
 #SWAGGER API
-GET            /api-docs                                   @utilities.swagger.ApiHelpController.getResources
+GET            /api-docs                                    @utilities.swagger.ApiHelpController.getResources
 
 #CORS
-OPTIONS        /*all                                       @controllers.SecurityController.optionLink(all)
+OPTIONS        /*all                                        @controllers.SecurityController.optionLink(all)
 
 # Map static resources from the /public folder to the /assets URL path
-GET           /assets/*file                                controllers.Assets.at(path="/public", file)
+GET           /assets/*file                                 controllers.Assets.at(path="/public", file)
 
 

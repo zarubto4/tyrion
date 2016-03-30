@@ -30,6 +30,13 @@ public class Global extends GlobalSettings {
            Logger.warn("Setting system Permission");
            Server.setPermission();
 
+           //4
+           Logger.warn("Setting logback configuration");
+           Server.set_Logback();
+
+           //4
+           Logger.warn("Loading errors from past runs");
+           Server.set_Loggy();
 
 
     //****************************************************************************************************************************
