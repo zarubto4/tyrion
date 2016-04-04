@@ -32,10 +32,18 @@ public class Global extends GlobalSettings {
            Server.setPermission();
 
            //4
+           Logger.warn("Setting logback configuration");
+           Server.set_Logback();
+
+           //4
+           Logger.warn("Loading errors from past runs");
+           Server.set_Loggy();
+           //4
            Logger.warn("Setting Directory for Files");
            Server.setDirectory();
 
-    /****************************************************************************************************************************/
+
+    //****************************************************************************************************************************
 
            // For Developing
            if(SecurityRole.findByName("SuperAdmin") == null){

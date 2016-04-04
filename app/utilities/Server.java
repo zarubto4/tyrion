@@ -1,11 +1,17 @@
 package utilities;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.core.joran.spi.JoranException;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import controllers.*;
 import models.persons.PersonPermission;
+import org.slf4j.LoggerFactory;
 import play.Configuration;
 import play.Logger;
+import play.Play;
+import utilities.loggy.Loggy;
 import utilities.permission.DynamicResourceHandler;
 import utilities.permission.PermissionException;
 import utilities.webSocket.ClientThreadChecker;
@@ -139,6 +145,34 @@ public class Server {
         }
 
     }
+
+
+    /**
+     * Výběr nastavení Logbacku podle Server.developerMode
+     */
+    public static void set_Logback() {
+        LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+
+        try {
+            JoranConfigurator configurator = new JoranConfigurator();
+            configurator.setContext(context);
+            context.reset();
+            if (Play.application().configuration().getBoolean("Server.developerMode")) {
+                configurator.doConfigure(Play.application().getFile(Play.application().configuration().getString("Logback.developerSettings")));
+            }
+            else {
+                configurator.doConfigure(Play.application().getFile(Play.application().configuration().getString("Logback.productionSettings")));
+            }
+        } catch (JoranException je) {}
+    }
+
+    /**
+     * Nastavení Loggyho
+     */
+    public static void set_Loggy() {
+        Loggy.start();
+    }
+
 
     /**
      * Metoda slouží k zavolání hlavníchm neměnných metod v controllerech,
