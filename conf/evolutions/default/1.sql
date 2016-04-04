@@ -21,7 +21,6 @@ create table b_program_cloud (
   blocko_instance_name      varchar(255),
   vrs_obj_id                varchar(255),
   running_from              timestamp,
-  state_of_progam           varchar(255),
   constraint uq_b_program_cloud_vrs_obj_id unique (vrs_obj_id),
   constraint pk_b_program_cloud primary key (id))
 ;
@@ -139,19 +138,6 @@ create table library_group (
   constraint pk_library_group primary key (id))
 ;
 
-create table linked_account (
-  id                        varchar(255) not null,
-  provider_user_id          varchar(255),
-  provider_key              TEXT,
-  type_of_connection        varchar(255),
-  return_url                varchar(255),
-  date_of_create            timestamp,
-  person_id                 varchar(255),
-  auth_token                varchar(255),
-  token_verified            boolean,
-  constraint pk_linked_account primary key (id))
-;
-
 create table linked_post (
   link_id                   varchar(255) not null,
   author_id                 varchar(255),
@@ -181,6 +167,11 @@ create table m_project (
   program_description       TEXT,
   date_of_create            timestamp,
   project_id                varchar(255),
+  b_program_id              varchar(255),
+  vrs_obj_id                varchar(255),
+  auto_incrementing         boolean,
+  constraint uq_m_project_b_program_id unique (b_program_id),
+  constraint uq_m_project_vrs_obj_id unique (vrs_obj_id),
   constraint pk_m_project primary key (id))
 ;
 
@@ -194,7 +185,6 @@ create table person (
   first_title               varchar(255),
   last_title                varchar(255),
   date_of_birth             timestamp,
-  auth_token                varchar(255),
   mail_validated            boolean,
   sha_password              bytea,
   constraint uq_person_mail unique (mail),
