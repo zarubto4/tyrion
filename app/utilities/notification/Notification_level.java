@@ -2,6 +2,9 @@ package utilities.notification;
 
 public enum Notification_level {
 
-    Success, Info, Warning, Error, Chat;
-
+    info,
+    success,
+    warning,
+    error,
+    message
 }

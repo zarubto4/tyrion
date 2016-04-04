@@ -5,7 +5,7 @@
 # Home page - for testing connected device
 # Home page
 
-#GET             /                                           @controllers.SecurityController.index
+GET             /                                           @controllers.SecurityController.index
 
 # -> Testovací
 GET             /test1                                      @controllers.WikyController.test1()
@@ -47,10 +47,8 @@ GET             /login/github/*url                          @controllers.Securit
 ### NOTIFICATION ############ NOTIFICATION ############### NOTIFICATION ################ NOTIFICATION ##########################################################################
 ###################################################################################f############################################################################################
 
-GET         /notification/:identificator                    @controllers.NotificationController.subscribe_notification(identificator)
-
-PUT         /notification                                   @controllers.NotificationController.sendSomething()
-
+GET             /notification/:identificator                    @controllers.NotificationController.subscribe_notification(identificator)
+PUT             /notification                                   @controllers.NotificationController.sendSomething(level, message)
 
 ### PERSON ############ PERSON ############### PERSON ################ PERSON ################# PERSON ############ PERSON #####################################################
 ################################################################################################################################################################################

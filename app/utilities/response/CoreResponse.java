@@ -25,6 +25,8 @@ public class CoreResponse extends Controller {
         }
     }
 
+
+    // Určeno jako cors pro centrum notifikací (Content-Type musí být text/event-stream
     public static void cors_EventSource() {
         try {
             response().setHeader("Access-Control-Allow-Origin", "*"); // Zde bude web se kterým to může komunikovat (url frontendu)
