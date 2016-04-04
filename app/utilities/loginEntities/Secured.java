@@ -18,7 +18,9 @@ public class Secured extends Security.Authenticator {
         String[] authTokenHeaderValues = ctx.request().headers().get("X-AUTH-TOKEN");
 
         if ((authTokenHeaderValues != null) && (authTokenHeaderValues.length == 1) && (authTokenHeaderValues[0] != null)) {
+
             person = Person.findByAuthToken(authTokenHeaderValues[0]);
+
             if (person != null) {
                 ctx.args.put("person", person);
                 return person.id;
@@ -28,23 +30,9 @@ public class Secured extends Security.Authenticator {
         return null;
     }
 
-    public static boolean isLoggedIn(Context ctx){
-
-        String[] authTokenHeaderValues = ctx.request().headers().get("X-AUTH-TOKEN");
-
-
-        if ((authTokenHeaderValues != null) && (authTokenHeaderValues.length == 1) && (authTokenHeaderValues[0] != null)) {
-            if (Person.findByAuthToken(authTokenHeaderValues[0])!= null) {
-                return true;
-            }
-        }
-       return false;
-    }
-
-
     @Override
     public Result onUnauthorized(Context ctx) {
-        return GlobalResult.unauthorizedResult();
+        return GlobalResult.result_Unauthorized();
     }
 
 }

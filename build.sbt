@@ -23,6 +23,10 @@ libraryDependencies ++= Seq(
   "org.glassfish.tyrus" % "tyrus-client" % "1.12",
   "org.glassfish.tyrus" % "tyrus-container-grizzly-client" % "1.12",
   "org.glassfish.tyrus" % "tyrus-core" % "1.12",
+  "mysql" % "mysql-connector-java" % "5.1.18",
+  "net.sourceforge.jtds" % "jtds" % "1.3.0",
+  "commons-codec" % "commons-codec" % "1.9",
+
 
   javaJdbc,
   filters,

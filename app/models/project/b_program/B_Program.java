@@ -5,8 +5,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.swagger.annotations.ApiModelProperty;
 import models.compiler.Version_Object;
 import models.project.global.Project;
+import models.project.m_program.M_Project;
 import play.libs.Json;
 import utilities.Server;
 
@@ -24,11 +26,14 @@ public class B_Program extends Model {
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public String b_program_id;
                                                              public String name;
                         @Column(columnDefinition = "TEXT")   public String program_description;
-                                                             public Date lastUpdate;
-                                                             public Date dateOfCreate;
+
+    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1458315085338") public Date lastUpdate;
+    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1458315085338") public Date dateOfCreate;
                                     @JsonIgnore @ManyToOne   public Project project;
                                                 @JsonIgnore  public String azurePackageLink;
                                                 @JsonIgnore  public String azureStorageLink;
+
+    @JsonIgnore   @OneToOne(mappedBy="b_program",cascade=CascadeType.ALL) public M_Project m_program; // TODO asi časem předělat na MayToMany!
 
     @OneToMany(mappedBy="b_program", cascade=CascadeType.ALL) @OrderBy("azureLinkVersion DESC") public List<Version_Object> versionObjects = new ArrayList<>();
 
@@ -36,10 +41,7 @@ public class B_Program extends Model {
 
         ObjectNode result = Json.newObject();
 
-            Version_Object version_object = Version_Object.find.where().eq("b_program.b_program_id", b_program_id).where().or(
-                    com.avaje.ebean.Expr.isNotNull("b_program_cloud"),
-                    com.avaje.ebean.Expr.isNotNull("b_program_homer")
-            ).findUnique();
+        Version_Object version_object = where_program_run();
 
 
         if(version_object == null){
@@ -65,16 +67,30 @@ public class B_Program extends Model {
     }
 
 
-    @JsonProperty public String   project()                     {  return Server.serverAddress + "/project/project/" + this.project.id; }
+
+    @JsonProperty public String   project()                     {  return Server.tyrion_serverAddress + "/project/project/" + this.project.id; }
 
 
-    public static Finder<String,B_Program> find = new Finder<>(B_Program.class);
+    //------------------------------------------------------------------------------------------------------------------
 
-    public void setUniqueAzureStorageLink() {
+    @JsonIgnore public void setUniqueAzureStorageLink() {
         while(true){ // I need Unique Value
             this.azureStorageLink = UUID.randomUUID().toString();
             if (B_Program.find.where().eq("azureStorageLink", azureStorageLink ).findUnique() == null) break;
         }
     }
+
+    @JsonIgnore  public Version_Object where_program_run(){
+        Version_Object version_object = Version_Object.find.where().eq("b_program.b_program_id", b_program_id).where().or(
+                com.avaje.ebean.Expr.isNotNull("b_program_cloud"),
+                com.avaje.ebean.Expr.isNotNull("b_program_homer")
+        ).findUnique();
+
+        return  version_object;
+    }
+
+    //------------------------------------------------------------------------------------------------------------------
+
+     public static Finder<String,B_Program> find = new Finder<>(B_Program.class);
 }
 

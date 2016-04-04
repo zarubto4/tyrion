@@ -7,6 +7,7 @@ import models.persons.Person;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import java.util.Date;
 import java.util.UUID;
 
 
@@ -15,8 +16,10 @@ public class Grid_Terminal extends Model {
 
     @Id
     @ApiModelProperty(required = true, readOnly = true, example = "Mobile, WebBrowser")
-    public String unique_token;
+    public String terminal_id;
 
+    @ApiModelProperty(required = false, readOnly = true)
+    public String user_agent;
 
     @ApiModelProperty(required = true, example = "Mobile, WebBrowser")
     public String device_type;
@@ -27,13 +30,25 @@ public class Grid_Terminal extends Model {
     @ApiModelProperty(required = false, readOnly = true, value = "Only if Device is connected with logged Person")
     @JsonIgnore public Person person;
 
+    @JsonIgnore  public Date date_of_create;
+    @JsonIgnore  public Date date_of_last_update;
+
+    public Boolean ws_permission;
+
+    public Boolean m_program_access;
+
+    public Boolean up_to_date;
+
+
+
+
     //***** Private ****************************************************************************************************
 
     @JsonIgnore
-    public void set_unique_token() {
+    public void set_terminal_id() {
         while(true){ // I need Unique Value
-            this.unique_token  = UUID.randomUUID().toString();
-            if (Grid_Terminal.find.where().eq("qr_token", this.unique_token ).findUnique() == null) break;
+            this.terminal_id  = UUID.randomUUID().toString();
+            if (Grid_Terminal.find.where().eq("terminal_id", this.terminal_id ).findUnique() == null) break;
         }
     }
 

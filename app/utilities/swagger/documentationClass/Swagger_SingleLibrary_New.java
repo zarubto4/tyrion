@@ -6,7 +6,7 @@ import play.data.validation.Constraints;
 
 
 @ApiModel(description = "Json Model for new Single Library",
-        value = "ShareProject_Person ")
+        value = "SingleLibrary_New")
 public class Swagger_SingleLibrary_New {
 
     @Constraints.Required

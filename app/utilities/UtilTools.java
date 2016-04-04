@@ -5,46 +5,29 @@ import com.microsoft.azure.storage.blob.CloudBlob;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import com.microsoft.azure.storage.blob.ListBlobItem;
+import controllers.WebSocketController_Incoming;
 import models.compiler.FileRecord;
 import models.compiler.Version_Object;
 import models.overflow.HashTag;
 import models.overflow.Post;
+import models.project.m_program.M_Project;
 import org.apache.commons.io.FileUtils;
+import play.mvc.Controller;
+import play.mvc.WebSocket;
+import utilities.webSocket.developing.WS_Homer_Cloud;
+import utilities.webSocket.developing.WS_Terminal_Local;
+import utilities.webSocket.developing.WebSCType;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * Pomocná třída, realizující jednoúčelové metody. Zde si odkládám cokoliv, co by bylo v kódu zbytečně duplicitní.
  * Například při create a edit vždy ukládám něco. Vždy parsuji datum.. atd.
  */
 
-public class UtilTools {
+public class UtilTools extends Controller {
 
-
-    public static Date returnDateFromMillis(String millis){
-        long milliSeconds= Long.parseLong(millis);
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(milliSeconds);
-        return calendar.getTime();
-    }
-
-    public static Long returnIntFromString(String string) throws Exception{
-       try{
-           return Long.getLong(string);
-       }catch (Exception e){
-           throw  new Exception("Incoming Value " + string + " is not regular number");
-       }
-    }
-
-    public static List<String> getListFromJson(JsonNode json, String name){
-        List<String> list = new ArrayList<>();
-        for (final JsonNode objNode : json.get(name)) { list.add(objNode.asText()); }
-        return list;
-    }
 
     public static void add_hashTags_to_Post( List<String> hash_tags, Post post){
 
@@ -122,7 +105,6 @@ public class UtilTools {
         FileUtils.deleteDirectory(new File(temporaryDirectory));
     }
 
-
     /**
      * Nahrávání souborů na Azure!
      * @param container_name = jméno kontejneru - tyto kontejnery je nutné vytvořit dopředu v Azure data storage.
@@ -163,4 +145,73 @@ public class UtilTools {
 
         return fileMain;
     }
+
+    public static byte[] loadFile(File file) throws IOException {
+        byte[] data = FileUtils.readFileToByteArray(file);
+        return  Base64.getEncoder().encode(data);
+    }
+
+    public static Map<String, String> getMap_From_querry(Set<Map.Entry<String, String[]>> url){
+        Map<String, String> map = new HashMap<>();
+
+        for (Map.Entry<String,String[]> entry : url) {
+
+            final String key = entry.getKey();
+            final String value = Arrays.toString(entry.getValue());
+            map.put(key, value);
+        }
+        return  map;
+    }
+
+    public static WebSocket<String>  b_program_in_cloud(M_Project m_project, String terminal_id){
+
+        System.out.println("Blocko Program je v Cloudu a to zatím není plně otestované!!");
+
+        String instance_name = m_project.b_program_version.b_program_cloud.blocko_instance_name;
+        String server_name   = m_project.b_program_version.b_program_cloud.blocko_server_name;
+
+
+        WebSCType terminal = new WS_Terminal_Local(terminal_id, WebSocketController_Incoming.incomingConnections_terminals);
+        WebSocket<String> ws = terminal.connection();
+
+        if (!WebSocketController_Incoming.cloud_servers.containsKey(server_name)) {
+
+            System.out.println("BLocko program je provozován na serveru, který není připojen...");
+            System.out.println("Měl bych ho zařadit terminál do seznamu ztracených připojení");
+
+            if (WebSocketController_Incoming.terminal_lost_connection_homer.containsKey(instance_name)) {
+                System.out.println("Ztracené spojení už bylo dávno vytvořeno s cloud programem s jiným prvkem ale pořád nejsem spojen a tak přidávám další hodnotu: " + instance_name);
+                WebSocketController_Incoming.terminal_lost_connection_homer.get(instance_name).add(terminal_id);
+            } else {
+                System.out.println("Ještě žádné ztracené spojení nebylo vytvořeno s " + instance_name + " A tak vytvářím a přidávám první hodnotu");
+                ArrayList<String> list = new ArrayList<>(4);
+                list.add(terminal_id);
+                WebSocketController_Incoming.terminal_lost_connection_homer.put(instance_name, list);
+            }
+            System.out.println("Chystám se upozornit terminál že Cloud Homer není připojený");
+            WebSocketController_Incoming.homer_is_not_connected_yet(terminal);
+            System.out.println("Upozornil jsem terminál že Homer není připojený");
+            return ws;
+        }
+
+        if (!WebSocketController_Incoming.cloud_servers.get(server_name).containsKey(instance_name)) {
+            System.out.println("Konkrétní instance B_programu není na serveru zprovozněna!");
+            System.out.println("Měl bych ho zprovoznit? Ještě asi nejsem na to připraven"); // TODO - zprovoznit připojení
+
+            return WebSocket.reject( badRequest());
+        }
+
+        System.out.println("Budu propojovat s Homererem v cloudu protože je připojený a instance běží: ");
+
+        WS_Homer_Cloud homer = (WS_Homer_Cloud) WebSocketController_Incoming.cloud_servers.get(server_name).get(instance_name);
+
+
+        terminal.subscribers.add(homer);
+        if (homer.subscribers.isEmpty()) WebSocketController_Incoming.ask_for_receiving(homer);
+        homer.subscribers.add(terminal);
+
+        return ws;
+    }
+
+
 }

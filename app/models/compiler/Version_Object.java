@@ -4,6 +4,7 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModelProperty;
 import models.project.b_program.B_Program;
 import models.project.b_program.B_Program_Cloud;
 import models.project.b_program.B_Program_Homer;
@@ -22,8 +23,13 @@ public class Version_Object extends Model {
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public String  id;
                                                              public String version_name;
                      @Column(columnDefinition = "TEXT")      public String version_description;
-                                                             public Date date_of_create;
-                                               @JsonIgnore   public Integer azureLinkVersion;
+                                                @JsonIgnore  public Integer azureLinkVersion;
+
+
+
+    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1458315085338") public Date date_of_create;
+
+
 
     @JsonIgnore  @OneToMany(mappedBy="version_object", cascade=CascadeType.ALL)  public List<FileRecord> files = new ArrayList<>();
 
@@ -36,9 +42,9 @@ public class Version_Object extends Model {
 
     @JsonIgnore   @OneToOne(mappedBy="version_object",  cascade=CascadeType.ALL)  public B_Program_Cloud b_program_cloud;
     @JsonIgnore   @OneToOne(mappedBy="version_object",  cascade=CascadeType.ALL)  public B_Program_Homer b_program_homer;
-    @JsonIgnore   @OneToOne(mappedBy="b_program_version",cascade=CascadeType.ALL) M_Project m_program;
+    @JsonIgnore   @OneToOne(mappedBy="b_program_version",cascade=CascadeType.ALL) public M_Project m_program;
 
-    @JsonProperty  @JsonInclude(JsonInclude.Include.NON_EMPTY) public String   allFiles()    { return Server.serverAddress + "/file/listOfFiles/" +  this.id;}
+    @JsonProperty  @JsonInclude(JsonInclude.Include.NON_EMPTY) public String   allFiles()    { return Server.tyrion_serverAddress + "/file/listOfFiles/" +  this.id;}
     @JsonProperty  @JsonInclude(JsonInclude.Include.NON_EMPTY) public Integer  files()       { return files.size(); }
 
 

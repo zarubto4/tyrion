@@ -7,6 +7,7 @@ import com.github.scribejava.apis.VkontakteApi;
 import com.github.scribejava.core.builder.ServiceBuilder;
 import com.github.scribejava.core.oauth.OAuthService;
 import play.Configuration;
+import utilities.Server;
 
 public class Socials {
 
@@ -17,10 +18,10 @@ public class Socials {
 
         final OAuthService Facebook = new ServiceBuilder()
                 .provider(new FacebookApi())
-                .apiKey(Configuration.root().getString("Facebook.apiKey"))
-                .apiSecret(Configuration.root().getString("Facebook.clientSecret"))
+                .apiKey(Server.Facebook_apiKey)
+                .apiSecret(Server.Facebook_clientSecret)
                 .state(state)
-                .callback(Configuration.root().getString("Facebook.callBack"))
+                .callback(Server.Facebook_callBack)
                 .build();
 
         return Facebook;
@@ -30,10 +31,10 @@ public class Socials {
 
         final OAuthService GitHub = new ServiceBuilder()
                 .provider(new GitHubApi())
-                .apiKey(Configuration.root().getString("GitHub.apiKey"))
-                .apiSecret(Configuration.root().getString("GitHub.clientSecret"))
+                .apiKey(Server.GitHub_apiKey)
+                .apiSecret(Server.GitHub_clientSecret)
                 .state(state)
-                .callback(Configuration.root().getString("GitHub.callBack"))
+                .callback( Server.GitHub_callBack )
                 .build();
 
         return GitHub;
@@ -44,7 +45,7 @@ public class Socials {
         final OAuthService Twitter = new ServiceBuilder()
                 .provider(new TwitterApi())
                 .apiKey(Configuration.root().getString("Twitter.apiKey"))
-                .apiSecret(Configuration.root().getString("Twitter.clientSecret"))
+                .apiSecret(Server.tyrion_serverAddress +  Configuration.root().getString("Twitter.clientSecret"))
                 .build();
 
         return Twitter;
@@ -57,7 +58,7 @@ public class Socials {
                 .apiKey(Configuration.root().getString("Vkontakte.apiKey"))
                 .apiSecret(Configuration.root().getString("Vkontakte.clientSecret"))
                 .state(state)
-                .callback(Configuration.root().getString("Vkontakte.callBack"))
+                .callback( Server.tyrion_serverAddress + Configuration.root().getString("Vkontakte.callBack"))
                 .build();
 
         return Vkontakte;

@@ -1,12 +1,12 @@
 package controllers;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.*;
 import models.persons.Person;
 import models.persons.PersonPermission;
 import models.persons.SecurityRole;
 import play.Logger;
+import play.data.Form;
 import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
@@ -17,6 +17,7 @@ import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_PermissionRequired;
 import utilities.response.response_objects.Result_Unauthorized;
 import utilities.response.response_objects.Result_ok;
+import utilities.swagger.documentationClass.Swagger_SecurityRole_New;
 
 import javax.websocket.server.PathParam;
 import java.util.List;
@@ -25,9 +26,8 @@ import java.util.List;
 @Security.Authenticated(Secured.class)
 public class PermissionController extends Controller {
 
-
-    // SYSTEM PERMISSION
-    public static void set_System_Permission(){
+// SYSTEM PERMISSION ###################################################################################################
+      public static void set_System_Permission(){
 
         new PersonPermission("role.read", "description");
         new PersonPermission("role.person", "description");
@@ -41,9 +41,7 @@ public class PermissionController extends Controller {
         new PersonPermission("permission.read", "description");
     }
 
-
-///###################################################################################################################*/
-
+//######################################################################################################################
 
 
     @ApiOperation(value = "add Permission to the Person",
@@ -67,21 +65,19 @@ public class PermissionController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-
     public Result add_Permission_Person(@ApiParam(required = true) @PathParam("person_id") String person_id, @ApiParam(required = true) @PathParam("permission_id") String permission_id) {
         try {
 
-
             Person person = Person.find.byId(person_id);
-            if (person == null) return GlobalResult.notFoundObject();
+            if (person == null) return GlobalResult.notFoundObject("Person person_id not found");
 
             PersonPermission personPermission = PersonPermission.find.byId(permission_id);
-            if (personPermission == null) return GlobalResult.notFoundObject();
+            if (personPermission == null) return GlobalResult.notFoundObject("PersonPermission permission_id not found");
 
             if (!person.permissions.contains(personPermission)) person.permissions.add(personPermission);
             person.update();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
 
 
         } catch (Exception e) {
@@ -118,15 +114,15 @@ public class PermissionController extends Controller {
         try {
 
             Person person = Person.find.byId(person_id);
-            if(person == null) return GlobalResult.notFoundObject();
+            if(person == null) return GlobalResult.notFoundObject("Person person_id not found");
 
             PersonPermission personPermission = PersonPermission.find.byId(permission_id);
-            if(personPermission == null ) return GlobalResult.notFoundObject();
+            if(personPermission == null ) return GlobalResult.notFoundObject("PersonPermission permission_id not found");
 
             if(person.permissions.contains(personPermission)) person.permissions.remove(personPermission);
             person.update();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -162,7 +158,7 @@ public class PermissionController extends Controller {
         try {
 
             List<PersonPermission> permissions = PersonPermission.find.all();
-            return GlobalResult.okResult(Json.toJson(permissions));
+            return GlobalResult.result_ok(Json.toJson(permissions));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -172,7 +168,7 @@ public class PermissionController extends Controller {
 
     }
 
-///*********************************************************************************************************************
+//######################################################################################################################
 
     @ApiOperation(value = "add Permission to the Role",
             tags = {"Permission", "Role"},
@@ -200,17 +196,17 @@ public class PermissionController extends Controller {
         try {
 
             PersonPermission personPermission = PersonPermission.find.byId(permission_id);
-            if(personPermission == null ) return GlobalResult.notFoundObject();
+            if(personPermission == null ) return GlobalResult.notFoundObject("PersonPermission permission_id not found");
 
             SecurityRole securityRole = SecurityRole.find.byId(role_id);
-            if(securityRole == null ) return GlobalResult.notFoundObject();
+            if(securityRole == null ) return GlobalResult.notFoundObject("SecurityRole role_id not found");
 
             if( ! securityRole.permissions.contains(personPermission)) securityRole.permissions.add(personPermission);
 
             securityRole.update();
 
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -244,9 +240,9 @@ public class PermissionController extends Controller {
         try {
 
             SecurityRole securityRole = SecurityRole.find.byId(role_id);
-            if(securityRole == null ) return GlobalResult.notFoundObject();
+            if(securityRole == null ) return GlobalResult.notFoundObject("SecurityRole role_id not found");
 
-            return GlobalResult.okResult(Json.toJson(securityRole.permissions));
+            return GlobalResult.result_ok(Json.toJson(securityRole.permissions));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -280,9 +276,9 @@ public class PermissionController extends Controller {
         try {
 
             SecurityRole securityRole = SecurityRole.find.byId(role_id);
-            if(securityRole == null ) return GlobalResult.notFoundObject();
+            if(securityRole == null ) return GlobalResult.notFoundObject("SecurityRole role_id not found");
 
-            return GlobalResult.okResult(Json.toJson(securityRole.persons));
+            return GlobalResult.result_ok(Json.toJson(securityRole.persons));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -316,16 +312,16 @@ public class PermissionController extends Controller {
         try {
 
             PersonPermission personPermission = PersonPermission.find.byId(permission_id);
-            if(personPermission == null ) return GlobalResult.notFoundObject();
+            if(personPermission == null ) return GlobalResult.notFoundObject("PersonPermission permission_id not found");
 
             SecurityRole securityRole = SecurityRole.find.byId(role_id);
-            if(securityRole == null ) return GlobalResult.notFoundObject();
+            if(securityRole == null ) return GlobalResult.notFoundObject("SecurityRole role_id not found");
 
             if(securityRole.permissions.contains(personPermission)) securityRole.permissions.remove(personPermission);
 
             securityRole.update();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -334,7 +330,7 @@ public class PermissionController extends Controller {
         }
     }
 
-///*********************************************************************************************************************
+//######################################################################################################################
 
     @ApiOperation(value = "create new Role",
             tags = {"Role"},
@@ -371,17 +367,17 @@ public class PermissionController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result new_Role(){
         try {
-            JsonNode json = request().body().asJson();
+            final Form<Swagger_SecurityRole_New> form = Form.form(Swagger_SecurityRole_New.class).bindFromRequest();
+            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_SecurityRole_New help = form.get();
 
             SecurityRole securityRole = new SecurityRole();
-            securityRole.name = json.get("name").asText();
-            securityRole.description = json.get("description").asText();
+            securityRole.name = help.name;
+            securityRole.description =help.description;
             securityRole.save();
 
             return GlobalResult.created(Json.toJson(securityRole));
 
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "name", "description");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - new_Processor ERROR");
@@ -415,11 +411,11 @@ public class PermissionController extends Controller {
         try {
 
             SecurityRole securityRole = SecurityRole.find.byId(role_id);
-            if(securityRole == null ) return GlobalResult.notFoundObject();
+            if(securityRole == null ) return GlobalResult.notFoundObject("SecurityRole role_id not found");
 
             securityRole.delete();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -455,15 +451,15 @@ public class PermissionController extends Controller {
         try {
 
             Person person = Person.find.byId(person_id);
-            if(person == null) return GlobalResult.notFoundObject();
+            if(person == null) return GlobalResult.notFoundObject("Person person_id not found");
 
             SecurityRole securityRole = SecurityRole.find.byId(role_id);
-            if(securityRole == null ) return GlobalResult.notFoundObject();
+            if(securityRole == null ) return GlobalResult.notFoundObject("SecurityRole role_id not found");
 
             if(!person.roles.contains(securityRole)) person.roles.add(securityRole);
             person.update();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -499,15 +495,15 @@ public class PermissionController extends Controller {
         try {
 
             Person person = Person.find.byId(person_id);
-            if(person == null) return GlobalResult.notFoundObject();
+            if(person == null) return GlobalResult.notFoundObject("Person person_id not found");
 
             SecurityRole securityRole = SecurityRole.find.byId(role_id);
-            if(securityRole == null ) return GlobalResult.notFoundObject();
+            if(securityRole == null ) return GlobalResult.notFoundObject("SecurityRole role_id not found");
 
             if(person.roles.contains(securityRole)) person.roles.remove(securityRole);
             person.update();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -542,7 +538,7 @@ public class PermissionController extends Controller {
         try {
 
             List<SecurityRole> roles = SecurityRole.find.all();
-            return GlobalResult.okResult(Json.toJson(roles));
+            return GlobalResult.result_ok(Json.toJson(roles));
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -553,7 +549,7 @@ public class PermissionController extends Controller {
     }
 
 
-///*********************************************************************************************************************
+//######################################################################################################################
 
     // Private class for Swagger documentation
     private class SystemAccess {
@@ -588,7 +584,7 @@ public class PermissionController extends Controller {
         result.set("roles", Json.toJson(person.roles));
         result.set("permission", Json.toJson(person.permissions));
 
-        return GlobalResult.okResult(Json.toJson(result));
+        return GlobalResult.result_ok(Json.toJson(result));
 
 
 

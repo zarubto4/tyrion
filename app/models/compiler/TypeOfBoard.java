@@ -27,20 +27,20 @@ public class TypeOfBoard extends Model {
 
 
     @ApiModelProperty(value = "Proxy address to get Objects [LibraryGroup]", readOnly =true, allowableValues = "http://server_url/{id}")
-    @JsonProperty public String libraryGroups (){return Server.serverAddress + "/compilation/libraryGroups/" +  this.id;}
+    @JsonProperty public String libraryGroups (){return Server.tyrion_serverAddress + "/compilation/libraryGroups/" +  this.id;}
 
     @ApiModelProperty(value = "Proxy address to get Object [Libraries]", readOnly =true, allowableValues = "http://server_url/{id}")
-    @JsonProperty public String libraries     (){return Server.serverAddress + "/compilation/libraries/files/" +  this.id;}
+    @JsonProperty public String libraries     (){return Server.tyrion_serverAddress + "/compilation/libraries/files/" +  this.id;}
 
     @ApiModelProperty(value = "Proxy address to get Object \"Processor\"", readOnly =true, allowableValues = "http://server_url/{id}")
-    @JsonProperty public String processor      (){return Server.serverAddress + "/compilation/processor/" +  this.id;}
+    @JsonProperty public String processor      (){return Server.tyrion_serverAddress + "/compilation/processor/" +  this.id;}
 
     @ApiModelProperty(value = "Proxy address to get all registered objects [Board] with this TypeOfPost property",  readOnly =true, allowableValues = "http://server_url/{id}")
-    @JsonProperty public String boards        (){return Server.serverAddress + "/compilation/TypeOfBoard/boards/" +  this.id;}
+    @JsonProperty public String boards        (){return Server.tyrion_serverAddress + "/compilation/TypeOfBoard/boards/" +  this.id;}
 
     @ApiModelProperty(value = "Proxy address to get object \"Producer\" who made this TypeOfPost", readOnly =true, allowableValues = "http://server_url/{id}")
     @JsonProperty
-    public String producer      (){return Server.serverAddress + "/compilation/producer/" +  this.id;}
+    public String producer      (){return Server.tyrion_serverAddress + "/compilation/producer/" +  this.id;}
 
 
     public static Finder<String, TypeOfBoard> find = new Finder<>(TypeOfBoard.class);

@@ -1,22 +1,19 @@
 package utilities.response.response_objects;
 
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-import java.util.ArrayList;
-
-@ApiModel(value="Json_Value_Missing_Result", description="Some Json value missing")
-public class JsonValueMissing {
+@ApiModel(value="Bad Request", description="When is something wrong")
+public class Result_BadRequest {
 
     @ApiModelProperty(value = "state", allowableValues = "error", required = true, readOnly = true)
     public String state;
 
     @ApiModelProperty(value = "code", allowableValues = "400", required = true, readOnly = true)
-    public Integer code;
+    public Integer code = 400;
 
-    @ApiModelProperty(value = "message", required = true, readOnly = true)
+    @ApiModelProperty(value = "Can be null! If not, you can show that to User", required = false, readOnly = true)
     public String message;
 
-    @ApiModelProperty(required = true, readOnly = true)
-    public ArrayList<String> required_json_parameter  = new ArrayList<>();
 }

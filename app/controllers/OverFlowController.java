@@ -4,9 +4,9 @@ package controllers;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.Query;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.*;
 import models.overflow.*;
+import models.persons.PersonPermission;
 import play.Logger;
 import play.data.Form;
 import play.libs.Json;
@@ -17,20 +17,29 @@ import play.mvc.Security;
 import utilities.UtilTools;
 import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
-import utilities.response.response_objects.JsonValueMissing;
+import utilities.response.response_objects.Result_JsonValueMissing;
 import utilities.response.response_objects.Result_PermissionRequired;
 import utilities.response.response_objects.Result_Unauthorized;
 import utilities.response.response_objects.Result_ok;
 import utilities.swagger.documentationClass.*;
 
 import javax.websocket.server.PathParam;
-import java.util.*;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class OverFlowController  extends Controller {
 
-// PUBLIC **********************************************************************************************************************
+// SYSTEM PERMISSION ###################################################################################################
+    public static void set_System_Permission(){
+        new PersonPermission("role.read", "description");
+        //
+    }
 
+
+// PUBLIC ##############################################################################################################
 
     @ApiOperation(value = "get Post",
             tags = {"Blocko-OverFlow", "Post"},
@@ -47,19 +56,18 @@ public class OverFlowController  extends Controller {
         try{
 
             Post post = Post.find.byId(post_id);
-            if(post == null) return GlobalResult.notFoundObject();
+            if(post == null) return GlobalResult.notFoundObject("Post post_id not found");
 
             post.views++;
             post.update();
 
-            return GlobalResult.okResult( Json.toJson(post) );
+            return GlobalResult.result_ok( Json.toJson(post) );
 
         } catch (Exception e) {
             Logger.error("Error", e);
             return GlobalResult.internalServerError();
         }
     }
-
 
     @ApiOperation(value = "get Posts by Filter",
             tags = {"Blocko-OverFlow", "Post"},
@@ -156,54 +164,15 @@ public class OverFlowController  extends Controller {
             List<Post> list = query.findList();
 
 
-            return GlobalResult.okResult(Json.toJson(list));
+            return GlobalResult.result_ok(Json.toJson(list));
 
 
 
 
         } catch (Exception e){
-            e.printStackTrace();
-            return GlobalResult.nullPointerResult(e);
-        }
-
-    }
-
-    public Result get_Post_links(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id){
-        try {
-            Post postMain = Post.find.byId(post_id);
-            if(postMain == null) return GlobalResult.notFoundObject();
-
-            List<ObjectNode> list = new ArrayList<>();
-
-
-                for(LinkedPost linkedPost : postMain.linkedQuestions){
-
-                    Post post = linkedPost.answer;
-                    ObjectNode json = Json.newObject();
-                    json.put("linkId", linkedPost.linkId);
-
-                    json.put("post", "http://localhost:9000/overflow/post/"  +  post.postId);
-                    json.put("name", post.name);
-                    json.put("question", post.text_of_post);
-
-                    List<ObjectNode> answerJson = new ArrayList<>();
-
-                    for(Post answer : post.answers){
-                        ObjectNode j = Json.newObject();
-                        j.put("textOfAnswer", answer.text_of_post);
-                        answerJson.add(j);
-                    }
-
-                    json.replace("answers", Json.toJson(answerJson));
-                    list.add(json);
-                }
-                return GlobalResult.okResult(Json.toJson(list));
-
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("OverFlowController - newPost ERROR");
             return GlobalResult.internalServerError();
         }
+
     }
 
 
@@ -236,7 +205,7 @@ public class OverFlowController  extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successful created",      response = Post.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
@@ -250,7 +219,7 @@ public class OverFlowController  extends Controller {
             Swagger_Post_New help = form.get();
 
             TypeOfPost typeOfPost = TypeOfPost.find.byId(help.type_of_post_id);
-            if (typeOfPost == null) return GlobalResult.notFoundObject();
+            if (typeOfPost == null) return GlobalResult.notFoundObject("TypeOfPost type_of_post_id not found");
 
             Post post = new Post();
             post.author = SecurityController.getPerson();
@@ -262,9 +231,7 @@ public class OverFlowController  extends Controller {
             post.text_of_post = help.text_of_post;
             post.date_of_create = new Date();
 
-            if (form.get().hash_tags != null) {
-                UtilTools.add_hashTags_to_Post(form.get().hash_tags, post);
-            }
+            if (help.hash_tags != null) UtilTools.add_hashTags_to_Post(form.get().hash_tags, post);
 
             post.save();
 
@@ -305,14 +272,14 @@ public class OverFlowController  extends Controller {
         try {
 
             Post post = Post.find.byId(post_id);
-            if (post == null ) return GlobalResult.notFoundObject();
+            if (post == null ) return GlobalResult.notFoundObject("Post post_id not found");
             if (!post.author.id.equals( SecurityController.getPerson().id) ) return GlobalResult.forbidden_Global();
 
             post.delete();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
         }catch (Exception e){
-            return GlobalResult.nullPointerResult(e);
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -343,7 +310,7 @@ public class OverFlowController  extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",      response = Post.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -353,16 +320,16 @@ public class OverFlowController  extends Controller {
     public Result edit_Post(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id){
         try {
             final Form<Swagger_Post_New> form = Form.form(Swagger_Post_New.class).bindFromRequest();
-            if(form.hasErrors()) {return badRequest(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Post_New help = form.get();
 
             Post post = Post.find.byId(post_id);
-            if (post == null) return GlobalResult.notFoundObject();
+            if (post == null) return GlobalResult.notFoundObject("Post post_id not found");
 
             if (!post.author.id.equals( SecurityController.getPerson().id) ) return GlobalResult.forbidden_Global();
 
             TypeOfPost typeOfPost = TypeOfPost.find.byId( help.type_of_post_id);
-            if(typeOfPost == null) return GlobalResult.notFoundObject();
+            if(typeOfPost == null) return GlobalResult.notFoundObject("TypeOfPost type_of_post_id not found");
 
             post.name = help.name;
             post.type = typeOfPost;
@@ -371,14 +338,13 @@ public class OverFlowController  extends Controller {
 
             post.hashTagsList.clear();
 
-            UtilTools.add_hashTags_to_Post( help.hash_tags, post );
+            if( help.hash_tags != null ) UtilTools.add_hashTags_to_Post( help.hash_tags, post );
 
             post.update();
 
-           return GlobalResult.okResult(Json.toJson(post));
+           return GlobalResult.result_ok(Json.toJson(post));
 
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "name - String", "comment - TEXT", "hashTags - [String, String..]");
+
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("OverFlowController - newPost ERROR");
@@ -413,7 +379,7 @@ public class OverFlowController  extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",      response = Post.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
@@ -427,9 +393,9 @@ public class OverFlowController  extends Controller {
            Swagger_Post_Comment help = form.get();
 
            Post parentPost = Post.find.byId(post_id);
-           if (parentPost == null) return GlobalResult.notFoundObject();
+           if (parentPost == null) return GlobalResult.notFoundObject("Post post_id not found");
 
-           if( parentPost.postParentComment != null)  return GlobalResult.nullPointerResult("You cannot comment another comment");
+           if( parentPost.postParentComment != null)  return GlobalResult.result_BadRequest("You cannot comment another comment");
 
            Post post = new Post();
            post.author = SecurityController.getPerson();
@@ -437,9 +403,7 @@ public class OverFlowController  extends Controller {
            post.text_of_post = help.text_of_post;
            post.date_of_create = new Date();
 
-           if (form.get().hash_tags != null) {
-               UtilTools.add_hashTags_to_Post(form.get().hash_tags, post);
-           }
+           if (help.hash_tags != null) UtilTools.add_hashTags_to_Post(form.get().hash_tags, post);
 
            parentPost.comments.add(post);
            post.postParentComment = parentPost;
@@ -447,9 +411,8 @@ public class OverFlowController  extends Controller {
            parentPost.save();
            post.save();
 
-           return GlobalResult.okResult( Json.newObject().put( "postId", post.postId ));
-       } catch (NullPointerException e) {
-           return GlobalResult.nullPointerResult(e, "name - String", "comment - TEXT", "hashTags - [String, String..]");
+           return GlobalResult.result_ok( Json.toJson(post) );
+
        } catch (Exception e) {
            Logger.error("Error", e);
            Logger.error("OverFlowController - newPost ERROR");
@@ -484,7 +447,7 @@ public class OverFlowController  extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",      response = Post.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
@@ -500,8 +463,8 @@ public class OverFlowController  extends Controller {
             Post parentPost = Post.find.byId(post_id);
             if (parentPost == null) throw new Exception("Post not Exist");
 
-            if( parentPost.postParentComment != null)  return GlobalResult.nullPointerResult("You cannot answer to comment");
-            if( parentPost.postParentAnswer  != null)  return GlobalResult.nullPointerResult("You cannot answer to another answer");
+            if( parentPost.postParentComment != null)  return GlobalResult.result_BadRequest("You cannot answer to comment");
+            if( parentPost.postParentAnswer  != null)  return GlobalResult.result_BadRequest("You cannot answer to another answer");
 
             Post post = new Post();
             post.author = SecurityController.getPerson();
@@ -509,9 +472,7 @@ public class OverFlowController  extends Controller {
             post.text_of_post = help.text_of_post;
             post.date_of_create = new Date();
 
-            if (form.get().hash_tags != null) {
-                UtilTools.add_hashTags_to_Post(form.get().hash_tags, post);
-            }
+            if (help.hash_tags != null) UtilTools.add_hashTags_to_Post(form.get().hash_tags, post);
 
             parentPost.answers.add(post);
             post.postParentAnswer = parentPost;
@@ -519,10 +480,8 @@ public class OverFlowController  extends Controller {
             parentPost.save();
             post.save();
 
-            return GlobalResult.okResult(Json.toJson(post));
+            return GlobalResult.result_ok(Json.toJson(post));
 
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "text_of_post", "[hash_tags]");
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("OverFlowController - newPost ERROR");
@@ -557,7 +516,7 @@ public class OverFlowController  extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",      response = Post.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -580,13 +539,12 @@ public class OverFlowController  extends Controller {
 
             post.hashTags().clear();
 
-            UtilTools.add_hashTags_to_Post(help.hash_tags, post );
+            if (help.hash_tags != null) UtilTools.add_hashTags_to_Post(form.get().hash_tags, post);
 
             post.update();
-            return GlobalResult.okResult(Json.toJson(post));
+            return GlobalResult.result_ok(Json.toJson(post));
 
-        } catch (NullPointerException e) {
-            return GlobalResult.nullPointerResult(e, "name - String", "comment - TEXT", "hashTags - [String, String..]");
+
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("OverFlowController - newPost ERROR");
@@ -620,19 +578,18 @@ public class OverFlowController  extends Controller {
             Post question = Post.find.byId(question_post_id);
             Post answer = Post.find.byId(answer_post_id);
 
-            if (question == null)   return GlobalResult.notFoundObject();
-            if (answer == null)     return GlobalResult.notFoundObject();
-            if (question.postParentComment != null)   return GlobalResult.badRequest("You can link only main post");
-            if (answer.postParentComment != null)     return GlobalResult.badRequest("You can link only main post");
+            if (question == null)   return GlobalResult.notFoundObject("Post question_post_id not found");
+            if (answer == null)     return GlobalResult.notFoundObject("Post answer_post_id not found");
+            if (question.postParentComment != null)   return GlobalResult.result_BadRequest("You can link only main post");
+            if (answer.postParentComment != null)     return GlobalResult.result_BadRequest("You can link only main post");
 
             LinkedPost linkedPost = new LinkedPost();
             linkedPost.answer = answer;
             linkedPost.question = question;
             linkedPost.author = SecurityController.getPerson();
-
             linkedPost.save();
 
-            return GlobalResult.okResult(Json.toJson(linkedPost));
+            return GlobalResult.result_ok(Json.toJson(linkedPost));
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("OverFlowController - newPost ERROR");
@@ -670,7 +627,7 @@ public class OverFlowController  extends Controller {
 
             post.delete();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -679,8 +636,10 @@ public class OverFlowController  extends Controller {
         }
     }
 
-/// TYPE OF POST ###################################################################################################################*/
 
+
+
+/// TYPE OF POST #######################################################################################################
 
     @ApiOperation(value = "new Type of Post",
             tags = {"Blocko-OverFlow", "Type-Of-Post"},
@@ -709,7 +668,7 @@ public class OverFlowController  extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successful created",      response = TypeOfPost.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -723,14 +682,14 @@ public class OverFlowController  extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_TypeOfPost_New help = form.get();
 
-            if( TypeOfPost.find.where().ieq("type", help.type ).findUnique() != null) return GlobalResult.badRequest("Duplicate Value");
+            if( TypeOfPost.find.where().ieq("type", help.type ).findUnique() != null) return GlobalResult.result_BadRequest("Duplicate Value");
 
             TypeOfPost typeOfPost = new TypeOfPost();
             typeOfPost.type =  help.type;
 
             typeOfPost.save();
 
-            return GlobalResult.okResult( Json.toJson(typeOfPost) );
+            return GlobalResult.result_ok( Json.toJson(typeOfPost) );
 
         }catch (Exception e) {
             Logger.error("Error", e);
@@ -761,7 +720,7 @@ public class OverFlowController  extends Controller {
     @Security.Authenticated(Secured.class)
     public Result get_TypeOfPost_all(){
         try{
-            return GlobalResult.okResult(Json.toJson( TypeOfPost.find.all() ));
+            return GlobalResult.result_ok(Json.toJson( TypeOfPost.find.all() ));
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("OverFlowController - newPost ERROR");
@@ -794,9 +753,9 @@ public class OverFlowController  extends Controller {
         try{
 
             TypeOfPost typeOfPost = TypeOfPost.find.byId(type_of_post_id);
-            if(typeOfPost == null) return GlobalResult.notFoundObject();
+            if(typeOfPost == null) return GlobalResult.notFoundObject("TypeOfPost type_of_post_id not found");
 
-            return GlobalResult.okResult( Json.toJson(typeOfPost) );
+            return GlobalResult.result_ok( Json.toJson(typeOfPost) );
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -833,7 +792,7 @@ public class OverFlowController  extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Ok Result",      response = TypeOfPost.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -849,16 +808,16 @@ public class OverFlowController  extends Controller {
 
 
             TypeOfPost typeOfPost = TypeOfPost.find.byId(type_of_post_id);
-            if(typeOfPost == null) return GlobalResult.notFoundObject();
+            if(typeOfPost == null) return GlobalResult.notFoundObject("TypeOfPost type_of_post_id not found");
 
             List<TypeOfPost> list = TypeOfPost.find.where().ieq("type", help.type ).where().ne("id", type_of_post_id).findList();
-            if(list.size()>0) return GlobalResult.badRequest("Name is used already");
+            if(list.size()>0) return GlobalResult.result_BadRequest("Name is used already");
 
 
             typeOfPost.type = help.type;
             typeOfPost.update();
 
-            return GlobalResult.okResult( Json.toJson(typeOfPost) );
+            return GlobalResult.result_ok( Json.toJson(typeOfPost) );
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -903,11 +862,11 @@ public class OverFlowController  extends Controller {
         try{
 
             TypeOfPost typeOfPost = TypeOfPost.find.byId(type_of_post_id);
-            if(typeOfPost == null) return GlobalResult.notFoundObject();
+            if(typeOfPost == null) return GlobalResult.notFoundObject("TypeOfPost type_of_post_id not found");
 
             typeOfPost.delete();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -916,7 +875,10 @@ public class OverFlowController  extends Controller {
         }
     }
 
-/// TYPE OF CONFIRMS ###################################################################################################################*/
+
+
+
+/// TYPE OF CONFIRMS ###################################################################################################
 
 
     @ApiOperation(value = "new Type of Confirms",
@@ -946,7 +908,7 @@ public class OverFlowController  extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successful created",      response = TypeOfConfirms.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -966,10 +928,10 @@ public class OverFlowController  extends Controller {
 
             typeOfConfirms.save();
 
-            return GlobalResult.okResult(Json.toJson( typeOfConfirms) );
+            return GlobalResult.result_ok(Json.toJson( typeOfConfirms) );
 
         }catch (Exception e){
-            return GlobalResult.nullPointerResult(e);
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -1000,7 +962,7 @@ public class OverFlowController  extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",      response = TypeOfConfirms.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1015,7 +977,7 @@ public class OverFlowController  extends Controller {
             Swagger_TypeOfConfirms_New help = form.get();
 
             TypeOfConfirms typeOfConfirms = TypeOfConfirms.find.byId(type_of_confirm_id);
-            if(typeOfConfirms == null) return GlobalResult.notFoundObject();
+            if(typeOfConfirms == null) return GlobalResult.notFoundObject("TypeOfConfirms type_of_confirm_id not found");
 
             typeOfConfirms.type = help.type;
             typeOfConfirms.color = help.color;
@@ -1023,10 +985,10 @@ public class OverFlowController  extends Controller {
 
             typeOfConfirms.save();
 
-            return GlobalResult.okResult(Json.toJson( typeOfConfirms) );
+            return GlobalResult.result_ok(Json.toJson( typeOfConfirms) );
 
         }catch (Exception e){
-            return GlobalResult.nullPointerResult(e);
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -1057,7 +1019,7 @@ public class OverFlowController  extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response = TypeOfConfirms.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1067,14 +1029,14 @@ public class OverFlowController  extends Controller {
         try{
 
             TypeOfConfirms typeOfConfirms = TypeOfConfirms.find.byId(type_of_confirm_id);
-            if(typeOfConfirms == null) return GlobalResult.notFoundObject();
+            if(typeOfConfirms == null) return GlobalResult.notFoundObject("TypeOfConfirms type_of_confirm_id not found");
 
             typeOfConfirms.delete();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return GlobalResult.nullPointerResult(e);
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -1103,11 +1065,11 @@ public class OverFlowController  extends Controller {
         try{
 
             TypeOfConfirms typeOfConfirms = TypeOfConfirms.find.byId(type_of_confirm_id);
-            if(typeOfConfirms == null) return GlobalResult.notFoundObject();
+            if(typeOfConfirms == null) return GlobalResult.notFoundObject("TypeOfConfirms type_of_confirm_id not found");
 
-            return GlobalResult.okResult(Json.toJson( typeOfConfirms) );
+            return GlobalResult.result_ok(Json.toJson( typeOfConfirms) );
         }catch (Exception e){
-            return GlobalResult.nullPointerResult(e);
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -1134,9 +1096,9 @@ public class OverFlowController  extends Controller {
     @Security.Authenticated(Secured.class)
     public Result get_TypeOfConfirms_all(){
         try{
-            return GlobalResult.okResult(Json.toJson( TypeOfConfirms.find.all() ));
+            return GlobalResult.result_ok(Json.toJson( TypeOfConfirms.find.all() ));
         }catch (Exception e){
-            return GlobalResult.nullPointerResult(e);
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -1164,18 +1126,18 @@ public class OverFlowController  extends Controller {
     public Result set_TypeOfConfirm_to_Post(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id, @ApiParam(value = "type_of_confirm_id String path", required = true) @PathParam("type_of_confirm_id") String  type_of_confirm_id){
         try{
             TypeOfConfirms typeOfConfirms = TypeOfConfirms.find.byId(type_of_confirm_id);
-            if(typeOfConfirms == null) return GlobalResult.notFoundObject();
+            if(typeOfConfirms == null) return GlobalResult.notFoundObject("TypeOfConfirms type_of_confirm_id not found");
 
             Post post = Post.find.byId(post_id);
-            if(post == null)  return GlobalResult.notFoundObject();
+            if(post == null)  return GlobalResult.notFoundObject("Post post_id not found");
 
             if(!post.typeOfConfirms.contains(typeOfConfirms)) post.typeOfConfirms.add(typeOfConfirms);
 
             post.update();
 
-            return GlobalResult.okResult(Json.toJson(post));
+            return GlobalResult.result_ok(Json.toJson(post));
         }catch (Exception e){
-            return GlobalResult.nullPointerResult(e);
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -1204,22 +1166,25 @@ public class OverFlowController  extends Controller {
         try{
 
             TypeOfConfirms typeOfConfirms = TypeOfConfirms.find.byId(type_of_confirm_id);
-            if(typeOfConfirms == null)  return GlobalResult.notFoundObject();
+            if(typeOfConfirms == null)  return GlobalResult.notFoundObject("TypeOfConfirms type_of_confirm_id not found");
 
             Post post = Post.find.byId(post_id);
-            if(post == null)  return GlobalResult.notFoundObject();
+            if(post == null)  return GlobalResult.notFoundObject("Post post_id not found");
 
             if(post.typeOfConfirms.contains(typeOfConfirms)) post.typeOfConfirms.remove(typeOfConfirms);
 
             post.update();
 
-            return GlobalResult.okResult(Json.toJson(post));
+            return GlobalResult.result_ok(Json.toJson(post));
         }catch (Exception e){
-            return GlobalResult.nullPointerResult(e);
+            return GlobalResult.internalServerError();
         }
     }
 
-/// OTHER ###################################################################################################################*/
+
+
+
+/// OTHER ##############################################################################################################
 
     @ApiOperation(value = "add HashTag to Post",
             tags = {"Blocko-OverFlow", "Post"},
@@ -1246,7 +1211,7 @@ public class OverFlowController  extends Controller {
         try{
 
             Post post = Post.find.byId(post_id);
-            if(post == null) return GlobalResult.notFoundObject();
+            if(post == null) return GlobalResult.notFoundObject("Post post_id not found");
 
 
             HashTag postHashTag = HashTag.find.byId(hash_tag);
@@ -1260,7 +1225,7 @@ public class OverFlowController  extends Controller {
 
             post.update();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
 
         }catch (Exception e){
             return GlobalResult.internalServerError();
@@ -1293,17 +1258,17 @@ public class OverFlowController  extends Controller {
         try{
 
             Post post = Post.find.byId(post_id);
-            if(post == null) return GlobalResult.notFoundObject();
+            if(post == null) return GlobalResult.notFoundObject("Post post_id not found");
 
             HashTag postHashTag = HashTag.find.byId(hash_tag);
-            if(postHashTag == null) return GlobalResult.notFoundObject();
+            if(postHashTag == null) return GlobalResult.notFoundObject("HashTag hash tag not found");
 
 
             if(post.hashTagsList.contains(postHashTag))post.hashTagsList.remove(postHashTag);
 
             post.update();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
         }catch (Exception e){
             return GlobalResult.internalServerError();
         }
@@ -1342,9 +1307,9 @@ public class OverFlowController  extends Controller {
             post.likes++;
             post.update();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
         }catch (Exception e){
-            return GlobalResult.nullPointerResult(e);
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -1380,9 +1345,9 @@ public class OverFlowController  extends Controller {
             post.likes--;
             post.update();
 
-            return GlobalResult.okResult();
+            return GlobalResult.result_ok();
         }catch (Exception e){
-            return GlobalResult.nullPointerResult(e);
+            return GlobalResult.internalServerError();
         }
     }
 

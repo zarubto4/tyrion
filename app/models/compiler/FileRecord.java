@@ -20,7 +20,7 @@ public class FileRecord extends Model {
                                  @JsonIgnore  @ManyToOne     public Version_Object version_object;
 
 
-    @JsonProperty public String fileContent()   { return Server.serverAddress + "/file/fileRecord/" +id; }
+    @JsonProperty public String fileContent()   { return Server.tyrion_serverAddress + "/file/fileRecord/" +id; }
 
 
 
@@ -60,15 +60,6 @@ public class FileRecord extends Model {
         }
 
         if(azurePackageLink.length() < 1) throw new Exception("FileRecord (uvnitř třídy) nenašel cestu k požadovanému souboru");
-
-        /*
-        System.out.println("Hledaný soubor je: ");
-        System.out.println("container: " + container);
-        System.out.println("azureStorageLink: " + azureStorageLink);
-        System.out.println("azurePackageLink: " + azurePackageLink);
-        System.out.println("azureLinkVersion: " + azureLinkVersion);
-        */
-
         return UtilTools.file_get_File_from_Azure(container, azureStorageLink, azurePackageLink, azureLinkVersion, file_name);
 
     }
