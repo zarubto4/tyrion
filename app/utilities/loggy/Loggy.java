@@ -189,7 +189,7 @@ public class Loggy {
 
             LineNumberReader reader = new LineNumberReader(new FileReader(f));
             String line;
-            while(!(line = reader.readLine()).equals("") && reader.getLineNumber() <= lines-start) {
+            while((line = reader.readLine())!= null && !line.equals("") && reader.getLineNumber() <= lines-start) {
                 if (reader.getLineNumber() <= lines-(count+start)) {
                     continue;
                 }
@@ -198,7 +198,7 @@ public class Loggy {
             }
             reader.close();
         } catch (Exception e) {
-            Logger.error(e.getMessage());
+            Logger.error("loading errors error", e);
         }
 
         return l;

@@ -42,6 +42,7 @@
 
     <logger name="play" level="INFO" />
     <logger name="application" level="DEBUG" />
+    <logger name="com.jolbox.bonecp" level="DEBUG"/>
 
     <logger name="Loggy" level="INFO" additivity = "false">
         <appender-ref ref="STDOUT" />
@@ -49,7 +50,7 @@
         <appender-ref ref="errorLog" />
     </logger>
 
-    <root level="ERROR">
+    <root level="INFO">
         <appender-ref ref="STDOUT" />
     </root>
 

@@ -1,12 +1,10 @@
 package controllers;
 
-import play.Configuration;
 import play.Play;
 import play.libs.F;
 import utilities.loggy.*;
 import play.mvc.Controller;
 import play.mvc.Result;
-import java.util.Base64;
 
 
 public class LoggyController extends Controller {
