@@ -25,6 +25,20 @@ public class CoreResponse extends Controller {
         }
     }
 
+    public static void cors_EventSource() {
+        try {
+            response().setHeader("Access-Control-Allow-Origin", "*"); // Zde bude web se kterým to může komunikovat (url frontendu)
+            response().setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+            response().setHeader("Access-Control-Max-Age", "72000");
+            response().setHeader("Content-Type", "text/event-stream");
+            response().setHeader("Accept", "*");
+            response().setHeader("Access-Control-Allow-Headers", "content-Type, api_key, Authorization, x-auth-token, accept, appid, appname, authorization, content-type");
+        }catch (Exception e){
+            //TODO dodělat Logger
+            e.printStackTrace();
+        }
+
+    }
 
 
 }

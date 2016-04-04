@@ -50,6 +50,7 @@ public class NotificationController extends Controller {
 
       try{
 
+         CoreResponse.cors();
          JsonNode msg = Json.newObject()
                   .put("level", level.name() )
                   .put("text", "blabla")
@@ -87,44 +88,37 @@ public class NotificationController extends Controller {
 
     System.out.println("Překontroluji jestli už s tokenem neodebíráš notifikace");
     if(connected_accounts.containsKey(token_value)) {
-      System.out.println("S tokenem už odebíráš notifikace hergot!");
-      return GlobalResult.badRequest("Token is used for subscribing server side notification");
+      System.out.println("S tokenem už odebíráš notifikace hergot - pravděpodobně si refresnul stránku a tak zabíjím předchozí spojení a navážu nové!");
+      connected_accounts.get(token_value).close();
     }
-
-
 
     token.notification_subscriber = true;
     token.update();
 
     System.out.println("V pořádku a vracím EventSource!");
 
+    CoreResponse.cors_EventSource();
       return ok(new EventSource() {
 
-      @Override
-      public void onConnected() {
+            @Override
+            public void onConnected() {
 
-        EventSource currentSocket = this;
+              EventSource currentSocket = this;
 
-        // Ze záhadného důvodu to nefuguje
-        this.onDisconnected( () -> {
-          System.out.println("Odběratel notifikací se odhlásil a tak měním u tokenu jeho odběr na false! ");
-          if( connected_accounts.containsKey(token_value)) connected_accounts.remove(token_value);
-          token.notification_subscriber = false;
-          token.update();
-          connected_accounts.remove(token_value);
-        });
+              // Ze záhadného důvodu to nefuguje
+              this.onDisconnected( () -> {
+                if( connected_accounts.containsKey(token_value)) connected_accounts.remove(token_value);
+                token.notification_subscriber = false;
+                token.update();
+                connected_accounts.remove(token_value);
+              });
 
-        // Add to MAP
-        if(connected_accounts.containsKey(token_value)) Logger.info(token_value + " - SSE už existuje");
-        else connected_accounts.put(token_value, currentSocket );
+              // Add to MAP
+              if(connected_accounts.containsKey(token_value)) Logger.info(token_value + " - SSE už existuje");
+              else connected_accounts.put(token_value, currentSocket );
 
-      }
-
-
-      }
-
-
-      );
+            }
+      });
 
 
   }
