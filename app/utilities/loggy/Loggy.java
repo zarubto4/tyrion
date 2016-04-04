@@ -49,6 +49,11 @@ public class Loggy {
         return GlobalResult.internalServerError();
     }
 
+    public static Result internalServerError(String summary, Exception e) {
+        error("Internal Server Error - "+summary, e);
+        return GlobalResult.internalServerError();
+    }
+
     public static List<LoggyError> getErrors(int count) {
         return getErrors(0, count);
     }
@@ -98,6 +103,14 @@ public class Loggy {
             new PrintWriter(errors).close();
             new PrintWriter(all).close();
         } catch (Exception e) {}
+    }
+
+    public static void error(String summary, Exception e) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+
+        error("Unnamed Error", sw.toString());
     }
 
     public static void error(String content) {
