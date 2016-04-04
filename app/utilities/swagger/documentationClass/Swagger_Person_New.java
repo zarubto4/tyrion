@@ -11,15 +11,15 @@ public class Swagger_Person_New {
 
     @Constraints.Required
     @Constraints.MinLength(value = 8)
-    @ApiModelProperty(required = true)
+    @ApiModelProperty(required = true, value = "The nick_name must have at least 8 characters")
     public String nick_name;
 
     @Constraints.Email
     @Constraints.Required
-    @ApiModelProperty(required = true)
+    @ApiModelProperty(required = true, value = "Required valid mail ")
     public String mail;
 
-    @ApiModelProperty(value = "", required = true)
+    @ApiModelProperty(value = "The password must have at least 8 characters", required = true)
     @Constraints.MinLength(value = 8)
     @Constraints.Required
     public String password;

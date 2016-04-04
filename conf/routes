@@ -25,6 +25,8 @@ GET              /websocket/mobile/:m_project_id/:mac_adress    @controllers.Web
 
 # Pro vývojáře
 POST             /websocket/webSocketStats                      @controllers.WebSocketController_Incoming.getWebSocketStats
+POST             /websocket/disconect_all_mobiles               @controllers.WebSocketController_Incoming.disconnect_all_mobiles_result()
+POST             /websocket/disconect_all_homers                @controllers.WebSocketController_Incoming.disconnect_all_homers_result()
 
 #API - CoreClient ##############################################################################################################################################################
 
@@ -45,10 +47,7 @@ GET             /login/github/*url                          @controllers.Securit
 ### NOTIFICATION ############ NOTIFICATION ############### NOTIFICATION ################ NOTIFICATION ##########################################################################
 ###################################################################################f############################################################################################
 
-
-GET         /                                               @controllers.NotificationController.index()
 GET         /notification/:identificator                    @controllers.NotificationController.subscribe_notification(identificator)
-POST        /notification                                   @controllers.NotificationController.postMessage()
 
 PUT         /notification                                   @controllers.NotificationController.sendSomething()
 
@@ -316,8 +315,8 @@ GET             /grid/m_project/:m_project_id                                   
 PUT             /grid/m_project/:m_project_id                                               @controllers.GridController.edit_M_Project(m_project_id)
 DELETE          /grid/m_project/:m_project_id                                               @controllers.GridController.remove_M_Project(m_project_id)
 
-PUT             /grid/m_project/connect/:m_project_id/:b_program_id/:version_id/:auto_incrementing @controllers.GridController.connect_M_Program_with_B_Program(m_project_id, b_program_id, version_id, auto_incrementing: Boolean)
-
+PUT             /grid/m_project/connect/:m_project_id/:version_id/:auto_incrementing        @controllers.GridController.connect_M_Program_with_B_Program(m_project_id, version_id, auto_incrementing: Boolean)
+PUT             /grid/m_project/disconnect/:m_project_id                                    @controllers.GridController.disconnect_M_Program_from_B_Program(m_project_id)
 #M Program
 POST            /grid/m_program/:m_project_id                                               @controllers.GridController.new_M_Program(m_project_id)
 GET             /grid/m_program/app/token/:qr_token                                         @controllers.GridController.get_M_Program_byQR_Token_forMobile(qr_token)

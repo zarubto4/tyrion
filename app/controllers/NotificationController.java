@@ -11,6 +11,7 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utilities.notification.Notification_level;
+import utilities.response.CoreResponse;
 import utilities.response.GlobalResult;
 
 import java.util.HashMap;
@@ -22,27 +23,14 @@ public class NotificationController extends Controller {
   private static Map<String, EventSource > connected_accounts = new HashMap<>(); // < Token , EventSource >
 
   // TODO SMAZAT
-  public  Result index() {
-    return ok(views.html.index.render("Chat using Server Sent Events and AngularJS"));
-  }
-
-
-  // TODO SMAZAT
-  public  Result postMessage() {
-    sendSomething();
-    return ok();
-  }
-
-
-  // TODO SMAZAT
   public Result sendSomething(){
 
     System.out.println("Počet spojení je: " + connected_accounts.size());
-
+    CoreResponse.cors();
     JsonNode msg = Json.newObject()
-            .put("room", "room1")
-            .put("text", "blabla")
-            .put("user", "server")
+            .put("level", Notification_level.Success.toString() )
+            .put("text", "blabla asdf sdfgkjgsdaflkj lkjagsfkj sdf")
+            .put("who", "server")
             .put("time", DateTime.now().toString() );
 
     for (String key: connected_accounts.keySet()) {
@@ -85,7 +73,11 @@ public class NotificationController extends Controller {
   public Result subscribe_notification(String token_value) {
 
     System.out.println("Přihlásil se mi k odběru: " + token_value);
+
+
+    System.out.println("Přihlásil se mi k odběru: " + token_value);
     System.out.println("Překontroluji jestli je token platný");
+
     FloatingPersonToken token = FloatingPersonToken.find.where().eq("authToken",token_value).findUnique();
     if(token == null) {
       System.out.println("Token nexistuje");

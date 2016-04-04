@@ -534,5 +534,21 @@ public class WebSocketController_Incoming extends Controller {
         }
     }
 
+    public Result disconnect_all_mobiles_result() {
+        for (Map.Entry<String, WebSCType> entry :  WebSocketController_Incoming.incomingConnections_terminals.entrySet())
+        {
+            server_violently_terminate_terminal(entry.getValue());
+        }
+        return ok();
+    }
+
+    public Result disconnect_all_homers_result() {
+        for (Map.Entry<String, WebSCType> entry :  WebSocketController_Incoming.incomingConnections_homers.entrySet())
+        {
+            server_violently_terminate_terminal(entry.getValue());
+        }
+        return ok();
+    }
+
 
 }

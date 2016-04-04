@@ -329,7 +329,6 @@ public class GridController extends play.mvc.Controller {
     })
     @Security.Authenticated(Secured.class)
     public Result connect_M_Program_with_B_Program(@ApiParam(value = "m_project_id String", required = true) @PathParam("m_project_id") String m_project_id,
-                                                   @ApiParam(value = "b_program_id String", required = true) @PathParam("b_program_id") String b_program_id,
                                                    @ApiParam(value = "version_id String", required = true) @PathParam("version_id")     String version_id,
                                                    @ApiParam(value = "auto_incrementing Boolean value", required = true) @PathParam("auto_incrementing")   Boolean auto_incrementing ){
         try {
@@ -343,6 +342,46 @@ public class GridController extends play.mvc.Controller {
             m_project.b_program_version = version_object;
             m_project.auto_incrementing = auto_incrementing;
             m_project.b_program = version_object.b_program;
+            m_project.update();
+
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            Logger.error("Error", e);
+            Logger.error("ProgramingPackageController - get_Screen_Size_Type ERROR");
+            return GlobalResult.internalServerError();
+        }
+    }
+
+    @ApiOperation(value = "disconnect M_Project with B_program",
+            tags = {"M_Program"},
+            notes = "disconnect M_project from B_program ( respectively with version of B_program - where is Blocko-Code)",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "Person need this value of permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response = M_Project.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured.class)
+    public Result disconnect_M_Program_from_B_Program(@ApiParam(value = "m_project_id String", required = true) @PathParam("m_project_id") String m_project_id){
+        try {
+
+            M_Project m_project = M_Project.find.byId(m_project_id);
+            if (m_project == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
+
+            m_project.b_program_version = null;
+            m_project.auto_incrementing = false;
+            m_project.b_program = null;
             m_project.update();
 
             return GlobalResult.result_ok();
