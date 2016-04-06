@@ -8,7 +8,6 @@ import play.data.validation.Constraints;
         value = "B_Program_New")
 public class Swagger_B_Program_New {
 
-    @Constraints.Required
     @ApiModelProperty(required = false, value = "program_description can be null")
     public String program_description;
 

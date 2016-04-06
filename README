@@ -1,5 +1,37 @@
 
+1.05.7 (Tyrion production Version)
 
+- Základní podpora logování
+- Implementovaná podpora notifikací
+- Změna řízení vláken a podpora websocket
+
+fixed       TYRION-177
+fixed       TYRION-171
+fixed       TYRION-176
+fixed       TYRION-182
+fixed       TYRION-169
+fixed       TYRION-150
+fixed       TYRION-178
+fixed       TYRION-173
+fixed       TYRION-174
+fixed       TYRION-175
+fixed       TYRION-179
+fixed       TYRION-180
+fixed       TYRION-181
+
+TODO 3 Tomáš Z.: Zdokumentovat všechny Models pro Swagger
+TODO 4 Tomáš Z.: Přidat cyklické odmazávání BLOB v Azure, na které už neexistuje databázová vazba (Nějaká fičura co se zapne každý den ve 3 ráno a provede sekvenci kam
+                 každý vývojář může přidávat metody které se provedou... (Mazání prošlých tokenů, mazání prošlých nedokončených ověření přes sociální sítě atd... Viz todo 5)
+TODO 5 Tomáš Z.: Přidat cyklické odmazávání Vygenerovaných nezrealizovaných spojení na sociální sítě (Linkded Account)
+TODO 6 Tomáš Z.: Pokud se uživatel přihlásí přes facebook, k jeho účtu bude přidělen plovoucí token. Pokud se přihlásí znova a znova..
+                 budou se vtvářet další a další připojení. Je žádoucí mazat předchozí spojení pokud poznám, že je to ze stejného prohlížeče?
+                 PS: Vyžaduje to tak půl dne (+ ideálně přepsat třídu s přihlášení přes facebook a odzkoušet github..
+TODO 7 Tomáš Z.: Dodělat disconnect http://youtrack.byzance.cz/youtrack/issue/TYRION-169
+TODO 8 ALL-Tyrion: Bude potřeba dodělat řešení pro prodlužování platnosti tokenu (Buď nějak magicky na Tyrionovi nebo ze strany frontendu) Asi to dodělá Tomáš.
+
+
+
+------------------------------------------------------------------------------------------------------------------------
 1.05.5.6 (Tyrion production Version)
 -> Chyba z 1.05.5.5 ve funkci pro nahrátí Embedded HW
 -> Přidání Apache Commons Codec pro louskání Base64 (updatování embedded HW)

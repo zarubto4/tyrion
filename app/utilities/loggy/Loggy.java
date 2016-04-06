@@ -1,16 +1,24 @@
 package utilities.loggy;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import play.*;
+import controllers.SecurityController;
+import models.persons.Person;
+import play.Configuration;
+import play.Logger;
+import play.Play;
 import play.libs.F.Promise;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSRequest;
 import play.libs.ws.WSResponse;
-import play.mvc.*;
+import play.mvc.Result;
+import play.mvc.Results;
 import utilities.response.GlobalResult;
 
 import javax.inject.Inject;
-import java.io.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.LineNumberReader;
+import java.io.PrintWriter;
 import java.util.Base64;
 import java.util.LinkedList;
 import java.util.List;
@@ -44,8 +52,10 @@ public class Loggy {
         logger.trace(content);
     }
 
-    public static Result internalServerError(String summary, String content) {
-        error("Internal Server Error - "+summary, content);
+    public static Result internalServerError(String url_request, String class_name, String method_name, Person person, Exception e) {
+
+
+        error("Internal Server Error - Path: " + url_request + " Class: "+ class_name + "." + method_name + ((SecurityController.getPerson() != null ) ? " Person id: " + SecurityController.getPerson().id :  "" ), e.toString());
         return GlobalResult.internalServerError();
     }
 

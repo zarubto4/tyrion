@@ -8,8 +8,6 @@ import play.libs.EventSource;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
-import play.mvc.Security;
-import utilities.loginEntities.Secured;
 import utilities.notification.Notification_level;
 import utilities.response.CoreResponse;
 import utilities.response.GlobalResult;
@@ -18,6 +16,7 @@ import utilities.response.response_objects.Result_ok;
 
 import javax.websocket.server.PathParam;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
@@ -27,16 +26,16 @@ public class NotificationController extends Controller {
 
 
   // Vize používání notifikátoru
-  public void sent_notification(Person person, Notification_level level, String message){
+  public static void sent_notification(List<Person> persons, Notification_level level, String message){
 
+    for(Person person : persons)
     for(FloatingPersonToken token : FloatingPersonToken.find.where().eq("person.id", person.id).where().eq("notification_subscriber", true).findList() ){
-
       try{
 
          CoreResponse.cors();
          JsonNode msg = Json.newObject()
-                  .put("level", level.name() )
-                  .put("text", message);
+                            .put("level", level.name() )
+                            .put("text", message);
 
          connected_accounts.get(token.authToken).send(EventSource.Event.event(msg));
 
@@ -65,12 +64,11 @@ public class NotificationController extends Controller {
           @ApiResponse(code = 401, message = "Unauthorized request - TOKEN IS NOT VALID",    response = Result_Unauthorized.class),
           @ApiResponse(code = 500, message = "Server side Error")
   })
-  @Security.Authenticated(Secured.class)
   public Result subscribe_notification(@ApiParam(value = "token_value", required = true) @PathParam("token_value") String token_value ) {
 
     FloatingPersonToken token = FloatingPersonToken.find.where().eq("authToken",token_value).findUnique();
 
-    if(token == null) return GlobalResult.forbidden_Global("Token is invalid");
+    if(token == null) return GlobalResult.result_Unauthorized();
 
 
     // Token je používán, pravděpodobně došlo k obnovení okna prohlížeče a proto je nutné zahodit předchozí spojení,
@@ -108,9 +106,7 @@ public class NotificationController extends Controller {
 
   // Testovací notifikační metoda // TODO do budoucna určena ke smazání
   @ApiOperation(value = "Testovací metoda, která po zavolání odešle všem připojeným terminálům novou notifikaci", tags = {"Notifications"}, code = 200)
-  @ApiResponses(value = {
-          @ApiResponse(code = 200, message = "successfully sent",  response = Result_ok.class),
-  })
+  @ApiResponses(value = { @ApiResponse(code = 200, message = "successfully sent",  response = Result_ok.class)})
   public Result sendSomething(String level, String message){
 
     System.out.println("Počet spojení je: " + connected_accounts.size());

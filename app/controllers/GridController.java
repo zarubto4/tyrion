@@ -353,7 +353,7 @@ public class GridController extends play.mvc.Controller {
         }
     }
 
-    @ApiOperation(value = "disconnect M_Project with B_program",
+    @ApiOperation(value = "disconnect M_Project from B_program",
             tags = {"M_Program"},
             notes = "disconnect M_project from B_program ( respectively with version of B_program - where is Blocko-Code)",
             produces = "application/json",
@@ -779,6 +779,8 @@ public class GridController extends play.mvc.Controller {
             Screen_Size_Type screen_size_type = new Screen_Size_Type();
             screen_size_type.name = help.name;
 
+
+
             screen_size_type.landscape_height = help.landscape_height;
             screen_size_type.landscape_width = help.landscape_width;
             screen_size_type.landscape_square_height = help.landscape_square_height;
@@ -809,10 +811,8 @@ public class GridController extends play.mvc.Controller {
             return GlobalResult.created(Json.toJson(screen_size_type));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - postNewProject ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+           // return Loggy.internalServerError(  Thread.currentThread().getStackTrace()[0].getClassName(),  Thread.currentThread().getStackTrace()[0].getMethodName(),  ((SecurityController.getPerson() != null ) ?  SecurityController.getPerson() :  null ), e.getLocalizedMessage());
+           return GlobalResult.internalServerError();
         }
     }
 

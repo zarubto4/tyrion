@@ -689,7 +689,7 @@ public class OverFlowController  extends Controller {
 
             typeOfPost.save();
 
-            return GlobalResult.result_ok( Json.toJson(typeOfPost) );
+            return GlobalResult.created( Json.toJson(typeOfPost) );
 
         }catch (Exception e) {
             Logger.error("Error", e);
@@ -928,7 +928,7 @@ public class OverFlowController  extends Controller {
 
             typeOfConfirms.save();
 
-            return GlobalResult.result_ok(Json.toJson( typeOfConfirms) );
+            return GlobalResult.created(Json.toJson( typeOfConfirms) );
 
         }catch (Exception e){
             return GlobalResult.internalServerError();

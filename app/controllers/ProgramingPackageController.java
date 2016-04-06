@@ -1,5 +1,6 @@
 package controllers;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.*;
 import models.blocko.BlockoBlock;
 import models.blocko.BlockoBlockVersion;
@@ -25,6 +26,7 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utilities.UtilTools;
 import utilities.loginEntities.Secured;
+import utilities.notification.Notification_level;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
@@ -94,7 +96,7 @@ public class ProgramingPackageController extends Controller {
             project.ownersOfProject.add( SecurityController.getPerson() );
             project.save();
 
-            return GlobalResult.result_ok( Json.toJson(project) );
+            return GlobalResult.created( Json.toJson(project) );
 
 
         } catch (Exception e) {
@@ -898,7 +900,7 @@ public class ProgramingPackageController extends Controller {
 
             b_program.save();
 
-            return GlobalResult.result_ok(Json.toJson(b_program));
+            return GlobalResult.created(Json.toJson(b_program));
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("ProgramingPackageController - postNewBProgram ERROR");
@@ -1149,7 +1151,7 @@ public class ProgramingPackageController extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successful Uploaded",                       response = B_Program_Homer.class),
+            @ApiResponse(code = 200, message = "Successful Uploaded",                       response = Result_ok.class),
             @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",                      response = Result_Unauthorized.class),
@@ -1161,6 +1163,8 @@ public class ProgramingPackageController extends Controller {
                                                     @ApiParam(value = "homer_id", required = true) @PathParam("homer_id") String homer_id){
         try {
 
+            Person person = SecurityController.getPerson();
+
             // B program, který chci nahrát do Cloudu na Blocko server
             B_Program b_program = B_Program.find.byId(b_program_id);
             if (b_program == null) return GlobalResult.notFoundObject("B_Program b_program_id not found");
@@ -1169,7 +1173,7 @@ public class ProgramingPackageController extends Controller {
             Version_Object version_object = Version_Object.find.byId(version_id);
             if (version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
-            // Homer na který budu nahrávatb_program_cloud
+            // Homer na který budu nahrávat b_program
             Homer homer = Homer.find.byId(homer_id);
             if (homer == null)  return GlobalResult.notFoundObject("Homer homer_id not found");
 
@@ -1177,35 +1181,47 @@ public class ProgramingPackageController extends Controller {
             if(! WebSocketController_Incoming.homer_is_online(homer_id)) return GlobalResult.result_BadRequest("Device is not online");
 
 
-            B_Program_Homer old_one =  B_Program_Homer.find.where().eq("homer.homer_id", homer.homer_id).findUnique();
-            // Na homerovi musím zabít a smazat předchozí program!!!
-            if( old_one  != null )  {
-                System.out.println("Homer měl předchozí program a proto ho mažu");
-                WebSocketController_Incoming.homer_KillInstance( homer.homer_id);
-                old_one.delete();
-             }
+            Thread thread = new Thread(){ @Override public void run() {
+                try {
 
-            System.out.println("Vytvářím nový program");
-            B_Program_Homer program_homer = new B_Program_Homer();
-            program_homer.homer = homer;
-
-            program_homer.running_from = new Date();
-            program_homer.version_object = version_object;
-            program_homer.save();
+                    // Na homerovi musím zabít a smazat předchozí program - jedná se pouze o nahrávání na cloud !!!
+                    B_Program_Homer old_one = B_Program_Homer.find.where().eq("homer.homer_id", homer.homer_id).findUnique();
+                    if (old_one != null) { old_one.delete(); }
 
 
-            System.out.println("teď nahraju program");
-            WebSocketController_Incoming.homer_UploadInstance(homer.homer_id,  version_object.files.get(0).get_fileRecord_from_Azure_inString()  );
+                    B_Program_Homer program_homer = new B_Program_Homer();
+                    program_homer.homer = homer;
+                    program_homer.running_from = new Date();
+                    program_homer.version_object = version_object;
 
+                    JsonNode result = WebSocketController_Incoming.homer_UploadInstance(homer, version_object.id, version_object.files.get(0).get_fileRecord_from_Azure_inString());
 
-            version_object.b_program_homer = program_homer;
-            version_object.update();
+                    if(result.get("status").asText().equals("success")){
 
+                        program_homer.save();
 
-            return GlobalResult.result_ok( Json.toJson( program_homer) );
+                        version_object.b_program_homer = program_homer;
+                        version_object.update();
+
+                            NotificationController.sent_notification(homer.project.ownersOfProject, Notification_level.success, "Homer was updated successfully");
+
+                    } else  NotificationController.sent_notification(homer.project.ownersOfProject, Notification_level.error,   "Attempt updating Homer device to new version. Update Error - " + result.get("error").asText());
+
+                } catch (TimeoutException e) {
+                    NotificationController.sent_notification(homer.project.ownersOfProject, Notification_level.error, "Attempt updating Homer device to new version. Timeout for connection.");
+                } catch (InterruptedException e){
+                    NotificationController.sent_notification(homer.project.ownersOfProject, Notification_level.error, "Attempt updating Homer device to new version. Server side problem.");
+                } catch (Exception e ){
+                    NotificationController.sent_notification(homer.project.ownersOfProject, Notification_level.error, "Attempt updating Homer device to new version. Critical bug with loading problem. The error was automatically reported to technical support.");
+                }
+
+            }};
+
+            thread.start();
+
+            return GlobalResult.result_ok();
+
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - uploadProgramToHomer_Immediately ERROR");
             return GlobalResult.internalServerError();
         }
     }
@@ -1244,6 +1260,18 @@ public class ProgramingPackageController extends Controller {
                B_Program_Cloud b_program_cloud = version_object.b_program_cloud;
                b_program_cloud.delete();
             }
+
+
+            /**
+            // Na homerovi musím zabít a smazat předchozí program - jedná se pouze o nahrávání na cloud !!!
+            B_Program_Homer old_one = B_Program_Homer.find.where().eq("homer.homer_id", homer.homer_id).findUnique();
+            if (old_one != null) {
+                JsonNode result =  WebSocketController_Incoming.homer_KillInstance(homer.homer_id);
+
+                NotificationController.sent_notification(person, Notification_level.success, "Homer was updated successfully" );
+                old_one.delete();
+            }*/
+
 
             // Vytvářím nový záznam v databázi pro běžící instanci b programu na blocko serveru
             B_Program_Cloud program_cloud       = new B_Program_Cloud();

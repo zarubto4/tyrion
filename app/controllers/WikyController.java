@@ -3,12 +3,9 @@ package controllers;
 
 import play.mvc.Controller;
 import play.mvc.Result;
-import play.mvc.Security;
 import utilities.Server;
-import utilities.loginEntities.Secured;
 import utilities.permission.PermissionException;
 
-@Security.Authenticated(Secured.class)
 public class WikyController extends Controller {
 
 
@@ -58,10 +55,10 @@ public class WikyController extends Controller {
 
     }
 
-    //Předpoklad
-    // MyDiynamicResourceHandlerer - tímto anotuji nějakou vlasntost (třeba že je vlastník)
+    // Testovací logger
     public Result test2(){
-        return ok("Vše se povedlo");
+
+            return ok();
     }
 
     public Result test3(){

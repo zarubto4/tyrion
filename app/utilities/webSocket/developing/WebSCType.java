@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 public abstract class WebSCType {
 
@@ -31,6 +31,9 @@ public abstract class WebSCType {
 
     public void onMessage(String message){
         try {
+
+            System.out.println("Příchozí zpráva " + message);
+
             JsonNode json = Json.parse(message);
 
 
@@ -78,31 +81,65 @@ public abstract class WebSCType {
     public  Map<String, JsonNode> message_out = new HashMap<>(); // (meessageId, JsonNode)
     public  Map<String, JsonNode> message_in  = new HashMap<>(); // (meessageId, JsonNode)
 
+    // TODO tohle chce dramaticky přepsat
     public JsonNode write_with_confirmation(String messageId, JsonNode json) throws TimeoutException, InterruptedException {
-        System.out.println("Odesílám zprávu [" + messageId + "], na kterou požaduji potvrzení. Zpráva: " + json.toString());
+            return write_with_confirmation(messageId, json, (long) (250*10) );
+    }
 
-        message_out.put(messageId, json);
-        out.write(json.toString());
+    public JsonNode write_with_confirmation(String messageId, JsonNode json, Long time_To_TimeOutExcepting) throws TimeoutException,InterruptedException {
 
-        Integer breaker = 10;
 
-        while(true){
-            breaker--;
-            Thread.sleep(250);
+        class Confirmation_Thread implements Callable<JsonNode>{
 
-            if( message_in.containsKey(messageId)){
-                JsonNode result =  message_in.get(messageId);
-                message_in.remove(messageId);
-                return result;
+            @Override
+            public JsonNode call() throws Exception {
+
+                    System.out.println("Odesílám zprávu [" + messageId + "], na kterou požaduji potvrzení. Zpráva: " + json.toString());
+
+                    message_out.put(messageId, json);
+                    out.write(json.toString());
+
+                    System.out.println("Zapínám vlákno");
+                    Long breaker = time_To_TimeOutExcepting;
+
+                    while (breaker > 0) {
+                        breaker-=250;
+                        System.out.println("Zbejvá času " + breaker);
+
+                        Thread.sleep(250);
+
+                        if (message_in.containsKey(messageId)) {
+                            System.out.println("Zpráva nalezena a tak zabíjím while cyklus");
+                            JsonNode message = message_in.get(messageId);
+                            message_in.remove(messageId);
+                            return message;
+                        }
+
+                        if (breaker == 0) {
+                            System.out.println("Time out Exception - Čas ve vlákně vypršel ");
+                            message_out.remove(messageId);
+                            throw new TimeoutException();
+                        }
+
+                    }
+
+                    throw new InterruptedException();
             }
-
-            if(breaker == 0) {
-                System.out.println("Time out Exception");
-                message_out.remove(messageId);
-                throw new TimeoutException();
-            }
-
         }
+
+        ExecutorService pool = Executors.newFixedThreadPool(3);
+
+        Callable<JsonNode> callable = new Confirmation_Thread();
+        Future<JsonNode> future = pool.submit(callable);
+
+        try {
+            return future.get();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+            if( e.getCause() instanceof TimeoutException) throw new TimeoutException();
+            else throw new InterruptedException();
+        }
+
     }
 
     public void send_file(File file){

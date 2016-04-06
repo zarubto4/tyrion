@@ -45,7 +45,13 @@ public class PersonController extends Controller {
             notes = "create new Person with unique email and nick_name",
             produces = "application/json",
             protocols = "https",
-            code = 201
+            code = 201,
+            extensions = {
+                    @Extension( name = "my-extension", properties = {
+                            @ExtensionProperty(name = "test1", value = "value1"),
+                            @ExtensionProperty(name = "test2", value = "value2")
+                    })
+            }
     )
     @ApiImplicitParams(
             {
@@ -103,7 +109,7 @@ public class PersonController extends Controller {
                 e.printStackTrace();
             }
 
-            return GlobalResult.result_ok(Json.toJson(person));
+            return GlobalResult.created(Json.toJson(person));
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("PersonController - edit_Person_Information ERROR");

@@ -22,13 +22,13 @@ GET             /test6                                      @controllers.WikyCon
 GET              /websocket/homer/:mac_adress                   @controllers.WebSocketController_Incoming.homer_connection(mac_adress)
 GET              /websocket/mobile/:m_project_id/:mac_adress    @controllers.WebSocketController_Incoming.mobile_connection(m_project_id, mac_adress)
 
-
 # Pro vývojáře
 POST             /websocket/webSocketStats                      @controllers.WebSocketController_Incoming.getWebSocketStats
 POST             /websocket/disconect_all_mobiles               @controllers.WebSocketController_Incoming.disconnect_all_mobiles_result()
 POST             /websocket/disconect_all_homers                @controllers.WebSocketController_Incoming.disconnect_all_homers_result()
 
 #API - CoreClient ##############################################################################################################################################################
+###################################################################################f#########################################################################################
 
 #Login page
 POST            /coreClient/person/permission/login         @controllers.SecurityController.login()

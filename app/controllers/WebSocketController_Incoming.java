@@ -3,6 +3,7 @@ package controllers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.project.b_program.B_Program;
+import models.project.global.Homer;
 import models.project.m_program.Grid_Terminal;
 import models.project.m_program.M_Project;
 import play.libs.Json;
@@ -100,7 +101,6 @@ public class WebSocketController_Incoming extends Controller {
             return WebSocket.reject(forbidden("Posralo se to"));
         }
     }
-
     public WebSocket<String> mobile_connection(String m_project_id, String terminal_id) {
 
         try {
@@ -238,10 +238,7 @@ public class WebSocketController_Incoming extends Controller {
 
     /** incoming Json from Homer */
     public static void incoming_message_homer(WebSCType homer, JsonNode json){
-        System.out.println ("Zpráva od Homera" + homer.identifikator +  " Obsah " + json.toString());
-
         if(json.has("messageChannel")){
-            System.out.println("Zpráva obsahuje message channel: " + json.get("messageChannel").asText());
 
             switch (json.get("messageChannel").asText()){
 
@@ -251,40 +248,27 @@ public class WebSocketController_Incoming extends Controller {
                 }
 
                 case "tyrion" : {
-                    System.out.println ("Tyrion Dále zpracovávám -- ale nic tu zatím není!!");
-
+                    System.out.println ("Tyrion Příchozí zpráva, která neměla svojí žádost ze strany Tyriona: " + json.asText());
+                    return;
                 }
 
             }
         }
-
-        System.out.println("Příchozí zpráva neobsahovala messageChannel a tak se nic neprovedlo");
     }
 
-    public static void homer_KillInstance(String homer_id) {
-        try {
-
-            System.out.println("homer_KillInstance " + homer_id);
-
-
+    public static JsonNode homer_KillInstance(String homer_id) throws TimeoutException, InterruptedException {
             String messageId = UUID.randomUUID().toString();
 
             ObjectNode result = Json.newObject();
             result.put("messageType", "Kill Instance");
             result.put("messageId", messageId);
-           // result.put("messageChannel", "tyrion");
+            result.put("messageChannel", "tyrion");
 
-            JsonNode answare = incomingConnections_homers.get(homer_id).write_with_confirmation(messageId, result);
-
-        } catch (TimeoutException e){
-            System.out.println("TimeoutException");
-        } catch (InterruptedException e){
-            System.out.println("InterruptedException");
-        }
+            return incomingConnections_homers.get(homer_id).write_with_confirmation(messageId, result);
     }
 
-    public static void homer_update_embeddedHW(String homer_id, String board_id, File file){
-        try {
+    public static void homer_update_embeddedHW(String homer_id, String board_id, File file) throws TimeoutException, InterruptedException, IOException {
+
             System.out.println("Chci nahrát binární soubor na hardware ");
 
             String messageId = UUID.randomUUID().toString();
@@ -300,20 +284,9 @@ public class WebSocketController_Incoming extends Controller {
             result.put("program", UtilTools.loadFile(file));
 
             incomingConnections_homers.get(homer_id).write_with_confirmation(messageId, result);
-
-        } catch (TimeoutException e){
-            System.out.println("TimeoutException");
-        } catch (IOException e){
-            System.out.println("IOException");
-        } catch (InterruptedException e){
-            System.out.println("InterruptedException");
-        }
     }
 
-    public static void homer_UploadInstance(String homer_id, String program) throws TimeoutException, InterruptedException {
-        try {
-
-            System.out.println ("homer_UploadInstance " + homer_id);
+    public static JsonNode homer_UploadInstance(Homer homer, String program_id, String program) throws TimeoutException, InterruptedException {
 
             String messageId =  UUID.randomUUID().toString();
 
@@ -321,20 +294,28 @@ public class WebSocketController_Incoming extends Controller {
             result.put("messageType", "loadProgram");
             result.put("messageId", messageId);
             result.put("messageChannel", "tyrion");
+            result.put("programId", program_id);
             result.put("program", program);
 
-            JsonNode answare =  incomingConnections_homers.get(homer_id).write_with_confirmation(messageId ,result );
-
-        } catch (TimeoutException e){
-            System.out.println("TimeoutException");
-        } catch (InterruptedException e){
-            System.out.println("InterruptedException");
-        }
+          return incomingConnections_homers.get( homer.homer_id).write_with_confirmation(messageId ,result );
     }
 
     public static boolean homer_is_online(String homer_id){
         return incomingConnections_homers.containsKey(homer_id);
     }
+
+    public static JsonNode get_all_Connected_HW_to_Homer(Homer homer) throws TimeoutException, InterruptedException{
+        String messageId = UUID.randomUUID().toString();
+
+        ObjectNode result = Json.newObject();
+        result.put("messageType", "getDeviceList");
+        result.put("messageId", messageId);
+        result.put("messageChannel", "tyrion");
+
+        return incomingConnections_homers.get( homer.homer_id ).write_with_confirmation(messageId, result, (long) 250*25 );
+    }
+
+
 
     // Homer se odpojil
     public static void homer_is_disconnect(WebSCType homer) {
