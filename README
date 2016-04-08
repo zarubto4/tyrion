@@ -1,4 +1,11 @@
+1.05.6.2
 
+- Přidání systému Loggy pro logování chyb
+- Změna konfigurace Logbacku
+- Zapnutí logování SQL příkazů
+
+
+------------------------------------------------------------------------------------------------------------------------
 
 1.05.5.6 (Tyrion production Version)
 -> Chyba z 1.05.5.5 ve funkci pro nahrátí Embedded HW

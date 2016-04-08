@@ -1,6 +1,8 @@
 package utilities.loggy;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import controllers.PersonController;
+import controllers.SecurityController;
 import play.*;
 import play.libs.F.Promise;
 import play.libs.ws.WSClient;
@@ -11,14 +13,18 @@ import utilities.response.GlobalResult;
 
 import javax.inject.Inject;
 import java.io.*;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.UnknownHostException;
 import java.util.Base64;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class Loggy {
 
-    @Inject static WSClient ws;
+    static WSClient ws;
     static Logger.ALogger logger = Logger.of("Loggy");
     static LinkedList<LoggyError> fastErrors = new LinkedList<>();
     static Configuration conf = Play.application().configuration();
@@ -49,8 +55,51 @@ public class Loggy {
         return GlobalResult.internalServerError();
     }
 
-    public static Result internalServerError(String summary, Exception e) {
-        error("Internal Server Error - "+summary, e);
+    public static Result internalServerError(Exception exception, Http.Request request) {
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("Tyrion version: "+ conf.getString("api.version"));
+        builder.append(" %n% ");
+        builder.append("Developer mode: "+ conf.getBoolean("Server.developerMode"));
+        builder.append(" %n% ");
+        builder.append("Server MAC address: "+ getMac());
+        builder.append(" %n% ");
+        builder.append("User: "+ (SecurityController.getPerson()!= null?SecurityController.getPerson().mail:"null"));
+        builder.append(" %n% ");
+        builder.append("Time: "+ new Date().toString());
+        builder.append(" %n% ");
+
+        builder.append("Stack trace: ");
+        for (StackTraceElement element : exception.getStackTrace()) {
+            builder.append(element);
+            builder.append(" %n% ");
+        }
+
+        error("Internal Server Error - "+request.method()+" "+request.path()+" - "+exception.getClass().getName(), builder.toString());
+        return GlobalResult.internalServerError();
+    }
+
+    public static Result internalServerError(String problem, Http.Request request) {
+        Thread t = Thread.currentThread();
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("Tyrion version: "+ conf.getString("api.version"));
+        builder.append(" %n% ");
+        builder.append("Tyrion mode: "+ conf.getBoolean("Server.developerMode"));
+        builder.append(" %n% ");
+        builder.append("Server MAC address: "+ getMac());
+        builder.append(" %n% ");
+        builder.append("User: "+ (SecurityController.getPerson()!= null?SecurityController.getPerson().mail:"null"));
+        builder.append(" %n% ");
+        builder.append("Time: "+ new Date().toString());
+        builder.append(" %n% ");
+
+        for (StackTraceElement element : t.getStackTrace()) {
+            builder.append(element);
+            builder.append("; ");
+        }
+
+        error("Internal Server Error - "+problem+" - "+request.method()+" "+request.path(), builder.toString());
         return GlobalResult.internalServerError();
     }
 
@@ -103,14 +152,6 @@ public class Loggy {
             new PrintWriter(errors).close();
             new PrintWriter(all).close();
         } catch (Exception e) {}
-    }
-
-    public static void error(String summary, Exception e) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        e.printStackTrace(pw);
-
-        error("Unnamed Error", sw.toString());
     }
 
     public static void error(String content) {
@@ -176,6 +217,24 @@ public class Loggy {
         else return Results.status(response.getStatus(), response.getBody());
     }
 
+    private static String getMac() {
+        StringBuilder builder = new StringBuilder();
+        try {
+            byte[] mac = NetworkInterface
+                    .getNetworkInterfaces()
+                    .nextElement()
+                    .getHardwareAddress();
+
+            for (int i = 0; i < mac.length; i++) {
+                builder.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
+            }
+        }
+        catch (Exception e) {
+            Logger.error("network problem", e);
+        }
+        return builder.toString();
+    }
+
     private static List<LoggyError> loadErrors(int start, int count) {
         LinkedList<LoggyError> l = null;
         try {
@@ -194,6 +253,9 @@ public class Loggy {
                     continue;
                 }
                 String[] splitLine = line.split("%%%");
+                if(splitLine.length < 2) {
+                    continue;
+                }
                 l.push(new LoggyError(splitLine[0], splitLine[1]));
             }
             reader.close();

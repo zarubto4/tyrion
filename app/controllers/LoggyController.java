@@ -1,10 +1,13 @@
 package controllers;
 
+import play.Logger;
 import play.Play;
 import play.libs.F;
+import play.mvc.Security;
 import utilities.loggy.*;
 import play.mvc.Controller;
 import play.mvc.Result;
+import utilities.loginEntities.Secured;
 
 
 public class LoggyController extends Controller {
@@ -27,9 +30,16 @@ public class LoggyController extends Controller {
         return redirect("/loggy");
     }
 
+    //@Security.Authenticated(Secured.class)
     public Result error(String description) {
-        Loggy.error(description);
-        return redirect("/loggy");
+        Logger.error(SecurityController.getPerson() == null?"not logged":"logged");
+        try {
+            String s = null;
+            return ok(""+s.length());
+        }
+        catch (Exception e) {
+            return Loggy.internalServerError(e, request());
+        }
     }
 
     public Result error(String summary, String description) {
