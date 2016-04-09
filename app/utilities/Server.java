@@ -45,6 +45,8 @@ public class Server {
     public static String Facebook_url;
     public static String Facebook_apiKey;
 
+    public static Boolean server_mode;
+    public static String server_version;
 
     public static Map<String, Optional<DynamicResourceHandler> > handlers = new HashMap<>();
 
@@ -63,7 +65,12 @@ public class Server {
          *
          * Zatím se zdá vhodnější varianta přepínání v configuračním souboru. Tomáš Záruba 15.2.16
          */
-        if( Configuration.root().getBoolean("Server.developerMode")) {
+
+        server_mode = Configuration.root().getBoolean("Server.developerMode");
+        server_version = Configuration.root().getString("api.version");
+
+
+        if(server_mode) {
 
             // Nastavení pro Tyrion Adresy
             tyrion_serverAddress = "http://" + Configuration.root().getString("Server.localhost");

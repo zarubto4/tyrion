@@ -30,7 +30,7 @@ public class PersonPermission extends Model {
     // Creating new permission if system not contains that
     public PersonPermission(String key, String description){
 
-        if(PersonPermission.findByValue(key) != null) return;
+        if(PersonPermission.find.byId(key) != null) return;
         this.value = key;
         this.description = description;
         this.save();

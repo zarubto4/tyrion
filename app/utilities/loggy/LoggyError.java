@@ -1,22 +1,31 @@
 package utilities.loggy;
 
+import java.util.Date;
+
 public class LoggyError {
 
-    String d;
-    String s;
+    public String hash_identification;
+    public Date   date_of_create = new Date();
+    public String description;
+    public String summary;
+    public String level = "error";
+    public String method_name = "asdfsf";
+    public String class_name = "sdafsdf";
+
+
     public String url = null;
 
     public LoggyError(String summary, String description) {
-        d = description;
-        s = summary;
+        this.description = description;
+        this.summary = summary;
     }
 
-    public String getSummmary() {
-        return s;
+    public String getSummary() {
+        return summary;
     }
 
     public String getDescription() {
-        return d;
+        return description;
     }
 
 }

@@ -27,6 +27,8 @@ libraryDependencies ++= Seq(
   "net.sourceforge.jtds" % "jtds" % "1.3.0",
   "commons-codec" % "commons-codec" % "1.9",
 
+  "org.pegdown" % "pegdown" % "1.6.0",
+
 
   javaJdbc,
   filters,

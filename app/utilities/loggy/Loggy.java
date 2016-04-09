@@ -34,8 +34,6 @@ public class Loggy {
     static String token = "";
 
 
-
-
     public static void debug(String content) {
         logger.debug(content);
     }
@@ -52,10 +50,12 @@ public class Loggy {
         logger.trace(content);
     }
 
+
+
     public static Result internalServerError(String url_request, String class_name, String method_name, Person person, Exception e) {
 
-
         error("Internal Server Error - Path: " + url_request + " Class: "+ class_name + "." + method_name + ((SecurityController.getPerson() != null ) ? " Person id: " + SecurityController.getPerson().id :  "" ), e.toString());
+
         return GlobalResult.internalServerError();
     }
 
@@ -75,6 +75,7 @@ public class Loggy {
         return l;
     }
 
+
     public static Promise<Result> upload(int id) {
         if (System.currentTimeMillis() > tokenExpire-10000) {
             return login().flatMap((result) -> upload(id));
@@ -88,12 +89,13 @@ public class Loggy {
 
         WSRequest request = ws.url(conf.getString("Loggy.youtrackUrl") + "/youtrack/rest/issue");
         request.setQueryParameter("project", conf.getString("Loggy.youtrackProject"));
-        request.setQueryParameter("summary", e.getSummmary());
+        request.setQueryParameter("summary", e.getSummary());
         request.setQueryParameter("description", e.getDescription());
         request.setHeader("Authorization", "Bearer "+token);
 
-        Promise<WSResponse> promise = request.put("");
-        return promise.map(response -> checkUploadResponse(response, e));
+        //Promise<WSResponse> promise = request.put("");
+        return null;
+        //return promise.map(response -> checkUploadResponse(response, e));
     }
 
     public static void deleteFast() {
@@ -143,14 +145,19 @@ public class Loggy {
                 "Basic "+ new String(Base64.getEncoder().encode(
                         (conf.getString("Loggy.youtrackId") + ":" + conf.getString("Loggy.youtrackSecret"))
                                 .getBytes())));
-        Promise<WSResponse> promise = request.post(
+
+
+        /*Promise<WSResponse> promise = request.post(
                 "grant_type=password"
                 +"&scope="+conf.getString("Loggy.youtrackScopeId")
                 +"&username="+conf.getString("Loggy.youtrackUsername")
                 +"&password="+conf.getString("Loggy.youtrackPassword")
         );
+        */
 
-        return promise.map(Loggy::checkLoginResponse);
+        // return promise.map(Loggy::checkLoginResponse);
+
+        return null;
     }
 
     private static Result checkUploadResponse(WSResponse response, LoggyError error) {

@@ -1,0 +1,67 @@
+@import java.util.List
+@import utilities.loggy.LoggyError
+
+@(logs: List[LoggyError])
+
+
+
+<section class="content-header">
+    <h1> Bug Reporter <small> system errors </small> </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-bug"></i> Loggy </a></li>
+        <li class="active">Dashboard</li>
+    </ol>
+</section>
+
+<section class="content">
+
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-header">
+                    <h3 class="box-title">Tyrion internal recorded errors </h3>
+                </div>
+                <div class="box-body table-responsive no-padding">
+                    <table class="table table-hover">
+
+                        <tr>
+                            <th>ID</th>
+                            <th>Time</th>
+                            <th>Class</th>
+                            <th>Method</th>
+                            <th>Level</th>
+                            <th>Status</th>
+                            <th>Details</th>
+                            <th></th>
+
+                        </tr>
+
+                        @for( i <- logs){
+                        <tr>
+                            <td>@i.hash_identification</td><!-- ID -->
+                            <td>@i.date_of_create</td><!-- Date -->
+                            <td>@i.class_name</td><!-- Class name-->
+                            <td>@i.method_name</td><!-- Method name -->
+                            <td>@i.level</td> <!-- Level  (asi zvýraznit červenou error - ostatní šedě -->
+                            <td>@i.getDescription</td> <!-- Nadpis chyby -->
+                            <td> <span><a style="color:royalblue" target=_blank href="http://youtrack.byzance.cz"> show error </a></span></td> <!-- Tady vymyslet jak rozbalit chybu a vypsat to rozumně po řádcích (zalamování) -->
+
+                            @if(i.url != null) {
+                                <td>  <span> Reported (<a style="color:royalblue" target=_blank href="http://youtrack.byzance.cz/issue/tyrion/neconeconeco"> Issue Link </a>) </span></td>
+                            } else {
+                                <td>  <a class="button bg-red" href="loggy/upload/@i.hash_identification"> Report to Youtrack </a> </td>
+                            }
+
+                         </tr>
+                        }
+
+
+                    </table>
+                </div><!-- /.box-body -->
+            </div><!-- /.box -->
+        </div>
+    </div>
+
+
+</section><!-- /.content -->
+

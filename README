@@ -1,523 +1,88 @@
+# Verze 1.05.7.1 #
+####  12.4.2016 ####
 
-1.05.7 (Tyrion production Version)
+### Tyrion a nový DashBoard ###
+ * Nasazení designu pro zobrazení a ovládání základních elementů serveru. Slouží k zobrazení informací a pro vývojáře navázané na Tyrion.
+    * Správa zařízení připojených přes WebSocket
+    * Nunté dodělat rozumné read me
 
-- Základní podpora logování
-- Implementovaná podpora notifikací
-- Změna řízení vláken a podpora websocket
+-----
 
-fixed       TYRION-177
-fixed       TYRION-171
-fixed       TYRION-176
-fixed       TYRION-182
-fixed       TYRION-169
-fixed       TYRION-150
-fixed       TYRION-178
-fixed       TYRION-173
-fixed       TYRION-174
-fixed       TYRION-175
-fixed       TYRION-179
-fixed       TYRION-180
-fixed       TYRION-181
+### Práva nových notificakí ###
+(připraveno pro implementaci na straně frontend)
 
-TODO 3 Tomáš Z.: Zdokumentovat všechny Models pro Swagger
-TODO 4 Tomáš Z.: Přidat cyklické odmazávání BLOB v Azure, na které už neexistuje databázová vazba (Nějaká fičura co se zapne každý den ve 3 ráno a provede sekvenci kam
-                 každý vývojář může přidávat metody které se provedou... (Mazání prošlých tokenů, mazání prošlých nedokončených ověření přes sociální sítě atd... Viz todo 5)
-TODO 5 Tomáš Z.: Přidat cyklické odmazávání Vygenerovaných nezrealizovaných spojení na sociální sítě (Linkded Account)
-TODO 6 Tomáš Z.: Pokud se uživatel přihlásí přes facebook, k jeho účtu bude přidělen plovoucí token. Pokud se přihlásí znova a znova..
-                 budou se vtvářet další a další připojení. Je žádoucí mazat předchozí spojení pokud poznám, že je to ze stejného prohlížeče?
-                 PS: Vyžaduje to tak půl dne (+ ideálně přepsat třídu s přihlášení přes facebook a odzkoušet github..
-TODO 7 Tomáš Z.: Dodělat disconnect http://youtrack.byzance.cz/youtrack/issue/TYRION-169
-TODO 8 ALL-Tyrion: Bude potřeba dodělat řešení pro prodlužování platnosti tokenu (Buď nějak magicky na Tyrionovi nebo ze strany frontendu) Asi to dodělá Tomáš.
+ * Proběhla implementace ukládání notifikací v případě, že uživatel nebyl zastižen k zaslání. Cílem bylo vytvořit API,
+  na které se frontend po svém obnovení dotáže pro seznam notifikací v době nepřítomnosti uživatele. Vracím seznam maximálně 25
+  notifikací. Pokud jich je více - stránkuji. Každá notifikace za měsíc vyexpiruje (Systém jí smaže). Takže uživatel se může
+  podívat až měsíc dozadu.
 
+ * Mezi řádky. Redhat má jen 2/7 produktů otevřené komunitě (linux a Jboss) a jako opensource. :D U ostatních je to těžkce komerční zpropadená korporace :D
+  a z výroční zprávy akcionářům vyplívá, že na produktech, které jsou otevřené vydělává jen 37% peněz. (Rok předtím to bylo 44%)  :D
 
+ * V případě že notifikaci doručím přihlášenému uživateli jí stejně uložím do systému jako historii.
 
-------------------------------------------------------------------------------------------------------------------------
-1.05.5.6 (Tyrion production Version)
--> Chyba z 1.05.5.5 ve funkci pro nahrátí Embedded HW
--> Přidání Apache Commons Codec pro louskání Base64 (updatování embedded HW)
--> Uprava objektu typeOfScreen (dodatečné hodnoty podle modelu Gridu z igrid Iphone6
+ * Objekt je zdokumentován ve Swaggeru. Přibyl parameter "read" značící, zda si ho uživatel už přečetl. Je to poměrně jednoduché.
+  V případě prvního zaslání nepřečtené notifikace je parameter read = false. A v případě znovu zavolání je už označen jako read = true.
+  Je to uděláno úplně stejně jako na Azure - že po F5 prohlížeče je notifikace chápána jako přečtená.
 
-TODO 3 Tomáš Z.: Zdokumentovat všechny Models pro Swagger
-TODO 4 Tomáš Z.: Přidat cyklické odmazávání BLOB v Azure, na které už neexistuje databázová vazba (Nějaká fičura co se zapne každý den ve 3 ráno a provede sekvenci kam
-               každý vývojář může přidávat metody které se provedou... (Mazání prošlých tokenů, mazání prošlých nedokončených ověření přes sociální sítě atd... Viz todo 5)
-TODO 5 Tomáš Z.: Přidat cyklické odmazávání Vygenerovaných nezrealizovaných spojení na sociální sítě (Linkded Account)
-TODO 6 Tomáš Z.: Pokud se uživatel přihlásí přes facebook, k jeho účtu bude přidělen plovoucí token. Pokud se přihlásí znova a znova..
-                budou se vtvářet další a další připojení. Je žádoucí mazat předchozí spojení pokud poznám, že je to ze stejného prohlížeče?
-                PS: Vyžaduje to tak půl dne (+ ideálně přepsat třídu s přihlášení přes facebook a odzkoušet github..
-TODO 7 Tomáš Z.: Dodělat disconnect http://youtrack.byzance.cz/youtrack/issue/TYRION-169
-TODO 8: Bude potřeba dodělat řešení pro prodlužování platnosti tokenu (Buď nějak magicky na Tyrionovi nebo ze strany frontendu)
+ * Některé notifikace mají v parametru "confirmation_required". Což znamená, že Tyrion požaduje jejich potvrzení!
+  Například informování o odstávce. O vypršelé kreditní kartě atd. V případě že uživatel neodkliknul potvrzení (Api pro potvrzení)
+  tak mu Tyrion danou zpávu zašle znovu při dalším přihlášení dokud to nepotvrdí. :D ( Big brother is watching you! ) :D
 
 
-------------------------------------------------------------------------------------------------------------------------
+ * Při přihlášení uživatele zároveň přibyly 3 parametry, které lze vykreslit do šablony.
+    * První je počet nových událostí (notifikací) "unread_notification"
+    * Druhý je počet nepřečtených zpráv "unread_message". Vize zpráv je pro komunitu a jejich projekty. Nebo pro připisování poznámek
+      k úpravám kódu atd. pokud na projektu pracuje více uživatelů. Vize zatím nic na Tyrionovi není implementováno.
+    * Tickety technické podpory "unread_ticket" - právě probíhá implementace do Tyriona skrze zendesk (nástroj třetí strany na technickou podporu)
 
-1.05.5.5 (Tyrion production Version)
--> Dodělávání funkce nahrávání a přepisování už zkompilovaných souborů na Embedded zařízení
+  * Notifikace se také zasílají všem uživatelům, kterých se to týká. (sdílený projekt, homer.. komunitní projekt, připsání
+  nového komentáře atd.
 
-------------------------------------------------------------------------------------------------------------------------
-1.05.5.4
+  * #### úprava linku u získání SEE ####
 
--> Programové změny Tyrion <-
-- Bylo nutné zajistit přihlášení více uživatelů naráz. Proto byla změněna koncepce správy klíčů (tokenů).
-  Každý uživatel se může přihlásit na libovolné množství zařízení - klíč má datum přidělení a určenou životnost (Několik týdnů).
-  Pro přihlášení se nic nemění. Uživatel stejně jako teď dostane svůj token. Odhlášení probíhá taktéž úplně stejně.
-  Jen je vyžadováno při přihlášení přiložit k emailu a heslu ještě "user_agent" informace o prohlížeči do hlavičky HTML reqestu!!.
-  (pro jistotu pokud nebude možné to zjistit na straně frontendu, bude nahrazena defaultní hodnotou "unknown browser")
+        GET  /notification/:identificator  -------> GET  /notification/connection/:identificator
 
-  Navíc přibyly API na zjištění aktuálních platných připojení a možnost jejich deaktivace na dálku. (Zneplatní se konkrétní token)
-  TODO 8: Bude potřeba dodělat řešení pro prodlužování platnosti tokenu (Buď nějak magicky na Tyrionovi nebo ze strany frontendu)
+  * Přidání API pro získání posledních notifikací ( obsahuje i to, co se jako notifikace nemusí uživateli odesílat)
+      například changelog jeho portfoli.  Pokud se zavolá první api - vrátí to seznam od poslední po první s omezením
+      na 25 prvků. Pokud chce ít uživatel hlouběji v notifikacích na konec url se připojí číslo ze seznamu stránek
+      uvedených v JSON.
 
-- Úprava nových API pro Davida - Pro sdílení M_programu mezi zařízeními
-    M_Project respektive M_Program. Pokud je požádáno o M_Project tak jeho obsah je i seznam M_Programů.
-    Aby nvýsledný JSON nebyl veliký M_program neobsahuje M_code ale pouze odkaz na něj.
-    To se změní ve chvíli, kdy je dotaz na konkrétní M_Program. Json v tomto případě obsahuje m_code.
-    Viz dokumentace.
+        GET             /notification/list
+        GET             /notification/list/{page_number}
+        DELETE          /notification/{notification_id}
+        PUT             /notification/confirm/{notification_id}
 
-- Přidání api dotazů pro validaci nick_name a emailu při registraci nového uživatele na žádost Radka + Přidání nové dokumentace
+-----
 
-- Uprava revalidace ztraceného terminal identifikátoru (Hlavně při vývoji a developerském modu, kdy se dá očekávat
-  že temrinal id může z databáze zmizel, ale zařízení se s Tyrionem nadále bude bavit s neznalým id..
+### EVIDENCE PŘIHLÁŠENÍ ###
+(připraveno pro implementaci na straně frontend)
 
-fixed       TYRION-168
-fixed       TYRION-167
-fixed       TYRION-166
-fixed       TYRION-65
-obsolate    TYRION-165
-fixed       TYRION-164
-wont fix    TYRION-162
-fixed       TYRION-137
-fixed       TYRION-152
-fixed       TYRION-65
-fixed       TYRION-152
-fixed       TYRION-156
-fixed       TYRION-158
-fixed       TYRION-159
-fixed       TYRION-160
-fixed       TYRION-161
-fixed       TYRION-129
+      GET      /coreClient/connections
+         - Vrátí seznam všech přihlášení, kde je stále platný token - uživatel má možnost ho deaktivovat.
 
-DONE -> TODO 1 Tomáš Z.: Do dalšího buildu - úprava GLOBAL RESULT - některý věci tam nedávají smysl
-DONE -> TODO 2 Tomáš Z.: Zdokumentovat response - a přejmenovat na Result na response u všech - je to zmatečné!
-TODO 3 Tomáš Z.: Zdokumentovat všechny Models pro Swagger
-TODO 4 Tomáš Z.: Přidat cyklické odmazávání BLOB v Azure, na které už neexistuje databázová vazba (Nějaká fičura co se zapne každý den ve 3 ráno a provede sekvenci kam
-               každý vývojář může přidávat metody které se provedou... (Mazání prošlých tokenů, mazání prošlých nedokončených ověření přes sociální sítě atd... Viz todo 5)
-TODO 5 Tomáš Z.: Přidat cyklické odmazávání Vygenerovaných nezrealizovaných spojení na sociální sítě (Linkded Account)
-TODO 6 Tomáš Z.: Pokud se uživatel přihlásí přes facebook, k jeho účtu bude přidělen plovoucí token. Pokud se přihlásí znova a znova..
-                budou se vtvářet další a další připojení. Je žádoucí mazat předchozí spojení pokud poznám, že je to ze stejného prohlížeče?
-                PS: Vyžaduje to tak půl dne (+ ideálně přepsat třídu s přihlášení přes facebook a odzkoušet github..
+      DELETE   /coreClient/connection/:connection_id
+         - API pro jeho trvalou deaktivaci (možnost deaktivovat i mobilní zařízení)
+         - Je ale nutné Tomášovi specifikovat,jak by měl asi rozlišovat jednotlivá spojení????? Radku?
 
 
-------------------------------------------------------------------------------------------------------------------------
+-----
 
-1.05.3.3
-- Opravena chyba v tvorbě m_programu kde bylo vyžadováno field  m_program_id (Chyba v kopírování - mělo se to jmenovat m_project_id)
-  Přesunuto do url linku
+### Oprava Bugů ###
 
+ * fixed [TYRION-183](http://youtrack.byzance.cz/youtrack/issue/TYRION-183)
+ * fixed [TYRION-181](http://youtrack.byzance.cz/youtrack/issue/TYRION-181)
 
-------------------------------------------------------------------------------------------------------------------------
+------
 
-Verze 1.05.3.2
+### TODO do další verze ###
 
-- Oprava chybějícího adresáře na public serveru.
-- Nová funkce autoopravy špatně nastaveného propojení mezi M_Project a Blocko-Version (Zejména pak možnost při propojení M_Program
-    s B_Program automatické posunování verzí vždy na nejnovější bez nutnosti zásahu ze strany uživatele.
-
-    -> PUT  {url}/grid/m_project/connect/:m_project_id/:version_id/:auto_incrementing
-     auto_incrementing je boolean (Pokud není, Play automaticky odmínte request) a značí, že uživatel si přeje automatické posunování verzí.
-     Viz https://wiki.byzance.cz/wiki/doku.php?id=schema_tyrion
-
-------------------------------------------------------------------------------------------------------------------------
-
-Verze 1.05.3
-fixed TYRION-154 ( Chybně zaznamenaný code=200 ve swagger dokumentaci )
-fixed TYRION-129
-
- - Swagger_TypeOfBlock_New
-   Chyba v požadavku na project_id (nebylo tedy možné vytvořit public verzi)
- - TypeOfBlock
-   Chyba pokud nebyl vyplněn project - Null pointer exception
-
-------------------------------------------------------------------------------------------------------------------------
-
-Verze 1.05.2
-Přidána funkcionalita ohledne WS na GRID a HOMER
-
-------------------------------------------------------------------------------------------------------------------------
-
-Verze 1.04.9.21
-
-fixed TYRION-152
-fixed TYRION-149
-fixed TYRION-148
-fixed TYRION-147
-
-------------------------------------------------------------------------------------------------------------------------
-
-Verze 1.04.9.20
-
-fixed TYRION-150
-fixed compilation errors
-
-------------------------------------------------------------------------------------------------------------------------
-
-Verze 1.04.9.19
-
-fixed TYRION-118
-fixed TYRION-151
-
-------------------------------------------------------------------------------------------------------------------------
-
-Verze 1.04.9.18
-
-utilities/EclipseProject přejmenováno na utilities/eclipseProject
-utilities/Response přejmenováno na utilities/response
--kvůli názvům jejich package, intellij si stěžovalo
-
-přihlašovací údaje k databázy změněny na
-db.default.username=tyrion
-db.default.password=lannister
--na linuxu je uživatel postgres propojený do systému jako superuser a má unikátní heslo
-
-
-------------------------------------------------------------------------------------------------------------------------
-
-Verze 1.04.9.12 FIXED a verze 12
-
-Úprava všech link u Permission z query na {Link} - id v linku
-- Odhalena chyba že v dokumentaci se u  id v linku objevuje že je to query. Bylo plošně opraveno.
-
-Při návratu objektu při přihlášení uživatele bylo matoucí jak chápat permission.
-Proto ti vracím seznam rolí ve zkrácené podobě (viz dokumentace)
-a v listu Permission dělám sjednocení všech oprávnění, které uživatel má (ze všech skupin i samostatných oprávnění)
-
-
-TypeOfBlock  je skupina pro bločky (logické, sociální atd) a aby mohl uživatel tvořit svoje bločky, má možnost vytvořit si svoje skupiny, které budou vázány na hlavní projekt.
-Pro tyto účely bli upraveny API - přidáním jendoho parametru (project_id) se z public skupiny stane private (pamatuj, že normálním uživatelům by si neměl dovolit tvořit skupiny jinak než přes privet skupiny)
-a v api GET all ti vrátím všechny veřejné skupiny a ty privátní k projektům, které uživatel vlasntí (nebo do nich byl přizván).
-
-
-Odstranil jsem getConnectedHomers -> protože když si vezmeš Homra v JSON toho objektu by mělo být kompletní info o tom v jakém stavu se nachází
-
-
-
-Co jsem chtěl podle módu "Developer" dodělat:
-
-    - Už nevim... měl jsem si to napsat hned... (TOTO JE HOTOVÉ)
-    - Jo Azure-DataStorage - developer
-                           - real
-
-
-Nasadit lepší zobrazení o stavu serveru (Registravaných uživatelů, Postu, projketů, připojených zařízení atd.)
-
-Tyrion main cloud server <- dev version
-
-Version 1.04.09
-========================================================================================================================
-1) Implementace podpory pro GRID
-
-    a) Objekty pro správu typů obrazovek (Iphone 4, 5S, Ipad, Galaxy S3 atd.. )
-       - Lze je vytvářet, Mazat atd. (Přístupné jen Administrátorovi)
-       - Uživateli je nutné dát na výběr při tvorbě nového m_codu s jakou obrazovkou chce pracovat - api dotazem na public
-         seznam podporovaných obrazovek. V objektu jsou parametry výška / šířka a zda je podporováno překlápění a zda je
-         obrazovka dotyková. (To ab se zamezilo tvorbě shiftu - posunutí na další obrazovku)
-         (U televize by to smysl třeba nedávalo)
-
-       - Uživatel si může vytvořit i vlastní rozlišení a nastavení - pokud tedy bude při výběru hledat obrazovku do
-         veřejného seznamu mu vložím jeho osobní obrazovky, vázané na projekt na které se grid taktéž váže.
-
-    b) Project 1:n M_Program 1:n M_Code
-
-
-2) Oprava gramatické chyby uploud na upload (XoXo) :D
-
-3) http://youtrack.byzance.cz/youtrack/issue/TYRION-61
-
-
-     In Version 1.04.9
-        {
-             "postId": "1"
-             "name" : "Post 1",
-             "type" : {
-                         "type" : "bug",
-                         "id" : "114"
-                       }
-             ..........
-        }
-
-4) http://youtrack.byzance.cz/youtrack/issue/TYRION-77 - FIXED
-
-
-5) Return Object Project -> výraz countOfPrograms -> byl rozdělen na
-    count_c_programs
-    count_b_programs
-    count_m_projects
-
-    b_programs
-    b_programs
-    m_projects
-
-6)
-
-
-
-
-
-
-
-Version 1.04.08
-========================================================================================================================
-1) Změna linků u práce v blocko - program i linky byly upraveny v rámci ochrany proti zmatečnosti s c_program
-    #Program
-    POST           /project/b_program
-    GET            /project/b_program/:id
-    PUT            /project/b_program/:id
-    DELETE         /project/b_program/:id
-    GET            /project/b_programInJson/:id
-
-2) Person - opět přidána položka middle name
-
-3) Oprava chyby LastNAme na LastName
-
-4) Úprava ukládání b_programu - zjednodušené prozatím jen na úroveň okamžitého nahrátí do cloudu nebo do Homra.
-    A to vždy jen jedna instance programu.
-
-    V budoucnu přibudou verze b_programu a další stavy, replikace atd... Momentálně příliš komplexní a zbytečné.
-
-5)  project/unloadtohomerImmediately     ->  project/b_program/unload
-    project/unloadToCloud                ->  project/b_program/unloadToCloud/:programId
-    project/getallprograms/:id           ->  project/b_programs/:id      (id - project)
-
-6) POST POST  ( POST  /overflow/post/:id ) http://youtrack.byzance.cz/youtrack/issue/TYRION-61
-    Vracel jsem jen id teď vracím v body celý objekt
-
-7) GET POST  ( GET  /overflow/post/:id ) http://youtrack.byzance.cz/youtrack/issue/TYRION-61
-
-    Before
-    {
-        "name" : "Post 1",
-        "type" : "1",
-        .....
-    }
-
-    In Version 1.04.8
-    {
-         "postId": "1"
-         "name" : "Post 1",
-         "type" : "Bug",   <----- !!!!!
-         .....
-    }
-
-8) GET /project/project/b_programs/1 returns 404 http://youtrack.byzance.cz/youtrack/issue/TYRION-62
-    in Json was bug in 's -> Changed to GET /project/project/b_program/1
-
-9) Změna linků u  compilation package:  (program  -> c_program)
-   POST            /compilation/c_program
-   GET             /compilation/c_program/:id
-   GET             /compilation/c_program/project/:id
-
-   PUT             /compilation/c_program/update/:id
-   PUT             /compilation/program/newVersion/:id
-
-   DELETE          /compilation/c_program/:id
-   DELETE          /compilation/c_program/:id/:version
-
-   GET             /compilation/c_program/eclipse                generateProjectForEclipse
-   POST            /compilation/c_program/unload/:id/:board      unloadCompilationToBoard(id: programId, board: boardId)
-   POST            /compilation/c_program/binary/:id             unloadBinaryFileToBoard(id: String)
-
-
-10) Password in database was removed - I am using only Sha512 encryption
-
-11) Oprava Linku u nové verze Skupiny knihoven
-POST            /compilation/libraryGroup/versions/:id   ->  /compilation/libraryGroup/version/:id   ('s')
-
-
-12) Vracím celé objekty (před tím pouze id objektu)
-
-POST            /compilation/libraryGroup
-POST            /compilation/libraryGroup/versions/:id
-POST            /compilation/library
-POST            /compilation/library/version/:id
-
-13) unload libovolného množstbí souborů u Skupiny Knihoven najednou je teď možný http://youtrack.byzance.cz/youtrack/issue/TYRION-39
-
-
-14) Project (GET...) in Json
-   programs -> b_programs
-
-   + new
-    c_programs
-    m_programs (mobile program - grid)
-
-15)
-
-Version 1.04.7
-========================================================================================================================
-
-1) Připojování na další servery (Blocko atd.) na WS je řešeno v configu serveru run ( true nebo false)(Default true)
-2) Verze v html hlavičce  je nyní synchronizována s configuračním souborem. (Byzance-Technical-Version → 1.04.X )
-3) Přibylo možnost blocko provozovat mimo Houmra i v Cloudu - Nová api
-    unload to Cloud Hosting -> PUT {{url}}/project/unloadToCloud
-       JSON {
-
-            }
-4) Editace PUT /overflow/post -> YouTrack( TYRION-29 ) změna podle hlášeného bugu na ID
-        {
-            "postId" : "1",
-            "name" : "Zmena Nazvu",
-            "type" : "1", //( id Type - dle databáze) - obdobně jako při create (POST)
-            "hashTags" : ["tag1", "tag7"],
-            "comment" : "Zmena komentare"
-        }
-
-5) Compilation Program -> YouTrack( http://youtrack.byzance.cz/youtrack/issue/TYRION-47 )
-     Vyžaduje Json uvedený v PostMan
-
-6) Library and Library Group directly contain description in Json
-
-7) Person - odebrána položka middle name
-
-
-
-
-
-
-Version 1.04
-========================================================================================================================
-Globální změny:
-
-
-   Abych nezasílal vše co není zrovna potřeba, obsah je překrýván linkem.
-   Uprava navrhu je videt na  výpisu všech knihoven "description"! Jednou obsahuje link (když obsah existuje)
-   V opačném případě je nahrazeno null.
-
-1) [
-     {
-       "id": "1",
-       "groupName": "Pro ARM7 - YP",
-       "description": "http://localhost:9000/compilation/libraryGroup/generalDescription/1",
-       "azurePackageLink": "libraryGroup",
-       "azureStorageLink": "244n44r7p7j8n",
-       "azurePrimaryUrl": null,
-       "azureSecondaryUrl": null,
-       "processors": "http://localhost:9000/compilation/libraryGroup/processors/1",
-       "libraries": "http://localhost:9000/compilation/libraryGroup/libraries/1"
-     },
-     {
-       "id": "21",
-       "groupName": "Pro ad ads afsdf ",
-       "description": null,
-       "azurePackageLink": "libraryGroup",
-       "azureStorageLink": "1p57k9lnjgbn4",
-       "azurePrimaryUrl": null,
-       "azureSecondaryUrl": null,
-       "processors": "http://localhost:9000/compilation/libraryGroup/processors/21",
-       "libraries": "http://localhost:9000/compilation/libraryGroup/libraries/21"
-     }
-   ]
-
-   Změny jsou zavedeny v těchto objektech: // LibraryGroup,  TODO
-
-2) Změna linků
-GET   /project/getAllConnectedHomers/:id  ->   /project/homer/getAllConnectedHomers/:id
-GET   /project/getallhoumers              ->   /project/homer
-
-3) Změna Přihlášení
-
-POST           /coreClient/person/developer                @controllers.PersonCreateController.developerRegistration()
-"password - String",  "mail - String"
-
-POST           /coreClient/person/person                   @controllers.PersonCreateController.standartRegistration()
-"nickName - String", "password - String",  "mail - String"
-+ Vyžaduje autorizaci přes email!!!!!!! - Musíš upravit config!!!
-
-
-Version 1.01
-========================================================================================================================
-Globální změny:
-1)  Byly přesunuty API na tvorbu IoT -> Jejich tvorba a registrace do systému bude zatím pouze pro "naše zaměstnance"
-    Do projektu půjde IoT pouze přihlásit a odhlásit.
-
-2)  Globální změna ebean filtrů - JSON který vrací ID objektu vždy proměnou udává jako "id" : "12"
-    -> už se nebude vracet "programId" : "14" -> jen ve výjmečných případech kdy se bude vracet více udajů.
-
-
-Projektové změny:
-
--> API změny na Objektu IoT -> Přejmenován na Board
-    Board:
-        - Je to objekt zastřešující fyzicky konrkétní desku - kdo je její majitel, generace, datum vyrobení atd...
-        - Bylo odstraněno "Producer" -> Přesunoto do vlastního objektu "Typ Desky"
-        - Bylo odstraněno "parameters" -> Přesunoto do vlastního objektu "Typ Desky"
-
-    Objektové (Pro Tyrion)
-    TypeOfBoard (Type of Procesor, Group Of Libraries, Libraries)
-    Procesor    (Group Of Libraries, Libraries)
-
--> GET /overflow/post/comments/:id
-    Upraven výpis jen na potřebné a používané proměné.
-    [
-      {
-        "postId": "22",
-        "likes": 0,
-        "dateOfCreate": 1452671440266,
-        "textOfPost": "komentář komentář 111",
-        "hashTags": [
-          "stairs",
-          "blabla",
-          "mocas"
-        ]
-      }
-    ]
-
--> GET /project/program/:id
-
-    Předchozí verze:
-    [
-      {
-        "projectId": "1",
-        "projectName": "Projekt 1",
-        "projectDescription": "Velý testovací projekt",
-        "homerList": [],
-        "electronicDevicesList": [],
-        "programs": [
-          {
-            "programId": "1",
-            "programName": "Program 1",
-            "programDescription": "Test",
-            "dateOfCreate": 1452680317152,
-            "listOfUploadedHomers": "http://localhost:9000/project/listOfUploadedHomers/1",
-            "listOfHomersWaitingForUpload": "http://localhost:9000/project/listOfHomersWaitingForUpload/1",
-            "programinJson": "http://localhost:9000/project/programInJson/1",
-            "projectinJson": "http://localhost:9000/project/1"
-          }
-        ]
-      }
-    ]
-
-    Nová verze:
-
-    homerList -> homers
-    electronicDevicesList -> boards
-    programs -> @link
-
-    Výpis počtu pro rychlé zopbrazení
-
-    {
-      "projectId": "1",
-      "projectName": "Projekt 1",
-      "projectDescription": "Velý testovací projekt",
-      "programs": "http://localhost:9000/project/project/programs/1",
-      "boards": "http://localhost:9000/project/project/electronicDevicesList/1",
-      "homers": "http://localhost:9000/project/project/homerList/1",
-      "countOfBoards": 0,
-      "countOfPrograms": 1,
-      "countOfHomer": 0
-    }
-
-
-
-
-
-Version 1.00
-========================================================================================================================
- Nothing here.. :(
+ * TODO 3 Tomáš Z.: Zdokumentovat všechny Models pro Swagger
+ * TODO 4 Tomáš Z.: Přidat cyklické odmazávání BLOB v Azure, na které už neexistuje databázová vazba (Nějaká fičura co se zapne každý den ve 3 ráno a provede sekvenci kam
+      každý vývojář může přidávat metody které se provedou... (Mazání prošlých tokenů, mazání prošlých nedokončených ověření přes sociální sítě atd... Viz todo 5)
+ * TODO 5 Tomáš Z.: Přidat cyklické odmazávání Vygenerovaných nezrealizovaných spojení na sociální sítě (Linkded Account)
+ * TODO 6 Tomáš Z.: Pokud se uživatel přihlásí přes facebook, k jeho účtu bude přidělen plovoucí token. Pokud se přihlásí znova a znova..
+      budou se vtvářet další a další připojení. Je žádoucí mazat předchozí spojení pokud poznám, že je to ze stejného prohlížeče?
+      PS: Vyžaduje to tak půl dne (+ ideálně přepsat třídu s přihlášení přes facebook a odzkoušet github..
+ * TODO 7 Tomáš Z.: Dodělat disconnect http://youtrack.byzance.cz/youtrack/issue/TYRION-169
+ * TODO 8 ALL-Tyrion: Bude potřeba dodělat řešení pro prodlužování platnosti tokenu (Buď nějak magicky na Tyrionovi nebo ze strany frontendu) Asi to dodělá Tomáš.

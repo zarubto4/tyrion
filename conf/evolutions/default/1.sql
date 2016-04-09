@@ -175,6 +175,19 @@ create table m_project (
   constraint pk_m_project primary key (id))
 ;
 
+create table notification (
+  id                        varchar(255) not null,
+  level                     varchar(7),
+  message                   varchar(255),
+  confirmation_required     boolean,
+  confirmed                 boolean,
+  read                      boolean,
+  created                   timestamp,
+  person_id                 varchar(255),
+  constraint ck_notification_level check (level in ('info','success','warning','error','message')),
+  constraint pk_notification primary key (id))
+;
+
 create table person (
   id                        varchar(255) not null,
   mail                      varchar(255),
@@ -422,6 +435,8 @@ create sequence m_program_seq;
 
 create sequence m_project_seq;
 
+create sequence notification_seq;
+
 create sequence person_seq;
 
 create sequence post_seq;
@@ -488,30 +503,32 @@ alter table m_project add constraint fk_m_project_b_program_19 foreign key (b_pr
 create index ix_m_project_b_program_19 on m_project (b_program_id);
 alter table m_project add constraint fk_m_project_b_program_versio_20 foreign key (vrs_obj_id) references version_object (id);
 create index ix_m_project_b_program_versio_20 on m_project (vrs_obj_id);
-alter table post add constraint fk_post_postParentComment_21 foreign key (post_parent_comment_post_id) references post (post_id);
-create index ix_post_postParentComment_21 on post (post_parent_comment_post_id);
-alter table post add constraint fk_post_postParentAnswer_22 foreign key (post_parent_answer_post_id) references post (post_id);
-create index ix_post_postParentAnswer_22 on post (post_parent_answer_post_id);
-alter table post add constraint fk_post_type_23 foreign key (type_id) references type_of_post (id);
-create index ix_post_type_23 on post (type_id);
-alter table post add constraint fk_post_author_24 foreign key (author_id) references person (id);
-create index ix_post_author_24 on post (author_id);
-alter table screen_size_type add constraint fk_screen_size_type_project_25 foreign key (project_id) references project (id);
-create index ix_screen_size_type_project_25 on screen_size_type (project_id);
-alter table type_of_block add constraint fk_type_of_block_project_26 foreign key (project_id) references project (id);
-create index ix_type_of_block_project_26 on type_of_block (project_id);
-alter table type_of_board add constraint fk_type_of_board_producer_27 foreign key (producer_id) references producer (id);
-create index ix_type_of_board_producer_27 on type_of_board (producer_id);
-alter table type_of_board add constraint fk_type_of_board_processor_28 foreign key (processor_id) references processor (id);
-create index ix_type_of_board_processor_28 on type_of_board (processor_id);
-alter table version_object add constraint fk_version_object_libraryGrou_29 foreign key (library_group_id) references library_group (id);
-create index ix_version_object_libraryGrou_29 on version_object (library_group_id);
-alter table version_object add constraint fk_version_object_singleLibra_30 foreign key (single_library_id) references single_library (id);
-create index ix_version_object_singleLibra_30 on version_object (single_library_id);
-alter table version_object add constraint fk_version_object_c_program_31 foreign key (c_program_id) references c_program (id);
-create index ix_version_object_c_program_31 on version_object (c_program_id);
-alter table version_object add constraint fk_version_object_b_program_32 foreign key (b_program_b_program_id) references b_program (b_program_id);
-create index ix_version_object_b_program_32 on version_object (b_program_b_program_id);
+alter table notification add constraint fk_notification_person_21 foreign key (person_id) references person (id);
+create index ix_notification_person_21 on notification (person_id);
+alter table post add constraint fk_post_postParentComment_22 foreign key (post_parent_comment_post_id) references post (post_id);
+create index ix_post_postParentComment_22 on post (post_parent_comment_post_id);
+alter table post add constraint fk_post_postParentAnswer_23 foreign key (post_parent_answer_post_id) references post (post_id);
+create index ix_post_postParentAnswer_23 on post (post_parent_answer_post_id);
+alter table post add constraint fk_post_type_24 foreign key (type_id) references type_of_post (id);
+create index ix_post_type_24 on post (type_id);
+alter table post add constraint fk_post_author_25 foreign key (author_id) references person (id);
+create index ix_post_author_25 on post (author_id);
+alter table screen_size_type add constraint fk_screen_size_type_project_26 foreign key (project_id) references project (id);
+create index ix_screen_size_type_project_26 on screen_size_type (project_id);
+alter table type_of_block add constraint fk_type_of_block_project_27 foreign key (project_id) references project (id);
+create index ix_type_of_block_project_27 on type_of_block (project_id);
+alter table type_of_board add constraint fk_type_of_board_producer_28 foreign key (producer_id) references producer (id);
+create index ix_type_of_board_producer_28 on type_of_board (producer_id);
+alter table type_of_board add constraint fk_type_of_board_processor_29 foreign key (processor_id) references processor (id);
+create index ix_type_of_board_processor_29 on type_of_board (processor_id);
+alter table version_object add constraint fk_version_object_libraryGrou_30 foreign key (library_group_id) references library_group (id);
+create index ix_version_object_libraryGrou_30 on version_object (library_group_id);
+alter table version_object add constraint fk_version_object_singleLibra_31 foreign key (single_library_id) references single_library (id);
+create index ix_version_object_singleLibra_31 on version_object (single_library_id);
+alter table version_object add constraint fk_version_object_c_program_32 foreign key (c_program_id) references c_program (id);
+create index ix_version_object_c_program_32 on version_object (c_program_id);
+alter table version_object add constraint fk_version_object_b_program_33 foreign key (b_program_b_program_id) references b_program (b_program_id);
+create index ix_version_object_b_program_33 on version_object (b_program_b_program_id);
 
 
 
@@ -601,6 +618,8 @@ drop table if exists m_program cascade;
 
 drop table if exists m_project cascade;
 
+drop table if exists notification cascade;
+
 drop table if exists person cascade;
 
 drop table if exists person_project cascade;
@@ -674,6 +693,8 @@ drop sequence if exists linked_post_seq;
 drop sequence if exists m_program_seq;
 
 drop sequence if exists m_project_seq;
+
+drop sequence if exists notification_seq;
 
 drop sequence if exists person_seq;
 

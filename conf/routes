@@ -5,15 +5,23 @@
 # Home page - for testing connected device
 # Home page
 
-GET             /                                           @controllers.SecurityController.index
+### PUBLIC ############ PUBLIC ############### PUBLIC ################ PUBLIC #######################################################################################
+###################################################################################f#################################################################################
 
-# -> Testovací
+GET             /                                           @controllers.DashboardController.index()
+GET             /public/bugs                                @controllers.DashboardController.show_all_logs()
+GET             /public/websocket                           @controllers.DashboardController.show_websocket_stats()
+GET             /public/show_readme                         @controllers.DashboardController.show_readme()
+GET             /public/show_api                            @controllers.DashboardController.show_api()
+
+
+
+### Testovací ############ Testovací ############### Testovací ################ Testovací ###########################################################################
+###################################################################################f#################################################################################
+
 GET             /test1                                      @controllers.WikyController.test1()
 GET             /test2                                      @controllers.WikyController.test2()
 GET             /test3                                      @controllers.WikyController.test3()
-GET             /test4                                      @controllers.WikyController.test4(projectId)
-GET             /test5                                      @controllers.WikyController.test5(projectId)
-GET             /test6                                      @controllers.WikyController.test6()
 
 
 ### TERMINAL ############ TERMINAL ############### TERMINAL ################ TERMINAL #######################################################################################
@@ -45,10 +53,15 @@ GET             /login/facebook/*url                        @controllers.Securit
 GET             /login/github/*url                          @controllers.SecurityController.GET_github_oauth(url)
 
 ### NOTIFICATION ############ NOTIFICATION ############### NOTIFICATION ################ NOTIFICATION ##########################################################################
-###################################################################################f############################################################################################
+################################################################################################################################################################################
 
-GET             /notification/:identificator                    @controllers.NotificationController.subscribe_notification(identificator)
-PUT             /notification                                   @controllers.NotificationController.sendSomething(level, message)
+GET             /notification/list                          @controllers.NotificationController.get_history_log()
+GET             /notification/list/:page_number             @controllers.NotificationController.get_history_log_page(page_number: Integer)
+GET             /notification/connection/:identificator     @controllers.NotificationController.subscribe_notification(identificator)
+DELETE          /notification/:notification_id              @controllers.NotificationController.remove_notification(notification_id)
+PUT             /notification/confirm/:notification_id      @controllers.NotificationController.confirm_Notification(notification_id)
+PUT             /notification                               @controllers.NotificationController.sendSomething(level, message)
+
 
 ### PERSON ############ PERSON ############### PERSON ################ PERSON ################# PERSON ############ PERSON #####################################################
 ################################################################################################################################################################################
@@ -339,16 +352,6 @@ PUT             /websocket/terminal/identificator/:terminal_id                  
 ### TOOLS ############ TOOLS ############### TOOLS ################ TOOLS ######################################################################################################
 ################################################################################################################################################################################
 
-#LOGGY
-GET             /loggy                                      @controllers.LoggyController.mainViewDefault()
-GET             /loggy/deleteAll                            @controllers.LoggyController.deleteAll()
-GET             /loggy/error/:content                       @controllers.LoggyController.error(content)
-GET             /loggy/upload/:id                           @controllers.LoggyController.upload(id: Int)
-GET             /loggy/login                                @controllers.LoggyController.login()
-
-GET             /loggy/:errorCount                          @controllers.LoggyController.mainView(errorCount: Int)
-
-
 #SWAGGER API
 GET            /api-docs                                    @utilities.swagger.ApiHelpController.getResources
 
@@ -357,5 +360,6 @@ OPTIONS        /*all                                        @controllers.Securit
 
 # Map static resources from the /public folder to the /assets URL path
 GET           /assets/*file                                 controllers.Assets.at(path="/public", file)
+GET           /assets/*file                                 controllers.Assets.versioned(path="/public", file: Asset)
 
 

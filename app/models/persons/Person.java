@@ -4,6 +4,7 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import models.blocko.BlockoBlock;
+import models.notification.Notification;
 import models.overflow.LinkedPost;
 import models.overflow.Post;
 import models.project.global.Project;
@@ -40,12 +41,13 @@ public class Person extends Model {
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<SecurityRole>         roles                     = new ArrayList<>();
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<PersonPermission>     permissions               = new ArrayList<>();
 
+
+
     @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<BlockoBlock>   blocksAuthor   = new ArrayList<>(); // Propojení, které bločky uživatel vytvořil
     @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<Post>          personPosts    = new ArrayList<>(); // Propojení, které uživatel napsal
     @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<LinkedPost>    linkedPosts    = new ArrayList<>(); // Propojení, které uživatel nalinkoval
     @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL)     public List<FloatingPersonToken> floatingPersonTokens = new ArrayList<>(); // Propojení, které uživatel napsal
-
-
+    @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL)     public List<Notification>         notifications             = new ArrayList<>();
 
 
 

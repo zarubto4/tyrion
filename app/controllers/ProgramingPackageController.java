@@ -1203,16 +1203,16 @@ public class ProgramingPackageController extends Controller {
                         version_object.b_program_homer = program_homer;
                         version_object.update();
 
-                            NotificationController.sent_notification(homer.project.ownersOfProject, Notification_level.success, "Homer was updated successfully");
+                            NotificationController.send_notification(homer.project.ownersOfProject, Notification_level.success, "Homer was updated successfully");
 
-                    } else  NotificationController.sent_notification(homer.project.ownersOfProject, Notification_level.error,   "Attempt updating Homer device to new version. Update Error - " + result.get("error").asText());
+                    } else  NotificationController.send_notification(homer.project.ownersOfProject, Notification_level.error,   "Attempt updating Homer device to new version. Update Error - " + result.get("error").asText());
 
                 } catch (TimeoutException e) {
-                    NotificationController.sent_notification(homer.project.ownersOfProject, Notification_level.error, "Attempt updating Homer device to new version. Timeout for connection.");
+                    NotificationController.send_notification(homer.project.ownersOfProject, Notification_level.error, "Attempt updating Homer device to new version. Timeout for connection.");
                 } catch (InterruptedException e){
-                    NotificationController.sent_notification(homer.project.ownersOfProject, Notification_level.error, "Attempt updating Homer device to new version. Server side problem.");
+                    NotificationController.send_notification(homer.project.ownersOfProject, Notification_level.error, "Attempt updating Homer device to new version. Server side problem.");
                 } catch (Exception e ){
-                    NotificationController.sent_notification(homer.project.ownersOfProject, Notification_level.error, "Attempt updating Homer device to new version. Critical bug with loading problem. The error was automatically reported to technical support.");
+                    NotificationController.send_notification(homer.project.ownersOfProject, Notification_level.error, "Attempt updating Homer device to new version. Critical bug with loading problem. The error was automatically reported to technical support.");
                 }
 
             }};
