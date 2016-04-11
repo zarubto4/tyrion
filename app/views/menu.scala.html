@@ -9,73 +9,53 @@
                 <li class="header">MAIN NAVIGATION</li>
 
 <!-------------------------------------------------------------------------- ------------------------>
-
-
                 <li>
                     <a href='@routes.DashboardController.index()' >
                         <i class="fa fa-globe"></i> <span>Dashboard</span>
                     </a>
                 </li>
-
  <!-------------------------------------------------------------------------- ------------------------>
-
                 <li>
                     <a href='@routes.DashboardController.show_all_logs()' >
                         <i class="fa  fa-bug"></i> <span>Bug Reporting</span>
                         @if( grid_terminal >0) { <small class="label pull-right bg-red">@bugs</small>}
                     </a>
                 </li>
-
- <!-------------------------------------------------------------------------- ------------------------>
-
-                <li>
-                    <a href='@routes.DashboardController.show_websocket_stats()' >
-                        <i class="fa fa-heart"></i> <span>Websocket connections</span>
-                        <small class="label pull-right bg-yellow">  @( grid_terminal + homer_server + homer_local ) </small>
-                    </a>
-                </li>
-
 <!-------------------------------------------------------------------------- ------------------------>
-
-                <li>
-                    <a href='@routes.DashboardController.show_readme()' >
-                        <i class="fa fa-graduation-cap"></i> <span>Read Me</span>
-                    </a>
-                </li>
-
-<!-------------------------------------------------------------------------- ------------------------>
-
                 <li>
                     <a href="http://youtrack.byzance.cz">
                         <i class="fa  fa-bug"></i> <span>Issue tracker</span>
                     </a>
                 </li>
 
+ <!-------------------------------------------------------------------------- ------------------------>
+                <li>
+                    <a href='@routes.DashboardController.show_websocket_stats()' >
+                        <i class="fa fa-heart"></i> <span>Websocket connections</span>
+                        <small class="label pull-right bg-yellow">  @( grid_terminal + homer_server + homer_local ) </small>
+                    </a>
+                </li>
 <!-------------------------------------------------------------------------- ------------------------>
-
                 <li>
                     <a href="http://swagger.byzance.cz">
-                        <i class="fa fa-book"></i> <span>API documentation</span>
+                        <i class="fa fa-book"></i> <span>External defaul API</span>
                     </a>
                 </li>
-
- <!-------------------------------------------------------------------------- ------------------------>
+<!-------------------------------------------------------------------------- ------------------------>
                 <li>
-                    <a href='@routes.DashboardController.show_api()' >
-                        <i class="fa fa-book"></i> <span>API interpreter - Beta</span>
+                    <a href='@routes.DashboardController.show_readme()' >
+                        <i class="fa fa-graduation-cap"></i> <span>Read Me</span>
                     </a>
                 </li>
- <!-------------------------------------------------------------------------- ------------------------>
+<!-------------------------------------------------------------------------- ------------------------>
 
-
+<!-------------------------------------------------------------------------- ------------------------>
                 <li>
                     <a href="http://wiki.byzance.cz">
                         <i class="fa fa-wikipedia-w"></i> <span>Wiki documentation</span>
                     </a>
                 </li>
-
- <!-------------------------------------------------------------------------- ------------------------>
-
+<!-------------------------------------------------------------------------- ------------------------>
 
             </ul>
         </section>

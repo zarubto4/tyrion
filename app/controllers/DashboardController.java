@@ -107,20 +107,6 @@ public class DashboardController extends Controller {
     }
 
 
-
-    public Result show_api(){
-
-        Html swagger_html = swagger.render();
-
-        return ok( main.render(menu_html,
-                swagger_html,
-                server_mode,
-                server_version));
-
-
-    }
-
-    
     public F.Promise<Result> upload(int id) {
         return Loggy.upload(id);
     }

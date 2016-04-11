@@ -12,8 +12,6 @@ GET             /                                           @controllers.Dashboa
 GET             /public/bugs                                @controllers.DashboardController.show_all_logs()
 GET             /public/websocket                           @controllers.DashboardController.show_websocket_stats()
 GET             /public/show_readme                         @controllers.DashboardController.show_readme()
-GET             /public/show_api                            @controllers.DashboardController.show_api()
-
 
 
 ### Testovací ############ Testovací ############### Testovací ################ Testovací ###########################################################################
