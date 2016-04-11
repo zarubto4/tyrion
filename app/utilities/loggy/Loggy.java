@@ -6,6 +6,9 @@ import models.persons.Person;
 import play.Configuration;
 import play.Logger;
 import play.Play;
+import controllers.PersonController;
+import controllers.SecurityController;
+import play.*;
 import play.libs.F.Promise;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSRequest;
@@ -19,19 +22,26 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.LineNumberReader;
 import java.io.PrintWriter;
+import java.io.*;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.UnknownHostException;
 import java.util.Base64;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class Loggy {
 
-    @Inject static WSClient ws;
+    static WSClient ws;
     static Logger.ALogger logger = Logger.of("Loggy");
     static LinkedList<LoggyError> fastErrors = new LinkedList<>();
     static Configuration conf = Play.application().configuration();
     static long tokenExpire = 0;
     static String token = "";
+
+
 
 
     public static void debug(String content) {
@@ -59,6 +69,54 @@ public class Loggy {
         return GlobalResult.internalServerError();
     }
 
+    public static Result internalServerError(Exception exception, Http.Request request) {
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("Tyrion version: "+ conf.getString("api.version"));
+        builder.append(" %n% ");
+        builder.append("Developer mode: "+ conf.getBoolean("Server.developerMode"));
+        builder.append(" %n% ");
+        builder.append("Server MAC address: "+ getMac());
+        builder.append(" %n% ");
+        builder.append("User: "+ (SecurityController.getPerson()!= null?SecurityController.getPerson().mail:"null"));
+        builder.append(" %n% ");
+        builder.append("Time: "+ new Date().toString());
+        builder.append(" %n% ");
+
+        builder.append("Stack trace: ");
+        for (StackTraceElement element : exception.getStackTrace()) {
+            builder.append(element);
+            builder.append(" %n% ");
+        }
+
+        error("Internal Server Error - "+request.method()+" "+request.path()+" - "+exception.getClass().getName(), builder.toString());
+        return GlobalResult.internalServerError();
+    }
+
+    public static Result internalServerError(String problem, Http.Request request) {
+        Thread t = Thread.currentThread();
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("Tyrion version: "+ conf.getString("api.version"));
+        builder.append(" %n% ");
+        builder.append("Tyrion mode: "+ conf.getBoolean("Server.developerMode"));
+        builder.append(" %n% ");
+        builder.append("Server MAC address: "+ getMac());
+        builder.append(" %n% ");
+        builder.append("User: "+ (SecurityController.getPerson()!= null?SecurityController.getPerson().mail:"null"));
+        builder.append(" %n% ");
+        builder.append("Time: "+ new Date().toString());
+        builder.append(" %n% ");
+
+        for (StackTraceElement element : t.getStackTrace()) {
+            builder.append(element);
+            builder.append("; ");
+        }
+
+        error("Internal Server Error - "+problem+" - "+request.method()+" "+request.path(), builder.toString());
+        return GlobalResult.internalServerError();
+    }
+
     public static List<LoggyError> getErrors(int count) {
         return getErrors(0, count);
     }
@@ -75,7 +133,6 @@ public class Loggy {
         return l;
     }
 
-
     public static Promise<Result> upload(int id) {
         if (System.currentTimeMillis() > tokenExpire-10000) {
             return login().flatMap((result) -> upload(id));
@@ -89,13 +146,12 @@ public class Loggy {
 
         WSRequest request = ws.url(conf.getString("Loggy.youtrackUrl") + "/youtrack/rest/issue");
         request.setQueryParameter("project", conf.getString("Loggy.youtrackProject"));
-        request.setQueryParameter("summary", e.getSummary());
+        request.setQueryParameter("summary", e.getSummmary());
         request.setQueryParameter("description", e.getDescription());
         request.setHeader("Authorization", "Bearer "+token);
 
-        //Promise<WSResponse> promise = request.put("");
-        return null;
-        //return promise.map(response -> checkUploadResponse(response, e));
+        Promise<WSResponse> promise = request.put("");
+        return promise.map(response -> checkUploadResponse(response, e));
     }
 
     public static void deleteFast() {
@@ -145,19 +201,14 @@ public class Loggy {
                 "Basic "+ new String(Base64.getEncoder().encode(
                         (conf.getString("Loggy.youtrackId") + ":" + conf.getString("Loggy.youtrackSecret"))
                                 .getBytes())));
-
-
-        /*Promise<WSResponse> promise = request.post(
+        Promise<WSResponse> promise = request.post(
                 "grant_type=password"
                 +"&scope="+conf.getString("Loggy.youtrackScopeId")
                 +"&username="+conf.getString("Loggy.youtrackUsername")
                 +"&password="+conf.getString("Loggy.youtrackPassword")
         );
-        */
 
-        // return promise.map(Loggy::checkLoginResponse);
-
-        return null;
+        return promise.map(Loggy::checkLoginResponse);
     }
 
     private static Result checkUploadResponse(WSResponse response, LoggyError error) {
@@ -180,6 +231,24 @@ public class Loggy {
         else return Results.status(response.getStatus(), response.getBody());
     }
 
+    private static String getMac() {
+        StringBuilder builder = new StringBuilder();
+        try {
+            byte[] mac = NetworkInterface
+                    .getNetworkInterfaces()
+                    .nextElement()
+                    .getHardwareAddress();
+
+            for (int i = 0; i < mac.length; i++) {
+                builder.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
+            }
+        }
+        catch (Exception e) {
+            Logger.error("network problem", e);
+        }
+        return builder.toString();
+    }
+
     private static List<LoggyError> loadErrors(int start, int count) {
         LinkedList<LoggyError> l = null;
         try {
@@ -193,16 +262,19 @@ public class Loggy {
 
             LineNumberReader reader = new LineNumberReader(new FileReader(f));
             String line;
-            while(!(line = reader.readLine()).equals("") && reader.getLineNumber() <= lines-start) {
+            while((line = reader.readLine())!= null && !line.equals("") && reader.getLineNumber() <= lines-start) {
                 if (reader.getLineNumber() <= lines-(count+start)) {
                     continue;
                 }
                 String[] splitLine = line.split("%%%");
+                if(splitLine.length < 2) {
+                    continue;
+                }
                 l.push(new LoggyError(splitLine[0], splitLine[1]));
             }
             reader.close();
         } catch (Exception e) {
-            Logger.error(e.getMessage());
+            Logger.error("loading errors error", e);
         }
 
         return l;

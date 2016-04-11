@@ -6,6 +6,13 @@
     * Správa zařízení připojených přes WebSocket
     * Nunté dodělat rozumné read me
 
+### Přidání systému Loggy pro logování chyb
+    * Změna konfigurace Logbacku
+    * Zapnutí logování SQL příkazů
+
+
+--------
+
 -----
 
 ### Práva nových notificakí ###

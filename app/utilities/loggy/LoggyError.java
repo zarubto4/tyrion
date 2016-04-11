@@ -25,6 +25,10 @@ public class LoggyError {
     }
 
     public String getDescription() {
+        return description.replace("%n%", "\n");;
+    }
+
+    public String getTrueDescription() {
         return description;
     }
 
