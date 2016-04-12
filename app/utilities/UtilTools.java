@@ -8,10 +8,15 @@ import com.microsoft.azure.storage.blob.ListBlobItem;
 import controllers.WebSocketController_Incoming;
 import models.compiler.FileRecord;
 import models.compiler.Version_Object;
+import models.grid.Screen_Size_Type;
 import models.overflow.HashTag;
 import models.overflow.Post;
+import models.persons.Person;
+import models.persons.PersonPermission;
+import models.persons.SecurityRole;
 import models.project.m_program.M_Project;
 import org.apache.commons.io.FileUtils;
+import play.Logger;
 import play.mvc.Controller;
 import play.mvc.WebSocket;
 import utilities.webSocket.developing.WS_Homer_Cloud;
@@ -28,6 +33,7 @@ import java.util.*;
 
 public class UtilTools extends Controller {
 
+    static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
     public static void add_hashTags_to_Post( List<String> hash_tags, Post post){
 
@@ -213,5 +219,64 @@ public class UtilTools extends Controller {
         return ws;
     }
 
+
+
+
+
+    public static void set_Developer_objects(){
+
+        // For Developing
+        if(SecurityRole.findByName("SuperAdmin") == null){
+            SecurityRole role = new SecurityRole();
+            role.permissions.addAll(PersonPermission.find.all());
+            role.name = "SuperAdmin";
+            role.save();
+        }
+
+        if (Person.find.where().eq("mail", "admin@byzance.cz").findUnique() == null)
+        {
+            logger.warn("Creating first admin account: admin@byzance.cz, password: 123456789");
+            Person person = new Person();
+            person.first_name = "Admin";
+            person.last_name = "Byzance";
+            person.mailValidated = true;
+            person.mail = "admin@byzance.cz";
+            person.setSha("123456789");
+            person.roles.add(SecurityRole.findByName("SuperAdmin"));
+
+            person.save();
+        }
+
+
+        if( Screen_Size_Type.find.where().eq("name","iPhone6").findUnique() == null){
+
+            Logger.warn("Creating screen size type for developers iPhone`s");
+            Screen_Size_Type screen_size_type = new Screen_Size_Type();
+
+            screen_size_type.name = "iPhone6";
+
+            screen_size_type.landscape_height = 375;
+            screen_size_type.landscape_width = 667;
+            screen_size_type.landscape_square_height = 6;
+            screen_size_type.landscape_square_width = 11;
+            screen_size_type.landscape_max_screens = 10;
+            screen_size_type.landscape_min_screens = 1;
+
+            screen_size_type.portrait_height = 667;
+            screen_size_type.portrait_width = 375;
+            screen_size_type.portrait_square_height = 11;
+            screen_size_type.portrait_square_width = 6;
+            screen_size_type.portrait_max_screens = 10;
+            screen_size_type.portrait_min_screens = 1;
+
+            screen_size_type.height_lock  = true;
+            screen_size_type.width_lock   = true;
+            screen_size_type.touch_screen = true;
+
+            screen_size_type.save();
+
+        }
+
+    }
 
 }

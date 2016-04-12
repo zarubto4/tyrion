@@ -16,7 +16,6 @@ import models.project.m_program.Grid_Terminal;
 import models.project.m_program.M_Program;
 import models.project.m_program.M_Project;
 import org.pegdown.PegDownProcessor;
-import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.twirl.api.Html;
@@ -34,10 +33,12 @@ import java.util.List;
 
 public class DashboardController extends Controller {
 
+    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+
     Integer connectedHomers          =  WebSocketController_Incoming.incomingConnections_homers.size();
     Integer connectedTerminals       =  WebSocketController_Incoming.incomingConnections_terminals.size();
     Integer connectedCloud_servers   =  WebSocketController_Incoming.cloud_servers.size();
-    Integer reported_bugs            =  15; // TODO Tomáš K. - doplnit
+    Integer reported_bugs            =  Loggy.number_of_reported_bugs();
     Html menu_html                   =  menu.render(reported_bugs,connectedHomers,connectedTerminals,connectedCloud_servers);
     Boolean server_mode              =  Server.server_mode;
     String  server_version           =  Server.server_version;
@@ -45,8 +46,12 @@ public class DashboardController extends Controller {
     List<WebSCType> homers = new ArrayList<>(WebSocketController_Incoming.incomingConnections_homers.values());
     List<WebSCType> grids = new ArrayList<>( WebSocketController_Incoming.incomingConnections_terminals.values());
 
+// Index (úvod) ########################################################################################################
 
+    // Úvodní zobrazení Dashboard
     public Result index() {
+
+        logger.info("Creating index.html content");
 
         Html content_html = dashboard.render(
                 Person.find.findRowCount(),
@@ -66,6 +71,8 @@ public class DashboardController extends Controller {
                 M_Project.find.findRowCount()
         );
 
+        logger.info("Return html content");
+
         return ok( main.render(menu_html,
                 content_html,
                 server_mode,
@@ -73,62 +80,101 @@ public class DashboardController extends Controller {
 
     }
 
-    public Result show_all_logs() {
+// README ###############################################################################################################
 
-        return ok( main.render(menu_html,
-                loggy.render( Loggy.getErrors(25) ), // TODO Tomáš K. doplnit - seznam
-                server_mode,
-                server_version));
-    }
-
-    public Result show_websocket_stats() {
-
-        return ok( main.render(menu_html,
-                websocket.render(homers, grids),  // TODO Tomáš Z. - Dodělat zobrazení pro Blocko servery
-                server_mode,
-                server_version));
-    }
-
+    // Zobrazení readme podle MarkDown
     public Result show_readme() throws IOException {
 
-       // Scanner scanner = new Scanner( new File("files/Test") );
+        logger.debug("Creating show_readme.html content");
+
         String text = "";
         for(String line : Files.readAllLines(Paths.get("README"), StandardCharsets.UTF_8) ) text += line + "\n";
 
-        Html file = new Html( new PegDownProcessor().markdownToHtml(text) );
+        Html readme_html =readme.render( new Html( new PegDownProcessor().markdownToHtml(text) ));
 
-        Html readme_html =readme.render(file);
+        logger.debug("Return show_readme.html content");
 
         return ok( main.render(menu_html,
                 readme_html ,
                 server_mode,
                 server_version));
-
     }
 
 
-    public F.Promise<Result> upload(int id) {
-        return Loggy.upload(id);
+// WEBSOCKET STATS ######################################################################################################
+
+    // Zobrazení seznamů připojených zařízení
+    public Result show_web_socket_stats() {
+
+        logger.debug("Return show_web_socket_stats.html content");
+
+        return ok( main.render(menu_html,
+                websocket.render(homers, grids),
+                server_mode,
+                server_version));
     }
 
-    public Result deleteAll() {
-        Loggy.deleteFast();
-        Loggy.deleteFile();
-        return redirect("/loggy");
+    // Odpojí všechny připojené homery
+    public Result disconnect_homer_all(){
+        logger.debug("Trying to disconnect all homers");
+
+        return TODO;
     }
 
-    public Result error(String description) {
-        Loggy.error(description);
-        return redirect("/loggy");
+    // Odpojí všechny připojené terminály
+    public Result disconnect_terminal_all(){
+        logger.debug("Trying to disconnect all terminals");
+        return TODO;
     }
 
-    public Result error(String summary, String description) {
-        Loggy.error(summary, description);
-        return redirect("/loggy");
+    // Odpojí konkrétní  terminál podle ID
+    public Result disconnect_terminal(String terminal_id){
+        logger.debug("Trying to disconnect terminal: " + terminal_id);
+        return TODO;
     }
 
-    public F.Promise<Result> login () {
-        return Loggy.login();
+    // Odpojí konkrétní  homer podle ID
+    public Result disconnect_homer(String homer_id){
+        logger.debug("Trying to disconnect homer: " + homer_id);
+        return TODO;
+    }
+
+
+// LOGGY ###############################################################################################################
+
+    // Vykreslí šablonu s bugy
+    public Result show_all_logs() {
+
+        logger.debug("Trying to render loggy.html content");
+
+        return ok( main.render(menu_html,
+                loggy.render( Loggy.getErrors(25) ), // TODO Tomáš K. doplnit - seznam načtený ze souboru
+                server_mode,
+                server_version));
+    }
+
+    // Nahraje konkrétní bug na Youtrack
+    public Result loggy_report_bug_to_youtrack(String bug_id) {
+        logger.debug("Trying to upload bug to youtrack");
+
+        Loggy.upload_to_youtrack(bug_id);   // TODO Tomáš K. doplnit nahrátí na youtrack
+        return show_all_logs();
+    }
+
+    // Odstraní konkrétní bug ze seznamu (souboru)
+    public Result loggy_remove_bug(String bug_id) {
+        logger.debug("Trying to upload bug to youtrack");
+
+        Loggy.remove_bug_from_file(bug_id);  // TODO Tomáš K. doplnit odstranění bugu ze souboru
+        return show_all_logs();
+    }
+
+    // Vyprázdní soubory se záznamem chyb
+    public Result loggy_remove_all_bugs() {
+        logger.debug("Trying to remove all bugs");
+        Loggy.remove_all_bugs();             // TODO Tomáš K. doplnit odstranění bugu ze souboru
+
+        return show_all_logs();
     }
 
 }

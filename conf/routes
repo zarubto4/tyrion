@@ -10,8 +10,16 @@
 
 GET             /                                           @controllers.DashboardController.index()
 GET             /public/bugs                                @controllers.DashboardController.show_all_logs()
-GET             /public/websocket                           @controllers.DashboardController.show_websocket_stats()
+GET             /public/websocket                           @controllers.DashboardController.show_web_socket_stats()
 GET             /public/show_readme                         @controllers.DashboardController.show_readme()
+
+DELETE          /public/bugs/deleteAll                      @controllers.DashboardController.loggy_remove_all_bugs()
+DELETE          /public/bug/remove/:id                      @controllers.DashboardController.loggy_remove_bug(id: String)
+PUT             /public/bug/report/:id                      @controllers.DashboardController.loggy_report_bug_to_youtrack(id: String)
+
+
+PUT             /public/websocket/disconect/:homer_id       @controllers.DashboardController.disconnect_homer(homer_id: String)
+PUT             /public/websocket/disconect/:terminal_id    @controllers.DashboardController.disconnect_terminal(terminal_id: String)
 
 
 ### Testovací ############ Testovací ############### Testovací ################ Testovací ###########################################################################
@@ -20,7 +28,6 @@ GET             /public/show_readme                         @controllers.Dashboa
 GET             /test1                                      @controllers.WikyController.test1()
 GET             /test2                                      @controllers.WikyController.test2()
 GET             /test3                                      @controllers.WikyController.test3()
-
 
 ### TERMINAL ############ TERMINAL ############### TERMINAL ################ TERMINAL #######################################################################################
 ###################################################################################f#########################################################################################

@@ -9,9 +9,7 @@ import controllers.*;
 import models.persons.PersonPermission;
 import org.slf4j.LoggerFactory;
 import play.Configuration;
-import play.Logger;
 import play.Play;
-import utilities.loggy.Loggy;
 import utilities.permission.DynamicResourceHandler;
 import utilities.permission.PermissionException;
 import utilities.webSocket.ClientThreadChecker;
@@ -141,7 +139,7 @@ public class Server {
 
         if (Configuration.root().getBoolean("Servers.blocko.server1.run")) {
 
-            Logger.warn("Starting Main Thread for Blocko Server1 ");
+            play.Logger.warn("Starting Main Thread for Blocko Server1 ");
 
             ClientThreadChecker clientThreadChecker = new ClientThreadChecker()
                     .setIDentificator(Configuration.root().getString("Servers.blocko.server1.name"))
@@ -173,16 +171,9 @@ public class Server {
         } catch (JoranException je) {}
     }
 
-    /**
-     * Nastavení Loggyho
-     */
-    public static void set_Loggy() {
-        Loggy.start();
-    }
-
 
     /**
-     * Metoda slouží k zavolání hlavníchm neměnných metod v controllerech,
+     * Metoda slouží k zavolání hlavních neměnných metod v controllerech,
      * kde se evidují přístupové klíče jednotlivých metod controlleru.
      *
      * Každý controller by měl mít svůj seznam oprávnění.
@@ -258,7 +249,7 @@ public class Server {
 
         File file = new File("files");
         if (!file.exists()) {
-            if (file.mkdir())  Logger.warn("Directory \"file\" is created!");
+            if (file.mkdir())  play.Logger.warn("Directory \"file\" is created!");
         }
     }
 }

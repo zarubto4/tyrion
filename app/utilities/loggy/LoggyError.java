@@ -1,35 +1,13 @@
 package utilities.loggy;
 
-import java.util.Date;
 
+// TODO dej to do databáze - a zároveň do souboru  - tam bude bug trace se všema píčovinama okolo
 public class LoggyError {
 
-    public String hash_identification;
-    public Date   date_of_create = new Date();
-    public String description;
-    public String summary;
-    public String level = "error";
-    public String method_name = "asdfsf";
-    public String class_name = "sdafsdf";
+    public String hash_identification; // nebo ID - to je fuk - ale měl by si podle tohohle "ID" umět dohledat hledáním v souboru konrkétní zaznamenanou chybu
 
+    public String description;  // sem dáš všechno co lze zobrazit (ten tvůj složený StringBuilder)
 
-    public String url = null;
-
-    public LoggyError(String summary, String description) {
-        this.description = description;
-        this.summary = summary;
-    }
-
-    public String getSummary() {
-        return summary;
-    }
-
-    public String getDescription() {
-        return description.replace("%n%", "\n");;
-    }
-
-    public String getTrueDescription() {
-        return description;
-    }
+    public String url; // URL na chybu pokud je nahraná na youtrack
 
 }

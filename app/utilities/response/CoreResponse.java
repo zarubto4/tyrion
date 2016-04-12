@@ -20,7 +20,7 @@ public class CoreResponse extends Controller {
             response().setHeader("Accept", "*");
             response().setHeader("Access-Control-Allow-Headers", "content-Type, api_key, Authorization, x-auth-token, accept, appid, appname, authorization, content-type");
         }catch (Exception e){
-            //TODO dodělat Logger
+            //TODO dodělat Loggy
             e.printStackTrace();
         }
     }
@@ -36,7 +36,7 @@ public class CoreResponse extends Controller {
             response().setHeader("Accept", "*");
             response().setHeader("Access-Control-Allow-Headers", "content-Type, api_key, Authorization, x-auth-token, accept, appid, appname, authorization, content-type");
         }catch (Exception e){
-            //TODO dodělat Logger
+            //TODO dodělat Loggy
             e.printStackTrace();
         }
 
