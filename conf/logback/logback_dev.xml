@@ -19,7 +19,7 @@
     <appender name="errorLog" class="ch.qos.logback.core.FileAppender">
 
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
-            <level>ERROR</level>
+            <level>DEBUG</level>
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
         </filter>

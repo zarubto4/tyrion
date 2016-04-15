@@ -3,7 +3,6 @@ package models.compiler;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import utilities.Server;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -13,6 +12,8 @@ import java.util.UUID;
 @Entity
 public class LibraryGroup extends Model {
 
+/* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
+
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) public String id;
                                                             public String group_name;
                          @Column(columnDefinition = "TEXT") public String description;
@@ -20,16 +21,14 @@ public class LibraryGroup extends Model {
                                                 @JsonIgnore public String azurePackageLink;
                                                 @JsonIgnore public String azureStorageLink;
 
-         @JsonIgnore @ManyToMany(cascade = CascadeType.ALL) public List<Processor> processors = new ArrayList<>();
-
+    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL) public List<Processor> processors = new ArrayList<>();
 
     @JsonIgnore @OneToMany(mappedBy="libraryGroup", cascade=CascadeType.ALL) @OrderBy("azureLinkVersion DESC") public List<Version_Object> version_objects = new ArrayList<>();
 
+    @JsonProperty public List<String>   versions_id()      { List<String> l = new ArrayList<>();  for( Version_Object m : version_objects)  l.add(m.id); return l;  }
+    @JsonProperty public List<String>   processors_id()    { List<String> l = new ArrayList<>();  for( Processor m      : processors)       l.add(m.id); return l;  }
 
-    @JsonProperty public Integer versionsCount() { return version_objects.size(); }
-    @JsonProperty public String  versions()      { return                                   Server.tyrion_serverAddress + "/compilation/libraryGroup/versions/"   + id; }
-    @JsonProperty public String  processors()    { return processors.isEmpty()    ? null :  Server.tyrion_serverAddress + "/compilation/libraryGroup/processors/" +  id;}
-
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
     public void setUniqueAzureStorageLink() {
@@ -39,5 +38,9 @@ public class LibraryGroup extends Model {
         }
     }
 
+
+
+/* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String, LibraryGroup> find = new Finder<>(LibraryGroup.class);
+
 }

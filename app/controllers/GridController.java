@@ -3,8 +3,8 @@ package controllers;
 import io.swagger.annotations.*;
 import models.compiler.Version_Object;
 import models.grid.Screen_Size_Type;
-import models.persons.Person;
-import models.persons.PersonPermission;
+import models.person.Person;
+import models.person.PersonPermission;
 import models.project.global.Project;
 import models.project.m_program.Grid_Terminal;
 import models.project.m_program.M_Program;
@@ -446,9 +446,9 @@ public class GridController extends play.mvc.Controller {
             m_program.date_of_create      = new Date();
             m_program.program_description = help.program_description;
             m_program.program_name        = help.program_name;
-            m_program.m_project_object = m_project;
+            m_program.m_project           = m_project;
             m_program.programInString     = help.m_code;
-            m_program.screen_size_type_object = screen_size_type;
+            m_program.screen_size_type    = screen_size_type;
             m_program.height_lock         = help.height_lock;
             m_program.width_lock          = help.width_lock;
 
@@ -515,7 +515,7 @@ public class GridController extends play.mvc.Controller {
     public Result get_M_Program_all_forMobile(){
         try{
 
-            List<M_Program> m_programs = M_Program.find.where().eq("m_project_object.project.ownersOfProject.id", SecurityController.getPerson().id ).findList();
+            List<M_Program> m_programs = M_Program.find.where().eq("m_project.project.ownersOfProject.id", SecurityController.getPerson().id ).findList();
 
             return GlobalResult.result_ok(Json.toJson(m_programs));
 
@@ -610,7 +610,7 @@ public class GridController extends play.mvc.Controller {
             m_program.program_description = help.program_description;
             m_program.program_name        = help.program_name;
             m_program.programInString     = help.m_code;
-            m_program.screen_size_type_object = screen_size_type;
+            m_program.screen_size_type    = screen_size_type;
             m_program.height_lock         = help.height_lock;
             m_program.width_lock          = help.width_lock;
             m_program.last_update         = new Date();
@@ -719,7 +719,7 @@ public class GridController extends play.mvc.Controller {
     public Result get_all_M_Program_from_Project(@ApiParam(value = "project_id String query", required = true) @PathParam("project_id") String project_id){
         try {
 
-            List<M_Program> list = M_Program.find.where().eq("m_project_object.project.id", project_id).findList();
+            List<M_Program> list = M_Program.find.where().eq("m_project.project.id", project_id).findList();
             return GlobalResult.result_ok(Json.toJson(list));
 
         } catch (Exception e) {

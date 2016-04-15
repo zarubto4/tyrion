@@ -3,7 +3,7 @@ package utilities.swagger.documentationClass;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.persons.Person;
+import models.person.Person;
 import play.data.validation.Constraints;
 
 import java.util.ArrayList;

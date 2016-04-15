@@ -7,7 +7,7 @@ import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import io.swagger.annotations.*;
 import models.compiler.*;
-import models.persons.PersonPermission;
+import models.person.PersonPermission;
 import models.project.c_program.C_Program;
 import models.project.global.Homer;
 import models.project.global.Project;
@@ -18,7 +18,6 @@ import play.mvc.*;
 import utilities.Server;
 import utilities.UtilTools;
 import utilities.loginEntities.Secured;
-import utilities.permission.InterfaceDynamic;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
@@ -28,7 +27,10 @@ import utilities.swagger.outboundClass.Swagger_File_Content;
 import javax.websocket.server.PathParam;
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.*;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Controller se zabívá správou knihoven, procesorů, desek (hardware), typů desek a jejich výrobce.
@@ -71,22 +73,6 @@ public class CompilationLibrariesController extends Controller {
         new PersonPermission("board.create", "description");
         new PersonPermission("board.delete", "description");
 
-    }
-
-    static {
-        Server.handlers.put("project.pepek", Optional.of(new InterfaceDynamic() { public boolean check_dynamic (final String name) {
-
-            System.out.println("Jsem v metodě project.owner");
-            return true;
-        }}));
-
-
-        Server.handlers.put("project.kokot",Optional.of(new InterfaceDynamic() { public boolean check_dynamic (final String name) {
-
-            System.out.println("Jsem v metodě project.creator");
-            return true;
-
-        }}));
     }
 
 ///###################################################################################################################*/
@@ -555,7 +541,7 @@ public class CompilationLibrariesController extends Controller {
             if (file == null) return GlobalResult.notFoundObject("File not found");
             if(!homer.online()) return GlobalResult.result_BadRequest("Homer is not online");
 
-            WebSocketController_Incoming.homer_update_embeddedHW(homer.homer_id, board_id, file.getFile() );
+            WebSocketController_Incoming.homer_update_embeddedHW(homer.id, board_id, file.getFile() );
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
@@ -2378,44 +2364,6 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
-    @ApiOperation(value = "get Producer description",
-            tags = {"Producer"},
-            notes = "if you get Producer object his description is hiding under this link",
-            produces = "application/json",
-            response =  Description.class,
-            protocols = "https",
-            code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "producer.read", description = "Person need this permission"),
-                                    @AuthorizationScope(scope = "SuperAdmin", description = "Or person must be SuperAdmin role")}
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Description.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    // @Pattern("producer.read")
-    public Result get_Producer_Description(@ApiParam(required = true) @PathParam("producer_id") String producer_id) {
-        try {
-            Producer producer = Producer.find.byId(producer_id);
-
-            if(producer == null ) return GlobalResult.notFoundObject("Producer producer_id not found");
-
-            Description description = new Description();
-            description.description = producer.description;
-
-            return GlobalResult.result_ok(Json.toJson(description));
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - get_Producer_Description ERROR");
-            return GlobalResult.internalServerError();
-        }
-    }
 
     @ApiOperation(value = "get TypeOfBoard from Producer",
             tags = {"Producer", "Type-Of-Board"},
@@ -2704,42 +2652,6 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
-    @ApiOperation(value = "get TypeOfBoard description",
-            tags = { "Type-Of-Board"},
-            notes = "if you want get description of TypeOfBoard object by query = type_of_board_id",
-            produces = "application/json",
-            response =  TypeOfBoard.class,
-            protocols = "https",
-            code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "type_of_board.read", description = "Person need this permission"),
-                                    @AuthorizationScope(scope = "SuperAdmin",       description = "Or person must be SuperAdmin role")}
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = TypeOfBoard.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    //  @Pattern("type_of_board.read")
-    public Result get_TypeOfBoard_Description(@ApiParam(required = true) @PathParam("type_of_board_id") String type_of_board_id) {
-        try {
-
-            TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(type_of_board_id);
-            if(typeOfBoard == null ) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
-
-            return GlobalResult.result_ok(Json.toJson(typeOfBoard.description));
-
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - get_Producer_TypeOfBoards ERROR");
-            return GlobalResult.internalServerError();
-        }
-    }
 
     @ApiOperation(value = "get all Boards from TypeOfBoard",
             tags = { "Type-Of-Board"},

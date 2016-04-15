@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
-import models.persons.Person;
+import models.person.Person;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -15,6 +15,8 @@ import java.util.stream.Collectors;
 
 @Entity
 public class Post extends Model {
+
+/* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
 @Id  @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true)          public String postId;
 @ApiModelProperty(required = false, value = "Only if Post is Main (not answers or comments)")
@@ -44,6 +46,7 @@ public class Post extends Model {
     @JsonIgnore @OneToMany(mappedBy="postParentAnswer", cascade=CascadeType.ALL)   public List<Post> answers = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="postParentComment", cascade=CascadeType.ALL)  public List<Post>  comments = new ArrayList<>();
 
+/* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = false, value = "Only if Post is Main")
     @JsonInclude(JsonInclude.Include.NON_EMPTY)  @JsonProperty  public TypeOfPost           type()                  { return type == null ? null : type;}
@@ -66,14 +69,9 @@ public class Post extends Model {
     @ApiModelProperty(required = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)   @JsonProperty  public List<String>         hashTags()              { return hashTagsList.stream().map(tag -> tag.postHashTagId).collect(Collectors.toList());}
 
-//******************************************************************************************************************
-    public Post(){}
+
+/* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String,Post> find = new Finder<>(Post.class);
 
-//******************************************************************************************************************
-
-    // Pro zjednodušení čtení ze strany front-end se linkované odpovědi profiltrují (jednak kvuli zac
-    // a je zasílán jen přehled (Pole linkovaných odpovědí) tedy
-    // Jména Main postu s ID a jeho otázkou a pak následně pouze odpovědi na kontrkétní otázku odfiltrováno naprosto od všeho
 
 }

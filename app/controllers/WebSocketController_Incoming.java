@@ -180,7 +180,7 @@ public class WebSocketController_Incoming extends Controller {
 
                   System.out.println("Vyhrává program puštěný na lokálním PC! Yeah!");
 
-                  String homer_id = m_project.b_program_version.b_program_homer.homer.homer_id;
+                  String homer_id = m_project.b_program_version.b_program_homer.homer.id;
                   System.out.println("Budu propojovat s Homer: " + homer_id);
 
                   System.out.println("Je Homer Připojený?: " + homer_id);
@@ -297,7 +297,7 @@ public class WebSocketController_Incoming extends Controller {
             result.put("programId", program_id);
             result.put("program", program);
 
-          return incomingConnections_homers.get( homer.homer_id).write_with_confirmation(messageId ,result );
+          return incomingConnections_homers.get( homer.id).write_with_confirmation(messageId ,result );
     }
 
     public static boolean homer_is_online(String homer_id){
@@ -312,7 +312,7 @@ public class WebSocketController_Incoming extends Controller {
         result.put("messageId", messageId);
         result.put("messageChannel", "tyrion");
 
-        return incomingConnections_homers.get( homer.homer_id ).write_with_confirmation(messageId, result, (long) 250*25 );
+        return incomingConnections_homers.get( homer.id).write_with_confirmation(messageId, result, (long) 250*25 );
     }
 
 

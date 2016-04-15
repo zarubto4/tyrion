@@ -4,7 +4,7 @@
 # --- !Ups
 
 create table b_program (
-  b_program_id              varchar(255) not null,
+  id                        varchar(255) not null,
   name                      varchar(255),
   program_description       TEXT,
   last_update               timestamp,
@@ -12,7 +12,7 @@ create table b_program (
   project_id                varchar(255),
   azure_package_link        varchar(255),
   azure_storage_link        varchar(255),
-  constraint pk_b_program primary key (b_program_id))
+  constraint pk_b_program primary key (id))
 ;
 
 create table b_program_cloud (
@@ -115,18 +115,12 @@ create table hash_tag (
   constraint pk_hash_tag primary key (post_hash_tag_id))
 ;
 
-create table home (
-  id                        varchar(255) not null,
-  name                      varchar(255),
-  constraint pk_home primary key (id))
-;
-
 create table homer (
-  homer_id                  varchar(255) not null,
+  id                        varchar(255) not null,
   type_of_device            varchar(255),
   version                   varchar(255),
   project_id                varchar(255),
-  constraint pk_homer primary key (homer_id))
+  constraint pk_homer primary key (id))
 ;
 
 create table library_group (
@@ -153,11 +147,11 @@ create table m_program (
   program_in_string         TEXT,
   height_lock               boolean,
   width_lock                boolean,
+  qr_token                  varchar(255),
+  m_project_id              varchar(255),
+  screen_size_type_id       varchar(255),
   date_of_create            timestamp,
   last_update               timestamp,
-  qr_token                  varchar(255),
-  m_project_object_id       varchar(255),
-  screen_size_type_object_id varchar(255),
   constraint pk_m_program primary key (id))
 ;
 
@@ -167,10 +161,9 @@ create table m_project (
   program_description       TEXT,
   date_of_create            timestamp,
   project_id                varchar(255),
-  b_program_id              varchar(255),
   vrs_obj_id                varchar(255),
   auto_incrementing         boolean,
-  constraint uq_m_project_b_program_id unique (b_program_id),
+  constraint uq_m_project_id unique (id),
   constraint uq_m_project_vrs_obj_id unique (vrs_obj_id),
   constraint pk_m_project primary key (id))
 ;
@@ -339,7 +332,7 @@ create table version_object (
   library_group_id          varchar(255),
   single_library_id         varchar(255),
   c_program_id              varchar(255),
-  b_program_b_program_id    varchar(255),
+  b_program_id              varchar(255),
   constraint pk_version_object primary key (id))
 ;
 
@@ -469,7 +462,7 @@ alter table b_program_cloud add constraint fk_b_program_cloud_version_obj_2 fore
 create index ix_b_program_cloud_version_obj_2 on b_program_cloud (vrs_obj_id);
 alter table b_program_homer add constraint fk_b_program_homer_version_obj_3 foreign key (vrs_obj_id) references version_object (id);
 create index ix_b_program_homer_version_obj_3 on b_program_homer (vrs_obj_id);
-alter table b_program_homer add constraint fk_b_program_homer_homer_4 foreign key (BProgramHomer_id) references homer (homer_id);
+alter table b_program_homer add constraint fk_b_program_homer_homer_4 foreign key (BProgramHomer_id) references homer (id);
 create index ix_b_program_homer_homer_4 on b_program_homer (BProgramHomer_id);
 alter table blocko_block add constraint fk_blocko_block_author_5 foreign key (author_id) references person (id);
 create index ix_blocko_block_author_5 on blocko_block (author_id);
@@ -493,14 +486,14 @@ alter table linked_post add constraint fk_linked_post_answer_14 foreign key (ans
 create index ix_linked_post_answer_14 on linked_post (answer_post_id);
 alter table linked_post add constraint fk_linked_post_question_15 foreign key (question_post_id) references post (post_id);
 create index ix_linked_post_question_15 on linked_post (question_post_id);
-alter table m_program add constraint fk_m_program_m_project_object_16 foreign key (m_project_object_id) references m_project (id);
-create index ix_m_program_m_project_object_16 on m_program (m_project_object_id);
-alter table m_program add constraint fk_m_program_screen_size_type_17 foreign key (screen_size_type_object_id) references screen_size_type (id);
-create index ix_m_program_screen_size_type_17 on m_program (screen_size_type_object_id);
+alter table m_program add constraint fk_m_program_m_project_16 foreign key (m_project_id) references m_project (id);
+create index ix_m_program_m_project_16 on m_program (m_project_id);
+alter table m_program add constraint fk_m_program_screen_size_type_17 foreign key (screen_size_type_id) references screen_size_type (id);
+create index ix_m_program_screen_size_type_17 on m_program (screen_size_type_id);
 alter table m_project add constraint fk_m_project_project_18 foreign key (project_id) references project (id);
 create index ix_m_project_project_18 on m_project (project_id);
-alter table m_project add constraint fk_m_project_b_program_19 foreign key (b_program_id) references b_program (b_program_id);
-create index ix_m_project_b_program_19 on m_project (b_program_id);
+alter table m_project add constraint fk_m_project_b_program_19 foreign key (id) references b_program (id);
+create index ix_m_project_b_program_19 on m_project (id);
 alter table m_project add constraint fk_m_project_b_program_versio_20 foreign key (vrs_obj_id) references version_object (id);
 create index ix_m_project_b_program_versio_20 on m_project (vrs_obj_id);
 alter table notification add constraint fk_notification_person_21 foreign key (person_id) references person (id);
@@ -527,8 +520,8 @@ alter table version_object add constraint fk_version_object_singleLibra_31 forei
 create index ix_version_object_singleLibra_31 on version_object (single_library_id);
 alter table version_object add constraint fk_version_object_c_program_32 foreign key (c_program_id) references c_program (id);
 create index ix_version_object_c_program_32 on version_object (c_program_id);
-alter table version_object add constraint fk_version_object_b_program_33 foreign key (b_program_b_program_id) references b_program (b_program_id);
-create index ix_version_object_b_program_33 on version_object (b_program_b_program_id);
+alter table version_object add constraint fk_version_object_b_program_33 foreign key (b_program_id) references b_program (id);
+create index ix_version_object_b_program_33 on version_object (b_program_id);
 
 
 
@@ -603,8 +596,6 @@ drop table if exists grid_terminal cascade;
 drop table if exists hash_tag cascade;
 
 drop table if exists hash_tag_post cascade;
-
-drop table if exists home cascade;
 
 drop table if exists homer cascade;
 

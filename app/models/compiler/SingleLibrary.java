@@ -3,7 +3,6 @@ package models.compiler;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import utilities.Server;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -12,6 +11,8 @@ import java.util.UUID;
 
 @Entity
 public class SingleLibrary  extends Model {
+
+/* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public String id;
                          @Column(columnDefinition = "TEXT")  public String description;
@@ -24,10 +25,10 @@ public class SingleLibrary  extends Model {
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL)   public List<Processor> processors = new ArrayList<>();
 
 
-    @JsonProperty public Integer versionsCount()   { return version_objects.size(); }
-    @JsonProperty public String  versions()        { return Server.tyrion_serverAddress + "/compilation/library/versions/"   + id; }
+    @JsonProperty public List<String>  versions_id()        { List<String> l = new ArrayList<>();  for( Version_Object m : version_objects)  l.add(m.id); return l;  }
 
 
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
     public void setUniqueAzureStorageLink() {
@@ -37,6 +38,9 @@ public class SingleLibrary  extends Model {
         }
     }
 
+
+
+/* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String, SingleLibrary> find = new Finder<>(SingleLibrary.class);
 
 }

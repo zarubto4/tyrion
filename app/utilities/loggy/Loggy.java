@@ -16,7 +16,10 @@ import utilities.Server;
 import utilities.response.GlobalResult;
 
 import java.net.NetworkInterface;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
 public class Loggy{
 
@@ -64,6 +67,7 @@ public class Loggy{
 
         logger.error(builder.toString());
         return GlobalResult.internalServerError();
+
     }
 
     public static Result result_internalServerError(String problem, Http.Request request) {

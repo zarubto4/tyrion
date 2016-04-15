@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
+import controllers.SecurityController;
 import controllers.WebSocketController_Incoming;
 import io.swagger.annotations.ApiModelProperty;
 import models.compiler.Board;
@@ -18,22 +19,24 @@ import java.util.List;
 @Entity
 public class Homer extends Model {
 
-/* DATABASE VALUES ------------------------------------------------------------------------------------------------------ */
-        @Id         public String homer_id;
+/* DATABASE VALUES ----------------------------------------------------------------------------------------------------*/
+        @Id         public String id;
                     public String type_of_device;
                     public String  version;
 
-    @JsonIgnore @ManyToOne  public Project project;
+    @JsonIgnore @ManyToOne                   public Project project;
+    @JsonProperty                            public String project_id(){ return project.id; }
+
 
     @JsonIgnore  @OneToOne(mappedBy="homer") public B_Program_Homer b_program_homer;
+    @JsonProperty                            public boolean online()  {return WebSocketController_Incoming.homer_is_online(id);}
 
+/* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
-
-    @JsonProperty public boolean online(){return WebSocketController_Incoming.homer_is_online(homer_id);}
-
-
+    @JsonProperty
     @ApiModelProperty(required = false, value = "Only if it is online homer")
-    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) public List<Board> active_boards(){
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public List<Board> active_boards(){
 
         if( !online() ) return null;
 
@@ -64,21 +67,17 @@ public class Homer extends Model {
 
     }
 
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
 
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
+    @JsonProperty public Boolean read_permission()  {  return ( Project.find.where().eq("m_project.project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Homer.read"); }
+    @JsonProperty public Boolean edit_permission()  {  return ( Project.find.where().eq("m_project.project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Homer.edit"); }
+    @JsonProperty public Boolean delete_permisison(){  return ( Project.find.where().eq("m_project.project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Homer.delete"); }
 
-/* METHODS ----------------------------------------------------------------------------------------------------------------*/
-
-
-
-
-
-/* FINDER & WEBSOCKET --------------------------------------------------------------------------------------------------------*/
-        public static Finder<String,Homer> find = new Finder<>(Homer.class);
-
-
-
+/* FINDER --------------------------------------------------------------------------------------------------------------*/
+    public static Finder<String,Homer> find = new Finder<>(Homer.class);
 }
 
 

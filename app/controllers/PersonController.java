@@ -2,10 +2,10 @@ package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.*;
-import models.persons.FloatingPersonToken;
-import models.persons.Person;
-import models.persons.PersonPermission;
-import models.persons.ValidationToken;
+import models.person.FloatingPersonToken;
+import models.person.Person;
+import models.person.PersonPermission;
+import models.person.ValidationToken;
 import play.Logger;
 import play.api.libs.mailer.MailerClient;
 import play.data.Form;
