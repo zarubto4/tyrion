@@ -1,4 +1,4 @@
-package models.persons;
+package models.person;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -8,6 +8,7 @@ import models.notification.Notification;
 import models.overflow.LinkedPost;
 import models.overflow.Post;
 import models.project.global.Project;
+import utilities.permission.Permission;
 
 import javax.persistence.*;
 import java.security.MessageDigest;
@@ -18,6 +19,7 @@ import java.util.List;
 @Entity
 public class Person extends Model {
 
+    /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)     public String id;
 
@@ -42,29 +44,32 @@ public class Person extends Model {
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<PersonPermission>     permissions               = new ArrayList<>();
 
 
-
-    @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<BlockoBlock>   blocksAuthor   = new ArrayList<>(); // Propojení, které bločky uživatel vytvořil
-    @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<Post>          personPosts    = new ArrayList<>(); // Propojení, které uživatel napsal
-    @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<LinkedPost>    linkedPosts    = new ArrayList<>(); // Propojení, které uživatel nalinkoval
-    @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL)     public List<FloatingPersonToken> floatingPersonTokens = new ArrayList<>(); // Propojení, které uživatel napsal
-    @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL)     public List<Notification>         notifications             = new ArrayList<>();
-
+    @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<BlockoBlock>          blocksAuthor         = new ArrayList<>(); // Propojení, které bločky uživatel vytvořil
+    @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<Post>                 personPosts          = new ArrayList<>(); // Propojení, které uživatel napsal
+    @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<LinkedPost>           linkedPosts          = new ArrayList<>(); // Propojení, které uživatel nalinkoval
+    @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL)     public List<FloatingPersonToken>  floatingPersonTokens = new ArrayList<>(); // Propojení, které uživatel napsal
+    @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL)     public List<Notification>         notifications        = new ArrayList<>();
 
 
+/* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
-//#### SECURITY LOGIN ##################################################################################################
 
+/* Security Tools @ JsonIgnore -----------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
     public static byte[] getSha512(String value) {
         try {
             return MessageDigest.getInstance("SHA-512").digest(value.getBytes("UTF-8"));
         }
-        catch (Exception e) {throw new RuntimeException(e); }
+        catch (Exception e) { throw new RuntimeException(e);}
     }
 
+    @JsonIgnore
     public void setSha(String value) {
         this.shaPassword = getSha512(value);
     }
 
+    @JsonIgnore
     public void setToken(String token, String user_agent){
         FloatingPersonToken floatingPersonToken = new FloatingPersonToken();
         floatingPersonToken.set_basic_values(token);
@@ -74,18 +79,24 @@ public class Person extends Model {
         this.floatingPersonTokens.add(floatingPersonToken);
     }
 
-//#### FINDER ########################################################################################################
+    @JsonIgnore
+    public boolean has_permission(String permission){
+        return Permission.check_permission(permission);
+    }
+
+/* FINDER --------------------------------------------------------------------------------------------------------------*/
 
     public static Person findByEmailAddressAndPassword(String emailAddress, String password) { return find.where().eq("mail", emailAddress.toLowerCase()).eq("shaPassword", getSha512(password)).findUnique();}
 
     public static Person findByAuthToken(String authToken) {
         if (authToken == null) { return null; }
         try  {
-
             return find.where().eq("floatingPersonTokens.authToken", authToken).findUnique(); }
-
         catch (Exception e) {
-            return null; }
+           e.printStackTrace();
+           return null;
+        }
     }
+
     public static Finder<String,Person> find = new Finder<>(Person.class);
 }

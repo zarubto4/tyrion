@@ -3,6 +3,7 @@ package models.compiler;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import controllers.SecurityController;
 import utilities.Server;
 import utilities.UtilTools;
 
@@ -14,18 +15,19 @@ import java.util.Scanner;
 @Entity
 public class FileRecord extends Model {
 
+/* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
+
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public String id;
                                                              public String file_name;
 
                                  @JsonIgnore  @ManyToOne     public Version_Object version_object;
 
+/* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty public String fileContent()   { return Server.tyrion_serverAddress + "/file/fileRecord/" +id; }
 
 
-
-
-// Mimo Objekt
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     // Určeno pro načítání souborů z Azure pro Tyriona
     // Trochu nedomyšleno, že u File Record nevím, jaký je mateřský objekt - ale vím, že má vždy jen jeden
@@ -78,6 +80,89 @@ public class FileRecord extends Model {
 
     }
 
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+
+    @JsonProperty public Boolean edit_permission()  {
+        return  (   FileRecord.find.where()
+                        .or(
+                                com.avaje.ebean.Expr.or(
+                                        com.avaje.ebean.Expr.and(
+                                                com.avaje.ebean.Expr.eq("version_object.b_program.project.ownersOfProject.id", SecurityController.getPerson().id),
+                                                com.avaje.ebean.Expr.eq("id",id)
+                                        ),
+                                        com.avaje.ebean.Expr.and(
+                                                com.avaje.ebean.Expr.eq("version_object.c_program.project.ownersOfProject.id", SecurityController.getPerson().id),
+                                                com.avaje.ebean.Expr.eq("id",id)
+                                        )
+                                ),
+                                com.avaje.ebean.Expr.or(
+                                        com.avaje.ebean.Expr.and(
+                                            com.avaje.ebean.Expr.eq("version_object.singleLibrary.project.ownersOfProject.id", SecurityController.getPerson().id),
+                                            com.avaje.ebean.Expr.eq("id",id)
+                                        ),
+                                        com.avaje.ebean.Expr.and(
+                                                com.avaje.ebean.Expr.eq("version_object.libraryGroup.project.ownersOfProject.id", SecurityController.getPerson().id),
+                                                com.avaje.ebean.Expr.eq("id",id)
+                                        )
+                                )
+                        )
+                        .or(
+                                com.avaje.ebean.Expr.and(
+                                        com.avaje.ebean.Expr.eq("version_object.m_program.project.ownersOfProject.id", SecurityController.getPerson().id),
+                                        com.avaje.ebean.Expr.eq("id",id)
+                                ),
+                                com.avaje.ebean.Expr.and(                      // TODO M_Project Version!!!
+                                        com.avaje.ebean.Expr.eq("version_object.b_program.project.ownersOfProject.id", SecurityController.getPerson().id),
+                                        com.avaje.ebean.Expr.eq("id",id)
+                                )
+                        )
+                        .findRowCount() > 0
+                        ||
+                        SecurityController.getPerson().has_permission("FileRecord.edit")
+                );
+    }
+
+    @JsonProperty public Boolean delete_permission() {
+        return  (   FileRecord.find.where()
+                    .or(
+                            com.avaje.ebean.Expr.or(
+                                    com.avaje.ebean.Expr.and(
+                                            com.avaje.ebean.Expr.eq("version_object.b_program.project.ownersOfProject.id", SecurityController.getPerson().id),
+                                            com.avaje.ebean.Expr.eq("id",id)
+                                    ),
+                                    com.avaje.ebean.Expr.and(
+                                            com.avaje.ebean.Expr.eq("version_object.c_program.project.ownersOfProject.id", SecurityController.getPerson().id),
+                                            com.avaje.ebean.Expr.eq("id",id)
+                                    )
+                            ),
+                            com.avaje.ebean.Expr.or(
+                                    com.avaje.ebean.Expr.and(
+                                            com.avaje.ebean.Expr.eq("version_object.singleLibrary.project.ownersOfProject.id", SecurityController.getPerson().id),
+                                            com.avaje.ebean.Expr.eq("id",id)
+                                    ),
+                                    com.avaje.ebean.Expr.and(
+                                            com.avaje.ebean.Expr.eq("version_object.libraryGroup.project.ownersOfProject.id", SecurityController.getPerson().id),
+                                            com.avaje.ebean.Expr.eq("id",id)
+                                    )
+                            )
+                    )
+                    .or(
+                            com.avaje.ebean.Expr.and(
+                                    com.avaje.ebean.Expr.eq("version_object.m_program.project.ownersOfProject.id", SecurityController.getPerson().id),
+                                    com.avaje.ebean.Expr.eq("id",id)
+                            ),
+                            com.avaje.ebean.Expr.and(                      // TODO M_Project Version!!!
+                                    com.avaje.ebean.Expr.eq("version_object.b_program.project.ownersOfProject.id", SecurityController.getPerson().id),
+                                    com.avaje.ebean.Expr.eq("id",id)
+                            )
+                    )
+                    .findRowCount() > 0
+                    ||
+                    SecurityController.getPerson().has_permission("FileRecord.edit")
+                 );
+    }
+
+/* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String, FileRecord> find = new Finder<>(FileRecord.class);
 
 }

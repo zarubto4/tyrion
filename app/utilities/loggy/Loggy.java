@@ -9,6 +9,7 @@ import utilities.Server;
 import utilities.response.GlobalResult;
 
 import java.net.NetworkInterface;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -54,7 +55,6 @@ public class Loggy{
 
         logger.error(builder.toString());
         return GlobalResult.internalServerError();
-
 
     }
 
@@ -114,7 +114,40 @@ public class Loggy{
     // Vracím v poli všechny chyby ze souboru (kde zaznamenávám chyby
     public static List<LoggyError> getErrors(Integer a){
         // TODO - dodělat načítání a separování chyb v souboru
-        return null;
+
+        List<LoggyError> loggyErrorList = new ArrayList<>();
+
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("\n");
+        builder.append("    Internal Server Error");
+        builder.append("\n");
+        builder.append("    Time: "+ new Date().toString());
+        builder.append("\n");
+        builder.append("    Request Type: " + "sdasdasdasd");
+        builder.append("\n");
+        builder.append("    Request Path: " + "asdasdasdasdasdasd");
+        builder.append("\n");
+        builder.append("    Unique Identificator: "+ UUID.randomUUID().toString());
+        builder.append("\n");
+        builder.append("    Tyrion version: "+ Server.server_version);
+        builder.append("\n");
+        builder.append("    Tyrion mode: "+ Server.server_mode);
+        builder.append("\n");
+        builder.append("    Server MAC address: "+ getMac());
+        builder.append("\n");
+        builder.append("    User: "+ (SecurityController.getPerson()!= null?SecurityController.getPerson().mail:"null"));
+        builder.append("\n");
+
+
+
+       for (int i = 0; i < 25; i++) {
+           LoggyError loggyError = new LoggyError();
+           loggyError.description =  builder.toString();
+           loggyErrorList.add(loggyError );
+       }
+
+        return loggyErrorList;
     }
 
 

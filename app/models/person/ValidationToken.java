@@ -1,6 +1,7 @@
-package models.persons;
+package models.person;
 
 import com.avaje.ebean.Model;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -10,14 +11,14 @@ import java.security.SecureRandom;
 @Entity
 public class ValidationToken extends Model{
 
+/* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
+
     @Id public String personEmail;
         public String authToken;
 
-    public static Finder<String,ValidationToken> find = new Finder<>(ValidationToken.class);
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    // Tohle slouží k ověřování emailu - tedy funkčního účtu
-
-
+    @JsonIgnore
     public ValidationToken  setValidation(String mail){
 
         this.personEmail = mail;
@@ -26,12 +27,12 @@ public class ValidationToken extends Model{
             authToken = new BigInteger(130, new SecureRandom()).toString(32).toLowerCase();
             if (ValidationToken.find.where().eq("authToken",authToken).findUnique() == null) break;
         }
-
         save();
-
         return this;
     }
 
 
+/* FINDER --------------------------------------------------------------------------------------------------------------*/
+    public static Finder<String,ValidationToken> find = new Finder<>(ValidationToken.class);
 
 }

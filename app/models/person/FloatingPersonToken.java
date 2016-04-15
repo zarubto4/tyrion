@@ -1,4 +1,4 @@
-package models.persons;
+package models.person;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;

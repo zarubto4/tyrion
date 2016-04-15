@@ -6,7 +6,7 @@ import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.Query;
 import io.swagger.annotations.*;
 import models.overflow.*;
-import models.persons.PersonPermission;
+import models.person.PersonPermission;
 import play.Logger;
 import play.data.Form;
 import play.libs.Json;

@@ -11,6 +11,8 @@ import java.util.List;
 @Entity
 public class Screen_Size_Type extends Model {
 
+/* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
+
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)     public String id;
                                                                 public String name;
 
@@ -39,9 +41,11 @@ public class Screen_Size_Type extends Model {
                                      @JsonIgnore @ManyToOne     public Project project;
 
 
-    @JsonIgnore  @OneToMany(mappedBy="screen_size_type_object", cascade = CascadeType.ALL)     public List<M_Program> m_program_s;
+    @JsonIgnore  @OneToMany(mappedBy="screen_size_type", cascade = CascadeType.ALL)     public List<M_Program> m_program_s;
 
 
+/* FINDER --------------------------------------------------------------------------------------------------------------*/
 
     public static Finder<String,Screen_Size_Type> find = new Finder<>(Screen_Size_Type.class);
+
 }

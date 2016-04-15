@@ -9,14 +9,13 @@
 ###################################################################################f#################################################################################
 
 GET             /                                           @controllers.DashboardController.index()
-GET             /public/bugs                                @controllers.DashboardController.show_all_logs()
+GET             /public/bugs                                @controllers.DashboardController.show_all_loggs()
 GET             /public/websocket                           @controllers.DashboardController.show_web_socket_stats()
 GET             /public/show_readme                         @controllers.DashboardController.show_readme()
 
-DELETE          /public/bugs/deleteAll                      @controllers.DashboardController.loggy_remove_all_bugs()
-DELETE          /public/bug/remove/:id                      @controllers.DashboardController.loggy_remove_bug(id: String)
-PUT             /public/bug/report/:id                      @controllers.DashboardController.loggy_report_bug_to_youtrack(id: String)
-
+GET             /public/bugs/deleteAll                      @controllers.DashboardController.loggy_remove_all_bugs()
+GET             /public/bug/remove/:id                      @controllers.DashboardController.loggy_remove_bug(id: String)
+GET             /public/bug/report/:id                      @controllers.DashboardController.loggy_report_bug_to_youtrack(id: String)
 
 PUT             /public/websocket/disconect/:homer_id       @controllers.DashboardController.disconnect_homer(homer_id: String)
 PUT             /public/websocket/disconect/:terminal_id    @controllers.DashboardController.disconnect_terminal(terminal_id: String)
@@ -278,7 +277,6 @@ PUT             /compilation/producer/:producer_id                              
 GET             /compilation/producer/all                                                   @controllers.CompilationLibrariesController.get_Producers()
 GET             /compilation/producer/:producer_id                                          @controllers.CompilationLibrariesController.get_Producer(producer_id)
 DELETE          /compilation/producer/:producer_id                                          @controllers.CompilationLibrariesController.delete_Producer(producer_id)
-GET             /compilation/producer/description/:producer_id                              @controllers.CompilationLibrariesController.get_Producer_Description(producer_id)
 GET             /compilation/producer/typeOfBoards/:producer_id                             @controllers.CompilationLibrariesController.get_Producer_TypeOfBoards(producer_id)
 
 #TypeOfBoard
@@ -288,7 +286,6 @@ DELETE          /compilation/typeOfBoard/:type_of_board_id                      
 GET             /compilation/typeOfBoard/all                                                @controllers.CompilationLibrariesController.get_TypeOfBoard_all()
 GET             /compilation/typeOfBoard/filter                                             @controllers.CompilationLibrariesController.get_TypeOfBoard_Filter()
 GET             /compilation/typeOfBoard/:type_of_board_id                                  @controllers.CompilationLibrariesController.get_TypeOfBoard(type_of_board_id)
-GET             /compilation/typeOfBoard/description/:type_of_board_id                      @controllers.CompilationLibrariesController.get_TypeOfBoard_Description(type_of_board_id)
 GET             /compilation/typeOfBoard/boards/:type_of_board_id                           @controllers.CompilationLibrariesController.getTypeOfBoardAllBoards(type_of_board_id)
 
 #LibraryGroups

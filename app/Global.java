@@ -67,6 +67,7 @@ public class Global extends GlobalSettings {
     @Override
     public Action onRequest(Http.Request request, Method actionMethod) {
         logger.debug(request.toString());
+        logger.info(request.toString());
         return super.onRequest(request, actionMethod);
     }
 

@@ -2,9 +2,9 @@ package controllers;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.*;
-import models.persons.Person;
-import models.persons.PersonPermission;
-import models.persons.SecurityRole;
+import models.person.Person;
+import models.person.PersonPermission;
+import models.person.SecurityRole;
 import play.Logger;
 import play.data.Form;
 import play.libs.Json;

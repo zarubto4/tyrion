@@ -1,5 +1,4 @@
 @(bugs: Integer, grid_terminal: Integer, homer_server: Integer, homer_local: Integer)
-@import controllers.DashboardController._
 
     <aside class="main-sidebar">
     <!-- sidebar: style can be found in sidebar.less -->
@@ -16,9 +15,9 @@
                 </li>
  <!-------------------------------------------------------------------------- ------------------------>
                 <li>
-                    <a href='@routes.DashboardController.show_all_logs()' >
+                    <a href='@routes.DashboardController.show_all_loggs()' >
                         <i class="fa  fa-bug"></i> <span>Bug Reporting</span>
-                        @if( grid_terminal >0) { <small class="label pull-right bg-red">@bugs</small>}
+                        @if( bugs > 0) { <small class="label pull-right bg-red">@bugs</small>}
                     </a>
                 </li>
 <!-------------------------------------------------------------------------- ------------------------>

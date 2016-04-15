@@ -6,18 +6,12 @@ import ch.qos.logback.core.joran.spi.JoranException;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import controllers.*;
-import models.persons.PersonPermission;
 import org.slf4j.LoggerFactory;
 import play.Configuration;
 import play.Play;
-import utilities.permission.DynamicResourceHandler;
-import utilities.permission.PermissionException;
 import utilities.webSocket.ClientThreadChecker;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 
 public class Server {
 
@@ -45,9 +39,6 @@ public class Server {
 
     public static Boolean server_mode;
     public static String server_version;
-
-    public static Map<String, Optional<DynamicResourceHandler> > handlers = new HashMap<>();
-
 
     public static void set_Server_address() throws Exception{
 
@@ -189,59 +180,6 @@ public class Server {
         ProgramingPackageController.set_System_Permission();
         SecurityController.set_System_Permission();
 
-    }
-
-
-    private static final DynamicResourceHandler denied_permission = s -> {
-        System.out.println("Mapa neobsahuje dynamický klíč!!!");
-        // TODO zalogování problému
-        throw new PermissionException();
-    };
-
-
-    public static boolean check_dynamic(String name) throws PermissionException {
-        if(handlers.containsKey(name)) return handlers.get(name).get().check_dynamic(name);
-        else return denied_permission.check_dynamic(name);
-    }
-
-    public static boolean check_permission(String... args) throws PermissionException {
-        try {
-
-            //Zde porovnávám zda uživatel má oprávnění na přímo
-            // nebo je ve skupině, která dané oprávnění vlastní
-
-            if (PersonPermission.find.where().or(
-                    com.avaje.ebean.Expr.and(
-                            com.avaje.ebean.Expr.in("value", args),
-                            com.avaje.ebean.Expr.eq("roles.persons.id", SecurityController.getPerson().id)
-                    ),
-                    com.avaje.ebean.Expr.and(
-                            com.avaje.ebean.Expr.in("value", args),
-                            com.avaje.ebean.Expr.like("persons.id", SecurityController.getPerson().id)
-                    )
-            ).findList().size() < 1) throw new PermissionException();
-
-
-            return true;
-
-        } catch (Exception e) { throw new PermissionException();}
-    }
-
-    public static boolean check_dynamic_OR_permission(String value, String... args) throws PermissionException{
-        try{
-
-            System.out.println("Kontroluji permission");
-
-            if(check_permission(args)) return true;
-
-
-
-        }catch (PermissionException e){
-            System.out.println("permission selhalo - Kontroluji dynamic");
-            if (check_dynamic(value)) return true;
-        }
-
-        throw new PermissionException();
     }
 
 

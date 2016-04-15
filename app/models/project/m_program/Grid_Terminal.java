@@ -2,8 +2,10 @@ package models.project.m_program;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
-import models.persons.Person;
+import models.person.Person;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -33,16 +35,14 @@ public class Grid_Terminal extends Model {
     @JsonIgnore  public Date date_of_create;
     @JsonIgnore  public Date date_of_last_update;
 
+
+    // lokální nedořešené oprávnění
     public Boolean ws_permission;
-
     public Boolean m_program_access;
-
     public Boolean up_to_date;
 
 
-
-
-    //***** Private ****************************************************************************************************
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
     public void set_terminal_id() {
@@ -52,5 +52,13 @@ public class Grid_Terminal extends Model {
         }
     }
 
+
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+
+    @JsonProperty public Boolean read_permission()  {  return ( Grid_Terminal.find.where().eq("person.id", SecurityController.getPerson().id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Grid_Terminal.read"); }
+    @JsonProperty public Boolean edit_permission()  {  return ( Grid_Terminal.find.where().eq("person.id", SecurityController.getPerson().id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Grid_Terminal.edit"); }
+    @JsonProperty public Boolean delete_permisison(){  return ( Grid_Terminal.find.where().eq("person.id", SecurityController.getPerson().id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Grid_Terminal.delete"); }
+
+/* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String,Grid_Terminal> find = new Model.Finder<>(Grid_Terminal.class);
 }

@@ -7,7 +7,7 @@ import models.compiler.TypeOfBoard;
 import models.grid.Screen_Size_Type;
 import models.notification.Notification;
 import models.overflow.Post;
-import models.persons.Person;
+import models.person.Person;
 import models.project.b_program.B_Program;
 import models.project.c_program.C_Program;
 import models.project.global.Homer;
@@ -39,7 +39,6 @@ public class DashboardController extends Controller {
     Integer connectedTerminals       =  WebSocketController_Incoming.incomingConnections_terminals.size();
     Integer connectedCloud_servers   =  WebSocketController_Incoming.cloud_servers.size();
     Integer reported_bugs            =  Loggy.number_of_reported_bugs();
-    Html menu_html                   =  menu.render(reported_bugs,connectedHomers,connectedTerminals,connectedCloud_servers);
     Boolean server_mode              =  Server.server_mode;
     String  server_version           =  Server.server_version;
 
@@ -52,6 +51,8 @@ public class DashboardController extends Controller {
     public Result index() {
 
         logger.info("Creating index.html content");
+
+        Html menu_html = menu.render(reported_bugs,connectedHomers,connectedTerminals,connectedCloud_servers);
 
         Html content_html = dashboard.render(
                 Person.find.findRowCount(),
@@ -90,7 +91,8 @@ public class DashboardController extends Controller {
         String text = "";
         for(String line : Files.readAllLines(Paths.get("README"), StandardCharsets.UTF_8) ) text += line + "\n";
 
-        Html readme_html =readme.render( new Html( new PegDownProcessor().markdownToHtml(text) ));
+        Html menu_html   = menu.render(reported_bugs,connectedHomers,connectedTerminals,connectedCloud_servers);
+        Html readme_html = readme.render( new Html( new PegDownProcessor().markdownToHtml(text) ));
 
         logger.debug("Return show_readme.html content");
 
@@ -107,6 +109,8 @@ public class DashboardController extends Controller {
     public Result show_web_socket_stats() {
 
         logger.debug("Return show_web_socket_stats.html content");
+
+        Html menu_html = menu.render(reported_bugs,connectedHomers,connectedTerminals,connectedCloud_servers);
 
         return ok( main.render(menu_html,
                 websocket.render(homers, grids),
@@ -143,9 +147,11 @@ public class DashboardController extends Controller {
 // LOGGY ###############################################################################################################
 
     // Vykreslí šablonu s bugy
-    public Result show_all_logs() {
+    public Result show_all_loggs() {
 
         logger.debug("Trying to render loggy.html content");
+
+        Html menu_html = menu.render(reported_bugs,connectedHomers,connectedTerminals,connectedCloud_servers);
 
         return ok( main.render(menu_html,
                 loggy.render( Loggy.getErrors(25) ), // TODO Tomáš K. doplnit - seznam načtený ze souboru
@@ -158,7 +164,7 @@ public class DashboardController extends Controller {
         logger.debug("Trying to upload bug to youtrack");
 
         Loggy.upload_to_youtrack(bug_id);   // TODO Tomáš K. doplnit nahrátí na youtrack
-        return show_all_logs();
+        return show_all_loggs();
     }
 
     // Odstraní konkrétní bug ze seznamu (souboru)
@@ -166,7 +172,7 @@ public class DashboardController extends Controller {
         logger.debug("Trying to upload bug to youtrack");
 
         Loggy.remove_bug_from_file(bug_id);  // TODO Tomáš K. doplnit odstranění bugu ze souboru
-        return show_all_logs();
+        return show_all_loggs();
     }
 
     // Vyprázdní soubory se záznamem chyb
@@ -174,7 +180,7 @@ public class DashboardController extends Controller {
         logger.debug("Trying to remove all bugs");
         Loggy.remove_all_bugs();             // TODO Tomáš K. doplnit odstranění bugu ze souboru
 
-        return show_all_logs();
+        return show_all_loggs();
     }
 
 }

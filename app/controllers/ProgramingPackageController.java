@@ -7,8 +7,8 @@ import models.blocko.BlockoBlockVersion;
 import models.blocko.TypeOfBlock;
 import models.compiler.Board;
 import models.compiler.Version_Object;
-import models.persons.Person;
-import models.persons.PersonPermission;
+import models.person.Person;
+import models.person.PersonPermission;
 import models.project.b_program.B_Program;
 import models.project.b_program.B_Program_Cloud;
 import models.project.b_program.B_Program_Homer;
@@ -651,10 +651,10 @@ public class ProgramingPackageController extends Controller {
             Swagger_Homer_New help = form.get();
 
 
-            if ( Homer.find.where().eq("homer_id", help.homer_id).findUnique() != null ) return GlobalResult.result_BadRequest("Homer with this id exist");
+            if ( Homer.find.where().eq("id", help.homer_id).findUnique() != null ) return GlobalResult.result_BadRequest("Homer with this id exist");
 
             Homer homer = new Homer();
-            homer.homer_id = help.homer_id;
+            homer.id = help.homer_id;
             homer.type_of_device = help.type_of_device;
 
             homer.save();
@@ -689,11 +689,11 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result removeHomer(@ApiParam(value = "homer_id String path",   required = true) @PathParam("homer_id") String homer_id){
+    public  Result removeHomer(@ApiParam(value = "id String path",   required = true) @PathParam("id") String homer_id){
         try{
 
            Homer homer = Homer.find.byId(homer_id);
-           if(homer == null) return GlobalResult.notFoundObject("Homer homer_id not found");
+           if(homer == null) return GlobalResult.notFoundObject("Homer id not found");
 
            homer.delete();
 
@@ -726,10 +726,10 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result getHomer(@ApiParam(value = "homer_id String path",   required = true) @PathParam("homer_id")String homer_id){
+    public  Result getHomer(@ApiParam(value = "id String path",   required = true) @PathParam("id")String homer_id){
         try {
             Homer homer = Homer.find.byId(homer_id);
-            if (homer == null) return GlobalResult.notFoundObject("Homer homer_id not found");
+            if (homer == null) return GlobalResult.notFoundObject("Homer id not found");
 
             return GlobalResult.result_ok( Json.toJson(homer) );
 
@@ -780,14 +780,14 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result connectHomerWithProject(@ApiParam(value = "project_id String path",   required = true) @PathParam("project_id") String project_id, @ApiParam(value = "homer_id String path",   required = true) @PathParam("homer_id") String homer_id){
+    public  Result connectHomerWithProject(@ApiParam(value = "project_id String path",   required = true) @PathParam("project_id") String project_id, @ApiParam(value = "id String path",   required = true) @PathParam("id") String homer_id){
         try{
 
             Project project = Project.find.byId(project_id);
             Homer homer = Homer.find.byId(homer_id);
 
             if(project == null)  return GlobalResult.notFoundObject("Project project_id not found");
-            if(homer == null)  return GlobalResult.notFoundObject("Homer homer_id not found");
+            if(homer == null)  return GlobalResult.notFoundObject("Homer id not found");
 
             homer.project = project;
             homer.update();
@@ -822,14 +822,14 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result disconnectHomerWithProject(@ApiParam(value = "project_id String path",   required = true) @PathParam("project_id") String project_id, @ApiParam(value = "homer_id String path",   required = true) @PathParam("homer_id") String homer_id){
+    public  Result disconnectHomerWithProject(@ApiParam(value = "project_id String path",   required = true) @PathParam("project_id") String project_id, @ApiParam(value = "id String path",   required = true) @PathParam("id") String homer_id){
         try{
 
             Project project = Project.find.byId(project_id);
             Homer homer = Homer.find.byId(homer_id);
 
             if(project == null)  return GlobalResult.notFoundObject("Project project_id not found");
-            if(homer == null)  return GlobalResult.notFoundObject("Homer homer_id not found");
+            if(homer == null)  return GlobalResult.notFoundObject("Homer id not found");
 
 
             if( project.homerList.contains(homer)) homer.project = null;
@@ -929,11 +929,11 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result get_b_Program(@ApiParam(value = "b_program_id String path", required = true) @PathParam("b_program_id") String b_program_id){
+    public  Result get_b_Program(@ApiParam(value = "id String path", required = true) @PathParam("id") String b_program_id){
         try{
 
             B_Program program = B_Program.find.byId(b_program_id);
-            if (program == null) return GlobalResult.notFoundObject("B_Program b_program_id not found");
+            if (program == null) return GlobalResult.notFoundObject("B_Program id not found");
 
             return GlobalResult.result_ok(Json.toJson(program));
         } catch (Exception e) {
@@ -1009,13 +1009,13 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public  Result edit_b_Program(@ApiParam(value = "b_program_id String path", required = true) @PathParam("b_program_id") String b_program_id){
+    public  Result edit_b_Program(@ApiParam(value = "id String path", required = true) @PathParam("id") String b_program_id){
         try{
             Swagger_B_Program_New help = Json.fromJson(request().body().asJson(), Swagger_B_Program_New.class);
 
 
             B_Program b_program  = B_Program.find.byId(b_program_id);
-            if (b_program == null) return GlobalResult.notFoundObject("B_Program b_program_id not found");
+            if (b_program == null) return GlobalResult.notFoundObject("B_Program id not found");
 
             b_program.program_description = help.program_description;
             b_program.name                  = help.name;
@@ -1064,7 +1064,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public  Result update_b_program(@ApiParam(value = "b_program_id String path", required = true) @PathParam("b_program_id") String b_program_id){
+    public  Result update_b_program(@ApiParam(value = "id String path", required = true) @PathParam("id") String b_program_id){
         try{
             Swagger_B_Program_Version_New help = Json.fromJson( request().body().asJson(), Swagger_B_Program_Version_New.class);
 
@@ -1073,7 +1073,7 @@ public class ProgramingPackageController extends Controller {
 
             // Ověřím program
             B_Program b_program = B_Program.find.byId(b_program_id);
-            if (b_program == null) return GlobalResult.notFoundObject("B_Program b_program_id not found");
+            if (b_program == null) return GlobalResult.notFoundObject("B_Program id not found");
 
             // První nová Verze
             Version_Object versionObjectObject          = new Version_Object();
@@ -1123,11 +1123,11 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result remove_b_Program(@ApiParam(value = "b_program_id String path", required = true) @PathParam("b_program_id") String b_program_id){
+    public  Result remove_b_Program(@ApiParam(value = "id String path", required = true) @PathParam("id") String b_program_id){
         try{
 
             B_Program program  = B_Program.find.byId(b_program_id);
-            if (program == null) return GlobalResult.notFoundObject("B_Program b_program_id not found");
+            if (program == null) return GlobalResult.notFoundObject("B_Program id not found");
 
 
             program.delete();
@@ -1158,16 +1158,16 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",                  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result uploadProgramToHomer_Immediately(@ApiParam(value = "b_program_id", required = true) @PathParam("b_program_id") String b_program_id,
+    public  Result uploadProgramToHomer_Immediately(@ApiParam(value = "id", required = true) @PathParam("id") String b_program_id,
                                                     @ApiParam(value = "version_id", required = true) @PathParam("version_id") String version_id,
-                                                    @ApiParam(value = "homer_id", required = true) @PathParam("homer_id") String homer_id){
+                                                    @ApiParam(value = "id", required = true) @PathParam("id") String homer_id){
         try {
 
             Person person = SecurityController.getPerson();
 
             // B program, který chci nahrát do Cloudu na Blocko server
             B_Program b_program = B_Program.find.byId(b_program_id);
-            if (b_program == null) return GlobalResult.notFoundObject("B_Program b_program_id not found");
+            if (b_program == null) return GlobalResult.notFoundObject("B_Program id not found");
 
             // Verze B programu kterou budu nahrávat do cloudu
             Version_Object version_object = Version_Object.find.byId(version_id);
@@ -1175,7 +1175,7 @@ public class ProgramingPackageController extends Controller {
 
             // Homer na který budu nahrávat b_program
             Homer homer = Homer.find.byId(homer_id);
-            if (homer == null)  return GlobalResult.notFoundObject("Homer homer_id not found");
+            if (homer == null)  return GlobalResult.notFoundObject("Homer id not found");
 
 
             if(! WebSocketController_Incoming.homer_is_online(homer_id)) return GlobalResult.result_BadRequest("Device is not online");
@@ -1185,7 +1185,7 @@ public class ProgramingPackageController extends Controller {
                 try {
 
                     // Na homerovi musím zabít a smazat předchozí program - jedná se pouze o nahrávání na cloud !!!
-                    B_Program_Homer old_one = B_Program_Homer.find.where().eq("homer.homer_id", homer.homer_id).findUnique();
+                    B_Program_Homer old_one = B_Program_Homer.find.where().eq("homer.id", homer.id).findUnique();
                     if (old_one != null) { old_one.delete(); }
 
 
@@ -1241,12 +1241,12 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",                  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result upload_b_Program_ToCloud(@ApiParam(value = "b_program_id String path", required = true) @PathParam("b_program_id") String b_program_id, @ApiParam(value = "version_id String path", required = true) @PathParam("version_id") String version_id){
+    public  Result upload_b_Program_ToCloud(@ApiParam(value = "id String path", required = true) @PathParam("id") String b_program_id, @ApiParam(value = "version_id String path", required = true) @PathParam("version_id") String version_id){
         try {
 
             // B program, který chci nahrát do Cloudu na Blocko server
             B_Program b_program = B_Program.find.byId(b_program_id);
-            if (b_program == null) return GlobalResult.notFoundObject("B_Program b_program_id not found");
+            if (b_program == null) return GlobalResult.notFoundObject("B_Program id not found");
 
             // Verze B programu kterou budu nahrávat do cloudu
             Version_Object version_object = Version_Object.find.byId(version_id);
@@ -1264,9 +1264,9 @@ public class ProgramingPackageController extends Controller {
 
             /**
             // Na homerovi musím zabít a smazat předchozí program - jedná se pouze o nahrávání na cloud !!!
-            B_Program_Homer old_one = B_Program_Homer.find.where().eq("homer.homer_id", homer.homer_id).findUnique();
+            B_Program_Homer old_one = B_Program_Homer.find.where().eq("homer.id", homer.id).findUnique();
             if (old_one != null) {
-                JsonNode result =  WebSocketController_Incoming.homer_KillInstance(homer.homer_id);
+                JsonNode result =  WebSocketController_Incoming.homer_KillInstance(homer.id);
 
                 NotificationController.sent_notification(person, Notification_level.success, "Homer was updated successfully" );
                 old_one.delete();
@@ -1361,7 +1361,7 @@ public class ProgramingPackageController extends Controller {
 
 
             TypeOfBlock typeOfBlock = new TypeOfBlock();
-            typeOfBlock.generalDescription  = help.general_description;
+            typeOfBlock.general_description = help.general_description;
             typeOfBlock.name                = help.name;
 
 
@@ -1426,7 +1426,7 @@ public class ProgramingPackageController extends Controller {
             TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(type_of_block_id);
             if(typeOfBlock == null) return GlobalResult.notFoundObject("TypeOfBlock type_of_block_id not found");
 
-            typeOfBlock.generalDescription  = help.general_description;
+            typeOfBlock.general_description = help.general_description;
             typeOfBlock.name                = help.name;
 
             if(help.project_id != null){
@@ -1888,7 +1888,7 @@ public class ProgramingPackageController extends Controller {
             BlockoBlock blockoBlock = BlockoBlock.find.byId(blocko_block_id);
 
             BlockoBlockVersion version = new BlockoBlockVersion();
-            version.dateOfCreate = new Date();
+            version.date_of_create = new Date();
 
             version.version_name = help.version_name;
             version.version_description = help.version_description;
