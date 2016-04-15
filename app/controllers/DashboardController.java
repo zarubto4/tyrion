@@ -165,7 +165,7 @@ public class DashboardController extends Controller {
     public Result loggy_remove_bug(String bug_id) {
         logger.debug("Trying to upload bug to youtrack");
 
-        Loggy.remove_bug_from_file(bug_id);  // TODO Tomáš K. doplnit odstranění bugu ze souboru
+        Loggy.remove_bug(bug_id);  // TODO Tomáš K. doplnit odstranění bugu ze souboru
         return show_all_logs();
     }
 
