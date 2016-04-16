@@ -16,6 +16,7 @@ import models.project.m_program.Grid_Terminal;
 import models.project.m_program.M_Program;
 import models.project.m_program.M_Project;
 import org.pegdown.PegDownProcessor;
+import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.twirl.api.Html;
@@ -147,7 +148,7 @@ public class DashboardController extends Controller {
 // LOGGY ###############################################################################################################
 
     // Vykreslí šablonu s bugy
-    public Result show_all_loggs() {
+    public Result show_all_logs() {
 
         logger.debug("Trying to render loggy.html content");
 
@@ -160,11 +161,11 @@ public class DashboardController extends Controller {
     }
 
     // Nahraje konkrétní bug na Youtrack
-    public Result loggy_report_bug_to_youtrack(String bug_id) {
+    public F.Promise<Result> loggy_report_bug_to_youtrack(String bug_id) {
         logger.debug("Trying to upload bug to youtrack");
 
-        Loggy.upload_to_youtrack(bug_id);   // TODO Tomáš K. doplnit nahrátí na youtrack
-        return show_all_loggs();
+        F.Promise<Result> p = Loggy.upload_to_youtrack(bug_id);   // TODO Tomáš K. doplnit nahrátí na youtrack
+        return p.map((result) -> redirect("/public/bugs"));
     }
 
     // Odstraní konkrétní bug ze seznamu (souboru)
@@ -172,7 +173,7 @@ public class DashboardController extends Controller {
         logger.debug("Trying to upload bug to youtrack");
 
         Loggy.remove_bug(bug_id);  // TODO Tomáš K. doplnit odstranění bugu ze souboru
-        return show_all_logs();
+        return redirect("/public/bugs");
     }
 
     // Vyprázdní soubory se záznamem chyb
@@ -180,7 +181,7 @@ public class DashboardController extends Controller {
         logger.debug("Trying to remove all bugs");
         Loggy.remove_all_bugs();             // TODO Tomáš K. doplnit odstranění bugu ze souboru
 
-        return show_all_loggs();
+        return redirect("/public/bugs");
     }
 
 }

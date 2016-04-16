@@ -3,6 +3,7 @@ package controllers;
 
 import play.mvc.Controller;
 import play.mvc.Result;
+import utilities.loggy.Loggy;
 
 public class WikyController extends Controller {
 
@@ -13,8 +14,8 @@ public class WikyController extends Controller {
 
     // Testovací logger
     public Result test2(){
-
-            return ok();
+        Loggy.result_internalServerError("testing", request());
+        return ok();
     }
 
     public Result test3(){
