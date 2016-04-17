@@ -140,6 +140,14 @@ create table linked_post (
   constraint pk_linked_post primary key (link_id))
 ;
 
+create table loggy_error (
+  id                        varchar(255) not null,
+  summary                   TEXT,
+  description               TEXT,
+  youtrack_url              varchar(255),
+  constraint pk_loggy_error primary key (id))
+;
+
 create table m_program (
   id                        varchar(255) not null,
   program_name              varchar(255),
@@ -604,6 +612,8 @@ drop table if exists library_group cascade;
 drop table if exists library_group_processor cascade;
 
 drop table if exists linked_post cascade;
+
+drop table if exists loggy_error cascade;
 
 drop table if exists m_program cascade;
 

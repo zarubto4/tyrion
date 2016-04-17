@@ -16,6 +16,8 @@ import models.project.m_program.Grid_Terminal;
 import models.project.m_program.M_Program;
 import models.project.m_program.M_Project;
 import org.pegdown.PegDownProcessor;
+import play.Play;
+import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.twirl.api.Html;
@@ -38,7 +40,7 @@ public class DashboardController extends Controller {
     Integer connectedHomers          =  WebSocketController_Incoming.incomingConnections_homers.size();
     Integer connectedTerminals       =  WebSocketController_Incoming.incomingConnections_terminals.size();
     Integer connectedCloud_servers   =  WebSocketController_Incoming.cloud_servers.size();
-    Integer reported_bugs            =  Loggy.number_of_reported_bugs();
+    Integer reported_bugs            =  Loggy.number_of_reported_errors();
     Boolean server_mode              =  Server.server_mode;
     String  server_version           =  Server.server_version;
 
@@ -147,40 +149,40 @@ public class DashboardController extends Controller {
 // LOGGY ###############################################################################################################
 
     // Vykreslí šablonu s bugy
-    public Result show_all_loggs() {
+    public Result show_all_logs() {
 
         logger.debug("Trying to render loggy.html content");
 
         Html menu_html = menu.render(reported_bugs,connectedHomers,connectedTerminals,connectedCloud_servers);
 
         return ok( main.render(menu_html,
-                loggy.render( Loggy.getErrors(25) ), // TODO Tomáš K. doplnit - seznam načtený ze souboru
+                loggy.render( Loggy.getErrors() ),
                 server_mode,
                 server_version));
     }
 
     // Nahraje konkrétní bug na Youtrack
-    public Result loggy_report_bug_to_youtrack(String bug_id) {
+    public F.Promise<Result> loggy_report_bug_to_youtrack(String bug_id) {
         logger.debug("Trying to upload bug to youtrack");
 
-        Loggy.upload_to_youtrack(bug_id);   // TODO Tomáš K. doplnit nahrátí na youtrack
-        return show_all_loggs();
+        F.Promise<Result> p = Loggy.upload_to_youtrack(bug_id);   // TODO Tomáš K. doplnit nahrátí na youtrack
+        return p.map((result) -> redirect("/public/bugs"));
     }
 
     // Odstraní konkrétní bug ze seznamu (souboru)
     public Result loggy_remove_bug(String bug_id) {
         logger.debug("Trying to upload bug to youtrack");
 
-        Loggy.remove_bug_from_file(bug_id);  // TODO Tomáš K. doplnit odstranění bugu ze souboru
-        return show_all_loggs();
+        Loggy.remove_error(bug_id);
+        return redirect("/public/bugs");
     }
 
     // Vyprázdní soubory se záznamem chyb
     public Result loggy_remove_all_bugs() {
         logger.debug("Trying to remove all bugs");
-        Loggy.remove_all_bugs();             // TODO Tomáš K. doplnit odstranění bugu ze souboru
+        Loggy.remove_all_errors();
 
-        return show_all_loggs();
+        return redirect("/public/bugs");
     }
 
 }

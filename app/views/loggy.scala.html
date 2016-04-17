@@ -1,6 +1,7 @@
 @import java.util
 
-@(logs: util.List[utilities.loggy.LoggyError])
+@import models.loggy.LoggyError
+@(logs: util.List[LoggyError])
 
 
 
@@ -21,7 +22,7 @@
                     <h3 class="box-title">Tyrion internal recorded errors </h3>
                     <div class="pull-right">
                         <div class="btn-group">
-                            <button class="btn btn-block btn-danger btn-sm" href='@routes.DashboardController.loggy_remove_all_bugs()'>Remove all</button>
+                            <a class="btn btn-block btn-danger btn-sm" href='/public/bugs/deleteAll'>Remove all</a>
                         </div>
                     </div>
                 </div>
@@ -32,7 +33,7 @@
                             @for(i <- logs) {
 
                                 <tr>
-                                    <th> <h4 class="info-box-text">  Identificator: @i.hash_identification </h4> </th>
+                                    <th> <h4 class="info-box-text">  Identificator: @i.id </h4> </th>
                                     <th>  </th>
                                 </tr>
                                 <tr>
@@ -40,17 +41,21 @@
                                         <pre class="prettyprint">
                                         <code class="javascript">@i.description</code></pre> </td>
                                     <td>
-                                        <span> <a class="btn btn-block btn-danger btn-sm" href='/public/bug/remove/@i.hash_identification' >Remove</a></span>
+                                        <span> <a class="btn btn-block btn-danger btn-sm" href='/public/bug/remove/@i.id' >Remove</a></span>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>
-                                    <span> <a class="btn btn-block btn-warning btn-sm"  href='/public/bug/report/@i.hash_identification' >Report on Youtrack</a></span>
+                                        @if(i.youtrack_url == null) {
+                                            <span> <a class="btn btn-block btn-warning btn-sm"  href='/public/bug/report/@i.id' >Report to Youtrack</a></span>
+                                        } else {
+                                            <span> <a class="btn btn-block btn-warning btn-success"  href='@i.youtrack_url' >View on Youtrack</a></span>
+                                        }
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>
-                                        <span> <a class="btn btn-block btn-info btn-sm" href='/public/bug/comment/@i.hash_identification' >Add Description</a></span>
+                                        <span> <a class="btn btn-block btn-info btn-sm" href='/public/bug/comment/@i.id' >Add Description</a></span>
                                     </td>
                                 </tr>
 
