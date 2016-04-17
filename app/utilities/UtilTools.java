@@ -237,8 +237,7 @@ public class UtilTools extends Controller {
         {
             logger.warn("Creating first admin account: admin@byzance.cz, password: 123456789");
             Person person = new Person();
-            person.first_name = "Admin";
-            person.last_name = "Byzance";
+            person.full_name = "Admin Byzance";
             person.mailValidated = true;
             person.mail = "admin@byzance.cz";
             person.setSha("123456789");
