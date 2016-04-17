@@ -23,13 +23,12 @@ public class PropertyOfPost extends Model {
     @JsonIgnore
     public PropertyOfPost(String postHashTagId){ this.propertyOfPostId = postHashTagId;}
 
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonProperty public Boolean create_permission(){  return  SecurityController.getPerson().has_permission("PropertyOfPost.create");}
     @JsonProperty public Boolean read_permission()  {  return  SecurityController.getPerson().has_permission("PropertyOfPost.read");  }
     @JsonProperty public Boolean edit_permission()  {  return  SecurityController.getPerson().has_permission("PropertyOfPost.edit");  }
-    @JsonProperty public Boolean delete_permisison(){  return  SecurityController.getPerson().has_permission("PropertyOfPost.delete");}
+    @JsonProperty public Boolean delete_permission(){  return  SecurityController.getPerson().has_permission("PropertyOfPost.delete");}
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String,PropertyOfPost> find = new Finder<>(PropertyOfPost.class);

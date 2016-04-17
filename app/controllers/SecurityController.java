@@ -9,8 +9,6 @@ import io.swagger.annotations.*;
 import models.person.FloatingPersonToken;
 import models.person.Person;
 import models.person.PersonPermission;
-import play.Configuration;
-import play.Logger;
 import play.data.Form;
 import play.libs.F;
 import play.libs.Json;
@@ -22,6 +20,7 @@ import play.mvc.Http;
 import play.mvc.Result;
 import utilities.Server;
 import utilities.UtilTools;
+import utilities.loggy.Loggy;
 import utilities.loginEntities.Socials;
 import utilities.response.CoreResponse;
 import utilities.response.GlobalResult;
@@ -40,25 +39,6 @@ import java.util.Map;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class SecurityController extends Controller {
-
-//### SYSTEM PERMISSION ################################################################################################
-
-    public static void set_System_Permission(){
-        new PersonPermission("role.read", "description");
-        //
-    }
-
-//######################################################################################################################
-
-    // Úvodní metoda - // TODO - nasadit základní zobrazovací šablonu o stavu serveru
-    public Result index() {
-
-        String link = "";
-        link += "Server version: " + Configuration.root().getString("api.version") + "\n";
-        link += "Developer mode = " + Configuration.root().getString("Server.developerMode") +"\n";
-        link += "Connection to blocko server = " + Configuration.root().getString("Servers.blocko.server1.run") +"\n";
-        return ok( link );
-    }
 
 //######################################################################################################################
     public static Person getPerson() {
@@ -105,7 +85,7 @@ public class SecurityController extends Controller {
 
 
             Person person = Person.findByEmailAddressAndPassword(help.mail, help.password);
-            if (person == null) return GlobalResult.forbidden_Global("Email or password are wrong");
+            if (person == null) return GlobalResult.forbidden_Permission("Email or password are wrong");
 
 
             if (!person.mailValidated) return GlobalResult.result_BadRequest("Your account is not validated");
@@ -130,10 +110,7 @@ public class SecurityController extends Controller {
             return GlobalResult.result_ok(Json.toJson( result ) );
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("SecurityController - login ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -160,7 +137,7 @@ public class SecurityController extends Controller {
             String token = request().getHeader("X-AUTH-TOKEN");
 
             Person person = Person.findByAuthToken(token);
-            if(person == null) return GlobalResult.forbidden_Global("Account is not authorized");
+            if(person == null) return GlobalResult.forbidden_Permission("Account is not authorized");
 
             ObjectNode result = Json.newObject();
             result.set("person", Json.toJson(person));
@@ -172,9 +149,7 @@ public class SecurityController extends Controller {
             return GlobalResult.result_ok(result);
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("PersonController - getPerson ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -200,13 +175,11 @@ public class SecurityController extends Controller {
                 FloatingPersonToken.find.where().eq("authToken", token).findUnique().deleteAuthToken();
             }catch (Exception e){}
 
-
+            // JE nutné garantovat vždy odpověď ok za všech sytuací kromě kritického selhální
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - logout ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -418,9 +391,7 @@ public class SecurityController extends Controller {
             return GlobalResult.result_ok(Json.toJson(result));
 
         }catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("SecurityController - GitHub ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -462,10 +433,7 @@ public class SecurityController extends Controller {
             return GlobalResult.result_ok(Json.toJson(result));
 
         }catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("SecurityController - facebook ERROR");
-
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -477,7 +445,6 @@ public class SecurityController extends Controller {
 
             OAuthService service = Socials.Twitter(floatingPersonToken.providerKey);
 
-        // Kraviny
             Token requestToken = service.getRequestToken();
 
             Login_Social_Network result = new Login_Social_Network();
@@ -488,9 +455,7 @@ public class SecurityController extends Controller {
             return GlobalResult.result_ok(Json.toJson(result));
 
         }catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("SecurityController - Twitter ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -510,9 +475,7 @@ public class SecurityController extends Controller {
             return GlobalResult.result_ok(result);
 
         }catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("SecurityController - facebook ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 

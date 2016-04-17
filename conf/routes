@@ -157,19 +157,12 @@ DELETE        /overflow/hashTag/:post_id/:hashTag                               
 ################################################################################################################################################################################
 #Project
 POST           /project/project                                                             @controllers.ProgramingPackageController.postNewProject()
-PUT            /project/project/:project_id                                                 @controllers.ProgramingPackageController.updateProject(project_id)
+PUT            /project/project/:project_id                                                 @controllers.ProgramingPackageController.edit_Project(project_id)
 GET            /project/project/:project_id                                                 @controllers.ProgramingPackageController.getProject(project_id)
 GET            /project/project                                                             @controllers.ProgramingPackageController.getProjectsByUserAccount
 DELETE         /project/project/:project_id                                                 @controllers.ProgramingPackageController.deleteProject(project_id)
 PUT            /project/project/shareProject/:project_id                                    @controllers.ProgramingPackageController.shareProjectWithUsers(project_id)
 PUT            /project/project/unshareProject/:project_id                                  @controllers.ProgramingPackageController.unshareProjectWithUsers(project_id)
-
-GET            /project/project/b_programs/:project_id                                      @controllers.ProgramingPackageController.get_Project_b_Programs(project_id)
-GET            /project/project/c_programs/:project_id                                      @controllers.ProgramingPackageController.get_Project_c_Programs(project_id)
-GET            /project/project/m_projects/:project_id                                      @controllers.ProgramingPackageController.get_Project_m_Projects(project_id)
-GET            /project/project/homers/:project_id                                          @controllers.ProgramingPackageController.get_Project_homers(project_id)
-GET            /project/project/owners/:project_id                                          @controllers.ProgramingPackageController.get_Project_Owners(project_id)
-GET            /project/project/boards/:project_id                                          @controllers.ProgramingPackageController.getProjectsBoard(project_id)
 
 #Homer
 POST           /project/homer                                                               @controllers.ProgramingPackageController.newHomer()
@@ -200,7 +193,7 @@ GET            /project/listOfHomersWaitingForUpload/:id                        
 #Blocks
 POST           /project/blockoBlock                                                         @controllers.ProgramingPackageController.new_Block()
 PUT            /project/blockoBlock/:blocko_block_id                                        @controllers.ProgramingPackageController.edit_Block(blocko_block_id)
-GET            /project/blockoBlock/:blocko_block_id                                        @controllers.ProgramingPackageController.getBlockBlock(blocko_block_id)
+GET            /project/blockoBlock/:blocko_block_id                                        @controllers.ProgramingPackageController.getBlockoBlock(blocko_block_id)
 DELETE         /project/blockoBlock/:blocko_block_id                                        @controllers.ProgramingPackageController.deleteBlock(blocko_block_id)
 
 POST           /project/blockoBlock/version/:blocko_block_id                                @controllers.ProgramingPackageController.new_BlockoBlock_Version(blocko_block_id)
@@ -212,7 +205,6 @@ DELETE         /project/blockoBlock/version/:blocko_block_version_id            
 
 POST           /project/typeOfBlock                                                         @controllers.ProgramingPackageController.newTypeOfBlock()
 GET            /project/typeOfBlock                                                         @controllers.ProgramingPackageController.getAllTypeOfBlocks
-GET            /project/blockoBlock/project/:project_id                                     @controllers.ProgramingPackageController.get_TypeOfBlock_by_Project(project_id)
 GET            /project/typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.get_TypeOfBlock(type_of_block_id)
 PUT            /project/typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.editTypeOfBlock(type_of_block_id)
 
@@ -323,7 +315,6 @@ GET             /file/fileRecord/:file_record_id                                
 #M Project
 POST            /grid/m_project/:project_id                                                 @controllers.GridController.new_M_Project(project_id)
 GET             /grid/m_project/person                                                      @controllers.GridController.get_M_Projects_ByLoggedPerson()
-GET             /grid/m_project/project/:project_id                                         @controllers.GridController.get_M_Projects_from_GlobalProject(project_id)
 GET             /grid/m_project/:m_project_id                                               @controllers.GridController.get_M_Project(m_project_id)
 PUT             /grid/m_project/:m_project_id                                               @controllers.GridController.edit_M_Project(m_project_id)
 DELETE          /grid/m_project/:m_project_id                                               @controllers.GridController.remove_M_Project(m_project_id)
@@ -342,7 +333,6 @@ DELETE          /grid/m_program/:m_progrm_id                                    
 #M Screen Type
 POST            /grid/screen_type                                                           @controllers.GridController.new_Screen_Size_Type()
 GET             /grid/screen_type/all                                                       @controllers.GridController.get_Screen_Size_Type_Combination()
-GET             /grid/screen_type/project/:project_id                                       @controllers.GridController.get_Screen_Size_Type_from_Project(project_id)
 GET             /grid/screen_type/:screen_size_type_id                                      @controllers.GridController.get_Screen_Size_Type(screen_size_type_id)
 PUT             /grid/screen_type/:screen_size_type_id                                      @controllers.GridController.edit_Screen_Size_Type(screen_size_type_id)
 DELETE          /grid/screen_type/:screen_size_type_id                                      @controllers.GridController.remove_Screen_Size_Type(screen_size_type_id)

@@ -26,23 +26,6 @@ import java.util.List;
 @Security.Authenticated(Secured.class)
 public class PermissionController extends Controller {
 
-// SYSTEM PERMISSION ###################################################################################################
-      public static void set_System_Permission(){
-
-        new PersonPermission("role.read", "description");
-        new PersonPermission("role.person", "description");
-        new PersonPermission("role.manager", "description");
-        new PersonPermission("role.delete", "description");
-
-        new PersonPermission("permission.connect_with_person", "description");
-        new PersonPermission("permission.disconnect_with_person", "description");
-        new PersonPermission("permission.edit", "description");
-        new PersonPermission("permission.delete", "description");
-        new PersonPermission("permission.read", "description");
-    }
-
-//######################################################################################################################
-
 
     @ApiOperation(value = "add Permission to the Person",
             tags = {"Permission"},

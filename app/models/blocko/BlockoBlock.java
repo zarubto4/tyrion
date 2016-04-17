@@ -34,7 +34,7 @@ public class BlockoBlock extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty public Boolean create_permission() {
+    @JsonIgnore   public Boolean create_permission() {
         return BlockoBlock.find.where()
                 .or(
                         com.avaje.ebean.Expr.eq("type_of_block.project.ownersOfProject.id", SecurityController.getPerson().id),
@@ -54,7 +54,7 @@ public class BlockoBlock extends Model {
                         SecurityController.getPerson().has_permission("BlockoBlock.create");
     }
 
-    @JsonProperty public Boolean read_permission() {
+    @JsonIgnore   public Boolean read_permission() {
         return BlockoBlock.find.where()
                         .or(
                                 com.avaje.ebean.Expr.eq("type_of_block.project.ownersOfProject.id", SecurityController.getPerson().id),
@@ -74,6 +74,9 @@ public class BlockoBlock extends Model {
                         ||
                         SecurityController.getPerson().has_permission("BlockoBlock.delete");
     }
+
+
+    public enum permissions{BlockoBlock_create, BlockoBlock_read, BlockoBlock_edit, BlockoBlock_delete}
 
 /* FINDER -------------------------------------------------------------------------------------------------------------*/
     public static Finder<String,BlockoBlock> find = new Finder<>(BlockoBlock.class);

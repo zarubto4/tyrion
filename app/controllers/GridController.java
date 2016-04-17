@@ -4,18 +4,17 @@ import io.swagger.annotations.*;
 import models.compiler.Version_Object;
 import models.grid.Screen_Size_Type;
 import models.person.Person;
-import models.person.PersonPermission;
 import models.project.global.Project;
 import models.project.m_program.Grid_Terminal;
 import models.project.m_program.M_Program;
 import models.project.m_program.M_Project;
-import play.Logger;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Security;
+import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
@@ -26,22 +25,14 @@ import utilities.swagger.documentationClass.Swagger_ScreeSizeType_New;
 import utilities.swagger.outboundClass.Swagger_Screen_Size_Type_Combination;
 
 import javax.websocket.server.PathParam;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class GridController extends play.mvc.Controller {
-
-//### SYSTEM PERMISSION ################################################################################################
-
-    public static void set_System_Permission(){
-        new PersonPermission("role.read", "description");
-       //
-    }
-
-//######################################################################################################################
-
 
     @ApiOperation(value = "Create new M_Project",
             tags = {"M_Program"},
@@ -94,15 +85,13 @@ public class GridController extends play.mvc.Controller {
             m_project.date_of_create = new Date();
             m_project.project = project;
 
+            if (!m_project.create_permission())  return GlobalResult.forbidden_Permission();
             m_project.save();
 
             return GlobalResult.created( Json.toJson(m_project));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - postNewProject ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -132,12 +121,11 @@ public class GridController extends play.mvc.Controller {
             M_Project m_project = M_Project.find.byId(m_project_id);
             if (m_project == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
 
+            if (!m_project.read_permission())  return GlobalResult.forbidden_Permission();
             return GlobalResult.result_ok(Json.toJson(m_project));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - get_Screen_Size_Type ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -184,6 +172,8 @@ public class GridController extends play.mvc.Controller {
             M_Project m_project = M_Project.find.byId(m_project_id);
             if(m_project == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
 
+            if (!m_project.edit_permission())  return GlobalResult.forbidden_Permission();
+
             m_project.program_description = help.program_description;
             m_project.program_name = help.program_name;
 
@@ -191,10 +181,7 @@ public class GridController extends play.mvc.Controller {
             return GlobalResult.result_ok( Json.toJson(m_project));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - postNewProject ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -225,48 +212,12 @@ public class GridController extends play.mvc.Controller {
             M_Project m_project = M_Project.find.byId(m_project_id);
             if(m_project == null) return GlobalResult.notFoundObject("SecurityRole role_id not found");
 
+            if (!m_project.delete_permission())  return GlobalResult.forbidden_Permission();
             m_project.delete();
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - postNewProject ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
-        }
-    }
-
-    @ApiOperation(value = "get all M_Project by General Project",
-            tags = {"M_Program", "Project"},
-            notes = "get List<M_Project> by query = project_id",
-            produces = "application/json",
-            response =  M_Project.class,
-            protocols = "https",
-            code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "Person need this value of permission")}
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = M_Project.class, responseContainer = "List"),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @Security.Authenticated(Secured.class)
-    public Result get_M_Projects_from_GlobalProject(String project_id){
-        try {
-
-            List<M_Project> m_projects = M_Project.find.where().eq("project.id", project_id).findList();
-            return GlobalResult.result_ok(Json.toJson(m_projects));
-
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - get_Screen_Size_Type ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -300,9 +251,7 @@ public class GridController extends play.mvc.Controller {
             return GlobalResult.result_ok(Json.toJson(m_projects));
 
         }catch (Exception e){
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - get_Screen_Size_Type ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
 
     }
@@ -339,6 +288,11 @@ public class GridController extends play.mvc.Controller {
             Version_Object version_object = Version_Object.find.byId(version_id);
             if (version_object == null) return GlobalResult.notFoundObject("Project project_id not found");
 
+
+            if (!m_project.update_permission())                 return GlobalResult.forbidden_Permission();
+            if (!version_object.b_program.update_permission())  return GlobalResult.forbidden_Permission();
+
+
             m_project.b_program_version = version_object;
             m_project.auto_incrementing = auto_incrementing;
             m_project.b_program = version_object.b_program;
@@ -347,9 +301,7 @@ public class GridController extends play.mvc.Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - get_Screen_Size_Type ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -379,6 +331,8 @@ public class GridController extends play.mvc.Controller {
             M_Project m_project = M_Project.find.byId(m_project_id);
             if (m_project == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
 
+            if (!m_project.update_permission())                 return GlobalResult.forbidden_Permission();
+
             m_project.b_program_version = null;
             m_project.auto_incrementing = false;
             m_project.b_program = null;
@@ -387,9 +341,7 @@ public class GridController extends play.mvc.Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - get_Screen_Size_Type ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -454,15 +406,12 @@ public class GridController extends play.mvc.Controller {
 
             m_program.set_QR_Token();
 
-
+            if (!m_program.create_permission())  return GlobalResult.forbidden_Permission();
             m_program.save();
 
             return GlobalResult.created(Json.toJson(m_program));
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - postNewProject ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
 
     }
@@ -487,13 +436,11 @@ public class GridController extends play.mvc.Controller {
            if(m_program == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
            m_program.m_code = m_program.programInString;
 
-
+           if (!m_program.read_permission())  return GlobalResult.forbidden_Permission();
            return GlobalResult.result_ok(Json.toJson(m_program));
 
        }catch (Exception e){
-           Logger.error("Error", e);
-           Logger.error("ProgramingPackageController - postNewProject ERROR");
-           return GlobalResult.internalServerError();
+           return Loggy.result_internalServerError(e, request());
        }
     }
 
@@ -515,14 +462,12 @@ public class GridController extends play.mvc.Controller {
     public Result get_M_Program_all_forMobile(){
         try{
 
-            List<M_Program> m_programs = M_Program.find.where().eq("m_project.project.ownersOfProject.id", SecurityController.getPerson().id ).findList();
+            List<M_Program> m_programs = M_Program.find.where().eq("m_project.project.ownersOfProject.id", SecurityController.getPerson().id).findList().stream().filter(M_Program::read_permission).collect(Collectors.toList());
 
             return GlobalResult.result_ok(Json.toJson(m_programs));
 
         }catch (Exception e){
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - postNewProject ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -552,13 +497,13 @@ public class GridController extends play.mvc.Controller {
             M_Program m_program = M_Program.find.byId(m_program_id);
             if (m_program == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
 
+            if (!m_program.read_permission())  return GlobalResult.forbidden_Permission();
+
             m_program.m_code = m_program.programInString;
 
             return GlobalResult.result_ok(Json.toJson(m_program));
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - get_Screen_Size_Type ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -605,7 +550,12 @@ public class GridController extends play.mvc.Controller {
             Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId(help.screen_type_id);
             if(screen_size_type == null) return GlobalResult.notFoundObject("Screen_Size_Type screen_type_id not found");
 
+
+
+
             M_Program m_program = M_Program.find.byId(m_program_id);
+            if (!m_program.edit_permission())  return GlobalResult.forbidden_Permission();
+
             m_program.date_of_create      = new Date();
             m_program.program_description = help.program_description;
             m_program.program_name        = help.program_name;
@@ -615,14 +565,13 @@ public class GridController extends play.mvc.Controller {
             m_program.width_lock          = help.width_lock;
             m_program.last_update         = new Date();
 
+
+
             m_program.update();
 
             return GlobalResult.created(Json.toJson(m_program));
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - postNewProject ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -649,85 +598,19 @@ public class GridController extends play.mvc.Controller {
     @Security.Authenticated(Secured.class)
     public Result remove_M_Program(@ApiParam(value = "m_program_id String query", required = true) @PathParam("m_program_id") String m_program_id){
         try {
-            M_Program m_program_ = M_Program.find.byId(m_program_id);
-            if (m_program_ == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
+            M_Program m_program = M_Program.find.byId(m_program_id);
+            if (m_program == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
 
-            m_program_.delete();
+            if (!m_program.delete_permission())  return GlobalResult.forbidden_Permission();
+            m_program.delete();
 
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - get_Screen_Size_Type ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
-    @ApiOperation(value = "get all M_Program by M_Project",
-            tags = {"M_Program"},
-            notes = "remove M_Program by quarry = m_project_id",
-            produces = "application/json",
-            response =  Result_ok.class,
-            protocols = "https",
-            code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "Person need this value of permission")}
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Result_ok.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @Security.Authenticated(Secured.class)
-    public Result getAll_M_Program_from_M_Project(@ApiParam(name = "m_project_id", value = "project_id String query", required = true) @PathParam("m_project_id") String m_project_id){
-        try {
-            M_Project project = M_Project.find.byId(m_project_id);
-            if (project == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
-
-            return GlobalResult.result_ok(Json.toJson(project.m_programs));
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - get_Screen_Size_Type ERROR");
-            return GlobalResult.internalServerError();
-        }
-    }
-
-    @ApiOperation(value = "get all M_Program by General Project",
-            tags = {"M_Program", "Project"},
-            notes = "remove M_Program by quarry = m_project_id",
-            produces = "application/json",
-            protocols = "https",
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "Person need this value of permission")}
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = M_Program.class, responseContainer = "List"),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @Security.Authenticated(Secured.class)
-    public Result get_all_M_Program_from_Project(@ApiParam(value = "project_id String query", required = true) @PathParam("project_id") String project_id){
-        try {
-
-            List<M_Program> list = M_Program.find.where().eq("m_project.project.id", project_id).findList();
-            return GlobalResult.result_ok(Json.toJson(list));
-
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - get_Screen_Size_Type ERROR");
-            return GlobalResult.internalServerError();
-        }
-    }
 
 //######################################################################################################################
 
@@ -806,13 +689,14 @@ public class GridController extends play.mvc.Controller {
                 screen_size_type.project = project;
             }
 
+            if (!screen_size_type.create_permission())  return GlobalResult.forbidden_Permission();
+
             screen_size_type.save();
 
             return GlobalResult.created(Json.toJson(screen_size_type));
 
         } catch (Exception e) {
-           // return Loggy.internalServerError(  Thread.currentThread().getStackTrace()[0].getClassName(),  Thread.currentThread().getStackTrace()[0].getMethodName(),  ((SecurityController.getPerson() != null ) ?  SecurityController.getPerson() :  null ), e.getLocalizedMessage());
-           return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -841,11 +725,11 @@ public class GridController extends play.mvc.Controller {
             Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId(screen_size_type_id);
             if (screen_size_type == null) return GlobalResult.notFoundObject("Screen_Size_Type screen_type_id not found");
 
+            if (!screen_size_type.read_permission())  return GlobalResult.forbidden_Permission();
+
             return GlobalResult.result_ok(Json.toJson(screen_size_type));
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - get_Screen_Size_Type ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -866,8 +750,11 @@ public class GridController extends play.mvc.Controller {
     public Result get_Screen_Size_Type_Combination(){
         try {
 
-            List<Screen_Size_Type> public_list = Screen_Size_Type.find.where().eq("project", null).findList();
-            List<Screen_Size_Type> private_list = Screen_Size_Type.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).findList();
+            List<Screen_Size_Type> public_list = new ArrayList<>();
+            List<Screen_Size_Type> private_list =  new ArrayList<>();
+
+            for(Screen_Size_Type type : Screen_Size_Type.find.where().eq("project", null).findList() )                                                  if (type.read_permission()) public_list.add(type);
+            for(Screen_Size_Type type : Screen_Size_Type.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).findList() ) if (type.read_permission())  private_list.add(type);
 
 
             Swagger_Screen_Size_Type_Combination help = new Swagger_Screen_Size_Type_Combination();
@@ -877,38 +764,10 @@ public class GridController extends play.mvc.Controller {
             return GlobalResult.result_ok(Json.toJson(help));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - get_Screen_Size_Type ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
-    @ApiOperation(value = "get all ScreenType from Project",
-            tags = {"Screen_Size_Type", "Project"},
-            notes = "get all ScreenType from project.",
-            produces = "application/json",
-            code = 200,
-            protocols = "https"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Ok Result", response = Screen_Size_Type.class, responseContainer = "List"),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @Security.Authenticated(Secured.class)
-    public Result get_Screen_Size_Type_from_Project(String project_id){
-        try {
-
-            List<Screen_Size_Type> screen_size_types = Screen_Size_Type.find.where().eq("project.id", project_id).findList();
-
-            return GlobalResult.result_ok(Json.toJson(screen_size_types));
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - get_Screen_Size_Type ERROR");
-            return GlobalResult.internalServerError();
-        }
-    }
 
     @ApiOperation(value = "edit ScreenType",
             tags = {"Screen_Size_Type"},
@@ -953,6 +812,8 @@ public class GridController extends play.mvc.Controller {
             Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId(screen_size_type_id);
             if(screen_size_type == null) return GlobalResult.notFoundObject("Screen_Size_Type screen_type_id not found");
 
+            if (!screen_size_type.edit_permission())  return GlobalResult.forbidden_Permission();
+
             screen_size_type.name = help.name;
 
             screen_size_type.landscape_height = help.landscape_height;
@@ -987,10 +848,7 @@ public class GridController extends play.mvc.Controller {
             return GlobalResult.result_ok(Json.toJson(screen_size_type));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - postNewProject ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1020,13 +878,13 @@ public class GridController extends play.mvc.Controller {
             Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId(screen_size_type_id);
             if(screen_size_type == null) return GlobalResult.notFoundObject("Screen_Size_Type screen_type_id not found");
 
+            if (!screen_size_type.delete_permission())  return GlobalResult.forbidden_Permission();
+
             screen_size_type.delete();
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - get_Screen_Size_Type ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1084,8 +942,7 @@ public class GridController extends play.mvc.Controller {
             return GlobalResult.created(Json.toJson(terminal));
 
         }catch (Exception e){
-            Logger.error("Error", e);
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1145,8 +1002,7 @@ public class GridController extends play.mvc.Controller {
             }
 
         }catch (Exception e){
-            Logger.error("Error", e);
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 

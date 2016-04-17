@@ -203,7 +203,7 @@ public class NotificationController extends Controller {
 
       Notification notification = Notification.find.where().eq("id",notification_id).where().eq("person.id", SecurityController.getPerson().id).findUnique();
 
-      if(notification == null && Notification.find.where().eq("id",notification_id).findUnique() != null ) return GlobalResult.forbidden_Global();
+      if(notification == null && Notification.find.where().eq("id",notification_id).findUnique() != null ) return GlobalResult.forbidden_Permission();
       if(notification == null)                                                                             return GlobalResult.notFoundObject("Notification notification_id not found");
 
       notification.delete();
@@ -242,7 +242,7 @@ public class NotificationController extends Controller {
 
       Notification notification = Notification.find.where().eq("id",notification_id).where().eq("person.id", SecurityController.getPerson().id).findUnique();
 
-      if(notification == null && Notification.find.where().eq("id",notification_id).findUnique() != null ) return GlobalResult.forbidden_Global();
+      if(notification == null && Notification.find.where().eq("id",notification_id).findUnique() != null ) return GlobalResult.forbidden_Permission();
       if(notification == null)                                                                             return GlobalResult.notFoundObject("Notification notification_id not found");
 
 

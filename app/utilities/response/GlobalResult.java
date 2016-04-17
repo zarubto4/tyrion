@@ -78,7 +78,7 @@ public class GlobalResult extends Controller {
 
     // Používá se výhradně pro odmítnutí uživatelovi akce z bezečnostních důvodů
     // Například nemá oprávnění (Klíč) přistupovat k projektům ostatních uživatelů
-    public static Status forbidden_Global(){
+    public static Status forbidden_Permission(){
         CoreResponse.cors();
         return Controller.forbidden(Json.toJson(new Result_PermissionRequired() ) );
     }
@@ -86,7 +86,7 @@ public class GlobalResult extends Controller {
 
     // Používá se výhradně pro odmítnutí uživatelovi akce z bezečnostních důvodů
     // Například nemá oprávnění (Klíč) přistupovat k projektům ostatních uživatelů
-    public static Status forbidden_Global(String message){
+    public static Status forbidden_Permission(String message){
         CoreResponse.cors();
 
         Result_PermissionRequired resultPermissionRequired = new Result_PermissionRequired();

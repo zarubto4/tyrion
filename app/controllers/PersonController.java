@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.*;
 import models.person.FloatingPersonToken;
 import models.person.Person;
-import models.person.PersonPermission;
 import models.person.ValidationToken;
 import play.Logger;
 import play.api.libs.mailer.MailerClient;
@@ -33,11 +32,6 @@ public class PersonController extends Controller {
 
     @Inject MailerClient mailerClient;
 
-//### SYSTEM PERMISSION ################################################################################################
-    public static void set_System_Permission(){
-        new PersonPermission("role.read", "description");
-        //
-    }
 //######################################################################################################################
 
     @ApiOperation(value = "register new Person",

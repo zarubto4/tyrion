@@ -5,13 +5,21 @@ import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
-import controllers.*;
+import models.blocko.BlockoBlock;
+import models.blocko.BlockoBlockVersion;
+import models.blocko.TypeOfBlock;
+import models.person.PersonPermission;
+import models.project.b_program.B_Program;
+import models.project.global.Homer;
+import models.project.global.Project;
 import org.slf4j.LoggerFactory;
 import play.Configuration;
 import play.Play;
 import utilities.webSocket.ClientThreadChecker;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Server {
 
@@ -39,6 +47,8 @@ public class Server {
 
     public static Boolean server_mode;
     public static String server_version;
+
+    static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
     public static void set_Server_address() throws Exception{
 
@@ -172,13 +182,31 @@ public class Server {
      */
     public static void setPermission() throws Exception{
 
-        CompilationLibrariesController.set_System_Permission();
-        PermissionController.set_System_Permission();
-        GridController.set_System_Permission();
-        OverFlowController.set_System_Permission();
-        PersonController.set_System_Permission();
-        ProgramingPackageController.set_System_Permission();
-        SecurityController.set_System_Permission();
+        List<String> permissions = new ArrayList<>();
+
+        // Models
+            // Blocko
+                for(Enum en : BlockoBlock.permissions.values())             permissions.add(en.name());
+                for(Enum en : BlockoBlockVersion.permissions.values())      permissions.add(en.name());
+                for(Enum en : TypeOfBlock.permissions.values())             permissions.add(en.name());
+
+            // compiler
+
+            // grid
+
+            // project
+                // b_program
+                    for(Enum en : B_Program.permissions.values())          permissions.add(en.name());
+                // c_program
+
+                // global
+                    for(Enum en : Homer.permissions.values())                permissions.add(en.name());
+                    for(Enum en : Project.permissions.values())              permissions.add(en.name());
+                // m_program
+
+        logger.info("Number of Static Permissions " + permissions.size() );
+
+        for(String permission : permissions) new PersonPermission(permission, "description");
 
     }
 

@@ -5,17 +5,13 @@ import io.swagger.annotations.*;
 import models.blocko.BlockoBlock;
 import models.blocko.BlockoBlockVersion;
 import models.blocko.TypeOfBlock;
-import models.compiler.Board;
 import models.compiler.Version_Object;
 import models.person.Person;
-import models.person.PersonPermission;
 import models.project.b_program.B_Program;
 import models.project.b_program.B_Program_Cloud;
 import models.project.b_program.B_Program_Homer;
-import models.project.c_program.C_Program;
 import models.project.global.Homer;
 import models.project.global.Project;
-import models.project.m_program.M_Project;
 import play.Configuration;
 import play.Logger;
 import play.data.Form;
@@ -25,6 +21,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.UtilTools;
+import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured;
 import utilities.notification.Notification_level;
 import utilities.response.GlobalResult;
@@ -39,13 +36,6 @@ import java.util.concurrent.TimeoutException;
 @Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Secured.class)
 public class ProgramingPackageController extends Controller {
-
-//### SYSTEM PERMISSION ################################################################################################
-
-    public static void set_System_Permission(){
-        new PersonPermission("role.read", "description");
-        //
-    }
 
 // GENERAL PROJECT #####################################################################################################
 
@@ -94,16 +84,16 @@ public class ProgramingPackageController extends Controller {
             project.project_description = help.project_description;
 
             project.ownersOfProject.add( SecurityController.getPerson() );
+
+            if (!project.create_permission())  return GlobalResult.forbidden_Permission();
+
             project.save();
 
             return GlobalResult.created( Json.toJson(project) );
 
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - postNewProject ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -135,9 +125,7 @@ public class ProgramingPackageController extends Controller {
             return GlobalResult.result_ok(Json.toJson( projects ));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - getProjectsByUserAccount ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
 
     }
@@ -168,14 +156,12 @@ public class ProgramingPackageController extends Controller {
             Project project = Project.find.byId(project_id);
             if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
-            if (    Project.find.where().eq("ownersOfProject.id", SecurityController.getPerson().id).eq("id", project_id).findUnique() == null ) return GlobalResult.forbidden_Global();
+            if (!project.read_permission())   return GlobalResult.forbidden_Permission();
 
             return GlobalResult.result_ok(Json.toJson(project));
 
          } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - getProjectsByUserAccount ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -205,154 +191,14 @@ public class ProgramingPackageController extends Controller {
             Project project = Project.find.byId(project_id);
             if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
-            if (!project.ownersOfProject.contains( SecurityController.getPerson() ) ) return GlobalResult.forbidden_Global();
+            if (!project.delete_permission())   return GlobalResult.forbidden_Permission();
 
             project.delete();
 
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - deleteProject ERROR");
-            return GlobalResult.internalServerError();
-        }
-    }
-
-    @ApiOperation(value = "get Homers from Project",
-            tags = {"Project", "Homer"},
-            notes = "get List of Homers from Projects by project_id",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Homer.class, responseContainer = "List"),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public  Result get_Project_homers(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
-        try{
-
-            Project project  = Project.find.byId(project_id);
-            if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
-
-            return GlobalResult.result_ok(Json.toJson(project.homerList));
-
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - getProgramhomerList ERROR");
-            return GlobalResult.internalServerError();
-        }
-    }
-
-    @ApiOperation(value = "get B_Programs from Project",
-            tags = {"Project","B_Program"},
-            notes = "get List of B_Programs from Projects by project_id",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  B_Program.class, responseContainer = "List"),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public  Result get_Project_b_Programs(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
-        try {
-
-            Project project = Project.find.byId(project_id);
-            if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
-
-            return GlobalResult.result_ok(Json.toJson( project.b_programs));
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - removeProgram ERROR");
-            return GlobalResult.internalServerError();
-        }
-    }
-
-    @ApiOperation(value = "get C_Programs from Project",
-            tags = {"Project","C_Program"},
-            notes = "get List of C_Programs from Projects by project_id",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  C_Program.class, responseContainer = "List"),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public  Result get_Project_c_Programs(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
-        try {
-
-            Project project = Project.find.byId(project_id);
-            if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
-
-            return GlobalResult.result_ok(Json.toJson( project.c_programs));
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - removeProgram ERROR");
-            return GlobalResult.internalServerError();
-        }
-    }
-
-    @ApiOperation(value = "get M_Projects from Project",
-            tags = {"Project","M_Program"},
-            notes = "get List of M_Projects from Projects by project_id",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  M_Project.class, responseContainer = "List"),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public  Result get_Project_m_Projects(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
-        try {
-
-            Project project = Project.find.byId(project_id);
-            if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
-
-
-            return GlobalResult.result_ok(Json.toJson( project.m_projects));
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - removeProgram ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -389,7 +235,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public  Result updateProject(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
+    public  Result edit_Project(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
         try {
 
             final Form<Swagger_Project_New> form = Form.form(Swagger_Project_New.class).bindFromRequest();
@@ -399,7 +245,7 @@ public class ProgramingPackageController extends Controller {
             Project project = Project.find.byId(project_id);
             if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
-            if (!project.ownersOfProject.contains( SecurityController.getPerson() ) ) return GlobalResult.forbidden_Global();
+            if (!project.share_permission() )   return GlobalResult.forbidden_Permission();
 
             project.project_name = help.project_name;
             project.project_description = help.project_description;
@@ -409,45 +255,7 @@ public class ProgramingPackageController extends Controller {
 
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - updateProject ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
-        }
-    }
-
-    @ApiOperation(value = "get all Boards from Project",
-            tags = {"Project", "Board"},
-            notes = "get all Boards (IoT) from Projects by project_id",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Board.class, responseContainer = "List"),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public Result getProjectsBoard(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
-        try {
-
-            Project project = Project.find.byId(project_id);
-            if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
-
-            return GlobalResult.result_ok(Json.toJson(project.boards));
-
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - get_Board ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -492,6 +300,7 @@ public class ProgramingPackageController extends Controller {
             Project project = Project.find.byId(project_id);
             if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
+            if (!project.share_permission() )   return GlobalResult.forbidden_Permission();
 
             for (Person person : help.get_person()) {
                 if (!person.owningProjects.contains(project)) {
@@ -506,10 +315,7 @@ public class ProgramingPackageController extends Controller {
             return GlobalResult.result_ok(Json.toJson(project));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - shareProjectWithUsers ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -554,6 +360,8 @@ public class ProgramingPackageController extends Controller {
             Project project = Project.find.byId(project_id);
             if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
+            if (!project.unshare_permission() )   return GlobalResult.forbidden_Permission();
+
             for (Person person : help.get_person()) {
                 if (person.owningProjects.contains(project)) {
                     project.ownersOfProject.remove(person);
@@ -565,47 +373,8 @@ public class ProgramingPackageController extends Controller {
             project.update();
 
             return GlobalResult.result_ok(Json.toJson(project));
-
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - unshareProjectWithUsers ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
-        }
-    }
-
-    @ApiOperation(value = "get all Persons from Project",
-            tags = {"Project", "Board"},
-            notes = "unshare Project with all users in list: List<person_id>",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Person.class, responseContainer = "List"),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public Result get_Project_Owners(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
-        try {
-
-            Project project = Project.find.byId(project_id);
-            if(project == null) return GlobalResult.result_BadRequest("Project project_id not found");
-
-            return GlobalResult.result_ok(Json.toJson(project.ownersOfProject));
-
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - shareProjectWithUsers ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -657,15 +426,14 @@ public class ProgramingPackageController extends Controller {
             homer.id = help.homer_id;
             homer.type_of_device = help.type_of_device;
 
+            if (!homer.create_permission() )   return GlobalResult.forbidden_Permission();
+
             homer.save();
 
             return GlobalResult.result_ok(Json.toJson(homer));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - newHomer ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -695,14 +463,14 @@ public class ProgramingPackageController extends Controller {
            Homer homer = Homer.find.byId(homer_id);
            if(homer == null) return GlobalResult.notFoundObject("Homer id not found");
 
+            if (!homer.delete_permission() )   return GlobalResult.forbidden_Permission();
+
            homer.delete();
 
            return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - removeHomer ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -731,12 +499,12 @@ public class ProgramingPackageController extends Controller {
             Homer homer = Homer.find.byId(homer_id);
             if (homer == null) return GlobalResult.notFoundObject("Homer id not found");
 
+            if (!homer.read_permission() )   return GlobalResult.forbidden_Permission();
+
             return GlobalResult.result_ok( Json.toJson(homer) );
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - removeHomer ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -789,16 +557,17 @@ public class ProgramingPackageController extends Controller {
             if(project == null)  return GlobalResult.notFoundObject("Project project_id not found");
             if(homer == null)  return GlobalResult.notFoundObject("Homer id not found");
 
+            if (!project.update_permission() ) return GlobalResult.forbidden_Permission();
+            if (!homer.update_permission() )   return GlobalResult.forbidden_Permission();
+
+
             homer.project = project;
             homer.update();
 
             return GlobalResult.result_ok(Json.toJson(project));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - connectHomerWithProject ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -807,14 +576,7 @@ public class ProgramingPackageController extends Controller {
             notes = "remove Homer",
             produces = "application/json",
             protocols = "https",
-            code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
-            }
+            code = 200
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response =  Project.class),
@@ -832,6 +594,9 @@ public class ProgramingPackageController extends Controller {
             if(homer == null)  return GlobalResult.notFoundObject("Homer id not found");
 
 
+            if (!project.update_permission() ) return GlobalResult.forbidden_Permission();
+            if (!homer.update_permission() )   return GlobalResult.forbidden_Permission();
+
             if( project.homerList.contains(homer)) homer.project = null;
             homer.update();
             project.homerList.remove(homer);
@@ -839,9 +604,7 @@ public class ProgramingPackageController extends Controller {
             return GlobalResult.result_ok(Json.toJson(project));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - unConnectHomerWithProject ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -889,6 +652,8 @@ public class ProgramingPackageController extends Controller {
             Project project = Project.find.byId(project_id);
             if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
+            if (!project.update_permission() ) return GlobalResult.forbidden_Permission();
+
             // Tvorba programu
             B_Program b_program             = new B_Program();
             b_program.azurePackageLink      = "personal-program";
@@ -898,14 +663,14 @@ public class ProgramingPackageController extends Controller {
             b_program.project               = project;
             b_program.setUniqueAzureStorageLink();
 
+            if (!b_program.create_permission() ) return GlobalResult.forbidden_Permission();
+
             b_program.save();
 
             return GlobalResult.created(Json.toJson(b_program));
+
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - postNewBProgram ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -932,14 +697,15 @@ public class ProgramingPackageController extends Controller {
     public  Result get_b_Program(@ApiParam(value = "id String path", required = true) @PathParam("id") String b_program_id){
         try{
 
-            B_Program program = B_Program.find.byId(b_program_id);
-            if (program == null) return GlobalResult.notFoundObject("B_Program id not found");
+            B_Program b_program = B_Program.find.byId(b_program_id);
+            if (b_program == null) return GlobalResult.notFoundObject("B_Program id not found");
 
-            return GlobalResult.result_ok(Json.toJson(program));
+            if (!b_program.read_permission() ) return GlobalResult.forbidden_Permission();
+
+            return GlobalResult.result_ok(Json.toJson(b_program));
+
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - getProgram ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -969,11 +735,12 @@ public class ProgramingPackageController extends Controller {
             Version_Object program = Version_Object.find.byId(version_id);
             if (program == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
+            if (! program.b_program.read_permission() ) return GlobalResult.forbidden_Permission();
+
             return GlobalResult.result_ok(Json.toJson(program));
+
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - getProgram ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1017,6 +784,8 @@ public class ProgramingPackageController extends Controller {
             B_Program b_program  = B_Program.find.byId(b_program_id);
             if (b_program == null) return GlobalResult.notFoundObject("B_Program id not found");
 
+            if (! b_program.edit_permission() ) return GlobalResult.forbidden_Permission();
+
             b_program.program_description = help.program_description;
             b_program.name                  = help.name;
 
@@ -1025,10 +794,7 @@ public class ProgramingPackageController extends Controller {
 
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - editProgram ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1075,6 +841,8 @@ public class ProgramingPackageController extends Controller {
             B_Program b_program = B_Program.find.byId(b_program_id);
             if (b_program == null) return GlobalResult.notFoundObject("B_Program id not found");
 
+            if (! b_program.update_permission() ) return GlobalResult.forbidden_Permission();
+
             // První nová Verze
             Version_Object versionObjectObject          = new Version_Object();
             versionObjectObject.version_name            = help.version_name;
@@ -1096,10 +864,7 @@ public class ProgramingPackageController extends Controller {
             return GlobalResult.result_ok(Json.toJson(versionObjectObject));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - editProgram ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1129,15 +894,13 @@ public class ProgramingPackageController extends Controller {
             B_Program program  = B_Program.find.byId(b_program_id);
             if (program == null) return GlobalResult.notFoundObject("B_Program id not found");
 
-
+            if (! program.delete_permission() ) return GlobalResult.forbidden_Permission();
             program.delete();
 
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - removeProgram ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1212,7 +975,7 @@ public class ProgramingPackageController extends Controller {
                 } catch (InterruptedException e){
                     NotificationController.send_notification(homer.project.ownersOfProject, Notification_level.error, "Attempt updating Homer device to new version. Server side problem.");
                 } catch (Exception e ){
-                    NotificationController.send_notification(homer.project.ownersOfProject, Notification_level.error, "Attempt updating Homer device to new version. Critical bug with loading problem. The error was automatically reported to technical support.");
+                    NotificationController.send_notification(homer.project.ownersOfProject, Notification_level.error, "Attempt updating Homer device to new version. Critical bug with loading. The error was automatically reported to technical support.");
                 }
 
             }};
@@ -1222,7 +985,7 @@ public class ProgramingPackageController extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1300,22 +1063,20 @@ public class ProgramingPackageController extends Controller {
          } catch (InterruptedException a) {
             return GlobalResult.result_BadRequest("Vlákno nahrávání bylo přerušeno ");
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - removeProgram ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
     //TODO
     public Result listOfUploadedHomers(String id) {
         //Na id B_Program vezmu všechny Houmry na kterých je program nahrán
-        return GlobalResult.ok("Nutné dodělat - listOfUploadedHomers");
+        return TODO;
     }
 
     //TODO
     public Result listOfHomersWaitingForUpload(String id){
         //Na id B_Program vezmu všechny Houmry na které jsem program ještě nenahrál
-        return GlobalResult.ok("Nutné dodělat - listOfHomersWaitingForUpload");
+        return TODO;
     }
 
 // TYPE OF BLOCK #######################################################################################################
@@ -1374,13 +1135,44 @@ public class ProgramingPackageController extends Controller {
 
             }
 
+            if (! typeOfBlock.create_permission() ) return GlobalResult.forbidden_Permission();
+
             typeOfBlock.save();
 
             return GlobalResult.created( Json.toJson(typeOfBlock));
         } catch (Exception e) {
-            Logger.error("Error", e);
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
+    }
+
+    @ApiOperation(value = "get TypeOfBlock ",
+            tags = {"Blocko-Block"},
+            notes = "get BlockoBlock ",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response =  TypeOfBlock.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result get_TypeOfBlock(String type_of_block_id){
+        try {
+
+            TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(type_of_block_id);
+            if(typeOfBlock == null) return GlobalResult.notFoundObject("TypeOfBlock type_of_block_id not found");
+
+            if (! typeOfBlock.read_permission() ) return GlobalResult.forbidden_Permission();
+
+            return GlobalResult.result_ok(Json.toJson(typeOfBlock));
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+
+
     }
 
     @ApiOperation(value = "edit Type of Block",
@@ -1426,6 +1218,8 @@ public class ProgramingPackageController extends Controller {
             TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(type_of_block_id);
             if(typeOfBlock == null) return GlobalResult.notFoundObject("TypeOfBlock type_of_block_id not found");
 
+            if (! typeOfBlock.edit_permission() ) return GlobalResult.forbidden_Permission();
+
             typeOfBlock.general_description = help.general_description;
             typeOfBlock.name                = help.name;
 
@@ -1442,8 +1236,7 @@ public class ProgramingPackageController extends Controller {
             return GlobalResult.result_ok( Json.toJson(typeOfBlock));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1475,46 +1268,14 @@ public class ProgramingPackageController extends Controller {
             TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(type_of_block_id);
             if(typeOfBlock == null) return GlobalResult.notFoundObject("TypeOfBlock type_of_block_id not found");
 
+            if (! typeOfBlock.delete_permission()) return GlobalResult.forbidden_Permission();
+
             typeOfBlock.delete();
 
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            return GlobalResult.internalServerError();
-        }
-    }
-
-    @ApiOperation(value = "get all Type of Block from Project",
-            tags = {"Type of Block", "Project"},
-            notes = "get all Type of Block from project",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                      @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  TypeOfBlock.class, responseContainer = "List"),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public Result get_TypeOfBlock_by_Project(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
-        try {
-            Project project = Project.find.byId(project_id);
-            if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
-
-            return GlobalResult.result_ok(Json.toJson(project.type_of_blocks));
-
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1541,15 +1302,21 @@ public class ProgramingPackageController extends Controller {
     })
     public Result getAllTypeOfBlocks(){
         try {
-            return GlobalResult.result_ok(Json.toJson(TypeOfBlock.find.all()));
+
+            List<TypeOfBlock> typeOfBlocks = TypeOfBlock.find.where().or(
+                                                     com.avaje.ebean.Expr.eq("project.ownersOfProject.id", SecurityController.getPerson().id ),
+                                                     com.avaje.ebean.Expr.isNull("project")
+                                             ).findList();
+
+            for(TypeOfBlock typeOfBlock :typeOfBlocks ) if(! typeOfBlock.read_permission())  return GlobalResult.forbidden_Permission();
+            return GlobalResult.result_ok(Json.toJson(typeOfBlocks));
+
         } catch (Exception e) {
-            Logger.error("Error", e);
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
 // BLOCK ###############################################################################################################
-
 
     @ApiOperation(value = "create new Block",
             tags = {"Blocko-Block"},
@@ -1592,6 +1359,7 @@ public class ProgramingPackageController extends Controller {
 
 
             BlockoBlock blockoBlock = new BlockoBlock();
+
             blockoBlock.general_description = help.general_description;
             blockoBlock.name                = help.name;
             blockoBlock.author              = SecurityController.getPerson();
@@ -1600,14 +1368,14 @@ public class ProgramingPackageController extends Controller {
            if(typeOfBlock == null) return GlobalResult.notFoundObject("TypeOfBlock type_of_block_id not found");
 
            blockoBlock.type_of_block = typeOfBlock;
-           blockoBlock.save();
 
+           if (! blockoBlock.create_permission() ) return GlobalResult.forbidden_Permission("You have no permission to create");
+
+           blockoBlock.save();
 
             return GlobalResult.result_ok( Json.toJson(blockoBlock) );
        } catch (Exception e) {
-           Logger.error("Error", e);
-           Logger.error("ProgramingPackageController - newBlock ERROR");
-           return GlobalResult.internalServerError();
+           return Loggy.result_internalServerError(e, request());
        }
     }
 
@@ -1653,7 +1421,11 @@ public class ProgramingPackageController extends Controller {
 
 
                 BlockoBlock blockoBlock = BlockoBlock.find.byId(blocko_block_id);
+
                 if (blockoBlock == null) return GlobalResult.notFoundObject("BlockoBlock blocko_block_id not found");
+
+                if (! blockoBlock.edit_permission() ) return GlobalResult.forbidden_Permission("You have no permission to edit");
+
 
                 blockoBlock.general_description = help.general_description;
                 blockoBlock.name                = help.name;
@@ -1668,9 +1440,7 @@ public class ProgramingPackageController extends Controller {
                 return GlobalResult.result_ok(Json.toJson(blockoBlock));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - getBlockLast ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
 
     }
@@ -1701,12 +1471,13 @@ public class ProgramingPackageController extends Controller {
                 BlockoBlockVersion blocko_version = BlockoBlockVersion.find.byId(blocko_version_id);
                 if(blocko_version == null) return GlobalResult.notFoundObject("BlockoBlock blocko_block_id not found");
 
+
+                if (! blocko_version.read_permission() ) return GlobalResult.forbidden_Permission("You have no permission to get that");
+
                 return GlobalResult.result_ok(Json.toJson(blocko_version));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - getBlockVersion ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
 
     }
@@ -1732,48 +1503,18 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result getBlockBlock(@ApiParam(value = "blocko_block_id String path",   required = true) @PathParam("blocko_block_id") String blocko_block_id){
+    public Result getBlockoBlock(@ApiParam(value = "blocko_block_id String path",   required = true) @PathParam("blocko_block_id") String blocko_block_id){
         try {
             BlockoBlock blockoBlock = BlockoBlock.find.byId(blocko_block_id);
             if(blockoBlock == null) return GlobalResult.notFoundObject("BlockoBlock blocko_block_id not found");
 
+            if (! blockoBlock.read_permission() ) return GlobalResult.forbidden_Permission();
+
             return GlobalResult.result_ok(Json.toJson(blockoBlock));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - getBlockVersion ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
-
-    }
-
-    @ApiOperation(value = "get TypeOfBlock ",
-            tags = {"Blocko-Block"},
-            notes = "get BlockoBlock ",
-            produces = "application/json",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response =  TypeOfBlock.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public Result get_TypeOfBlock(String type_of_block_id){
-        try {
-
-            TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(type_of_block_id);
-            if(typeOfBlock == null) return GlobalResult.notFoundObject("TypeOfBlock type_of_block_id not found");
-
-            return GlobalResult.result_ok(Json.toJson(typeOfBlock));
-
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - getBlockLast ERROR");
-            return GlobalResult.internalServerError();
-        }
-
 
     }
 
@@ -1801,13 +1542,14 @@ public class ProgramingPackageController extends Controller {
 
             BlockoBlock blockoBlock = BlockoBlock.find.byId(blocko_block_id);
             if(blockoBlock == null) return GlobalResult.notFoundObject("BlockoBlock blocko_block_id not found");
+
+            if (! blockoBlock.delete_permission()) return GlobalResult.forbidden_Permission();
+
             blockoBlock.delete();
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - shareProjectWithUsers ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1833,17 +1575,17 @@ public class ProgramingPackageController extends Controller {
     public Result delete_BlockoBlock_Version(String blocko_block_version_id){
         try {
 
-            BlockoBlockVersion blockoContentBlock = BlockoBlockVersion.find.byId(blocko_block_version_id);
-            if(blockoContentBlock == null) return GlobalResult.notFoundObject("BlockoBlockVersion blocko_block_version_id not found");
+            BlockoBlockVersion version = BlockoBlockVersion.find.byId(blocko_block_version_id);
+            if(version == null) return GlobalResult.notFoundObject("BlockoBlockVersion blocko_block_version_id not found");
 
-            blockoContentBlock.delete();
+            if (! version.delete_permission()) return GlobalResult.forbidden_Permission();
+
+            version.delete();
 
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - shareProjectWithUsers ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1895,17 +1637,16 @@ public class ProgramingPackageController extends Controller {
             version.design_json = help.design_json;
             version.logic_json = help.logic_json;
             version.blocko_block = blockoBlock;
+
+            if (! blockoBlock.create_permission()) return GlobalResult.forbidden_Permission();
+
             version.save();
 
-            //blocko_block.blocko_versions.add(version);
             return GlobalResult.result_ok(Json.toJson(blockoBlock));
 
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - shareProjectWithUsers ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1958,10 +1699,7 @@ public class ProgramingPackageController extends Controller {
             return GlobalResult.result_ok(Json.toJson(version));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - shareProjectWithUsers ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -2001,12 +1739,13 @@ public class ProgramingPackageController extends Controller {
         try {
             BlockoBlock blockoBlock = BlockoBlock.find.byId(blocko_block_id);
             if (blockoBlock == null) return GlobalResult.notFoundObject("BlockoBlock blocko_block_id not found");
+            if (! blockoBlock.read_permission()) return GlobalResult.forbidden_Permission();
+
+
             return GlobalResult.ok(Json.toJson(blockoBlock.blocko_versions));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - allPrevVersions ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
