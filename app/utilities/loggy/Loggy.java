@@ -119,24 +119,28 @@ public class Loggy{
         return GlobalResult.internalServerError();
     }
 
-    public static void error(String id, String summary, String description) {
-        logger.error(summary+"\n"+description);
-        LoggyError error = new LoggyError(id, summary, description);
+    public static void error(String summary, String description) {
+        error(UUID.randomUUID().toString(), summary, description);
+    }
+
+    private static void error(String id, String summary, String description) {
+        logger.error(summary+"\n"+description); // zapíšu do souboru
+        LoggyError error = new LoggyError(id, summary, description); // zapíšu do databáze
         error.save();
     }
 
     // Vracím počet zaznamenaných bugů v souboru
-    public static Integer number_of_reported_bugs(){
+    public static Integer number_of_reported_errors(){
         return LoggyError.find.findRowCount(); // TODO - dodělat načítání počtu chyb
     }
 
     // Vymažu bug z databáze
-    public static void remove_bug(String id){
+    public static void remove_error(String id){
         LoggyError.find.byId(id).delete();
     }
 
     // Vymažu všechny bugy z databáze
-    public static void remove_all_bugs(){
+    public static void remove_all_errors(){
         Ebean.delete(LoggyError.find.all());
     }
 
@@ -169,6 +173,10 @@ public class Loggy{
 
     public static List<LoggyError> getErrors(Integer a){
         return LoggyError.find.setMaxRows(a).findList();
+    }
+
+    public static List<LoggyError> getErrors(){
+        return LoggyError.find.all();
     }
 
     public static LoggyError getError(String id) {

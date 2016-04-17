@@ -16,6 +16,7 @@ import models.project.m_program.Grid_Terminal;
 import models.project.m_program.M_Program;
 import models.project.m_program.M_Project;
 import org.pegdown.PegDownProcessor;
+import play.Play;
 import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -39,7 +40,7 @@ public class DashboardController extends Controller {
     Integer connectedHomers          =  WebSocketController_Incoming.incomingConnections_homers.size();
     Integer connectedTerminals       =  WebSocketController_Incoming.incomingConnections_terminals.size();
     Integer connectedCloud_servers   =  WebSocketController_Incoming.cloud_servers.size();
-    Integer reported_bugs            =  Loggy.number_of_reported_bugs();
+    Integer reported_bugs            =  Loggy.number_of_reported_errors();
     Boolean server_mode              =  Server.server_mode;
     String  server_version           =  Server.server_version;
 
@@ -155,7 +156,7 @@ public class DashboardController extends Controller {
         Html menu_html = menu.render(reported_bugs,connectedHomers,connectedTerminals,connectedCloud_servers);
 
         return ok( main.render(menu_html,
-                loggy.render( Loggy.getErrors(25) ), // TODO Tomáš K. doplnit - seznam načtený ze souboru
+                loggy.render( Loggy.getErrors() ),
                 server_mode,
                 server_version));
     }
@@ -172,14 +173,14 @@ public class DashboardController extends Controller {
     public Result loggy_remove_bug(String bug_id) {
         logger.debug("Trying to upload bug to youtrack");
 
-        Loggy.remove_bug(bug_id);  // TODO Tomáš K. doplnit odstranění bugu ze souboru
+        Loggy.remove_error(bug_id);
         return redirect("/public/bugs");
     }
 
     // Vyprázdní soubory se záznamem chyb
     public Result loggy_remove_all_bugs() {
         logger.debug("Trying to remove all bugs");
-        Loggy.remove_all_bugs();             // TODO Tomáš K. doplnit odstranění bugu ze souboru
+        Loggy.remove_all_errors();
 
         return redirect("/public/bugs");
     }
