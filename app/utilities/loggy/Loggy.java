@@ -131,7 +131,7 @@ public class Loggy{
 
     // Vracím počet zaznamenaných bugů v souboru
     public static Integer number_of_reported_errors(){
-        return LoggyError.find.findRowCount(); // TODO - dodělat načítání počtu chyb
+        return LoggyError.find.findRowCount();
     }
 
     // Vymažu bug z databáze

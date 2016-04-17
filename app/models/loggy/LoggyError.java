@@ -4,8 +4,6 @@ package models.loggy;
 import com.avaje.ebean.Model;
 import javax.persistence.*;
 
-// TODO dej to do databáze - a zároveň do souboru  - tam bude bug trace se všema píčovinama okolo
-
 @Entity
 public class LoggyError extends Model {
 
