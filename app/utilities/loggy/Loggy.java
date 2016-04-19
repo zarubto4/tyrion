@@ -36,6 +36,9 @@ public class Loggy{
 
 
     public static Result result_internalServerError(Exception exception, Http.Request request) {
+
+        String id = UUID.randomUUID().toString();
+
         StringBuilder summaryBuilder = new StringBuilder();         // stavění nadpisu
         StringBuilder descriptionBuilder = new StringBuilder();     // stavění obsahu
 
@@ -44,13 +47,16 @@ public class Loggy{
         summaryBuilder.append(request.method()+" ");
         summaryBuilder.append(request.path());
 
+        descriptionBuilder.append("\n");
+        descriptionBuilder.append("    Exception type: " +exception.getClass().getName());
+        descriptionBuilder.append("\n");
         descriptionBuilder.append("    Time: " + new Date().toString());
         descriptionBuilder.append("\n");
         descriptionBuilder.append("    Request Type: " + request.method());
         descriptionBuilder.append("\n");
         descriptionBuilder.append("    Request Path: " + request.path());
         descriptionBuilder.append("\n");
-        descriptionBuilder.append("    Unique Identificator: " + UUID.randomUUID().toString());
+        descriptionBuilder.append("    Unique Identificator: " + id);
         descriptionBuilder.append("\n");
         descriptionBuilder.append("    Tyrion version: " + Server.server_version);
         descriptionBuilder.append("\n");
@@ -72,7 +78,7 @@ public class Loggy{
         String summary = summaryBuilder.toString();
         String description = descriptionBuilder.toString();
 
-        logger.error(summary+"\n"+description);
+        error(id, summary, description);
         return GlobalResult.internalServerError();
     }
 
@@ -87,6 +93,9 @@ public class Loggy{
         summaryBuilder.append(request.method()+" ");
         summaryBuilder.append(request.path());
 
+        descriptionBuilder.append("\n");
+        descriptionBuilder.append("    Exception type: " + problem );
+        descriptionBuilder.append("\n");
         descriptionBuilder.append("    Time: " + new Date().toString());
         descriptionBuilder.append("\n");
         descriptionBuilder.append("    Request Type: " + request.method());

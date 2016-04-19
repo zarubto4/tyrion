@@ -23,7 +23,7 @@ public class Post extends Model {
 @JsonInclude(JsonInclude.Include.NON_EMPTY)                                                          public String name;
 @ApiModelProperty(required = true)                                                                   public int likes;
 @ApiModelProperty(required = true, dataType = "integer", readOnly = true,
-        value = "UNIX time stamp", example = "1458315085338")                                        public Date date_of_create;
+        value = "UNIX time stamp", example = "1460126537")                                           public Date date_of_create;
 @JsonIgnore                                                                                          public boolean deleted;
 @ApiModelProperty(required = true)                                                                   public boolean updated;
 

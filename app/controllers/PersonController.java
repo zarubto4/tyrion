@@ -1,11 +1,9 @@
 package controllers;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.*;
 import models.person.FloatingPersonToken;
 import models.person.Person;
 import models.person.ValidationToken;
-import play.Logger;
 import play.api.libs.mailer.MailerClient;
 import play.data.Form;
 import play.libs.Json;
@@ -16,6 +14,7 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utilities.Server;
 import utilities.emails.EmailTool;
+import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
@@ -31,6 +30,7 @@ import java.util.Locale;
 public class PersonController extends Controller {
 
     @Inject MailerClient mailerClient;
+    static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
 //######################################################################################################################
 
@@ -98,17 +98,13 @@ public class PersonController extends Controller {
                 mailerClient.send(email);
 
             } catch (Exception e) {
-                // TODO vhodně zalogovat tento problém
-                System.out.println("Odesílání emailu se nezdařilo");
+                logger.error ("Sending mail -> critical error", e);
                 e.printStackTrace();
             }
 
             return GlobalResult.created(Json.toJson(person));
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("PersonController - edit_Person_Information ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -128,9 +124,7 @@ public class PersonController extends Controller {
 
             return GlobalResult.redirect( Server.becki_accountAuthorizedSuccessful );
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("PersonController - email_Person_authentitaction ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -156,9 +150,7 @@ public class PersonController extends Controller {
             return GlobalResult.result_ok(Json.toJson(person));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("PersonController - getPerson ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -187,9 +179,7 @@ public class PersonController extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("PersonController - deletePerson ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -218,8 +208,8 @@ public class PersonController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
     @BodyParser.Of(BodyParser.Json.class)
+    @Security.Authenticated(Secured.class)
     public  Result edit_Person_Information(String person_id){
         try{
 
@@ -227,18 +217,13 @@ public class PersonController extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Person_Update help = form.get();
 
-
-            JsonNode json = request().body().asJson();
-
             Person person = Person.find.byId(person_id);
             if (person == null) return GlobalResult.notFoundObject("Person person_id not found");
 
             person.nick_name    = help.nick_name;
-            person.first_name   = help.first_name;
-            person.middle_name  = help.middle_name;
-            person.last_name    = help.last_name;
-            person.date_of_birth = new SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH).parse( help.date_of_birth );
-            person.first_title  = help.first_title;
+            person.full_name   = help.full_name;
+            person.date_of_birth = help.date_of_birth;
+
             person.last_title   = help.last_title;
 
             person.update();
@@ -246,7 +231,7 @@ public class PersonController extends Controller {
             return GlobalResult.result_ok();
 
          } catch (Exception e) {
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -271,7 +256,7 @@ public class PersonController extends Controller {
            return GlobalResult.result_ok(Json.toJson( SecurityController.getPerson().floatingPersonTokens ));
 
         } catch (Exception e) {
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -296,7 +281,7 @@ public class PersonController extends Controller {
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -319,7 +304,7 @@ public class PersonController extends Controller {
             else return GlobalResult.result_BadRequest("Its used");
 
         }catch (Exception e){
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -342,7 +327,7 @@ public class PersonController extends Controller {
             else return GlobalResult.result_BadRequest("Its used");
 
         }catch (Exception e){
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 

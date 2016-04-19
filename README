@@ -1,21 +1,33 @@
-# Verze 1.05.7.1 #
-####  12.4.2016 ####
+# Verze 1.06.1 #
+####  17.4.2016 ####
 
 ### Tyrion a nový DashBoard ###
  * Nasazení designu pro zobrazení a ovládání základních elementů serveru. Slouží k zobrazení informací a pro vývojáře navázané na Tyrion.
     * Správa zařízení připojených přes WebSocket
-    * Nunté dodělat rozumné read me
-
-### Přidání systému Loggy pro logování chyb
-    * Změna konfigurace Logbacku
-    * Zapnutí logování SQL příkazů
+    * Možnost Reportování serverem zachycených chyb na Youtrack.
+    * Kvalitní verzované Readme s podporou formátování
 
 
---------
+
+Rádi bychom vydali i integrovanou a verzovanou API dokumentaci, kde by šlo porovnávat na kterých obejktech došlo ke změně - ale to je pro nedostatek skillu ohledně vykreslování a javascriptu ze strany týmu Tyrion odloženo na dobu
+neurčitou. Každopádně každý nápad jak posunout Tyriona kupředu jsou vítány.
 
 -----
 
-### Práva nových notificakí ###
+### Oprávnění ###
+ * Bylo implementováno (z větší části) oprávnění pro tvorbu a úpravu objektů. Během implementace nové verze do Becki by bylo vhodně dát zpětnou vazbu a představy o potřebách dokumentace. Směrodatná (vývojová - pro Tyrion tým) je
+   [docu](https://wiki.byzance.cz/wiki/doku.php?id=tyrion_permission). Logika je řešena na úrovni objektu a tak není potřeba cokoliv programovat do Controlleru - pouze požádat o ověření samotný objekt.
+
+-----
+
+### Přidání systému Loggy pro logování chyb
+ * Změna konfigurace Logbacku
+ * Zapnutí logování SQL příkazů
+
+-----
+
+
+### Práva nových notifikací ###
 (připraveno pro implementaci na straně frontend)
 
  * Proběhla implementace ukládání notifikací v případě, že uživatel nebyl zastižen k zaslání. Cílem bylo vytvořit API,
@@ -23,8 +35,8 @@
   notifikací. Pokud jich je více - stránkuji. Každá notifikace za měsíc vyexpiruje (Systém jí smaže). Takže uživatel se může
   podívat až měsíc dozadu.
 
- * Mezi řádky. Redhat má jen 2/7 produktů otevřené komunitě (linux a Jboss) a jako opensource. :D U ostatních je to těžkce komerční zpropadená korporace :D
-  a z výroční zprávy akcionářům vyplívá, že na produktech, které jsou otevřené vydělává jen 37% peněz. (Rok předtím to bylo 44%)  :D
+ * Mezi řádky. Redhat má jen 2/7 produktů otevřené komunitě (linux a Jboss) a jako opensource. :D U ostatních je to těžce komerční zpropadená korporace :D
+  a z výroční zprávy akcionářům vyplývá, že na produktech, které jsou otevřené vydělává jen 37% peněz. (Rok předtím to bylo 44%)  :D
 
  * V případě že notifikaci doručím přihlášenému uživateli jí stejně uložím do systému jako historii.
 
@@ -79,6 +91,8 @@
 
  * fixed [TYRION-183](http://youtrack.byzance.cz/youtrack/issue/TYRION-183)
  * fixed [TYRION-181](http://youtrack.byzance.cz/youtrack/issue/TYRION-181)
+ * fixed [TYRION-193](http://youtrack.byzance.cz/youtrack/issue/TYRION-193)
+ * fixed [TYRION-189](http://youtrack.byzance.cz/youtrack/issue/TYRION-189)
 
 ------
 
@@ -93,3 +107,5 @@
       PS: Vyžaduje to tak půl dne (+ ideálně přepsat třídu s přihlášení přes facebook a odzkoušet github..
  * TODO 7 Tomáš Z.: Dodělat disconnect http://youtrack.byzance.cz/youtrack/issue/TYRION-169
  * TODO 8 ALL-Tyrion: Bude potřeba dodělat řešení pro prodlužování platnosti tokenu (Buď nějak magicky na Tyrionovi nebo ze strany frontendu) Asi to dodělá Tomáš.
+ * TODO 9 Přidat a vykreslit všechny objekty na dashboard Tyriona
+ * TODO 10 [TYRION-186](http://youtrack.byzance.cz/youtrack/issue/TYRION-186)

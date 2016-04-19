@@ -25,10 +25,7 @@ public class Person extends Model {
 
                                        @Column(unique=true)     public String mail;
                                        @Column(unique=true)     public String nick_name;
-                                                                public String first_name;
-                                                                public String middle_name;
-                                                                public String last_name;
-                                                                public String first_title;
+                                                                public String full_name;
                                                                 public String last_title;
     @ApiModelProperty(required = true,
     dataType = "integer", readOnly = true,

@@ -246,9 +246,7 @@ public class SecurityController extends Controller {
                 if (jsonNode.has("name")) {
                     try {
                         System.out.println("name: " + jsonNode.get("login").asText());
-                        String[] parts = jsonNode.get("name").asText().split("\\s+");
-                        person.first_name = parts[0];
-                        person.last_name = parts[1];
+                       person.full_name = jsonNode.get("name").asText();
                     } catch (ArrayIndexOutOfBoundsException e) {
                         System.out.println("Uživatel nemá vyplněné jméno a příjmení s mezerou .. nebo jiná TODO aktivita");
                     }
@@ -326,9 +324,9 @@ public class SecurityController extends Controller {
 
                 Person person = new Person();
                 if (jsonRequest.has("mail")) person.mail = jsonRequest.get("mail").asText();
-                if (jsonRequest.has("first_name")) person.first_name = jsonRequest.get("first_name").asText();
+                if (jsonRequest.has("first_name")) person.full_name = jsonRequest.get("first_name").asText();
 
-                if (jsonRequest.has("last_name")) person.last_name = jsonRequest.get("last_name").asText();
+                if (jsonRequest.has("last_name")) person.full_name += " " +jsonRequest.get("last_name").asText();
 
                 if (jsonRequest.has("birthday")) {
                     try {
