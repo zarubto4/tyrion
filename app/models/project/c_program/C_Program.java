@@ -54,7 +54,7 @@ public class C_Program extends Model {
 
     @JsonProperty public Boolean read_permission()  {  return ( C_Program.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("C_Program.read"); }
     @JsonProperty public Boolean edit_permission()  {  return ( C_Program.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("C_Program.edit"); }
-    @JsonProperty public Boolean delete_permisison(){  return ( C_Program.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("C_Program.delete"); }
+    @JsonProperty public Boolean delete_permission(){  return ( C_Program.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("C_Program.delete"); }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String,C_Program> find = new Finder<>(C_Program.class);

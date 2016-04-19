@@ -44,6 +44,11 @@ public class Version_Object extends Model {
 
     @JsonProperty public List<String> files_id(){ List<String> l = new ArrayList<>();  for( FileRecord m : files) l.add(m.id); return l;  }
 
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+
+    // ZDE BY NIKDY NEMĚLY BÝT OPRÁVNĚNÍ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! - TOMÁŠ Z.
+    // Oprávnění volejte na objektu kterého se to týký např.  version.b_program.read_permission()...
+
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String, Version_Object> find = new Finder<>(Version_Object.class);
 

@@ -36,10 +36,12 @@ public class TypeOfBlock extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty public Boolean create_permission()  {  return  ( TypeOfBlock.find.where().where().eq("project.ownersOfProject.id", SecurityController.getPerson().id ).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("TypeOfBlock.create");  }
-    @JsonProperty public Boolean read_permission()    {  return  ( TypeOfBlock.find.where().where().eq("project.ownersOfProject.id", SecurityController.getPerson().id ).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("TypeOfBlock.read");    }
-    @JsonProperty public Boolean edit_permission()    {  return  ( TypeOfBlock.find.where().where().eq("project.ownersOfProject.id", SecurityController.getPerson().id ).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("TypeOfBlock.edit");    }
-    @JsonProperty public Boolean delete_permission()  {  return  ( TypeOfBlock.find.where().where().eq("project.ownersOfProject.id", SecurityController.getPerson().id ).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("TypeOfBlock.delete");  }
+    @JsonProperty public Boolean create_permission()  {  return  ( TypeOfBlock.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id ).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("TypeOfBlock_create");  }
+    @JsonProperty public Boolean read_permission()    {  return   project == null ? true : (  (TypeOfBlock.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id ).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("TypeOfBlock_read") ); }
+    @JsonProperty public Boolean edit_permission()    {  return  ( TypeOfBlock.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id ).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("TypeOfBlock_edit");    }
+    @JsonProperty public Boolean delete_permission()  {  return  ( TypeOfBlock.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id ).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("TypeOfBlock_delete");  }
+
+    public enum permissions{TypeOfBlock_create, TypeOfBlock_read, TypeOfBlock_edit , TypeOfBlock_delete}
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String,TypeOfBlock> find = new Finder<>(TypeOfBlock.class);

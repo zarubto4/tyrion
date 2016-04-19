@@ -32,12 +32,6 @@ import java.util.Set;
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class OverFlowController  extends Controller {
 
-// SYSTEM PERMISSION ###################################################################################################
-    public static void set_System_Permission(){
-        new PersonPermission("role.read", "description");
-        //
-    }
-
 
 // PUBLIC ##############################################################################################################
 
@@ -273,7 +267,7 @@ public class OverFlowController  extends Controller {
 
             Post post = Post.find.byId(post_id);
             if (post == null ) return GlobalResult.notFoundObject("Post post_id not found");
-            if (!post.author.id.equals( SecurityController.getPerson().id) ) return GlobalResult.forbidden_Global();
+            if (!post.author.id.equals( SecurityController.getPerson().id) ) return GlobalResult.forbidden_Permission();
 
             post.delete();
 
@@ -326,7 +320,7 @@ public class OverFlowController  extends Controller {
             Post post = Post.find.byId(post_id);
             if (post == null) return GlobalResult.notFoundObject("Post post_id not found");
 
-            if (!post.author.id.equals( SecurityController.getPerson().id) ) return GlobalResult.forbidden_Global();
+            if (!post.author.id.equals( SecurityController.getPerson().id) ) return GlobalResult.forbidden_Permission();
 
             TypeOfPost typeOfPost = TypeOfPost.find.byId( help.type_of_post_id);
             if(typeOfPost == null) return GlobalResult.notFoundObject("TypeOfPost type_of_post_id not found");
@@ -623,7 +617,7 @@ public class OverFlowController  extends Controller {
             LinkedPost post = LinkedPost.find.byId(linked_post_id);
 
             if (post == null ) throw new Exception("Linked connection not Exist");
-            if (!post.author.id.equals( SecurityController.getPerson().id) ) return GlobalResult.forbidden_Global();
+            if (!post.author.id.equals( SecurityController.getPerson().id) ) return GlobalResult.forbidden_Permission();
 
             post.delete();
 
@@ -1339,7 +1333,7 @@ public class OverFlowController  extends Controller {
         try {
             Post post = Post.find.where().eq("postId", post_id).findUnique();
 
-            if(post.listOfLikers != null &&  post.listOfLikers.contains(  SecurityController.getPerson()  ) ) return GlobalResult.forbidden_Global();
+            if(post.listOfLikers != null &&  post.listOfLikers.contains(  SecurityController.getPerson()  ) ) return GlobalResult.forbidden_Permission();
 
             post.listOfLikers.add(SecurityController.getPerson());
             post.likes--;

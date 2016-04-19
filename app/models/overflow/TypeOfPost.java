@@ -24,7 +24,7 @@ public class TypeOfPost extends Model {
     @JsonProperty public Boolean create_permission(){  return  SecurityController.getPerson().has_permission("TypeOfPost.create");}
     @JsonProperty public Boolean read_permission()  {  return  SecurityController.getPerson().has_permission("TypeOfPost.read");  }
     @JsonProperty public Boolean edit_permission()  {  return  SecurityController.getPerson().has_permission("TypeOfPost.edit");  }
-    @JsonProperty public Boolean delete_permisison(){  return  SecurityController.getPerson().has_permission("TypeOfPost.delete");}
+    @JsonProperty public Boolean delete_permission(){  return  SecurityController.getPerson().has_permission("TypeOfPost.delete");}
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String,TypeOfPost> find = new Finder<>(TypeOfPost.class);

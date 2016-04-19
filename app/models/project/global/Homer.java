@@ -53,6 +53,7 @@ public class Homer extends Model {
                 while (iterator.hasNext()) {
                     JsonNode hardware = iterator.next();
 
+
                     try {
                        boards.add(  Board.find.byId(hardware.asText()) );
                     } catch(Exception e){
@@ -72,9 +73,13 @@ public class Homer extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty public Boolean read_permission()  {  return ( Project.find.where().eq("m_project.project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Homer.read"); }
-    @JsonProperty public Boolean edit_permission()  {  return ( Project.find.where().eq("m_project.project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Homer.edit"); }
-    @JsonProperty public Boolean delete_permisison(){  return ( Project.find.where().eq("m_project.project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Homer.delete"); }
+    @JsonProperty public Boolean create_permission()  {  return ( Project.find.where().eq("m_project.project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Homer_create");  }
+    @JsonProperty public Boolean update_permission()  {  return ( Project.find.where().eq("m_project.project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Homer_update");  }
+    @JsonIgnore   public Boolean read_permission()    {  return ( Project.find.where().eq("m_project.project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Homer_read");    }
+    @JsonProperty public Boolean edit_permission()    {  return ( Project.find.where().eq("m_project.project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Homer_edit");    }
+    @JsonProperty public Boolean delete_permission()  {  return ( Project.find.where().eq("m_project.project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Homer_delete");  }
+
+    public enum permissions{Homer_create, Homer_update, Homer_read, Homer_edit, Homer_delete}
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String,Homer> find = new Finder<>(Homer.class);

@@ -7,6 +7,9 @@ public class Permission {
 
     public static boolean check_permission(String... args){
 
+        System.out.println(" Kontroluji oprávnění: ");
+        for(String s : args) System.out.print(s + ", ");
+
         //Zde porovnávám zda uživatel má oprávnění na přímo
         // nebo je ve skupině, která dané oprávnění vlastní
 

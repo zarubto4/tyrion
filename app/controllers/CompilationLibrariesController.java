@@ -49,32 +49,6 @@ import java.util.Set;
 @Security.Authenticated(Secured.class)
 public class CompilationLibrariesController extends Controller {
 
-
-// SYSTEM PERMISSION for this controller
-    public static void set_System_Permission(){
-
-        new PersonPermission("processor.read", "description");
-        new PersonPermission("processor.edit", "description");
-        new PersonPermission("processor.create", "description");
-        new PersonPermission("processor.delete", "description");
-
-        new PersonPermission("producer.read", "description");
-        new PersonPermission("producer.edit", "description");
-        new PersonPermission("producer.create", "description");
-        new PersonPermission("producer.delete", "description");
-
-        new PersonPermission("type_of_board.read", "description");
-        new PersonPermission("type_of_board.edit", "description");
-        new PersonPermission("type_of_board.create", "description");
-        new PersonPermission("type_of_board.delete", "description");
-
-        new PersonPermission("board.read", "description");
-        new PersonPermission("board.edit", "description");
-        new PersonPermission("board.create", "description");
-        new PersonPermission("board.delete", "description");
-
-    }
-
 ///###################################################################################################################*/
 
     @ApiOperation(value = "Create new C_Program",

@@ -26,7 +26,7 @@ public class TypeOfConfirms extends Model {
     @JsonProperty public Boolean create_permission(){  return  SecurityController.getPerson().has_permission("TypeOfConfirms.create");}
     @JsonProperty public Boolean read_permission()  {  return  SecurityController.getPerson().has_permission("TypeOfConfirms.read");  }
     @JsonProperty public Boolean edit_permission()  {  return  SecurityController.getPerson().has_permission("TypeOfConfirms.edit");  }
-    @JsonProperty public Boolean delete_permisison(){  return  SecurityController.getPerson().has_permission("TypeOfConfirms.delete");}
+    @JsonProperty public Boolean delete_permission(){  return  SecurityController.getPerson().has_permission("TypeOfConfirms.delete");}
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String,TypeOfConfirms> find = new Model.Finder<>(TypeOfConfirms.class);

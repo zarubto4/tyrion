@@ -31,10 +31,13 @@ public class SecurityRole extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty public Boolean create_permission(){  return  SecurityController.getPerson().has_permission("SecurityRole.create");}
-    @JsonProperty public Boolean read_permission()  {  return  SecurityController.getPerson().has_permission("SecurityRole.read"); }
-    @JsonProperty public Boolean edit_permission()  {  return  SecurityController.getPerson().has_permission("SecurityRole.edit"); }
-    @JsonProperty public Boolean delete_permisison(){  return  SecurityController.getPerson().has_permission("SecurityRole.delete"); }
+    @JsonProperty public Boolean create_permission(){  return  SecurityController.getPerson() == null ? false : SecurityController.getPerson().has_permission("SecurityRole_create");}
+    @JsonProperty public Boolean read_permission()  {  return  SecurityController.getPerson() == null ? false : SecurityController.getPerson().has_permission("SecurityRole_read"); }
+    @JsonProperty public Boolean edit_permission()  {  return  SecurityController.getPerson() == null ? false : SecurityController.getPerson().has_permission("SecurityRole_edit"); }
+    @JsonProperty public Boolean delete_permission(){  return  SecurityController.getPerson() == null ? false : SecurityController.getPerson().has_permission("SecurityRole_delete");}
+
+    public enum permissions{SecurityRole_create, SecurityRole_read, SecurityRole_edit , SecurityRole_delete}
+
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
