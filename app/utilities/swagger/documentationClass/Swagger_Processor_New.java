@@ -22,7 +22,7 @@ public class Swagger_Processor_New {
 
 
     @Constraints.Required
-    @Constraints.MinLength(value = 8)
+    @Constraints.MinLength(value = 4)
     @ApiModelProperty(required = true, value = "The Processor name must have at least 4 characters")
     public String  processor_name;
 

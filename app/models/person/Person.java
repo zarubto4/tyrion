@@ -2,18 +2,19 @@ package models.person;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.annotations.ApiModelProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import controllers.SecurityController;
 import models.blocko.BlockoBlock;
 import models.notification.Notification;
 import models.overflow.LinkedPost;
 import models.overflow.Post;
 import models.project.global.Project;
+import models.project.m_program.M_Project;
 import utilities.permission.Permission;
 
 import javax.persistence.*;
 import java.security.MessageDigest;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -27,10 +28,6 @@ public class Person extends Model {
                                        @Column(unique=true)     public String nick_name;
                                                                 public String full_name;
                                                                 public String last_title;
-    @ApiModelProperty(required = true,
-    dataType = "integer", readOnly = true,
-    value = "UNIX time stamp", example = "1458315085338")      public Date date_of_birth;
-
 
                                                 @JsonIgnore     public boolean mailValidated;
                                        @Column(length = 64)     private byte[] shaPassword;
@@ -38,7 +35,7 @@ public class Person extends Model {
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<Project>              owningProjects            = new ArrayList<>();
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<Post>                 postLiker                 = new ArrayList<>();    // Propojení, které byly uživatelem hodnoceny (jak negativně, tak pozitivně)
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<SecurityRole>         roles                     = new ArrayList<>();
-    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<PersonPermission>     permissions               = new ArrayList<>();
+    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<PersonPermission>     person_permissions = new ArrayList<>();
 
 
     @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<BlockoBlock>          blocksAuthor         = new ArrayList<>(); // Propojení, které bločky uživatel vytvořil
@@ -49,6 +46,7 @@ public class Person extends Model {
 
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
+
 
 
 /* Security Tools @ JsonIgnore -----------------------------------------------------------------------------------------*/
@@ -80,6 +78,24 @@ public class Person extends Model {
     public boolean has_permission(String permission){
         return Permission.check_permission(permission);
     }
+
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore   public Boolean create_permission(){  return true;  }
+    @JsonProperty public Boolean read_permission()  {  return true;  }
+    @JsonProperty public Boolean edit_permission() {
+        if (SecurityController.getPerson() != null) return (M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Person_edit");
+        return false;
+    }
+    @JsonProperty public Boolean delete_permission(){
+
+        if(SecurityController.getPerson() != null) return (M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Person_delete");
+            return false;
+    }
+
+    public enum permissions{ Person_edit, Person_delete }
+
+
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 

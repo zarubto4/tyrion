@@ -44,14 +44,7 @@ public class ProgramingPackageController extends Controller {
             notes = "create new Project",
             produces = "application/json",
             protocols = "https",
-            code = 201,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
-            }
+            code = 201
     )
     @ApiImplicitParams(
             {
@@ -102,14 +95,7 @@ public class ProgramingPackageController extends Controller {
             notes = "get all Projects by logged Person",
             produces = "application/json",
             protocols = "https",
-            code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
-            }
+            code = 200
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response =  Project.class, responseContainer = "List"),
@@ -136,12 +122,15 @@ public class ProgramingPackageController extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Project.read_permission", value = Project.read_permission_docs ),
+                    }),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Project.read_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "Project_read" ),
+                            @ExtensionProperty(name = "Dynamic Permission key", value = "Project_read.{project_id}"),
+                    })
             }
     )
     @ApiResponses(value = {
@@ -171,12 +160,10 @@ public class ProgramingPackageController extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Project.delete_permission", value = "true")
+                    })
             }
     )
     @ApiResponses(value = {
@@ -209,12 +196,10 @@ public class ProgramingPackageController extends Controller {
             protocols = "https",
             response =  Project.class,
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Project.edit_permission", value = "true")
+                    })
             }
     )
     @ApiImplicitParams(
@@ -245,7 +230,7 @@ public class ProgramingPackageController extends Controller {
             Project project = Project.find.byId(project_id);
             if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
-            if (!project.share_permission() )   return GlobalResult.forbidden_Permission();
+            if (!project.edit_permission() )   return GlobalResult.forbidden_Permission();
 
             project.project_name = help.project_name;
             project.project_description = help.project_description;
@@ -265,12 +250,10 @@ public class ProgramingPackageController extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Project.share_permission", value = "true")
+                    })
             }
     )
     @ApiImplicitParams(
@@ -325,12 +308,10 @@ public class ProgramingPackageController extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Project.unshare_permission", value = "true")
+                    })
             }
     )
     @ApiImplicitParams(
@@ -387,12 +368,14 @@ public class ProgramingPackageController extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 201,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Homer.create_permission", value = Homer.create_permission_docs ),
+                    }),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Homer.create_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "Homer_create_permission" )
+                    })
             }
     )
     @ApiImplicitParams(
@@ -443,12 +426,10 @@ public class ProgramingPackageController extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Homer.remove_permission", value = "true"),
+                    })
             }
     )
     @ApiResponses(value = {
@@ -480,12 +461,13 @@ public class ProgramingPackageController extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Homer.read_permission", value = Homer.read_permission_docs),
+                    }),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Homer.remove_permission", value = "true"),
+                    })
             }
     )
     @ApiResponses(value = {
@@ -1369,7 +1351,7 @@ public class ProgramingPackageController extends Controller {
 
            blockoBlock.type_of_block = typeOfBlock;
 
-           if (! blockoBlock.create_permission() ) return GlobalResult.forbidden_Permission("You have no permission to create");
+           if (! blockoBlock.create_permission() ) return GlobalResult.forbidden_Permission();
 
            blockoBlock.save();
 
@@ -1406,7 +1388,7 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Ok Result", response =  BlockoBlock.class),
+            @ApiResponse(code = 200, message = "Ok Result", response =  BlockoBlock.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1594,6 +1576,7 @@ public class ProgramingPackageController extends Controller {
             notes = "new BlockoBlock version",
             produces = "application/json",
             protocols = "https",
+            code = 201,
             authorizations = {
                     @Authorization(
                             value="permission",

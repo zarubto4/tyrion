@@ -7,7 +7,6 @@ import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import io.swagger.annotations.*;
 import models.compiler.*;
-import models.person.PersonPermission;
 import models.project.c_program.C_Program;
 import models.project.global.Homer;
 import models.project.global.Project;
@@ -2017,7 +2016,7 @@ public class CompilationLibrariesController extends Controller {
             produces = "application/json",
             response =  SingleLibrary.class,
             protocols = "https",
-            code = 201,
+            code = 200,
             authorizations = {
                     @Authorization(
                             value="library.edit",

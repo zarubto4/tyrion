@@ -79,6 +79,7 @@ public class Loggy{
         String description = descriptionBuilder.toString();
 
         error(id, summary, description);
+        exception.printStackTrace();
         return GlobalResult.internalServerError();
     }
 

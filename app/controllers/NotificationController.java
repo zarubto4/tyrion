@@ -40,7 +40,7 @@ public class NotificationController extends Controller {
 
           for (FloatingPersonToken token : FloatingPersonToken.find.where().eq("person.id", person.id).where().eq("notification_subscriber", true).findList()) {
 
-            CoreResponse.cors();
+            CoreResponse.cors_EventSource();
             JsonNode msg = Json.newObject()
                     .put("level", level.name())
                     .put("text", message);
@@ -147,7 +147,7 @@ public class NotificationController extends Controller {
     try {
       Swagger_Notification_List result = new Swagger_Notification_List();
 
-      result.notifications = Notification.find.where().eq("person.id", SecurityController.getPerson().id).order().desc("result_created").setFirstRow((page_number - 1) * 25).setMaxRows(25).findList();
+      result.notifications = Notification.find.where().eq("person.id", SecurityController.getPerson().id).order().desc("created").setFirstRow((page_number - 1) * 25).setMaxRows(25).findList();
       result.total         = Notification.find.where().eq("person.id", SecurityController.getPerson().id).findRowCount();
 
        // Trochu složitěší operace - ale všechno je podřízeno tomu, abych vždy vracel maximálně 25 prvků

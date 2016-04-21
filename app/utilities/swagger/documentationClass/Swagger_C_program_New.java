@@ -16,7 +16,7 @@ public class Swagger_C_program_New {
 
 
     @Constraints.Required
-    @ApiModelProperty(required = true, value = "program_description can be null, but must be in JSON")
+    @ApiModelProperty(required = false)
     public String program_description;
 }
 

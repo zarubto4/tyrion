@@ -33,7 +33,6 @@ import utilities.swagger.outboundClass.Login_return_object;
 
 import javax.inject.Inject;
 import javax.websocket.server.PathParam;
-import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Map;
 
@@ -107,7 +106,7 @@ public class SecurityController extends Controller {
             result.roles = person.roles;
             result.permissions = PersonPermission.find.where().eq("roles.persons.id", person.id).findList();
 
-            return GlobalResult.result_ok(Json.toJson( result ) );
+            return GlobalResult.result_ok( Json.toJson( result ) );
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -143,7 +142,7 @@ public class SecurityController extends Controller {
             result.set("person", Json.toJson(person));
             result.put("authToken", token);
             result.set("roles", Json.toJson(person.roles));
-            result.set("permission", Json.toJson(person.permissions));
+            result.set("permission", Json.toJson(person.person_permissions));
 
 
             return GlobalResult.result_ok(result);
@@ -327,13 +326,6 @@ public class SecurityController extends Controller {
                 if (jsonRequest.has("first_name")) person.full_name = jsonRequest.get("first_name").asText();
 
                 if (jsonRequest.has("last_name")) person.full_name += " " +jsonRequest.get("last_name").asText();
-
-                if (jsonRequest.has("birthday")) {
-                    try {
-                        SimpleDateFormat sdf = new SimpleDateFormat("MM/DD/YYYY");
-                        person.date_of_birth = sdf.parse(jsonRequest.get("birthday").asText());
-                    }catch (Exception e){}
-                }
 
                 person.save();
                 floatingPersonToken.person = person;

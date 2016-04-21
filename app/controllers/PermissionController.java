@@ -57,7 +57,7 @@ public class PermissionController extends Controller {
             PersonPermission personPermission = PersonPermission.find.byId(permission_id);
             if (personPermission == null) return GlobalResult.notFoundObject("PersonPermission permission_id not found");
 
-            if (!person.permissions.contains(personPermission)) person.permissions.add(personPermission);
+            if (!person.person_permissions.contains(personPermission)) person.person_permissions.add(personPermission);
             person.update();
 
             return GlobalResult.result_ok();
@@ -102,7 +102,7 @@ public class PermissionController extends Controller {
             PersonPermission personPermission = PersonPermission.find.byId(permission_id);
             if(personPermission == null ) return GlobalResult.notFoundObject("PersonPermission permission_id not found");
 
-            if(person.permissions.contains(personPermission)) person.permissions.remove(personPermission);
+            if(person.person_permissions.contains(personPermission)) person.person_permissions.remove(personPermission);
             person.update();
 
             return GlobalResult.result_ok();
@@ -117,7 +117,7 @@ public class PermissionController extends Controller {
 
     @ApiOperation(value = "get all system Permissions",
             tags = {"Permission"},
-            notes = "If you want get all system permissions (Really all!). You need permission for that or have right system Roles",
+            notes = "If you want get all system person_permissions (Really all!). You need permission for that or have right system Roles",
             produces = "application/json",
             response =  PersonPermission.class,
             protocols = "https",
@@ -155,7 +155,7 @@ public class PermissionController extends Controller {
 
     @ApiOperation(value = "add Permission to the Role",
             tags = {"Permission", "Role"},
-            notes = "If you want add system permissions to Role. You need permission for that or have right system Roles",
+            notes = "If you want add system person_permissions to Role. You need permission for that or have right system Roles",
             produces = "application/json",
             response =  Result_ok.class,
             protocols = "https",
@@ -200,7 +200,7 @@ public class PermissionController extends Controller {
 
     @ApiOperation(value = "get all Permission on Role (Group)",
             tags = {"Permission", "Role"},
-            notes = "If you want get all permissions in Role (Admins, Monkeys..etc). You need also permission for that or have right system Roles",
+            notes = "If you want get all person_permissions in Role (Admins, Monkeys..etc). You need also permission for that or have right system Roles",
             produces = "application/json",
             response =  PersonPermission.class,
             protocols = "https",
@@ -272,7 +272,7 @@ public class PermissionController extends Controller {
 
     @ApiOperation(value = "remove Permission from the Role",
             tags = {"Permission", "Role"},
-            notes = "If you want remove system permissions from Role. You need permission for that or have right system Roles",
+            notes = "If you want remove system person_permissions from Role. You need permission for that or have right system Roles",
             produces = "application/json",
             protocols = "https",
             response = Result_ok.class,
@@ -539,7 +539,7 @@ public class PermissionController extends Controller {
         public List<SecurityRole> roles;
         public List<PersonPermission> permissions;
     }
-    @ApiOperation(value = "get all system permissions & Roles",
+    @ApiOperation(value = "get all system person_permissions & Roles",
             tags = {"Role", "Permission", "Person"},
             notes = "This api return List of Roles and List of Permission",
             produces = "application/json",
@@ -565,7 +565,7 @@ public class PermissionController extends Controller {
         Person person = Person.find.byId(person_id);
         ObjectNode result = Json.newObject();
         result.set("roles", Json.toJson(person.roles));
-        result.set("permission", Json.toJson(person.permissions));
+        result.set("permission", Json.toJson(person.person_permissions));
 
         return GlobalResult.result_ok(Json.toJson(result));
 

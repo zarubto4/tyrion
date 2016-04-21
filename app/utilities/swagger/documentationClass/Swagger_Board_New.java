@@ -13,7 +13,7 @@ public class Swagger_Board_New {
         public String type_of_board_id;
 
         @Constraints.Required
-        @Constraints.MinLength(value = 8, message = "The hardware_if must have at least 8 characters")
-        @ApiModelProperty(value = "Must be unique!!!", required = true)
+        @Constraints.MinLength(value = 8, message = "The hardware_id must have at least 8 characters")
+        @ApiModelProperty(value = "Must be unique!!!, The hardware_id must have at least 8 characters", required = true)
         public String hardware_unique_id;
 }

@@ -36,17 +36,21 @@ public class GridController extends play.mvc.Controller {
 
     @ApiOperation(value = "Create new M_Project",
             tags = {"M_Program"},
-            notes = "M_Project is box for M_Programs -> presupposition is that you need more control terminal for your IoT project. " +
-                    "Different screens for family members, for employes etc.. But of course - you can used that for only one M_program",
+            notes = "M_Project is package for M_Programs -> presupposition is that you need more control terminal for your IoT project. " +
+                    "Different screens for family members, for employee etc.. But of course - you can used that for only one M_program",
             produces = "application/json",
             response =  M_Project.class,
             protocols = "https",
             code = 201,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "Person need this value of permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "M_Project.create_permission", value = M_Project.create_permission_docs ),
+                    }),
+                    @Extension( name = "permission_required", properties = {
+                        @ExtensionProperty(name = "Project.create_permission", value = "true"),
+                        @ExtensionProperty(name = "Static Permission key", value =  "M_Project_create" ),
+                        @ExtensionProperty(name = "Dynamic Permission key", value = "M_Project_create.{project_id}"),
+                    })
             }
     )
     @ApiImplicitParams(
@@ -67,7 +71,6 @@ public class GridController extends play.mvc.Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-   // @Dynamic("project.owner")
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Secured.class)
     public Result new_M_Project(String project_id) {
@@ -102,11 +105,15 @@ public class GridController extends play.mvc.Controller {
             response =  M_Project.class,
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "Person need this value of permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "M_Project.read_permission", value = M_Project.read_permission_docs ),
+                    }),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "M_Project.read_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key"    , value = "M_Project_read" ),
+                            @ExtensionProperty(name = "Dynamic Permission key"   , value = "M_Project_read.{project_id}"),
+                    })
             }
     )
     @ApiResponses(value = {
@@ -136,11 +143,10 @@ public class GridController extends play.mvc.Controller {
             response =  M_Project.class,
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "Person need this value of permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "M_Project.edit_permission", value = "true")
+                    })
             }
     )
     @ApiImplicitParams(
@@ -192,11 +198,10 @@ public class GridController extends play.mvc.Controller {
             response =  Result_ok.class,
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "Person need this value of permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "M_Project.delete_permission", value = "true")
+                    })
             }
     )
      @ApiResponses(value = {
@@ -211,6 +216,7 @@ public class GridController extends play.mvc.Controller {
 
             M_Project m_project = M_Project.find.byId(m_project_id);
             if(m_project == null) return GlobalResult.notFoundObject("SecurityRole role_id not found");
+
 
             if (!m_project.delete_permission())  return GlobalResult.forbidden_Permission();
             m_project.delete();
@@ -228,11 +234,15 @@ public class GridController extends play.mvc.Controller {
             response =  M_Project.class,
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "Person need this value of permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "M_Project.read_permission", value = M_Project.read_permission_docs ),
+                    }),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "M_Project.read_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key"    , value = "M_Project_read" ),
+                            @ExtensionProperty(name = "Dynamic Permission key"   , value = "M_Project_read.{project_id}"),
+                    })
             }
     )
     @ApiResponses(value = {
@@ -256,18 +266,18 @@ public class GridController extends play.mvc.Controller {
 
     }
 
-
     @ApiOperation(value = "connect M_Project with B_program",
             tags = {"M_Program"},
             notes = "connect M_project with B_program ( respectively with version of B_program - where is Blocko-Code)",
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "Person need this value of permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "M_Project.update_permission", value = "true"),
+                            @ExtensionProperty(name = "B_Program.update_permission", value = "true"),
+
+                    })
             }
     )
     @ApiResponses(value = {
@@ -311,11 +321,11 @@ public class GridController extends play.mvc.Controller {
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "Person need this value of permission")}
-                    )
+            extensions = {
+                    @Extension(name = "permission_required", properties = {
+                            @ExtensionProperty(name = "M_Project.update_permission", value = "true"),
+                            @ExtensionProperty(name = "B_Program.update_permission", value = "true"),
+                    })
             }
     )
     @ApiResponses(value = {
@@ -354,11 +364,15 @@ public class GridController extends play.mvc.Controller {
             response =  M_Program.class,
             protocols = "https",
             code = 201,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "Person need this value of permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "M_Program.create_permission", value = M_Program.create_permission_docs),
+                    }),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "M_Project.create_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "M_Program_create" ),
+                            @ExtensionProperty(name = "Dynamic Permission key", value = "M_Program_create.{project_id}"),
+                    })
             }
     )
     @ApiImplicitParams(
@@ -421,7 +435,17 @@ public class GridController extends play.mvc.Controller {
             notes = "get M_Program by token",
             produces = "application/json",
             protocols = "https",
-            code = 200
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "M_Program.read_qrToken_permission", value = M_Program.read_qrToken_permission_docs),
+                    }),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "M_Program.read_qrToken_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key"    , value = "M_Program_read" ),
+                            @ExtensionProperty(name = "Dynamic Permission key"   , value = "M_Program_read.{project_id}"),
+                    })
+            }
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response = M_Program.class),
@@ -436,7 +460,7 @@ public class GridController extends play.mvc.Controller {
            if(m_program == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
            m_program.m_code = m_program.programInString;
 
-           if (!m_program.read_permission())  return GlobalResult.forbidden_Permission();
+           if (!m_program.read_qrToken_permission())  return GlobalResult.forbidden_Permission();
            return GlobalResult.result_ok(Json.toJson(m_program));
 
        }catch (Exception e){
@@ -478,12 +502,17 @@ public class GridController extends play.mvc.Controller {
             response =  M_Project.class,
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "Person need this value of permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "M_Program.read_permission", value = M_Program.read_permission_docs),
+                    }),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "M_Program.read_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key"    , value = "M_Program_read" ),
+                            @ExtensionProperty(name = "Dynamic Permission key"   , value = "M_Program_read.{project_id}"),
+                    })
             }
+
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response = M_Project.class),
@@ -514,11 +543,10 @@ public class GridController extends play.mvc.Controller {
             response =  M_Project.class,
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "Person need this value of permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "M_Program.edit_permission", value = "true"),
+                    })
             }
     )
     @ApiImplicitParams(
@@ -582,11 +610,10 @@ public class GridController extends play.mvc.Controller {
             response =  Result_ok.class,
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "Person need this value of permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "M_Program.remove_permission", value = "true"),
+                    })
             }
     )
     @ApiResponses(value = {
@@ -622,13 +649,14 @@ public class GridController extends play.mvc.Controller {
             produces = "application/json",
             protocols = "https",
             code = 201,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "Only if you want create personal ScreenType"),
-                                       @AuthorizationScope(scope = "SuperAdmin", description = "Or person must be SuperAdmin role")
-                            }
-                    )
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Screen_Size_Type.create_permission", value = Screen_Size_Type.create_permission_docs ),
+                    }),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Screen_Size_Type.create_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value = "Screen_Size_Type_create" ),
+                    })
             }
     )
     @ApiImplicitParams(
@@ -702,15 +730,18 @@ public class GridController extends play.mvc.Controller {
 
     @ApiOperation(value = "get ScreenType",
             tags = {"Screen_Size_Type"},
-            notes = "get ScreenType. If you want get private ScreenType you have to owned that. Public are without permissions",
+            notes = "get ScreenType. If you want get private ScreenType you have to owned that. Public are without person_permissions",
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "Only if you want get personal ScreenType you have to be project owner")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Screen_Size_Type.read_permission", value = Screen_Size_Type.read_permission_docs ),
+                    }),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Screen_Size_Type.read_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value = "Screen_Size_Type_create" ),
+                    })
             }
     )
     @ApiResponses(value = {
@@ -737,8 +768,17 @@ public class GridController extends play.mvc.Controller {
             tags = {"Screen_Size_Type"},
             notes = "get all ScreenType. Private_types areon every Persons projects",
             produces = "application/json",
+            protocols = "https",
             code = 200,
-            protocols = "https"
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Screen_Size_Type.read_permission", value = Screen_Size_Type.read_permission_docs ),
+                    }),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Screen_Size_Type.read_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value = "Screen_Size_Type_read" ),
+                    })
+            }
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response = Swagger_Screen_Size_Type_Combination.class),
@@ -753,9 +793,8 @@ public class GridController extends play.mvc.Controller {
             List<Screen_Size_Type> public_list = new ArrayList<>();
             List<Screen_Size_Type> private_list =  new ArrayList<>();
 
-            for(Screen_Size_Type type : Screen_Size_Type.find.where().eq("project", null).findList() )                                                  if (type.read_permission()) public_list.add(type);
-            for(Screen_Size_Type type : Screen_Size_Type.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).findList() ) if (type.read_permission())  private_list.add(type);
-
+            for(Screen_Size_Type type : Screen_Size_Type.find.where().eq("project", null).findList() )                                                  if (type.read_permission())  public_list.add(type);
+            for(Screen_Size_Type type : Screen_Size_Type.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).findList() )  if (type.read_permission())  private_list.add(type);
 
             Swagger_Screen_Size_Type_Combination help = new Swagger_Screen_Size_Type_Combination();
             help.private_types = private_list;
@@ -768,18 +807,17 @@ public class GridController extends play.mvc.Controller {
         }
     }
 
-
     @ApiOperation(value = "edit ScreenType",
             tags = {"Screen_Size_Type"},
             notes = "Edit all ScreenType information",
             produces = "application/json",
             protocols = "https",
-            authorizations = {
-                    @Authorization(
-                        value="permission",
-                        scopes = { @AuthorizationScope(scope = "project.owner", description = "Only if you want get personal ScreenType, you have to be project owner")}
-            )
-    }
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Screen_Size_Type.edit_permission", value = "true"),
+                    })
+            }
     )
     @ApiImplicitParams(
             {
@@ -795,7 +833,7 @@ public class GridController extends play.mvc.Controller {
 
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Ok Result",               response = Screen_Size_Type.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Screen_Size_Type.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -857,17 +895,15 @@ public class GridController extends play.mvc.Controller {
             notes = "remove ScreenType",
             produces = "application/json",
             protocols = "https",
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "Only if you want delete personal ScreenType"),
-                                       @AuthorizationScope(scope = "SuperAdmin"   , description = "Or person must be SuperAdmin role")
-                            }
-                    )
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Screen_Size_Type.delete_permission", value = "true"),
+                    })
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -945,7 +981,6 @@ public class GridController extends play.mvc.Controller {
             return Loggy.result_internalServerError(e, request());
         }
     }
-
 
     @ApiOperation(value = "check Terminal terminal_id",
             tags = {"APP-Api"},

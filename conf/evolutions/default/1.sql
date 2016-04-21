@@ -135,8 +135,8 @@ create table library_group (
 create table linked_post (
   link_id                   varchar(255) not null,
   author_id                 varchar(255),
-  answer_post_id            varchar(255),
-  question_post_id          varchar(255),
+  answer_id                 varchar(255),
+  question_id               varchar(255),
   constraint pk_linked_post primary key (link_id))
 ;
 
@@ -195,7 +195,6 @@ create table person (
   nick_name                 varchar(255),
   full_name                 varchar(255),
   last_title                varchar(255),
-  date_of_birth             timestamp,
   mail_validated            boolean,
   sha_password              bytea,
   constraint uq_person_mail unique (mail),
@@ -210,7 +209,7 @@ create table person_permission (
 ;
 
 create table post (
-  post_id                   varchar(255) not null,
+  id                        varchar(255) not null,
   name                      varchar(255),
   likes                     integer,
   date_of_create            timestamp,
@@ -218,11 +217,11 @@ create table post (
   updated                   boolean,
   views                     integer,
   text_of_post              TEXT,
-  post_parent_comment_post_id varchar(255),
-  post_parent_answer_post_id varchar(255),
+  post_parent_comment_id    varchar(255),
+  post_parent_answer_id     varchar(255),
   type_id                   varchar(255),
   author_id                 varchar(255),
-  constraint pk_post primary key (post_id))
+  constraint pk_post primary key (id))
 ;
 
 create table processor (
@@ -350,8 +349,8 @@ create table board_project (
 
 create table hash_tag_post (
   hash_tag_post_hash_tag_id      varchar(255) not null,
-  post_post_id                   varchar(255) not null,
-  constraint pk_hash_tag_post primary key (hash_tag_post_hash_tag_id, post_post_id))
+  post_id                        varchar(255) not null,
+  constraint pk_hash_tag_post primary key (hash_tag_post_hash_tag_id, post_id))
 ;
 
 create table library_group_processor (
@@ -368,8 +367,8 @@ create table person_project (
 
 create table person_post (
   person_id                      varchar(255) not null,
-  post_post_id                   varchar(255) not null,
-  constraint pk_person_post primary key (person_id, post_post_id))
+  post_id                        varchar(255) not null,
+  constraint pk_person_post primary key (person_id, post_id))
 ;
 
 create table person_security_role (
@@ -386,8 +385,8 @@ create table person_person_permission (
 
 create table property_of_post_post (
   property_of_post_property_of_post_id varchar(255) not null,
-  post_post_id                   varchar(255) not null,
-  constraint pk_property_of_post_post primary key (property_of_post_property_of_post_id, post_post_id))
+  post_id                        varchar(255) not null,
+  constraint pk_property_of_post_post primary key (property_of_post_property_of_post_id, post_id))
 ;
 
 create table security_role_person_permission (
@@ -404,8 +403,8 @@ create table single_library_processor (
 
 create table type_of_confirms_post (
   type_of_confirms_id            varchar(255) not null,
-  post_post_id                   varchar(255) not null,
-  constraint pk_type_of_confirms_post primary key (type_of_confirms_id, post_post_id))
+  post_id                        varchar(255) not null,
+  constraint pk_type_of_confirms_post primary key (type_of_confirms_id, post_id))
 ;
 create sequence b_program_seq;
 
@@ -487,10 +486,10 @@ alter table homer add constraint fk_homer_project_12 foreign key (project_id) re
 create index ix_homer_project_12 on homer (project_id);
 alter table linked_post add constraint fk_linked_post_author_13 foreign key (author_id) references person (id);
 create index ix_linked_post_author_13 on linked_post (author_id);
-alter table linked_post add constraint fk_linked_post_answer_14 foreign key (answer_post_id) references post (post_id);
-create index ix_linked_post_answer_14 on linked_post (answer_post_id);
-alter table linked_post add constraint fk_linked_post_question_15 foreign key (question_post_id) references post (post_id);
-create index ix_linked_post_question_15 on linked_post (question_post_id);
+alter table linked_post add constraint fk_linked_post_answer_14 foreign key (answer_id) references post (id);
+create index ix_linked_post_answer_14 on linked_post (answer_id);
+alter table linked_post add constraint fk_linked_post_question_15 foreign key (question_id) references post (id);
+create index ix_linked_post_question_15 on linked_post (question_id);
 alter table m_program add constraint fk_m_program_m_project_16 foreign key (m_project_id) references m_project (id);
 create index ix_m_program_m_project_16 on m_program (m_project_id);
 alter table m_program add constraint fk_m_program_screen_size_type_17 foreign key (screen_size_type_id) references screen_size_type (id);
@@ -503,10 +502,10 @@ alter table m_project add constraint fk_m_project_b_program_versio_20 foreign ke
 create index ix_m_project_b_program_versio_20 on m_project (vrs_obj_id);
 alter table notification add constraint fk_notification_person_21 foreign key (person_id) references person (id);
 create index ix_notification_person_21 on notification (person_id);
-alter table post add constraint fk_post_postParentComment_22 foreign key (post_parent_comment_post_id) references post (post_id);
-create index ix_post_postParentComment_22 on post (post_parent_comment_post_id);
-alter table post add constraint fk_post_postParentAnswer_23 foreign key (post_parent_answer_post_id) references post (post_id);
-create index ix_post_postParentAnswer_23 on post (post_parent_answer_post_id);
+alter table post add constraint fk_post_postParentComment_22 foreign key (post_parent_comment_id) references post (id);
+create index ix_post_postParentComment_22 on post (post_parent_comment_id);
+alter table post add constraint fk_post_postParentAnswer_23 foreign key (post_parent_answer_id) references post (id);
+create index ix_post_postParentAnswer_23 on post (post_parent_answer_id);
 alter table post add constraint fk_post_type_24 foreign key (type_id) references type_of_post (id);
 create index ix_post_type_24 on post (type_id);
 alter table post add constraint fk_post_author_25 foreign key (author_id) references person (id);
@@ -536,7 +535,7 @@ alter table board_project add constraint fk_board_project_project_02 foreign key
 
 alter table hash_tag_post add constraint fk_hash_tag_post_hash_tag_01 foreign key (hash_tag_post_hash_tag_id) references hash_tag (post_hash_tag_id);
 
-alter table hash_tag_post add constraint fk_hash_tag_post_post_02 foreign key (post_post_id) references post (post_id);
+alter table hash_tag_post add constraint fk_hash_tag_post_post_02 foreign key (post_id) references post (id);
 
 alter table library_group_processor add constraint fk_library_group_processor_li_01 foreign key (library_group_id) references library_group (id);
 
@@ -548,7 +547,7 @@ alter table person_project add constraint fk_person_project_project_02 foreign k
 
 alter table person_post add constraint fk_person_post_person_01 foreign key (person_id) references person (id);
 
-alter table person_post add constraint fk_person_post_post_02 foreign key (post_post_id) references post (post_id);
+alter table person_post add constraint fk_person_post_post_02 foreign key (post_id) references post (id);
 
 alter table person_security_role add constraint fk_person_security_role_perso_01 foreign key (person_id) references person (id);
 
@@ -560,7 +559,7 @@ alter table person_person_permission add constraint fk_person_person_permission_
 
 alter table property_of_post_post add constraint fk_property_of_post_post_prop_01 foreign key (property_of_post_property_of_post_id) references property_of_post (property_of_post_id);
 
-alter table property_of_post_post add constraint fk_property_of_post_post_post_02 foreign key (post_post_id) references post (post_id);
+alter table property_of_post_post add constraint fk_property_of_post_post_post_02 foreign key (post_id) references post (id);
 
 alter table security_role_person_permission add constraint fk_security_role_person_permi_01 foreign key (security_role_id) references security_role (id);
 
@@ -572,7 +571,7 @@ alter table single_library_processor add constraint fk_single_library_processor_
 
 alter table type_of_confirms_post add constraint fk_type_of_confirms_post_type_01 foreign key (type_of_confirms_id) references type_of_confirms (id);
 
-alter table type_of_confirms_post add constraint fk_type_of_confirms_post_post_02 foreign key (post_post_id) references post (post_id);
+alter table type_of_confirms_post add constraint fk_type_of_confirms_post_post_02 foreign key (post_id) references post (id);
 
 # --- !Downs
 

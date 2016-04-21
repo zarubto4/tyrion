@@ -12,8 +12,8 @@ import java.util.List;
 public class Swagger_Post_Answer {
 
     @Constraints.Required
-    @Constraints.MinLength(value = 24, message = "The text of post must have at least 24 characters")
-    @ApiModelProperty(required = true)
+    @Constraints.MinLength(value = 4, message = "The text of post must have at least 4 characters")
+    @ApiModelProperty(required = true, value = "The text of post must have at least 4 characters")
     public String text_of_post;
 
 

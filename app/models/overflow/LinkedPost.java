@@ -2,6 +2,8 @@ package models.overflow;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import controllers.SecurityController;
 import models.person.Person;
 
 import javax.persistence.*;
@@ -21,6 +23,11 @@ public class LinkedPost extends Model {
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
 
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+
+    @JsonProperty public Boolean delete_permission(){  return ( LinkedPost.find.where().eq("author.id", SecurityController.getPerson().id).where().eq("id", linkId).findRowCount() > 0) || SecurityController.getPerson().has_permission("Post_delete"); }
+
+    public enum permissions{}
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String,LinkedPost> find = new Finder<>(LinkedPost.class);
 

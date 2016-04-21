@@ -52,6 +52,9 @@ public class Project extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Transient public static final String read_permission_docs   = "read: If user have Project.update_permission = true, you can create M_project on this Project - Or you need static/dynamic permission key";
+
+
     @JsonIgnore   public Boolean create_permission()    {  return true;  }
     @JsonProperty public Boolean update_permission()    {  return ( Project.find.where().eq("ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Project_update");  }
     @JsonIgnore   public Boolean read_permission()      {  return ( Project.find.where().eq("ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Project_read");    }

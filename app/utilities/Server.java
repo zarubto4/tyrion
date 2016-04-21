@@ -8,10 +8,16 @@ import com.microsoft.azure.storage.blob.CloudBlobClient;
 import models.blocko.BlockoBlock;
 import models.blocko.BlockoBlockVersion;
 import models.blocko.TypeOfBlock;
+import models.overflow.*;
+import models.person.FloatingPersonToken;
+import models.person.Person;
 import models.person.PersonPermission;
 import models.project.b_program.B_Program;
+import models.project.c_program.C_Program;
 import models.project.global.Homer;
 import models.project.global.Project;
+import models.project.m_program.M_Program;
+import models.project.m_program.M_Project;
 import org.slf4j.LoggerFactory;
 import play.Configuration;
 import play.Play;
@@ -194,15 +200,28 @@ public class Server {
 
             // grid
 
+            // overflow
+                for(Enum en : FloatingPersonToken.permissions.values())     permissions.add(en.name());
+                for(Enum en : LinkedPost.permissions.values())              permissions.add(en.name());
+                for(Enum en : Post.permissions.values())                    permissions.add(en.name());
+                for(Enum en : PropertyOfPost.permissions.values())          permissions.add(en.name());
+                for(Enum en : TypeOfConfirms.permissions.values())          permissions.add(en.name());
+                for(Enum en : TypeOfPost.permissions.values())              permissions.add(en.name());
+            // person
+                for(Enum en : FloatingPersonToken.permissions.values())     permissions.add(en.name());
+                for(Enum en : Person.permissions.values())                  permissions.add(en.name());
             // project
                 // b_program
-                    for(Enum en : B_Program.permissions.values())          permissions.add(en.name());
+                    for(Enum en : B_Program.permissions.values())           permissions.add(en.name());
                 // c_program
-
+                    for(Enum en : C_Program.permissions.values())           permissions.add(en.name());
                 // global
-                    for(Enum en : Homer.permissions.values())                permissions.add(en.name());
-                    for(Enum en : Project.permissions.values())              permissions.add(en.name());
+                    for(Enum en : Homer.permissions.values())               permissions.add(en.name());
+                    for(Enum en : Project.permissions.values())             permissions.add(en.name());
                 // m_program
+                    for(Enum en : M_Project.permissions.values())           permissions.add(en.name());
+                    for(Enum en : M_Program.permissions.values())           permissions.add(en.name());
+
 
         logger.info("Number of Static Permissions " + permissions.size() );
 

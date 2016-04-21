@@ -10,12 +10,12 @@ public class Swagger_BlockoBlock_New {
 
     @Constraints.Required
     @Constraints.MinLength(value = 8, message = "The name must have at least 8 characters")
-    @ApiModelProperty(required = true)
+    @ApiModelProperty(required = true, value = "The name must have at least 8 characters")
     public String name;
 
     @Constraints.Required
     @Constraints.MinLength(value = 24, message = "The name must have at least 24 characters")
-    @ApiModelProperty(required = true)
+    @ApiModelProperty(required = true, value = "The name must have at least 24 characters")
     public String general_description;
 
     @Constraints.Required

@@ -35,13 +35,10 @@ public class BlockoBlock extends Model {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore   public Boolean create_permission() {
-        return BlockoBlock.find.where()
-                .or(
-                        com.avaje.ebean.Expr.eq("type_of_block.project.ownersOfProject.id", SecurityController.getPerson().id),
-                        com.avaje.ebean.Expr.eq("author.id", SecurityController.getPerson().id)
-                ).eq("id", id).findRowCount() > 0
-                ||
-                SecurityController.getPerson().has_permission("BlockoBlock.create");
+        if( TypeOfBlock.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id ).eq("id", type_of_block).findRowCount() < 1) return false;
+        if(! author.id.equals( SecurityController.getPerson().id ) ) return false;
+        if(! type_of_block.update_permission() )return false;
+        return true;
     }
 
     @JsonProperty public Boolean edit_permission() {

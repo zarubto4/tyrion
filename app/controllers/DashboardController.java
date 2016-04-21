@@ -16,7 +16,6 @@ import models.project.m_program.Grid_Terminal;
 import models.project.m_program.M_Program;
 import models.project.m_program.M_Project;
 import org.pegdown.PegDownProcessor;
-import play.Play;
 import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -165,7 +164,7 @@ public class DashboardController extends Controller {
     public F.Promise<Result> loggy_report_bug_to_youtrack(String bug_id) {
         logger.debug("Trying to upload bug to youtrack");
 
-        F.Promise<Result> p = Loggy.upload_to_youtrack(bug_id);   // TODO Tomáš K. doplnit nahrátí na youtrack
+        F.Promise<Result> p = Loggy.upload_to_youtrack(bug_id);
         return p.map((result) -> redirect("/public/bugs"));
     }
 

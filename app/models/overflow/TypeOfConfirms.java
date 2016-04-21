@@ -2,7 +2,6 @@ package models.overflow;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
 
 import javax.persistence.*;
@@ -23,11 +22,12 @@ public class TypeOfConfirms extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty public Boolean create_permission(){  return  SecurityController.getPerson().has_permission("TypeOfConfirms.create");}
-    @JsonProperty public Boolean read_permission()  {  return  SecurityController.getPerson().has_permission("TypeOfConfirms.read");  }
-    @JsonProperty public Boolean edit_permission()  {  return  SecurityController.getPerson().has_permission("TypeOfConfirms.edit");  }
-    @JsonProperty public Boolean delete_permission(){  return  SecurityController.getPerson().has_permission("TypeOfConfirms.delete");}
+    @JsonIgnore public Boolean create_permission(){  return  SecurityController.getPerson().has_permission("TypeOfConfirms_create"); }
+    @JsonIgnore public Boolean read_permission()  {  return  true;                                                                   }
+    @JsonIgnore public Boolean edit_permission()  {  return  SecurityController.getPerson().has_permission("TypeOfConfirms_edit");   }
+    @JsonIgnore public Boolean delete_permission(){  return  SecurityController.getPerson().has_permission("TypeOfConfirms_delete"); }
 
+    public enum permissions{  PropertyOfPost_create, PropertyOfPost_read,  PropertyOfPost_edit, PropertyOfPost_delete; }
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String,TypeOfConfirms> find = new Model.Finder<>(TypeOfConfirms.class);
 }
