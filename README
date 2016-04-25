@@ -6,8 +6,11 @@
 ### Oprávnění ###
 
  * Dolaďování oprávnění nad objekty - a evidence všech oprávnění do databáze přes ENUM statické klíče nad objektem
- * Odstranění všech nevhodně použitých anotací pro Swagger "Permisison"
+ * Odstranění části nevhodně použitých anotací pro Swagger "Permission"
  * Navržení vzoru jak dokumentovat statické klíče
+ * Definování a sjednocení vzhledu a umístění proměných na všech DB modelech
+
+
 -----
 
 ### Oprava Bugů ###
@@ -24,11 +27,23 @@
  * fixed [TYRION-196](http://youtrack.byzance.cz/youtrack/issue/TYRION-196)
  * fixed [TYRION-173](http://youtrack.byzance.cz/youtrack/issue/TYRION-173)
  * fixed [TYRION-203](http://youtrack.byzance.cz/youtrack/issue/TYRION-203)
-
- * fixed [TYRION-203](http://youtrack.byzance.cz/youtrack/issue/TYRION-203)
- * fixed [TYRION-203](http://youtrack.byzance.cz/youtrack/issue/TYRION-203)
- * fixed [TYRION-203](http://youtrack.byzance.cz/youtrack/issue/TYRION-203)
-
+ * fixed [TYRION-203](http://youtrack.byzance.cz/youtrack/issue/TYRION-209)
+ * fixed [TYRION-210](http://youtrack.byzance.cz/youtrack/issue/TYRION-210)
+ * fixed [TYRION-201](http://youtrack.byzance.cz/youtrack/issue/TYRION-201)
+ * fixed [TYRION-200](http://youtrack.byzance.cz/youtrack/issue/TYRION-200)
+ * fixed [TYRION-191](http://youtrack.byzance.cz/youtrack/issue/TYRION-191)
+ * fixed [TYRION-186](http://youtrack.byzance.cz/youtrack/issue/TYRION-186) Feature (List all users)
+ * fixed [TYRION-192](http://youtrack.byzance.cz/youtrack/issue/TYRION-192)
+ * fixed [TYRION-210](http://youtrack.byzance.cz/youtrack/issue/TYRION-210)
+ * fixed [TYRION-194](http://youtrack.byzance.cz/youtrack/issue/TYRION-194)
+ * fixed [TYRION-195](http://youtrack.byzance.cz/youtrack/issue/TYRION-195)
+ * fixed [TYRION-113](http://youtrack.byzance.cz/youtrack/issue/TYRION-113)
+ * fixed [TYRION-114](http://youtrack.byzance.cz/youtrack/issue/TYRION-114)
+ * fixed [TYRION-116](http://youtrack.byzance.cz/youtrack/issue/TYRION-116)
+ * fixed [TYRION-185](http://youtrack.byzance.cz/youtrack/issue/TYRION-185)
+ * fixed [TYRION-187](http://youtrack.byzance.cz/youtrack/issue/TYRION-187)
+ * fixed [TYRION-199](http://youtrack.byzance.cz/youtrack/issue/TYRION-199)
+ * fixed [TYRION-197](http://youtrack.byzance.cz/youtrack/issue/TYRION-197)
 
 ### TODO do další verze ###
 

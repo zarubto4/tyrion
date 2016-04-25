@@ -11,13 +11,10 @@ public class Swagger_LibraryGroup_Version {
 
 
     @Constraints.Required
-    @Constraints.MinLength(value = 8)
-    @ApiModelProperty(required = true, value = "MinLength >= 8")
+    @Constraints.MinLength(value = 2)
+    @ApiModelProperty(required = true, value = "MinLength >= 2")
     public String version_name;
 
-
-    @Constraints.Required
-    @Constraints.MinLength(value = 8)
-    @ApiModelProperty(required = true, value = "MinLength >= 8")
+    @ApiModelProperty(required = false)
     public String version_description;
 }

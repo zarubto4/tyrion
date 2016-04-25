@@ -16,6 +16,7 @@ import utilities.Server;
 import utilities.emails.EmailTool;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured;
+import utilities.response.CoreResponse;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.Swagger_Person_New;
@@ -23,6 +24,7 @@ import utilities.swagger.documentationClass.Swagger_Person_Update;
 
 import javax.inject.Inject;
 import javax.websocket.server.PathParam;
+import java.util.List;
 
 @Api(value = "Not Documented API - InProgress or Stuck") // Překrývá nezdokumentované API do jednotné serverové kategorie ve Swaggeru.
 public class PersonController extends Controller {
@@ -134,7 +136,7 @@ public class PersonController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured.class)
-    public  Result getPerson(@ApiParam(value = "person_id String query", required = true) @PathParam("person_id")  String person_id){
+    public  Result get_Person(@ApiParam(value = "person_id String query", required = true) @PathParam("person_id")  String person_id){
         try{
 
             Person person = Person.find.byId(person_id);
@@ -145,6 +147,36 @@ public class PersonController extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
     }
+
+
+
+    @ApiOperation(value = "get all Person",
+            tags = {"Person"},
+            notes = "get all Persons",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",      response = Person.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured.class)
+    public  Result get_Person_all(){
+        try{
+
+            List<Person> persons = Person.find.all();
+            return GlobalResult.result_ok(Json.toJson(persons));
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+
+
 
     @ApiOperation(value = "delete Person",
             tags = {"Person"},
@@ -316,14 +348,18 @@ public class PersonController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Its possible used that",  response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Nick name is used", response = Result_BadRequest.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public  Result valid_Person_mail(@ApiParam(value = "mail value for server side unique control", required = true) @PathParam("person_id") String mail){
         try{
 
             if(Person.find.where().ieq("mail", mail).findUnique() == null ) return GlobalResult.result_ok();
-            else return GlobalResult.result_BadRequest("Its used");
+
+            Result_ok result_ok = new Result_ok();
+            result_ok.code = 400;
+            result_ok.message = "email is used";
+            CoreResponse.cors();
+            return ok(Json.toJson(result_ok));
 
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
@@ -339,14 +375,18 @@ public class PersonController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Its possible used that",  response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Nick name is used", response = Result_BadRequest.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public  Result valid_Person_NickName(@ApiParam(value = "nick_name value for server side - it must be unique", required = true) @PathParam("nick_name")  String nick_name){
         try{
 
             if(Person.find.where().ieq("nick_name", nick_name).findUnique() == null ) return GlobalResult.result_ok();
-            else return GlobalResult.result_BadRequest("Its used");
+
+            Result_ok result_ok = new Result_ok();
+            result_ok.code = 400;
+            result_ok.message = "nickname is used";
+            CoreResponse.cors();
+            return ok(Json.toJson(result_ok));
 
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());

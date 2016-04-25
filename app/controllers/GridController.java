@@ -44,10 +44,10 @@ public class GridController extends play.mvc.Controller {
             code = 201,
             extensions = {
                     @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "M_Project.create_permission", value = M_Project.create_permission_docs ),
+                            @ExtensionProperty(name = "M_Project_create_permission", value = M_Project.create_permission_docs ),
                     }),
                     @Extension( name = "permission_required", properties = {
-                        @ExtensionProperty(name = "Project.create_permission", value = "true"),
+                        @ExtensionProperty(name = "Project_create_permission", value = "true"),
                         @ExtensionProperty(name = "Static Permission key", value =  "M_Project_create" ),
                         @ExtensionProperty(name = "Dynamic Permission key", value = "M_Project_create.{project_id}"),
                     })
@@ -815,7 +815,7 @@ public class GridController extends play.mvc.Controller {
             code = 200,
             extensions = {
                     @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Screen_Size_Type.edit_permission", value = "true"),
+                            @ExtensionProperty(name = "PersonPermission_edit_person_permission", value = "true"),
                     })
             }
     )
@@ -898,7 +898,7 @@ public class GridController extends play.mvc.Controller {
             code = 200,
             extensions = {
                     @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Screen_Size_Type.delete_permission", value = "true"),
+                            @ExtensionProperty(name = "Screen_Size_Type_delete_permission", value = "true"),
                     })
             }
     )

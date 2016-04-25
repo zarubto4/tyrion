@@ -22,7 +22,7 @@ public class Notification extends Model {
                                     public boolean read;
 
     @ApiModelProperty(required = true, dataType = "integer", readOnly = true,
-    value = "UNIX time stamp", example = "1458315085338")
+    value = "UNIX time stamp", example = "1458315085")
     public Date created;
 
     @JsonIgnore @ManyToOne(cascade = CascadeType.MERGE)  public Person person;

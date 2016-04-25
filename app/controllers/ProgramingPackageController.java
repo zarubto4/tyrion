@@ -471,7 +471,7 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Result_ok.class),
+            @ApiResponse(code = 200, message = "Ok Result", response =  Homer.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")

@@ -141,9 +141,12 @@ public class UtilTools extends Controller {
     public static File file_get_File_from_Azure(String container_name, String azureStorageLink, String azurePackageLink, Integer azureLinkVersion, String filename)throws Exception{
 
         CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
-        CloudBlob blob = container.getBlockBlobReference( azureStorageLink +"/"+ azurePackageLink  +"/"+ azureLinkVersion  +"/"+ filename);
 
-        File fileMain = new File("files/" + azureStorageLink + azurePackageLink + azureLinkVersion + filename);
+        System.out.println("azure adresa: " + container_name + "/" + azurePackageLink  +"/"+  azureStorageLink +"/"+ azureLinkVersion  +"/"+ filename);
+
+        CloudBlob blob = container.getBlockBlobReference( azurePackageLink  +"/"+  azureStorageLink +"/"+ azureLinkVersion  +"/"+ filename);
+
+        File fileMain = new File("files/" + azurePackageLink + azureStorageLink + azureLinkVersion + filename);
         // Tento soubor se nesmí zapomínat mazat!!!!
         OutputStream outputStreamMain = new FileOutputStream (fileMain);
 

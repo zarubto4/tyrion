@@ -159,9 +159,6 @@ public class OverFlowController  extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(list));
 
-
-
-
         } catch (Exception e){
             return Loggy.result_internalServerError(e, request());
         }
@@ -228,11 +225,8 @@ public class OverFlowController  extends Controller {
 
             post.save();
 
-            SecurityController.getPerson().personPosts.add(post);
-            SecurityController.getPerson().update();
 
             return GlobalResult.created(Json.toJson(post));
-
 
           } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());

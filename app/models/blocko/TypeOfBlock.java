@@ -36,11 +36,28 @@ public class TypeOfBlock extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore public Boolean create_permission()  {  return  ( TypeOfBlock.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id ).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("TypeOfBlock_create");  }
-    @JsonIgnore public Boolean read_permission()    {  return   project == null ? true : (  (TypeOfBlock.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id ).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("TypeOfBlock_read") ); }
-    @JsonIgnore public Boolean update_permission()    {  return   project == null ? true : (  (TypeOfBlock.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id ).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("TypeOfBlock_read") );}
-    @JsonProperty public Boolean edit_permission()    {  return  ( TypeOfBlock.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id ).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("TypeOfBlock_edit");    }
-    @JsonProperty public Boolean delete_permission()  {  return  ( TypeOfBlock.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id ).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("TypeOfBlock_delete");  }
+    @JsonIgnore public Boolean create_permission()  {
+        if(project != null) return  ( Project.find.where().eq("ownersOfProject.id", SecurityController.getPerson().id ).where().eq("id", project.id).findRowCount() < 1  || SecurityController.getPerson().has_permission("TypeOfBlock_create") );
+        return SecurityController.getPerson().has_permission("TypeOfBlock_create");
+    }
+    @JsonIgnore public Boolean read_permission() {
+            if(project != null) return  ( project.read_permission() || SecurityController.getPerson().has_permission("TypeOfBlock_read") );
+             return SecurityController.getPerson().has_permission("TypeOfBlock_read");
+    }
+
+    @JsonIgnore public Boolean update_permission()    {
+        if(project != null) return  ( project.update_permission() || SecurityController.getPerson().has_permission("TypeOfBlock_read") );
+        return SecurityController.getPerson().has_permission("TypeOfBlock_read");
+
+    }
+    @JsonProperty public Boolean edit_permission()    {
+        if(project != null) return  ( project.edit_permission() || SecurityController.getPerson().has_permission("TypeOfBlock_edit") );
+        return SecurityController.getPerson().has_permission("TypeOfBlock_edit");
+    }
+    @JsonProperty public Boolean delete_permission()  {
+        if(project != null) return  ( project.update_permission() || SecurityController.getPerson().has_permission("TypeOfBlock_delete") );
+        return SecurityController.getPerson().has_permission("TypeOfBlock_delete");
+    }
 
     public enum permissions{TypeOfBlock_create, TypeOfBlock_read, TypeOfBlock_edit , TypeOfBlock_delete}
 

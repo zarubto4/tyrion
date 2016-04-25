@@ -73,10 +73,14 @@ PUT             /notification                               @controllers.Notific
 #Peron CRUD
 POST           /coreClient/person/person                        @controllers.PersonController.registred_Person()
 PUT            /coreClient/person/person/:person_id             @controllers.PersonController.edit_Person_Information(person_id)
-GET            /coreClient/person/person/:person_id             @controllers.PersonController.getPerson(person_id)
+GET            /coreClient/person/person/all                    @controllers.PersonController.get_Person_all()
+GET            /coreClient/person/person/:person_id             @controllers.PersonController.get_Person(person_id)
+
+
 
 GET            /coreClient/person/valid/nickname/:nick_name     @controllers.PersonController.valid_Person_NickName(nick_name)
 GET            /coreClient/person/valid/mail/:mail              @controllers.PersonController.valid_Person_mail(mail)
+
 
 GET             /coreClient/connections                          @controllers.PersonController.get_Person_Connections()
 DELETE          /coreClient/connection/:connection_id            @controllers.PersonController.remove_Person_Connection(connection_id)

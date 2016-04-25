@@ -73,15 +73,15 @@ public class Post extends Model {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore   public Boolean create_permission(){  return true;    }
-    @JsonProperty public Boolean read_permission()  {  return true;    }
-    @JsonProperty public Boolean edit_permission()  {  return ( Post.find.where().eq("person.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Post_edit"); }
+    @JsonIgnore   public Boolean read_permission()  {  return true;    }
+    @JsonProperty public Boolean edit_permission()  {  return SecurityController.getPerson() != null && ( author.id.equals( SecurityController.getPerson().id )  || SecurityController.getPerson().has_permission("Post_edit") ); }
 
     @JsonProperty public Boolean answer_permission(){  return ( this.postParentComment == null && this.postParentAnswer  == null );}
     @JsonProperty public Boolean comment_permission(){ return ( name != null || postParentAnswer != null );}
 
-    @JsonProperty public Boolean edit_confirms_permission() { return  SecurityController.getPerson().has_permission("Post_edit"); }
+    @JsonProperty public Boolean edit_confirms_permission() { return SecurityController.getPerson() != null && SecurityController.getPerson().has_permission("Post_edit"); }
 
-    @JsonProperty public Boolean delete_permission(){  return ( Post.find.where().eq("person.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Post_delete"); }
+    @JsonProperty public Boolean delete_permission(){  return SecurityController.getPerson() != null && ( ( author.id.equals( SecurityController.getPerson().id ) ) || SecurityController.getPerson().has_permission("Post_delete") ); }
 
     public enum permissions{ Post_edit, Post_delete}
 

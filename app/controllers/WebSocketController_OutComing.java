@@ -13,9 +13,6 @@ import java.util.concurrent.TimeoutException;
 
 public class WebSocketController_OutComing extends Controller {
 
-    //public static Map<String, WebSocketClientNotPlay> servers = new HashMap<>(); // (Identificator, Websocket)
-
-
     /**
      * TODO
      * Důležitý komentář. Momentálně je bez otestování dopsáno jak se má chovat připojený terminál když je B_program
