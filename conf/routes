@@ -214,14 +214,16 @@ DELETE          /project/blocko/server/:server_id                               
 ################################################################################################################################################################################
 
 #C:Program
-POST            /compilation/c_program/c_program/:project_id                                          @controllers.CompilationLibrariesController.create_C_Program(project_id)
-GET             /compilation/c_program/c_program/:c_program_id                                        @controllers.CompilationLibrariesController.get_C_Program(c_program_id)
+POST            /compilation/c_program/c_program/:project_id                                @controllers.CompilationLibrariesController.create_C_Program(project_id)
+GET             /compilation/c_program/c_program/:c_program_id                              @controllers.CompilationLibrariesController.get_C_Program(c_program_id)
 
-PUT             /compilation/c_program/c_program/:c_program_id                                   @controllers.CompilationLibrariesController.edit_C_Program_Description(c_program_id)
+PUT             /compilation/c_program/c_program/:c_program_id                              @controllers.CompilationLibrariesController.edit_C_Program_Description(c_program_id)
 DELETE          /compilation/c_program/c_program/:c_program_id                              @controllers.CompilationLibrariesController.delete_C_Program(c_program_id)
 
-PUT             /compilation/c_program/version/:c_program_id                                 @controllers.CompilationLibrariesController.new_C_Program_Version(c_program_id)
-POST            /compilation/c_program/version/:version_id                                  @controllers.CompilationLibrariesController.edit_C_Program_version(version_id)
+POST            /compilation/c_program/version/:c_program_id                                @controllers.CompilationLibrariesController.new_C_Program_Version(c_program_id)
+PUT             /compilation/c_program/version/update/:version_id                           @controllers.CompilationLibrariesController.update_C_Program_Version(version_id)
+PUT             /compilation/c_program/version/edit/:version_id                             @controllers.CompilationLibrariesController.edit_C_Program_version(version_id)
+
 DELETE          /compilation/c_program/version/:c_program_id/:version_id                    @controllers.CompilationLibrariesController.delete_C_Program_Version(c_program_id, version_id)
 
 

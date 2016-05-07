@@ -3,6 +3,7 @@ package controllers;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.Query;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import io.swagger.annotations.*;
@@ -230,7 +231,7 @@ public class CompilationLibrariesController extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_C_Program_Version",
+                            dataType = "utilities.swagger.documentationClass.Swagger_C_Program_Version_New",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -242,24 +243,24 @@ public class CompilationLibrariesController extends Controller {
     public Result new_C_Program_Version(@ApiParam(value = "c_program_id String query", required = true) @PathParam("c_program_id") String c_program_id){
         try{
 
-            Form<Swagger_C_Program_Version> form = Form.form(Swagger_C_Program_Version.class).bindFromRequest();
+            Form<Swagger_C_Program_Version_New> form = Form.form(Swagger_C_Program_Version_New.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-            Swagger_C_Program_Version help = form.get();
+            Swagger_C_Program_Version_New help = form.get();
 
 
             C_Program c_program = C_Program.find.byId(c_program_id);
             if(c_program == null) return GlobalResult.notFoundObject("C_Program c_program_id not found");
 
             // První nová Verze
-            Version_Object version_object     = new Version_Object();
-            version_object.version_name = help.version_name;
+            Version_Object version_object      = new Version_Object();
+            version_object.version_name        = help.version_name;
             version_object.version_description = help.version_description;
 
             if(c_program.version_objects.isEmpty() ) version_object.azureLinkVersion = 1;
             else version_object.azureLinkVersion    = ++c_program.version_objects.get(0).azureLinkVersion; // Zvednu verzi o jednu
 
             version_object.date_of_create = new Date();
-            version_object.c_program           = c_program;
+            version_object.c_program = c_program;
             version_object.save();
 
             c_program.version_objects.add(version_object);
@@ -267,9 +268,83 @@ public class CompilationLibrariesController extends Controller {
 
             // Nahraje do Azure a připojí do verze soubor (lze dělat i cyklem - ale název souboru musí být vždy jiný)
 
-            for (final Swagger_C_Program_Version.VersionFiles file : help.files){
-                UtilTools.uploadAzure_Version("c-program", file.content, file.file_name, c_program.azureStorageLink, c_program.azurePackageLink, version_object);
+
+            ObjectNode content = Json.newObject();
+            content.put("code", help.code );
+            content.set("external_files", Json.toJson( help.external_files) );
+            content.set("external_libraries", Json.toJson( help.external_libraries) );
+
+            UtilTools.uploadAzure_Version("c-program", content.toString() , "c_program", c_program.azureStorageLink, c_program.azurePackageLink, version_object);
+
+
+            return GlobalResult.created(Json.toJson(version_object));
+
+
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - new_Processor ERROR");
+            Logger.error(request().body().asJson().toString());
+            return GlobalResult.internalServerError();
+        }
+    }
+
+    @ApiOperation(value = "new Version of C_Program",
+            tags = {"C_Program"},
+            notes = "If you want add new code to C_program by query = c_program_id. Send required json values and server respond with new object",
+            produces = "application/json",
+            response =  Version_Object.class,
+            protocols = "https",
+            code = 201,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
             }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successful created",      response = C_Program.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_C_Program_Version_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    // @Dynamic("project.c_program_owner")
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result update_C_Program_Version(@ApiParam(value = "version_id String query", required = true) @PathParam("c_program_id") String version_id){
+        try{
+
+            Form<Swagger_C_Program_Version_New> form = Form.form(Swagger_C_Program_Version_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_C_Program_Version_New help = form.get();
+
+
+            Version_Object version_object = Version_Object.find.byId(version_id);
+            if(version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
+
+            // Nahraje do Azure a připojí do verze soubor (lze dělat i cyklem - ale název souboru musí být vždy jiný)
+            FileRecord file = FileRecord.find.where().eq("version_object.id", version_id).where().eq("file_name", "c_program").findUnique();
+            if(file != null) file.delete();
+
+            ObjectNode content = Json.newObject();
+            content.put("code", help.code );
+            content.set("external_files", Json.toJson( help.external_files) );
+            content.set("external_libraries", Json.toJson( help.external_libraries) );
+
+            UtilTools.uploadAzure_Version("c-program", content.toString() , "c_program", version_object.c_program.azureStorageLink, version_object.c_program.azurePackageLink, version_object);
+
 
             return GlobalResult.created(Json.toJson(version_object));
 
@@ -303,7 +378,6 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    //  @Dynamic("project.c_program_owner")
     public Result delete_C_Program_Version(@ApiParam(value = "c_program_id String query", required = true) @PathParam("c_program_id") String c_program_id, @ApiParam(value = "version_id String query",   required = true) @PathParam("version_id")   String version_id){
         try{
 
@@ -381,6 +455,10 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.internalServerError();
         }
     }
+
+
+
+
 
     @ApiOperation(value = "delete C_program",
             tags = {"C_Program"},
