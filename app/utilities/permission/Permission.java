@@ -9,13 +9,8 @@ public class Permission {
         //Zde porovnávám zda uživatel má oprávnění na přímo
         // nebo je ve skupině, která dané oprávnění vlastní
 
-        if (
-           (PersonPermission.find.where().in("value", args).eq("roles.persons.id", SecurityController.getPerson().id).findRowCount() < 1) &&
-           (PersonPermission.find.where().in("value", args).eq("persons.id", SecurityController.getPerson().id).findRowCount() < 1) ){
-           return false;
-        }
-
-        return true;
+        if ((PersonPermission.find.where().in("value", args).eq("roles.persons.id", SecurityController.getPerson().id).findRowCount() < 1) && (PersonPermission.find.where().in("value", args).eq("persons.id", SecurityController.getPerson().id).findRowCount() < 1) ) return false;
+        else return true;
     }
 
     public static boolean check_dynamic(String value){

@@ -9,6 +9,7 @@ import models.compiler.Board;
 import models.grid.Screen_Size_Type;
 import models.person.Person;
 import models.project.b_program.B_Program;
+import models.project.b_program.Homer;
 import models.project.c_program.C_Program;
 import models.project.m_program.M_Project;
 
@@ -32,10 +33,10 @@ public class Project extends Model {
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<M_Project>         m_projects        = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Screen_Size_Type>  screen_size_types = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<TypeOfBlock>       type_of_blocks    = new ArrayList<>();
-
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Board>             boards            = new ArrayList<>();
 
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "owningProjects")  @JoinTable(name = "connected_projects") public List<Person> ownersOfProject = new ArrayList<>();
-    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "projects")        @JoinTable(name = "board_project")      public List<Board> boards = new ArrayList<>();
+
 
     @JsonProperty public List<String> homers_id()           { List<String> l = new ArrayList<>();  for( Homer m            : homerList)         l.add(m.id); return l;  }
     @JsonProperty public List<String> boards_id()           { List<String> l = new ArrayList<>();  for( Board m            : boards)            l.add(m.id); return l;  }

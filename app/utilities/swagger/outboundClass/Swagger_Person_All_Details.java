@@ -10,18 +10,16 @@ import java.util.List;
 
 @ApiModel(description = "Json Model that you will get, if login was successful",
         value = "Login_Result")
-public class Login_return_object {
+public class Swagger_Person_All_Details {
 
     @ApiModelProperty(readOnly = true)
     public Person person;
 
-    @ApiModelProperty(value = "used this token in HTML head for verifying the identities", readOnly = true)
-    public String authToken;
 
-    @ApiModelProperty(value = "", readOnly = true)
+    @ApiModelProperty(value = "List of roles, that", readOnly = true)
     public List<SecurityRole> roles;
 
-    @ApiModelProperty(readOnly = true)
+    @ApiModelProperty(readOnly = true, value = "List of all person permission (private and all collections from Person Roles (\"SecurityRole\") ")
     public List<PersonPermission> permissions;
 
 }

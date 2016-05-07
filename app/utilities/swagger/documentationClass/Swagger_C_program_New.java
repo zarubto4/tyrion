@@ -14,8 +14,6 @@ public class Swagger_C_program_New {
     @ApiModelProperty(required = true, value = "MinLength >= 8")
     public String program_name;
 
-
-    @Constraints.Required
     @ApiModelProperty(required = false)
     public String program_description;
 }

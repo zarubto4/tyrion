@@ -12,16 +12,16 @@ import models.overflow.*;
 import models.person.FloatingPersonToken;
 import models.person.Person;
 import models.person.PersonPermission;
+import models.person.SecurityRole;
 import models.project.b_program.B_Program;
+import models.project.b_program.Homer;
 import models.project.c_program.C_Program;
-import models.project.global.Homer;
 import models.project.global.Project;
 import models.project.m_program.M_Program;
 import models.project.m_program.M_Project;
 import org.slf4j.LoggerFactory;
 import play.Configuration;
 import play.Play;
-import utilities.webSocket.ClientThreadChecker;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -142,23 +142,6 @@ public class Server {
 
     }
 
-    public static void set_Blocko_Server_Connection(){
-
-        if (Configuration.root().getBoolean("Servers.blocko.server1.run")) {
-
-            play.Logger.warn("Starting Main Thread for Blocko Server1 ");
-
-            ClientThreadChecker clientThreadChecker = new ClientThreadChecker()
-                    .setIDentificator(Configuration.root().getString("Servers.blocko.server1.name"))
-                    .setPeriodReconnectionTime(Configuration.root().getInt("Servers.blocko.server1.periodicTime"))
-                    .setReconnection(true)
-                    .setServerAddress(Configuration.root().getString("Servers.blocko.server1.url"))
-                    .connectToServer();
-        }
-
-    }
-
-
     /**
      * Výběr nastavení Logbacku podle Server.developerMode
      */
@@ -210,6 +193,8 @@ public class Server {
             // person
                 for(Enum en : FloatingPersonToken.permissions.values())     permissions.add(en.name());
                 for(Enum en : Person.permissions.values())                  permissions.add(en.name());
+                for(Enum en : SecurityRole.permissions.values())            permissions.add(en.name());
+
             // project
                 // b_program
                     for(Enum en : B_Program.permissions.values())           permissions.add(en.name());
@@ -218,7 +203,7 @@ public class Server {
                 // global
                     for(Enum en : Homer.permissions.values())               permissions.add(en.name());
                     for(Enum en : Project.permissions.values())             permissions.add(en.name());
-                // m_program
+                // m_project
                     for(Enum en : M_Project.permissions.values())           permissions.add(en.name());
                     for(Enum en : M_Program.permissions.values())           permissions.add(en.name());
 

@@ -538,7 +538,7 @@ public class GridController extends play.mvc.Controller {
 
     @ApiOperation(value = "update M_Program",
             tags = {"M_Program"},
-            notes = "update m_program - in this case we are not support versions of m_program",
+            notes = "update m_project - in this case we are not support versions of m_project",
             produces = "application/json",
             response =  M_Project.class,
             protocols = "https",
@@ -612,7 +612,7 @@ public class GridController extends play.mvc.Controller {
             code = 200,
             extensions = {
                     @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "M_Program.remove_permission", value = "true"),
+                            @ExtensionProperty(name = "M_Program.delete_permission", value = "true"),
                     })
             }
     )
@@ -815,7 +815,7 @@ public class GridController extends play.mvc.Controller {
             code = 200,
             extensions = {
                     @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "PersonPermission_edit_person_permission", value = "true"),
+                            @ExtensionProperty(name = "Screen_Size_Type.read_permission", value = "true"),
                     })
             }
     )

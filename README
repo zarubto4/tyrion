@@ -1,3 +1,63 @@
+
+# Verze 1.06.3 #
+####  29.4.2016 ####
+
+-----
+
+ * Začátek vývoje podpory Blocko Serveru (Připojování kontejnerových serverů, kde běží instance Blocko programů)
+   Cílem je umožnit připojovat  servery vlastní (Větší zákazníci si mohou zprovoznit svůj server a pouze vyplní jméno a ověřující token)
+
+    - Momentálně ještě není podporováno API.
+
+    - 4 NOVÉ API [(External Server)](http://swagger.byzance.cz/#/External_Server)
+
+ * Podpora pro kompilační servery (ty budou vždy naše) - ale je už od začátku pamatováno na škálování takových serverů a rovnoměrné zatížení
+
+    - 4 NOVÉ API [(External Server)](http://swagger.byzance.cz/#/External_Server)
+
+ * Oprava přihlášení - po přihlášení (zaslání hesla a emailu) je vrácen pouze token a je vyžadován další request na který jsou vráceny všechny původní informace
+
+
+
+-----
+
+### TODO ###
+
+ * TODO Dodělat všude!!!
+
+        @Entity
+        @ApiModel( value =
+                "<h3>Permissions:</h3>" +
+                "<span style=\"color: green\">"    + M_Project.create_permission_docs +  "</span>" +
+                "<br><span style=\"color: blue\">" + M_Project.read_permission_docs +    "</span>" +
+                "<br>"
+        )
+        public class M_Project extends Model {
+
+ * TODO Swagger Dokumentace na objektu B_Program_State a B_Program!!!!!!!!!!!!
+
+-----
+
+### Oprava Bugů ###
+
+ * fixed [TYRION-203](http://youtrack.byzance.cz/youtrack/issue/TYRION-203)
+ * fixed [TYRION-235](http://youtrack.byzance.cz/youtrack/issue/TYRION-235)
+ * fixed [TYRION-236](http://youtrack.byzance.cz/youtrack/issue/TYRION-236)
+ * fixed [TYRION-239](http://youtrack.byzance.cz/youtrack/issue/TYRION-239)
+ * fixed [TYRION-238](http://youtrack.byzance.cz/youtrack/issue/TYRION-238)
+ * fixed [TYRION-198](http://youtrack.byzance.cz/youtrack/issue/TYRION-198)
+ * fixed [TYRION-230](http://youtrack.byzance.cz/youtrack/issue/TYRION-230)
+ * fixed [TYRION-228](http://youtrack.byzance.cz/youtrack/issue/TYRION-228)
+ * fixed [TYRION-232](http://youtrack.byzance.cz/youtrack/issue/TYRION-232)
+ * fixed [TYRION-231](http://youtrack.byzance.cz/youtrack/issue/TYRION-232) -> Vázané issue [HOMER-3](http://youtrack.byzance.cz/youtrack/issue/HOMER-3)
+ * fixed [TYRION-227](http://youtrack.byzance.cz/youtrack/issue/TYRION-227)
+ * Obsolate [TYRION-233](http://youtrack.byzance.cz/youtrack/issue/TYRION-233)
+ * Neřešitelné [TYRION-219](http://youtrack.byzance.cz/youtrack/issue/TYRION-219)
+ * Zamítnuto [TYRION-216](http://youtrack.byzance.cz/youtrack/issue/TYRION-216)
+ * Zamítnuto [TYRION-234](http://youtrack.byzance.cz/youtrack/issue/TYRION-234)
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 # Verze 1.06.2 #
 ####  19.4.2016 ####
 

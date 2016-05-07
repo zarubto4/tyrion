@@ -7,8 +7,8 @@ import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import io.swagger.annotations.*;
 import models.compiler.*;
+import models.project.b_program.Homer;
 import models.project.c_program.C_Program;
-import models.project.global.Homer;
 import models.project.global.Project;
 import play.Logger;
 import play.data.Form;
@@ -26,10 +26,7 @@ import utilities.swagger.outboundClass.Swagger_File_Content;
 import javax.websocket.server.PathParam;
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Controller se zabívá správou knihoven, procesorů, desek (hardware), typů desek a jejich výrobce.
@@ -86,7 +83,6 @@ public class CompilationLibrariesController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result create_C_Program(@ApiParam(value = "project_id String query", required = true) @PathParam("project_id") String project_id) {
         try {
-
 
             final Form<Swagger_C_program_New> form = Form.form(Swagger_C_program_New.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
@@ -149,39 +145,6 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
-    @ApiOperation(value = "get All C_program",
-            tags = {"C_Program"},
-            notes = "get all C_program from project by query = project_id",
-            produces = "application/json",
-            response =  C_Program.class,
-            protocols = "https",
-            code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
-                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = C_Program.class, responseContainer = "List"),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    // @Dynamic("project.owner")
-    public Result get_C_Program_All_from_Project(@ApiParam(value = "project_id String query", required = true) @PathParam("project_id") String project_id) {
-        try {
-
-            Project project = Project.find.byId(project_id);
-            return GlobalResult.result_ok(Json.toJson(project.c_programs));
-
-        } catch (Exception e) {
-            Logger.error("CompilationLibrariesController - gellAllProgramFromProject ERROR");
-            return GlobalResult.internalServerError();
-        }
-    }
 
     @ApiOperation(value = "Edit C_Program",
             tags = {"C_Program"},
@@ -473,10 +436,9 @@ public class CompilationLibrariesController extends Controller {
         return GlobalResult.result_ok("In TODO"); //TODO
     }
 
-    //TODO swagger Documentation
 
-    @ApiOperation(value = "update Embedded Hardware with your binary file",
-            tags = {"C_Program - Binary Files"},
+    @ApiOperation(value = "update Embedded Hardware with  binary file",
+            tags = {"C_Program"},
             notes = "Upload Binary file and choose hardware_id for update. Result (HTML code) will be every time 200. - Its because upload, restart, etc.. operation need more than ++30 second " +
                     "There is also problem / chance that Tyrion didn't find where Embedded hardware is. So you have to listening Server Sent Events (SSE) and show \"future\" message to the user!",
             produces = "application/json",
@@ -485,36 +447,68 @@ public class CompilationLibrariesController extends Controller {
             response =  Result_ok.class,
             code = 200
     )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_UploadBinaryFileToBoard",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response =  Result_ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result uploadBinaryFileToBoard(@ApiParam(value = "board_id String path", required = true) @PathParam("board_id") String board_id) {
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result uploadBinaryFileToBoard() {
         try{
 
-            Board board = Board.find.byId(board_id);
-            if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
+            final Form<Swagger_UploadBinaryFileToBoard> form = Form.form(Swagger_UploadBinaryFileToBoard.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_UploadBinaryFileToBoard help = form.get();
 
-            Homer homer;
-            // TODO Trochu problém té nejednoznačnosti
-            try {
-                homer = board.projects.get(0).homerList.get(0);
-                if (homer == null) return GlobalResult.notFoundObject("Homer not found");
-            }catch (Exception e){ return GlobalResult.result_BadRequest("Hardware is not connected with Homer (cloud or physic) ");}
+            List<Board> boardList = Board.find.where().idIn(help.board_id).findList();
+
+            if(boardList.size() == 0) return GlobalResult.result_BadRequest("no devices to update");
+
+
+            Map< Homer, List<String>> map = new HashMap<>();
+
+
+            // Updatovat můžu desky napříč desítkami spojení v různých projektech atd...
+            for(Board board : boardList){
+                if(!map.containsKey(board.homer)){
+                    List<String> boards = new ArrayList<>();
+                    boards.add(board.id);
+                    map.put(board.homer, boards);
+                }else {
+                    map.get(board.homer).add(board.id);
+                }
+            }
+
+            // TODO samostané vlákno co by odpověď vrátilo hned a zbytek notifikací
+
 
             // Přijmu soubor
             Http.MultipartFormData body = request().body().asMultipartFormData();
             Http.MultipartFormData.FilePart file = body.getFile("file");
 
-
-
             // Its file not null
             if (file == null) return GlobalResult.notFoundObject("File not found");
-            if(!homer.online()) return GlobalResult.result_BadRequest("Homer is not online");
 
-            WebSocketController_Incoming.homer_update_embeddedHW(homer.id, board_id, file.getFile() );
+           byte[] file_inBase64 = UtilTools.loadFile_inBase64( file.getFile() );
+
+            for (Map.Entry< Homer, List<String>>  entry : map.entrySet())
+            {
+                // TODO dodělat notifikaci
+                WebSocketController_Incoming.homer_update_embeddedHW(entry.getKey().id, entry.getValue() , file_inBase64);
+            }
+
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
@@ -523,17 +517,264 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
-    //TODO swagger Documentation
-    public Result uploadCompilationToBoard(String c_program_id, String boardId) {
 
-        Board board = Board.find.byId(boardId);
-        if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
+    @ApiOperation(value = "update Embedded Hardware with C_program compilation",
+            tags = {"C_Program"},
+            notes = "Upload compilation to list of hardware. Compilation is on Version oc C_program. And before uplouding compilation, you must succesfuly compile required version before! " +
+                    "Result (HTML code) will be every time 200. - Its because upload, restart, etc.. operation need more than ++30 second " +
+                    "There is also problem / chance that Tyrion didn't find where Embedded hardware is. So you have to listening Server Sent Events (SSE) and show \"future\" message to the user!",
+            produces = "application/json",
+            protocols = "https",
+            consumes = "multipart/form-data",
+            response =  Result_ok.class,
+            code = 200
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_UploadBinaryFileToBoard",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result uploadCompilationToBoard(String c_program_id, String version_id) {
+        try {
 
-        C_Program c_program = C_Program.find.byId(c_program_id);
-        if (c_program == null) return GlobalResult.notFoundObject("C_Program c_program_id not found");
+            final Form<Swagger_UploadBinaryFileToBoard> form = Form.form(Swagger_UploadBinaryFileToBoard.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_UploadBinaryFileToBoard help = form.get();
 
-        //TODO Chybí kompilování atd... tohle bude mega metoda!!!
-        return GlobalResult.result_ok();
+            C_Program c_program = C_Program.find.byId(c_program_id);
+            if (c_program == null) return GlobalResult.notFoundObject("C_Program c_program_id not found");
+
+            Version_Object version = Version_Object.find.byId(version_id);
+            if (version.c_program.id.equals(c_program.id)) return GlobalResult.result_BadRequest("The version is not consistent with the program");
+
+            if(version.c_compilation == null) return GlobalResult.result_BadRequest("The program is not yet compiled");
+            FileRecord binary_file = version.c_compilation.compilation();
+
+
+            List<Board> boardList = Board.find.where().idIn(help.board_id).findList();
+
+            Map< Homer, List<String>> map = new HashMap<>();
+
+            // Updatovat můžu desky napříč desítkami spojení v různých projektech atd...
+            for(Board board : boardList){
+                if(!map.containsKey(board.homer)){
+                    List<String> boards = new ArrayList<>();
+                    boards.add(board.id);
+                    map.put(board.homer, boards);
+                }else {
+                    map.get(board.homer).add(board.id);
+                }
+            }
+
+            // TODO samostané vlákno co by odpověď vrátilo hned a zbytek notifikací
+
+            byte[] file_inBase64 = UtilTools.loadFile_inBase64( binary_file.get_fileRecord_from_Azure_inFile() );
+
+            for (Map.Entry< Homer, List<String>>  entry : map.entrySet()) {
+                WebSocketController_Incoming.homer_update_embeddedHW(entry.getKey().id, entry.getValue(), file_inBase64);
+            }
+
+            return GlobalResult.result_ok();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return GlobalResult.internalServerError();
+        }
+    }
+
+
+///###################################################################################################################*/
+
+    @ApiOperation(value = "Create new Compilation Server",
+            tags = {"External Server"},
+            notes = "Create new Gate for Compilation Server",
+            produces = "application/json",
+            protocols = "https",
+            code = 201,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner",  description = "For create new C_program, you have to own project"),
+                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Cloud_Compilation_Server_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successful created",      response = Cloud_Compilation_Server.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result create_Compilation_Server(){
+        try{
+
+            final Form<Swagger_Cloud_Compilation_Server_New> form = Form.form(Swagger_Cloud_Compilation_Server_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Cloud_Compilation_Server_New help = form.get();
+
+            Cloud_Compilation_Server server = new Cloud_Compilation_Server();
+            server.server_name = help.server_name;
+            server.destination_address = Server.tyrion_webSocketAddress + "/websocket/compilation_server/" + server.server_name;
+
+            server.set_hash_certificate();
+
+            server.save();
+
+            return GlobalResult.result_ok(Json.toJson(server));
+
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - deleteCProgram ERROR");
+            return GlobalResult.internalServerError();
+        }
+    }
+
+    @ApiOperation(value = "edit Compilation Server",
+            tags = {"External Server"},
+            notes = "Edit basic information Compilation Server",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner",  description = "For create new C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Cloud_Compilation_Server_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Update successfuly",      response = Cloud_Compilation_Server.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result edit_Compilation_Server( @ApiParam(value = "server_id ", required = true) @PathParam("server_id") String server_id ){
+        try{
+
+            final Form<Swagger_Cloud_Compilation_Server_New> form = Form.form(Swagger_Cloud_Compilation_Server_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Cloud_Compilation_Server_New help = form.get();
+
+            Cloud_Compilation_Server server = Cloud_Compilation_Server.find.byId(server_id);
+            if (server == null) return GlobalResult.notFoundObject("Cloud_Compilation_Server server_id not found");
+
+            server.server_name = help.server_name;
+
+            server.save();
+            return GlobalResult.result_ok(Json.toJson(server));
+
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - deleteCProgram ERROR");
+            return GlobalResult.internalServerError();
+        }
+    }
+
+    @ApiOperation(value = "get all Compilation Servers",
+            tags = {"External Server"},
+            notes = "get Compilation Servers",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner",  description = "For create new C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",      response = Cloud_Compilation_Server.class, responseContainer = "List "),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result get_All_Compilation_Server(){
+        try{
+
+            List<Cloud_Compilation_Server> servers = Cloud_Compilation_Server.find.all();
+
+            return GlobalResult.result_ok(Json.toJson(servers));
+
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - deleteCProgram ERROR");
+            return GlobalResult.internalServerError();
+        }
+    }
+
+    @ApiOperation(value = "remove Compilation Servers",
+            tags = {"External Server"},
+            notes = "remove Compilation Servers",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner",  description = "For create new C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",      response = Result_ok.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result delete_Compilation_Server( @ApiParam(value = "server_id ", required = true) @PathParam("server_id") String server_id ){
+        try{
+
+            Cloud_Compilation_Server server = Cloud_Compilation_Server.find.byId(server_id);
+
+            if (server == null) return GlobalResult.notFoundObject("Cloud_Compilation_Server server_id not found");
+
+            server.delete();
+            return GlobalResult.result_ok();
+
+        } catch (Exception e) {
+            Logger.error("Error", e);
+            Logger.error("CompilationLibrariesController - deleteCProgram ERROR");
+            return GlobalResult.internalServerError();
+        }
     }
 
 ///###################################################################################################################*/
@@ -552,13 +793,6 @@ public class CompilationLibrariesController extends Controller {
                     )
             }
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful created",      response = Processor.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(
@@ -570,8 +804,14 @@ public class CompilationLibrariesController extends Controller {
                     )
             }
     )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successful created",      response = Processor.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @BodyParser.Of(BodyParser.Json.class)
-    //  @Pattern("processor.create")
     public Result new_Processor() {
         try {
 
@@ -1086,8 +1326,8 @@ public class CompilationLibrariesController extends Controller {
             LibraryGroup libraryGroup = new LibraryGroup();
             libraryGroup.description = help.description;
             libraryGroup.group_name = help.group_name;
-            libraryGroup.azurePackageLink = "libraryGroup"; // TODO? -> Nějaké třídění ??? (Private, Public,.. etc?)
-            libraryGroup.setUniqueAzureStorageLink();
+            libraryGroup.azureStorageLink = "libraryGroup"; // TODO? -> Nějaké třídění ??? (Private, Public,.. etc?)
+            libraryGroup.setUniqueAzurePackageLink();
             libraryGroup.save();
 
             return GlobalResult.created(Json.toJson(libraryGroup));
@@ -1168,43 +1408,6 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
-    @ApiOperation(value = "get all Versions from LibraryGroup",
-            tags = {"LibraryGroup"},
-            notes = "If you want create new versinon in LibraryGroup query = libraryGroup_id. Send required json values and server respond with new object",
-            produces = "application/json",
-            response =  Version_Object.class,
-            protocols = "https",
-            code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "libraryGroup.edit", description = "For create new Processor")}
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result",      response = Version_Object.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    // @Pattern("libraryGroup.read")
-    public Result get_LibraryGroup_Version(@ApiParam(value = "libraryGroup_id String query", required = true) @PathParam("libraryGroup_id") String libraryGroup_id){
-        try {
-
-            LibraryGroup libraryGroup = LibraryGroup.find.byId(libraryGroup_id);
-            if(libraryGroup == null) return GlobalResult.notFoundObject("LibraryGroup library_group_id not found");
-
-            return GlobalResult.result_ok(Json.toJson(libraryGroup.version_objects));
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            Logger.error("CompilationLibrariesController - getVersionLibraryGroup ERROR");
-            return GlobalResult.internalServerError();
-        }
-    }
-
     @ApiOperation(value = "upload files to Version in LibraryGroup",
             tags = {"LibraryGroup"},
             notes = "Its not possible now describe uploud file in Swagger. But file name must be longer than 5 chars." +
@@ -1257,7 +1460,7 @@ public class CompilationLibrariesController extends Controller {
                 // Připojuji se a tvořím cestu souboru
                 CloudBlobContainer container = Server.blobClient.getContainerReference("libraries");
 
-                String azurePath = libraryGroup.azurePackageLink + "/" + libraryGroup.azureStorageLink + "/" + versionObjectObject.azureLinkVersion + "/" + fileName;
+                String azurePath =libraryGroup.azureStorageLink + "/" +  libraryGroup.azurePackageLink + "/" + versionObjectObject.azureLinkVersion + "/" + fileName;
 
                 CloudBlockBlob blob = container.getBlockBlobReference(azurePath);
 
@@ -1412,110 +1615,6 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
-    @ApiOperation(value = "get LibraryGroup description",
-            tags = {"LibraryGroup"},
-            notes = "If you want get description from LibraryGroup by query = libraryGroup_id",
-            produces = "application/json",
-            response =  Description.class,
-            protocols = "https",
-            code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "libraryGroup.read", description = "For get LibraryGroup")}
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result",      response = Description.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    //  @Pattern("libraryGroup.read")
-    public Result get_LibraryGroup_Description(@ApiParam(value = "libraryGroup_id String query", required = true) @PathParam("libraryGroup_id") String libraryGroup_id) {
-        try {
-            LibraryGroup libraryGroup = LibraryGroup.find.byId(libraryGroup_id);
-            if(libraryGroup == null) return GlobalResult.notFoundObject("LibraryGroup libraryGroup_id not found");
-
-            Description description = new Description();
-            description.description = libraryGroup.description;
-
-            return GlobalResult.result_ok(Json.toJson(description));
-
-        } catch (Exception e) {
-            Logger.error("CompilationLibrariesController - get_LibraryGroup_Description ERROR");
-            return GlobalResult.internalServerError();
-        }
-    }
-
-    @ApiOperation(value = "get LibraryGroup Processors",
-            tags = {"LibraryGroup", "Processor"},
-            notes = "If you want get Processors from LibraryGroup by query = libraryGroup_id",
-            produces = "application/json",
-            response =  Processor.class,
-            protocols = "https",
-            code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "processor.read", description = "For get Processors")}
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result",      response = Processor.class, responseContainer = "List"),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    // @Pattern("processor.read")
-    public Result get_LibraryGroup_Processors(@ApiParam(value = "libraryGroup_id String query", required = true) @PathParam("libraryGroup_id") String libraryGroup_id) {
-        try {
-            LibraryGroup libraryGroup = LibraryGroup.find.byId(libraryGroup_id);
-            if(libraryGroup == null) return GlobalResult.notFoundObject("LibraryGroup libraryGroup_id not found");
-
-            return GlobalResult.result_ok(Json.toJson(libraryGroup.processors));
-
-        } catch (Exception e) {
-            Logger.error("CompilationLibrariesController - get_LibraryGroup_Processors ERROR");
-            return GlobalResult.internalServerError();
-        }
-    }
-
-    @ApiOperation(value = "get Libraries from LibraryGroup",
-            tags = {"LibraryGroup"},
-            notes = "If you want get Processors from LibraryGroup by query = libraryGroup_id",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "processor.read", description = "For get Processors")}
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result",      response = FileRecord.class, responseContainer = "List"),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    // @Pattern("libraryGroup.read")
-    public Result get_LibraryGroup_Libraries(@ApiParam(value = "libraryGroup_id String query", required = true) @PathParam("libraryGroup_id") String libraryGroup_id, @ApiParam(required = true) @PathParam("version_id") String version_id) {
-        try {
-
-            Version_Object versionObjectObject = Version_Object.find.where().in("libraryGroup.id", libraryGroup_id).eq("id",version_id).setMaxRows(1).findUnique();
-            if(versionObjectObject == null ) return GlobalResult.notFoundObject("Version_Object version_id not found");
-
-            return GlobalResult.result_ok(Json.toJson(versionObjectObject.files));
-        } catch (Exception e) {
-            Logger.error("CompilationLibrariesController - get_LibraryGroup_Libraries ERROR");
-            return GlobalResult.internalServerError();
-        }
-    }
-
     @ApiOperation(value = "get Libraries from LibraryGroup Version",
             tags = {"LibraryGroup"},
             notes = "If you want get Libraries from LibraryGroup.Version by query = version_id",
@@ -1641,6 +1740,41 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
+    @ApiOperation(value = "get version from LibraryGroup",
+            tags = {"LibraryGroup"},
+            notes = "get version from LibraryGroup",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "libraryGroup.edit", description = "For create new Processor")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok result",      response = Version_Object.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result get_LibraryGroup_Version(@ApiParam(value = "version_id String query", required = true) @PathParam("version_id") String version_id){
+        try {
+
+            Version_Object version = Version_Object.find.byId(version_id);
+            if(version == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
+
+            return GlobalResult.result_ok(Json.toJson(version));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Logger.error("CompilationLibrariesController - getVersionLibraryGroup ERROR");
+            return GlobalResult.internalServerError();
+        }
+    }
+
 ///###################################################################################################################*/
 
     @ApiOperation(value = "get FileRecord",
@@ -1723,8 +1857,8 @@ public class CompilationLibrariesController extends Controller {
             SingleLibrary singleLibrary = new SingleLibrary();
             singleLibrary.library_name = help.library_name;
             singleLibrary.description = help.description;
-            singleLibrary.azurePackageLink = "singleLibraries";
-            singleLibrary.setUniqueAzureStorageLink();
+            singleLibrary.azureStorageLink = "singleLibraries";
+            singleLibrary.setUniqueAzurePackageLink();
 
             singleLibrary.save();
 
@@ -1864,7 +1998,7 @@ public class CompilationLibrariesController extends Controller {
             fileRecord.save();
 
             CloudBlobContainer container = Server.blobClient.getContainerReference("libraries");
-            String azurePath = singleLibrary.azurePackageLink + "/" + singleLibrary.azureStorageLink + "/"+ versionObjectObject.azureLinkVersion  +"/" + fileRecord.file_name;
+            String azurePath = singleLibrary.azureStorageLink + "/" +  singleLibrary.azurePackageLink + "/" + versionObjectObject.azureLinkVersion + "/" + fileName;
             CloudBlockBlob blob = container.getBlockBlobReference(azurePath);
 
             blob.upload(new FileInputStream(libraryFile), libraryFile.length());
@@ -3074,12 +3208,14 @@ public class CompilationLibrariesController extends Controller {
             Project project = Project.find.byId(project_id);
             if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
-            if( board.projects.contains(project)) return  GlobalResult.result_ok(Json.toJson(board));
-            board.projects.add(project);
+            if( ! project.boards.contains(board) ){
+                board.project = project;
+                project.boards.add(board);
+                project.update();
+                board.update();
+            }
 
-            board.update();
-
-            return GlobalResult.result_ok(Json.toJson(board));
+             return GlobalResult.result_ok(Json.toJson(board));
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("CompilationLibrariesController - get_Board ERROR");
@@ -3118,10 +3254,13 @@ public class CompilationLibrariesController extends Controller {
             Project project = Project.find.byId(project_id);
             if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
-            if( !board.projects.contains(project)) return  GlobalResult.result_ok(Json.toJson(board));
-            board.projects.remove(project);
+            if( board.project == null) return  GlobalResult.result_ok(Json.toJson(board));
+            project.boards.remove(board);
+            project.update();
 
+            board.project = null;
             board.update();
+
             return GlobalResult.result_ok(Json.toJson(board));
 
         } catch (Exception e) {
@@ -3130,79 +3269,6 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.internalServerError();
         }
     }
-
-    @ApiOperation(value = "get Project from Board",
-            tags = { "Board", "Project"},
-            notes = "Design pattern from Api-GitHub says that from every object you can get another, which belongs to it",
-            produces = "application/json",
-            response =  Board.class,
-            protocols = "https",
-            code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "Board Owner & Project Owner", description = "Person who owned this Board and Project"),
-                                       @AuthorizationScope(scope = "board.edit",  description = "Person need this permission"),
-                                       @AuthorizationScope(scope = "SuperAdmin",  description = "Or person must be SuperAdmin role")}
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Board.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public Result getBoardProjects(@ApiParam(required = true) @PathParam("board_id")  String board_id){
-        try {
-            Board board = Board.find.byId(board_id);
-            if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
-
-            return GlobalResult.result_ok(Json.toJson(board.projects));
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - get_Board ERROR");
-            return GlobalResult.internalServerError();
-        }
-    }
-
-    @ApiOperation(value = "get all Boards from Project",
-            tags = { "Board", "Project"},
-            notes = "Get all boards which are connected with Project",
-            produces = "application/json",
-            response =  Board.class,
-            protocols = "https",
-            code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "Board Owner & Project Owner", description = "Person who owned this Board and Project"),
-                                       @AuthorizationScope(scope = "board.edit",  description = "Person need this permission"),
-                                       @AuthorizationScope(scope = "SuperAdmin",  description = "Or person must be SuperAdmin role")}
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Board.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public Result get_Boards_from_Project(@ApiParam(required = true) @PathParam("project_id")  String project_id) {
-        try {
-
-            Project project = Project.find.byId(project_id);
-            if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
-
-            return GlobalResult.result_ok(Json.toJson(project.boards));
-
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - deleteCProgram ERROR");
-            return GlobalResult.internalServerError();
-        }
-    }
-
 
 
 }

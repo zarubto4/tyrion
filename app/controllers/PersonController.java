@@ -148,8 +148,6 @@ public class PersonController extends Controller {
         }
     }
 
-
-
     @ApiOperation(value = "get all Person",
             tags = {"Person"},
             notes = "get all Persons",
@@ -175,9 +173,6 @@ public class PersonController extends Controller {
         }
     }
 
-
-
-
     @ApiOperation(value = "delete Person",
             tags = {"Person"},
             notes = "delete Person by id",
@@ -199,7 +194,6 @@ public class PersonController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured.class)
-    @BodyParser.Of(BodyParser.Json.class)
     public  Result deletePerson(@ApiParam(value = "person_id String query", required = true) @PathParam("person_id") String person_id){
         try{
 

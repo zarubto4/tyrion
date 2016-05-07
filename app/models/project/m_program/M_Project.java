@@ -29,11 +29,11 @@ public class M_Project extends Model {
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true)      public String  id;
                                                                                                     public String  program_name;
     @Column(columnDefinition = "TEXT") @ApiModelProperty(required = false, value = "can be empty")  public String  program_description;
-    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1458315085338") public Date    date_of_create;
+    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1461854312") public Date    date_of_create;
 
 
     @JsonIgnore @ManyToOne                                      public Project project;
-    @JsonIgnore @OneToOne   @JoinColumn(name="id")    public B_Program b_program; // TODO asi časem předělat na MayToMany!
+    @JsonIgnore @OneToOne   @JoinColumn(name="b_program_id")    public B_Program b_program; // TODO asi časem předělat na MayToMany!
     @JsonIgnore @OneToOne   @JoinColumn(name="vrs_obj_id")      public Version_Object b_program_version;
                                                                 public boolean auto_incrementing;
 

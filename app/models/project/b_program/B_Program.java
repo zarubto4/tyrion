@@ -3,14 +3,13 @@ package models.project.b_program;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
+import models.blocko.Cloud_Blocko_Server;
 import models.compiler.Version_Object;
 import models.project.global.Project;
 import models.project.m_program.M_Project;
-import play.libs.Json;
+import utilities.swagger.outboundClass.B_Program_State;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -28,13 +27,13 @@ public class B_Program extends Model {
                                                              public String name;
                         @Column(columnDefinition = "TEXT")   public String program_description;
 
-    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1458315085338") public Date lastUpdate;
-    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1458315085338") public Date dateOfCreate;
+    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1461854312") public Date lastUpdate;
+    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1461854312") public Date dateOfCreate;
                                     @JsonIgnore @ManyToOne   public Project project;
                                                 @JsonIgnore  public String azurePackageLink;
                                                 @JsonIgnore  public String azureStorageLink;
 
-    @JsonIgnore   @OneToOne(mappedBy="b_program",cascade=CascadeType.ALL) public M_Project m_program; // TODO asi časem předělat na MayToMany!
+    @JsonIgnore   @OneToOne(mappedBy="b_program",cascade=CascadeType.ALL) public M_Project m_project; // TODO asi časem předělat na MayToMany!
 
     @OneToMany(mappedBy="b_program", cascade=CascadeType.ALL) @OrderBy("azureLinkVersion DESC")     public List<Version_Object> versionObjects = new ArrayList<>();
                                                                                  @JsonProperty      public String   project_id() {  return project.id; }
@@ -42,32 +41,35 @@ public class B_Program extends Model {
 
 /* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty public JsonNode program_state(){
+    @JsonProperty public B_Program_State program_state(){
 
-        ObjectNode result = Json.newObject();
+        B_Program_State state = new B_Program_State();
+        state.m_project_id = m_project != null ? m_project.id : null;
 
         Version_Object version_object = where_program_run();
 
-
         if(version_object == null){
-            result.put("version", "null" );
-            return  result;
+            state.uploaded = false;
+            return state;
         }
 
-        result.put("version_id", version_object.id);
+        state.uploaded = true;
+        state.version_id = version_object.id;
 
         if( version_object.b_program_cloud != null ) {
-            result.put("where", "cloud");
-            result.put("b_program_cloud_id", version_object.b_program_cloud.id );
+            state.where = "cloud";
+
+            Cloud_Blocko_Server server = Cloud_Blocko_Server.find.where().eq("cloud_programs.id", version_object.b_program_cloud.id).findUnique();
+
+            state.set_Cloud_State(version_object.b_program_cloud, server.server_name );
         }
         else {
-            result.put("where", "homer");
-            result.put("b_program_homer_id", version_object.b_program_homer.id );
-            result.put("id", version_object.b_program_homer.homer.id);
-            result.put("homer_online", version_object.b_program_homer.homer.online() );
+            state.where = "homer";
+            state.set_Local_State(version_object.b_program_homer, version_object.b_program_homer.homer);
+
         }
 
-        return result;
+        return state;
     }
 
 

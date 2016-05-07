@@ -1,4 +1,4 @@
-package models.project.global;
+package models.project.b_program;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -9,12 +9,13 @@ import controllers.SecurityController;
 import controllers.WebSocketController_Incoming;
 import io.swagger.annotations.ApiModelProperty;
 import models.compiler.Board;
-import models.project.b_program.B_Program_Homer;
+import models.project.global.Project;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 public class Homer extends Model {
@@ -26,6 +27,9 @@ public class Homer extends Model {
 
     @JsonIgnore @ManyToOne                   public Project project;
     @JsonProperty                            public String project_id(){ return project == null ? null : project.id; }
+
+    @JsonIgnore @OneToMany(mappedBy="homer", cascade = CascadeType.ALL) public List<Board>  boards  = new ArrayList<>();
+    @JsonProperty                                                       public List<String> boards_id()   { return boards.stream().map(m -> m.id).collect(Collectors.toList());}
 
 
     @JsonIgnore  @OneToOne(mappedBy="homer") public B_Program_Homer b_program_homer;

@@ -23,8 +23,8 @@ public class Global extends GlobalSettings {
            Server.set_Server_address();
 
            //2
-           logger.warn("Setting main servers connections");
-           Server.set_Blocko_Server_Connection();
+           //logger.warn("Setting main servers connections");
+          // Server.set_Homer_Server();
 
            //3
            logger.warn("Setting system Permission");
@@ -41,10 +41,11 @@ public class Global extends GlobalSettings {
 
     //****************************************************************************************************************************
             UtilTools.set_Developer_objects(); // TODO bude smazáno - slouží jen k vytvoření prvního uživatele
-
+            UtilTools.set_Homer_Server();
+            UtilTools.set_Compilation_Server();
 
        }catch (Exception e){
-          logger.error("Server Start Exception - Global Settings",e);
+          logger.error( "Server Start Exception - Global Settings",e);
        }
 
     }

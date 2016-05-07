@@ -73,11 +73,10 @@ public class M_Program extends Model{
 
 
     @JsonIgnore   public Boolean create_permission(){  return ( Project.find.where().where().eq("ownersOfProject.id", SecurityController.getPerson().id ).eq("m_projects.id", m_project.id).findUnique().create_permission() ) || SecurityController.getPerson().has_permission("M_Program_create");      }
-    @JsonProperty public Boolean read_permission()  {  return ( M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("M_Program_read"); }
-    @JsonProperty public Boolean read_qrToken_permission() { return  true; }
-
-    @JsonProperty public Boolean edit_permission()  {  return ( M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("M_Program_edit"); }
-    @JsonProperty public Boolean delete_permission(){  return ( M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("M_Program_delete"); }
+    @JsonIgnore   public Boolean read_permission()  {  return ( M_Program.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("M_Program_read"); }
+    @JsonProperty public Boolean read_qrToken_permission() { return  true; } // TODO pokud uživatel vyloženě nebude chtít zakázat public přístup
+    @JsonProperty public Boolean edit_permission()  { return  SecurityController.getPerson() == null ? false : ( M_Program.find.where().eq("m_project.project.ownersOfProject.id", SecurityController.getPerson().id).eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("M_Program_edit"); }
+    @JsonProperty public Boolean delete_permission(){ return  SecurityController.getPerson() == null ? false : ( M_Program.find.where().eq("m_project.project.ownersOfProject.id", SecurityController.getPerson().id).eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("M_Program_delete"); }
 
     public enum permissions{ M_Program_create, M_Program_read, M_Program_edit, M_Program_delete }
 

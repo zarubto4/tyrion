@@ -175,7 +175,7 @@ public class PermissionController extends Controller {
 
             if(! personPermission.edit_permission()) return GlobalResult.forbidden_Permission();
 
-            if( ! securityRole.permissions.contains(personPermission)) securityRole.permissions.add(personPermission);
+            if( ! securityRole.person_permissions.contains(personPermission)) securityRole.person_permissions.add(personPermission);
 
             securityRole.update();
 
@@ -212,7 +212,7 @@ public class PermissionController extends Controller {
             SecurityRole securityRole = SecurityRole.find.byId(role_id);
             if(securityRole == null ) return GlobalResult.notFoundObject("SecurityRole role_id not found");
 
-            return GlobalResult.result_ok(Json.toJson(securityRole.permissions));
+            return GlobalResult.result_ok(Json.toJson(securityRole.person_permissions));
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -280,7 +280,7 @@ public class PermissionController extends Controller {
 
             if (!securityRole.update_permission() ) return GlobalResult.forbidden_Permission();
 
-            if(securityRole.permissions.contains(personPermission)) securityRole.permissions.remove(personPermission);
+            if(securityRole.person_permissions.contains(personPermission)) securityRole.person_permissions.remove(personPermission);
 
             securityRole.update();
 
@@ -505,10 +505,10 @@ public class PermissionController extends Controller {
             code = 200,
             extensions = {
                     @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Person.all_permission", value = "its possible get only own (personú permission"),
+                            @ExtensionProperty(name = "Person.all_permission", value = "Its public information"),
                     }),
                     @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "owner", value = "true"),
+                            @ExtensionProperty(name = "public", value = "true"),
                     })
             }
     )

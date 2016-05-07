@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
 import models.project.b_program.B_Program;
 import models.project.b_program.B_Program_Cloud;
 import models.project.b_program.B_Program_Homer;
+import models.project.c_program.C_Compilation;
 import models.project.c_program.C_Program;
 import models.project.m_program.M_Project;
 
@@ -24,7 +25,7 @@ public class Version_Object extends Model {
                      @Column(columnDefinition = "TEXT")      public String version_description;
                                                 @JsonIgnore  public Integer azureLinkVersion;
 
-    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1458315085338") public Date date_of_create;
+    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1461918607") public Date date_of_create;
 
     @JsonIgnore  @OneToMany(mappedBy="version_object", cascade=CascadeType.ALL)  public List<FileRecord> files = new ArrayList<>();
 
@@ -35,11 +36,10 @@ public class Version_Object extends Model {
                                     @JsonIgnore  @ManyToOne  public C_Program     c_program;
                                     @JsonIgnore  @ManyToOne  public B_Program     b_program;
 
-    @JsonIgnore   @OneToOne(mappedBy="version_object",  cascade=CascadeType.ALL)  public B_Program_Cloud b_program_cloud;
-    @JsonIgnore   @OneToOne(mappedBy="version_object",  cascade=CascadeType.ALL)  public B_Program_Homer b_program_homer;
-    @JsonIgnore   @OneToOne(mappedBy="b_program_version",cascade=CascadeType.ALL) public M_Project m_program;
-
-
+    @JsonIgnore   @OneToOne(mappedBy="version_object",   cascade=CascadeType.ALL)  public B_Program_Cloud b_program_cloud;
+    @JsonIgnore   @OneToOne(mappedBy="version_object",   cascade=CascadeType.ALL)  public B_Program_Homer b_program_homer;
+    @JsonIgnore   @OneToOne(mappedBy="b_program_version",cascade=CascadeType.ALL) public M_Project m_project;
+    @JsonIgnore   @OneToOne(mappedBy="version_object",cascade=CascadeType.ALL) public C_Compilation c_compilation;
 
 
     @JsonProperty public List<String> files_id(){ List<String> l = new ArrayList<>();  for( FileRecord m : files) l.add(m.id); return l;  }
@@ -47,7 +47,7 @@ public class Version_Object extends Model {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     // ZDE BY NIKDY NEMĚLY BÝT OPRÁVNĚNÍ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! - TOMÁŠ Z.
-    // Oprávnění volejte na objektu kterého se to týký např.  version.b_program.read_permission()...
+    // Oprávnění volejte na objektu kterého se to týká např.  version.b_program.read_permission()...
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String, Version_Object> find = new Finder<>(Version_Object.class);

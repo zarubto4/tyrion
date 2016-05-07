@@ -1181,7 +1181,7 @@ public class OverFlowController  extends Controller {
 
     @ApiOperation(value = "remove HashTag from Post",
             tags = {"Blocko-OverFlow", "Post"},
-            notes = "add HashTag to post",
+            notes = "remove HashTag to post",
             produces = "application/json",
             protocols = "https",
             code = 200,

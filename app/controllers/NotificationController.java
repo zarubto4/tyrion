@@ -161,7 +161,7 @@ public class NotificationController extends Controller {
 
       // Abych změnil stav všech notifikací v DB, že byly uživateli už ukázány (front
       if (page_number == 1 && result.notifications.get(0) != null && !result.notifications.get(0).read)
-        Notification.find.where().eq("person.id", SecurityController.getPerson().id).order().desc("result_created").setMaxRows(25).findList().forEach(Notification::set_read);
+        Notification.find.where().eq("person.id", SecurityController.getPerson().id).order().desc("created").setMaxRows(25).findList().forEach(Notification::set_read);
       return GlobalResult.result_ok(Json.toJson(result));
 
     } catch (Exception e) {

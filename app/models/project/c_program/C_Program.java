@@ -32,8 +32,9 @@ public class C_Program extends Model {
                                                @JsonIgnore      public String azureStorageLink;
 
 
-    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1458315085338") public Date dateOfCreate;
-    @OneToMany(mappedBy="c_program", cascade=CascadeType.ALL) @OrderBy("azureLinkVersion DESC")                                     public List<Version_Object> version_objects = new ArrayList<>();
+    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1461854312") public Date dateOfCreate;
+    @OneToMany(mappedBy="c_program", cascade=CascadeType.ALL) @OrderBy("azureLinkVersion DESC")                                  public List<Version_Object> version_objects = new ArrayList<>();
+
 
 
 
@@ -50,7 +51,6 @@ public class C_Program extends Model {
     }
 
 
-/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore   public Boolean create_permission(){  return ( Project.find.where().where().eq("ownersOfProject.id",   SecurityController.getPerson().id).eq("id", project.id ).findUnique().create_permission() ) || SecurityController.getPerson().has_permission("C_program_create");      }

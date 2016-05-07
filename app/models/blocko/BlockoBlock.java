@@ -35,7 +35,7 @@ public class BlockoBlock extends Model {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore   public Boolean create_permission() {
-        if( TypeOfBlock.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id ).eq("id", type_of_block).findRowCount() < 1) return false;
+        if( TypeOfBlock.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id ).where().eq("id", type_of_block.id).findRowCount() < 1) return false;
         if(! author.id.equals( SecurityController.getPerson().id ) ) return false;
         if(! type_of_block.update_permission() )return false;
         return true;
@@ -71,6 +71,7 @@ public class BlockoBlock extends Model {
                         ||
                         SecurityController.getPerson().has_permission("BlockoBlock.delete");
     }
+
 
 
     public enum permissions{BlockoBlock_create, BlockoBlock_read, BlockoBlock_edit, BlockoBlock_delete}
