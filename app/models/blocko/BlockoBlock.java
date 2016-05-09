@@ -27,21 +27,21 @@ public class BlockoBlock extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-                @JsonProperty public List<String>    versions()             { List<String> l = new ArrayList<>();  for( BlockoBlockVersion m : blocko_versions)  l.add(m.id); return l; }
-                @JsonProperty public String         author_id()             { return author.id;}
+    @Transient  @JsonProperty public List<String>    versions()             { List<String> l = new ArrayList<>();  for( BlockoBlockVersion m : blocko_versions)  l.add(m.id); return l; }
+    @Transient  @JsonProperty public String         author_id()             { return author.id;}
     @Transient  @JsonProperty public String  type_of_block_id()             { return type_of_block.id; }
 
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   public Boolean create_permission() {
+    @JsonIgnore  @Transient  public Boolean create_permission() {
         if( TypeOfBlock.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id ).where().eq("id", type_of_block.id).findRowCount() < 1) return false;
         if(! author.id.equals( SecurityController.getPerson().id ) ) return false;
         if(! type_of_block.update_permission() )return false;
         return true;
     }
 
-    @JsonProperty public Boolean edit_permission() {
+    @JsonProperty @Transient public Boolean edit_permission() {
         return BlockoBlock.find.where()
                         .or(
                                 com.avaje.ebean.Expr.eq("type_of_block.project.ownersOfProject.id", SecurityController.getPerson().id),
@@ -51,7 +51,7 @@ public class BlockoBlock extends Model {
                         SecurityController.getPerson().has_permission("BlockoBlock.create");
     }
 
-    @JsonIgnore   public Boolean read_permission() {
+    @JsonIgnore  @Transient  public Boolean read_permission() {
         return BlockoBlock.find.where()
                         .or(
                                 com.avaje.ebean.Expr.eq("type_of_block.project.ownersOfProject.id", SecurityController.getPerson().id),
@@ -61,7 +61,7 @@ public class BlockoBlock extends Model {
                         SecurityController.getPerson().has_permission("BlockoBlock.read");
     }
 
-    @JsonProperty public Boolean delete_permission() {
+    @JsonProperty @Transient  public Boolean delete_permission() {
         return
                 BlockoBlock.find.where()
                         .or(

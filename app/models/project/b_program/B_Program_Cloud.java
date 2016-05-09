@@ -29,7 +29,7 @@ public class B_Program_Cloud extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     public void setUnique_blocko_instance_name() {
 
             while(true){ // I need Unique Value

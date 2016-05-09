@@ -49,39 +49,39 @@ public class Post extends Model {
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
-    @ApiModelProperty(required = false, value = "Only if Post is Main")
+    @ApiModelProperty(required = false, value = "Only if Post is Main") @Transient
     @JsonInclude(JsonInclude.Include.NON_EMPTY)  @JsonProperty  public TypeOfPost           type()                  { return type == null ? null : type;}
 
-    @ApiModelProperty(required = false, value = "Only if Post is Main")
+    @ApiModelProperty(required = false, value = "Only if Post is Main") @Transient
     @JsonInclude(JsonInclude.Include.NON_NULL)   @JsonProperty  public List<TypeOfConfirms> type_of_confirms()      { return name == null  ? null : typeOfConfirms;}
 
-    @ApiModelProperty(required = false, value = "Only if Post is Main")
+    @ApiModelProperty(required = false, value = "Only if Post is Main") @Transient
     @JsonInclude(JsonInclude.Include.NON_NULL)   @JsonProperty  public Integer              views()                 { return name == null ? null : views; }
 
-    @ApiModelProperty(required = false, value = "Only if Post is Main")
+    @ApiModelProperty(required = false, value = "Only if Post is Main") @Transient
     @JsonInclude(JsonInclude.Include.NON_NULL)   @JsonProperty  public List<Post>           answers()               { return name == null ? null : answers; }
 
-    @ApiModelProperty(required = false, value = "Only if Post is Main")
+    @ApiModelProperty(required = false, value = "Only if Post is Main") @Transient
     @JsonInclude(JsonInclude.Include.NON_NULL)   @JsonProperty  public List<LinkedPost>     linked_answers()        { return name == null ? null : linkedQuestions; }
 
-    @ApiModelProperty(required = false, value = "Only if Post is Main or Answare")
+    @ApiModelProperty(required = false, value = "Only if Post is Main or Answare") @Transient
     @JsonInclude(JsonInclude.Include.NON_NULL)   @JsonProperty  public List<Post>           comments()              { return name == null && postParentAnswer == null ? null : comments;}
 
-    @ApiModelProperty(required = true)
+    @ApiModelProperty(required = true) @Transient
     @JsonInclude(JsonInclude.Include.NON_NULL)   @JsonProperty  public List<String>         hashTags()              { return hashTagsList.stream().map(tag -> tag.postHashTagId).collect(Collectors.toList());}
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   public Boolean create_permission(){  return true;    }
-    @JsonIgnore   public Boolean read_permission()  {  return true;    }
-    @JsonProperty public Boolean edit_permission()  {  return SecurityController.getPerson() != null && ( author.id.equals( SecurityController.getPerson().id )  || SecurityController.getPerson().has_permission("Post_edit") ); }
+    @JsonIgnore   @Transient public Boolean create_permission(){  return true;    }
+    @JsonIgnore   @Transient public Boolean read_permission()  {  return true;    }
+    @JsonProperty @Transient public Boolean edit_permission()  {  return SecurityController.getPerson() != null && ( author.id.equals( SecurityController.getPerson().id )  || SecurityController.getPerson().has_permission("Post_edit") ); }
 
-    @JsonProperty public Boolean answer_permission(){  return ( this.postParentComment == null && this.postParentAnswer  == null );}
-    @JsonProperty public Boolean comment_permission(){ return ( name != null || postParentAnswer != null );}
+    @JsonProperty @Transient public Boolean answer_permission(){  return ( this.postParentComment == null && this.postParentAnswer  == null );}
+    @JsonProperty @Transient public Boolean comment_permission(){ return ( name != null || postParentAnswer != null );}
 
-    @JsonProperty public Boolean edit_confirms_permission() { return SecurityController.getPerson() != null && SecurityController.getPerson().has_permission("Post_edit"); }
+    @JsonProperty @Transient public Boolean edit_confirms_permission() { return SecurityController.getPerson() != null && SecurityController.getPerson().has_permission("Post_edit"); }
 
-    @JsonProperty public Boolean delete_permission(){  return SecurityController.getPerson() != null && ( ( author.id.equals( SecurityController.getPerson().id ) ) || SecurityController.getPerson().has_permission("Post_delete") ); }
+    @JsonProperty @Transient public Boolean delete_permission(){  return SecurityController.getPerson() != null && ( ( author.id.equals( SecurityController.getPerson().id ) ) || SecurityController.getPerson().has_permission("Post_delete") ); }
 
     public enum permissions{ Post_edit, Post_delete}
 

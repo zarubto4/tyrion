@@ -39,17 +39,17 @@ public class M_Program extends Model{
 
 
 
-    @ApiModelProperty(required = false, value = "Visible here only when the object is NOT specifically required. Inversion value for \"m_code\" ")
+    @ApiModelProperty(required = false, value = "Visible here only when the object is NOT specifically required. Inversion value for \"m_code\" ") @Transient
     @JsonInclude(JsonInclude.Include.NON_NULL)  @JsonProperty public String m_code_id()            {  return m_code == null ? qr_token : null ; }
 
 
-    @ApiModelProperty(required = false, value = "Its here only if its possible to connect to B_Program")
+    @ApiModelProperty(required = false, value = "Its here only if its possible to connect to B_Program") @Transient
     @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty public String websocket_address()      {  return m_project.b_program_version == null ? null :  Server.tyrion_webSocketAddress + "/websocket/mobile/" + m_project.id + "/{terminal_id}"; }
 
 
     // Pokud nastavím M_Code (Slouží k zobrazení celého m_code v případě že vracím konkrétní objekt a né pole objektů kde je jen odkaz na získání codu
     @Transient @JsonIgnore public String m_code;
-    @ApiModelProperty(required = false, value = "Visible here only when the object IS specifically required. Inversion value for \"m_code_url\" THIS or THAT!")
+    @ApiModelProperty(required = false, value = "Visible here only when the object IS specifically required. Inversion value for \"m_code_url\" THIS or THAT!") @Transient
     @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty public String m_code() {  return m_code == null ? null : m_code; }
 
 
@@ -72,11 +72,11 @@ public class M_Program extends Model{
     @JsonIgnore @Transient public static final String read_qrToken_permission_docs = "read: Private settings for M_Program";
 
 
-    @JsonIgnore   public Boolean create_permission(){  return ( Project.find.where().where().eq("ownersOfProject.id", SecurityController.getPerson().id ).eq("m_projects.id", m_project.id).findUnique().create_permission() ) || SecurityController.getPerson().has_permission("M_Program_create");      }
-    @JsonIgnore   public Boolean read_permission()  {  return ( M_Program.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("M_Program_read"); }
-    @JsonProperty public Boolean read_qrToken_permission() { return  true; } // TODO pokud uživatel vyloženě nebude chtít zakázat public přístup
-    @JsonProperty public Boolean edit_permission()  { return  SecurityController.getPerson() == null ? false : ( M_Program.find.where().eq("m_project.project.ownersOfProject.id", SecurityController.getPerson().id).eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("M_Program_edit"); }
-    @JsonProperty public Boolean delete_permission(){ return  SecurityController.getPerson() == null ? false : ( M_Program.find.where().eq("m_project.project.ownersOfProject.id", SecurityController.getPerson().id).eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("M_Program_delete"); }
+    @JsonIgnore   @Transient public Boolean create_permission(){  return ( Project.find.where().where().eq("ownersOfProject.id", SecurityController.getPerson().id ).eq("m_projects.id", m_project.id).findUnique().create_permission() ) || SecurityController.getPerson().has_permission("M_Program_create");      }
+    @JsonIgnore   @Transient public Boolean read_permission()  {  return ( M_Program.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("M_Program_read"); }
+    @JsonProperty @Transient public Boolean read_qrToken_permission() { return  true; } // TODO pokud uživatel vyloženě nebude chtít zakázat public přístup
+    @JsonProperty @Transient public Boolean edit_permission()  { return  SecurityController.getPerson() == null ? false : ( M_Program.find.where().eq("m_project.project.ownersOfProject.id", SecurityController.getPerson().id).eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("M_Program_edit"); }
+    @JsonProperty @Transient public Boolean delete_permission(){ return  SecurityController.getPerson() == null ? false : ( M_Program.find.where().eq("m_project.project.ownersOfProject.id", SecurityController.getPerson().id).eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("M_Program_delete"); }
 
     public enum permissions{ M_Program_create, M_Program_read, M_Program_edit, M_Program_delete }
 

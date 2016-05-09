@@ -4,10 +4,7 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import controllers.SecurityController;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,10 +24,10 @@ public class PropertyOfPost extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore public Boolean create_permission(){  return  SecurityController.getPerson().has_permission("PropertyOfPost_create");}
-    @JsonIgnore public Boolean read_permission()  {  return  true; }
-    @JsonIgnore public Boolean edit_permission()  {  return  SecurityController.getPerson().has_permission("PropertyOfPost_edit");  }
-    @JsonIgnore public Boolean delete_permission(){  return  SecurityController.getPerson().has_permission("PropertyOfPost_delete");}
+    @JsonIgnore @Transient public Boolean create_permission(){  return  SecurityController.getPerson().has_permission("PropertyOfPost_create");}
+    @JsonIgnore @Transient public Boolean read_permission()  {  return  true; }
+    @JsonIgnore @Transient public Boolean edit_permission()  {  return  SecurityController.getPerson().has_permission("PropertyOfPost_edit");  }
+    @JsonIgnore @Transient public Boolean delete_permission(){  return  SecurityController.getPerson().has_permission("PropertyOfPost_delete");}
 
     public enum permissions{  PropertyOfPost_create, PropertyOfPost_edit,  PropertyOfPost_delete;}
 

@@ -30,7 +30,7 @@ public class Notification extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     public void set_read(){
             read = true;
             this.update();

@@ -24,12 +24,12 @@ public class SingleLibrary  extends Model {
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL)   public List<Processor> processors = new ArrayList<>();
 
 
-    @JsonProperty public List<String>  versions_id()        { List<String> l = new ArrayList<>();  for( Version_Object m : version_objects)  l.add(m.id); return l;  }
+    @JsonProperty @Transient public List<String>  versions_id()        { List<String> l = new ArrayList<>();  for( Version_Object m : version_objects)  l.add(m.id); return l;  }
 
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     public void setUniqueAzurePackageLink() {
         while(true){ // I need Unique Value
             this.azurePackageLink = UUID.randomUUID().toString();

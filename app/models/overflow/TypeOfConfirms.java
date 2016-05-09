@@ -22,10 +22,10 @@ public class TypeOfConfirms extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore public Boolean create_permission(){  return  SecurityController.getPerson().has_permission("TypeOfConfirms_create"); }
-    @JsonIgnore public Boolean read_permission()  {  return  true;                                                                   }
-                public Boolean edit_permission()  {  return  SecurityController.getPerson().has_permission("TypeOfConfirms_edit");   }
-                public Boolean delete_permission(){  return  SecurityController.getPerson().has_permission("TypeOfConfirms_delete"); }
+    @JsonIgnore @Transient public Boolean create_permission(){  return  SecurityController.getPerson().has_permission("TypeOfConfirms_create"); }
+    @JsonIgnore @Transient public Boolean read_permission()  {  return  true;                                                                   }
+                @Transient public Boolean edit_permission()  {  return  SecurityController.getPerson().has_permission("TypeOfConfirms_edit");   }
+                @Transient public Boolean delete_permission(){  return  SecurityController.getPerson().has_permission("TypeOfConfirms_delete"); }
 
     public enum permissions{  PropertyOfPost_create, PropertyOfPost_read,  PropertyOfPost_edit, PropertyOfPost_delete; }
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

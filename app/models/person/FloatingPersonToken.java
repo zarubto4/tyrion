@@ -68,7 +68,7 @@ public class FloatingPersonToken extends Model {
        this.access_age = new Date(created.getTime() + TimeUnit.DAYS.toMillis(72));
     }
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     private String createToken(){
 
         while(true){ // I need Unique Value
@@ -78,7 +78,7 @@ public class FloatingPersonToken extends Model {
         return authToken;
     }
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     public static FloatingPersonToken setProviderKey(String typeOfConnection ){
         FloatingPersonToken floatingPersonToken = new FloatingPersonToken();
         while(true){ // I need Unique Value
@@ -114,8 +114,8 @@ public class FloatingPersonToken extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty public Boolean read_permission()  {  return ( FloatingPersonToken.find.where().eq("person.id", SecurityController.getPerson().id).where().eq("id", connection_id).findRowCount() > 0) || SecurityController.getPerson().has_permission("FloatingPersonToken_read"); }
-    @JsonProperty public Boolean delete_permission(){  return ( FloatingPersonToken.find.where().eq("person.id", SecurityController.getPerson().id).where().eq("id", connection_id).findRowCount() > 0) || SecurityController.getPerson().has_permission("FloatingPersonToken_delete"); }
+    @JsonProperty @Transient public Boolean read_permission()  {  return ( FloatingPersonToken.find.where().eq("person.id", SecurityController.getPerson().id).where().eq("id", connection_id).findRowCount() > 0) || SecurityController.getPerson().has_permission("FloatingPersonToken_read"); }
+    @JsonProperty @Transient public Boolean delete_permission(){  return ( FloatingPersonToken.find.where().eq("person.id", SecurityController.getPerson().id).where().eq("id", connection_id).findRowCount() > 0) || SecurityController.getPerson().has_permission("FloatingPersonToken_delete"); }
 
     public enum permissions{ FloatingPersonToken_read, FloatingPersonToken_delete }
 

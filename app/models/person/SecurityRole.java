@@ -26,15 +26,15 @@ public class SecurityRole extends Model {
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty public List<String> persons_id(){  List<String> l = new ArrayList<>();  for( Person m  : persons)   l.add(m.id); return l;  }
+    @JsonProperty @Transient public List<String> persons_id(){  List<String> l = new ArrayList<>();  for( Person m  : persons)   l.add(m.id); return l;  }
 
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   public Boolean create_permission(){  return  SecurityController.getPerson().has_permission("SecurityRole_create"); }
-    @JsonIgnore   public Boolean read_permission()  {  return  SecurityController.getPerson().has_permission("SecurityRole_read"); }
-    @JsonProperty public Boolean update_permission(){  return  SecurityController.getPerson().has_permission("SecurityRole_update"); }
-    @JsonProperty public Boolean delete_permission(){  return  SecurityController.getPerson().has_permission("SecurityRole_delete");}
+    @JsonIgnore   @Transient public Boolean create_permission(){  return  SecurityController.getPerson().has_permission("SecurityRole_create"); }
+    @JsonIgnore   @Transient public Boolean read_permission()  {  return  SecurityController.getPerson().has_permission("SecurityRole_read"); }
+    @JsonProperty @Transient public Boolean update_permission(){  return  SecurityController.getPerson().has_permission("SecurityRole_update"); }
+    @JsonProperty @Transient  public Boolean delete_permission(){  return  SecurityController.getPerson().has_permission("SecurityRole_delete");}
 
     public enum permissions{SecurityRole_create, SecurityRole_read, SecurityRole_update , SecurityRole_delete}
 

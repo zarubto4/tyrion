@@ -19,7 +19,7 @@ public class B_Program_Homer extends Model {
                 @OneToOne @JoinColumn(name="BProgramHomer_id")  public Homer homer;
 
     @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1461854312") public Date running_from;
-    @JsonProperty public boolean homer_online()  { return homer.online();}
+    @JsonProperty @Transient public boolean homer_online()  { return homer.online();}
 
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/

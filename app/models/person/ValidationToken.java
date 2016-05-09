@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 import java.util.UUID;
 
 @Entity
@@ -17,7 +18,7 @@ public class ValidationToken extends Model{
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     public ValidationToken  setValidation(String mail){
 
         this.personEmail = mail;

@@ -19,6 +19,7 @@ public class LoggyError extends Model {
 
     public static Finder<String,LoggyError> find = new Finder<>(LoggyError.class);
 
+
     public LoggyError(String id, String summary, String description) {
         this.id = id;
         this.summary = summary;

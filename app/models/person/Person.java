@@ -51,7 +51,7 @@ public class Person extends Model {
 
 /* Security Tools @ JsonIgnore -----------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     public static byte[] getSha512(String value) {
         try {
             return MessageDigest.getInstance("SHA-512").digest(value.getBytes("UTF-8"));
@@ -59,12 +59,12 @@ public class Person extends Model {
         catch (Exception e) { throw new RuntimeException(e);}
     }
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     public void setSha(String value) {
         this.shaPassword = getSha512(value);
     }
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     public void setToken(String token, String user_agent){
         FloatingPersonToken floatingPersonToken = new FloatingPersonToken();
         floatingPersonToken.set_basic_values(token);
@@ -74,20 +74,20 @@ public class Person extends Model {
         this.floatingPersonTokens.add(floatingPersonToken);
     }
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     public boolean has_permission(String permission){
         return Permission.check_permission(permission);
     }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   public Boolean create_permission(){  return true;  }
-    @JsonProperty public Boolean read_permission()  {  return true;  }
-    @JsonProperty public Boolean edit_permission() {
+    @JsonIgnore   @Transient public Boolean create_permission(){  return true;  }
+    @JsonProperty @Transient public Boolean read_permission()  {  return true;  }
+    @JsonProperty @Transient  public Boolean edit_permission() {
         if (SecurityController.getPerson() != null) return (M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Person_edit");
         return false;
     }
-    @JsonProperty public Boolean delete_permission(){
+    @JsonProperty @Transient public Boolean delete_permission(){
 
         if(SecurityController.getPerson() != null) return (M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Person_delete");
             return false;

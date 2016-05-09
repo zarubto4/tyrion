@@ -30,8 +30,8 @@ public class Board extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty public Boolean edit_permission()  {  return  ( Board.find.where().where().eq("projects.ownersOfProject.id", SecurityController.getPerson().id ).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("TypeOfBlock.edit");  }
-    @JsonProperty public Boolean delete_permission(){  return  ( Board.find.where().where().eq("projects.ownersOfProject.id", SecurityController.getPerson().id ).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("TypeOfBlock.delete");}
+    @JsonProperty @Transient public Boolean edit_permission()  {  return  ( Board.find.where().where().eq("projects.ownersOfProject.id", SecurityController.getPerson().id ).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("TypeOfBlock.edit");  }
+    @JsonProperty @Transient public Boolean delete_permission(){  return  ( Board.find.where().where().eq("projects.ownersOfProject.id", SecurityController.getPerson().id ).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("TypeOfBlock.delete");}
 
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

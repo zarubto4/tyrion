@@ -39,7 +39,7 @@ public class FileRecord extends Model {
     // Určeno pro načítání souborů z Azure pro Tyriona
     // Trochu nedomyšleno, že u File Record nevím, jaký je mateřský objekt - ale vím, že má vždy jen jeden
     // záznam - to znamená, že file_record je vázán pouze bud k b programu, nebo jen k c programu atd...
-    @JsonIgnore public File get_fileRecord_from_Azure_inFile() throws Exception{
+    @JsonIgnore @Transient  public File get_fileRecord_from_Azure_inFile() throws Exception{
 
       Integer azureLinkVersion = version_object.azureLinkVersion;
       String  azurePackageLink = "";
@@ -73,7 +73,7 @@ public class FileRecord extends Model {
 
     }
 
-    @JsonIgnore public String get_fileRecord_from_Azure_inString() throws Exception {
+    @JsonIgnore @Transient  public String get_fileRecord_from_Azure_inString() throws Exception {
 
         File file = this.get_fileRecord_from_Azure_inFile();
 
@@ -89,7 +89,7 @@ public class FileRecord extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty public Boolean edit_permission()  {
+    @JsonProperty @Transient  public Boolean edit_permission()  {
         return  (   FileRecord.find.where()
                         .or(
                                 com.avaje.ebean.Expr.or(
@@ -129,7 +129,7 @@ public class FileRecord extends Model {
                 );
     }
 
-    @JsonProperty public Boolean delete_permission() {
+    @JsonProperty @Transient  public Boolean delete_permission() {
         return  (   FileRecord.find.where()
                     .or(
                             com.avaje.ebean.Expr.or(

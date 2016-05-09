@@ -43,10 +43,10 @@ public class Cloud_Blocko_Server extends Model{
     @JsonIgnore @Transient public static final String read_permission_docs   = "read: User (Admin with privileges) can read public servers, User (Customer) can read own private servers";
     @JsonIgnore @Transient public static final String create_permission_docs = "create: User (Admin with privileges) can create public cloud server where the system uniformly creating Blocko instantiates or (Customer) can create private server for own projects";
 
-    @JsonIgnore   public Boolean create_permission()  {  return SecurityController.getPerson().has_permission("Cloud_Blocko_Server_create");  }
-    @JsonIgnore   public Boolean read_permission()    {  return SecurityController.getPerson().has_permission("Cloud_Blocko_Server_read");    }
-    @JsonProperty public Boolean edit_permission()    {  return SecurityController.getPerson().has_permission("Cloud_Blocko_Server_edit");    }
-    @JsonProperty public Boolean delete_permission()  {  return SecurityController.getPerson().has_permission("Cloud_Blocko_Server_delete");  }
+    @JsonIgnore   @Transient public Boolean create_permission()  {  return SecurityController.getPerson().has_permission("Cloud_Blocko_Server_create");  }
+    @JsonIgnore   @Transient public Boolean read_permission()    {  return SecurityController.getPerson().has_permission("Cloud_Blocko_Server_read");    }
+    @JsonProperty @Transient public Boolean edit_permission()    {  return SecurityController.getPerson().has_permission("Cloud_Blocko_Server_edit");    }
+    @JsonProperty @Transient public Boolean delete_permission()  {  return SecurityController.getPerson().has_permission("Cloud_Blocko_Server_delete");  }
 
     public enum permissions{Cloud_Blocko_Server_create, Cloud_Blocko_Server_read, Cloud_Blocko_Server_edit, Cloud_Blocko_Server_delete}
 

@@ -25,13 +25,13 @@ public class TypeOfBoard extends Model {
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
-    @ApiModelProperty(readOnly =true)
+    @ApiModelProperty(readOnly =true) @Transient
     @JsonProperty public String processor_id      (){return processor.id;}
 
-    @ApiModelProperty(readOnly =true)
+    @ApiModelProperty(readOnly =true) @Transient
     @JsonProperty public List<String> boards_id() { List<String> l = new ArrayList<>();  for( Board m : boards)  l.add(m.id); return l;  }
 
-    @ApiModelProperty(readOnly =true)
+    @ApiModelProperty(readOnly =true) @Transient
     @JsonProperty public String producer_id      (){return producer.id;}
 
 

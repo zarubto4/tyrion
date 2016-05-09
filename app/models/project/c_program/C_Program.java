@@ -25,8 +25,8 @@ public class C_Program extends Model {
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)     public String id;
                                                                 public String program_name;
                           @Column(columnDefinition = "TEXT")    public String program_description;
-                                    @JsonIgnore @ManyToOne      public Project project;
-                                              @JsonProperty     public String  project_id(){ return project.id; }
+                                      @JsonIgnore @ManyToOne    public Project project;
+                                   @Transient  @JsonProperty    public String  project_id(){ return project.id; }
 
                                                @JsonIgnore      public String azurePackageLink;
                                                @JsonIgnore      public String azureStorageLink;
@@ -50,14 +50,13 @@ public class C_Program extends Model {
         }
     }
 
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   public Boolean create_permission(){  return ( Project.find.where().where().eq("ownersOfProject.id",   SecurityController.getPerson().id).eq("id", project.id ).findUnique().create_permission() ) || SecurityController.getPerson().has_permission("C_program_create");      }
-    @JsonProperty public Boolean update_permission(){  return ( C_Program.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("C_program_update"); }
-    @JsonIgnore   public Boolean read_permission()  {  return ( C_Program.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("C_program_read"); }
-    @JsonProperty public Boolean edit_permission()  {  return ( C_Program.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("C_program_edit"); }
-    @JsonProperty public Boolean delete_permission(){  return ( C_Program.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("C_program_delete"); }
+    @JsonIgnore   @Transient public Boolean create_permission(){  return ( Project.find.where().where().eq("ownersOfProject.id",   SecurityController.getPerson().id).eq("id", project.id ).findUnique().create_permission() ) || SecurityController.getPerson().has_permission("C_program_create");      }
+    @JsonProperty @Transient public Boolean update_permission(){  return ( C_Program.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("C_program_update"); }
+    @JsonIgnore   @Transient public Boolean read_permission()  {  return ( C_Program.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("C_program_read"); }
+    @JsonProperty @Transient public Boolean edit_permission()  {  return ( C_Program.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("C_program_edit"); }
+    @JsonProperty @Transient public Boolean delete_permission(){  return ( C_Program.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("C_program_delete"); }
 
     public enum permissions{  C_program_create,  C_program_update, C_program_read ,  C_program_edit, C_program_delete; }
 

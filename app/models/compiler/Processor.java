@@ -24,8 +24,8 @@ public class Processor extends Model {
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "processors")  @JoinTable(name = "processor_singleLibrary")  public List<SingleLibrary> singleLibraries = new ArrayList<>();
 
 
-    @JsonProperty public List<String> libraryGroups    (){ List<String> l = new ArrayList<>();  for( LibraryGroup m  : libraryGroups)    l.add(m.id); return l;  }
-    @JsonProperty public List<String> singleLibraries  (){ List<String> l = new ArrayList<>();  for( SingleLibrary m : singleLibraries)  l.add(m.id); return l;  }
+    @JsonProperty @Transient public List<String> libraryGroups    (){ List<String> l = new ArrayList<>();  for( LibraryGroup m  : libraryGroups)    l.add(m.id); return l;  }
+    @JsonProperty @Transient public List<String> singleLibraries  (){ List<String> l = new ArrayList<>();  for( SingleLibrary m : singleLibraries)  l.add(m.id); return l;  }
 
 
 

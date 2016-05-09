@@ -36,25 +36,25 @@ public class TypeOfBlock extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore public Boolean create_permission()  {
+    @JsonIgnore @Transient public Boolean create_permission()  {
         if(project != null) return  ( Project.find.where().eq("ownersOfProject.id", SecurityController.getPerson().id ).where().eq("id", project.id).findRowCount() < 1  || SecurityController.getPerson().has_permission("TypeOfBlock_create") );
         return SecurityController.getPerson().has_permission("TypeOfBlock_create");
     }
-    @JsonIgnore public Boolean read_permission() {
+    @JsonIgnore @Transient public Boolean read_permission() {
             if(project != null) return  ( project.read_permission() || SecurityController.getPerson().has_permission("TypeOfBlock_read") );
              return SecurityController.getPerson().has_permission("TypeOfBlock_read");
     }
 
-    @JsonIgnore public Boolean update_permission()    {
+    @JsonIgnore @Transient  public Boolean update_permission()    {
         if(project != null) return  ( project.update_permission() || SecurityController.getPerson().has_permission("TypeOfBlock_read") );
         return SecurityController.getPerson().has_permission("TypeOfBlock_read");
 
     }
-    @JsonProperty public Boolean edit_permission()    {
+    @JsonProperty @Transient  public Boolean edit_permission()    {
         if(project != null) return  ( project.edit_permission() || SecurityController.getPerson().has_permission("TypeOfBlock_edit") );
         return SecurityController.getPerson().has_permission("TypeOfBlock_edit");
     }
-    @JsonProperty public Boolean delete_permission()  {
+    @JsonProperty @Transient public Boolean delete_permission()  {
         if(project != null) return  ( project.update_permission() || SecurityController.getPerson().has_permission("TypeOfBlock_delete") );
         return SecurityController.getPerson().has_permission("TypeOfBlock_delete");
     }

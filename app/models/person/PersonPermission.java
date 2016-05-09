@@ -25,7 +25,7 @@ public class PersonPermission extends Model {
              public String description;
 
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "person_permissions")  @JoinTable(name = "join_prs_prm")   public List<Person>       persons = new ArrayList<>();
-    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "person_permissions")         @JoinTable(name = "join_group_prm") public List<SecurityRole> roles   = new ArrayList<>();
+    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "person_permissions")  @JoinTable(name = "join_group_prm") public List<SecurityRole> roles   = new ArrayList<>();
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
@@ -49,8 +49,8 @@ public class PersonPermission extends Model {
     @JsonIgnore @Transient public static final String create_permission_docs       = "create: If user have M_Project.update_permission = true, you can create M_Program on this M_Project - Or you need static/dynamic permission key";
     @JsonIgnore @Transient public static final String read_qrToken_permission_docs = "read: Private settings for M_Program";
 
-    @JsonProperty public Boolean edit_person_permission() {  return  SecurityController.getPerson() == null ? null :  SecurityController.getPerson().has_permission("PersonPermission_edit_person_permission");  }
-    @JsonProperty public Boolean edit_permission()        {  return  SecurityController.getPerson() == null ? null :  SecurityController.getPerson().has_permission("PersonPermission_edit"); }
+    @JsonProperty @Transient  public Boolean edit_person_permission() {  return  SecurityController.getPerson() == null ? null :  SecurityController.getPerson().has_permission("PersonPermission_edit_person_permission");  }
+    @JsonProperty @Transient  public Boolean edit_permission()        {  return  SecurityController.getPerson() == null ? null :  SecurityController.getPerson().has_permission("PersonPermission_edit"); }
 
     public enum permissions{ PersonPermission_edit_person_permission, PersonPermission_edit }
 

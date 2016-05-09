@@ -48,7 +48,7 @@ public class Version_Object extends Model {
     // M_project
     @JsonIgnore   @OneToOne(mappedBy="b_program_version",cascade=CascadeType.ALL)  public M_Project m_project;
 
-    @JsonProperty public List<String> files_id(){ List<String> l = new ArrayList<>();  for( FileRecord m : files) l.add(m.id); return l;  }
+    @JsonProperty @Transient  public List<String> files_id(){ List<String> l = new ArrayList<>();  for( FileRecord m : files) l.add(m.id); return l;  }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
