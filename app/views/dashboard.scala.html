@@ -1,10 +1,16 @@
 
 @import utilities.webSocket.WS_BlockoServer
+@import utilities.webSocket.WS_CompilerServer
 @import java.util.List
 @import models.blocko.Cloud_Blocko_Server
 @import java.util.Map
 @import scala.collection.JavaConversions.mapAsScalaMap
+@import models.compiler.Cloud_Compilation_Server
 
+
+
+
+@import utilities.webSocket.WS_CompilerServer
 @(      person: Integer,            project: Integer,
         homer: Integer,             b_program: Integer,
         board: Integer,             file_record: Integer,
@@ -14,7 +20,9 @@
         grid_terminal: Integer,     m_program: Integer,
         m_project: Integer,
         cloud_blocko_servers_object:  Map[ String , WS_BlockoServer],
-        cloud_blocko_server_DB: List[Cloud_Blocko_Server]
+        cloud_blocko_server_DB: List[Cloud_Blocko_Server],
+        cloud_compile_servers_object:  Map[ String , WS_CompilerServer],
+        cloud_compile_server_DB: List[Cloud_Compilation_Server]
 )
 
 
@@ -59,7 +67,9 @@
 <!-- ------------------------------------------------------------------------------------------------------------------ -->
 </section><!-- /.content -->
 
-
+<section class="content-header">
+    <h1> Blocko Cloud servers <small>Control panel</small> </h1>
+</section>
 <section class="content">
     <div class="row">
 
@@ -79,6 +89,29 @@
                 Instances:
                 @cloud_blocko_servers_object.get(x.server_name).virtual_homers.size()
             }</p>
+             </div><div class="icon"><i class="ion fa-server"></i></div> </div>
+        </div>
+    }
+    </div><!-- /.row -->
+</section>
+
+<section class="content-header">
+    <h1> Compilation servers <small>Control panel</small> </h1>
+</section>
+<section class="content">
+    <div class="row">
+
+    @for( x <- cloud_compile_server_DB) {
+        <div class="col-lg-4 col-xs-6"><div
+            @if(cloud_compile_servers_object.contains( x.server_name) ) {
+                class="small-box bg-green-gradient"
+            } else {
+                class="small-box bg-red"
+                }><div class="inner">
+            <h3>@x.server_name
+                @if(! cloud_compile_servers_object.contains( x.server_name)){                    <small style="color: white">(Offline)</small>                }
+            </h3>
+            <p>Compilation server</p>
         </div><div class="icon"><i class="ion fa-server"></i></div> </div>
         </div>
 
@@ -86,6 +119,7 @@
 
     </div><!-- /.row -->
 </section>
+
 
 
 

@@ -363,6 +363,7 @@ create table version_object (
   library_group_id          varchar(255),
   single_library_id         varchar(255),
   c_program_id              varchar(255),
+  c_compilation_build_url   varchar(255),
   b_program_id              varchar(255),
   constraint pk_version_object primary key (id))
 ;

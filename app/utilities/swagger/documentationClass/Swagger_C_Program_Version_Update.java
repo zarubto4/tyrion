@@ -18,7 +18,7 @@ public class Swagger_C_Program_Version_Update {
     @ApiModelProperty(required = true)
     public String code;
 
-    @Valid public List<User_Files> external_files;
+    @Valid public List<User_Files> user_files;
 
     @Valid public List<External_Libraries>  external_libraries;
 
@@ -30,26 +30,22 @@ public class Swagger_C_Program_Version_Update {
                 public String file_name;
                 public String code;
 
-
             }
-
 
             public static class External_Libraries {
                 public External_Libraries(){}
 
                        public String library_name;
-                @Valid public List<File_Lib>  content;
+                @Valid public List<File_Lib> files;
 
+                    public static class File_Lib {
+                        public File_Lib(){}
 
-
-                public static class File_Lib {
-                    public File_Lib(){}
-
-                    public String file_name;
-                    public String content;
-                }
-
+                        public String file_name;
+                        public String content;
+                    }
             }
+
 
 
 }

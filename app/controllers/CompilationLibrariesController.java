@@ -3,7 +3,9 @@ package controllers;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.Query;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.inject.Inject;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import io.swagger.annotations.*;
@@ -13,7 +15,9 @@ import models.project.c_program.C_Program;
 import models.project.global.Project;
 import play.Logger;
 import play.data.Form;
+import play.libs.F;
 import play.libs.Json;
+import play.libs.ws.WSClient;
 import play.mvc.*;
 import utilities.Server;
 import utilities.UtilTools;
@@ -22,11 +26,11 @@ import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Description;
+import utilities.swagger.outboundClass.Swagger_Compilation_Build_Error;
 import utilities.swagger.outboundClass.Swagger_File_Content;
 
 import javax.websocket.server.PathParam;
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -45,7 +49,7 @@ import java.util.*;
 @Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Secured.class)
 public class CompilationLibrariesController extends Controller {
-
+    @Inject WSClient ws;
 ///###################################################################################################################*/
 
     @ApiOperation(value = "Create new C_Program",
@@ -271,7 +275,7 @@ public class CompilationLibrariesController extends Controller {
 
             ObjectNode content = Json.newObject();
             content.put("code", help.code );
-            content.set("external_files", Json.toJson( help.external_files) );
+            content.set("user_files", Json.toJson( help.user_files) );
             content.set("external_libraries", Json.toJson( help.external_libraries) );
 
             UtilTools.uploadAzure_Version("c-program", content.toString() , "c_program", c_program.azureStorageLink, c_program.azurePackageLink, version_object);
@@ -288,13 +292,12 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
-    @ApiOperation(value = "new Version of C_Program",
+    @ApiOperation(value = "update Version of C_Program",
             tags = {"C_Program"},
-            notes = "If you want add new code to C_program by query = c_program_id. Send required json values and server respond with new object",
+            notes = "Update C_program Version code",
             produces = "application/json",
-            response =  Version_Object.class,
             protocols = "https",
-            code = 201,
+            code = 200,
             authorizations = {
                     @Authorization(
                             value="permission",
@@ -303,36 +306,37 @@ public class CompilationLibrariesController extends Controller {
                     )
             }
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful created",      response = C_Program.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_C_Program_Version_New",
+                            dataType = "utilities.swagger.documentationClass.Swagger_C_Program_Version_Update",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
                     )
             }
     )
-    // @Dynamic("project.c_program_owner")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successful updated",      response = Version_Object.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @BodyParser.Of(BodyParser.Json.class)
     public Result update_C_Program_Version(@ApiParam(value = "version_id String query", required = true) @PathParam("c_program_id") String version_id){
         try{
 
-            Form<Swagger_C_Program_Version_New> form = Form.form(Swagger_C_Program_Version_New.class).bindFromRequest();
+            Form<Swagger_C_Program_Version_Update> form = Form.form(Swagger_C_Program_Version_Update.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-            Swagger_C_Program_Version_New help = form.get();
+            Swagger_C_Program_Version_Update help = form.get();
 
 
             Version_Object version_object = Version_Object.find.byId(version_id);
             if(version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
+
+            version_object.c_compilation_build_url = null;
 
             // Nahraje do Azure a připojí do verze soubor (lze dělat i cyklem - ale název souboru musí být vždy jiný)
             FileRecord file = FileRecord.find.where().eq("version_object.id", version_id).where().eq("file_name", "c_program").findUnique();
@@ -340,14 +344,13 @@ public class CompilationLibrariesController extends Controller {
 
             ObjectNode content = Json.newObject();
             content.put("code", help.code );
-            content.set("external_files", Json.toJson( help.external_files) );
+            content.set("user_files", Json.toJson( help.user_files) );
             content.set("external_libraries", Json.toJson( help.external_libraries) );
 
             UtilTools.uploadAzure_Version("c-program", content.toString() , "c_program", version_object.c_program.azureStorageLink, version_object.c_program.azurePackageLink, version_object);
 
 
             return GlobalResult.created(Json.toJson(version_object));
-
 
         } catch (Exception e) {
             Logger.error("Error", e);
@@ -481,7 +484,6 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    // @Dynamic("project.c_program_owner")
     public Result delete_C_Program(@ApiParam(value = "c_program_id String query", required = true) @PathParam("c_program_id") String c_program_id){
         try{
 
@@ -502,10 +504,91 @@ public class CompilationLibrariesController extends Controller {
 
 ///###################################################################################################################*/
 
-    //TODO swagger Documentation
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result compileCProgram(){
-        return GlobalResult.result_ok("Compiled!"); //TODO
+    @ApiOperation(value = "compile C_program",
+            tags = {"C_Program"},
+            notes = "Compile specific version of C_program - before compilation - you have to update (save) version code",
+            produces = "application/json",
+            protocols = "https",
+            response =  Result_ok.class,
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
+                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Compilation successful", response =  Result_ok.class),
+            @ApiResponse(code = 400, message = "Compilation unsuccessful", response =  Swagger_Compilation_Build_Error.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result compile_C_Program_version( @ApiParam(value = "version_id String query",   required = true) @PathParam("version_id") String version_id ){
+        try{
+
+            Version_Object version_object = Version_Object.find.byId(version_id);
+            if(version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
+
+            FileRecord file = FileRecord.find.where().eq("version_object.id", version_id).where().eq("file_name", "c_program").findUnique();
+            if(file == null) return GlobalResult.notFoundObject("First save version content");
+
+            JsonNode json = Json.parse( file.get_fileRecord_from_Azure_inString() );
+            Form<Swagger_C_Program_Version_Update> form = Form.form(Swagger_C_Program_Version_Update.class).bind(json);
+            Swagger_C_Program_Version_Update help = form.get();
+
+            ObjectNode result = Json.newObject();
+            result.put("messageType", "build");
+            // result.put("messageId", messageId); <- messageId je vkládáno až v WebSocketController_Incoming.compiler_server_make_Compilation(...)!
+            result.put("target", "NUCLEO_F411RE");
+            result.put("libVersion", "v0");
+
+            // Code - Musím sesumírovat všechny uživatelovi okna do jednoho souboru ke kompilaci (nejedná se totiž o uživatelovi knihovny)
+            for(Swagger_C_Program_Version_Update.User_Files user_file : help.user_files){
+                help.code += "\n \n " + user_file.code;
+            }
+            result.put("code", help.code);
+
+
+            // Includes (Vkládám sem přiložené balíky....
+            ObjectNode includes = Json.newObject();
+            for(Swagger_C_Program_Version_Update.External_Libraries external_library : help.external_libraries){
+                for(Swagger_C_Program_Version_Update.External_Libraries.File_Lib file_lib : external_library.files){
+                    includes.put(file_lib.file_name , file_lib.content);
+                }
+            }
+            result.set("includes", includes);
+
+            if(WebSocketController_Incoming.compiler_cloud_servers.isEmpty()) return GlobalResult.result_BadRequest("Compilation server is offline!");
+
+            // Odesílám na compilační server
+           JsonNode compilation_result = WebSocketController_Incoming.compiler_server_make_Compilation(SecurityController.getPerson(), result);
+
+            // V případě úspěšného buildu
+                // 1. Uložím link buildu - spáruji s version, tím umožním build nahrát na HW
+                // 2.
+           if(compilation_result.has("buildUrl")){
+                version_object.c_compilation_build_url = compilation_result.get("buildUrl").asText();
+                version_object.update();
+                return GlobalResult.result_ok();
+           }
+            // Kompilace nebyla úspěšná
+           else if(compilation_result.has("buildErrors")){
+               return GlobalResult.result_BadRequest(Json.toJson(compilation_result.get("buildErrors")));
+
+            // Nebylo úspěšné ani odeslání reqestu - Chyba v konfiguraci
+           }else if(compilation_result.has("error") ){
+               return GlobalResult.result_BadRequest(Json.toJson(compilation_result.get("error")));
+           }
+
+            return GlobalResult.result_BadRequest("Unknown error");
+        }catch (Exception e){
+            e.printStackTrace();
+            return GlobalResult.internalServerError();
+        }
+
     }
 
     //TODO swagger Documentation
@@ -625,23 +708,80 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result uploadCompilationToBoard(String c_program_id, String version_id) {
+    public Result uploadCompilationToBoard(String version_id) {
         try {
 
-            final Form<Swagger_UploadBinaryFileToBoard> form = Form.form(Swagger_UploadBinaryFileToBoard.class).bindFromRequest();
+            Form<Swagger_UploadBinaryFileToBoard> form = Form.form(Swagger_UploadBinaryFileToBoard.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_UploadBinaryFileToBoard help = form.get();
 
-            C_Program c_program = C_Program.find.byId(c_program_id);
-            if (c_program == null) return GlobalResult.notFoundObject("C_Program c_program_id not found");
+            List<Board> boards_for_update = Board.find.where().idIn(help.board_id).findList();
 
-            Version_Object version = Version_Object.find.byId(version_id);
-            if (version.c_program.id.equals(c_program.id)) return GlobalResult.result_BadRequest("The version is not consistent with the program");
-
-            if(version.c_compilation == null) return GlobalResult.result_BadRequest("The program is not yet compiled");
-            FileRecord binary_file = version.c_compilation.compilation();
+            Version_Object version_object = Version_Object.find.byId(version_id);
+            if(version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
 
+            if(version_object.c_compilation_build_url == null || version_object.c_compilation_build_url.length() < 5) return GlobalResult.result_BadRequest("The program is not yet compiled");
+
+            if(FileRecord.find.where().eq("version_object.id", version_object.id).where().eq("file_name", "compilation.bin").findUnique() == null
+               && WebSocketController_Incoming.compiler_cloud_servers.isEmpty()){
+                return GlobalResult.result_BadRequest("We have not your historic compilation and int the same time compilation server for compile your code is offline! So we cannot do anything now :((( ");
+            }
+
+            final File file;
+
+            // Jestli ještě Tyrion nemá na Azure kompilaci (bin file) - tak si jí stáhne a uloží a dále s ní pracuje
+           FileRecord file_record = FileRecord.find.where().eq("version_object.id", version_object.id).where().eq("file_name", "compilation.bin").findUnique();
+            if( file_record == null) {
+                System.out.println("Bin file ještě nemám - stahuju z Compilatoru!");
+                // write the inputStream to a File
+                // Example "http://0.0.0.0:8989/7e50e112-b2d3-4ea2-989a-89f415241268.bin"
+                // Beru z názvu url souboru až za posledním lomítkem
+                // Výsledek files/7e50e112-b2d3-4ea2-989a-89f415241268.bin
+                file = new File("files/" + version_object.c_compilation_build_url.split("/")[3]);
+
+
+                F.Promise<File> filePromise = ws.url(version_object.c_compilation_build_url).get().map(response -> {
+                    InputStream inputStream = null;
+                    OutputStream outputStream = null;
+                    try {
+                        inputStream = response.getBodyAsStream();
+                        outputStream = new FileOutputStream(file);
+
+                        int read = 0;
+                        byte[] buffer = new byte[1024];
+
+                        while ((read = inputStream.read(buffer)) != -1) {
+                            outputStream.write(buffer, 0, read);
+                        }
+
+                        return file;
+                    } catch (IOException e) {
+                        throw e;
+                    } finally {
+                        if (inputStream != null) {
+                            inputStream.close();
+                        }
+                        if (outputStream != null) {
+                            outputStream.close();
+                        }
+                    }
+                });
+
+                filePromise.get(1000);
+
+                // Daný soubor potřebuji dostat na Azure a Propojit s verzí
+                UtilTools.uploadAzure_Version("c-program", file, "compilation.bin", version_object.c_program.azureStorageLink, version_object.c_program.azurePackageLink, version_object);
+            }
+            else{
+                System.out.println("Bin file už mám - stahuju z Azure!");
+                file = file_record.get_fileRecord_from_Azure_inFile();
+            }
+
+            // NAhrát na Hardware !
+            System.out.println("Nahrávám na HARDWARE - Což ještě není!! TODO !!!!!!!!!!!!!!!!!!!!");
+
+            /*
             List<Board> boardList = Board.find.where().idIn(help.board_id).findList();
 
             Map< Homer, List<String>> map = new HashMap<>();
@@ -664,6 +804,11 @@ public class CompilationLibrariesController extends Controller {
             for (Map.Entry< Homer, List<String>>  entry : map.entrySet()) {
                 WebSocketController_Incoming.homer_update_embeddedHW(entry.getKey().id, entry.getValue(), file_inBase64);
             }
+            */
+
+
+            // Nakonci smažu soubor!
+            file.delete();
 
             return GlobalResult.result_ok();
 

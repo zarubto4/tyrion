@@ -29,18 +29,24 @@ public class Version_Object extends Model {
 
     @JsonIgnore  @OneToMany(mappedBy="version_object", cascade=CascadeType.ALL)  public List<FileRecord> files = new ArrayList<>();
 
-
                                     @JsonIgnore  @ManyToOne  public LibraryGroup  libraryGroup;
                                     @JsonIgnore  @ManyToOne  public SingleLibrary singleLibrary;
 
-                                    @JsonIgnore  @ManyToOne  public C_Program     c_program;
-                                    @JsonIgnore  @ManyToOne  public B_Program     b_program;
+    // C_code / C_program ...
+                                     @JsonIgnore  @ManyToOne  public C_Program     c_program;
 
-    @JsonIgnore   @OneToOne(mappedBy="version_object",   cascade=CascadeType.ALL)  public B_Program_Cloud b_program_cloud;
-    @JsonIgnore   @OneToOne(mappedBy="version_object",   cascade=CascadeType.ALL)  public B_Program_Homer b_program_homer;
-    @JsonIgnore   @OneToOne(mappedBy="b_program_version",cascade=CascadeType.ALL) public M_Project m_project;
-    @JsonIgnore   @OneToOne(mappedBy="version_object",cascade=CascadeType.ALL) public C_Compilation c_compilation;
+    @JsonIgnore   @OneToOne(mappedBy="version_object",cascade=CascadeType.ALL)     public C_Compilation c_compilation;
+                                                                  @JsonIgnore      public String c_compilation_build_url;
 
+
+    // B_program / B_code ,,,
+                                    @JsonIgnore  @ManyToOne  public B_Program      b_program;
+    @JsonIgnore   @OneToOne(mappedBy="version_object",cascade=CascadeType.ALL)     public B_Program_Homer b_program_homer;
+    @JsonIgnore   @OneToOne(mappedBy="version_object",cascade=CascadeType.ALL)     public B_Program_Cloud b_program_cloud;
+
+
+    // M_project
+    @JsonIgnore   @OneToOne(mappedBy="b_program_version",cascade=CascadeType.ALL)  public M_Project m_project;
 
     @JsonProperty public List<String> files_id(){ List<String> l = new ArrayList<>();  for( FileRecord m : files) l.add(m.id); return l;  }
 

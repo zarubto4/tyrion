@@ -1,10 +1,7 @@
 package controllers;
 
 import models.blocko.Cloud_Blocko_Server;
-import models.compiler.Board;
-import models.compiler.FileRecord;
-import models.compiler.Producer;
-import models.compiler.TypeOfBoard;
+import models.compiler.*;
 import models.grid.Screen_Size_Type;
 import models.notification.Notification;
 import models.overflow.Post;
@@ -63,9 +60,13 @@ public class DashboardController extends Controller {
 
         Map<String, WS_BlockoServer> blockoServerMap = new HashMap<>();
 
-        Map<String, WebSCType> map =  WebSocketController_Incoming.blocko_servers;
-        for (Map.Entry<String, WebSCType> entry : map.entrySet()) blockoServerMap.put(entry.getKey(), (WS_BlockoServer) entry.getValue());
+        Map<String, WebSCType> map_blocko =  WebSocketController_Incoming.blocko_servers;
+        for (Map.Entry<String, WebSCType> entry : map_blocko.entrySet()) blockoServerMap.put(entry.getKey(), (WS_BlockoServer) entry.getValue());
 
+        Map<String, WS_CompilerServer> compilerServerMap = new HashMap<>();
+
+        Map<String, WebSCType> map_compile =  WebSocketController_Incoming.compiler_cloud_servers;
+        for (Map.Entry<String, WebSCType> entry : map_compile.entrySet()) compilerServerMap.put(entry.getKey(), (WS_CompilerServer) entry.getValue());
 
         Html content_html = dashboard.render(
                 Person.find.findRowCount(),
@@ -84,7 +85,9 @@ public class DashboardController extends Controller {
                 M_Program.find.findRowCount(),
                 M_Project.find.findRowCount(),
                 blockoServerMap,
-                Cloud_Blocko_Server.find.all()
+                Cloud_Blocko_Server.find.all(),
+                compilerServerMap,
+                Cloud_Compilation_Server.find.all()
         );
 
         logger.info("Return html content");
@@ -134,17 +137,17 @@ public class DashboardController extends Controller {
         for(WebSCType o  : new ArrayList<>(WebSocketController_Incoming.incomingConnections_terminals.values()) ) grids.add((WS_Terminal) o);
 
 
-        List<WebSCType> compilation_servers = new ArrayList<>( WebSocketController_Incoming.compiler_cloud_servers.values());
-
-
 
         List<WS_BlockoServer> blocko_cloud_servers = new ArrayList<>();
         for(WebSCType o  : new ArrayList<>(WebSocketController_Incoming.blocko_servers.values()) ) blocko_cloud_servers.add( (WS_BlockoServer) o);
 
 
+        List<WS_CompilerServer> compilation_servers = new ArrayList<>();
+        for(WebSCType o  : new ArrayList<>(WebSocketController_Incoming.compiler_cloud_servers.values()) ) compilation_servers.add( (WS_CompilerServer) o);
+
 
         return ok( main.render(menu_html,
-                websocket.render(homers, grids, blocko_cloud_servers ,compilation_servers),
+                websocket.render(homers, grids, blocko_cloud_servers , compilation_servers),
                 server_mode,
                 server_version));
     }
@@ -196,17 +199,21 @@ public class DashboardController extends Controller {
     }
 
     public Result ping_homer(String homer_id) throws TimeoutException, InterruptedException {
+        if(WebSocketController_Incoming.incomingConnections_homers.containsKey(homer_id))
         WebSocketController_Incoming.homer_ping( homer_id);
 
         return show_web_socket_stats();
     }
 
     public Result ping_Blocko_Server(String identificator) throws TimeoutException, InterruptedException {
+        if(WebSocketController_Incoming.blocko_servers.containsKey(identificator))
         WebSocketController_Incoming.blocko_server_ping( (WS_BlockoServer) WebSocketController_Incoming.blocko_servers.get(identificator) );
         return show_web_socket_stats();
     }
 
     public Result ping_Compilation_Server(String identificator)  throws TimeoutException, InterruptedException {
+
+        if(WebSocketController_Incoming.compiler_cloud_servers.containsKey(identificator))
         WebSocketController_Incoming.compiler_server_ping( (WS_CompilerServer) WebSocketController_Incoming.compiler_cloud_servers.get(identificator) );
         return show_web_socket_stats();
     }

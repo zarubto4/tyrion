@@ -5,7 +5,8 @@
 @import utilities.webSocket.WS_Terminal
 @import controllers.DashboardController
 
-@(homers: List[WebSCType], grids: List[WS_Terminal], cloud_blocko_server: List[WS_BlockoServer], compilation_server: List[WebSCType])
+@import utilities.webSocket.WS_CompilerServer
+@(homers: List[WebSCType], grids: List[WS_Terminal], cloud_blocko_server: List[WS_BlockoServer], compilation_server: List[WS_CompilerServer])
 
 
 <section class="content-header">
@@ -227,14 +228,37 @@
 
                         <tr>
                             <th>Server</th>
-                            <th>Instance</th>
-                            <th>Blocko Program</th>
-                            <th>Version Program</th>
-                            <th>Get Hardware</th>
-                            <th>Get Status</th>
-                            <th>Disconnect</th>
-                            <th></th>
+
+                            <th class="col-xs-1">Get Status</th>
+                            <th class="col-xs-1">Ping</th>
+                            <th class="col-xs-1">Disconnect</th>
+
                         </tr>
+
+                        @for( x <- compilation_server ){
+                            <tr>
+                                <td> @x.identifikator </td>
+
+
+                                <td align="center">
+                                    <a href='@routes.DashboardController.show_all_logs()' >
+                                        <button class="btn btn-block btn-success btn-xs">Get Status</button>
+                                    </a>
+                                </td>
+
+                                <td align="center">
+                                    <a href=' @routes.DashboardController.ping_Compilation_Server( x.identifikator )' >
+                                        <button class="btn btn-block btn-info btn-xs">Ping</button>
+                                    </a>
+                                </td>
+
+                                <td align="center">
+                                    <a href=' @routes.DashboardController.disconnect_Compilation_Server( x.identifikator )' >
+                                        <button class="btn btn-block btn-danger btn-xs">Disconnect</button>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
 
                     </table>
 

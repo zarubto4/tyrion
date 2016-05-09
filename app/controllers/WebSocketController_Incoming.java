@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.blocko.Cloud_Blocko_Server;
 import models.compiler.Cloud_Compilation_Server;
-import models.compiler.Version_Object;
 import models.person.Person;
 import models.project.b_program.B_Program;
 import models.project.b_program.B_Program_Cloud;
@@ -20,7 +19,7 @@ import utilities.webSocket.*;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 
 public class WebSocketController_Incoming extends Controller {
@@ -40,7 +39,7 @@ public class WebSocketController_Incoming extends Controller {
     public static Map<String, WebSCType> blocko_servers = new HashMap<>(); // (<Server-Identificator, Websocket> >)
 
     // Komnpilační servery, které mají být při kompilaci rovnoměrně zatěžovány - nastřídačku. Ale předpokladem je, že všechny dělají vždy totéž.
-    public static Map<String, WS_CompilerServer> compiler_cloud_servers = new HashMap<>(); // (Server-Identificator, Websocket)
+    public static Map<String, WebSCType> compiler_cloud_servers = new HashMap<>(); // (Server-Identificator, Websocket)
 
 
 // PUBLIC API -------------------------------------------------------------------------------------------------------------------
@@ -437,10 +436,11 @@ public class WebSocketController_Incoming extends Controller {
             }
 
             // Inicializuji Websocket pro Homera
-            WS_CompilerServer server = new WS_CompilerServer( cloud_compilation_server.server_name, cloud_compilation_server.destination_address);
-            // Připojím se
-            return server.connection();
+            WS_CompilerServer server = new WS_CompilerServer( cloud_compilation_server.server_name, cloud_compilation_server.destination_address, compiler_cloud_servers );
 
+            // Připojím se
+            System.out.println("Compilační server se připojit");
+            return server.connection();
 
         }catch (Exception e){
             Loggy.error("Cloud Compiler Server Web Socket connection", e);
@@ -456,7 +456,7 @@ public class WebSocketController_Incoming extends Controller {
         blocko_servers.remove(blockoServer.identifikator);
     }
 
-    public static JsonNode blocko_server_listOfInstance(WS_BlockoServer ws_blockoServer)  throws TimeoutException, InterruptedException{
+    public static JsonNode blocko_server_listOfInstance(WS_BlockoServer blockoServer)  throws TimeoutException, InterruptedException{
         String messageId = UUID.randomUUID().toString();
 
         ObjectNode result = Json.newObject();
@@ -464,10 +464,10 @@ public class WebSocketController_Incoming extends Controller {
         result.put("messageId", messageId);
         result.put("messageChannel", "homer-server");
 
-        return ws_blockoServer.write_with_confirmation(messageId, result);
+        return blockoServer.write_with_confirmation(messageId, result);
     }
 
-    public static JsonNode blocko_server_isInstanceExist(WS_BlockoServer ws_blockoServer, String instance_name)  throws TimeoutException, InterruptedException{
+    public static JsonNode blocko_server_isInstanceExist(WS_BlockoServer blockoServer, String instance_name)  throws TimeoutException, InterruptedException{
         String messageId = UUID.randomUUID().toString();
 
         ObjectNode result = Json.newObject();
@@ -476,7 +476,7 @@ public class WebSocketController_Incoming extends Controller {
         result.put("messageChannel", "homer-server");
         result.put("instanceId", instance_name);
 
-        return ws_blockoServer.write_with_confirmation(messageId, result);
+        return blockoServer.write_with_confirmation(messageId, result);
     }
 
     public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, JsonNode json){
@@ -558,8 +558,6 @@ public class WebSocketController_Incoming extends Controller {
         blockoServer.onClose();
     }
 
-
-
 // PRIVATE Compiler-Server --------------------------------------------------------------------------------------------------------
 
     public static void compiler_server_is_disconnect(WS_CompilerServer compilerServer)  {
@@ -568,23 +566,83 @@ public class WebSocketController_Incoming extends Controller {
         compiler_cloud_servers.remove(compilerServer.identifikator);
     }
 
-    public static JsonNode compiler_server_make_Compilation(Person compilator, Version_Object library_version, String code) throws TimeoutException, InterruptedException {
+    public static JsonNode compiler_server_make_Compilation(Person compilator, ObjectNode jsonNodes) throws TimeoutException, InterruptedException {
 
         // 1. Vybrat náhodný server kde se provede kompilace
+        System.out.println("Tyrion chce odeslat soubor ke kompilaci");
 
         List<String> keys      = new ArrayList<>(compiler_cloud_servers.keySet());
-        WS_CompilerServer  server  = compiler_cloud_servers.get( keys.get( new Random().nextInt(keys.size()) ));
+        WS_CompilerServer server = (WS_CompilerServer) compiler_cloud_servers.get( keys.get( new Random().nextInt(keys.size())) );
+
+        System.out.println("Vybral příslušný server");
 
         String messageId = UUID.randomUUID().toString();
+        jsonNodes.put("messageId", messageId);
 
-        ObjectNode result = Json.newObject();
-        result.put("messageType", "build");
-        result.put("messageId", messageId);
-        result.put("target", "SOME");
-        result.put("libVersion", library_version.version_name);
-        result.put("code", code);
+        System.out.println("Odeslal žádost o kompilaci");
+        JsonNode compilation_request = server.write_with_confirmation(messageId, jsonNodes);
 
-        return server.write_with_confirmation(messageId, result, (long) 250*4*30 );
+        System.out.println("Přijal potvrzení žádost o kompilaci se  zprávou: " +compilation_request.asText() );
+
+        if(!compilation_request.get("status").asText().equals("success")) {
+            System.out.println("Zpráva neobsahovala success a tak vracím error json ");
+            ObjectNode error_result = Json.newObject();
+            error_result.put("error", "Something was wrong");
+            return  error_result;
+        }
+
+        System.out.println("Zpráva obsahovala success");
+
+        System.out.println("Vkládám do zásobníku reqestů kompilace odchozí žádost s klíčem " + compilation_request.get("buildId").asText());
+        server.compilation_request.put(compilation_request.get("buildId").asText()  , jsonNodes);
+
+
+        class Confirmation_Thread implements Callable<JsonNode> {
+
+            Long breaker = (long) 1000*30;
+
+            @Override
+            public JsonNode call() throws Exception {
+
+                while(breaker > 0){
+                    Thread.sleep(1000);
+                    breaker-=1000;
+
+                    if(server.compilation_results.containsKey( compilation_request.get("buildId").asText() )) {
+                        System.out.println("Kompilace dokončena protože server zavěsil do Result odpověď");
+
+                        System.out.println("Mažu žádost");
+                        server.compilation_request.remove(compilation_request.get("buildId").asText());
+                        JsonNode compilation_result = server.compilation_results.get(compilation_request.get("buildId").asText());
+
+                        System.out.println("Mažu odpověď");
+                        server.compilation_results.remove(compilation_request.get("buildId").asText());
+
+                        System.out.println("Vracím Odpověď");
+                        return compilation_result;
+                    }
+
+                    System.out.println("Kompilace stále probíhá");
+                }
+
+                server.compilation_request.remove(compilation_request.get("buildId").asText());
+                ObjectNode error_result = Json.newObject();
+                error_result.put("error", "Something was wrong");
+                return error_result;
+            }
+        }
+
+        ExecutorService pool = Executors.newFixedThreadPool(3);
+
+        Callable<JsonNode> callable = new Confirmation_Thread();
+        Future<JsonNode> future = pool.submit(callable);
+
+        try {
+            return future.get();
+        } catch (Exception e) {
+            System.out.println("write_with_confirmation NEstihlo se včas");
+            throw new TimeoutException();
+        }
     }
 
     public static void compiler_server_ping(WS_CompilerServer compilerServer) throws TimeoutException, InterruptedException {
@@ -596,7 +654,13 @@ public class WebSocketController_Incoming extends Controller {
         result.put("messageId", messageId);
         result.put("messageChannel", "tyrion");
 
+
         compilerServer.write_without_confirmation(result);
+    }
+
+    public static void compilation_server_incoming_message(WS_CompilerServer server, JsonNode json){
+        System.out.println("Speciálně  server2server přišla zpráva: " + json.asText() );
+        System.out.println("Zatím není implementovaná žádná reakce na příchozá zprávu z Compilačního serveru !!");
     }
 
 // PRIVATE Homer -----------------------------------------------------------------------------------------------------------------

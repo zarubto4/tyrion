@@ -4,7 +4,6 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
-import utilities.Server;
 import utilities.UtilTools;
 
 import javax.persistence.*;
@@ -24,8 +23,16 @@ public class FileRecord extends Model {
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty public String fileContent()   { return Server.tyrion_serverAddress + "/file/fileRecord/" +id; }
+    // @JsonProperty public String file_content_link()   { return Server.tyrion_serverAddress + "/file/fileRecord/" +id; }
 
+    @JsonProperty public String content() {
+        try {
+            return get_fileRecord_from_Azure_inString();
+        } catch (Exception e) {
+            return null;
+        }
+
+    }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 

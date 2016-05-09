@@ -117,7 +117,7 @@ public class UtilTools extends Controller {
      * @param versionObjectObject = číslo verze respektive string verze, která odděluje stejné soubory v jiných verzích
      * @throws Exception
      */
-    public static void uploadAzure_Version(String container_name, String file_content, String file_name, String azureStorageLink, String azurePackageLink, Version_Object versionObjectObject) throws Exception{
+    public static FileRecord uploadAzure_Version(String container_name, String file_content, String file_name, String azureStorageLink, String azurePackageLink, Version_Object versionObjectObject) throws Exception{
 
             CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
             CloudBlockBlob blob = container.getBlockBlobReference(azureStorageLink +"/" + azurePackageLink  +"/" + versionObjectObject.azureLinkVersion  +"/" + file_name);
@@ -132,6 +132,27 @@ public class UtilTools extends Controller {
 
             versionObjectObject.files.add(fileRecord);
             versionObjectObject.update();
+
+            return fileRecord;
+    }
+
+    public static FileRecord uploadAzure_Version(String container_name, File file, String file_name, String azureStorageLink, String azurePackageLink, Version_Object versionObjectObject) throws Exception{
+
+        CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
+        CloudBlockBlob blob = container.getBlockBlobReference(azureStorageLink +"/" + azurePackageLink  +"/" + versionObjectObject.azureLinkVersion  +"/" + file_name);
+
+        InputStream is = new FileInputStream(file);
+        blob.upload(is, -1);
+
+        FileRecord fileRecord = new FileRecord();
+        fileRecord.file_name = file_name;
+        fileRecord.version_object = versionObjectObject;
+        fileRecord.save();
+
+        versionObjectObject.files.add(fileRecord);
+        versionObjectObject.update();
+
+        return fileRecord;
     }
 
     public static File file_get_File_from_Azure(String container_name, String azurePackageLink , String azureStorageLink, Integer azureLinkVersion, String filename)throws Exception{
@@ -198,7 +219,13 @@ public class UtilTools extends Controller {
             server.save();
         }
 
-
+        if(Cloud_Compilation_Server.find.where().eq("server_name", "ubuntu1").findUnique() == null ){
+            Cloud_Compilation_Server server = new Cloud_Compilation_Server();
+            server.server_name = "ubuntu1";
+            server.destination_address = Server.tyrion_webSocketAddress + "/websocket/compilation_server/" + server.server_name;
+            server.set_hash_certificate();
+            server.save();
+        }
 
     }
 
