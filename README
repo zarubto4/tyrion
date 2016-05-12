@@ -1,22 +1,21 @@
 
-# Verze 1.06.3 #
+# Verze 1.06.4 #
 ####  29.4.2016 ####
 
 -----
 
- * Začátek vývoje podpory Blocko Serveru (Připojování kontejnerových serverů, kde běží instance Blocko programů)
-   Cílem je umožnit připojovat  servery vlastní (Větší zákazníci si mohou zprovoznit svůj server a pouze vyplní jméno a ověřující token)
-
-    - Momentálně ještě není podporováno API.
-
-    - 4 NOVÉ API [(External Server)](http://swagger.byzance.cz/#/External_Server)
+ * Doplnění funkce připojování Blocko (homer) serverů - podpora vytváření nstancí atd..
+    - 4 NOVÉ API [(External Server)](http://swagger.byzance.cz/#/External_Server) pro vytváření objektů zastupující připojené servery
 
  * Podpora pro kompilační servery (ty budou vždy naše) - ale je už od začátku pamatováno na škálování takových serverů a rovnoměrné zatížení
+    - 4 NOVÉ API [(External Server)](http://swagger.byzance.cz/#/External_Server) pro vytváření objektů zastupující připojené servery
 
-    - 4 NOVÉ API [(External Server)](http://swagger.byzance.cz/#/External_Server)
-
+ * Podpora přihlášení Becki pomocí tokenu - možnost více přihlášení jednou osobou (vyřešené routování)
+     - čeká se na požadavky z Blocko serveru co kam přeposílat
  * Oprava přihlášení - po přihlášení (zaslání hesla a emailu) je vrácen pouze token a je vyžadován další request na který jsou vráceny všechny původní informace
-
+ * Nově implementovaný návrh filtru a stránkvání velkých seznamů
+ * Doplnění dokumentace na wiki
+ * Opravy v ProgramingPackageController - zejména logování chyb - změna u všech metod
 
 
 -----
@@ -35,7 +34,23 @@
         public class M_Project extends Model {
 
  * TODO Swagger Dokumentace na objektu B_Program_State a B_Program!!!!!!!!!!!!
+ * TODO 12 Tomáš Z.: Dodělat možnost obnovení hesla
+ * TODO 3 Tomáš Z.: Zdokumentovat všechny Models pro Swagger
+ * TODO 4 Tomáš Z.: Přidat cyklické odmazávání BLOB v Azure, na které už neexistuje databázová vazba (Nějaká fičura co se zapne každý den ve 3 ráno a provede sekvenci kam
+      každý vývojář může přidávat metody které se provedou... (Mazání prošlých tokenů, mazání prošlých nedokončených ověření přes sociální sítě atd... Viz todo 5)
+ * TODO 5 Tomáš Z.: Přidat cyklické odmazávání Vygenerovaných nezrealizovaných spojení na sociální sítě (Linkded Account)
+ * TODO 6 Tomáš Z.: Pokud se uživatel přihlásí přes facebook, k jeho účtu bude přidělen plovoucí token. Pokud se přihlásí znova a znova..
+      budou se vtvářet další a další připojení. Je žádoucí mazat předchozí spojení pokud poznám, že je to ze stejného prohlížeče?
+      PS: Vyžaduje to tak půl dne (+ ideálně přepsat třídu s přihlášení přes facebook a odzkoušet github..
+ * TODO 8 ALL-Tyrion: Bude potřeba dodělat řešení pro prodlužování platnosti tokenu (Buď nějak magicky na Tyrionovi nebo ze strany frontendu) Asi to dodělá Tomáš.
+ * TODO 9 Přidat a vykreslit všechny objekty na dashboard Tyriona
 
+-----
+
+### Vyřešené TODO ###
+ * Dokumentace pro Filtr get Homer Filter parametr a stránkování stránkování (Tomáš Z.)
+ * Dodělání filtr návrhového vzoru a stránkování (univerzální a kopírovatelné řešení napříč projektem + dokumentace )
+ * Odpojení M_Programu a Blocko_programu
 -----
 
 ### Oprava Bugů ###
@@ -55,6 +70,10 @@
  * Neřešitelné [TYRION-219](http://youtrack.byzance.cz/youtrack/issue/TYRION-219)
  * Zamítnuto [TYRION-216](http://youtrack.byzance.cz/youtrack/issue/TYRION-216)
  * Zamítnuto [TYRION-234](http://youtrack.byzance.cz/youtrack/issue/TYRION-234)
+ * fixed [TYRION-142](http://youtrack.byzance.cz/youtrack/issue/TYRION-142) <-> [TYRION-155](http://youtrack.byzance.cz/youtrack/issue/TYRION-155)
+
+
+
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 

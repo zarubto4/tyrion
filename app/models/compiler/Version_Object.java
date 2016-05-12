@@ -23,20 +23,25 @@ public class Version_Object extends Model {
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public String  id;
                                                              public String version_name;
                      @Column(columnDefinition = "TEXT")      public String version_description;
-                                                @JsonIgnore  public Integer azureLinkVersion;
+
+
+    @JsonIgnore    public Integer azureLinkVersion;
 
     @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1461918607") public Date date_of_create;
 
-    @JsonIgnore  @OneToMany(mappedBy="version_object", cascade=CascadeType.ALL)  public List<FileRecord> files = new ArrayList<>();
+    @JsonIgnore  @OneToMany(mappedBy="version_object", cascade=CascadeType.ALL, fetch = FetchType.EAGER )  public List<FileRecord> files = new ArrayList<>();
 
                                     @JsonIgnore  @ManyToOne  public LibraryGroup  libraryGroup;
                                     @JsonIgnore  @ManyToOne  public SingleLibrary singleLibrary;
 
     // C_code / C_program ...
-                                     @JsonIgnore  @ManyToOne  public C_Program     c_program;
-
+                            @JsonIgnore  @ManyToOne(cascade = CascadeType.ALL)     public C_Program     c_program;
     @JsonIgnore   @OneToOne(mappedBy="version_object",cascade=CascadeType.ALL)     public C_Compilation c_compilation;
-                                                                  @JsonIgnore      public String c_compilation_build_url;
+
+
+
+
+    @JsonIgnore   @Column(columnDefinition = "TEXT")     public String c_comp_build_url;
 
 
     // B_program / B_code ,,,
@@ -57,5 +62,13 @@ public class Version_Object extends Model {
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String, Version_Object> find = new Finder<>(Version_Object.class);
+
+
+
+/* Pomocné SET a GET (Za určitých okolností nevyhnutelné) --------------------------------------------------------------*/
+
+    public void setC_comp_build_url(String c_comp_build_url) {
+        this.c_comp_build_url = c_comp_build_url;
+    }
 
 }

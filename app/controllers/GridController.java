@@ -10,10 +10,7 @@ import models.project.m_program.M_Program;
 import models.project.m_program.M_Project;
 import play.data.Form;
 import play.libs.Json;
-import play.mvc.BodyParser;
-import play.mvc.Http;
-import play.mvc.Result;
-import play.mvc.Security;
+import play.mvc.*;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
@@ -32,14 +29,13 @@ import java.util.stream.Collectors;
 
 
 @Api(value = "Not Documented API - InProgress or Stuck")
-public class GridController extends play.mvc.Controller {
+public class GridController extends Controller {
 
     @ApiOperation(value = "Create new M_Project",
             tags = {"M_Program"},
             notes = "M_Project is package for M_Programs -> presupposition is that you need more control terminal for your IoT project. " +
                     "Different screens for family members, for employee etc.. But of course - you can used that for only one M_program",
             produces = "application/json",
-            response =  M_Project.class,
             protocols = "https",
             code = 201,
             extensions = {
@@ -48,8 +44,7 @@ public class GridController extends play.mvc.Controller {
                     }),
                     @Extension( name = "permission_required", properties = {
                         @ExtensionProperty(name = "Project_create_permission", value = "true"),
-                        @ExtensionProperty(name = "Static Permission key", value =  "M_Project_create" ),
-                        @ExtensionProperty(name = "Dynamic Permission key", value = "M_Project_create.{project_id}"),
+                        @ExtensionProperty(name = "Static Permission key",     value =  "M_Project_create" )
                     })
             }
     )
@@ -102,7 +97,6 @@ public class GridController extends play.mvc.Controller {
             tags = {"M_Program"},
             notes = "get M_Project by query = m_project_id",
             produces = "application/json",
-            response =  M_Project.class,
             protocols = "https",
             code = 200,
             extensions = {
@@ -140,7 +134,6 @@ public class GridController extends play.mvc.Controller {
             tags = {"M_Program"},
             notes = "edit basic information in M_Project by query = m_project_id",
             produces = "application/json",
-            response =  M_Project.class,
             protocols = "https",
             code = 200,
             extensions = {
@@ -231,7 +224,6 @@ public class GridController extends play.mvc.Controller {
             tags = {"M_Program", "APP-Api"},
             notes = "get List<M_Project> by logged person ->that's required valid token in html head",
             produces = "application/json",
-            response =  M_Project.class,
             protocols = "https",
             code = 200,
             extensions = {
@@ -361,7 +353,6 @@ public class GridController extends play.mvc.Controller {
             tags = {"M_Program"},
             notes = "creating new M_Program",
             produces = "application/json",
-            response =  M_Program.class,
             protocols = "https",
             code = 201,
             extensions = {
@@ -370,8 +361,7 @@ public class GridController extends play.mvc.Controller {
                     }),
                     @Extension( name = "permission_required", properties = {
                             @ExtensionProperty(name = "M_Project.create_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "M_Program_create" ),
-                            @ExtensionProperty(name = "Dynamic Permission key", value = "M_Program_create.{project_id}"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "M_Program_create" )
                     })
             }
     )
@@ -472,7 +462,6 @@ public class GridController extends play.mvc.Controller {
             tags = {"M_Program", "APP-Api"},
             notes = "get list of M_Programs by logged Person",
             produces = "application/json",
-            response =  M_Program.class,
             protocols = "https",
             code = 200
     )
@@ -499,7 +488,6 @@ public class GridController extends play.mvc.Controller {
             tags = {"M_Program"},
             notes = "get M_Program by quarry m_program_id",
             produces = "application/json",
-            response =  M_Project.class,
             protocols = "https",
             code = 200,
             extensions = {
@@ -540,7 +528,6 @@ public class GridController extends play.mvc.Controller {
             tags = {"M_Program"},
             notes = "update m_project - in this case we are not support versions of m_project",
             produces = "application/json",
-            response =  M_Project.class,
             protocols = "https",
             code = 200,
             extensions = {

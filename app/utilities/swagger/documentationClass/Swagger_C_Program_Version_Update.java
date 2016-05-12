@@ -11,6 +11,7 @@ import java.util.List;
 @ApiModel(description = "Json Model for new Version of C_Program",
           value = "C_Program_Version_New")
 public class Swagger_C_Program_Version_Update {
+
     // Nutný fiktivní contructor pro zhmotnění vnitřních tříd
     public Swagger_C_Program_Version_Update(){}
 
@@ -23,13 +24,11 @@ public class Swagger_C_Program_Version_Update {
     @Valid public List<External_Libraries>  external_libraries;
 
 
-
             public static class User_Files {
                 public User_Files(){}
 
                 public String file_name;
                 public String code;
-
             }
 
             public static class External_Libraries {
@@ -45,7 +44,4 @@ public class Swagger_C_Program_Version_Update {
                         public String content;
                     }
             }
-
-
-
 }

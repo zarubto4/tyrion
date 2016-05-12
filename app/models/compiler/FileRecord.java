@@ -4,6 +4,9 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
+import models.project.b_program.B_Program;
+import models.project.c_program.C_Program;
+import play.libs.Json;
 import utilities.UtilTools;
 
 import javax.persistence.*;
@@ -19,7 +22,7 @@ public class FileRecord extends Model {
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public String id;
                                                              public String file_name;
 
-                                 @JsonIgnore  @ManyToOne     public Version_Object version_object;
+        @JsonIgnore  @ManyToOne(cascade=CascadeType.ALL)     public Version_Object version_object;
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
@@ -39,34 +42,41 @@ public class FileRecord extends Model {
     // Určeno pro načítání souborů z Azure pro Tyriona
     // Trochu nedomyšleno, že u File Record nevím, jaký je mateřský objekt - ale vím, že má vždy jen jeden
     // záznam - to znamená, že file_record je vázán pouze bud k b programu, nebo jen k c programu atd...
-    @JsonIgnore @Transient  public File get_fileRecord_from_Azure_inFile() throws Exception{
+    @JsonIgnore @Transient public File get_fileRecord_from_Azure_inFile() throws Exception{
 
       Integer azureLinkVersion = version_object.azureLinkVersion;
       String  azurePackageLink = "";
       String  azureStorageLink = "";
       String  container = "";
 
+        System.out.println(Json.toJson(version_object));
+
         if( version_object.b_program != null){
                  container = "b-program";
-                 azurePackageLink = version_object.b_program.azurePackageLink;
-                 azureStorageLink = version_object.b_program.azureStorageLink;
+                 B_Program b_program = B_Program.find.byId(version_object.b_program.id);
+                 azurePackageLink = b_program.azurePackageLink;
+                 azureStorageLink = b_program.azureStorageLink;
              }
         else if( version_object.c_program != null){
                 container = "c-program";
-                azurePackageLink = version_object.c_program.azurePackageLink;
-                azureStorageLink = version_object.c_program.azureStorageLink;
+                C_Program c_program = C_Program.find.byId(version_object.c_program.id);
+                azurePackageLink = c_program.azurePackageLink;
+                azureStorageLink = c_program.azureStorageLink;
         }
         //else if( version_object.m_project != null){} Todo Na M_Program - zatím není verze implementována
         else if( version_object.singleLibrary != null){
                 container = "libraries";
-                azurePackageLink = version_object.singleLibrary.azurePackageLink;
-                azureStorageLink = version_object.singleLibrary.azureStorageLink;
+                SingleLibrary singleLibrary = SingleLibrary.find.byId(version_object.singleLibrary.id);
+                azurePackageLink = singleLibrary.azurePackageLink;
+                azureStorageLink = singleLibrary.azureStorageLink;
         }
         else if( version_object.libraryGroup != null){
                 container = "libraries";
-                azurePackageLink = version_object.libraryGroup.azurePackageLink;
-                azureStorageLink = version_object.libraryGroup.azureStorageLink;
+                LibraryGroup libraryGroup = LibraryGroup.find.byId(version_object.libraryGroup.id);
+                azurePackageLink = libraryGroup.azurePackageLink;
+                azureStorageLink = libraryGroup.azureStorageLink;
         }
+
 
         if(azurePackageLink.length() < 1) throw new Exception("FileRecord (uvnitř třídy) nenašel cestu k požadovanému souboru");
         return UtilTools.file_get_File_from_Azure(container, azurePackageLink, azureStorageLink,  azureLinkVersion, file_name);

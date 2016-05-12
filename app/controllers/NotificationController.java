@@ -1,6 +1,6 @@
 package controllers;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.avaje.ebean.Query;
 import io.swagger.annotations.*;
 import models.notification.Notification;
 import models.person.FloatingPersonToken;
@@ -18,7 +18,7 @@ import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_NotFound;
 import utilities.response.response_objects.Result_Unauthorized;
 import utilities.response.response_objects.Result_ok;
-import utilities.swagger.outboundClass.Swagger_Notification_List;
+import utilities.swagger.outboundClass.Filter_List.Swagger_Notification_List;
 
 import javax.websocket.server.PathParam;
 import java.util.Date;
@@ -36,30 +36,21 @@ public class NotificationController extends Controller {
 
   public static void send_notification(Person person, Notification_level level, String message) {
 
-    if( connected_accounts.containsKey(person.id) &&  !connected_accounts.get(person.id).isEmpty() ) {
+      Notification notification = new Notification();
+      notification.person = person;
+      notification.message = message;
+      notification.level = level;
+      notification.created = new Date();
+      notification.confirmation_required = false;
+      notification.save();
+
+      if( connected_accounts.containsKey(person.id) &&  !connected_accounts.get(person.id).isEmpty() ) {
 
           for (FloatingPersonToken token : FloatingPersonToken.find.where().eq("person.id", person.id).where().eq("notification_subscriber", true).findList()) {
 
             CoreResponse.cors_EventSource();
-            JsonNode msg = Json.newObject()
-                    .put("level", level.name())
-                    .put("text", message);
-
-            connected_accounts.get(person.id).get(token.authToken).send(EventSource.Event.event(msg));
+             connected_accounts.get(person.id).get(token.authToken).send(EventSource.Event.event(Json.toJson(notification)));
           }
-
-
-    }
-    else {
-
-          Notification notification = new Notification();
-          notification.person = person;
-          notification.message = message;
-          notification.level = level;
-          notification.created = new Date();
-          notification.confirmation_required = false;
-          notification.save();
-
     }
   }
 
@@ -143,25 +134,15 @@ public class NotificationController extends Controller {
           @ApiResponse(code = 500, message = "Server side Error")
   })
   @Security.Authenticated(Secured.class)
-  public Result get_history_log_page(@ApiParam(value = "page_number is Integer. May missing or contain  0,1,2...", required = false) @PathParam("page_number") Integer page_number){
+  public Result get_history_log_page(@ApiParam(value = "page_number is Integer. Contain  1,2... " + " For first call, use 1", required = false) @PathParam("page_number") Integer page_number){
     try {
-      Swagger_Notification_List result = new Swagger_Notification_List();
 
-      result.notifications = Notification.find.where().eq("person.id", SecurityController.getPerson().id).order().desc("created").setFirstRow((page_number - 1) * 25).setMaxRows(25).findList();
-      result.total         = Notification.find.where().eq("person.id", SecurityController.getPerson().id).findRowCount();
 
-       // Trochu složitěší operace - ale všechno je podřízeno tomu, abych vždy vracel maximálně 25 prvků
-       // a na ostatní udělal odkaz. Dále na žádost frontendu, zasíláme pole ve kterém jsou uvedeny stránky
-       // od jedné do n tak aby modulo 25 byly prvky na stránku - zároveň pokud uživatel pošle třeba 0 nebo číslo 1000
-       // tak se odešle jen prázdné pole.
-      result.from   = (page_number - 1) * 25;
-      result.to     = (page_number - 1) * 25 + result.notifications.size();
+      Query<Notification> query =  Notification.find.where().eq("person.id", SecurityController.getPerson().id).order().desc("created");
 
-      for (int i = 1; i < (result.total / 25) + 2; i++) result.pages.add(i);
+      Swagger_Notification_List result = new Swagger_Notification_List(query, page_number);
 
-      // Abych změnil stav všech notifikací v DB, že byly uživateli už ukázány (front
-      if (page_number == 1 && result.notifications.get(0) != null && !result.notifications.get(0).read)
-        Notification.find.where().eq("person.id", SecurityController.getPerson().id).order().desc("created").setMaxRows(25).findList().forEach(Notification::set_read);
+
       return GlobalResult.result_ok(Json.toJson(result));
 
     } catch (Exception e) {
@@ -171,11 +152,6 @@ public class NotificationController extends Controller {
 
   }
 
-  @ApiOperation(value = "Směrodatná dokumentace je u get_history_log_page - Play nepodporuje přetypování konstruktoru v API", hidden = true)
-  @Security.Authenticated(Secured.class)
-  public Result get_history_log() {
-      return get_history_log_page(1);
-  }
 
   @ApiOperation(value = "remove Notification",
           tags = {"Notifications"},

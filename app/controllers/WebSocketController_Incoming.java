@@ -31,7 +31,7 @@ public class WebSocketController_Incoming extends Controller {
     public static Map<String, WebSCType> incomingConnections_terminals = new HashMap<>(); // (Identificator, Websocket)
 
     // Sem podle ID homera uložím seznam zařízení, na která by se měl opět připojit
-    public static Map<String, ArrayList<String>> terminal_lost_connection_homer = new HashMap<>();  // (Homer Identificator, List<Terminal Identicikator>)
+    public static Map<String, ArrayList<String>> terminal_lost_connection_homer = new HashMap<>();  // (Homer Identificator, List<Terminal Identificator>)
 
     // Připojené servery, kde běží Homer instance jsou drženy v homer_cloud_server. Jde jen o jendoduché čisté spojení a
     // několik servisních metod. Ale aby bylo dosaženo toho, že Homer jak v cloudu tak i na fyzickém počítači byl obsluhován stejně
@@ -40,6 +40,9 @@ public class WebSocketController_Incoming extends Controller {
 
     // Komnpilační servery, které mají být při kompilaci rovnoměrně zatěžovány - nastřídačku. Ale předpokladem je, že všechny dělají vždy totéž.
     public static Map<String, WebSCType> compiler_cloud_servers = new HashMap<>(); // (Server-Identificator, Websocket)
+
+    // Becki (frontend) spojení na synchronizaci blocka atd.. - Podporován režim multipřihlášení.
+    public static Map<String, WebSCType> becki_website = new HashMap<>(); // (Person_id - Identificator, List of Websocket connections - Identificator je Token)
 
 
 // PUBLIC API -------------------------------------------------------------------------------------------------------------------
@@ -142,7 +145,7 @@ public class WebSocketController_Incoming extends Controller {
 
             System.out.println("Právě se pouštím do odhalování na co se terminál může připojit..................................");
 
-            WS_Terminal terminal = new WS_Terminal(terminal_id, m_project_id, incomingConnections_terminals);
+            WS_Grid_Terminal terminal = new WS_Grid_Terminal(terminal_id, m_project_id, incomingConnections_terminals);
             WebSocket<String> ws = terminal.connection();
 
             // Tohle je cloudové nasazení B programu
@@ -447,6 +450,41 @@ public class WebSocketController_Incoming extends Controller {
             return WebSocket.reject(forbidden("Server side error"));
         }
     }
+    public  WebSocket<String>  becki_website_connection (String security_token){
+        try{
+            System.out.println("Připojuje se mi Websocket z Becki " + security_token);
+
+            System.out.println("Ověřuji zda je token platný a mohu ho nechat připojit");
+
+            Person person = Person.findByAuthToken(security_token);
+            if(person == null) return WebSocket.reject(forbidden("Unrecognized Token"));
+
+            System.out.println("Je platný");
+
+            WS_Becki_Website website;
+
+            if(becki_website.containsKey(person.id)) {
+                website = (WS_Becki_Website) becki_website.get(person.id);
+            }else{
+                website = new WS_Becki_Website(person.id);
+                becki_website.put(person.id , website);
+            }
+
+            System.out.println("Ověřuji zda už není připojený");
+            if(website.all_person_Connections != null && website.all_person_Connections.containsKey(security_token)) return WebSocket.reject(forbidden("Already connected Token"));
+
+            WS_Becki_Single_Connection website_connection = new WS_Becki_Single_Connection(security_token, website);
+
+            System.out.println("Compilační server se připojit");
+            return website_connection.connection();
+
+        }catch (Exception e){
+            e.printStackTrace();
+            Loggy.error("Cloud Compiler Server Web Socket connection", e);
+            return WebSocket.reject(forbidden("Server side error"));
+        }
+
+    }
 
 // PRIVATE Blocko-Server ---------------------------------------------------------------------------------------------------------
 
@@ -526,6 +564,7 @@ public class WebSocketController_Incoming extends Controller {
             return result;
 
     }
+
 
     public static JsonNode blocko_server_remove_instance( WS_BlockoServer blockoServer, String instance_name) throws TimeoutException, InterruptedException{
 
@@ -662,6 +701,21 @@ public class WebSocketController_Incoming extends Controller {
         System.out.println("Speciálně  server2server přišla zpráva: " + json.asText() );
         System.out.println("Zatím není implementovaná žádná reakce na příchozá zprávu z Compilačního serveru !!");
     }
+
+// PRIVATE Becki -----------------------------------------------------------------------------------------------------------------
+
+    public static void becki_ping(WebSCType webSCType) throws TimeoutException, InterruptedException {
+
+        String messageId = UUID.randomUUID().toString();
+
+        ObjectNode result = Json.newObject();
+        result.put("messageType", "ping");
+        result.put("messageId", messageId);
+        result.put("messageChannel", "tyrion");
+
+        webSCType.write_without_confirmation(result);
+    }
+
 
 // PRIVATE Homer -----------------------------------------------------------------------------------------------------------------
 

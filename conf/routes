@@ -20,7 +20,7 @@ GET              /websocket/homer/:mac_adress                  @controllers.WebS
 GET              /websocket/mobile/:m_project_id/:mac_adress   @controllers.WebSocketController_Incoming.mobile_connection(m_project_id, mac_adress)
 GET              /websocket/blocko_server/:identificator       @controllers.WebSocketController_Incoming.blocko_cloud_server_connection(identificator)
 GET              /websocket/compilation_server/:identificator  @controllers.WebSocketController_Incoming.compilator_server_connection(identificator)
-
+GET              /websocket/becki/:secure_token                @controllers.WebSocketController_Incoming.becki_website_connection(secure_token)
 
 
 #API - CoreClient ##############################################################################################################################################################
@@ -43,7 +43,6 @@ GET             /login/github/*url                          @controllers.Securit
 ### NOTIFICATION ############ NOTIFICATION ############### NOTIFICATION ################ NOTIFICATION ##########################################################################
 ################################################################################################################################################################################
 
-GET             /notification/list                          @controllers.NotificationController.get_history_log()
 GET             /notification/list/:page_number             @controllers.NotificationController.get_history_log_page(page_number: Integer)
 GET             /notification/connection/:identificator     @controllers.NotificationController.subscribe_notification(identificator)
 DELETE          /notification/:notification_id              @controllers.NotificationController.remove_notification(notification_id)
@@ -62,7 +61,7 @@ GET            /coreClient/person/person/:person_id             @controllers.Per
 
 
 
-GET            /coreClient/person/valid/nickname/:nick_name     @controllers.PersonController.valid_Person_NickName(nick_name)
+GET            /coreClient/person/valid/nicknamewe/:nick_name     @controllers.PersonController.valid_Person_NickName(nick_name)
 GET            /coreClient/person/valid/mail/:mail              @controllers.PersonController.valid_Person_mail(mail)
 
 
@@ -154,7 +153,7 @@ PUT            /project/project/unshareProject/:project_id                      
 
 #Homer
 POST           /project/homer                                                               @controllers.ProgramingPackageController.newHomer()
-GET            /project/homer/filter                                                        @controllers.ProgramingPackageController.get_Homers_by_Filter()
+GET            /project/homer/filter/:page_number                                           @controllers.ProgramingPackageController.get_Homers_by_Filter(page_number: Integer)
 DELETE         /project/homer/:homer_id                                                     @controllers.ProgramingPackageController.removeHomer(homer_id)
 GET            /project/homer/:homer_id                                                     @controllers.ProgramingPackageController.getHomer(homer_id)
 
@@ -220,14 +219,15 @@ GET             /compilation/c_program/c_program/:c_program_id                  
 PUT             /compilation/c_program/c_program/:c_program_id                              @controllers.CompilationLibrariesController.edit_C_Program_Description(c_program_id)
 DELETE          /compilation/c_program/c_program/:c_program_id                              @controllers.CompilationLibrariesController.delete_C_Program(c_program_id)
 
-POST            /compilation/c_program/version/:c_program_id                                @controllers.CompilationLibrariesController.new_C_Program_Version(c_program_id)
+POST            /compilation/c_program/version/create/:c_program_id                         @controllers.CompilationLibrariesController.new_C_Program_Version(c_program_id)
 PUT             /compilation/c_program/version/update/:version_id                           @controllers.CompilationLibrariesController.update_C_Program_Version(version_id)
 PUT             /compilation/c_program/version/edit/:version_id                             @controllers.CompilationLibrariesController.edit_C_Program_version(version_id)
 
 DELETE          /compilation/c_program/version/:c_program_id/:version_id                    @controllers.CompilationLibrariesController.delete_C_Program_Version(c_program_id, version_id)
 
-POST            /compilation/c_program/version/compile/:version_id                          @controllers.CompilationLibrariesController.compile_C_Program_version(version_id)
-POST            /compilation/c_program/version/uploud/:version_id                           @controllers.CompilationLibrariesController.uploadCompilationToBoard(version_id)
+POST            /compilation/c_program/version/compile                                      @controllers.CompilationLibrariesController.compile_C_Program_code()
+PUT             /compilation/c_program/version/compile/:version_id                          @controllers.CompilationLibrariesController.compile_C_Program_version(version_id)
+PUT             /compilation/c_program/version/uploud/:version_id                           @controllers.CompilationLibrariesController.uploadCompilationToBoard(version_id)
 
 GET             /compilation/c_program/eclipse/:c_program_id                                @controllers.CompilationLibrariesController.generateProjectForEclipse(c_program_id)
 POST            /compilation/c_program/binary                                               @controllers.CompilationLibrariesController.uploadBinaryFileToBoard()
@@ -251,7 +251,7 @@ GET            /compilation/processor/singleLibrary/:processor_id               
 #Board
 POST            /compilation/board                                                          @controllers.CompilationLibrariesController.new_Board()
 PUT             /compilation/board/userDescription/:type_of_board_id                        @controllers.CompilationLibrariesController.edit_Board_User_Description(type_of_board_id)
-PUT             /compilation/board/filter                                                   @controllers.CompilationLibrariesController.get_Board_Filter()
+PUT             /compilation/board/filter/:page_number                                      @controllers.CompilationLibrariesController.get_Board_Filter(page_number: Integer)
 GET             /compilation/board/:board_id                                                @controllers.CompilationLibrariesController.get_Board(board_id)
 DELETE          /compilation/board/deactivateBoard/:board_id                                @controllers.CompilationLibrariesController.deactivate_Board(board_id)
 PUT             /compilation/board/:board_id/:project_id                                    @controllers.CompilationLibrariesController.connect_Board_with_Project(board_id, project_id)
@@ -271,7 +271,6 @@ POST            /compilation/typeOfBoard                                        
 PUT             /compilation/typeOfBoard/:type_of_board_id                                  @controllers.CompilationLibrariesController.edit_TypeOfBoard(type_of_board_id)
 DELETE          /compilation/typeOfBoard/:type_of_board_id                                  @controllers.CompilationLibrariesController.delete_TypeOfBoard(type_of_board_id)
 GET             /compilation/typeOfBoard/all                                                @controllers.CompilationLibrariesController.get_TypeOfBoard_all()
-GET             /compilation/typeOfBoard/filter                                             @controllers.CompilationLibrariesController.get_TypeOfBoard_Filter()
 GET             /compilation/typeOfBoard/:type_of_board_id                                  @controllers.CompilationLibrariesController.get_TypeOfBoard(type_of_board_id)
 GET             /compilation/typeOfBoard/boards/:type_of_board_id                           @controllers.CompilationLibrariesController.getTypeOfBoardAllBoards(type_of_board_id)
 
@@ -389,6 +388,9 @@ GET             /public/compilator_server/get_status/:id    @controllers.Dashboa
 GET             /public/terminal/ping/:id                   @controllers.DashboardController.ping_terminal(id)
 GET             /public/terminal/disconnect/:id             @controllers.DashboardController.disconnect_terminal(id)
 GET             /public/terminal/get_status/:id             @controllers.DashboardController.loggy_remove_bug(id)
+
+GET             /public/becki/ping/:id                      @controllers.DashboardController.ping_becki(id)
+GET             /public/becki/disconnect/:id/:token         @controllers.DashboardController.disconnect_becki(id, token)
 
 GET             /public/terminal/log_out/:id                @controllers.DashboardController.log_out_Terminal_User(id)
 

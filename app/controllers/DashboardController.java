@@ -20,10 +20,7 @@ import play.mvc.Result;
 import play.twirl.api.Html;
 import utilities.Server;
 import utilities.loggy.Loggy;
-import utilities.webSocket.WS_BlockoServer;
-import utilities.webSocket.WS_CompilerServer;
-import utilities.webSocket.WS_Terminal;
-import utilities.webSocket.WebSCType;
+import utilities.webSocket.*;
 import views.html.*;
 
 import java.io.IOException;
@@ -42,7 +39,8 @@ public class DashboardController extends Controller {
 
     Integer connectedHomers          =  WebSocketController_Incoming.incomingConnections_homers.size();
     Integer connectedTerminals       =  WebSocketController_Incoming.incomingConnections_terminals.size();
-    Integer connectedBlocko_servers =  WebSocketController_Incoming.blocko_servers.size();
+    Integer connectedBecki           =  WebSocketController_Incoming.becki_website.size();
+    Integer connectedBlocko_servers  =  WebSocketController_Incoming.blocko_servers.size();
     Integer connectedCompile_servers =  WebSocketController_Incoming.compiler_cloud_servers.size();
     Integer reported_bugs            =  Loggy.number_of_reported_errors();
     Boolean server_mode              =  Server.server_mode;
@@ -56,7 +54,7 @@ public class DashboardController extends Controller {
 
         logger.info("Creating index.html content");
 
-        Html menu_html = menu.render(reported_bugs, connectedHomers,connectedTerminals, connectedBlocko_servers, connectedCompile_servers);
+        Html menu_html = menu.render(reported_bugs, connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers, connectedCompile_servers);
 
         Map<String, WS_BlockoServer> blockoServerMap = new HashMap<>();
 
@@ -109,7 +107,7 @@ public class DashboardController extends Controller {
         String text = "";
         for(String line : Files.readAllLines(Paths.get("README"), StandardCharsets.UTF_8) ) text += line + "\n";
 
-        Html menu_html   = menu.render(reported_bugs,connectedHomers,connectedTerminals, connectedBlocko_servers,connectedCompile_servers);
+        Html menu_html   = menu.render(reported_bugs,connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers,connectedCompile_servers);
         Html readme_html = readme.render( new Html( new PegDownProcessor().markdownToHtml(text) ));
 
         logger.debug("Return show_readme.html content");
@@ -128,14 +126,17 @@ public class DashboardController extends Controller {
 
         logger.debug("Return show_web_socket_stats.html content");
 
-        Html menu_html = menu.render(reported_bugs,connectedHomers,connectedTerminals, connectedBlocko_servers, connectedCompile_servers);
+        Html menu_html = menu.render(reported_bugs,connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers, connectedCompile_servers);
 
 
         List<WebSCType> homers = new ArrayList<>(WebSocketController_Incoming.incomingConnections_homers.values());
 
-        List<WS_Terminal> grids = new ArrayList<>();
-        for(WebSCType o  : new ArrayList<>(WebSocketController_Incoming.incomingConnections_terminals.values()) ) grids.add((WS_Terminal) o);
+        List<WS_Grid_Terminal> grids = new ArrayList<>();
+        for(WebSCType o  : new ArrayList<>(WebSocketController_Incoming.incomingConnections_terminals.values()) ) grids.add((WS_Grid_Terminal) o);
 
+
+        List<WS_Becki_Website> becki_terminals = new ArrayList<>();
+        for(WebSCType o  : new ArrayList<>(WebSocketController_Incoming.becki_website.values()) ) becki_terminals.add((WS_Becki_Website) o);
 
 
         List<WS_BlockoServer> blocko_cloud_servers = new ArrayList<>();
@@ -146,8 +147,9 @@ public class DashboardController extends Controller {
         for(WebSCType o  : new ArrayList<>(WebSocketController_Incoming.compiler_cloud_servers.values()) ) compilation_servers.add( (WS_CompilerServer) o);
 
 
+
         return ok( main.render(menu_html,
-                websocket.render(homers, grids, blocko_cloud_servers , compilation_servers),
+                websocket.render(homers, grids, becki_terminals, blocko_cloud_servers , compilation_servers),
                 server_mode,
                 server_version));
     }
@@ -172,23 +174,32 @@ public class DashboardController extends Controller {
     }
 
     public Result disconnect_terminal(String terminal_id){
-        WebSocketController_Incoming.incomingConnections_terminals.get(terminal_id).onClose();
+        if(WebSocketController_Incoming.incomingConnections_terminals.containsKey(terminal_id) ) WebSocketController_Incoming.incomingConnections_terminals.get(terminal_id).onClose();
+        return show_web_socket_stats();
+    }
+
+    public Result disconnect_becki(String person_id, String token){
+        if(WebSocketController_Incoming.becki_website.containsKey(person_id)){
+            WS_Becki_Website website = (WS_Becki_Website) WebSocketController_Incoming.becki_website.get(person_id);
+            if( website.all_person_Connections.containsKey(token))website.all_person_Connections.get(token).onClose();
+        }
         return show_web_socket_stats();
     }
 
     public Result disconnect_homer(String homer_id){
-        WebSocketController_Incoming.incomingConnections_homers.get(homer_id).onClose();
+        if(WebSocketController_Incoming.incomingConnections_homers.containsKey(homer_id))   WebSocketController_Incoming.incomingConnections_homers.get(homer_id).onClose();
         return show_web_socket_stats();
     }
 
     public Result disconnect_Blocko_Server(String identificator){
-        logger.debug("Trying to disconnect all homers");
+        if(WebSocketController_Incoming.blocko_servers.containsKey(identificator)) WebSocketController_Incoming.blocko_servers.get(identificator).onClose();
 
         return show_web_socket_stats();
     }
 
     public Result disconnect_Compilation_Server(String identificator){
-        logger.debug("Trying to disconnect all homers");
+        if(WebSocketController_Incoming.compiler_cloud_servers.containsKey(identificator)) WebSocketController_Incoming.compiler_cloud_servers.get(identificator).onClose();
+
         return show_web_socket_stats();
     }
 
@@ -197,6 +208,13 @@ public class DashboardController extends Controller {
         WebSocketController_Incoming.terminal_ping( WebSocketController_Incoming.incomingConnections_terminals.get(terminal_id) ) ;
         return show_web_socket_stats();
     }
+
+    public Result ping_becki(String person_id) throws TimeoutException, InterruptedException {
+        WebSocketController_Incoming.becki_ping( WebSocketController_Incoming.becki_website.get(person_id) ) ;
+
+        return redirect("/public/websocket");
+    }
+
 
     public Result ping_homer(String homer_id) throws TimeoutException, InterruptedException {
         if(WebSocketController_Incoming.incomingConnections_homers.containsKey(homer_id))
@@ -212,13 +230,13 @@ public class DashboardController extends Controller {
     }
 
     public Result ping_Compilation_Server(String identificator)  throws TimeoutException, InterruptedException {
-
         if(WebSocketController_Incoming.compiler_cloud_servers.containsKey(identificator))
         WebSocketController_Incoming.compiler_server_ping( (WS_CompilerServer) WebSocketController_Incoming.compiler_cloud_servers.get(identificator) );
         return show_web_socket_stats();
     }
 
-    public Result log_out_Terminal_User(String identificator){
+    public Result log_out_Terminal_User(String identificator) {
+        System.out.println("Ještě neimplementováno");
         return  show_web_socket_stats();
     }
 
@@ -229,7 +247,7 @@ public class DashboardController extends Controller {
 
         logger.debug("Trying to render loggy.html content");
 
-        Html menu_html = menu.render(reported_bugs,connectedHomers,connectedTerminals, connectedBlocko_servers, connectedCompile_servers);
+        Html menu_html = menu.render(reported_bugs,connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers, connectedCompile_servers);
 
         return ok( main.render(menu_html,
                 loggy.render( Loggy.getErrors() ),

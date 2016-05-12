@@ -21,11 +21,12 @@ import play.libs.ws.WSClient;
 import play.mvc.*;
 import utilities.Server;
 import utilities.UtilTools;
+import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
-import utilities.swagger.outboundClass.Description;
+import utilities.swagger.outboundClass.Filter_List.Swagger_Board_List;
 import utilities.swagger.outboundClass.Swagger_Compilation_Build_Error;
 import utilities.swagger.outboundClass.Swagger_File_Content;
 
@@ -108,10 +109,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.created(Json.toJson(c_program));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - new_Processor ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -145,8 +143,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok(Json.toJson(c_program));
 
         } catch (Exception e) {
-            Logger.error("CompilationLibrariesController - getCProgram ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -203,9 +200,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok(Json.toJson(program));
 
         } catch (Exception e) {
-            Logger.error("CompilationLibrariesController - gellAllProgramFromProject ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -224,13 +219,6 @@ public class CompilationLibrariesController extends Controller {
                     )
             }
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful created",      response = C_Program.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(
@@ -242,6 +230,13 @@ public class CompilationLibrariesController extends Controller {
                     )
             }
     )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successful created",      response = C_Program.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     // @Dynamic("project.c_program_owner")
     @BodyParser.Of(BodyParser.Json.class)
     public Result new_C_Program_Version(@ApiParam(value = "c_program_id String query", required = true) @PathParam("c_program_id") String c_program_id){
@@ -285,10 +280,7 @@ public class CompilationLibrariesController extends Controller {
 
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - new_Processor ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -336,7 +328,7 @@ public class CompilationLibrariesController extends Controller {
             Version_Object version_object = Version_Object.find.byId(version_id);
             if(version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
-            version_object.c_compilation_build_url = null;
+            version_object.c_comp_build_url = null;
 
             // Nahraje do Azure a připojí do verze soubor (lze dělat i cyklem - ale název souboru musí být vždy jiný)
             FileRecord file = FileRecord.find.where().eq("version_object.id", version_id).where().eq("file_name", "c_program").findUnique();
@@ -353,10 +345,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.created(Json.toJson(version_object));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - new_Processor ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -396,9 +385,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - deleteVersionOfCProgram ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -453,9 +440,7 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(version_object));
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - deleteVersionOfCProgram ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -488,23 +473,22 @@ public class CompilationLibrariesController extends Controller {
         try{
 
             C_Program c_program = C_Program.find.byId(c_program_id);
+            if(c_program == null ) return GlobalResult.notFoundObject("C_Program c_program_id not found");
 
             UtilTools.azureDelete(Server.blobClient.getContainerReference("c-program"), c_program.azurePackageLink + "/" + c_program.azureStorageLink);
 
-            c_program.delete();
 
+            c_program.delete();
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - deleteCProgram ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
 ///###################################################################################################################*/
 
-    @ApiOperation(value = "compile C_program",
+    @ApiOperation(value = "compile C_program Version",
             tags = {"C_Program"},
             notes = "Compile specific version of C_program - before compilation - you have to update (save) version code",
             produces = "application/json",
@@ -532,7 +516,7 @@ public class CompilationLibrariesController extends Controller {
             Version_Object version_object = Version_Object.find.byId(version_id);
             if(version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
-            FileRecord file = FileRecord.find.where().eq("version_object.id", version_id).where().eq("file_name", "c_program").findUnique();
+            FileRecord file = FileRecord.find.fetch("version_object.c_program").fetch("version_object").where().eq("version_object.id", version_id).where().eq("file_name", "c_program").findUnique();
             if(file == null) return GlobalResult.notFoundObject("First save version content");
 
             JsonNode json = Json.parse( file.get_fileRecord_from_Azure_inString() );
@@ -564,15 +548,22 @@ public class CompilationLibrariesController extends Controller {
             if(WebSocketController_Incoming.compiler_cloud_servers.isEmpty()) return GlobalResult.result_BadRequest("Compilation server is offline!");
 
             // Odesílám na compilační server
-           JsonNode compilation_result = WebSocketController_Incoming.compiler_server_make_Compilation(SecurityController.getPerson(), result);
+            System.out.println("Odesílám na kompilační server z Controlleru");
+            JsonNode compilation_result = WebSocketController_Incoming.compiler_server_make_Compilation(SecurityController.getPerson(), result);
 
             // V případě úspěšného buildu
                 // 1. Uložím link buildu - spáruji s version, tím umožním build nahrát na HW
                 // 2.
+            System.out.println("Obsahuje zpráva buildUrl???");
            if(compilation_result.has("buildUrl")){
-                version_object.c_compilation_build_url = compilation_result.get("buildUrl").asText();
-                version_object.update();
-                return GlobalResult.result_ok();
+
+
+               version_object.setC_comp_build_url( compilation_result.get("buildUrl").asText() );
+               version_object.update();
+
+               System.out.println("Vše v cajku");
+
+               return GlobalResult.result_ok();
            }
             // Kompilace nebyla úspěšná
            else if(compilation_result.has("buildErrors")){
@@ -585,13 +576,96 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.result_BadRequest("Unknown error");
         }catch (Exception e){
-            e.printStackTrace();
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
 
     }
 
-    //TODO swagger Documentation
+
+    @ApiOperation(value = "compile C_program with Code",
+            tags = {"C_Program"},
+            notes = "Compile code",
+            produces = "application/json",
+            protocols = "https",
+            response =  Result_ok.class,
+            code = 200
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_C_Program_Version_Update",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Compilation successful", response =  Result_ok.class),
+            @ApiResponse(code = 400, message = "Compilation unsuccessful", response =  Swagger_Compilation_Build_Error.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result compile_C_Program_code(){
+        try{
+
+            System.out.println("Jseeeeeeem zde....................................................... .................... .......");
+
+            Form<Swagger_C_Program_Version_Update> form = Form.form(Swagger_C_Program_Version_Update.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_C_Program_Version_Update help = form.get();
+
+
+            ObjectNode result = Json.newObject();
+            result.put("messageType", "build");
+            // result.put("messageId", messageId); <- messageId je vkládáno až v WebSocketController_Incoming.compiler_server_make_Compilation(...)!
+            result.put("target", "NUCLEO_F411RE");
+            result.put("libVersion", "v0");
+
+            // Code - Musím sesumírovat všechny uživatelovi okna do jednoho souboru ke kompilaci (nejedná se totiž o uživatelovi knihovny)
+            for(Swagger_C_Program_Version_Update.User_Files user_file : help.user_files){
+                help.code += "\n \n " + user_file.code;
+            }
+            result.put("code", help.code);
+
+
+            // Includes (Vkládám sem přiložené balíky....
+            ObjectNode includes = Json.newObject();
+            for(Swagger_C_Program_Version_Update.External_Libraries external_library : help.external_libraries){
+                for(Swagger_C_Program_Version_Update.External_Libraries.File_Lib file_lib : external_library.files){
+                    includes.put(file_lib.file_name , file_lib.content);
+                }
+            }
+            result.set("includes", includes);
+
+            if(WebSocketController_Incoming.compiler_cloud_servers.isEmpty()) return GlobalResult.result_BadRequest("Compilation server is offline!");
+
+            // Odesílám na compilační server
+            System.out.println("Odesílám na kompilační server z Controlleru");
+            JsonNode compilation_result = WebSocketController_Incoming.compiler_server_make_Compilation(SecurityController.getPerson(), result);
+
+
+            if(compilation_result.has("buildUrl")){
+                return GlobalResult.result_ok();
+            }
+            // Kompilace nebyla úspěšná
+            else if(compilation_result.has("buildErrors")){
+                return GlobalResult.result_BadRequest(Json.toJson(compilation_result.get("buildErrors")));
+                // Nebylo úspěšné ani odeslání reqestu - Chyba v konfiguraci
+            }else if(compilation_result.has("error") ){
+                return GlobalResult.result_BadRequest(Json.toJson(compilation_result.get("error")));
+            }
+
+            return GlobalResult.result_BadRequest("Unknown error");
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+
+    }
+
+
     public Result generateProjectForEclipse(String c_program_id) {
        // EclipseProject.createFullnewProject();
         return GlobalResult.result_ok("In TODO"); //TODO
@@ -673,8 +747,7 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
-            e.printStackTrace();
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -721,7 +794,7 @@ public class CompilationLibrariesController extends Controller {
             if(version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
 
-            if(version_object.c_compilation_build_url == null || version_object.c_compilation_build_url.length() < 5) return GlobalResult.result_BadRequest("The program is not yet compiled");
+            if(version_object.c_comp_build_url == null || version_object.c_comp_build_url.length() < 5) return GlobalResult.result_BadRequest("The program is not yet compiled");
 
             if(FileRecord.find.where().eq("version_object.id", version_object.id).where().eq("file_name", "compilation.bin").findUnique() == null
                && WebSocketController_Incoming.compiler_cloud_servers.isEmpty()){
@@ -738,10 +811,10 @@ public class CompilationLibrariesController extends Controller {
                 // Example "http://0.0.0.0:8989/7e50e112-b2d3-4ea2-989a-89f415241268.bin"
                 // Beru z názvu url souboru až za posledním lomítkem
                 // Výsledek files/7e50e112-b2d3-4ea2-989a-89f415241268.bin
-                file = new File("files/" + version_object.c_compilation_build_url.split("/")[3]);
+                file = new File("files/" + version_object.c_comp_build_url.split("/")[3]);
 
 
-                F.Promise<File> filePromise = ws.url(version_object.c_compilation_build_url).get().map(response -> {
+                F.Promise<File> filePromise = ws.url(version_object.c_comp_build_url).get().map(response -> {
                     InputStream inputStream = null;
                     OutputStream outputStream = null;
                     try {
@@ -813,8 +886,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            e.printStackTrace();
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -871,9 +943,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok(Json.toJson(server));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - deleteCProgram ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -925,9 +995,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok(Json.toJson(server));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - deleteCProgram ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -958,9 +1026,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok(Json.toJson(servers));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - deleteCProgram ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -994,9 +1060,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - deleteCProgram ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1054,10 +1118,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.created(Json.toJson(processor));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - new_Processor ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1091,8 +1152,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok(Json.toJson(processor));
 
         } catch (Exception e) {
-            Logger.error("CompilationLibrariesController - new_Processor ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1124,8 +1184,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok(Json.toJson(processors));
 
         } catch (Exception e) {
-            Logger.error("CompilationLibrariesController - new_Processor ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1185,10 +1244,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok(Json.toJson(processor));
 
         } catch (Exception e) {
-            Logger.error("Error", e.getMessage());
-            Logger.error("CompilationLibrariesController - update_Processor ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1222,49 +1278,7 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - new_Processor ERROR");
-            return GlobalResult.internalServerError();
-        }
-    }
-
-    @ApiOperation(value = "get Processor description",
-            tags = {"Processor"},
-            notes = "If you get Processor by query processor_id.",
-            produces = "application/json",
-            response =  Description.class,
-            protocols = "https",
-            code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "processor.read", description = "For read  Procesor, you have to own project")}
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Description.class),
-            @ApiResponse(code = 400, message = "Object Not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    //@Pattern("processor.read")
-    public Result get_Processor_Description(@ApiParam(value = "processor_id String query", required = true) @PathParam("processor_id")String processor_id) {
-        try {
-
-            Processor processor = Processor.find.byId(processor_id);
-            if(processor == null ) return GlobalResult.notFoundObject("Processor processor_id not found");
-
-            Description description = new Description();
-            description.description = processor.description;
-
-            return GlobalResult.result_ok(Json.toJson(description));
-
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - get_Processor_Description ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1297,9 +1311,7 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(processor.libraryGroups));
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - getProcessorLibraryGroups ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1332,9 +1344,7 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(processor.singleLibraries));
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - getProcessorSingleLibraries ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1373,9 +1383,7 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - connectProcessorWithLibrary ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1414,9 +1422,7 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - connectProcessorWithLibraryGroup ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1455,9 +1461,7 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - connectProcessorWithLibrary ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1496,9 +1500,7 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - connectProcessorWithLibraryGroup ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1555,10 +1557,7 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.created(Json.toJson(libraryGroup));
         }catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - connectProcessorWithLibraryGroup ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1624,10 +1623,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.created(Json.toJson(versionObjectObject));
 
         } catch (Exception e) {
-            e.printStackTrace();
-            Logger.error("CompilationLibrariesController - new_Processor ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1699,9 +1695,7 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
-            e.printStackTrace();
-            Logger.error("CompilationLibrariesController - upload_Library_To_LibraryGroup ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1734,9 +1728,7 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(libraryGroup));
         } catch (Exception e) {
-            Logger.error("CompilationLibrariesController - getLibraryGroup ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1773,9 +1765,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            Logger.error("CompilationLibrariesController - delete_LibraryGroup ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1832,9 +1822,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            Logger.error("CompilationLibrariesController - updateLibraryGroup ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1865,8 +1853,7 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(versionObject.files));
         } catch (Exception e) {
-            Logger.error("CompilationLibrariesController - get_LibraryGroup_Version_Libraries ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1875,7 +1862,6 @@ public class CompilationLibrariesController extends Controller {
             notes = "If you want get all or only some LibraryGroups you can use filter parameters in Json. But EveryTime i will return maximal 25 objects \n\n" +
                     "so, you have to used that limit for frontend pagination -> first round (0,25), second round (26, 50) etc... \n ",
             produces = "application/json",
-            response =  LibraryGroup.class,
             protocols = "https",
             code = 200,
             authorizations = {
@@ -1957,9 +1943,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok(Json.toJson(list));
 
         } catch (Exception e) {
-            Logger.error("CompilationLibrariesController - get_LibraryGroup_Version_Libraries ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1992,9 +1976,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok(Json.toJson(version));
 
         } catch (Exception e) {
-            e.printStackTrace();
-            Logger.error("CompilationLibrariesController - getVersionLibraryGroup ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -2016,7 +1998,7 @@ public class CompilationLibrariesController extends Controller {
     public Result fileRecord(@ApiParam(value = "file_record_id String query", required = true) @PathParam("file_record_id")  String file_record_id){
         try {
 
-            FileRecord fileRecord = FileRecord.find.byId(file_record_id);
+            FileRecord fileRecord = FileRecord.find.fetch("version_object").where().eq("id", file_record_id).findUnique();
             if (fileRecord == null) return GlobalResult.notFoundObject("FileRecord file_record_id not found");
 
             Swagger_File_Content file_content = new Swagger_File_Content();
@@ -2027,9 +2009,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok(Json.toJson(file_content));
 
         } catch (Exception e) {
-            Logger.error("CompilationLibrariesController - get_LibraryGroup_Version_Libraries ERROR");
-            e.printStackTrace();
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -2039,7 +2019,6 @@ public class CompilationLibrariesController extends Controller {
             tags = {"SingleLibrary"},
             notes = "if you want create new SingleLibrary for C_program compilation",
             produces = "application/json",
-            response =  SingleLibrary.class,
             protocols = "https",
             code = 201,
             authorizations = {
@@ -2088,9 +2067,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.created(Json.toJson(singleLibrary));
 
         } catch (Exception e) {
-            Logger.error("CompilationLibrariesController - get_LibraryGroup_Version_Libraries ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -2098,7 +2075,6 @@ public class CompilationLibrariesController extends Controller {
             tags = {"SingleLibrary"},
             notes = "if you want create new SingleLibrary for C_program compilation",
             produces = "application/json",
-            response =  Version_Object.class,
             protocols = "https",
             code = 201,
             authorizations = {
@@ -2152,10 +2128,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.created(Json.toJson(versionObjectObject));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - new_Processor ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -2163,7 +2136,6 @@ public class CompilationLibrariesController extends Controller {
             tags = {"SingleLibrary"},
             notes = "if you want create new SingleLibrary for C_program compilation",
             produces = "application/json",
-            response =  Version_Object.class,
             protocols = "https",
             code = 200,
             authorizations = {
@@ -2189,7 +2161,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok(Json.toJson(singleLibrary.version_objects));
 
         } catch (Exception e) {
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -2233,10 +2205,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok(Json.toJson(versionObjectObject));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - new_Processor ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -2244,7 +2213,6 @@ public class CompilationLibrariesController extends Controller {
             tags = {"SingleLibrary"},
             notes = "if you want get SingleLibrary by query = library_id",
             produces = "application/json",
-            response =  SingleLibrary.class,
             protocols = "https",
             code = 200,
             authorizations = {
@@ -2270,9 +2238,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok(Json.toJson(singleLibrary));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - new_Processor ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -2282,7 +2248,6 @@ public class CompilationLibrariesController extends Controller {
                     "so, you have to used that limit for frontend pagination -> first round (0,25), second round (26, 50) etc... I will give you also" +
                     "information how many results you can show \n ",
             produces = "application/json",
-            response =  SingleLibrary.class,
             protocols = "https",
             code = 200,
             authorizations = {
@@ -2361,9 +2326,7 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(list));
         } catch (Exception e) {
-            Logger.error("CompilationLibrariesController - get_LibraryGroup_Version_Libraries ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -2371,7 +2334,6 @@ public class CompilationLibrariesController extends Controller {
             tags = {"SingleLibrary"},
             notes = "if you want edit name or description of SingleLibrary by query = library_id",
             produces = "application/json",
-            response =  SingleLibrary.class,
             protocols = "https",
             code = 200,
             authorizations = {
@@ -2420,9 +2382,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            Logger.error("CompilationLibrariesController - get_LibraryGroup_Version_Libraries ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -2430,7 +2390,6 @@ public class CompilationLibrariesController extends Controller {
             tags = {"SingleLibrary"},
             notes = "If you want delete SingleLibrary by query = library_id",
             produces = "application/json",
-            response =  Result_ok.class,
             protocols = "https",
             code = 200,
             authorizations = {
@@ -2459,9 +2418,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            Logger.error("CompilationLibrariesController - get_LibraryGroup_Version_Libraries ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -2471,7 +2428,6 @@ public class CompilationLibrariesController extends Controller {
             tags = {"Producer"},
             notes = "if you want create new Producer. Its company owned physical boards and we used that for filtering",
             produces = "application/json",
-            response =  Producer.class,
             protocols = "https",
             code = 201,
             authorizations = {
@@ -2517,10 +2473,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.created(Json.toJson(producer));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - new_Processor ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -2528,7 +2481,6 @@ public class CompilationLibrariesController extends Controller {
             tags = {"Producer"},
             notes = "if you want edit information about Producer. Its company owned physical boards and we used that for filtering",
             produces = "application/json",
-            response =  Producer.class,
             protocols = "https",
             code = 200,
             authorizations = {
@@ -2577,10 +2529,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok(Json.toJson(producer));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - edit_Producer ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -2588,7 +2537,6 @@ public class CompilationLibrariesController extends Controller {
             tags = {"Producer"},
             notes = "if you want get list of Producers. Its list of companies owned physical boards and we used that for filtering",
             produces = "application/json",
-            response =  Producer.class,
             protocols = "https",
             code = 200,
             authorizations = {
@@ -2613,9 +2561,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok(Json.toJson(producers));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - get_Producers ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -2623,7 +2569,6 @@ public class CompilationLibrariesController extends Controller {
             tags = {"Producer"},
             notes = "if you want get Producer. Its company owned physical boards and we used that for filtering",
             produces = "application/json",
-            response =  Producer.class,
             protocols = "https",
             code = 200,
             authorizations = {
@@ -2650,9 +2595,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok(Json.toJson(producer));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - get_Producer ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -2688,9 +2631,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - get_Producer ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -2699,7 +2640,6 @@ public class CompilationLibrariesController extends Controller {
             tags = {"Producer", "Type-Of-Board"},
             notes = "if you want get TypeOfBoard from Producer. Its a list of Boards types.",
             produces = "application/json",
-            response =  TypeOfBoard.class,
             protocols = "https",
             code = 200,
             authorizations = {
@@ -2726,9 +2666,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok(Json.toJson(producer.type_of_boards));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - get_Producer_TypeOfBoards ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -2741,7 +2679,6 @@ public class CompilationLibrariesController extends Controller {
             notes = "The TypeOfBoard is category for IoT. Like Raspberry2, Arduino-Uno etc. \n\n" +
                     "We using that for compilation, sorting libraries, filtres and more..",
             produces = "application/json",
-            response =  TypeOfBoard.class,
             protocols = "https",
             code = 201,
             authorizations = {
@@ -2794,10 +2731,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok(Json.toJson(typeOfBoard));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - new_TypeOfBoard ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -2862,10 +2796,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok(Json.toJson(typeOfBoard));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - edit_TypeOfBoard ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
 
     }
@@ -2874,7 +2805,6 @@ public class CompilationLibrariesController extends Controller {
             tags = { "Type-Of-Board"},
             notes = "if you want delete TypeOfBoard object by query = type_of_board_id",
             produces = "application/json",
-            response =  Result_ok.class,
             protocols = "https",
             code = 200,
             authorizations = {
@@ -2891,7 +2821,6 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    //TODO dokumentace Issue TYRION-88 (http://youtrack.byzance.cz/youtrack/issue/TYRION-88)
     // @Pattern("type_of_board.delete")
     public Result delete_TypeOfBoard(@ApiParam(required = true) @PathParam("type_of_board_id") String type_of_board_id) {
         try {
@@ -2904,9 +2833,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - edit_TypeOfBoard ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -2914,7 +2841,6 @@ public class CompilationLibrariesController extends Controller {
             tags = { "Type-Of-Board"},
             notes = "if you want get all TypeOfBoard objects",
             produces = "application/json",
-            response =  TypeOfBoard.class,
             protocols = "https",
             code = 200,
             authorizations = {
@@ -2939,9 +2865,7 @@ public class CompilationLibrariesController extends Controller {
             return  GlobalResult.result_ok(Json.toJson(typeOfBoards));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - get_TypeOfBoard_all ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -2949,7 +2873,6 @@ public class CompilationLibrariesController extends Controller {
             tags = { "Type-Of-Board"},
             notes = "if you want get TypeOfBoard object by query = type_of_board_id",
             produces = "application/json",
-            response =  TypeOfBoard.class,
             protocols = "https",
             code = 200,
             authorizations = {
@@ -2976,9 +2899,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok(Json.toJson(typeOfBoard));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - get_Producer_TypeOfBoards ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -2998,7 +2919,7 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Board.class, responseContainer = "List"), //TODO list
+            @ApiResponse(code = 200, message = "Ok Result",               response = Board.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -3011,101 +2932,10 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(typeOfBoard.boards));
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - get_Producer_TypeOfBoards ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
-    @ApiOperation(value = "get TypeOfBoard by Filter",
-            tags = { "Type-Of-Board"},
-            notes = "get List of TypeOfBoard by filter",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "type_of_board.edit", description = "Person need this permission"),
-                                    @AuthorizationScope(scope = "SuperAdmin", description = "Or person must be SuperAdmin role")}
-                    )
-            }
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_TypeOfBoard_Filter",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = TypeOfBoard.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result get_TypeOfBoard_Filter(){
-        try {
-
-            final Form<Swagger_TypeOfBoard_Filter> form = Form.form(Swagger_TypeOfBoard_Filter.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-            Swagger_TypeOfBoard_Filter help = form.get();
-
-
-            Query<Swagger_TypeOfBoard_Filter> query = Ebean.find(Swagger_TypeOfBoard_Filter.class);
-
-
-            if(help.producer_name != null){
-                query.where().eq("producer.name", help.producer_name);
-            }
-
-            if(help.processor_name != null){
-                query.where().eq("processor.processor_name", help.processor_name);
-            }
-
-            if(help.count_from != null){
-                query.setFirstRow(help.count_from);
-            }
-
-            if(help.count_to != null){
-                query.setMaxRows(help.count_to);
-            }
-
-            if(help.order != null){
-
-                String order = help.order;
-                String value = help.value;
-
-                OrderBy<Swagger_TypeOfBoard_Filter> orderBy = new OrderBy<>();
-
-                if(order.equals("asc")) orderBy.asc(value);
-                else if (order.equals("desc")) orderBy.desc(value);
-
-                query.setOrder(orderBy);
-            }
-
-
-
-            List<Swagger_TypeOfBoard_Filter> list = query.findList();
-
-
-
-            return GlobalResult.result_ok(Json.toJson(list));
-
-
-
-
-        } catch (Exception e) {
-            Logger.error("Error", e);
-            return GlobalResult.internalServerError();
-        }
-    }
 
     ///###################################################################################################################*/
 
@@ -3115,7 +2945,6 @@ public class CompilationLibrariesController extends Controller {
                     "boards themselves with \"registration procedure\". Its not allowed to delete that! Only deactivate. Classic User can registed that to own " +
                     "project or own account",
             produces = "application/json",
-            response =  Board.class,
             protocols = "https",
             code = 201,
             authorizations = {
@@ -3168,10 +2997,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok(Json.toJson(board));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - newBoard ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -3266,23 +3092,18 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    // @Pattern("board.read")
-    public Result get_Board_Filter() {
+    public Result get_Board_Filter(@ApiParam(value = "page_number is Integer. May missing or contain  1,2...n For first call, use 1", required = false) @PathParam("page_number") Integer page_number) {
         try {
 
             final Form<Swagger_Board_Filter> form = Form.form(Swagger_Board_Filter.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Board_Filter help = form.get();
 
-
             Query<Board> query = Ebean.find(Board.class);
 
-            // If contains HashTags
+            // If Json contains TypeOfBoards list of id's
             if(help.typeOfBoards != null ){
-                List<String> stringList = help.typeOfBoards;
-                Set<String> stringListSet = new HashSet<>(stringList);
-                query.where().in("type_of_board.id", stringListSet);
-
+                query.where().in("type_of_board.id", help.typeOfBoards);
             }
 
             // If contains confirms
@@ -3293,35 +3114,24 @@ public class CompilationLibrariesController extends Controller {
 
             // From date
             if(help.projects != null){
-                List<String> stringList = help.projects;
-                Set<String> stringListSet = new HashSet<>(stringList);
-                query.where().in("projects.id", stringListSet);
+                query.where().in("projects.id", help.projects);
             }
 
-
             if(help.producers != null){
-                List<String> stringList = help.producers;
-                Set<String> stringListSet = new HashSet<>(stringList);
-                query.where().in("type_of_board.producer.id", stringListSet);
+                query.where().in("type_of_board.producer.id", help.producers);
             }
 
             if(help.processors != null){
-                List<String> stringList = help.processors;
-                Set<String> stringListSet = new HashSet<>(stringList);
-                query.where().in("type_of_board.processor.id", stringListSet);
+                query.where().in("type_of_board.processor.id", help.processors);
             }
 
-            List<Board> list = query.findList();
+            Swagger_Board_List result = new Swagger_Board_List(query, page_number);
 
-            return GlobalResult.result_ok(Json.toJson(list));
-
+            return GlobalResult.result_ok(Json.toJson(result));
 
         } catch (Exception e){
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
-
-
-
     }
 
     @ApiOperation(value = "deactivate Board",
@@ -3356,10 +3166,7 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(board));
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - deactivate_Board ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
 
     }
@@ -3394,10 +3201,7 @@ public class CompilationLibrariesController extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(board));
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - get_Board ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -3440,9 +3244,7 @@ public class CompilationLibrariesController extends Controller {
 
              return GlobalResult.result_ok(Json.toJson(board));
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - get_Board ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -3487,9 +3289,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok(Json.toJson(board));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - get_Board ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 

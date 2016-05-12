@@ -1,5 +1,7 @@
 package controllers;
 
+import com.avaje.ebean.Ebean;
+import com.avaje.ebean.Query;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.*;
 import models.blocko.BlockoBlock;
@@ -13,7 +15,6 @@ import models.project.b_program.B_Program_Cloud;
 import models.project.b_program.B_Program_Homer;
 import models.project.b_program.Homer;
 import models.project.global.Project;
-import play.Logger;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.BodyParser;
@@ -28,6 +29,7 @@ import utilities.notification.Notification_level;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
+import utilities.swagger.outboundClass.Filter_List.Swagger_Homer_List;
 import utilities.webSocket.WS_BlockoServer;
 
 import javax.websocket.server.PathParam;
@@ -287,7 +289,11 @@ public class ProgramingPackageController extends Controller {
 
             if (!project.share_permission() )   return GlobalResult.forbidden_Permission();
 
-            for (Person person : help.get_person()) {
+            System.out.println("Velikost pole : " + help.persons_id.size() );
+
+            List<Person> list = Person.find.where().idIn(help.persons_id).findList();
+
+            for (Person person : list) {
                 if (!person.owningProjects.contains(project)) {
                     project.ownersOfProject.add(person);
                     person.owningProjects.add(project);
@@ -345,7 +351,9 @@ public class ProgramingPackageController extends Controller {
 
             if (!project.unshare_permission() )   return GlobalResult.forbidden_Permission();
 
-            for (Person person : help.get_person()) {
+            List<Person> list = Person.find.where().idIn(help.persons_id).findList();
+
+            for (Person person : list) {
                 if (person.owningProjects.contains(project)) {
                     project.ownersOfProject.remove(person);
                     person.owningProjects.remove(project);
@@ -492,21 +500,27 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-    //TODO http://youtrack.byzance.cz/youtrack/issue/TYRION-142
-    public  Result get_Homers_by_Filter(){
+
+    public  Result get_Homers_by_Filter( @ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1", required = true) @PathParam("page_number") Integer page_number){
         try {
-            List<Homer> homers = Homer.find.all();
 
-            System.out.println("Filter není dodělaný...........");
+            final Form<Swagger_Homer_Filter> form = Form.form(Swagger_Homer_Filter.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Homer_Filter help = form.get();
 
-            // TODO dodělat filter
+            Query<Homer> query = Ebean.find(Homer.class);
 
-            return GlobalResult.result_ok(Json.toJson(homers));
+            // If Json contains project_ids list of id's
+            if(help.project_ids != null ){
+                query.where().in("project.id", help.project_ids);
+            }
+
+            Swagger_Homer_List result = new Swagger_Homer_List(query, page_number);
+
+            return GlobalResult.result_ok(Json.toJson(result));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("ProgramingPackageController - getAllHomers ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -816,7 +830,10 @@ public class ProgramingPackageController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public  Result update_b_program(@ApiParam(value = "id String path", required = true) @PathParam("id") String b_program_id){
         try{
-            Swagger_B_Program_Version_New help = Json.fromJson( request().body().asJson(), Swagger_B_Program_Version_New.class);
+
+            final Form<Swagger_B_Program_Version_New> form = Form.form(Swagger_B_Program_Version_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_B_Program_Version_New help = form.get();
 
             // Program který budu ukládat do data Storage v Azure
             String file_content =  help.program;
@@ -1002,10 +1019,10 @@ public class ProgramingPackageController extends Controller {
             if (b_program == null) return GlobalResult.notFoundObject("B_Program id not found");
 
             // Verze B programu kterou budu nahrávat do cloudu
-            Version_Object version_object = Version_Object.find.byId(version_id);
+            Version_Object version_object = Version_Object.find.fetch("b_program_cloud.blocko_instance_name").where().eq("id", version_id).findUnique();
             if (version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
-            // Pokud už nějaká instance běžela, tak jí zabiju a z databáze odstraním vazbu na běžící instanci b programu
+            // Pokud už nějaká instance běžela, tak na ní budu nabrávat nový program a odstraním vazbu na běžící instanci b programu
             if( version_object.b_program_cloud != null ) {
 
                WebSocketController_Incoming.homer_destroyInstance(version_object.b_program_cloud.blocko_instance_name);
@@ -1038,7 +1055,6 @@ public class ProgramingPackageController extends Controller {
             if( result.get("status").equals("success")) {
                 // Ukládám po úspěšné nastartvoání programu v cloudu jeho databázový ekvivalent
                 program_cloud.save();
-
                 return GlobalResult.result_ok();
             }
 

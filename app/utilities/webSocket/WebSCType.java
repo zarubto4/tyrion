@@ -1,5 +1,6 @@
 package utilities.webSocket;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -37,17 +38,17 @@ public abstract class WebSCType {
             ObjectNode json = (ObjectNode) new ObjectMapper().readTree(message);
 
 
-             if(json.has("messageId") && message_out.containsKey( json.get("messageId").asText())){
-                    message_out.remove(json.get("messageId").asText() );
-                    message_in.put(json.get("messageId").asText(), json);
-                    return;
-             }
+            if (json.has("messageId") && message_out.containsKey(json.get("messageId").asText())) {
+                message_out.remove(json.get("messageId").asText());
+                message_in.put(json.get("messageId").asText(), json);
+                return;
+            }
 
-            onMessage (json);
-
+            onMessage(json);
+        }catch (JsonParseException e){
+            WebSocketController_Incoming.invalid_json_message(webSCtype);
         }catch (Exception e){
             e.printStackTrace();
-            WebSocketController_Incoming.invalid_json_message(webSCtype);
         }
 
     }

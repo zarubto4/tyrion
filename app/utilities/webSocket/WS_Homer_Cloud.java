@@ -58,7 +58,10 @@ public class WS_Homer_Cloud extends WebSCType{
 
 
     @Override
-    public void onClose() { WebSocketController_Incoming.homer_is_disconnect(this);}
+    public void onClose() {
+        this.close();
+        WebSocketController_Incoming.homer_is_disconnect(this);
+    }
 
     @Override
     public void onMessage(ObjectNode json) {

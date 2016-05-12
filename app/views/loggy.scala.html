@@ -27,7 +27,7 @@
                     </div>
                 </div>
                 <div class="box-body table-responsive no-padding">
-                    <table class="table table-condensed">
+                    <table class="table">
 
                         @if(logs != null) {
                             @for(i <- logs) {
@@ -36,14 +36,17 @@
                                     <th> <h4 class="info-box-text">  Identificator: @i.id </h4> </th>
                                     <th>  </th>
                                 </tr>
+
                                 <tr>
                                     <td rowspan="3">
                                         <pre class="prettyprint">
-                                        <code class="javascript">@i.description</code></pre> </td>
+                                        <code class="javascript">@i.description</code></pre>
+                                    </td>
                                     <td>
                                         <span> <a class="btn btn-block btn-danger btn-sm" href='/public/bug/remove/@i.id' >Remove</a></span>
                                     </td>
                                 </tr>
+
                                 <tr>
                                     <td>
                                         @if(i.youtrack_url == null) {

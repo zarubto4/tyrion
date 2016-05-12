@@ -1,4 +1,4 @@
-@(bugs: Integer, homer_local  : Integer, grid_terminal: Integer, homer_server : Integer, compiler_server: Integer)
+@(bugs: Integer, homer_local  : Integer, becki_terminal: Integer, grid_terminal: Integer, homer_server : Integer, compiler_server: Integer)
 
     <aside class="main-sidebar">
     <!-- sidebar: style can be found in sidebar.less -->
@@ -31,7 +31,7 @@
                 <li>
                     <a href='@routes.DashboardController.show_web_socket_stats()' >
                         <i class="fa fa-heart"></i> <span>Websocket connections</span>
-                        <small class="label pull-right bg-yellow">  @( grid_terminal + homer_server + homer_local + compiler_server) </small>
+                        <small class="label pull-right bg-yellow">  @( grid_terminal + homer_server + homer_local + compiler_server+ becki_terminal) </small>
                     </a>
                 </li>
 <!-------------------------------------------------------------------------- ------------------------>

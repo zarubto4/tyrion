@@ -36,7 +36,7 @@ public class WS_BlockoServer extends WebSCType{
 
     @Override
     public void onMessage(ObjectNode json) {
-        System.out.println("příchozí zpráva v WS_Homer_Local: " + json.toString());
+        System.out.println("příchozí zpráva v WS_BlockoServer: " + json.toString());
 
         // Zpráva je z virtuální instance
         if(json.has ("instanceId") ) WebSocketController_Incoming.homer_incoming_message(  maps.get( json.get("instanceId").asText() ) , json);

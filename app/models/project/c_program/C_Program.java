@@ -33,11 +33,7 @@ public class C_Program extends Model {
 
 
     @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1461854312") public Date dateOfCreate;
-    @OneToMany(mappedBy="c_program", cascade=CascadeType.ALL) @OrderBy("azureLinkVersion DESC")                                  public List<Version_Object> version_objects = new ArrayList<>();
-
-
-
-
+    @OneToMany(mappedBy="c_program", cascade = CascadeType.ALL) @OrderBy("azureLinkVersion DESC") public List<Version_Object> version_objects = new ArrayList<>();
 
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/

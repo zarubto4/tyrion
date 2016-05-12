@@ -23,6 +23,7 @@ public class WS_CompilerServer extends WebSCType{
 
     @Override
     public void onClose() {
+        this.close();
         WebSocketController_Incoming.compiler_server_is_disconnect(this);
     }
 
