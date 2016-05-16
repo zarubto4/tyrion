@@ -4,6 +4,7 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
 import models.person.Person;
 
@@ -18,7 +19,7 @@ public class Post extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-@Id  @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true)          public String postId;
+@Id  @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true)          public String id;
 @ApiModelProperty(required = false, value = "Only if Post is Main (not answers or comments)")
 @JsonInclude(JsonInclude.Include.NON_EMPTY)                                                          public String name;
 @ApiModelProperty(required = true)                                                                   public int likes;
@@ -69,6 +70,20 @@ public class Post extends Model {
     @ApiModelProperty(required = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)   @JsonProperty  public List<String>         hashTags()              { return hashTagsList.stream().map(tag -> tag.postHashTagId).collect(Collectors.toList());}
 
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore   public Boolean create_permission(){  return true;    }
+    @JsonIgnore   public Boolean read_permission()  {  return true;    }
+    @JsonProperty public Boolean edit_permission()  {  return SecurityController.getPerson() != null && ( author.id.equals( SecurityController.getPerson().id )  || SecurityController.getPerson().has_permission("Post_edit") ); }
+
+    @JsonProperty public Boolean answer_permission(){  return ( this.postParentComment == null && this.postParentAnswer  == null );}
+    @JsonProperty public Boolean comment_permission(){ return ( name != null || postParentAnswer != null );}
+
+    @JsonProperty public Boolean edit_confirms_permission() { return SecurityController.getPerson() != null && SecurityController.getPerson().has_permission("Post_edit"); }
+
+    @JsonProperty public Boolean delete_permission(){  return SecurityController.getPerson() != null && ( ( author.id.equals( SecurityController.getPerson().id ) ) || SecurityController.getPerson().has_permission("Post_delete") ); }
+
+    public enum permissions{ Post_edit, Post_delete}
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String,Post> find = new Finder<>(Post.class);

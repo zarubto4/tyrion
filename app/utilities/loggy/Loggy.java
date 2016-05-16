@@ -81,6 +81,9 @@ public class Loggy{
         String description = descriptionBuilder.toString();
 
         error(id, summary, description);
+
+        exception.printStackTrace();
+
         return GlobalResult.internalServerError();
     }
 
@@ -128,6 +131,47 @@ public class Loggy{
 
         error(id, summary, description);
         return GlobalResult.internalServerError();
+    }
+
+    public static void error(String problem, Exception exception){
+
+        String id = UUID.randomUUID().toString();
+
+        StringBuilder summaryBuilder = new StringBuilder();         // stavění nadpisu
+        StringBuilder descriptionBuilder = new StringBuilder();     // stavění obsahu
+
+        summaryBuilder.append("Internal Server Error - ");
+        summaryBuilder.append(exception.getClass().getName()+" - ");
+        summaryBuilder.append("Exception description from code: " + problem);
+
+        descriptionBuilder.append("\n");
+        descriptionBuilder.append("    Exception type: " +exception.getClass().getName());
+        descriptionBuilder.append("\n");
+        descriptionBuilder.append("    Time: " + new Date().toString());
+        descriptionBuilder.append("\n");
+        descriptionBuilder.append("    Unique Identificator: " + id);
+        descriptionBuilder.append("\n");
+        descriptionBuilder.append("    Tyrion version: " + Server.server_version);
+        descriptionBuilder.append("\n");
+        descriptionBuilder.append("    Tyrion mode: " + Server.server_mode);
+        descriptionBuilder.append("\n");
+        descriptionBuilder.append("    Server MAC address: " + getMac());
+        descriptionBuilder.append("\n");
+        descriptionBuilder.append("    User: " + (SecurityController.getPerson() != null ? SecurityController.getPerson().mail : "null"));
+        descriptionBuilder.append("\n");
+
+        descriptionBuilder.append("    Stack trace: \n");
+        for (StackTraceElement element : Thread.currentThread().getStackTrace()) {    // formátování stack trace
+            descriptionBuilder.append("        " + element);
+            descriptionBuilder.append("\n");
+        }
+        descriptionBuilder.append("\n");    // random whitespace
+        descriptionBuilder.append("\n");
+
+        String summary = summaryBuilder.toString();
+        String description = descriptionBuilder.toString();
+
+        error(id, summary, description);
     }
 
     public static void error(String summary, String description) {

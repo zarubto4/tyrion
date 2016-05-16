@@ -4,6 +4,7 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.compiler.Version_Object;
 import models.project.b_program.B_Program;
@@ -15,6 +16,12 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
+@ApiModel( value =
+        "<h3>Permissions:</h3>" +
+        "<span style=\"color: green\">"    + M_Project.create_permission_docs +  "</span>" +
+        "<br><span style=\"color: blue\">" + M_Project.read_permission_docs +    "</span>" +
+        "<br>"
+)
 public class M_Project extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
@@ -22,14 +29,13 @@ public class M_Project extends Model {
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true)      public String  id;
                                                                                                     public String  program_name;
     @Column(columnDefinition = "TEXT") @ApiModelProperty(required = false, value = "can be empty")  public String  program_description;
-    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1458315085338") public Date    date_of_create;
+    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1461854312") public Date    date_of_create;
 
 
     @JsonIgnore @ManyToOne                                      public Project project;
-    @JsonIgnore @OneToOne   @JoinColumn(name="id")    public B_Program b_program; // TODO asi časem předělat na MayToMany!
+    @JsonIgnore @OneToOne   @JoinColumn(name="b_program_id")    public B_Program b_program; // TODO asi časem předělat na MayToMany!
     @JsonIgnore @OneToOne   @JoinColumn(name="vrs_obj_id")      public Version_Object b_program_version;
                                                                 public boolean auto_incrementing;
-
 
     @OneToMany(mappedBy="m_project", cascade = CascadeType.ALL) public List<M_Program> m_programs = new ArrayList<>();
 
@@ -39,19 +45,24 @@ public class M_Project extends Model {
     @JsonProperty @Transient public String b_program_id()                  {  return b_program         == null ? null : b_program.id; }
 
 
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+    /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
 
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   public Boolean create_permission(){  return ( Project.find.where().where().eq("ownersOfProject.id", SecurityController.getPerson().id ).eq("id", project.id ).findUnique().create_permission() ) || SecurityController.getPerson().has_permission("M_Project_create");      }
-    @JsonProperty public Boolean update_permission(){  return ( M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("M_Project_read"); }
-    @JsonIgnore   public Boolean read_permission()  {  return ( M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("M_Project_read"); }
-    @JsonProperty public Boolean edit_permission()  {  return ( M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("M_Project_edit"); }
-    @JsonProperty public Boolean delete_permission(){  return ( M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("M_Project_delete"); }
+    // Floating shared documentation for Swagger
+    @JsonIgnore @Transient public static final String read_permission_docs   = "read: If user have Project.update_permission = true, you can create M_project on this Project - Or you need static/dynamic permission key";
+    @JsonIgnore @Transient public static final String create_permission_docs = "create: If user have Project.update_permission = true, you can create M_project on this Project - Or you need static/dynamic permission key";
 
-    public enum permissions{ M_Project_create, M_Project_read, M_Project_edit, M_Project_delete }
+    @JsonIgnore   public Boolean create_permission(){  return ( Project.find.where().eq("ownersOfProject.id",   SecurityController.getPerson().id).eq("id", project.id ).findUnique().create_permission() ) || SecurityController.getPerson().has_permission("M_Project_create");      }
+    @JsonProperty public Boolean update_permission(){  return ( M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("M_Project_update"); }
+    @JsonIgnore   public Boolean read_permission()  {  return ( M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("M_Project_read"); }
+    @JsonProperty public Boolean edit_permission()  {  return ( M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("M_Project_edit"); }
+    @JsonProperty public Boolean delete_permission(){  return ( M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("M_Project_delete"); }
+
+    public enum permissions{  M_Project_create, M_Project_update, M_Project_read,  M_Project_edit, M_Project_delete; }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String,M_Project> find = new Finder<>(M_Project.class);

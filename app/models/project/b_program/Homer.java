@@ -1,4 +1,4 @@
-package models.project.global;
+package models.project.b_program;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -9,12 +9,13 @@ import controllers.SecurityController;
 import controllers.WebSocketController_Incoming;
 import io.swagger.annotations.ApiModelProperty;
 import models.compiler.Board;
-import models.project.b_program.B_Program_Homer;
+import models.project.global.Project;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 public class Homer extends Model {
@@ -25,7 +26,10 @@ public class Homer extends Model {
                     public String  version;
 
     @JsonIgnore @ManyToOne                   public Project project;
-    @JsonProperty                            public String project_id(){ return project.id; }
+    @JsonProperty                            public String project_id(){ return project == null ? null : project.id; }
+
+    @JsonIgnore @OneToMany(mappedBy="homer", cascade = CascadeType.ALL) public List<Board>  boards  = new ArrayList<>();
+    @JsonProperty                                                       public List<String> boards_id()   { return boards.stream().map(m -> m.id).collect(Collectors.toList());}
 
 
     @JsonIgnore  @OneToOne(mappedBy="homer") public B_Program_Homer b_program_homer;
@@ -73,11 +77,14 @@ public class Homer extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty public Boolean create_permission()  {  return ( Project.find.where().eq("m_project.project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Homer_create");  }
-    @JsonProperty public Boolean update_permission()  {  return ( Project.find.where().eq("m_project.project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Homer_update");  }
-    @JsonIgnore   public Boolean read_permission()    {  return ( Project.find.where().eq("m_project.project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Homer_read");    }
-    @JsonProperty public Boolean edit_permission()    {  return ( Project.find.where().eq("m_project.project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Homer_edit");    }
-    @JsonProperty public Boolean delete_permission()  {  return ( Project.find.where().eq("m_project.project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Homer_delete");  }
+    @JsonIgnore @Transient public static final String read_permission_docs   = "read: If user have Project.update_permission = true, you can create M_project on this Project - Or you need static/dynamic permission key";
+    @JsonIgnore @Transient public static final String create_permission_docs = "Its not allowed to create Homer by user. Homer (installed on PC or created in cloud) must build itself in DB - there are private APIs for Homer-Js! User can only connect this homer with own Project";
+
+    @JsonIgnore   public Boolean create_permission()  {  return SecurityController.getPerson().has_permission("Homer_create");  }
+    @JsonProperty public Boolean update_permission()  {  return ( Homer.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Homer_update");  }
+    @JsonIgnore   public Boolean read_permission()    {  return ( Homer.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Homer_read");    }
+    @JsonProperty public Boolean edit_permission()    {  return ( Homer.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Homer_edit");    }
+    @JsonProperty public Boolean delete_permission()  {  return SecurityController.getPerson().has_permission("Homer_delete");  }
 
     public enum permissions{Homer_create, Homer_update, Homer_read, Homer_edit, Homer_delete}
 

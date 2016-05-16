@@ -4,7 +4,6 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
-import utilities.Server;
 import utilities.UtilTools;
 
 import javax.persistence.*;
@@ -24,8 +23,16 @@ public class FileRecord extends Model {
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty public String fileContent()   { return Server.tyrion_serverAddress + "/file/fileRecord/" +id; }
+    // @JsonProperty public String file_content_link()   { return Server.tyrion_serverAddress + "/file/fileRecord/" +id; }
 
+    @JsonProperty public String content() {
+        try {
+            return get_fileRecord_from_Azure_inString();
+        } catch (Exception e) {
+            return null;
+        }
+
+    }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
@@ -49,7 +56,7 @@ public class FileRecord extends Model {
                 azurePackageLink = version_object.c_program.azurePackageLink;
                 azureStorageLink = version_object.c_program.azureStorageLink;
         }
-        //else if( version_object.m_program != null){} Todo Na M_Program - zatím není verze implementována
+        //else if( version_object.m_project != null){} Todo Na M_Program - zatím není verze implementována
         else if( version_object.singleLibrary != null){
                 container = "libraries";
                 azurePackageLink = version_object.singleLibrary.azurePackageLink;
@@ -62,11 +69,11 @@ public class FileRecord extends Model {
         }
 
         if(azurePackageLink.length() < 1) throw new Exception("FileRecord (uvnitř třídy) nenašel cestu k požadovanému souboru");
-        return UtilTools.file_get_File_from_Azure(container, azureStorageLink, azurePackageLink, azureLinkVersion, file_name);
+        return UtilTools.file_get_File_from_Azure(container, azurePackageLink, azureStorageLink,  azureLinkVersion, file_name);
 
     }
 
-    @JsonIgnore public String get_fileRecord_from_Azure_inString() throws Exception{
+    @JsonIgnore public String get_fileRecord_from_Azure_inString() throws Exception {
 
         File file = this.get_fileRecord_from_Azure_inFile();
 
@@ -108,7 +115,7 @@ public class FileRecord extends Model {
                         )
                         .or(
                                 com.avaje.ebean.Expr.and(
-                                        com.avaje.ebean.Expr.eq("version_object.m_program.project.ownersOfProject.id", SecurityController.getPerson().id),
+                                        com.avaje.ebean.Expr.eq("version_object.m_project.project.ownersOfProject.id", SecurityController.getPerson().id),
                                         com.avaje.ebean.Expr.eq("id",id)
                                 ),
                                 com.avaje.ebean.Expr.and(                      // TODO M_Project Version!!!
@@ -148,7 +155,7 @@ public class FileRecord extends Model {
                     )
                     .or(
                             com.avaje.ebean.Expr.and(
-                                    com.avaje.ebean.Expr.eq("version_object.m_program.project.ownersOfProject.id", SecurityController.getPerson().id),
+                                    com.avaje.ebean.Expr.eq("version_object.m_project.project.ownersOfProject.id", SecurityController.getPerson().id),
                                     com.avaje.ebean.Expr.eq("id",id)
                             ),
                             com.avaje.ebean.Expr.and(                      // TODO M_Project Version!!!

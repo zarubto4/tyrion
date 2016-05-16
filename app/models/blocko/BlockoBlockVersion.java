@@ -18,7 +18,7 @@ public class BlockoBlockVersion extends Model {
                                                                 public String version_name;
                                                                 public String version_description;
 
-    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1458315085338") public Date date_of_create;
+    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1461918607") public Date date_of_create;
 
                          @Column(columnDefinition = "TEXT")     public String design_json;
                          @Column(columnDefinition = "TEXT")     public String logic_json;

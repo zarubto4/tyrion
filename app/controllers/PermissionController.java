@@ -1,23 +1,23 @@
 package controllers;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.*;
 import models.person.Person;
 import models.person.PersonPermission;
 import models.person.SecurityRole;
-import play.Logger;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_PermissionRequired;
 import utilities.response.response_objects.Result_Unauthorized;
 import utilities.response.response_objects.Result_ok;
 import utilities.swagger.documentationClass.Swagger_SecurityRole_New;
+import utilities.swagger.documentationClass.Swagger_System_Access;
 
 import javax.websocket.server.PathParam;
 import java.util.List;
@@ -34,12 +34,10 @@ public class PermissionController extends Controller {
             response =  Result_ok.class,
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "permission.connect_with_person", description = "Person need this permission"),
-                                       @AuthorizationScope(scope = "SuperAdmin", description = "Or person must be SuperAdmin role")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "PersonPermission_edit_person_permission", value = "true"),
+                    })
             }
     )
     @ApiResponses(value = {
@@ -55,35 +53,35 @@ public class PermissionController extends Controller {
             if (person == null) return GlobalResult.notFoundObject("Person person_id not found");
 
             PersonPermission personPermission = PersonPermission.find.byId(permission_id);
+
             if (personPermission == null) return GlobalResult.notFoundObject("PersonPermission permission_id not found");
 
-            if (!person.permissions.contains(personPermission)) person.permissions.add(personPermission);
+            if(!personPermission.edit_person_permission()) return GlobalResult.forbidden_Permission();
+
+
+
+            if (!person.person_permissions.contains(personPermission)) person.person_permissions.add(personPermission);
             person.update();
 
             return GlobalResult.result_ok();
 
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - new_Processor ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
-    @ApiOperation(value = "remove Permission from the Person",
+    @ApiOperation(value = "remove the person Permission",
             tags = {"Permission"},
             notes = "If you want remove permission from Person. You need permission for that or have right system Roles",
             produces = "application/json",
             response =  Result_ok.class,
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "permission.disconnect_with_person", description = "Person need this permission"),
-                                       @AuthorizationScope(scope = "SuperAdmin", description = "Or person must be SuperAdmin role")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "PersonPermission_edit_person_permission", value = "true"),
+                    })
             }
     )
     @ApiResponses(value = {
@@ -92,7 +90,6 @@ public class PermissionController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    // @Pattern("permission.disconnect_with_person")
     public Result remove_Permission_Person(@ApiParam(required = true) @PathParam("person_id") String person_id, @ApiParam(required = true) @PathParam("permission_id")String permission_id) {
         try {
 
@@ -102,32 +99,29 @@ public class PermissionController extends Controller {
             PersonPermission personPermission = PersonPermission.find.byId(permission_id);
             if(personPermission == null ) return GlobalResult.notFoundObject("PersonPermission permission_id not found");
 
-            if(person.permissions.contains(personPermission)) person.permissions.remove(personPermission);
+            if(!personPermission.edit_person_permission()) return GlobalResult.forbidden_Permission();
+
+            if(person.person_permissions.contains(personPermission)) person.person_permissions.remove(personPermission);
             person.update();
 
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - new_Processor ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
     @ApiOperation(value = "get all system Permissions",
             tags = {"Permission"},
-            notes = "If you want get all system permissions (Really all!). You need permission for that or have right system Roles",
+            notes = "Get all user Permission. You need permission for that or have right system Roles",
             produces = "application/json",
             response =  PersonPermission.class,
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "permission.read", description = "Person need this permission"),
-                                       @AuthorizationScope(scope = "SuperAdmin", description = "Or person must be SuperAdmin role")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Public", value = "Without Permission"),
+                    })
             }
     )
     @ApiResponses(value = {
@@ -136,7 +130,6 @@ public class PermissionController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    // @Pattern("permission.read")
     public Result get_Permission_All(){
         try {
 
@@ -144,9 +137,7 @@ public class PermissionController extends Controller {
             return GlobalResult.result_ok(Json.toJson(permissions));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - new_Processor ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
 
     }
@@ -155,18 +146,17 @@ public class PermissionController extends Controller {
 
     @ApiOperation(value = "add Permission to the Role",
             tags = {"Permission", "Role"},
-            notes = "If you want add system permissions to Role. You need permission for that or have right system Roles",
+            notes = "If you want add system person_permissions to Role. You need permission for that or have right system Roles",
             produces = "application/json",
             response =  Result_ok.class,
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "role.edit", description = "Person need this permission"),
-                                       @AuthorizationScope(scope = "SuperAdmin", description = "Or person must be SuperAdmin role")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "SecurityRole_update", value = "true"),
+                    })
             }
+
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
@@ -174,7 +164,6 @@ public class PermissionController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    // @Pattern("permission.edit")
     public Result add_Permission_to_Role(@ApiParam(required = true) @PathParam("permission_id") String permission_id, @ApiParam(required = true) @PathParam("role_id") String role_id){
         try {
 
@@ -184,7 +173,9 @@ public class PermissionController extends Controller {
             SecurityRole securityRole = SecurityRole.find.byId(role_id);
             if(securityRole == null ) return GlobalResult.notFoundObject("SecurityRole role_id not found");
 
-            if( ! securityRole.permissions.contains(personPermission)) securityRole.permissions.add(personPermission);
+            if(! personPermission.edit_permission()) return GlobalResult.forbidden_Permission();
+
+            if( ! securityRole.person_permissions.contains(personPermission)) securityRole.person_permissions.add(personPermission);
 
             securityRole.update();
 
@@ -192,25 +183,21 @@ public class PermissionController extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - new_Processor ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
-    @ApiOperation(value = "get all Permission on Role (Group)",
+    @ApiOperation(value = "get all Permissions from Role (Group)",
             tags = {"Permission", "Role"},
-            notes = "If you want get all permissions in Role (Admins, Monkeys..etc). You need also permission for that or have right system Roles",
+            notes = "If you want get all person_permissions in Role (Admins, Monkeys..etc). You need also permission for that or have right system Roles",
             produces = "application/json",
             response =  PersonPermission.class,
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "permission.disconnectWithPerson", description = "Person need this permission"),
-                                       @AuthorizationScope(scope = "SuperAdmin", description = "Or person must be SuperAdmin role")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Public", value = "Without Permission"),
+                    })
             }
     )
     @ApiResponses(value = {
@@ -225,28 +212,23 @@ public class PermissionController extends Controller {
             SecurityRole securityRole = SecurityRole.find.byId(role_id);
             if(securityRole == null ) return GlobalResult.notFoundObject("SecurityRole role_id not found");
 
-            return GlobalResult.result_ok(Json.toJson(securityRole.permissions));
+            return GlobalResult.result_ok(Json.toJson(securityRole.person_permissions));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - new_Processor ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
-
-
 
     @ApiOperation(value = "get all Person from Role (Group)",
             tags = {"Permission", "Role"},
             notes = "If you want get all person from Role. You need also permission for that or have right system Roles",
             produces = "application/json",
             protocols = "https",
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "permission.disconnectWithPerson", description = "Person need this permission"),
-                                       @AuthorizationScope(scope = "SuperAdmin", description = "Or person must be SuperAdmin role")}
-                    )
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Public", value = "Without Permisison"),
+                    })
             }
     )
     @ApiResponses(value = {
@@ -264,25 +246,21 @@ public class PermissionController extends Controller {
             return GlobalResult.result_ok(Json.toJson(securityRole.persons));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - new_Processor ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
     @ApiOperation(value = "remove Permission from the Role",
             tags = {"Permission", "Role"},
-            notes = "If you want remove system permissions from Role. You need permission for that or have right system Roles",
+            notes = "If you want remove system person_permissions from Role. You need permission for that or have right system Roles",
             produces = "application/json",
             protocols = "https",
             response = Result_ok.class,
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "permission.disconnectWithPerson", description = "Person need this permission"),
-                                    @AuthorizationScope(scope = "SuperAdmin", description = "Or person must be SuperAdmin role")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "SecurityRole_update", value = "true"),
+                    })
             }
     )
     @ApiResponses(value = {
@@ -300,16 +278,16 @@ public class PermissionController extends Controller {
             SecurityRole securityRole = SecurityRole.find.byId(role_id);
             if(securityRole == null ) return GlobalResult.notFoundObject("SecurityRole role_id not found");
 
-            if(securityRole.permissions.contains(personPermission)) securityRole.permissions.remove(personPermission);
+            if (!securityRole.update_permission() ) return GlobalResult.forbidden_Permission();
+
+            if(securityRole.person_permissions.contains(personPermission)) securityRole.person_permissions.remove(personPermission);
 
             securityRole.update();
 
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - new_Processor ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -322,12 +300,10 @@ public class PermissionController extends Controller {
             response =  SecurityRole.class,
             protocols = "https",
             code = 201,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "role.create", description = "Person need this permission"),
-                                       @AuthorizationScope(scope = "SuperAdmin", description = "Or person must be SuperAdmin role")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "SecurityRole_create", value = "true"),
+                    })
             }
     )
     @ApiResponses(value = {
@@ -355,17 +331,18 @@ public class PermissionController extends Controller {
             Swagger_SecurityRole_New help = form.get();
 
             SecurityRole securityRole = new SecurityRole();
+
             securityRole.name = help.name;
             securityRole.description =help.description;
+
+            if ( !securityRole.create_permission()) return GlobalResult.forbidden_Permission();
+
             securityRole.save();
 
             return GlobalResult.created(Json.toJson(securityRole));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - new_Processor ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -375,13 +352,11 @@ public class PermissionController extends Controller {
             produces = "application/json",
             response =  Result_ok.class,
             protocols = "https",
-            code = 201,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "role.deleter", description = "Person need this permission"),
-                                    @AuthorizationScope(scope = "SuperAdmin", description = "Or person must be SuperAdmin role")}
-                    )
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "SecurityRole_delete", value = "true"),
+                    })
             }
     )
     @ApiResponses(value = {
@@ -396,15 +371,14 @@ public class PermissionController extends Controller {
             SecurityRole securityRole = SecurityRole.find.byId(role_id);
             if(securityRole == null ) return GlobalResult.notFoundObject("SecurityRole role_id not found");
 
+            if (!securityRole.delete_permission()) return GlobalResult.forbidden_Permission();
+
             securityRole.delete();
 
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - new_Processor ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -415,12 +389,10 @@ public class PermissionController extends Controller {
             response =  Result_ok.class,
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "role.person", description = "Person need this permission"),
-                                    @AuthorizationScope(scope = "SuperAdmin", description = "Or person must be SuperAdmin role")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "SecurityRole_update", value = "true"),
+                    })
             }
     )
     @ApiResponses(value = {
@@ -429,7 +401,6 @@ public class PermissionController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-
     public Result add_Role_Person( @ApiParam(required = true) @PathParam("person_id") String person_id , @ApiParam(required = true) @PathParam("role_id") String role_id) {
         try {
 
@@ -439,16 +410,15 @@ public class PermissionController extends Controller {
             SecurityRole securityRole = SecurityRole.find.byId(role_id);
             if(securityRole == null ) return GlobalResult.notFoundObject("SecurityRole role_id not found");
 
+            if ( !securityRole.update_permission()) return GlobalResult.forbidden_Permission();
+
             if(!person.roles.contains(securityRole)) person.roles.add(securityRole);
             person.update();
 
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - new_Processor ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -459,12 +429,10 @@ public class PermissionController extends Controller {
             response =  Result_ok.class,
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "role.manager", description = "Person need this permission"),
-                                    @AuthorizationScope(scope = "SuperAdmin", description = "Or person must be SuperAdmin role")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "SecurityRole_update", value = "true"),
+                    })
             }
     )
     @ApiResponses(value = {
@@ -473,7 +441,6 @@ public class PermissionController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-
     public Result remove_Role_Person(@ApiParam(required = true) @PathParam("person_id") String person_id, @ApiParam(required = true) @PathParam("role_id")String role_id) {
         try {
 
@@ -483,16 +450,15 @@ public class PermissionController extends Controller {
             SecurityRole securityRole = SecurityRole.find.byId(role_id);
             if(securityRole == null ) return GlobalResult.notFoundObject("SecurityRole role_id not found");
 
+            if (!securityRole.update_permission()) return GlobalResult.forbidden_Permission();
+
             if(person.roles.contains(securityRole)) person.roles.remove(securityRole);
             person.update();
 
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - new_Processor ERROR");
-            Logger.error(request().body().asJson().toString());
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -503,12 +469,10 @@ public class PermissionController extends Controller {
             response =  SecurityRole.class,
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "role.manager", description = "Person need this permission"),
-                                       @AuthorizationScope(scope = "SuperAdmin",   description = "Or person must be SuperAdmin role")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Public", value = "Without Permisison"),
+                    })
             }
     )
     @ApiResponses(value = {
@@ -524,9 +488,7 @@ public class PermissionController extends Controller {
             return GlobalResult.result_ok(Json.toJson(roles));
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            Logger.error("CompilationLibrariesController - new_Processor ERROR");
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
 
     }
@@ -534,41 +496,43 @@ public class PermissionController extends Controller {
 
 //######################################################################################################################
 
-    // Private class for Swagger documentation
-    private class SystemAccess {
-        public List<SecurityRole> roles;
-        public List<PersonPermission> permissions;
-    }
-    @ApiOperation(value = "get all system permissions & Roles",
+    @ApiOperation(value = "get all system person_permissions & Roles",
             tags = {"Role", "Permission", "Person"},
             notes = "This api return List of Roles and List of Permission",
             produces = "application/json",
-            response =  SystemAccess.class,
+            response =  Swagger_System_Access.class,
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "role.manager", description = "Person need this permission"),
-                                    @AuthorizationScope(scope = "SuperAdmin",   description = "Or person must be SuperAdmin role")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Person.all_permission", value = "Its public information"),
+                    }),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "public", value = "true"),
+                    })
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = SystemAccess.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_System_Access.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result get_System_Acces(@ApiParam(required = true) @PathParam("person_id") String person_id){
+        try {
 
-        Person person = Person.find.byId(person_id);
-        ObjectNode result = Json.newObject();
-        result.set("roles", Json.toJson(person.roles));
-        result.set("permission", Json.toJson(person.permissions));
+            Person person = Person.find.byId(person_id);
+            if(person == null) return GlobalResult.notFoundObject("Person person_id not found");
 
-        return GlobalResult.result_ok(Json.toJson(result));
+            Swagger_System_Access system_access = new Swagger_System_Access();
+            system_access.roles = person.roles;
+            system_access.permissions = person.person_permissions;
 
+        return GlobalResult.result_ok(Json.toJson(system_access));
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
 
 
     }

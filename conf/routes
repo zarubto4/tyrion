@@ -5,21 +5,6 @@
 # Home page - for testing connected device
 # Home page
 
-### PUBLIC ############ PUBLIC ############### PUBLIC ################ PUBLIC #######################################################################################
-###################################################################################f#################################################################################
-
-GET             /                                           @controllers.DashboardController.index()
-GET             /public/bugs                                @controllers.DashboardController.show_all_logs()
-GET             /public/websocket                           @controllers.DashboardController.show_web_socket_stats()
-GET             /public/show_readme                         @controllers.DashboardController.show_readme()
-
-GET             /public/bugs/deleteAll                      @controllers.DashboardController.loggy_remove_all_bugs()
-GET             /public/bug/remove/:id                      @controllers.DashboardController.loggy_remove_bug(id: String)
-GET             /public/bug/report/:id                      @controllers.DashboardController.loggy_report_bug_to_youtrack(id: String)
-
-PUT             /public/websocket/disconect/:homer_id       @controllers.DashboardController.disconnect_homer(homer_id: String)
-PUT             /public/websocket/disconect/:terminal_id    @controllers.DashboardController.disconnect_terminal(terminal_id: String)
-
 
 ### Testovací ############ Testovací ############### Testovací ################ Testovací ###########################################################################
 ###################################################################################f#################################################################################
@@ -31,13 +16,12 @@ GET             /test3                                      @controllers.WikyCon
 ### TERMINAL ############ TERMINAL ############### TERMINAL ################ TERMINAL #######################################################################################
 ###################################################################################f#########################################################################################
 
-GET              /websocket/homer/:mac_adress                   @controllers.WebSocketController_Incoming.homer_connection(mac_adress)
-GET              /websocket/mobile/:m_project_id/:mac_adress    @controllers.WebSocketController_Incoming.mobile_connection(m_project_id, mac_adress)
+GET              /websocket/homer/:mac_adress                  @controllers.WebSocketController_Incoming.homer_connection(mac_adress)
+GET              /websocket/mobile/:m_project_id/:mac_adress   @controllers.WebSocketController_Incoming.mobile_connection(m_project_id, mac_adress)
+GET              /websocket/blocko_server/:identificator       @controllers.WebSocketController_Incoming.blocko_cloud_server_connection(identificator)
+GET              /websocket/compilation_server/:identificator  @controllers.WebSocketController_Incoming.compilator_server_connection(identificator)
 
-# Pro vývojáře
-POST             /websocket/webSocketStats                      @controllers.WebSocketController_Incoming.getWebSocketStats
-POST             /websocket/disconect_all_mobiles               @controllers.WebSocketController_Incoming.disconnect_all_mobiles_result()
-POST             /websocket/disconect_all_homers                @controllers.WebSocketController_Incoming.disconnect_all_homers_result()
+
 
 #API - CoreClient ##############################################################################################################################################################
 ###################################################################################f#########################################################################################
@@ -73,10 +57,14 @@ PUT             /notification                               @controllers.Notific
 #Peron CRUD
 POST           /coreClient/person/person                        @controllers.PersonController.registred_Person()
 PUT            /coreClient/person/person/:person_id             @controllers.PersonController.edit_Person_Information(person_id)
-GET            /coreClient/person/person/:person_id             @controllers.PersonController.getPerson(person_id)
+GET            /coreClient/person/person/all                    @controllers.PersonController.get_Person_all()
+GET            /coreClient/person/person/:person_id             @controllers.PersonController.get_Person(person_id)
+
+
 
 GET            /coreClient/person/valid/nickname/:nick_name     @controllers.PersonController.valid_Person_NickName(nick_name)
 GET            /coreClient/person/valid/mail/:mail              @controllers.PersonController.valid_Person_mail(mail)
+
 
 GET             /coreClient/connections                          @controllers.PersonController.get_Person_Connections()
 DELETE          /coreClient/connection/:connection_id            @controllers.PersonController.remove_Person_Connection(connection_id)
@@ -202,12 +190,11 @@ GET            /project/blockoBlock/version/:blocko_block_version_id            
 DELETE         /project/blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.delete_BlockoBlock_Version(blocko_block_version_id)
 
 
-
+#TypeOfBlocko
 POST           /project/typeOfBlock                                                         @controllers.ProgramingPackageController.newTypeOfBlock()
 GET            /project/typeOfBlock                                                         @controllers.ProgramingPackageController.getAllTypeOfBlocks
 GET            /project/typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.get_TypeOfBlock(type_of_block_id)
 PUT            /project/typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.editTypeOfBlock(type_of_block_id)
-
 DELETE         /project/typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.deleteTypeOfBlock(type_of_block_id)
 
 
@@ -215,6 +202,14 @@ DELETE         /project/typeOfBlock/:type_of_block_id                           
 #Community
 PUT             /project/documentation/:project_id                                          @controllers.CommunityProjectController.new_Documentation(project_id)
 GET             /project/documentation/:project_id                                          @controllers.CommunityProjectController.get_Documentation(project_id)
+#BLocko Server
+POST            /project/blocko/server                                                      @controllers.ProgramingPackageController.create_Blocko_Server()
+PUT             /project/blocko/server/:server_id                                           @controllers.ProgramingPackageController.edit_Blocko_Server(server_id)
+GET             /project/blocko/server                                                      @controllers.ProgramingPackageController.get_All_Blocko_Server()
+DELETE          /project/blocko/server/:server_id                                           @controllers.ProgramingPackageController.delete_Blocko_Server(server_id)
+
+
+
 
 
 
@@ -222,21 +217,23 @@ GET             /project/documentation/:project_id                              
 ################################################################################################################################################################################
 
 #C:Program
-POST            /compilation/c_program/:project_id                                          @controllers.CompilationLibrariesController.create_C_Program(project_id)
-GET             /compilation/c_program/:c_program_id                                        @controllers.CompilationLibrariesController.get_C_Program(c_program_id)
-GET             /compilation/c_program/project/:project_id                                  @controllers.CompilationLibrariesController.get_C_Program_All_from_Project(project_id)
+POST            /compilation/c_program/c_program/:project_id                                @controllers.CompilationLibrariesController.create_C_Program(project_id)
+GET             /compilation/c_program/c_program/:c_program_id                              @controllers.CompilationLibrariesController.get_C_Program(c_program_id)
 
-PUT             /compilation/c_program/edit/:c_program_id                                   @controllers.CompilationLibrariesController.edit_C_Program_Description(c_program_id)
-PUT             /compilation/c_program/update/:c_program_id                                 @controllers.CompilationLibrariesController.new_C_Program_Version(c_program_id)
-PUT             /compilation/c_program/version/:version_id                                  @controllers.CompilationLibrariesController.edit_C_Program_version(version_id)
-
+PUT             /compilation/c_program/c_program/:c_program_id                              @controllers.CompilationLibrariesController.edit_C_Program_Description(c_program_id)
 DELETE          /compilation/c_program/c_program/:c_program_id                              @controllers.CompilationLibrariesController.delete_C_Program(c_program_id)
+
+POST            /compilation/c_program/version/:c_program_id                                @controllers.CompilationLibrariesController.new_C_Program_Version(c_program_id)
+PUT             /compilation/c_program/version/update/:version_id                           @controllers.CompilationLibrariesController.update_C_Program_Version(version_id)
+PUT             /compilation/c_program/version/edit/:version_id                             @controllers.CompilationLibrariesController.edit_C_Program_version(version_id)
+
 DELETE          /compilation/c_program/version/:c_program_id/:version_id                    @controllers.CompilationLibrariesController.delete_C_Program_Version(c_program_id, version_id)
 
+POST            /compilation/c_program/version/compile/:version_id                          @controllers.CompilationLibrariesController.compile_C_Program_version(version_id)
+POST            /compilation/c_program/version/uploud/:version_id                           @controllers.CompilationLibrariesController.uploadCompilationToBoard(version_id)
+
 GET             /compilation/c_program/eclipse/:c_program_id                                @controllers.CompilationLibrariesController.generateProjectForEclipse(c_program_id)
-POST            /compilation/c_program/upload/:c_program_id/:board_id                       @controllers.CompilationLibrariesController.uploadCompilationToBoard(c_program_id, board_id)
-POST            /compilation/c_program/binary/:board_id                                     @controllers.CompilationLibrariesController.uploadBinaryFileToBoard(board_id)
-GET             /compilation/project/board/:project_id                                      @controllers.CompilationLibrariesController.get_Boards_from_Project(project_id)
+POST            /compilation/c_program/binary                                               @controllers.CompilationLibrariesController.uploadBinaryFileToBoard()
 
 
 #Processor
@@ -262,7 +259,6 @@ GET             /compilation/board/:board_id                                    
 DELETE          /compilation/board/deactivateBoard/:board_id                                @controllers.CompilationLibrariesController.deactivate_Board(board_id)
 PUT             /compilation/board/:board_id/:project_id                                    @controllers.CompilationLibrariesController.connect_Board_with_Project(board_id, project_id)
 DELETE          /compilation/board/:board_id/:project_id                                    @controllers.CompilationLibrariesController.disconnect_Board_from_Project(board_id, project_id)
-GET             /compilation/board/projects/:board_id                                       @controllers.CompilationLibrariesController.getBoardProjects(board_id)
 
 
 #Producer
@@ -285,12 +281,12 @@ GET             /compilation/typeOfBoard/boards/:type_of_board_id               
 #LibraryGroups
 POST            /compilation/libraryGroup                                                   @controllers.CompilationLibrariesController.new_LibraryGroup()
 PUT             /compilation/libraryGroup/filter                                            @controllers.CompilationLibrariesController.get_LibraryGroup_Filter
-GET             /compilation/libraryGroup/generalDescription/:libraryGroup_id               @controllers.CompilationLibrariesController.get_LibraryGroup_Description(libraryGroup_id)
-GET             /compilation/libraryGroup/processors/:libraryGroup_id                       @controllers.CompilationLibrariesController.get_LibraryGroup_Processors(libraryGroup_id)
-GET             /compilation/libraryGroup/libraries/:libraryGroup_id/:version_id            @controllers.CompilationLibrariesController.get_LibraryGroup_Libraries(libraryGroup_id, version_id)
-POST            /compilation/libraryGroup/version/:version_id                               @controllers.CompilationLibrariesController.new_LibraryGroup_Version(version_id)
-GET             /compilation/libraryGroup/versions/:version_id                              @controllers.CompilationLibrariesController.get_LibraryGroup_Version(version_id)
+
 POST            /compilation/libraryGroup/upload/:libraryGroup_id/:version_id               @controllers.CompilationLibrariesController.upload_Library_To_LibraryGroup(libraryGroup_id, version_id)
+
+POST            /compilation/libraryGroup/version/:libraryGroup_id                          @controllers.CompilationLibrariesController.new_LibraryGroup_Version(libraryGroup_id)
+GET             /compilation/libraryGroup/version/:version_id                               @controllers.CompilationLibrariesController.get_LibraryGroup_Version(version_id)
+
 GET             /compilation/libraryGroup/:libraryGroup_id                                  @controllers.CompilationLibrariesController.get_LibraryGroup(libraryGroup_id)
 DELETE          /compilation/libraryGroup/:libraryGroup_id                                  @controllers.CompilationLibrariesController.delete_LibraryGroup(libraryGroup_id)
 PUT             /compilation/libraryGroup/:libraryGroup_id                                  @controllers.CompilationLibrariesController.editLibraryGroup(libraryGroup_id)
@@ -299,7 +295,7 @@ PUT             /compilation/libraryGroup/:libraryGroup_id                      
 POST            /compilation/library                                                        @controllers.CompilationLibrariesController.new_SingleLibrary()
 PUT             /compilation/library/filter                                                 @controllers.CompilationLibrariesController.get_SingleLibrary_Filter()
 POST            /compilation/library/version/:library_id                                    @controllers.CompilationLibrariesController.new_SingleLibrary_Version(library_id)
-GET             /compilation/library/versions/:library_id                                   @controllers.CompilationLibrariesController.get_SingleLibrary_Versions(library_id)
+POST            /compilation/library/version/:library_id                                    @controllers.CompilationLibrariesController.new_SingleLibrary_Version(library_id)
 
 GET             /compilation/library/:library_id                                            @controllers.CompilationLibrariesController.get_SingleLibrary(library_id)
 PUT             /compilation/library/:library_id                                            @controllers.CompilationLibrariesController.edit_SingleLibrary(library_id)
@@ -309,6 +305,12 @@ POST            /compilation/library/upload/:library_id/:version_id             
 #File
 GET             /file/listOfFiles/:version_id                                               @controllers.CompilationLibrariesController.get_LibraryGroup_Version_Libraries(version_id)
 GET             /file/fileRecord/:file_record_id                                            @controllers.CompilationLibrariesController.fileRecord(file_record_id)
+
+#Compilation Server
+POST            /compilation/server                                                         @controllers.CompilationLibrariesController.create_Compilation_Server()
+PUT             /compilation/server/:server_id                                              @controllers.CompilationLibrariesController.edit_Compilation_Server(server_id)
+GET             /compilation/server                                                         @controllers.CompilationLibrariesController.get_All_Compilation_Server()
+DELETE          /compilation/server/:server_id                                              @controllers.CompilationLibrariesController.delete_Compilation_Server(server_id)
 
 
 ### GRIDS ############ GRIDS ############### GRIDS ################ GRIDS ######################################################################################################
@@ -357,3 +359,41 @@ GET           /assets/*file                                 controllers.Assets.a
 GET           /assets/*file                                 controllers.Assets.versioned(path="/public", file: Asset)
 
 
+
+
+### PUBLIC ############ PUBLIC ############### PUBLIC ################ PUBLIC #######################################################################################
+###################################################################################f#################################################################################
+
+# Basic Page Requests
+GET             /                                           @controllers.DashboardController.index()
+GET             /public/bugs                                @controllers.DashboardController.show_all_logs()
+GET             /public/websocket                           @controllers.DashboardController.show_web_socket_stats()
+GET             /public/show_readme                         @controllers.DashboardController.show_readme()
+
+# BUGS SERVISE PAGE
+
+GET             /public/bugs/deleteAll                      @controllers.DashboardController.loggy_remove_all_bugs()
+GET             /public/bug/remove/:id                      @controllers.DashboardController.loggy_remove_bug(id: String)
+GET             /public/bug/report/:id                      @controllers.DashboardController.loggy_report_bug_to_youtrack(id: String)
+
+# WEBSOCKET SERVISE PAGE
+GET             /public/homer/ping/:id                      @controllers.DashboardController.ping_homer(id)
+GET             /public/homer/disconnect/:id                @controllers.DashboardController.disconnect_homer(id)
+GET             /public/homer/get_status/:id                @controllers.DashboardController.loggy_remove_bug(id)
+
+GET             /public/blocko_server/ping/:id              @controllers.DashboardController.ping_Blocko_Server(id)
+GET             /public/blocko_server/disconnect/:id        @controllers.DashboardController.disconnect_Blocko_Server(id)
+GET             /public/blocko_server/get_status/:id        @controllers.DashboardController.loggy_remove_bug(id)
+
+GET             /public/compilator_server/ping/:id          @controllers.DashboardController.ping_Compilation_Server(id)
+GET             /public/compilator_server/disconnect/:id    @controllers.DashboardController.disconnect_Compilation_Server(id)
+GET             /public/compilator_server/get_status/:id    @controllers.DashboardController.loggy_remove_bug(id)
+
+GET             /public/terminal/ping/:id                   @controllers.DashboardController.ping_terminal(id)
+GET             /public/terminal/disconnect/:id             @controllers.DashboardController.disconnect_terminal(id)
+GET             /public/terminal/get_status/:id             @controllers.DashboardController.loggy_remove_bug(id)
+
+GET             /public/terminal/log_out/:id                @controllers.DashboardController.log_out_Terminal_User(id)
+
+POST             /public/disconect_all_terminals            @controllers.DashboardController.disconnect_terminal_all()
+POST             /public/disconect_all_homers               @controllers.DashboardController.disconnect_homer_all()

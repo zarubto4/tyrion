@@ -4,15 +4,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.*;
 import models.blocko.BlockoBlock;
 import models.blocko.BlockoBlockVersion;
+import models.blocko.Cloud_Blocko_Server;
 import models.blocko.TypeOfBlock;
 import models.compiler.Version_Object;
 import models.person.Person;
 import models.project.b_program.B_Program;
 import models.project.b_program.B_Program_Cloud;
 import models.project.b_program.B_Program_Homer;
-import models.project.global.Homer;
+import models.project.b_program.Homer;
 import models.project.global.Project;
-import play.Configuration;
 import play.Logger;
 import play.data.Form;
 import play.libs.Json;
@@ -20,6 +20,7 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import utilities.Server;
 import utilities.UtilTools;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured;
@@ -27,6 +28,7 @@ import utilities.notification.Notification_level;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
+import utilities.webSocket.WS_BlockoServer;
 
 import javax.websocket.server.PathParam;
 import java.util.Date;
@@ -44,14 +46,7 @@ public class ProgramingPackageController extends Controller {
             notes = "create new Project",
             produces = "application/json",
             protocols = "https",
-            code = 201,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
-            }
+            code = 201
     )
     @ApiImplicitParams(
             {
@@ -102,14 +97,7 @@ public class ProgramingPackageController extends Controller {
             notes = "get all Projects by logged Person",
             produces = "application/json",
             protocols = "https",
-            code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
-            }
+            code = 200
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response =  Project.class, responseContainer = "List"),
@@ -136,12 +124,15 @@ public class ProgramingPackageController extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Project.read_permission", value = Project.read_permission_docs ),
+                    }),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Project.read_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "Project_read" ),
+                            @ExtensionProperty(name = "Dynamic Permission key", value = "Project_read.{project_id}"),
+                    })
             }
     )
     @ApiResponses(value = {
@@ -171,12 +162,10 @@ public class ProgramingPackageController extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Project.delete_permission", value = "true")
+                    })
             }
     )
     @ApiResponses(value = {
@@ -209,12 +198,10 @@ public class ProgramingPackageController extends Controller {
             protocols = "https",
             response =  Project.class,
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Project.edit_permission", value = "true")
+                    })
             }
     )
     @ApiImplicitParams(
@@ -245,7 +232,7 @@ public class ProgramingPackageController extends Controller {
             Project project = Project.find.byId(project_id);
             if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
-            if (!project.share_permission() )   return GlobalResult.forbidden_Permission();
+            if (!project.edit_permission() )   return GlobalResult.forbidden_Permission();
 
             project.project_name = help.project_name;
             project.project_description = help.project_description;
@@ -265,12 +252,10 @@ public class ProgramingPackageController extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Project.share_permission", value = "true")
+                    })
             }
     )
     @ApiImplicitParams(
@@ -325,12 +310,10 @@ public class ProgramingPackageController extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Project.unshare_permission", value = "true")
+                    })
             }
     )
     @ApiImplicitParams(
@@ -387,12 +370,14 @@ public class ProgramingPackageController extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 201,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Homer.create_permission", value = Homer.create_permission_docs ),
+                    }),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Homer.create_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "Homer_create_permission" )
+                    })
             }
     )
     @ApiImplicitParams(
@@ -443,12 +428,10 @@ public class ProgramingPackageController extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Homer.delete_permission", value = "true"),
+                    })
             }
     )
     @ApiResponses(value = {
@@ -480,16 +463,17 @@ public class ProgramingPackageController extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Homer.read_permission", value = Homer.read_permission_docs),
+                    }),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Homer.remove_permission", value = "true"),
+                    })
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Result_ok.class),
+            @ApiResponse(code = 200, message = "Ok Result", response =  Homer.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -859,7 +843,7 @@ public class ProgramingPackageController extends Controller {
             b_program.update();
 
             // Nahraje do Azure a připojí do verze soubor (lze dělat i cyklem - ale název souboru musí být vždy jiný)
-            UtilTools.uploadAzure_Version("b-program", file_content, "b-program-file", b_program.azureStorageLink, b_program.azurePackageLink, versionObjectObject);
+            UtilTools.uploadAzure_Version("b-program", file_content, "program.js", b_program.azureStorageLink, b_program.azurePackageLink, versionObjectObject);
 
             return GlobalResult.result_ok(Json.toJson(versionObjectObject));
 
@@ -957,7 +941,13 @@ public class ProgramingPackageController extends Controller {
                     program_homer.running_from = new Date();
                     program_homer.version_object = version_object;
 
-                    JsonNode result = WebSocketController_Incoming.homer_UploadInstance(homer, version_object.id, version_object.files.get(0).get_fileRecord_from_Azure_inString());
+                   if(!  WebSocketController_Incoming.homer_is_online(homer.id) ) {
+                       System.out.println("Homer není online při pokusu na něj nahrát instanci a není dodělané zpžděné nahrátí");
+
+                   };
+
+
+                    JsonNode result = WebSocketController_Incoming.homer_UploadProgram(WebSocketController_Incoming.incomingConnections_homers.get(homer.id), version_object.id, version_object.files.get(0).get_fileRecord_from_Azure_inString());
 
                     if(result.get("status").asText().equals("success")){
 
@@ -1018,46 +1008,42 @@ public class ProgramingPackageController extends Controller {
             // Pokud už nějaká instance běžela, tak jí zabiju a z databáze odstraním vazbu na běžící instanci b programu
             if( version_object.b_program_cloud != null ) {
 
-               WebSocketController_OutComing.blockoServerKillInstance(version_object.b_program_cloud.blocko_server_name,  version_object.b_program_cloud.blocko_instance_name);
+               WebSocketController_Incoming.homer_destroyInstance(version_object.b_program_cloud.blocko_instance_name);
 
                B_Program_Cloud b_program_cloud = version_object.b_program_cloud;
                b_program_cloud.delete();
             }
 
-
-            /**
-            // Na homerovi musím zabít a smazat předchozí program - jedná se pouze o nahrávání na cloud !!!
-            B_Program_Homer old_one = B_Program_Homer.find.where().eq("homer.id", homer.id).findUnique();
-            if (old_one != null) {
-                JsonNode result =  WebSocketController_Incoming.homer_KillInstance(homer.id);
-
-                NotificationController.sent_notification(person, Notification_level.success, "Homer was updated successfully" );
-                old_one.delete();
-            }*/
+            // TODO Chytré dělení na servery - kam se blocko program nahraje
+            List<Cloud_Blocko_Server> cloud_homer_servers = Cloud_Blocko_Server.find.findList();
+            Cloud_Blocko_Server destination_server = cloud_homer_servers.get(0);
 
 
             // Vytvářím nový záznam v databázi pro běžící instanci b programu na blocko serveru
             B_Program_Cloud program_cloud       = new B_Program_Cloud();
             program_cloud.running_from          = new Date();
             program_cloud.version_object        = version_object;
-            program_cloud.blocko_server_name    = Configuration.root().getString("Servers.blocko.server1.name");
+            program_cloud.server                = destination_server;
             program_cloud.setUnique_blocko_instance_name();
 
-            // if(WebSocketController_OutComing.servers.containsKey( Configuration.root().getString("Servers.blocko.server1.name")) && WebSocketController_OutComing.servers.get(Configuration.root().getString("Servers.blocko.server1.name") ).session.isOpen()) {
+            System.out.println("blocko server size " + WebSocketController_Incoming.blocko_servers.size() );
+
+            if(! WebSocketController_Incoming.blocko_servers.containsKey( destination_server.server_name) ) return GlobalResult.result_BadRequest("Server is offline");
 
             // Vytvářím instanci na serveru
-            WebSocketController_OutComing.blockoServerCreateInstance( program_cloud.blocko_server_name,  program_cloud.blocko_instance_name);
+            WS_BlockoServer server = (WS_BlockoServer) WebSocketController_Incoming.blocko_servers.get(destination_server.server_name);
 
-            // Nahrávám do instance program
-            WebSocketController_OutComing.blockoServerUploadProgram(  program_cloud.blocko_server_name,  program_cloud.blocko_instance_name, program_cloud.version_object.files.get(0).get_fileRecord_from_Azure_inString());
+            JsonNode result =  WebSocketController_Incoming.blocko_server_add_instance(server, program_cloud);
 
-            // Ukládám po úspěšné nastartvoání programu v cloudu jeho databázový ekvivalent
-            program_cloud.save();
+            if( result.get("status").equals("success")) {
+                // Ukládám po úspěšné nastartvoání programu v cloudu jeho databázový ekvivalent
+                program_cloud.save();
 
-            return GlobalResult.result_ok();
-        } catch (NullPointerException a) {
-            // TODO dopřeložit a nějak definovat????
-            return GlobalResult.result_BadRequest("Server není nastartován");
+                return GlobalResult.result_ok();
+            }
+
+            return GlobalResult.result_BadRequest("Došlo k chybě");
+
          } catch (TimeoutException a) {
             return GlobalResult.result_BadRequest("Nepodařilo se včas nahrát na server");
          } catch (InterruptedException a) {
@@ -1077,6 +1063,185 @@ public class ProgramingPackageController extends Controller {
     public Result listOfHomersWaitingForUpload(String id){
         //Na id B_Program vezmu všechny Houmry na které jsem program ještě nenahrál
         return TODO;
+    }
+
+
+// B PROGRAM / HOMER / BLOCKO CLOUD SERVER #############################################################################
+
+    @ApiOperation(value = "Create new Blocko Server",
+            tags = {"External Server"},
+            notes = "Create new Gate for Blocko Server",
+            produces = "application/json",
+            protocols = "https",
+            code = 201,
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Cloud_Blocko_Server.create_permission", value = Cloud_Blocko_Server.create_permission_docs ),
+                    }),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Cloud_Blocko_Server.create_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "Cloud_Blocko_Server_create_permission" )
+                    })
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Cloud_Compilation_Server_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successful created",      response = Cloud_Blocko_Server.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result create_Blocko_Server(){
+        try{
+
+            final Form<Swagger_Cloud_Blocko_Server_New> form = Form.form(Swagger_Cloud_Blocko_Server_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Cloud_Blocko_Server_New help = form.get();
+
+            Cloud_Blocko_Server server = new Cloud_Blocko_Server();
+            server.server_name = help.server_name;
+            server.destination_address = Server.tyrion_webSocketAddress + "/websocket/blocko_server/" + server.server_name;
+
+            server.set_hash_certificate();
+
+            if(!server.create_permission()) return GlobalResult.forbidden_Permission();
+            server.save();
+            return GlobalResult.result_ok(Json.toJson(server));
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "edit Compilation Server",
+            tags = {"External Server"},
+            notes = "Edit basic information Compilation Server",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Cloud_Blocko_Server.edit_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "Cloud_Blocko_Server_edit_permission" )
+                    })
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Cloud_Compilation_Server_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Update successfuly",      response = Cloud_Blocko_Server.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result edit_Blocko_Server( @ApiParam(value = "server_id ", required = true) @PathParam("server_id") String server_id ){
+        try{
+
+            final Form<Swagger_Cloud_Blocko_Server_New> form = Form.form(Swagger_Cloud_Blocko_Server_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Cloud_Blocko_Server_New help = form.get();
+
+            Cloud_Blocko_Server server = Cloud_Blocko_Server.find.byId(server_id);
+            if (server == null) return GlobalResult.notFoundObject("Cloud_Blocko_Server server_id not found");
+
+            if(!server.edit_permission()) return GlobalResult.forbidden_Permission();
+
+            server.server_name = help.server_name;
+
+            server.save();
+            return GlobalResult.result_ok(Json.toJson(server));
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "get all Blocko Servers",
+            tags = {"External Server"},
+            notes = "get all Blocko Servers",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Cloud_Blocko_Server.read_permission", value = Cloud_Blocko_Server.read_permission_docs ),
+                    }),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Cloud_Blocko_Server.read_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "Cloud_Blocko_Server_read_permission")
+                    })
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",      response = Cloud_Blocko_Server.class, responseContainer = "List "),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result get_All_Blocko_Server(){
+        try{
+
+            List<Cloud_Blocko_Server> servers = Cloud_Blocko_Server.find.all();
+
+            return GlobalResult.result_ok(Json.toJson(servers));
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "remove Compilation Servers",
+            tags = {"External Server"},
+            notes = "remove Compilation Servers",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Cloud_Blocko_Server.delete_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "Cloud_Blocko_Server_delete_permission")
+                    })
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",      response = Result_ok.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result delete_Blocko_Server( @ApiParam(value = "server_id ", required = true) @PathParam("server_id") String server_id ){
+        try{
+
+            Cloud_Blocko_Server server = Cloud_Blocko_Server.find.byId(server_id);
+
+            if (server == null) return GlobalResult.notFoundObject("Cloud_Compilation_Server server_id not found");
+            if(!server.delete_permission()) return GlobalResult.forbidden_Permission();
+
+            server.delete();
+            return GlobalResult.result_ok();
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
     }
 
 // TYPE OF BLOCK #######################################################################################################
@@ -1303,12 +1468,11 @@ public class ProgramingPackageController extends Controller {
     public Result getAllTypeOfBlocks(){
         try {
 
-            List<TypeOfBlock> typeOfBlocks = TypeOfBlock.find.where().or(
-                                                     com.avaje.ebean.Expr.eq("project.ownersOfProject.id", SecurityController.getPerson().id ),
-                                                     com.avaje.ebean.Expr.isNull("project")
-                                             ).findList();
+            List<TypeOfBlock> typeOfBlocks = TypeOfBlock.find.where().isNull("project").findList();
+            typeOfBlocks.addAll( TypeOfBlock.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id ).findList() );
 
             for(TypeOfBlock typeOfBlock :typeOfBlocks ) if(! typeOfBlock.read_permission())  return GlobalResult.forbidden_Permission();
+
             return GlobalResult.result_ok(Json.toJson(typeOfBlocks));
 
         } catch (Exception e) {
@@ -1369,7 +1533,7 @@ public class ProgramingPackageController extends Controller {
 
            blockoBlock.type_of_block = typeOfBlock;
 
-           if (! blockoBlock.create_permission() ) return GlobalResult.forbidden_Permission("You have no permission to create");
+           if (! blockoBlock.create_permission() ) return GlobalResult.forbidden_Permission();
 
            blockoBlock.save();
 
@@ -1406,7 +1570,7 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Ok Result", response =  BlockoBlock.class),
+            @ApiResponse(code = 200, message = "Ok Result", response =  BlockoBlock.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1594,6 +1758,7 @@ public class ProgramingPackageController extends Controller {
             notes = "new BlockoBlock version",
             produces = "application/json",
             protocols = "https",
+            code = 201,
             authorizations = {
                     @Authorization(
                             value="permission",

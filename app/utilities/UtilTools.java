@@ -5,7 +5,7 @@ import com.microsoft.azure.storage.blob.CloudBlob;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import com.microsoft.azure.storage.blob.ListBlobItem;
-import controllers.WebSocketController_Incoming;
+import models.compiler.Cloud_Compilation_Server;
 import models.compiler.FileRecord;
 import models.compiler.Version_Object;
 import models.grid.Screen_Size_Type;
@@ -14,14 +14,10 @@ import models.overflow.Post;
 import models.person.Person;
 import models.person.PersonPermission;
 import models.person.SecurityRole;
-import models.project.m_program.M_Project;
+import models.blocko.Cloud_Blocko_Server;
 import org.apache.commons.io.FileUtils;
 import play.Logger;
 import play.mvc.Controller;
-import play.mvc.WebSocket;
-import utilities.webSocket.developing.WS_Homer_Cloud;
-import utilities.webSocket.developing.WS_Terminal_Local;
-import utilities.webSocket.developing.WebSCType;
 
 import java.io.*;
 import java.util.*;
@@ -121,7 +117,7 @@ public class UtilTools extends Controller {
      * @param versionObjectObject = číslo verze respektive string verze, která odděluje stejné soubory v jiných verzích
      * @throws Exception
      */
-    public static void uploadAzure_Version(String container_name, String file_content, String file_name, String azureStorageLink, String azurePackageLink, Version_Object versionObjectObject) throws Exception{
+    public static FileRecord uploadAzure_Version(String container_name, String file_content, String file_name, String azureStorageLink, String azurePackageLink, Version_Object versionObjectObject) throws Exception{
 
             CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
             CloudBlockBlob blob = container.getBlockBlobReference(azureStorageLink +"/" + azurePackageLink  +"/" + versionObjectObject.azureLinkVersion  +"/" + file_name);
@@ -136,14 +132,38 @@ public class UtilTools extends Controller {
 
             versionObjectObject.files.add(fileRecord);
             versionObjectObject.update();
+
+            return fileRecord;
     }
 
-    public static File file_get_File_from_Azure(String container_name, String azureStorageLink, String azurePackageLink, Integer azureLinkVersion, String filename)throws Exception{
+    public static FileRecord uploadAzure_Version(String container_name, File file, String file_name, String azureStorageLink, String azurePackageLink, Version_Object versionObjectObject) throws Exception{
 
         CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
-        CloudBlob blob = container.getBlockBlobReference( azureStorageLink +"/"+ azurePackageLink  +"/"+ azureLinkVersion  +"/"+ filename);
+        CloudBlockBlob blob = container.getBlockBlobReference(azureStorageLink +"/" + azurePackageLink  +"/" + versionObjectObject.azureLinkVersion  +"/" + file_name);
 
-        File fileMain = new File("files/" + azureStorageLink + azurePackageLink + azureLinkVersion + filename);
+        InputStream is = new FileInputStream(file);
+        blob.upload(is, -1);
+
+        FileRecord fileRecord = new FileRecord();
+        fileRecord.file_name = file_name;
+        fileRecord.version_object = versionObjectObject;
+        fileRecord.save();
+
+        versionObjectObject.files.add(fileRecord);
+        versionObjectObject.update();
+
+        return fileRecord;
+    }
+
+    public static File file_get_File_from_Azure(String container_name, String azurePackageLink , String azureStorageLink, Integer azureLinkVersion, String filename)throws Exception{
+
+        CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
+
+        System.out.println("azure adresa: " + container_name + "/" +  azureStorageLink   +"/"+  azurePackageLink +"/"+ azureLinkVersion  +"/"+ filename);
+
+        CloudBlob blob = container.getBlockBlobReference( azureStorageLink +"/"+  azurePackageLink+"/"+ azureLinkVersion  +"/"+ filename);
+
+        File fileMain = new File("files/" + azurePackageLink + azureStorageLink + azureLinkVersion + filename);
         // Tento soubor se nesmí zapomínat mazat!!!!
         OutputStream outputStreamMain = new FileOutputStream (fileMain);
 
@@ -152,7 +172,7 @@ public class UtilTools extends Controller {
         return fileMain;
     }
 
-    public static byte[] loadFile(File file) throws IOException {
+    public static byte[] loadFile_inBase64(File file) throws IOException {
         byte[] data = FileUtils.readFileToByteArray(file);
         return  Base64.getEncoder().encode(data);
     }
@@ -169,66 +189,52 @@ public class UtilTools extends Controller {
         return  map;
     }
 
-    public static WebSocket<String>  b_program_in_cloud(M_Project m_project, String terminal_id){
+    public static void set_Homer_Server(){
 
-        System.out.println("Blocko Program je v Cloudu a to zatím není plně otestované!!");
-
-        String instance_name = m_project.b_program_version.b_program_cloud.blocko_instance_name;
-        String server_name   = m_project.b_program_version.b_program_cloud.blocko_server_name;
-
-
-        WebSCType terminal = new WS_Terminal_Local(terminal_id, WebSocketController_Incoming.incomingConnections_terminals);
-        WebSocket<String> ws = terminal.connection();
-
-        if (!WebSocketController_Incoming.cloud_servers.containsKey(server_name)) {
-
-            System.out.println("BLocko program je provozován na serveru, který není připojen...");
-            System.out.println("Měl bych ho zařadit terminál do seznamu ztracených připojení");
-
-            if (WebSocketController_Incoming.terminal_lost_connection_homer.containsKey(instance_name)) {
-                System.out.println("Ztracené spojení už bylo dávno vytvořeno s cloud programem s jiným prvkem ale pořád nejsem spojen a tak přidávám další hodnotu: " + instance_name);
-                WebSocketController_Incoming.terminal_lost_connection_homer.get(instance_name).add(terminal_id);
-            } else {
-                System.out.println("Ještě žádné ztracené spojení nebylo vytvořeno s " + instance_name + " A tak vytvářím a přidávám první hodnotu");
-                ArrayList<String> list = new ArrayList<>(4);
-                list.add(terminal_id);
-                WebSocketController_Incoming.terminal_lost_connection_homer.put(instance_name, list);
-            }
-            System.out.println("Chystám se upozornit terminál že Cloud Homer není připojený");
-            WebSocketController_Incoming.homer_is_not_connected_yet(terminal);
-            System.out.println("Upozornil jsem terminál že Homer není připojený");
-            return ws;
+        if(Cloud_Blocko_Server.find.where().eq("server_name", "Alfa").findUnique() == null ){
+            Cloud_Blocko_Server server = new Cloud_Blocko_Server();
+            server.server_name = "Alfa";
+            server.destination_address = Server.tyrion_webSocketAddress + "/websocket/compilation_server/" + server.server_name;
+            server.set_hash_certificate();
+            server.save();
         }
 
-        if (!WebSocketController_Incoming.cloud_servers.get(server_name).containsKey(instance_name)) {
-            System.out.println("Konkrétní instance B_programu není na serveru zprovozněna!");
-            System.out.println("Měl bych ho zprovoznit? Ještě asi nejsem na to připraven"); // TODO - zprovoznit připojení
-
-            return WebSocket.reject( badRequest());
+        if(Cloud_Blocko_Server.find.where().eq("server_name", "Beta").findUnique() == null ){
+            Cloud_Blocko_Server server = new Cloud_Blocko_Server();
+            server.server_name = "Beta";
+            server.destination_address = Server.tyrion_webSocketAddress + "/websocket/compilation_server/" + server.server_name;
+            server.set_hash_certificate();
+            server.save();
         }
 
-        System.out.println("Budu propojovat s Homererem v cloudu protože je připojený a instance běží: ");
-
-        WS_Homer_Cloud homer = (WS_Homer_Cloud) WebSocketController_Incoming.cloud_servers.get(server_name).get(instance_name);
-
-
-        terminal.subscribers.add(homer);
-        if (homer.subscribers.isEmpty()) WebSocketController_Incoming.ask_for_receiving(homer);
-        homer.subscribers.add(terminal);
-
-        return ws;
     }
 
+    public static void set_Compilation_Server(){
 
+        if(Cloud_Compilation_Server.find.where().eq("server_name", "Alfa").findUnique() == null ){
+            Cloud_Compilation_Server server = new Cloud_Compilation_Server();
+            server.server_name = "Alfa";
+            server.destination_address = Server.tyrion_webSocketAddress + "/websocket/compilation_server/" + server.server_name;
+            server.set_hash_certificate();
+            server.save();
+        }
 
+        if(Cloud_Compilation_Server.find.where().eq("server_name", "ubuntu1").findUnique() == null ){
+            Cloud_Compilation_Server server = new Cloud_Compilation_Server();
+            server.server_name = "ubuntu1";
+            server.destination_address = Server.tyrion_webSocketAddress + "/websocket/compilation_server/" + server.server_name;
+            server.set_hash_certificate();
+            server.save();
+        }
 
+    }
 
     public static void set_Developer_objects(){
 
         // For Developing
         if(SecurityRole.findByName("SuperAdmin") == null){
             SecurityRole role = new SecurityRole();
-            role.permissions.addAll(PersonPermission.find.all());
+            role.person_permissions.addAll(PersonPermission.find.all());
             role.name = "SuperAdmin";
             role.save();
         }

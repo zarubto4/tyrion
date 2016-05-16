@@ -14,13 +14,11 @@ import play.libs.F;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSRequest;
-import play.mvc.BodyParser;
-import play.mvc.Controller;
-import play.mvc.Http;
-import play.mvc.Result;
+import play.mvc.*;
 import utilities.Server;
 import utilities.UtilTools;
 import utilities.loggy.Loggy;
+import utilities.loginEntities.Secured;
 import utilities.loginEntities.Socials;
 import utilities.response.CoreResponse;
 import utilities.response.GlobalResult;
@@ -29,11 +27,11 @@ import utilities.response.response_objects.Result_Unauthorized;
 import utilities.response.response_objects.Result_ok;
 import utilities.swagger.documentationClass.Login_IncomingLogin;
 import utilities.swagger.outboundClass.Login_Social_Network;
-import utilities.swagger.outboundClass.Login_return_object;
+import utilities.swagger.outboundClass.Swagger_Person_All_Details;
+import utilities.swagger.outboundClass.Swagger_Login_Token;
 
 import javax.inject.Inject;
 import javax.websocket.server.PathParam;
-import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Map;
 
@@ -52,9 +50,8 @@ public class SecurityController extends Controller {
 
     @ApiOperation(value = "login",
             tags = {"Access", "Person", "APP-Api"},
-            notes = "For login",
+            notes = "Get access Token",
             produces = "application/json",
-            response =  Login_return_object.class,
             protocols = "https",
             code = 200
     )
@@ -70,7 +67,7 @@ public class SecurityController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successful logged",      response = Login_return_object.class),
+            @ApiResponse(code = 200, message = "Successful logged",      response = Swagger_Login_Token.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Wrong Email or Password",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -90,24 +87,21 @@ public class SecurityController extends Controller {
 
             if (!person.mailValidated) return GlobalResult.result_BadRequest("Your account is not validated");
 
+
             FloatingPersonToken floatingPersonToken = new FloatingPersonToken();
             floatingPersonToken.set_basic_values();
             floatingPersonToken.person = person;
 
-
             if( Http.Context.current().request().headers().get("User-Agent")[0] != null) floatingPersonToken.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
             else  floatingPersonToken.user_agent = "Unknown browser";
 
-
             floatingPersonToken.save();
 
-            Login_return_object result = new Login_return_object();
-            result.person = person;
-            result.authToken = floatingPersonToken.authToken;
-            result.roles = person.roles;
-            result.permissions = PersonPermission.find.where().eq("roles.persons.id", person.id).findList();
+            Swagger_Login_Token swagger_login_token = new Swagger_Login_Token();
+            swagger_login_token.authToken = floatingPersonToken.authToken;
 
-            return GlobalResult.result_ok(Json.toJson( result ) );
+
+            return GlobalResult.result_ok( Json.toJson( swagger_login_token ) );
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -121,16 +115,17 @@ public class SecurityController extends Controller {
                     "to this link and after returning to success page that you filled in ask for token, ask again to this api " +
                     "and server respond with Person Object and with Roles and Permissions lists",
             produces = "application/json",
-            response =  Login_return_object.class,
+            response =  Swagger_Person_All_Details.class,
             protocols = "https",
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successful logged",      response = Login_return_object.class),
+            @ApiResponse(code = 200, message = "Successful logged",       response = Swagger_Person_All_Details.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 401, message = "Wrong Email or Password",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 401, message = "Wrong Email or Password", response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
+    @Security.Authenticated(Secured.class)
     public  Result getPersonByToken(){
         try{
 
@@ -139,14 +134,14 @@ public class SecurityController extends Controller {
             Person person = Person.findByAuthToken(token);
             if(person == null) return GlobalResult.forbidden_Permission("Account is not authorized");
 
-            ObjectNode result = Json.newObject();
-            result.set("person", Json.toJson(person));
-            result.put("authToken", token);
-            result.set("roles", Json.toJson(person.roles));
-            result.set("permission", Json.toJson(person.permissions));
+            Swagger_Person_All_Details result = new Swagger_Person_All_Details();
+            result.person = person;
 
+            result.roles = person.roles;
+            result.permissions = PersonPermission.find.where().eq("roles.persons.id", person.id).findList();
 
-            return GlobalResult.result_ok(result);
+            return GlobalResult.result_ok( Json.toJson( result ) );
+
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -327,13 +322,6 @@ public class SecurityController extends Controller {
                 if (jsonRequest.has("first_name")) person.full_name = jsonRequest.get("first_name").asText();
 
                 if (jsonRequest.has("last_name")) person.full_name += " " +jsonRequest.get("last_name").asText();
-
-                if (jsonRequest.has("birthday")) {
-                    try {
-                        SimpleDateFormat sdf = new SimpleDateFormat("MM/DD/YYYY");
-                        person.date_of_birth = sdf.parse(jsonRequest.get("birthday").asText());
-                    }catch (Exception e){}
-                }
 
                 person.save();
                 floatingPersonToken.person = person;

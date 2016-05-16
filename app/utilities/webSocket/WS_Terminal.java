@@ -1,16 +1,19 @@
-package utilities.webSocket.developing;
+package utilities.webSocket;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.WebSocketController_Incoming;
 
 import java.util.Map;
 
-public class WS_Terminal_Local extends  WebSCType {
+public class WS_Terminal extends  WebSCType {
+
+    public String m_project_id; // Určeno pouze pro Vývojový WebSocket portál
 
 
-    public WS_Terminal_Local(String mobile_mac_address, Map<String, WebSCType> incomingConnections_mobileDevice) {
+    public WS_Terminal(String mobile_mac_address, String m_project_id, Map<String, WebSCType> incomingConnections_mobileDevice) {
         super();
         super.identifikator = mobile_mac_address;
+        this.m_project_id = m_project_id;
         super.maps = incomingConnections_mobileDevice;
         super.webSCtype = this;
     }
@@ -24,8 +27,13 @@ public class WS_Terminal_Local extends  WebSCType {
 
 
     @Override
-    public void onMessage(JsonNode json) {
-        System.out.println("příchozí zpráva v WS_Terminal_Local: " + json.toString());
+    public void onMessage(ObjectNode json) {
+        System.out.println("příchozí zpráva v WS_Terminal: " + json.toString());
          WebSocketController_Incoming.incoming_message_terminal(this, json);
     }
+
+
+
+
+
 }

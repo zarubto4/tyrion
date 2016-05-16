@@ -11,7 +11,7 @@ public class Swagger_Person_New {
 
     @Constraints.Required
     @Constraints.MinLength(value = 8)
-    @ApiModelProperty(required = true, value = "The nick_name must have at least 9 characters")
+    @ApiModelProperty(required = true, value = "The nick_name must have at least 8 characters")
     public String nick_name;
 
     @Constraints.Email

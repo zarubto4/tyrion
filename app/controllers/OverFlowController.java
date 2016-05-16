@@ -6,7 +6,6 @@ import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.Query;
 import io.swagger.annotations.*;
 import models.overflow.*;
-import models.person.PersonPermission;
 import play.Logger;
 import play.data.Form;
 import play.libs.Json;
@@ -15,6 +14,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.UtilTools;
+import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_JsonValueMissing;
@@ -58,8 +58,7 @@ public class OverFlowController  extends Controller {
             return GlobalResult.result_ok( Json.toJson(post) );
 
         } catch (Exception e) {
-            Logger.error("Error", e);
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -160,11 +159,8 @@ public class OverFlowController  extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(list));
 
-
-
-
         } catch (Exception e){
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
 
     }
@@ -229,15 +225,11 @@ public class OverFlowController  extends Controller {
 
             post.save();
 
-            SecurityController.getPerson().personPosts.add(post);
-            SecurityController.getPerson().update();
 
             return GlobalResult.created(Json.toJson(post));
 
-
           } catch (Exception e) {
-                Logger.error("Error", e);
-                return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -247,12 +239,10 @@ public class OverFlowController  extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
-                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                   @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Post.delete_permission", value = "true"),
+                    })
             }
     )
     @ApiResponses(value = {
@@ -269,11 +259,13 @@ public class OverFlowController  extends Controller {
             if (post == null ) return GlobalResult.notFoundObject("Post post_id not found");
             if (!post.author.id.equals( SecurityController.getPerson().id) ) return GlobalResult.forbidden_Permission();
 
+
+            if (!post.delete_permission())  return GlobalResult.forbidden_Permission();
             post.delete();
 
             return GlobalResult.result_ok();
         }catch (Exception e){
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -283,12 +275,10 @@ public class OverFlowController  extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Post.edit_permission", value = "true"),
+                    })
             }
     )
     @ApiImplicitParams(
@@ -320,10 +310,12 @@ public class OverFlowController  extends Controller {
             Post post = Post.find.byId(post_id);
             if (post == null) return GlobalResult.notFoundObject("Post post_id not found");
 
-            if (!post.author.id.equals( SecurityController.getPerson().id) ) return GlobalResult.forbidden_Permission();
+            if (!post.edit_permission())  return GlobalResult.forbidden_Permission();
 
             TypeOfPost typeOfPost = TypeOfPost.find.byId( help.type_of_post_id);
             if(typeOfPost == null) return GlobalResult.notFoundObject("TypeOfPost type_of_post_id not found");
+
+
 
             post.name = help.name;
             post.type = typeOfPost;
@@ -352,12 +344,10 @@ public class OverFlowController  extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
-                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Post.comment_permission", value = "true"),
+                    })
             }
     )
     @ApiImplicitParams(
@@ -389,7 +379,7 @@ public class OverFlowController  extends Controller {
            Post parentPost = Post.find.byId(post_id);
            if (parentPost == null) return GlobalResult.notFoundObject("Post post_id not found");
 
-           if( parentPost.postParentComment != null)  return GlobalResult.result_BadRequest("You cannot comment another comment");
+           if (!parentPost.comment_permission())  return GlobalResult.forbidden_Permission();
 
            Post post = new Post();
            post.author = SecurityController.getPerson();
@@ -420,12 +410,10 @@ public class OverFlowController  extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Post.answer_permission", value = "true"),
+                    })
             }
     )
     @ApiImplicitParams(
@@ -457,8 +445,7 @@ public class OverFlowController  extends Controller {
             Post parentPost = Post.find.byId(post_id);
             if (parentPost == null) throw new Exception("Post not Exist");
 
-            if( parentPost.postParentComment != null)  return GlobalResult.result_BadRequest("You cannot answer to comment");
-            if( parentPost.postParentAnswer  != null)  return GlobalResult.result_BadRequest("You cannot answer to another answer");
+            if (!parentPost.answer_permission())  return GlobalResult.forbidden_Permission();
 
             Post post = new Post();
             post.author = SecurityController.getPerson();
@@ -489,12 +476,10 @@ public class OverFlowController  extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
-                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Post.edit_permission", value = "true"),
+                    })
             }
     )
     @ApiImplicitParams(
@@ -524,10 +509,10 @@ public class OverFlowController  extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Post_Comment help = form.get();
 
-
-
             Post post = Post.find.byId(post_id);
             if (post == null) throw new Exception("Comment not Exist");
+
+            if (!post.edit_permission()) return GlobalResult.forbidden_Permission();
 
             post.text_of_post = help.text_of_post;
 
@@ -551,14 +536,7 @@ public class OverFlowController  extends Controller {
             notes = "You can connect question (main Post) with previous version",
             produces = "application/json",
             protocols = "https",
-            code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
-                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
-            }
+            code = 200
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",      response = LinkedPost.class),
@@ -597,12 +575,10 @@ public class OverFlowController  extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "LinkedPost.delete_permission", value = "true"),
+                    })
             }
     )
     @ApiResponses(value = {
@@ -617,7 +593,7 @@ public class OverFlowController  extends Controller {
             LinkedPost post = LinkedPost.find.byId(linked_post_id);
 
             if (post == null ) throw new Exception("Linked connection not Exist");
-            if (!post.author.id.equals( SecurityController.getPerson().id) ) return GlobalResult.forbidden_Permission();
+            if (!post.delete_permission()) return GlobalResult.forbidden_Permission();
 
             post.delete();
 
@@ -641,12 +617,14 @@ public class OverFlowController  extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 201,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
-                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "TypeOfPost.create_permission", value = TypeOfPost.create_permission_docs ),
+                    }),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "TypeOfPost.create_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "TypeOfPost_create" )
+                    })
             }
     )
     @ApiImplicitParams(
@@ -681,6 +659,8 @@ public class OverFlowController  extends Controller {
             TypeOfPost typeOfPost = new TypeOfPost();
             typeOfPost.type =  help.type;
 
+            if (!typeOfPost.create_permission())  return GlobalResult.forbidden_Permission();
+
             typeOfPost.save();
 
             return GlobalResult.created( Json.toJson(typeOfPost) );
@@ -697,14 +677,7 @@ public class OverFlowController  extends Controller {
             notes = "get All Type of Post. (Its for all logged users)",
             produces = "application/json",
             protocols = "https",
-            code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
-            }
+            code = 200
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",      response = TypeOfPost.class, responseContainer = "List"),
@@ -728,14 +701,7 @@ public class OverFlowController  extends Controller {
             notes = "get Type of Post by path id. (Its for all logged users)",
             produces = "application/json",
             protocols = "https",
-            code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
-                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
-            }
+            code = 200
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",      response = TypeOfPost.class),
@@ -760,18 +726,17 @@ public class OverFlowController  extends Controller {
 
 
     @ApiOperation(value = "edit Type of Post",
-                 tags = {"Blocko-OverFlow", "Type-Of-Post"},
-    notes = "edit type of post. Its required special permission!",
-    produces = "application/json",
-    protocols = "https",
-    code = 200,
-    authorizations = {
-        @Authorization(
-                value="permission",
-                scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
-                        @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-        )
-    }
+                tags = {"Blocko-OverFlow", "Type-Of-Post"},
+                notes = "edit type of post. Its required special permission!",
+                produces = "application/json",
+                protocols = "https",
+                code = 200,
+                extensions = {
+                        @Extension( name = "permission_required", properties = {
+                                @ExtensionProperty(name = "TypeOfPost.create_permission", value = "true"),
+                                @ExtensionProperty(name = "Static Permission key", value =  "TypeOfPost_edit" )
+                        })
+                }
     )
     @ApiImplicitParams(
             {
@@ -785,7 +750,7 @@ public class OverFlowController  extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Ok Result",      response = TypeOfPost.class),
+            @ApiResponse(code = 200, message = "Ok Result",      response = TypeOfPost.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
@@ -804,8 +769,11 @@ public class OverFlowController  extends Controller {
             TypeOfPost typeOfPost = TypeOfPost.find.byId(type_of_post_id);
             if(typeOfPost == null) return GlobalResult.notFoundObject("TypeOfPost type_of_post_id not found");
 
-            List<TypeOfPost> list = TypeOfPost.find.where().ieq("type", help.type ).where().ne("id", type_of_post_id).findList();
-            if(list.size()>0) return GlobalResult.result_BadRequest("Name is used already");
+            if (!typeOfPost.edit_permission())  return GlobalResult.forbidden_Permission();
+
+            if ( TypeOfPost.find.where().ieq("type", help.type ).where().ne("id", type_of_post_id).findRowCount() > 0) return GlobalResult.result_BadRequest("Name is used already");
+
+
 
 
             typeOfPost.type = help.type;
@@ -826,12 +794,11 @@ public class OverFlowController  extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "TypeOfPost.create_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "TypeOfPost_edit" )
+                    })
             }
     )
     @ApiImplicitParams(
@@ -858,6 +825,8 @@ public class OverFlowController  extends Controller {
             TypeOfPost typeOfPost = TypeOfPost.find.byId(type_of_post_id);
             if(typeOfPost == null) return GlobalResult.notFoundObject("TypeOfPost type_of_post_id not found");
 
+            if (!typeOfPost.delete_permission())  return GlobalResult.forbidden_Permission();
+
             typeOfPost.delete();
 
             return GlobalResult.result_ok();
@@ -870,10 +839,7 @@ public class OverFlowController  extends Controller {
     }
 
 
-
-
 /// TYPE OF CONFIRMS ###################################################################################################
-
 
     @ApiOperation(value = "new Type of Confirms",
             tags = {"Blocko-OverFlow", "Type-Of-Confirms"},
@@ -881,12 +847,11 @@ public class OverFlowController  extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 201,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "TypeOfConfirm.create_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "TypeOfConfirm_create" )
+                    })
             }
     )
     @ApiImplicitParams(
@@ -920,6 +885,7 @@ public class OverFlowController  extends Controller {
             typeOfConfirms.color = help.color;
             typeOfConfirms.size =  help.size;
 
+            if (!typeOfConfirms.create_permission())  return GlobalResult.forbidden_Permission();
             typeOfConfirms.save();
 
             return GlobalResult.created(Json.toJson( typeOfConfirms) );
@@ -935,12 +901,11 @@ public class OverFlowController  extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
-                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "TypeOfConfirm.edit_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "TypeOfConfirm_edit" )
+                    })
             }
     )
     @ApiImplicitParams(
@@ -973,6 +938,8 @@ public class OverFlowController  extends Controller {
             TypeOfConfirms typeOfConfirms = TypeOfConfirms.find.byId(type_of_confirm_id);
             if(typeOfConfirms == null) return GlobalResult.notFoundObject("TypeOfConfirms type_of_confirm_id not found");
 
+            if (!typeOfConfirms.edit_permission())  return GlobalResult.forbidden_Permission();
+
             typeOfConfirms.type = help.type;
             typeOfConfirms.color = help.color;
             typeOfConfirms.size =  help.size;
@@ -992,12 +959,11 @@ public class OverFlowController  extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
-                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "TypeOfConfirm.delete_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "TypeOfConfirm_delete" )
+                    })
             }
     )
     @ApiImplicitParams(
@@ -1025,6 +991,8 @@ public class OverFlowController  extends Controller {
             TypeOfConfirms typeOfConfirms = TypeOfConfirms.find.byId(type_of_confirm_id);
             if(typeOfConfirms == null) return GlobalResult.notFoundObject("TypeOfConfirms type_of_confirm_id not found");
 
+            if (!typeOfConfirms.delete_permission())  return GlobalResult.forbidden_Permission();
+
             typeOfConfirms.delete();
 
             return GlobalResult.result_ok();
@@ -1039,14 +1007,7 @@ public class OverFlowController  extends Controller {
             notes = "get  type of Confirms. Its only for Blocko-OverFlow Administrators!",
             produces = "application/json",
             protocols = "https",
-            code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
-                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
-            }
+            code = 200
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response = TypeOfConfirms.class),
@@ -1072,14 +1033,7 @@ public class OverFlowController  extends Controller {
             notes = "get  type of Confirms. Its only for Blocko-OverFlow Administrators!",
             produces = "application/json",
             protocols = "https",
-            code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
-                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
-            }
+            code = 200
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response = TypeOfConfirms.class, responseContainer = "List"),
@@ -1102,12 +1056,11 @@ public class OverFlowController  extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
-                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "TypeOfConfirm.edit_confirms_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "TypeOfConfirm_edit" )
+                    })
             }
     )
     @ApiResponses(value = {
@@ -1141,12 +1094,11 @@ public class OverFlowController  extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
-                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "TypeOfConfirm.edit_confirms_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "TypeOfConfirm_edit" )
+                    })
             }
     )
     @ApiResponses(value = {
@@ -1165,6 +1117,8 @@ public class OverFlowController  extends Controller {
             Post post = Post.find.byId(post_id);
             if(post == null)  return GlobalResult.notFoundObject("Post post_id not found");
 
+            if (!post.edit_confirms_permission())  return GlobalResult.forbidden_Permission();
+
             if(post.typeOfConfirms.contains(typeOfConfirms)) post.typeOfConfirms.remove(typeOfConfirms);
 
             post.update();
@@ -1176,8 +1130,6 @@ public class OverFlowController  extends Controller {
     }
 
 
-
-
 /// OTHER ##############################################################################################################
 
     @ApiOperation(value = "add HashTag to Post",
@@ -1186,16 +1138,15 @@ public class OverFlowController  extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Post.edit", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "Post_edit" )
+                    })
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = TypeOfConfirms.class),
+            @ApiResponse(code = 200, message = "Ok Result", response = Post.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1207,6 +1158,7 @@ public class OverFlowController  extends Controller {
             Post post = Post.find.byId(post_id);
             if(post == null) return GlobalResult.notFoundObject("Post post_id not found");
 
+            if (!post.edit_permission())  return GlobalResult.forbidden_Permission();
 
             HashTag postHashTag = HashTag.find.byId(hash_tag);
 
@@ -1219,7 +1171,7 @@ public class OverFlowController  extends Controller {
 
             post.update();
 
-            return GlobalResult.result_ok();
+            return GlobalResult.result_ok(Json.toJson(post));
 
         }catch (Exception e){
             return GlobalResult.internalServerError();
@@ -1229,20 +1181,19 @@ public class OverFlowController  extends Controller {
 
     @ApiOperation(value = "remove HashTag from Post",
             tags = {"Blocko-OverFlow", "Post"},
-            notes = "add HashTag to post",
+            notes = "remove HashTag to post",
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Post.edit", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "Post_edit" )
+                    })
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = TypeOfConfirms.class),
+            @ApiResponse(code = 200, message = "Ok Result", response = Post.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1257,12 +1208,13 @@ public class OverFlowController  extends Controller {
             HashTag postHashTag = HashTag.find.byId(hash_tag);
             if(postHashTag == null) return GlobalResult.notFoundObject("HashTag hash tag not found");
 
+            if (!post.edit_permission())  return GlobalResult.forbidden_Permission();
 
             if(post.hashTagsList.contains(postHashTag))post.hashTagsList.remove(postHashTag);
 
             post.update();
 
-            return GlobalResult.result_ok();
+            return GlobalResult.result_ok(Json.toJson(post));
         }catch (Exception e){
             return GlobalResult.internalServerError();
         }
@@ -1274,14 +1226,7 @@ public class OverFlowController  extends Controller {
             notes = "touch like plus - And user can do that only once! ",
             produces = "application/json",
             protocols = "https",
-            code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
-            }
+            code = 200
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response = TypeOfConfirms.class),
@@ -1292,7 +1237,7 @@ public class OverFlowController  extends Controller {
     @Security.Authenticated(Secured.class)
     public Result likePlus(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id){
         try {
-            Post post = Post.find.where().eq("postId", post_id).findUnique();
+            Post post = Post.find.where().eq("id", post_id).findUnique();
 
             if(post.listOfLikers != null &&  post.listOfLikers.contains(  SecurityController.getPerson()  ) ) throw new Exception("You have decided");
 
@@ -1313,14 +1258,7 @@ public class OverFlowController  extends Controller {
             notes = "touch like minus - And user can do that only once! ",
             produces = "application/json",
             protocols = "https",
-            code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner",  description = "For create new C_program, you have to own project"),
-                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
-            }
+            code = 200
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response = TypeOfConfirms.class),
@@ -1331,7 +1269,7 @@ public class OverFlowController  extends Controller {
     @Security.Authenticated(Secured.class)
     public Result likeMinus(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id){
         try {
-            Post post = Post.find.where().eq("postId", post_id).findUnique();
+            Post post = Post.find.where().eq("id", post_id).findUnique();
 
             if(post.listOfLikers != null &&  post.listOfLikers.contains(  SecurityController.getPerson()  ) ) return GlobalResult.forbidden_Permission();
 

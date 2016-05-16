@@ -1,11 +1,11 @@
-package utilities.webSocket.developing;
+package utilities.webSocket;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.WebSocketController_Incoming;
-import play.libs.Json;
 import play.mvc.WebSocket;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,8 +22,8 @@ public abstract class WebSCType {
     public String identifikator;
 
     public abstract void onClose(); //  Určeno pro možnost výběru, přes kterou metodu v controlleru se pokyn vykoná. Především proto, aby na to mohl server globálně reagovat, uzavřel ostatní vlákna atd.
-    public void close(){out.close();}
-    public abstract void onMessage(JsonNode json);
+    public void close(){ if(out != null) out.close(); }
+    public abstract void onMessage(ObjectNode json);
     public boolean isReady(){
         return out != null;
     }
@@ -34,7 +34,7 @@ public abstract class WebSCType {
 
             System.out.println("Příchozí zpráva " + message);
 
-            JsonNode json = Json.parse(message);
+            ObjectNode json = (ObjectNode) new ObjectMapper().readTree(message);
 
 
              if(json.has("messageId") && message_out.containsKey( json.get("messageId").asText())){
@@ -43,14 +43,14 @@ public abstract class WebSCType {
                     return;
              }
 
-            onMessage(json);
+            onMessage (json);
 
         }catch (Exception e){
+            e.printStackTrace();
             WebSocketController_Incoming.invalid_json_message(webSCtype);
         }
 
     }
-
 
     public WebSocket<String> connection() {
         return new WebSocket<String>() {
@@ -67,7 +67,6 @@ public abstract class WebSCType {
         };
     }
 
-
     /**
      * Odesílání zpráv: Zprávy lze odesílat s vyžadovanou odpovědí, nebo bez ní. Pokud vyžaduji odpověď (jako potvrzení
      * že se akce povedla, nebo co se událo v reakci na zprávu), spustí se vlákno v metodě write_with_confirmation. Odeslaná
@@ -78,15 +77,15 @@ public abstract class WebSCType {
      * nedojde k během určitého intervalu k odovědi, vláknu vyprší životnost a zavolá vyjímku TimeoutException.
      */
 
-    public  Map<String, JsonNode> message_out = new HashMap<>(); // (meessageId, JsonNode)
-    public  Map<String, JsonNode> message_in  = new HashMap<>(); // (meessageId, JsonNode)
+    private  Map<String, JsonNode> message_out = new HashMap<>(); // (meessageId, JsonNode)
+    private  Map<String, JsonNode> message_in  = new HashMap<>(); // (meessageId, JsonNode)
 
-    // TODO tohle chce dramaticky přepsat
-    public JsonNode write_with_confirmation(String messageId, JsonNode json) throws TimeoutException, InterruptedException {
-            return write_with_confirmation(messageId, json, (long) (250*10) );
+
+    public JsonNode write_with_confirmation(String messageId, ObjectNode json) throws TimeoutException, InterruptedException {
+            return write_with_confirmation(messageId, json, (long) (250*100) );
     }
 
-    public JsonNode write_with_confirmation(String messageId, JsonNode json, Long time_To_TimeOutExcepting) throws TimeoutException,InterruptedException {
+    public JsonNode write_with_confirmation(String messageId, ObjectNode json, Long time_To_TimeOutExcepting) throws TimeoutException,  InterruptedException {
 
 
         class Confirmation_Thread implements Callable<JsonNode>{
@@ -104,7 +103,7 @@ public abstract class WebSCType {
 
                     while (breaker > 0) {
                         breaker-=250;
-                        System.out.println("Zbejvá času " + breaker);
+                        //System.out.println("Zbejvá času " + breaker);
 
                         Thread.sleep(250);
 
@@ -134,20 +133,17 @@ public abstract class WebSCType {
 
         try {
             return future.get();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-            if( e.getCause() instanceof TimeoutException) throw new TimeoutException();
-            else throw new InterruptedException();
+        } catch (Exception e) {
+            System.out.println("write_with_confirmation NEstihlo se včas");
+            throw new TimeoutException();
         }
 
     }
 
-    public void send_file(File file){
-        out.write("asdfsd");
+    public void write_without_confirmation(ObjectNode json) {
 
-    }
+        System.out.println("Odesílám zprávu na kterou nepožaduji potvrzení. Zpráva: " + json.toString());
 
-    public void write_without_confirmation(JsonNode json) {
 
             Thread thread = new Thread(){
 

@@ -4,12 +4,10 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
-import io.swagger.annotations.ApiModelProperty;
+import models.project.b_program.Homer;
 import models.project.global.Project;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
 
 
 @Entity
@@ -22,11 +20,13 @@ public class Board extends Model {
                                                 @ManyToOne       public TypeOfBoard type_of_board;  // Typ desky
                                                                  public boolean isActive;
 
-    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<Project> projects = new ArrayList<>();
+    @JsonIgnore @ManyToOne                                       public Project project;
+    @JsonIgnore @ManyToOne                                       public Homer homer;
 
-    @ApiModelProperty(readOnly =true)
+
     @JsonProperty  @Transient public String type_of_board_id()   { return type_of_board.id; }
-
+    @JsonProperty  @Transient public String project_id()         { return project.id; }
+    @JsonProperty  @Transient public String homer_id()           { return homer.id; }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 

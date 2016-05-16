@@ -2,7 +2,6 @@ package models.overflow;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
 
 import javax.persistence.*;
@@ -21,11 +20,14 @@ public class TypeOfPost extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty public Boolean create_permission(){  return  SecurityController.getPerson().has_permission("TypeOfPost.create");}
-    @JsonProperty public Boolean read_permission()  {  return  SecurityController.getPerson().has_permission("TypeOfPost.read");  }
-    @JsonProperty public Boolean edit_permission()  {  return  SecurityController.getPerson().has_permission("TypeOfPost.edit");  }
-    @JsonProperty public Boolean delete_permission(){  return  SecurityController.getPerson().has_permission("TypeOfPost.delete");}
+    @JsonIgnore @Transient public static final String create_permission_docs = "create: User have to own static key \"TypeOfPost_create\" ";
 
+    @JsonIgnore public Boolean create_permission(){  return  SecurityController.getPerson().has_permission("TypeOfPost_create");}
+    @JsonIgnore public Boolean read_permission()  {  return true; }
+    @JsonIgnore public Boolean edit_permission()  {  return  SecurityController.getPerson().has_permission("TypeOfPost_edit");  }
+    @JsonIgnore public Boolean delete_permission(){  return  SecurityController.getPerson().has_permission("TypeOfPost_delete");}
+
+    public enum permissions{  TypeOfPost_create, TypeOfPost_edit, TypeOfPost_delete}
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String,TypeOfPost> find = new Finder<>(TypeOfPost.class);
 

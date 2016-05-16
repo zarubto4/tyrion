@@ -1,7 +1,12 @@
 @import java.util.List
-@import utilities.webSocket.developing.WebSCType
 
-@(homers: List[WebSCType], grids: List[WebSCType])
+@import utilities.webSocket.WebSCType
+@import utilities.webSocket.WS_BlockoServer
+@import utilities.webSocket.WS_Terminal
+@import controllers.DashboardController
+
+@import utilities.webSocket.WS_CompilerServer
+@(homers: List[WebSCType], grids: List[WS_Terminal], cloud_blocko_server: List[WS_BlockoServer], compilation_server: List[WS_CompilerServer])
 
 
 <section class="content-header">
@@ -21,25 +26,51 @@
                     <h3 class="box-title">Connected Homers (PC/RPI..)</h3>
                     <div class="pull-right">
                         <div class="btn-group">
-                            <button class="btn btn-block btn-danger btn-sm"> Disconnect All </button>
-                            <button class="btn btn-block btn-info btn-sm ">  Send Ping to all</button>
+                            <button type="button" class="btn btn-danger btn-sm"> Disconnect All </button>
+                            <button type="button" class="btn btn-info    btn-sm ">  Send Ping to all</button>
                         </div><!-- /.btn-group -->
                     </div><!-- /.pull-right -->
                 </div>
 
                 <div class="box-body table-responsive no-padding">
-                    <table class="table table-hover">
+                    <table class="table table-bordered">
 
                         <tr>
                             <th>ID</th>
-                            <th>Version</th>
-                            <th>Blocko Program</th>
-                            <th>Version Program</th>
+                            <th>Subscribers</th>
                             <th>Get Hardware</th>
                             <th>Get Status</th>
                             <th>Disconnect</th>
-                            <th></th>
                         </tr>
+
+                        @for( x <- homers){
+                            <tr>
+                                <td> @x.identifikator.substring(0,7)</td>
+
+                                <td> @if( !x.subscribers.isEmpty) {
+                                    @for( y <- x.subscribers){
+                                        @y.identifikator.substring(0,7)
+                                    }
+                                } else{
+                                    -----
+                                }</td>
+
+                                <td align="center"><button class="btn btn-block btn-success btn-xs">Get Status</button></td>
+
+                                <td align="center">
+                                    <a href=' @routes.DashboardController.ping_homer( x.identifikator )' >
+                                        <button class="btn btn-block btn-info btn-xs">Ping</button>
+                                    </a>
+                                </td>
+
+                                <td align="center">
+                                    <a href=' @routes.DashboardController.disconnect_homer( x.identifikator )' >
+                                        <button class="btn btn-block btn-danger btn-xs">Disconnect</button>
+                                    </a>
+                                </td>
+
+                            </tr>
+                        }
 
                     </table>
                 </div><!-- /.box-body -->
@@ -56,25 +87,124 @@
                     <h3 class="box-title">Connected Grid Terminals (Browser, Iphone...)</h3>
                     <div class="pull-right">
                         <div class="btn-group">
-                            <button class="btn btn-block btn-danger btn-sm">Disconnect All </button>
-                            <button class="btn btn-block btn-info btn-sm ">  Send Ping to all</button>
+                            <button type="button" class="btn btn-danger btn-sm"> Disconnect All </button>
+                            <button type="button" class="btn btn-info btn-sm "> Send Ping to all </button>
                         </div><!-- /.btn-group -->
                     </div><!-- /.pull-right -->
                 </div>
                 <div class="box-body table-responsive no-padding">
-                    <table class="table table-hover">
+                    <table class="table table-bordered">
 
                         <tr>
-                            <th>ID</th>
-                            <th>Version</th>
-                            <th>Blocko Program</th>
-                            <th>Version Program</th>
-                            <th>Get Hardware</th>
-                            <th>Get Status</th>
-                            <th>Disconnect</th>
-                            <th></th>
+                            <th class="col-xs-1">Identificator</th>
+                            <th class="col-xs-1">Receive from Homer</th>
+                            <th class="col-xs-1">Homer Identificator</th>
+                            <th class="col-xs-1">M Program Id</th>
+
+                            <th class="col-xs-1">Get Status</th>
+                            <th class="col-xs-1">Ping</th>
+                            <th class="col-xs-1">Log out</th>
+                            <th class="col-xs-1">Disconnect</th>
+
                         </tr>
 
+                        @for( x <- grids){
+                            <tr>
+                                <td> @x.identifikator.substring(0,7) </td>
+
+                                <td > @if( x.subscribers.isEmpty){
+                                    <b style="color: red">FALSE</b>
+                                }else{
+                                    <b style="color: #70ff6e">TRUE</b>
+                                }
+                                </td>
+
+                                <td> @if( !x.subscribers.isEmpty) {
+                                    @x.subscribers.get(0).identifikator.substring(0,7)
+                                } else{
+                                    -----
+                                }</td>
+
+                                <td> @x.m_project_id </td>
+
+                                <td align="center"><button class="btn btn-block btn-success btn-xs">Get Status</button></td>
+
+                                <td align="center">
+                                    <a href=' @routes.DashboardController.ping_terminal( x.identifikator )' >
+                                        <button class="btn btn-block btn-info btn-xs">Ping</button>
+                                    </a>
+                                </td>
+
+                                <td align="center">
+                                    <a href=' @routes.DashboardController.log_out_Terminal_User( x.identifikator )' >
+                                        <button class="btn btn-block btn-warning btn-xs">Logout</button>
+                                    </a>
+                                </td>
+
+                                <td align="center">
+                                    <a href=' @routes.DashboardController.disconnect_terminal( x.identifikator )' >
+                                        <button class="btn btn-block btn-danger btn-xs">Disconnect</button>
+                                    </a>
+                                </td>
+
+                            </tr>
+                        }
+                        </table>
+
+                </div><!-- /.box-body -->
+            </div><!-- /.box -->
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-header">
+                    <h3 class="box-title">Connected Blocko-Servers (Homer Cloud instances)</h3>
+                    <div class="pull-right">
+                        <div class="btn-group">
+                                <!--   <button type="button" class="btn btn-danger btn-sm"> Disconnect All </button>  -->
+                                <!--    <button type="button" class="btn btn-info btn-sm ">  Send Ping to all</button>  -->
+                        </div><!-- /.btn-group -->
+                    </div><!-- /.pull-right -->
+                </div>
+                <div class="box-body table-responsive no-padding">
+                    <table class="table table-bordered">
+
+                        <tr>
+                            <th align="center" >Server</th>
+                            <th align="center">Working instances</th>
+
+                            <th class="col-xs-1">Get Status</th>
+                            <th class="col-xs-1">Ping</th>
+                            <th class="col-xs-1">Disconnect</th>
+
+                        </tr>
+
+                        @for( x <- cloud_blocko_server ){
+                            <tr>
+                                <td> @x.identifikator </td>
+                                <td> @x.virtual_homers.size() </td>
+
+                                <td align="center">
+                                    <a href='@routes.DashboardController.show_all_logs()' >
+                                        <button class="btn btn-block btn-success btn-xs">Get Status</button>
+                                     </a>
+                                </td>
+
+                                <td align="center">
+                                    <a href=' @routes.DashboardController.ping_Blocko_Server( x.identifikator )' >
+                                        <button class="btn btn-block btn-info btn-xs">Ping</button>
+                                    </a>
+                                </td>
+
+                                <td align="center">
+                                    <a href=' @routes.DashboardController.disconnect_Blocko_Server( x.identifikator )' >
+                                        <button class="btn btn-block btn-danger btn-xs">Disconnect</button>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
                     </table>
 
                 </div><!-- /.box-body -->
@@ -82,6 +212,60 @@
         </div>
     </div>
 
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-header">
+                    <h3 class="box-title">Connected Compiler-Servers</h3>
+                    <div class="pull-right">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-danger btn-sm"> Disconnect All </button>
+                        </div><!-- /.btn-group -->
+                    </div><!-- /.pull-right -->
+                </div>
+                <div class="box-body table-responsive no-padding">
+                    <table class="table table-bordered">
+
+                        <tr>
+                            <th>Server</th>
+
+                            <th class="col-xs-1">Get Status</th>
+                            <th class="col-xs-1">Ping</th>
+                            <th class="col-xs-1">Disconnect</th>
+
+                        </tr>
+
+                        @for( x <- compilation_server ){
+                            <tr>
+                                <td> @x.identifikator </td>
+
+
+                                <td align="center">
+                                    <a href='@routes.DashboardController.show_all_logs()' >
+                                        <button class="btn btn-block btn-success btn-xs">Get Status</button>
+                                    </a>
+                                </td>
+
+                                <td align="center">
+                                    <a href=' @routes.DashboardController.ping_Compilation_Server( x.identifikator )' >
+                                        <button class="btn btn-block btn-info btn-xs">Ping</button>
+                                    </a>
+                                </td>
+
+                                <td align="center">
+                                    <a href=' @routes.DashboardController.disconnect_Compilation_Server( x.identifikator )' >
+                                        <button class="btn btn-block btn-danger btn-xs">Disconnect</button>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+
+                    </table>
+
+                </div><!-- /.box-body -->
+            </div><!-- /.box -->
+        </div>
+    </div>
 
 </section><!-- /.content -->
 

@@ -11,6 +11,7 @@ import models.overflow.HashTag;
 import models.overflow.Post;
 import models.person.Person;
 import models.project.b_program.B_Program;
+import models.project.b_program.Homer;
 import models.project.c_program.C_Program;
 import models.project.community.Documentation;
 import models.project.community.PrintedModel;
@@ -39,10 +40,10 @@ public class Project extends Model {
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<M_Project>         m_projects        = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Screen_Size_Type>  screen_size_types = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<TypeOfBlock>       type_of_blocks    = new ArrayList<>();
-
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Board>             boards            = new ArrayList<>();
 
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "owningProjects")  @JoinTable(name = "connected_projects") public List<Person> ownersOfProject = new ArrayList<>();
-    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "projects")        @JoinTable(name = "board_project")      public List<Board> boards = new ArrayList<>();
+
 
     @JsonProperty public List<String> homers_id()           { List<String> l = new ArrayList<>();  for( Homer m            : homerList)         l.add(m.id); return l;  }
     @JsonProperty public List<String> boards_id()           { List<String> l = new ArrayList<>();  for( Board m            : boards)            l.add(m.id); return l;  }
@@ -71,6 +72,9 @@ public class Project extends Model {
 
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient public static final String read_permission_docs   = "read: If user have Project.update_permission = true, you can create M_project on this Project - Or you need static/dynamic permission key";
+
 
     @JsonIgnore   public Boolean create_permission()    {  return true;  }
     @JsonProperty public Boolean update_permission()    {  return ( Project.find.where().eq("ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Project_update");  }

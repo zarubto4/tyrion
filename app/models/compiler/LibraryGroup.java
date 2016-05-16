@@ -31,10 +31,10 @@ public class LibraryGroup extends Model {
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public void setUniqueAzureStorageLink() {
+    public void setUniqueAzurePackageLink() {
         while(true){ // I need Unique Value
-            this.azureStorageLink = UUID.randomUUID().toString();
-            if (LibraryGroup.find.where().eq("azureStorageLink", azureStorageLink ).findUnique() == null) break;
+            this.azurePackageLink = UUID.randomUUID().toString();
+            if (LibraryGroup.find.where().eq("azurePackageLink", azurePackageLink ).findUnique() == null) break;
         }
     }
 

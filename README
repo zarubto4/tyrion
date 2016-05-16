@@ -1,3 +1,130 @@
+
+# Verze 1.06.3 #
+####  29.4.2016 ####
+
+-----
+
+ * Začátek vývoje podpory Blocko Serveru (Připojování kontejnerových serverů, kde běží instance Blocko programů)
+   Cílem je umožnit připojovat  servery vlastní (Větší zákazníci si mohou zprovoznit svůj server a pouze vyplní jméno a ověřující token)
+
+    - Momentálně ještě není podporováno API.
+
+    - 4 NOVÉ API [(External Server)](http://swagger.byzance.cz/#/External_Server)
+
+ * Podpora pro kompilační servery (ty budou vždy naše) - ale je už od začátku pamatováno na škálování takových serverů a rovnoměrné zatížení
+
+    - 4 NOVÉ API [(External Server)](http://swagger.byzance.cz/#/External_Server)
+
+ * Oprava přihlášení - po přihlášení (zaslání hesla a emailu) je vrácen pouze token a je vyžadován další request na který jsou vráceny všechny původní informace
+
+
+
+-----
+
+### TODO ###
+
+ * TODO Dodělat všude!!!
+
+        @Entity
+        @ApiModel( value =
+                "<h3>Permissions:</h3>" +
+                "<span style=\"color: green\">"    + M_Project.create_permission_docs +  "</span>" +
+                "<br><span style=\"color: blue\">" + M_Project.read_permission_docs +    "</span>" +
+                "<br>"
+        )
+        public class M_Project extends Model {
+
+ * TODO Swagger Dokumentace na objektu B_Program_State a B_Program!!!!!!!!!!!!
+
+-----
+
+### Oprava Bugů ###
+
+ * fixed [TYRION-203](http://youtrack.byzance.cz/youtrack/issue/TYRION-203)
+ * fixed [TYRION-235](http://youtrack.byzance.cz/youtrack/issue/TYRION-235)
+ * fixed [TYRION-236](http://youtrack.byzance.cz/youtrack/issue/TYRION-236)
+ * fixed [TYRION-239](http://youtrack.byzance.cz/youtrack/issue/TYRION-239)
+ * fixed [TYRION-238](http://youtrack.byzance.cz/youtrack/issue/TYRION-238)
+ * fixed [TYRION-198](http://youtrack.byzance.cz/youtrack/issue/TYRION-198)
+ * fixed [TYRION-230](http://youtrack.byzance.cz/youtrack/issue/TYRION-230)
+ * fixed [TYRION-228](http://youtrack.byzance.cz/youtrack/issue/TYRION-228)
+ * fixed [TYRION-232](http://youtrack.byzance.cz/youtrack/issue/TYRION-232)
+ * fixed [TYRION-231](http://youtrack.byzance.cz/youtrack/issue/TYRION-232) -> Vázané issue [HOMER-3](http://youtrack.byzance.cz/youtrack/issue/HOMER-3)
+ * fixed [TYRION-227](http://youtrack.byzance.cz/youtrack/issue/TYRION-227)
+ * Obsolate [TYRION-233](http://youtrack.byzance.cz/youtrack/issue/TYRION-233)
+ * Neřešitelné [TYRION-219](http://youtrack.byzance.cz/youtrack/issue/TYRION-219)
+ * Zamítnuto [TYRION-216](http://youtrack.byzance.cz/youtrack/issue/TYRION-216)
+ * Zamítnuto [TYRION-234](http://youtrack.byzance.cz/youtrack/issue/TYRION-234)
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Verze 1.06.2 #
+####  19.4.2016 ####
+
+-----
+
+### Oprávnění ###
+
+ * Dolaďování oprávnění nad objekty - a evidence všech oprávnění do databáze přes ENUM statické klíče nad objektem
+ * Odstranění části nevhodně použitých anotací pro Swagger "Permission"
+ * Navržení vzoru jak dokumentovat statické klíče
+ * Definování a sjednocení vzhledu a umístění proměných na všech DB modelech
+
+
+-----
+
+### Oprava Bugů ###
+
+ * fixed [TYRION-183](http://youtrack.byzance.cz/youtrack/issue/TYRION-183)
+ * fixed [TYRION-206](http://youtrack.byzance.cz/youtrack/issue/TYRION-206)
+ * fixed [TYRION-207](http://youtrack.byzance.cz/youtrack/issue/TYRION-207) Netestováno!!
+ * fixed [TYRION-205](http://youtrack.byzance.cz/youtrack/issue/TYRION-205)
+ * fixed [TYRION-204](http://youtrack.byzance.cz/youtrack/issue/TYRION-204)
+ * fixed [TYRION-217](http://youtrack.byzance.cz/youtrack/issue/TYRION-217)
+ * fixed [TYRION-217](http://youtrack.byzance.cz/youtrack/issue/TYRION-217)
+ * fixed [TYRION-211](http://youtrack.byzance.cz/youtrack/issue/TYRION-211)
+ * fixed [TYRION-212](http://youtrack.byzance.cz/youtrack/issue/TYRION-212)
+ * fixed [TYRION-196](http://youtrack.byzance.cz/youtrack/issue/TYRION-196)
+ * fixed [TYRION-173](http://youtrack.byzance.cz/youtrack/issue/TYRION-173)
+ * fixed [TYRION-203](http://youtrack.byzance.cz/youtrack/issue/TYRION-203)
+ * fixed [TYRION-203](http://youtrack.byzance.cz/youtrack/issue/TYRION-209)
+ * fixed [TYRION-210](http://youtrack.byzance.cz/youtrack/issue/TYRION-210)
+ * fixed [TYRION-201](http://youtrack.byzance.cz/youtrack/issue/TYRION-201)
+ * fixed [TYRION-200](http://youtrack.byzance.cz/youtrack/issue/TYRION-200)
+ * fixed [TYRION-191](http://youtrack.byzance.cz/youtrack/issue/TYRION-191)
+ * fixed [TYRION-186](http://youtrack.byzance.cz/youtrack/issue/TYRION-186) Feature (List all users)
+ * fixed [TYRION-192](http://youtrack.byzance.cz/youtrack/issue/TYRION-192)
+ * fixed [TYRION-210](http://youtrack.byzance.cz/youtrack/issue/TYRION-210)
+ * fixed [TYRION-194](http://youtrack.byzance.cz/youtrack/issue/TYRION-194)
+ * fixed [TYRION-195](http://youtrack.byzance.cz/youtrack/issue/TYRION-195)
+ * fixed [TYRION-113](http://youtrack.byzance.cz/youtrack/issue/TYRION-113)
+ * fixed [TYRION-114](http://youtrack.byzance.cz/youtrack/issue/TYRION-114)
+ * fixed [TYRION-116](http://youtrack.byzance.cz/youtrack/issue/TYRION-116)
+ * fixed [TYRION-185](http://youtrack.byzance.cz/youtrack/issue/TYRION-185)
+ * fixed [TYRION-187](http://youtrack.byzance.cz/youtrack/issue/TYRION-187)
+ * fixed [TYRION-199](http://youtrack.byzance.cz/youtrack/issue/TYRION-199)
+ * fixed [TYRION-197](http://youtrack.byzance.cz/youtrack/issue/TYRION-197)
+
+### TODO do další verze ###
+
+ * TODO 3 Tomáš Z.: Zdokumentovat všechny Models pro Swagger
+ * TODO 4 Tomáš Z.: Přidat cyklické odmazávání BLOB v Azure, na které už neexistuje databázová vazba (Nějaká fičura co se zapne každý den ve 3 ráno a provede sekvenci kam
+      každý vývojář může přidávat metody které se provedou... (Mazání prošlých tokenů, mazání prošlých nedokončených ověření přes sociální sítě atd... Viz todo 5)
+ * TODO 5 Tomáš Z.: Přidat cyklické odmazávání Vygenerovaných nezrealizovaných spojení na sociální sítě (Linkded Account)
+ * TODO 6 Tomáš Z.: Pokud se uživatel přihlásí přes facebook, k jeho účtu bude přidělen plovoucí token. Pokud se přihlásí znova a znova..
+      budou se vtvářet další a další připojení. Je žádoucí mazat předchozí spojení pokud poznám, že je to ze stejného prohlížeče?
+      PS: Vyžaduje to tak půl dne (+ ideálně přepsat třídu s přihlášení přes facebook a odzkoušet github..
+ * TODO 7 Tomáš Z.: Dodělat disconnect http://youtrack.byzance.cz/youtrack/issue/TYRION-169
+ * TODO 8 ALL-Tyrion: Bude potřeba dodělat řešení pro prodlužování platnosti tokenu (Buď nějak magicky na Tyrionovi nebo ze strany frontendu) Asi to dodělá Tomáš.
+ * TODO 9 Přidat a vykreslit všechny objekty na dashboard Tyriona
+ * TODO 10 [TYRION-186](http://youtrack.byzance.cz/youtrack/issue/TYRION-186)
+ * TODO 11 Dodělat na všech filtrech stránkování (vhodné by bylo vymyslet univerzální a kopírovatelné řešení napříč projektem)
+
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 # Verze 1.06.1 #
 ####  17.4.2016 ####
 
@@ -95,17 +222,3 @@ neurčitou. Každopádně každý nápad jak posunout Tyriona kupředu jsou vít
  * fixed [TYRION-189](http://youtrack.byzance.cz/youtrack/issue/TYRION-189)
 
 ------
-
-### TODO do další verze ###
-
- * TODO 3 Tomáš Z.: Zdokumentovat všechny Models pro Swagger
- * TODO 4 Tomáš Z.: Přidat cyklické odmazávání BLOB v Azure, na které už neexistuje databázová vazba (Nějaká fičura co se zapne každý den ve 3 ráno a provede sekvenci kam
-      každý vývojář může přidávat metody které se provedou... (Mazání prošlých tokenů, mazání prošlých nedokončených ověření přes sociální sítě atd... Viz todo 5)
- * TODO 5 Tomáš Z.: Přidat cyklické odmazávání Vygenerovaných nezrealizovaných spojení na sociální sítě (Linkded Account)
- * TODO 6 Tomáš Z.: Pokud se uživatel přihlásí přes facebook, k jeho účtu bude přidělen plovoucí token. Pokud se přihlásí znova a znova..
-      budou se vtvářet další a další připojení. Je žádoucí mazat předchozí spojení pokud poznám, že je to ze stejného prohlížeče?
-      PS: Vyžaduje to tak půl dne (+ ideálně přepsat třídu s přihlášení přes facebook a odzkoušet github..
- * TODO 7 Tomáš Z.: Dodělat disconnect http://youtrack.byzance.cz/youtrack/issue/TYRION-169
- * TODO 8 ALL-Tyrion: Bude potřeba dodělat řešení pro prodlužování platnosti tokenu (Buď nějak magicky na Tyrionovi nebo ze strany frontendu) Asi to dodělá Tomáš.
- * TODO 9 Přidat a vykreslit všechny objekty na dashboard Tyriona
- * TODO 10 [TYRION-186](http://youtrack.byzance.cz/youtrack/issue/TYRION-186)

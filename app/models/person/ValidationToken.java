@@ -5,8 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import java.math.BigInteger;
-import java.security.SecureRandom;
+import java.util.UUID;
 
 @Entity
 public class ValidationToken extends Model{
@@ -24,7 +23,7 @@ public class ValidationToken extends Model{
         this.personEmail = mail;
 
         while(true){ // I need Unique Value
-            authToken = new BigInteger(130, new SecureRandom()).toString(32).toLowerCase();
+            authToken = UUID.randomUUID().toString();
             if (ValidationToken.find.where().eq("authToken",authToken).findUnique() == null) break;
         }
         save();
