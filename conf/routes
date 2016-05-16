@@ -212,7 +212,9 @@ DELETE         /project/typeOfBlock/:type_of_block_id                           
 
 
 
-
+#Community
+PUT             /project/documentation/:project_id                                          @controllers.CommunityProjectController.new_Documentation(project_id)
+GET             /project/documentation/:project_id                                          @controllers.CommunityProjectController.get_Documentation(project_id)
 
 
 
