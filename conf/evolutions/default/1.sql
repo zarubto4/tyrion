@@ -438,8 +438,6 @@ create sequence blocko_block_seq;
 
 create sequence blocko_block_version_seq;
 
-create sequence board_seq;
-
 create sequence c_compilation_seq;
 
 create sequence c_program_seq;
@@ -710,8 +708,6 @@ drop sequence if exists b_program_homer_seq;
 drop sequence if exists blocko_block_seq;
 
 drop sequence if exists blocko_block_version_seq;
-
-drop sequence if exists board_seq;
 
 drop sequence if exists c_compilation_seq;
 

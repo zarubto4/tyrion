@@ -273,7 +273,7 @@ public class CompilationLibrariesController extends Controller {
             content.set("user_files", Json.toJson( help.user_files) );
             content.set("external_libraries", Json.toJson( help.external_libraries) );
 
-            UtilTools.uploadAzure_Version("c-program", content.toString() , "c_program", c_program.azureStorageLink, c_program.azurePackageLink, version_object);
+            UtilTools.uploadAzure_Version("c-program", content.toString() , "c-program", c_program.azureStorageLink, c_program.azurePackageLink, version_object);
 
 
             return GlobalResult.created(Json.toJson(version_object));
@@ -339,7 +339,7 @@ public class CompilationLibrariesController extends Controller {
             content.set("user_files", Json.toJson( help.user_files) );
             content.set("external_libraries", Json.toJson( help.external_libraries) );
 
-            UtilTools.uploadAzure_Version("c-program", content.toString() , "c_program", version_object.c_program.azureStorageLink, version_object.c_program.azurePackageLink, version_object);
+            UtilTools.uploadAzure_Version("c-program", content.toString() , "c-program", version_object.c_program.azureStorageLink, version_object.c_program.azurePackageLink, version_object);
 
 
             return GlobalResult.created(Json.toJson(version_object));
@@ -2967,7 +2967,7 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful created",      response = Board.class),
+            @ApiResponse(code = 201, message = "Successful created",      response = Board.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
@@ -2981,20 +2981,38 @@ public class CompilationLibrariesController extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Board_New help = form.get();
 
+            // Odstraním duplikáty
+            Set<String> hs = new HashSet<>();
+            hs.addAll(help.hardware_unique_ids);
+            help.hardware_unique_ids.clear();
+            help.hardware_unique_ids.addAll(hs);
 
-            if (Board.find.byId( help.hardware_unique_id ) != null) return GlobalResult.result_BadRequest("Duplicate database value");
+
+            List<Board> exist_boards = Board.find.where().in( "id", help.hardware_unique_ids).findList();
+
+            Board weads = Board.find.byId(  help.hardware_unique_ids.get(0) );
+            System.out.println("Kolik jich to našlo " + exist_boards.size() );
+            if(weads!= null) System.out.println("weads není null");
+
+            for(Board board : exist_boards)  help.hardware_unique_ids.remove( board.id );
+
+            System.out.println("Kolik jich zbejvá k vytvoření" + help.hardware_unique_ids.size() );
+
+            List<Board> created_board = new ArrayList<>();
 
             TypeOfBoard typeOfBoard = TypeOfBoard.find.byId( help.type_of_board_id  );
             if(typeOfBoard == null ) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
 
-            Board board = new Board();
-            board.id =  help.hardware_unique_id;
-            board.isActive = false;
-            board.type_of_board = typeOfBoard;
+            for(String hw_id : help.hardware_unique_ids) {
+                Board board = new Board();
+                board.id = hw_id;
+                board.isActive = false;
+                board.type_of_board = typeOfBoard;
+                board.save();
+                created_board.add(board);
+            }
 
-            board.save();
-
-            return GlobalResult.result_ok(Json.toJson(board));
+            return GlobalResult.result_ok(Json.toJson(created_board));
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -3155,7 +3173,6 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    //  @Pattern("board.deactivate")
     public Result deactivate_Board(@ApiParam(required = true) @PathParam("board_id")  String board_id) {
         try {
             Board board = Board.find.byId(board_id);
@@ -3229,6 +3246,7 @@ public class CompilationLibrariesController extends Controller {
     })
     public Result connect_Board_with_Project(@ApiParam(required = true) @PathParam("board_id")  String board_id, @ApiParam(required = true) @PathParam("project_id")  String project_id){
         try {
+            System.out.println("connect_Board_with_Project...................................................." );
             Board board = Board.find.byId(board_id);
             if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
 
@@ -3280,8 +3298,6 @@ public class CompilationLibrariesController extends Controller {
             if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
             if( board.project == null) return  GlobalResult.result_ok(Json.toJson(board));
-            project.boards.remove(board);
-            project.update();
 
             board.project = null;
             board.update();

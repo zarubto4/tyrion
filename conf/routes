@@ -79,11 +79,11 @@ GET            /mail_person_authentication                      @controllers.Per
 
 PUT            /secure/permission/person/:person_id/:permission_id                          @controllers.PermissionController.add_Permission_Person(person_id,permission_id)
 DELETE         /secure/permission/person/:person_id/:permission_id                          @controllers.PermissionController.remove_Permission_Person(person_id,permission_id)
+
 GET            /secure/permission                                                           @controllers.PermissionController.get_Permission_All()
+GET            /secure/role/all                                                             @controllers.PermissionController.get_Role_All()
 
 PUT            /secure/role/permission/:permission_id/:role_id                              @controllers.PermissionController.add_Permission_to_Role(permission_id,role_id)
-GET            /secure/role/permission/:role_id                                             @controllers.PermissionController.get_Permission_in_Group(role_id)
-GET            /secure/role/person/:role_id                                                 @controllers.PermissionController.get_Person_from_Role_Group(role_id)
 DELETE         /secure/role/permission/:permission_id/:role_id                              @controllers.PermissionController.remove_Permission_from_Role(permission_id,role_id)
 
 POST           /secure/role                                                                 @controllers.PermissionController.new_Role()
@@ -91,7 +91,8 @@ DELETE         /secure/role/:role_id                                            
 
 PUT            /secure/role/person/:person_id/:role_id                                      @controllers.PermissionController.add_Role_Person(person_id,role_id)
 DELETE         /secure/role/person/:person_id/:role_id                                      @controllers.PermissionController.remove_Role_Person(person_id,role_id)
-GET            /secure/role/all                                                             @controllers.PermissionController.get_Role_All()
+
+
 
 GET            /secure/person/system_acces/:person_id                                       @controllers.PermissionController.get_System_Acces(person_id)
 
@@ -153,7 +154,7 @@ PUT            /project/project/unshareProject/:project_id                      
 
 #Homer
 POST           /project/homer                                                               @controllers.ProgramingPackageController.newHomer()
-GET            /project/homer/filter/:page_number                                           @controllers.ProgramingPackageController.get_Homers_by_Filter(page_number: Integer)
+PUT            /project/homer/filter/:page_number                                           @controllers.ProgramingPackageController.get_Homers_by_Filter(page_number: Integer)
 DELETE         /project/homer/:homer_id                                                     @controllers.ProgramingPackageController.removeHomer(homer_id)
 GET            /project/homer/:homer_id                                                     @controllers.ProgramingPackageController.getHomer(homer_id)
 
@@ -251,6 +252,7 @@ GET            /compilation/processor/singleLibrary/:processor_id               
 #Board
 POST            /compilation/board                                                          @controllers.CompilationLibrariesController.new_Board()
 PUT             /compilation/board/userDescription/:type_of_board_id                        @controllers.CompilationLibrariesController.edit_Board_User_Description(type_of_board_id)
+
 PUT             /compilation/board/filter/:page_number                                      @controllers.CompilationLibrariesController.get_Board_Filter(page_number: Integer)
 GET             /compilation/board/:board_id                                                @controllers.CompilationLibrariesController.get_Board(board_id)
 DELETE          /compilation/board/deactivateBoard/:board_id                                @controllers.CompilationLibrariesController.deactivate_Board(board_id)

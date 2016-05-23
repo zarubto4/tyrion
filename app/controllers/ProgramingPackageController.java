@@ -896,7 +896,23 @@ public class ProgramingPackageController extends Controller {
             if (program == null) return GlobalResult.notFoundObject("B_Program id not found");
 
             if (! program.delete_permission() ) return GlobalResult.forbidden_Permission();
-            program.delete();
+
+
+            // Před smazáním blocko programu je nutné smazat jeho běžící cloud instance
+            System.out.println("Snažím se odstanit instance ze serverů");
+            List<B_Program_Cloud> b_program_clouds = B_Program_Cloud.find.where().eq("version_object.b_program.id", program.id).findList();
+            System.out.println("Počet instancí " + b_program_clouds.size()  );
+
+            for(B_Program_Cloud b_program_cloud : b_program_clouds){
+               if(  WebSocketController_Incoming.blocko_servers.containsKey(b_program_cloud.server.server_name)){
+
+                   WS_BlockoServer server = (WS_BlockoServer)  WebSocketController_Incoming.blocko_servers.get(b_program_cloud.server.server_name);
+                   WebSocketController_Incoming.blocko_server_remove_instance( server, b_program_cloud.blocko_instance_name);
+                   if(WebSocketController_Incoming.incomingConnections_homers.containsKey( b_program_cloud.blocko_instance_name ))   WebSocketController_Incoming.incomingConnections_homers.get(b_program_cloud.blocko_instance_name).onClose();
+               }
+            }
+
+           program.delete();
 
             return GlobalResult.result_ok();
 
@@ -1019,13 +1035,13 @@ public class ProgramingPackageController extends Controller {
             if (b_program == null) return GlobalResult.notFoundObject("B_Program id not found");
 
             // Verze B programu kterou budu nahrávat do cloudu
-            Version_Object version_object = Version_Object.find.fetch("b_program_cloud.blocko_instance_name").where().eq("id", version_id).findUnique();
+            Version_Object version_object = Version_Object.find.where().eq("id", version_id).eq("b_program.id", b_program.id).findUnique();
             if (version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
             // Pokud už nějaká instance běžela, tak na ní budu nabrávat nový program a odstraním vazbu na běžící instanci b programu
             if( version_object.b_program_cloud != null ) {
 
-               WebSocketController_Incoming.homer_destroyInstance(version_object.b_program_cloud.blocko_instance_name);
+               if(WebSocketController_Incoming.incomingConnections_homers.containsKey(version_object.b_program_cloud.blocko_instance_name )) WebSocketController_Incoming.homer_destroyInstance(version_object.b_program_cloud.blocko_instance_name);
 
                B_Program_Cloud b_program_cloud = version_object.b_program_cloud;
                b_program_cloud.delete();
@@ -1042,6 +1058,7 @@ public class ProgramingPackageController extends Controller {
             program_cloud.version_object        = version_object;
             program_cloud.server                = destination_server;
             program_cloud.setUnique_blocko_instance_name();
+            program_cloud.save();
 
             System.out.println("blocko server size " + WebSocketController_Incoming.blocko_servers.size() );
 
@@ -1052,12 +1069,15 @@ public class ProgramingPackageController extends Controller {
 
             JsonNode result =  WebSocketController_Incoming.blocko_server_add_instance(server, program_cloud);
 
-            if( result.get("status").equals("success")) {
+            System.out.println("Příchozí zpráva: " + result.asText() );
+
+            if( result.get("status").asText().equals("success") ) {
                 // Ukládám po úspěšné nastartvoání programu v cloudu jeho databázový ekvivalent
-                program_cloud.save();
                 return GlobalResult.result_ok();
             }
 
+            // Neproběhlo to úspěšně smažu zástupný objekt!!!
+            program_cloud.delete();
             return GlobalResult.result_BadRequest("Došlo k chybě");
 
          } catch (TimeoutException a) {
@@ -1132,6 +1152,7 @@ public class ProgramingPackageController extends Controller {
             server.set_hash_certificate();
 
             if(!server.create_permission()) return GlobalResult.forbidden_Permission();
+
             server.save();
             return GlobalResult.result_ok(Json.toJson(server));
 

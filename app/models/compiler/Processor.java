@@ -3,6 +3,7 @@ package models.compiler;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import controllers.SecurityController;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -32,8 +33,12 @@ public class Processor extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore   @Transient public Boolean create_permission(){  return SecurityController.getPerson().has_permission("Processor_create"); }
+    @JsonIgnore   @Transient public Boolean read_permission()  {  return true; }
+    @JsonProperty @Transient public Boolean edit_permission()  {  return SecurityController.getPerson().has_permission("Processor_edit");   }
+    @JsonProperty @Transient public Boolean delete_permission(){  return SecurityController.getPerson().has_permission("Processor_delete"); }
 
-
+    public enum permissions{Processor_create, Processor_edit, Processor_delete}
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String, Processor> find = new Finder<>(Processor.class);

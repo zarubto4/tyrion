@@ -45,6 +45,7 @@ public class DashboardController extends Controller {
     Integer reported_bugs            =  Loggy.number_of_reported_errors();
     Boolean server_mode              =  Server.server_mode;
     String  server_version           =  Server.server_version;
+    String  link_api_swagger         =  "http://swagger.byzance.cz/?url="+ Server.tyrion_serverAddress +"/api-docs";
 
 
 // Index (úvod) ########################################################################################################
@@ -54,7 +55,7 @@ public class DashboardController extends Controller {
 
         logger.info("Creating index.html content");
 
-        Html menu_html = menu.render(reported_bugs, connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers, connectedCompile_servers);
+        Html menu_html = menu.render(reported_bugs, connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers, connectedCompile_servers, link_api_swagger);
 
         Map<String, WS_BlockoServer> blockoServerMap = new HashMap<>();
 
@@ -107,7 +108,7 @@ public class DashboardController extends Controller {
         String text = "";
         for(String line : Files.readAllLines(Paths.get("README"), StandardCharsets.UTF_8) ) text += line + "\n";
 
-        Html menu_html   = menu.render(reported_bugs,connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers,connectedCompile_servers);
+        Html menu_html   = menu.render(reported_bugs,connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers,connectedCompile_servers, link_api_swagger);
         Html readme_html = readme.render( new Html( new PegDownProcessor().markdownToHtml(text) ));
 
         logger.debug("Return show_readme.html content");
@@ -126,7 +127,7 @@ public class DashboardController extends Controller {
 
         logger.debug("Return show_web_socket_stats.html content");
 
-        Html menu_html = menu.render(reported_bugs,connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers, connectedCompile_servers);
+        Html menu_html = menu.render(reported_bugs,connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers, connectedCompile_servers, link_api_swagger);
 
 
         List<WebSCType> homers = new ArrayList<>(WebSocketController_Incoming.incomingConnections_homers.values());
@@ -247,7 +248,7 @@ public class DashboardController extends Controller {
 
         logger.debug("Trying to render loggy.html content");
 
-        Html menu_html = menu.render(reported_bugs,connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers, connectedCompile_servers);
+        Html menu_html = menu.render(reported_bugs,connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers, connectedCompile_servers, link_api_swagger);
 
         return ok( main.render(menu_html,
                 loggy.render( Loggy.getErrors() ),

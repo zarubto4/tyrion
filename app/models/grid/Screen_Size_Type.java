@@ -53,7 +53,7 @@ public class Screen_Size_Type extends Model {
 
 
     @JsonIgnore   @Transient public Boolean create_permission(){  return  project != null ? Project.find.where().where().eq("ownersOfProject.id", SecurityController.getPerson().id ).findUnique().create_permission() : SecurityController.getPerson().has_permission("Screen_Size_Type_create"); }
-    @JsonProperty @Transient public Boolean read_permission()  {  return  project != null ? Project.find.where().where().eq("ownersOfProject.id", SecurityController.getPerson().id ).findUnique().read_permission()   : SecurityController.getPerson().has_permission("Screen_Size_Type_read"); }
+    @JsonIgnore   @Transient public Boolean read_permission()  {  return  ( project == null ? true : Project.find.where().where().eq("ownersOfProject.id", SecurityController.getPerson().id ).findUnique().read_permission() ) || SecurityController.getPerson().has_permission("Screen_Size_Type_read"); }
 
     @JsonProperty @Transient public Boolean edit_permission()  {  return  project != null ? Project.find.where().where().eq("ownersOfProject.id", SecurityController.getPerson().id ).findUnique().read_permission()   : SecurityController.getPerson().has_permission("Screen_Size_Type_edit"); }
     @JsonProperty @Transient public Boolean delete_permission(){  return  project != null ? Project.find.where().where().eq("ownersOfProject.id", SecurityController.getPerson().id ).findUnique().read_permission()   : SecurityController.getPerson().has_permission("Screen_Size_Type_delete"); }

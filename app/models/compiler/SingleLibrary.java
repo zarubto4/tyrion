@@ -3,6 +3,7 @@ package models.compiler;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import controllers.SecurityController;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -36,6 +37,16 @@ public class SingleLibrary  extends Model {
             if (SingleLibrary.find.where().eq("azurePackageLink", azurePackageLink ).findUnique() == null) break;
         }
     }
+
+
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore   @Transient public Boolean create_permission(){  return SecurityController.getPerson().has_permission("SingleLibrary_create"); }
+    @JsonIgnore   @Transient public Boolean read_permission()  {  return true; }
+    @JsonProperty @Transient public Boolean edit_permission()  {  return SecurityController.getPerson().has_permission("SingleLibrary_edit");   }
+    @JsonProperty @Transient public Boolean delete_permission(){  return SecurityController.getPerson().has_permission("SingleLibrary_delete"); }
+
+    public enum permissions{SingleLibrary_create, SingleLibrary_edit, SingleLibrary_delete}
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String, SingleLibrary> find = new Finder<>(SingleLibrary.class);

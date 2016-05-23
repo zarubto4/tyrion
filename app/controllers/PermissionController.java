@@ -173,7 +173,7 @@ public class PermissionController extends Controller {
             SecurityRole securityRole = SecurityRole.find.byId(role_id);
             if(securityRole == null ) return GlobalResult.notFoundObject("SecurityRole role_id not found");
 
-            if(! personPermission.edit_permission()) return GlobalResult.forbidden_Permission();
+            if(! securityRole.update_permission()) return GlobalResult.forbidden_Permission();
 
             if( ! securityRole.person_permissions.contains(personPermission)) securityRole.person_permissions.add(personPermission);
 
@@ -187,68 +187,7 @@ public class PermissionController extends Controller {
         }
     }
 
-    @ApiOperation(value = "get all Permissions from Role (Group)",
-            tags = {"Permission", "Role"},
-            notes = "If you want get all person_permissions in Role (Admins, Monkeys..etc). You need also permission for that or have right system Roles",
-            produces = "application/json",
-            response =  PersonPermission.class,
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Public", value = "Without Permission"),
-                    })
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = PersonPermission.class, responseContainer = "List"),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public Result get_Permission_in_Group( @ApiParam(required = true) @PathParam("role_id" )String role_id){
-        try {
 
-            SecurityRole securityRole = SecurityRole.find.byId(role_id);
-            if(securityRole == null ) return GlobalResult.notFoundObject("SecurityRole role_id not found");
-
-            return GlobalResult.result_ok(Json.toJson(securityRole.person_permissions));
-
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "get all Person from Role (Group)",
-            tags = {"Permission", "Role"},
-            notes = "If you want get all person from Role. You need also permission for that or have right system Roles",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Public", value = "Without Permisison"),
-                    })
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Person.class, responseContainer = "List"),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public Result get_Person_from_Role_Group( @ApiParam(required = true) @PathParam("role_id" )String role_id){
-        try {
-
-            SecurityRole securityRole = SecurityRole.find.byId(role_id);
-            if(securityRole == null ) return GlobalResult.notFoundObject("SecurityRole role_id not found");
-
-            return GlobalResult.result_ok(Json.toJson(securityRole.persons));
-
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
 
     @ApiOperation(value = "remove Permission from the Role",
             tags = {"Permission", "Role"},

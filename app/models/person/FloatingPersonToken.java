@@ -63,7 +63,7 @@ public class FloatingPersonToken extends Model {
     }
 
     @JsonIgnore
-    private void setDate(){
+    public void setDate(){
        this.created = new Date(); // oldDate == current time
        this.access_age = new Date(created.getTime() + TimeUnit.DAYS.toMillis(72));
     }
@@ -114,8 +114,8 @@ public class FloatingPersonToken extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient public Boolean read_permission()  {  return ( FloatingPersonToken.find.where().eq("person.id", SecurityController.getPerson().id).where().eq("id", connection_id).findRowCount() > 0) || SecurityController.getPerson().has_permission("FloatingPersonToken_read"); }
-    @JsonProperty @Transient public Boolean delete_permission(){  return ( FloatingPersonToken.find.where().eq("person.id", SecurityController.getPerson().id).where().eq("id", connection_id).findRowCount() > 0) || SecurityController.getPerson().has_permission("FloatingPersonToken_delete"); }
+    @JsonProperty @Transient public Boolean read_permission()  {  return ( person.id.equals( SecurityController.getPerson().id) ) || SecurityController.getPerson().has_permission("FloatingPersonToken_read");   }
+    @JsonProperty @Transient public Boolean delete_permission(){  return ( person.id.equals( SecurityController.getPerson().id) ) || SecurityController.getPerson().has_permission("FloatingPersonToken_delete"); }
 
     public enum permissions{ FloatingPersonToken_read, FloatingPersonToken_delete }
 

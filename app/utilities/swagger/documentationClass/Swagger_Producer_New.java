@@ -9,12 +9,12 @@ import play.data.validation.Constraints;
 public class Swagger_Producer_New {
 
     @Constraints.Required
-    @Constraints.MinLength(value = 8, message = "The name must have at least 8 characters, must be unique!")
-    @ApiModelProperty(required = true, value = "The name must have at least 8 characters, must be unique!")
+    @Constraints.MinLength(value = 4, message = "The name must have at least 4 characters, must be unique!")
+    @ApiModelProperty(required = true, value = "The name must have at least 4 characters, must be unique!")
     public String name;
 
     @Constraints.Required
-    @Constraints.MinLength(value = 24, message = "The description must have at least 24 characters")
-    @ApiModelProperty(required = true, value = "The description must have at least 24 characters")
+    @Constraints.MinLength(value = 8, message = "The description must have at least 8 characters")
+    @ApiModelProperty(required = true, value = "The description must have at least 8 characters")
     public String description;
 }

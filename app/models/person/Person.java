@@ -2,7 +2,6 @@ package models.person;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
 import models.blocko.BlockoBlock;
 import models.notification.Notification;
@@ -82,12 +81,13 @@ public class Person extends Model {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore   @Transient public Boolean create_permission(){  return true;  }
-    @JsonProperty @Transient public Boolean read_permission()  {  return true;  }
-    @JsonProperty @Transient  public Boolean edit_permission() {
+    @JsonIgnore   @Transient public Boolean read_permission()  {  return true;  }
+    @JsonIgnore   @Transient  public Boolean edit_permission() {
         if (SecurityController.getPerson() != null) return (M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Person_edit");
         return false;
     }
-    @JsonProperty @Transient public Boolean delete_permission(){
+    @JsonIgnore   @Transient
+    public Boolean delete_permission(){
 
         if(SecurityController.getPerson() != null) return (M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Person_delete");
             return false;
@@ -111,5 +111,5 @@ public class Person extends Model {
         }
     }
 
-    public static Finder<String,Person> find = new Finder<>(Person.class);
+      public static Model.Finder<String,Person>  find = new Model.Finder<>(Person.class);
 }

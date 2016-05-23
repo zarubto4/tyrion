@@ -3,6 +3,7 @@ package models.compiler;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import controllers.SecurityController;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -38,7 +39,14 @@ public class LibraryGroup extends Model {
         }
     }
 
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore   @Transient public Boolean create_permission(){  return SecurityController.getPerson().has_permission("LibraryGroup_create"); }
+    @JsonIgnore   @Transient public Boolean read_permission()  {  return true; }
+    @JsonProperty @Transient public Boolean edit_permission()  {  return SecurityController.getPerson().has_permission("LibraryGroup_edit");   }
+    @JsonProperty @Transient public Boolean delete_permission(){  return SecurityController.getPerson().has_permission("LibraryGroup_delete"); }
+
+    public enum permissions{LibraryGroup_create, LibraryGroup_edit, LibraryGroup_delete}
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String, LibraryGroup> find = new Finder<>(LibraryGroup.class);

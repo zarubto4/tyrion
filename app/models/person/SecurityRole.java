@@ -26,8 +26,8 @@ public class SecurityRole extends Model {
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient public List<String> persons_id(){  List<String> l = new ArrayList<>();  for( Person m  : persons)   l.add(m.id); return l;  }
-
+    @JsonProperty @Transient public List<String> persons_id()           {  List<String> l = new ArrayList<>();  for( Person m  : persons)   l.add(m.id); return l;  }
+    @JsonProperty @Transient public List<String> person_permissions_id(){  List<String> l = new ArrayList<>();  for( PersonPermission m   : person_permissions)   l.add(m.value); return l;  }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 

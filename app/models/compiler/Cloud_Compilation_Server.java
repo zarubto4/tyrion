@@ -2,6 +2,8 @@ package models.compiler;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import controllers.SecurityController;
 
 import javax.persistence.*;
 import java.util.UUID;
@@ -33,6 +35,14 @@ public class Cloud_Compilation_Server extends Model {
     }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+
+
+    @JsonIgnore   @Transient public Boolean create_permission(){  return SecurityController.getPerson().has_permission("Cloud_Compilation_Server_create"); }
+    @JsonIgnore   @Transient public Boolean read_permission()  {  return true; }
+    @JsonProperty @Transient public Boolean edit_permission()  {  return SecurityController.getPerson().has_permission("Cloud_Compilation_Server_edit");   }
+    @JsonProperty @Transient public Boolean delete_permission(){  return SecurityController.getPerson().has_permission("Cloud_Compilation_Server_delete"); }
+
+    public enum permissions{Cloud_Compilation_Server_create, Cloud_Compilation_Server_edit, Cloud_Compilation_Server_delete}
 
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

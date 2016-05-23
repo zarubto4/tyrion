@@ -27,11 +27,12 @@ import utilities.response.response_objects.Result_Unauthorized;
 import utilities.response.response_objects.Result_ok;
 import utilities.swagger.documentationClass.Login_IncomingLogin;
 import utilities.swagger.outboundClass.Login_Social_Network;
-import utilities.swagger.outboundClass.Swagger_Person_All_Details;
 import utilities.swagger.outboundClass.Swagger_Login_Token;
+import utilities.swagger.outboundClass.Swagger_Person_All_Details;
 
 import javax.inject.Inject;
 import javax.websocket.server.PathParam;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -138,7 +139,11 @@ public class SecurityController extends Controller {
             result.person = person;
 
             result.roles = person.roles;
-            result.permissions = PersonPermission.find.where().eq("roles.persons.id", person.id).findList();
+
+            List<String> permissions = new ArrayList<>();
+            for( PersonPermission m :  PersonPermission.find.where().eq("roles.persons.id", person.id).findList() ) permissions.add(m.value);
+
+            result.permissions = permissions;
 
             return GlobalResult.result_ok( Json.toJson( result ) );
 
@@ -279,10 +284,14 @@ public class SecurityController extends Controller {
             String state = map.get("state").replace("[", "").replace("]", "");
             String code  = map.get("code").replace("[", "").replace("]", "");
 
+            System.out.println("State: " + state);
+            System.out.println("Code: " + code);
+
 
             FloatingPersonToken floatingPersonToken = FloatingPersonToken.find.where().eq("providerKey", state).findUnique();
             if (floatingPersonToken == null) return redirect(Server.becki_redirectFail);
             floatingPersonToken.social_tokenVerified = true;
+            floatingPersonToken.setDate();
 
             OAuthService  service = Socials.Facebook(state);
 
@@ -305,17 +314,17 @@ public class SecurityController extends Controller {
             JsonNode jsonRequest = jsonPromise.get(10000);
 
             System.out.println("Příchozí JSON: " + jsonRequest.toString());
+            System.out.println("floatingPersonToken.providerUserId:" + floatingPersonToken.providerUserId);
 
 
-            List<FloatingPersonToken> before_registred = FloatingPersonToken.find.where().eq("providerUserId", floatingPersonToken.providerUserId).where().ne("connection_id", floatingPersonToken.connection_id).findList();
+            List<FloatingPersonToken> before_registred = FloatingPersonToken.find.where().eq("providerUserId", jsonRequest.get("id").asText() ).where().ne("connection_id", floatingPersonToken.connection_id).findList();
             if (!before_registred.isEmpty()){
                 System.out.println("Tento uživatel se nepřihlašuje poprvné");
                 floatingPersonToken.person = before_registred.get(0).person;
+                floatingPersonToken.providerUserId = jsonRequest.get("id").asText();
                 floatingPersonToken.update();
-
-
             }
-            else {
+            else{
 
                 Person person = new Person();
                 if (jsonRequest.has("mail")) person.mail = jsonRequest.get("mail").asText();

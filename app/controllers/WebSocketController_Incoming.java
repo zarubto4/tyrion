@@ -561,7 +561,7 @@ public class WebSocketController_Incoming extends Controller {
 
             incomingConnections_homers.put(homer.identifikator, homer);
 
-            return result;
+            return result_uploud;
 
     }
 
@@ -769,12 +769,14 @@ public class WebSocketController_Incoming extends Controller {
     }
 
     public static JsonNode homer_destroyInstance(String homer_id) throws TimeoutException, InterruptedException {
+
             String messageId = UUID.randomUUID().toString();
 
             ObjectNode result = Json.newObject();
             result.put("messageType", "destroyInstance");
             result.put("messageId", messageId);
             result.put("messageChannel", "homer-server");
+
 
             return incomingConnections_homers.get(homer_id).write_with_confirmation(messageId, result);
     }

@@ -7,7 +7,10 @@ import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import models.blocko.BlockoBlock;
 import models.blocko.BlockoBlockVersion;
+import models.blocko.Cloud_Blocko_Server;
 import models.blocko.TypeOfBlock;
+import models.compiler.*;
+import models.grid.Screen_Size_Type;
 import models.overflow.*;
 import models.person.FloatingPersonToken;
 import models.person.Person;
@@ -177,11 +180,19 @@ public class Server {
             // Blocko
                 for(Enum en : BlockoBlock.permissions.values())             permissions.add(en.name());
                 for(Enum en : BlockoBlockVersion.permissions.values())      permissions.add(en.name());
+                for(Enum en : Cloud_Blocko_Server.permissions.values())     permissions.add(en.name());
                 for(Enum en : TypeOfBlock.permissions.values())             permissions.add(en.name());
 
             // compiler
+                for(Enum en : Board.permissions.values())                   permissions.add(en.name());
+                for(Enum en : Cloud_Compilation_Server.permissions.values())permissions.add(en.name());
+                for(Enum en : LibraryGroup.permissions.values())            permissions.add(en.name());
+                for(Enum en : Processor.permissions.values())               permissions.add(en.name());
+                for(Enum en : Producer.permissions.values())                permissions.add(en.name());
+                for(Enum en : SingleLibrary.permissions.values())           permissions.add(en.name());
 
             // grid
+                for(Enum en : Screen_Size_Type.permissions.values())           permissions.add(en.name());
 
             // overflow
                 for(Enum en : FloatingPersonToken.permissions.values())     permissions.add(en.name());
