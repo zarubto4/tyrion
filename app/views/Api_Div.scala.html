@@ -1,0 +1,101 @@
+@import utilities.swagger.swagger_diff_tools.servise_class.Swagger_Diff
+(diff: Swagger_Diff)
+
+
+<section class="content-header">
+  <h1> Read Me <small> current version </small> </h1>
+  <ol class="breadcrumb">
+    <li><a href="#"><i class="fa fa-graduation-cap"></i> Read Me </a></li>
+    <li class="active">Dashboard</li>
+  </ol>
+</section>
+
+  <!-- Main content -->
+<section class="content">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="box box-primary">
+        <div class="box-body no-padding">
+          <div class="mailbox-read-message">
+
+              <H1>Porovnávám verze @diff.old_Verion vs @diff.new_Verion </H1><br>
+
+
+              <h2 class="page-header">Skupiny na kterých došlo ke změně</h2>
+              <div class="row">
+                  <div class="col-md-6">
+                      <div class="box box-default">
+                          <div class="box-header with-border">
+                              <i class="fa fa-warning"></i>
+                              <h3 class="box-title">Group Removed</h3>
+                          </div><!-- /.box-header -->
+                          <div class="box-body">
+                          @for(x <- diff.removed_groups){
+                              <p class="text-red">  @x </p>
+                          }
+                          </div>
+                      </div>
+                  </div>
+                  <div class="col-md-6">
+                      <div class="box box-default">
+                          <div class="box-header with-border">
+                              <i class="fa fa-bullhorn"></i>
+                              <h3 class="box-title">Group Added</h3>
+                          </div><!-- /.box-header -->
+                          <div class="box-body">
+                              @for(x <- diff.add_groups ){
+                                  <p class="text-green">  @x </p>
+                              }
+                          </div>
+                      </div><!-- /.box-body -->
+                  </div><!-- /.box -->
+
+              </div>
+
+              <h2 class="page-header">Api objekty na kterých došlo ke změně</h2>
+
+
+          </div>
+        </div><!-- /.box-body -->
+      </div><!-- /. box -->
+    </div><!-- /.col -->
+  </div><!-- /.row -->
+</section><!-- /.content -->
+
+<script src="@routes.Assets.at("plugins/jsdifflib/difflib.js")"></script>
+<script>
+    function diffUsingJS() {
+
+        // get the baseText and newText values from the two textboxes, and split them into lines
+        var base = difflib.stringAsLines($("baseText").value);
+        var newtxt = difflib.stringAsLines($("newText").value);
+
+        // create a SequenceMatcher instance that diffs the two sets of lines
+        var sm = new difflib.SequenceMatcher(base, newtxt);
+
+        // get the opcodes from the SequenceMatcher instance
+        // opcodes is a list of 3-tuples describing what changes should be made to the base text
+        // in order to yield the new text
+        var opcodes = sm.get_opcodes();
+        var diffoutputdiv = $("diffoutput");
+        while (diffoutputdiv.firstChild) diffoutputdiv.removeChild(diffoutputdiv.firstChild);
+        var contextSize = $("contextSize").value;
+        contextSize = contextSize ? contextSize : null;
+
+        // build the diff view and add it to the current DOM
+        diffoutputdiv.appendChild(diffview.buildView({
+        baseTextLines: base,
+        newTextLines: newtxt,
+        opcodes: opcodes,
+
+        // set the display titles for each resource
+        baseTextName: "Base Text",
+        newTextName: "New Text",
+        contextSize: contextSize,
+        viewType: $("inline").checked ? 1 : 0
+        }));
+
+        // scroll down to the diff view window.
+        location = url + "#diff";
+    }
+</script>

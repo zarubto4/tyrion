@@ -30,7 +30,7 @@ import java.util.Map;
 public class NotificationController extends Controller {
 
   //######################################################################################################################
-
+  static play.Logger.ALogger logger = play.Logger.of("Loggy");
   private static Map<String, Map<String, EventSource>> connected_accounts = new HashMap<>(); // < person_id , < token , EventSource >
   //######################################################################################################################
 
@@ -49,9 +49,33 @@ public class NotificationController extends Controller {
           for (FloatingPersonToken token : FloatingPersonToken.find.where().eq("person.id", person.id).where().eq("notification_subscriber", true).findList()) {
 
             CoreResponse.cors_EventSource();
-             connected_accounts.get(person.id).get(token.authToken).send(EventSource.Event.event(Json.toJson(notification)));
+            try {
+              connected_accounts.get(person.id).get(token.authToken).send(EventSource.Event.event(Json.toJson(notification)));
+
+            } catch (Exception e) {
+              logger.error("Došlo k systémové chybě při odesílání EventSource");
+
+              try {
+                  if (connected_accounts.containsKey(person.id)) {
+                    System.out.println("connected_accounts stále obsahuje person.id");
+                    if (connected_accounts.get(person.id).containsKey(token.authToken)) {
+                      System.out.println("connected_accounts nad person.id stále obsahuje token.authToken");
+                      connected_accounts.get(person.id).get(token.authToken).close();
+                      connected_accounts.get(person.id).remove(token.authToken);
+                    }else{
+                      System.out.println("connected_accounts stále obsahuje person.id ale už neobsahuje token");
+                    }
+                  } else {
+                    System.out.println("connected_accounts neobsahuje person.id");
+                  }
+              } catch (Exception b) {
+
+                logger.error("Došlo k systémové chybě nad systémovou chybou");
+                b.printStackTrace();
+              }
+            }
           }
-    }
+       }
   }
 
   public static void send_notification(List<Person> persons, Notification_level level, String message){
@@ -76,9 +100,16 @@ public class NotificationController extends Controller {
   })
   public Result subscribe_notification(@ApiParam(value = "token_value", required = true) @PathParam("token_value") String token_value ) {
 
-    FloatingPersonToken token = FloatingPersonToken.find.where().eq("authToken",token_value).findUnique();
+    System.out.println("Pripojuje se mi notifikace s tokenem " + token_value);
 
+
+    FloatingPersonToken token = FloatingPersonToken.find.where().eq("authToken",token_value).findUnique();
     if(token == null) return GlobalResult.result_Unauthorized();
+
+    if(connected_accounts.containsKey(token.person.id) && connected_accounts.get(token.person.id).containsKey(token_value) ) {
+      System.out.println("Mám v mapě osobu i token!");
+    }
+
 
     // Token je používán, pravděpodobně došlo k obnovení okna prohlížeče a proto je nutné zahodit předchozí spojení,
     // které se bohužel umí samo odpojit až ve chvíli kdy mu server chce něco odeslat.

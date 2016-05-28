@@ -5,6 +5,7 @@ import com.microsoft.azure.storage.blob.CloudBlob;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import com.microsoft.azure.storage.blob.ListBlobItem;
+import models.blocko.Cloud_Blocko_Server;
 import models.compiler.Cloud_Compilation_Server;
 import models.compiler.FileRecord;
 import models.compiler.Version_Object;
@@ -14,12 +15,22 @@ import models.overflow.Post;
 import models.person.Person;
 import models.person.PersonPermission;
 import models.person.SecurityRole;
-import models.blocko.Cloud_Blocko_Server;
 import org.apache.commons.io.FileUtils;
 import play.Logger;
+import play.data.Form;
+import play.libs.Json;
 import play.mvc.Controller;
+import utilities.swagger.swagger_diff_tools.servise_class.Swagger_Api;
+import utilities.swagger.swagger_diff_tools.servise_class.Swagger_Diff;
+import utilities.swagger.swagger_diff_tools.servise_class.Diffs;
+import utilities.swagger.swagger_diff_tools.servise_class.News;
+import utilities.swagger.swagger_diff_tools.servise_class.Remws;
 
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -250,7 +261,16 @@ public class UtilTools extends Controller {
             person.roles.add(SecurityRole.findByName("SuperAdmin"));
 
             person.save();
+
+        }else{
+            // updatuji oprávnění
+            Person person = Person.find.where().eq("mail", "admin@byzance.cz").findUnique();
+            List<PersonPermission> personPermissions = PersonPermission.find.all();
+
+            for(PersonPermission personPermission :  personPermissions) if(!person.person_permissions.contains(personPermission)) person.person_permissions.add(personPermission);
+            person.update();
         }
+
 
 
         if( Screen_Size_Type.find.where().eq("name","iPhone6").findUnique() == null){
@@ -283,5 +303,95 @@ public class UtilTools extends Controller {
         }
 
     }
+
+    //
+    public static JsonNode getVersion(String version){
+        try {
+            String version_name = "1.06.04";
+
+            String content = readFile("app/utilities/swagger/historical_api_files/" + version_name + ".json", StandardCharsets.UTF_8);
+            return Json.parse(content);
+            
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    // Zde budu porovnávat změny příchozích souboru API
+    public static Swagger_Diff set_API_Changes() {
+                try {
+
+                    logger.debug("Creating api_diff.html content");
+
+                    String file_name_old = "1.06.04";
+                    String file_name_new = "1.06.05";
+
+                    String content_old = readFile("app/utilities/swagger/historical_api_files/" + file_name_old + ".json", StandardCharsets.UTF_8);
+                    String content_new = readFile("app/utilities/swagger/historical_api_files/" + file_name_new + ".json", StandardCharsets.UTF_8);
+
+                    JsonNode old_api = Json.parse(content_old);
+                    JsonNode new_api = Json.parse(content_new);
+
+
+
+                    Swagger_Diff swagger_Dif = new Swagger_Diff();
+                    swagger_Dif.new_Verion = file_name_new;
+                    swagger_Dif.old_Verion = file_name_old;
+
+
+                    final Form<Swagger_Api> form_old = Form.form(Swagger_Api.class).bind(old_api);
+                    Swagger_Api api_old = form_old.get();
+
+                    final Form<Swagger_Api> form_new = Form.form(Swagger_Api.class).bind(new_api);
+                    Swagger_Api api_new = form_new.get();
+
+
+                    for(Swagger_Api.Tag tag_old : api_old.tags) if(! api_new.contains_tag(tag_old.name)) swagger_Dif.add_groups.add( tag_old.name  );
+
+                    for(Swagger_Api.Tag tag_new: api_new.tags) if(! api_old.contains_tag(tag_new.name)) swagger_Dif.removed_groups.add( tag_new.name  );
+
+
+                    for(String key : api_new.models.keySet()){
+
+                        if(!api_old.models.containsKey(key)){
+                            swagger_Dif.news.add( new News(key, api_new.models.get(key) ));
+                        }
+                        else if(api_old.models.containsKey(key) &&  !api_old.models.get(key).equals(api_new.models.get(key) )) {
+
+                            swagger_Dif.diffs.add( new Diffs(key,api_old.models.get(key), api_new.models.get(key)));
+                        }
+                    }
+
+                    for(String key : api_old.models.keySet()){
+                        if(!api_new.models.containsKey(key)){
+                            swagger_Dif.remwses.add( new Remws(key, api_old.models.get(key)));
+                        }
+                    }
+
+//
+
+                    //--------------------------------------------------------------------------------------------------
+
+                    logger.debug("Return show_readme.html content");
+
+
+                    // TODO vrátit odkaz na soubor
+
+                    return swagger_Dif;
+
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+        throw new NullPointerException();
+    }
+
+    public static String readFile(String path, Charset encoding) throws IOException
+    {
+        byte[] encoded = Files.readAllBytes(Paths.get(path));
+        return new String(encoded, encoding);
+    }
+
+
 
 }

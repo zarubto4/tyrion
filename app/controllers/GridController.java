@@ -43,7 +43,7 @@ public class GridController extends Controller {
                             @ExtensionProperty(name = "M_Project_create_permission", value = M_Project.create_permission_docs ),
                     }),
                     @Extension( name = "permission_required", properties = {
-                        @ExtensionProperty(name = "Project_create_permission", value = "true"),
+                        @ExtensionProperty(name = "Project.update_permission", value = "true"),
                         @ExtensionProperty(name = "Static Permission key",     value =  "M_Project_create" )
                     })
             }
@@ -221,19 +221,19 @@ public class GridController extends Controller {
     }
 
     @ApiOperation(value = "get all M_Project by Logged Person",
-            tags = {"M_Program", "APP-Api"},
+            tags = {"M_Program"},
             notes = "get List<M_Project> by logged person ->that's required valid token in html head",
             produces = "application/json",
             protocols = "https",
             code = 200,
             extensions = {
                     @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "M_Project.read_permission", value = M_Project.read_permission_docs ),
+                            @ExtensionProperty(name = "M_Project.delete_permission", value = M_Project.read_permission_docs ),
                     }),
                     @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "M_Project.read_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key"    , value = "M_Project_read" ),
-                            @ExtensionProperty(name = "Dynamic Permission key"   , value = "M_Project_read.{project_id}"),
+                            @ExtensionProperty(name = "M_Project.remove_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key"      , value = "M_Project_delete" ),
+                            @ExtensionProperty(name = "Dynamic Permission key"     , value = "M_Project_delete.{project_id}"),
                     })
             }
     )
@@ -421,7 +421,7 @@ public class GridController extends Controller {
     }
 
     @ApiOperation(value = "get M_Program by generated token",
-            tags = {"M_Program", "APP-Api"},
+            tags = {"APP-Api"},
             notes = "get M_Program by token",
             produces = "application/json",
             protocols = "https",
@@ -459,7 +459,7 @@ public class GridController extends Controller {
     }
 
     @ApiOperation(value = "get all M_Program b yLogged Person",
-            tags = {"M_Program", "APP-Api"},
+            tags = {"APP-Api"},
             notes = "get list of M_Programs by logged Person",
             produces = "application/json",
             protocols = "https",
@@ -509,7 +509,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured.class)
-    public Result get_M_Program(@ApiParam(value = "m_program_id String query", required = true) @PathParam("m_program_id") String m_program_id) {
+    public Result  get_M_Program(@ApiParam(value = "m_program_id String query", required = true) @PathParam("m_program_id") String m_program_id) {
         try {
             M_Program m_program = M_Program.find.byId(m_program_id);
             if (m_program == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
@@ -520,6 +520,7 @@ public class GridController extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(m_program));
         } catch (Exception e) {
+            e.printStackTrace();
             return Loggy.result_internalServerError(e, request());
         }
     }

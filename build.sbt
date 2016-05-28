@@ -26,7 +26,7 @@ libraryDependencies ++= Seq(
   "mysql" % "mysql-connector-java" % "5.1.18",
   "net.sourceforge.jtds" % "jtds" % "1.3.0",
   "commons-codec" % "commons-codec" % "1.9",
-
+  "com.cedarsoftware" % "json-io" % "4.4.0",
   "org.pegdown" % "pegdown" % "1.6.0",
 
 

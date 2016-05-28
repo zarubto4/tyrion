@@ -19,9 +19,12 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.twirl.api.Html;
 import utilities.Server;
+import utilities.UtilTools;
 import utilities.loggy.Loggy;
+import utilities.swagger.swagger_diff_tools.servise_class.Swagger_Diff;
 import utilities.webSocket.*;
 import views.html.*;
+import views.html.api_Div;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -115,6 +118,27 @@ public class DashboardController extends Controller {
 
         return ok( main.render(menu_html,
                 readme_html ,
+                server_mode,
+                server_version));
+    }
+
+// API DIFF ###############################################################################################################
+
+    // Zobrazení readme podle MarkDown
+    public Result show_diff_on_Api() throws IOException, NullPointerException {
+
+        logger.debug("show_diff_on_Api diff_html content");
+
+        String text = "";
+        for(String line : Files.readAllLines(Paths.get("README"), StandardCharsets.UTF_8) ) text += line + "\n";
+
+        Html menu_html   = menu.render(reported_bugs,connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers,connectedCompile_servers, link_api_swagger);
+        Swagger_Diff swagger_diff = UtilTools.set_API_Changes();
+        Html content = api_Div.render(swagger_diff);
+        logger.debug("Return show_readme.html content");
+
+        return ok( main.render(menu_html,
+                content ,
                 server_mode,
                 server_version));
     }

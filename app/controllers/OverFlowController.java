@@ -619,7 +619,7 @@ public class OverFlowController  extends Controller {
             code = 201,
             extensions = {
                     @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "TypeOfPost.create_permission", value = TypeOfPost.create_permission_docs ),
+                            @ExtensionProperty(name = "TypeOfPost.create_permission", value = TypeOfPost.create_permission_docs),
                     }),
                     @Extension( name = "permission_required", properties = {
                             @ExtensionProperty(name = "TypeOfPost.create_permission", value = "true"),
@@ -733,7 +733,7 @@ public class OverFlowController  extends Controller {
                 code = 200,
                 extensions = {
                         @Extension( name = "permission_required", properties = {
-                                @ExtensionProperty(name = "TypeOfPost.create_permission", value = "true"),
+                                @ExtensionProperty(name = "TypeOfPost.edit_permission", value = "true"),
                                 @ExtensionProperty(name = "Static Permission key", value =  "TypeOfPost_edit" )
                         })
                 }
@@ -796,8 +796,8 @@ public class OverFlowController  extends Controller {
             code = 200,
             extensions = {
                     @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "TypeOfPost.create_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "TypeOfPost_edit" )
+                            @ExtensionProperty(name = "TypeOfPost.delete_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "TypeOfPost_delete" )
                     })
             }
     )

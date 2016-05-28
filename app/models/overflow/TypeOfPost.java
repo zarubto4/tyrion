@@ -24,8 +24,8 @@ public class TypeOfPost extends Model {
 
     @JsonIgnore @Transient public Boolean create_permission(){  return  SecurityController.getPerson().has_permission("TypeOfPost_create");}
     @JsonIgnore @Transient public Boolean read_permission()  {  return true; }
-    @JsonIgnore @Transient public Boolean edit_permission()  {  return  SecurityController.getPerson().has_permission("TypeOfPost_edit");  }
-    @JsonIgnore @Transient public Boolean delete_permission(){  return  SecurityController.getPerson().has_permission("TypeOfPost_delete");}
+    @Transient public Boolean edit_permission()  { return  SecurityController.getPerson().has_permission("TypeOfPost_edit");}
+    @Transient public Boolean delete_permission(){ return  SecurityController.getPerson().has_permission("TypeOfPost_delete");}
 
     public enum permissions{  TypeOfPost_create, TypeOfPost_edit, TypeOfPost_delete}
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

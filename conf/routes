@@ -348,6 +348,8 @@ PUT             /websocket/terminal/identificator/:terminal_id                  
 
 #SWAGGER API
 GET            /api-docs                                    @utilities.swagger.ApiHelpController.getResources
+GET            /api-docs/:version                           @utilities.swagger.swagger_diff_tools.Swagger_diff_Controller.getResources_version(version)
+
 
 #CORS
 OPTIONS        /*all                                        @controllers.SecurityController.optionLink(all)
@@ -367,6 +369,7 @@ GET             /                                           @controllers.Dashboa
 GET             /public/bugs                                @controllers.DashboardController.show_all_logs()
 GET             /public/websocket                           @controllers.DashboardController.show_web_socket_stats()
 GET             /public/show_readme                         @controllers.DashboardController.show_readme()
+GET             /public/show_diff_on_Api                    @controllers.DashboardController.show_diff_on_Api()
 
 # BUGS SERVISE PAGE
 

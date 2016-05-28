@@ -173,6 +173,7 @@ public class Server {
      * @throws Exception
      */
     public static void setPermission() throws Exception{
+        logger.info("Setting Permission");
 
         List<String> permissions = new ArrayList<>();
 

@@ -6,13 +6,12 @@ import play.mvc.Result;
 import utilities.loggy.Loggy;
 
 
-
 public class WikyController extends Controller {
 
 
      public Result test1(){
-       return TODO;
-    }
+         return ok();
+     }
 
     // Testovací logger
     public Result test2(){

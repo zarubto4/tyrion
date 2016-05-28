@@ -4,6 +4,7 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
+import controllers.WebSocketController_Incoming;
 
 import javax.persistence.*;
 import java.util.UUID;
@@ -22,6 +23,9 @@ public class Cloud_Compilation_Server extends Model {
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
+    @JsonProperty  public boolean server_is_online(){
+        return WebSocketController_Incoming.compiler_cloud_servers.containsKey(this.server_name);
+    }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 

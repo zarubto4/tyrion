@@ -13,8 +13,30 @@ public class Login_IncomingLogin {
     @ApiModelProperty(required = true)
     public String mail;
 
+
     @Constraints.Required
     @ApiModelProperty(required = true)
     public String password;
+
+
+// ----------------------------------------------------------------
+
+    public String getMail() {
+        return mail;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setMail(String mail) {
+        this.mail = mail;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+
 }
 

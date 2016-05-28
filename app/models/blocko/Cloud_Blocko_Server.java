@@ -4,6 +4,7 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
+import controllers.WebSocketController_Incoming;
 import models.project.b_program.B_Program_Cloud;
 
 import javax.persistence.*;
@@ -24,6 +25,11 @@ public class Cloud_Blocko_Server extends Model{
     @JsonIgnore @OneToMany(mappedBy="server", cascade = CascadeType.ALL) public List<B_Program_Cloud> cloud_programs  = new ArrayList<>();
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
+
+
+    @JsonProperty  public boolean server_is_online(){
+        return WebSocketController_Incoming.blocko_servers.containsKey(this.server_name);
+    }
 
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
