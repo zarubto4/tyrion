@@ -15,7 +15,7 @@ public class Swagger_diff_Controller extends Controller {
 
     public Result getResources_version(String version){
         try{
-            String content_old = UtilTools.readFile("app/utilities/swagger/swagger_diff_tools/json_files/" + version + ".json", StandardCharsets.UTF_8);
+            String content_old = UtilTools.read_local_File_for_Swagger("app/utilities/swagger/swagger_diff_tools/json_files/" + version + ".json", StandardCharsets.UTF_8);
             JsonNode old_api = Json.parse(content_old);
 
             return GlobalResult.result_ok(old_api);

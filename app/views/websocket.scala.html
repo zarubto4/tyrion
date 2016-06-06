@@ -34,7 +34,8 @@
 
                         <tr>
                             <th>ID</th>
-                            <th>Subscribers</th>
+                            <th>Grid Subscribers</th>
+                            <th>Becki Subscribers</th>
                             <th>Get Hardware</th>
                             <th>Get Status</th>
                             <th>Disconnect</th>
@@ -42,11 +43,20 @@
 
                         @for( x <- homers){
                             <tr>
-                                <td> @x.identifikator.substring(0,7)</td>
+                                <td> @x.identifikator</td>
 
-                                <td> @if( !x.subscribers.isEmpty) {
-                                    @for( y <- x.subscribers){
-                                        @y.identifikator.substring(0,7)
+                                <td> @if( !x.subscribers_grid.isEmpty) {
+                                    @for( y <- x.subscribers_grid){
+                                        @y.identifikator
+                                    }
+                                } else{
+                                    -----
+                                }</td>
+
+
+                                <td> @if( !x.subscribers_becki.isEmpty) {
+                                    @for( y <- x.subscribers_becki){
+                                        @Person.find.byId(y.identifikator).mail
                                     }
                                 } else{
                                     -----
@@ -109,15 +119,15 @@
                             <tr>
                                 <td> @x.identifikator.substring(0,7) </td>
 
-                                <td > @if( x.subscribers.isEmpty){
+                                <td > @if( x.subscribers_grid.isEmpty){
                                     <b style="color: red">FALSE</b>
                                 }else{
                                     <b style="color: #70ff6e">TRUE</b>
                                 }
                                 </td>
 
-                                <td> @if( !x.subscribers.isEmpty) {
-                                    @x.subscribers.get(0).identifikator.substring(0,7)
+                                <td> @if( !x.subscribers_grid.isEmpty) {
+                                    @x.subscribers_grid.get(0).identifikator.substring(0,7)
                                 } else{
                                     -----
                                 }</td>
@@ -187,7 +197,7 @@
                                     <th></th>
 
                                     <th rowspan="@(x.all_person_Connections.size()+2)">
-                                        <a href=' @routes.DashboardController.ping_terminal( x.identifikator )' >
+                                        <a href=' @routes.DashboardController.ping_becki( x.identifikator )' >
                                             <button class="btn btn-block btn-info btn-xs">Ping All</button>
                                         </a>
                                     </th>

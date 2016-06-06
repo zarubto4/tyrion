@@ -35,7 +35,13 @@
         <script src="@routes.Assets.at("plugins/slimScroll/jquery.slimscroll.min.js")"></script>
         <script src="@routes.Assets.at("plugins/fastclick/fastclick.min.js")"></script>
     </head>
-       <body class="hold-transition skin-blue sidebar-mini">
+
+    @if(mode){
+        <body class="hold-transition skin-blue sidebar-mini">
+    }else{
+       <body class="hold-transition skin-red sidebar-mini">
+    }
+
             <div class="wrapper">
 
                 <header class="main-header">

@@ -3,6 +3,7 @@ package utilities.swagger.documentationClass;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import play.data.validation.Constraints;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -15,7 +16,11 @@ public class Swagger_C_Program_Version_Update {
     // Nutný fiktivní contructor pro zhmotnění vnitřních tříd
     public Swagger_C_Program_Version_Update(){}
 
+    @Constraints.Required
+    @ApiModelProperty(required = true)
+    public String type_of_board_id;
 
+    @Constraints.Required
     @ApiModelProperty(required = true)
     public String code;
 

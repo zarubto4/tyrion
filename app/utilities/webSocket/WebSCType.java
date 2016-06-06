@@ -16,7 +16,8 @@ import java.util.concurrent.*;
 public abstract class WebSCType {
 
     public Map<String, WebSCType> maps;
-    public List<WebSCType> subscribers = new ArrayList<>();
+    public List<WebSCType> subscribers_grid  = new ArrayList<>();
+    public List<WebSCType> subscribers_becki = new ArrayList<>();
 
     public WebSCType webSCtype;
     public WebSocket.Out<String> out;
@@ -48,6 +49,7 @@ public abstract class WebSCType {
         }catch (JsonParseException e){
             WebSocketController_Incoming.invalid_json_message(webSCtype);
         }catch (Exception e){
+            WebSocketController_Incoming.invalid_json_message(webSCtype);
             e.printStackTrace();
         }
 
@@ -83,7 +85,7 @@ public abstract class WebSCType {
 
 
     public JsonNode write_with_confirmation(String messageId, ObjectNode json) throws TimeoutException, InterruptedException {
-            return write_with_confirmation(messageId, json, (long) (250*100) );
+            return write_with_confirmation(messageId, json, (long) (250*1000) );
     }
 
     public JsonNode write_with_confirmation(String messageId, ObjectNode json, Long time_To_TimeOutExcepting) throws TimeoutException,  InterruptedException {
@@ -104,7 +106,7 @@ public abstract class WebSCType {
 
                     while (breaker > 0) {
                         breaker-=250;
-                        //System.out.println("Zbejvá času " + breaker);
+                        System.out.println("Zbejvá času " + breaker);
 
                         Thread.sleep(250);
 

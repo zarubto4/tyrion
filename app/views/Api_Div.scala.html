@@ -1,5 +1,6 @@
 @import utilities.swagger.swagger_diff_tools.servise_class.Swagger_Diff
-(diff: Swagger_Diff)
+@import utilities.swagger.swagger_diff_tools.servise_class.Diffs
+@(diff: Swagger_Diff, link_api_swagger : String)
 
 
 <section class="content-header">
@@ -18,33 +19,38 @@
         <div class="box-body no-padding">
           <div class="mailbox-read-message">
 
-              <H1>Porovnávám verze @diff.old_Verion vs @diff.new_Verion </H1><br>
+              <H1> <p style="text-align: center">Differencing on version
+                                    <text class="text-red">   @diff.old_Version </text>
+                                                              vs
+                                    <text class="text-green"> @diff.new_Version </text>
+              </p> </H1><br>
 
 
-              <h2 class="page-header">Skupiny na kterých došlo ke změně</h2>
+
               <div class="row">
                   <div class="col-md-6">
-                      <div class="box box-default">
+                      <div class="box box-danger">
                           <div class="box-header with-border">
                               <i class="fa fa-warning"></i>
                               <h3 class="box-title">Group Removed</h3>
                           </div><!-- /.box-header -->
                           <div class="box-body">
                           @for(x <- diff.removed_groups){
-                              <p class="text-red">  @x </p>
+                              <p class="text-red">  @x <a href='@(link_api_swagger + "/" + diff.old_Version + "#" + x)' ><i class="fa fa-graduation-cap"></i>[Swagger]</a> </p>
                           }
                           </div>
                       </div>
                   </div>
+
                   <div class="col-md-6">
-                      <div class="box box-default">
+                      <div class="box box-success">
                           <div class="box-header with-border">
                               <i class="fa fa-bullhorn"></i>
                               <h3 class="box-title">Group Added</h3>
                           </div><!-- /.box-header -->
                           <div class="box-body">
                               @for(x <- diff.add_groups ){
-                                  <p class="text-green">  @x </p>
+                                  <p class="text-green">  @x <a href='@(link_api_swagger + "/" + diff.new_Version + "#" + x)' ><i class="fa fa-graduation-cap"></i>[Swagger]</a> </p> </p>
                               }
                           </div>
                       </div><!-- /.box-body -->
@@ -53,6 +59,136 @@
               </div>
 
               <h2 class="page-header">Api objekty na kterých došlo ke změně</h2>
+
+              @for(x <- diff.diffs) {
+                  <h2 class="page-header"></h2>
+                  <div class="row">
+                      <div class="col-md-6">
+                          <div class="box box-danger">
+                              <div class="box-header with-border">
+                                  <i class="fa fa-warning"></i>
+                                  <h3 class="box-title"><text class="text-red"> @x.name (old)</text></h3>
+                              </div> <!-- /.box-header -->
+                              <div class="box-body">
+                                   <pre class="prettyprint">
+                                     @x.old_json
+                                   </pre>
+                              </div>
+                          </div>
+                      </div>
+                      <div class="col-md-6">
+                          <div class="box box-success">
+                              <div class="box-header with-border">
+                                  <i class="fa fa-bullhorn"></i>
+                                  <h3 class="box-title"><text class="text-green"> @x.name (New)</text></h3>
+                              </div> <!-- /.box-header -->
+                              <div class="box-body">
+                                  <pre class="prettyprint">
+                                    @x.new_json
+                                  </pre>
+                              </div>
+                          </div> <!-- /.box-body -->
+                      </div> <!-- /.box -->
+                  </div>
+              }
+
+
+
+
+                  <h2 class="page-header">Odebrané nebo nové APi</h2>
+                  <div class="row">
+
+                      <div class="col-md-6">
+                          <div class="box box-danger">
+                              <div class="box-header with-border">
+                                  <i class="fa fa-warning"></i>
+                                  <h3 class="box-title"><text class="text-red">  dfsdsfasdfsd</text></h3>
+                              </div> <!-- /.box-header -->
+                              <div class="box-body">
+                                  <pre class="prettyprint">
+                                      dfsdsfasdfsd
+                              </div>
+                          </div>
+                      </div>
+                      <div class="col-md-6">
+                             <div class="box box-success">
+                                 <div class="box-header with-border">
+                                     <i class="fa fa-bullhorn"></i>
+                                     <h3 class="box-title"><text class="text-green">  dfsdsfasdfsd</text></h3>
+                                 </div> <!-- /.box-header -->
+                                 <div class="box-body">
+                                     <pre class="prettyprint">
+                                         dfsdsfasdfsd
+                                     </pre>
+                                 </div>
+                             </div> <!-- /.box-body -->
+                         </div> <!-- /.box -->
+                      <div class="col-md-6">
+                          <div class="box box-success">
+                              <div class="box-header with-border">
+                                  <i class="fa fa-bullhorn"></i>
+                                  <h3 class="box-title"><text class="text-green">  dfsdsfasdfsd</text></h3>
+                              </div> <!-- /.box-header -->
+                              <div class="box-body">
+                                  <pre class="prettyprint">
+                                   dfsdsfasdfsd
+                                  </pre>
+                              </div>
+                          </div> <!-- /.box-body -->
+
+                          <div class="box box-success">
+                              <div class="box-header with-border">
+                                  <i class="fa fa-bullhorn"></i>
+                                  <h3 class="box-title"><text class="text-green">  dfsdsfasdfsd</text></h3>
+                              </div> <!-- /.box-header -->
+                              <div class="box-body">
+                                  <pre class="prettyprint">
+                                      dfsdsfasdfsd
+                                  </pre>
+                              </div>
+                          </div> <!-- /.box-body -->
+
+                          <div class="box box-success">
+                              <div class="box-header with-border">
+                                  <i class="fa fa-bullhorn"></i>
+                                  <h3 class="box-title"><text class="text-green">  dfsdsfasdfsd</text></h3>
+                              </div> <!-- /.box-header -->
+                              <div class="box-body">
+                                  <pre class="prettyprint">
+                                      dfsdsfasdfsd
+                                  </pre>
+                              </div>
+                          </div> <!-- /.box-body -->
+
+                          <div class="box box-success">
+                              <div class="box-header with-border">
+                                  <i class="fa fa-bullhorn"></i>
+                                  <h3 class="box-title"><text class="text-green">  dfsdsfasdfsd</text></h3>
+                              </div> <!-- /.box-header -->
+                              <div class="box-body">
+                                  <pre class="prettyprint">
+                                      dfsdsfasdfsd
+                                  </pre>
+                              </div>
+                          </div> <!-- /.box-body -->
+
+                      </div> <!-- /.box -->
+                      <div class="col-md-6">
+                          <div class="box box-success">
+                              <div class="box-header with-border">
+                                  <i class="fa fa-bullhorn"></i>
+                                  <h3 class="box-title"><text class="text-green">  dfsdsfasdfsd</text></h3>
+                              </div> <!-- /.box-header -->
+                              <div class="box-body">
+                                  <pre class="prettyprint">
+                                      dfsdsfasdfsd
+                                  </pre>
+                              </div>
+                          </div> <!-- /.box-body -->
+                      </div> <!-- /.box -->
+
+                  </div>
+
 
 
           </div>

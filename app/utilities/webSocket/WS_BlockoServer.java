@@ -39,10 +39,15 @@ public class WS_BlockoServer extends WebSCType{
         System.out.println("příchozí zpráva v WS_BlockoServer: " + json.toString());
 
         // Zpráva je z virtuální instance
-        if(json.has ("instanceId") ) WebSocketController_Incoming.homer_incoming_message(  maps.get( json.get("instanceId").asText() ) , json);
+        if(json.has ("instanceId") ){
+            WebSCType ws = virtual_homers.get( json.get("instanceId").asText() );
+            ws.onMessage(json);
+        }
 
         // Zpráva je ze serveru
-        WebSocketController_Incoming.blocko_server_incoming_message( this, json);
+        else {
+            WebSocketController_Incoming.blocko_server_incoming_message(this, json);
+        }
 
     }
 

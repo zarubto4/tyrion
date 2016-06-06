@@ -21,59 +21,57 @@
   }, {
     "name" : "Post"
   }, {
-     "name" :"Abrakadabra"
-  }, {
     "name" : "Type-Of-Post"
   }, {
     "name" : "Type-Of-Confirms"
-  }, {
-    "name" : "M_Program"
-  }, {
-    "name" : "APP-Api"
-  }, {
-    "name" : "Screen_Size_Type"
   }, {
     "name" : "Project"
   }, {
     "name" : "Homer"
   }, {
-    "name" : "Board"
-  }, {
     "name" : "B_Program"
   }, {
-    "name" : "Blocko-Block"
-  }, {
-    "name" : "Type of Block"
+    "name" : "Board"
   }, {
     "name" : "External Server"
   }, {
-    "name" : "Notifications"
+    "name" : "Type of Block"
   }, {
-    "name" : "Access"
-  }, {
-    "name" : "Person"
-  }, {
-    "name" : "Social-Facebook"
-  }, {
-    "name" : "Social-GitHub"
-  }, {
-    "name" : "Permission"
-  }, {
-    "name" : "Role"
+    "name" : "Blocko-Block"
   }, {
     "name" : "C_Program"
   }, {
     "name" : "Processor"
   }, {
+    "name" : "LibraryGroup"
+  }, {
     "name" : "SingleLibrary"
   }, {
-    "name" : "LibraryGroup"
+    "name" : "File"
   }, {
     "name" : "Producer"
   }, {
     "name" : "Type-Of-Board"
   }, {
-    "name" : "File"
+    "name" : "Access"
+  }, {
+    "name" : "Person"
+  }, {
+    "name" : "Social-GitHub"
+  }, {
+    "name" : "Social-Facebook"
+  }, {
+    "name" : "APP-Api"
+  }, {
+    "name" : "Notifications"
+  }, {
+    "name" : "M_Program"
+  }, {
+    "name" : "Screen_Size_Type"
+  }, {
+    "name" : "Role"
+  }, {
+    "name" : "Permission"
   } ],
   "paths" : {
     "/compilation/board" : {
@@ -656,27 +654,6 @@
         } ]
       }
     },
-    "/compilation/c_program/eclipse/{c_program_id}" : {
-      "get" : {
-        "tags" : [ "Not Documented API - InProgress or Stuck" ],
-        "operationId" : "generateProjectForEclipse",
-        "parameters" : [ {
-          "name" : "c_program_id",
-          "in" : "path",
-          "required" : true,
-          "type" : "string"
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "successful operation",
-            "schema" : {
-              "$ref" : "#/definitions/Result"
-            },
-            "headers" : { }
-          }
-        }
-      }
-    },
     "/compilation/c_program/version/compile" : {
       "post" : {
         "tags" : [ "C_Program" ],
@@ -1019,6 +996,49 @@
             "description" : "Ok Result",
             "schema" : {
               "$ref" : "#/definitions/Result ok"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/Permission Required"
+            }
+          }
+        },
+        "security" : [ {
+          "permission" : [ "project.owner", "Project_Editor" ]
+        } ]
+      }
+    },
+    "/compilation/c_program/version/{version_id}" : {
+      "get" : {
+        "tags" : [ "C_Program" ],
+        "summary" : "get C_program Version",
+        "description" : "get Version of C_program by query = verison_id",
+        "operationId" : "get_C_Program_Version",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "version_id",
+          "in" : "path",
+          "description" : "version_id String query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "$ref" : "#/definitions/Version_Object"
             }
           },
           "401" : {
@@ -8158,7 +8178,7 @@
         "description" : {
           "type" : "string"
         },
-        "update_permission" : {
+        "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -8177,7 +8197,7 @@
             "type" : "string"
           }
         },
-        "delete_permission" : {
+        "update_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -8246,6 +8266,68 @@
         }
       },
       "description" : "Json Model for new Post"
+    },
+    "BlockoBlockVersion" : {
+      "type" : "object",
+      "required" : [ "date_of_create" ],
+      "properties" : {
+        "id" : {
+          "type" : "string"
+        },
+        "version_name" : {
+          "type" : "string"
+        },
+        "version_description" : {
+          "type" : "string"
+        },
+        "date_of_create" : {
+          "type" : "integer",
+          "format" : "int32",
+          "example" : 1461918607,
+          "description" : "UNIX time stamp",
+          "readOnly" : true
+        },
+        "design_json" : {
+          "type" : "string"
+        },
+        "logic_json" : {
+          "type" : "string"
+        },
+        "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "delete_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "create_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "read_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        }
+      }
+    },
+    "LibraryGroup_Version" : {
+      "type" : "object",
+      "required" : [ "version_name" ],
+      "properties" : {
+        "version_name" : {
+          "type" : "string",
+          "description" : "MinLength >= 2"
+        },
+        "version_description" : {
+          "type" : "string"
+        }
+      },
+      "description" : "Json Model for new Version for LibraryGroup"
     },
     "ScreeSizeType_New" : {
       "type" : "object",
@@ -8322,68 +8404,6 @@
       },
       "description" : "Json Model for new Scree Size Type "
     },
-    "BlockoBlockVersion" : {
-      "type" : "object",
-      "required" : [ "date_of_create" ],
-      "properties" : {
-        "id" : {
-          "type" : "string"
-        },
-        "version_name" : {
-          "type" : "string"
-        },
-        "version_description" : {
-          "type" : "string"
-        },
-        "date_of_create" : {
-          "type" : "integer",
-          "format" : "int32",
-          "example" : 1461918607,
-          "description" : "UNIX time stamp",
-          "readOnly" : true
-        },
-        "design_json" : {
-          "type" : "string"
-        },
-        "logic_json" : {
-          "type" : "string"
-        },
-        "create_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "read_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "edit_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "delete_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        }
-      }
-    },
-    "LibraryGroup_Version" : {
-      "type" : "object",
-      "required" : [ "version_name" ],
-      "properties" : {
-        "version_name" : {
-          "type" : "string",
-          "description" : "MinLength >= 2"
-        },
-        "version_description" : {
-          "type" : "string"
-        }
-      },
-      "description" : "Json Model for new Version for LibraryGroup"
-    },
     "JsonNode" : {
       "type" : "object",
       "properties" : {
@@ -8407,23 +8427,7 @@
           "type" : "boolean",
           "default" : false
         },
-        "nodeType" : {
-          "type" : "string",
-          "enum" : [ "ARRAY", "BINARY", "BOOLEAN", "MISSING", "NULL", "NUMBER", "OBJECT", "POJO", "STRING" ]
-        },
         "long" : {
-          "type" : "boolean",
-          "default" : false
-        },
-        "number" : {
-          "type" : "boolean",
-          "default" : false
-        },
-        "int" : {
-          "type" : "boolean",
-          "default" : false
-        },
-        "double" : {
           "type" : "boolean",
           "default" : false
         },
@@ -8431,11 +8435,23 @@
           "type" : "boolean",
           "default" : false
         },
+        "number" : {
+          "type" : "boolean",
+          "default" : false
+        },
+        "nodeType" : {
+          "type" : "string",
+          "enum" : [ "ARRAY", "BINARY", "BOOLEAN", "MISSING", "NULL", "NUMBER", "OBJECT", "POJO", "STRING" ]
+        },
+        "pojo" : {
+          "type" : "boolean",
+          "default" : false
+        },
         "short" : {
           "type" : "boolean",
           "default" : false
         },
-        "pojo" : {
+        "double" : {
           "type" : "boolean",
           "default" : false
         },
@@ -8468,6 +8484,10 @@
           "default" : false
         },
         "boolean" : {
+          "type" : "boolean",
+          "default" : false
+        },
+        "int" : {
           "type" : "boolean",
           "default" : false
         }
@@ -8558,11 +8578,11 @@
           "type" : "string",
           "readOnly" : true
         },
-        "project_id" : {
+        "type_of_board_id" : {
           "type" : "string",
           "readOnly" : true
         },
-        "type_of_board_id" : {
+        "project_id" : {
           "type" : "string",
           "readOnly" : true
         }
@@ -8582,12 +8602,12 @@
           "description" : "Description for \"(static key)\"",
           "readOnly" : true
         },
-        "edit_person_permission" : {
+        "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
         },
-        "edit_permission" : {
+        "edit_person_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -8629,92 +8649,6 @@
         }
       },
       "description" : "Json Model for new TypeOfBoard"
-    },
-    "<h3>Permissions:</h3><span style=\"color: green\">create: If user have Project.update_permission = true, you can create M_project on this Project - Or you need static/dynamic permission key</span><br><span style=\"color: blue\">read: If user have Project.update_permission = true, you can create M_project on this Project - Or you need static/dynamic permission key</span><br>" : {
-      "type" : "object",
-      "required" : [ "date_of_create", "id" ],
-      "properties" : {
-        "id" : {
-          "type" : "string"
-        },
-        "program_name" : {
-          "type" : "string"
-        },
-        "program_description" : {
-          "type" : "string",
-          "description" : "can be empty"
-        },
-        "date_of_create" : {
-          "type" : "integer",
-          "format" : "int32",
-          "example" : 1461854312,
-          "description" : "UNIX time stamp",
-          "readOnly" : true
-        },
-        "auto_incrementing" : {
-          "type" : "boolean",
-          "default" : false
-        },
-        "m_programs" : {
-          "type" : "array",
-          "items" : {
-            "$ref" : "#/definitions/M_Program"
-          }
-        },
-        "project_id" : {
-          "type" : "string",
-          "readOnly" : true
-        },
-        "update_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "b_program_id" : {
-          "type" : "string",
-          "readOnly" : true
-        },
-        "b_progam_connected_version_id" : {
-          "type" : "string",
-          "readOnly" : true
-        },
-        "edit_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "delete_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        }
-      }
-    },
-    "Login_Result" : {
-      "type" : "object",
-      "properties" : {
-        "person" : {
-          "readOnly" : true,
-          "$ref" : "#/definitions/Person"
-        },
-        "roles" : {
-          "type" : "array",
-          "description" : "List of roles, that",
-          "readOnly" : true,
-          "items" : {
-            "$ref" : "#/definitions/SecurityRole"
-          }
-        },
-        "permissions" : {
-          "type" : "array",
-          "description" : "List of all person permission (private and all collections from Person Roles (\"SecurityRole\") ",
-          "readOnly" : true,
-          "items" : {
-            "type" : "string"
-          }
-        }
-      },
-      "description" : "Json Model that you will get, if login was successful"
     },
     "Swagger_Compilation_Build_Error" : {
       "type" : "object",
@@ -8789,6 +8723,77 @@
         }
       }
     },
+    "Login_Result" : {
+      "type" : "object",
+      "properties" : {
+        "authToken" : {
+          "type" : "string",
+          "description" : "X-AUTH-TOKEN - used this token in HTML head for verifying the identities",
+          "readOnly" : true
+        }
+      },
+      "description" : "Json Model that you will get, if login was successful"
+    },
+    "<h3>Permissions:</h3><span style=\"color: green\">create: If user have Project.update_permission = true, you can create M_project on this Project - Or you need static/dynamic permission key</span><br><span style=\"color: blue\">read: If user have Project.update_permission = true, you can create M_project on this Project - Or you need static/dynamic permission key</span><br>" : {
+      "type" : "object",
+      "required" : [ "date_of_create", "id" ],
+      "properties" : {
+        "id" : {
+          "type" : "string"
+        },
+        "program_name" : {
+          "type" : "string"
+        },
+        "program_description" : {
+          "type" : "string",
+          "description" : "can be empty"
+        },
+        "date_of_create" : {
+          "type" : "integer",
+          "format" : "int32",
+          "example" : 1461854312,
+          "description" : "UNIX time stamp",
+          "readOnly" : true
+        },
+        "auto_incrementing" : {
+          "type" : "boolean",
+          "default" : false
+        },
+        "m_programs" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/M_Program"
+          }
+        },
+        "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "delete_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "b_program_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "b_progam_connected_version_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "project_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "update_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        }
+      }
+    },
     "B_Program" : {
       "type" : "object",
       "required" : [ "dateOfCreate", "lastUpdate" ],
@@ -8822,15 +8827,6 @@
             "$ref" : "#/definitions/Version_Object"
           }
         },
-        "project_id" : {
-          "type" : "string",
-          "readOnly" : true
-        },
-        "update_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
         "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
@@ -8844,6 +8840,15 @@
         "program_state" : {
           "readOnly" : true,
           "$ref" : "#/definitions/B_Program_State"
+        },
+        "project_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "update_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
         }
       }
     },
@@ -8889,9 +8894,15 @@
           "type" : "string",
           "description" : "Visible here only when the object IS specifically required. Inversion value for \"m_code_url\" THIS or THAT!"
         },
-        "m_project_id" : {
-          "type" : "string",
-          "readOnly" : true
+        "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "delete_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
         },
         "screen_size_type_id" : {
           "type" : "string",
@@ -8912,15 +8923,9 @@
           "readOnly" : true,
           "default" : false
         },
-        "edit_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "delete_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
+        "m_project_id" : {
+          "type" : "string",
+          "readOnly" : true
         }
       }
     },
@@ -8968,14 +8973,6 @@
             "type" : "string"
           }
         },
-        "author_id" : {
-          "type" : "string",
-          "readOnly" : true
-        },
-        "type_of_block_id" : {
-          "type" : "string",
-          "readOnly" : true
-        },
         "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
@@ -8985,6 +8982,14 @@
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
+        },
+        "author_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "type_of_block_id" : {
+          "type" : "string",
+          "readOnly" : true
         }
       }
     },
@@ -8993,7 +8998,7 @@
       "required" : [ "homer_id", "type_of_device" ],
       "properties" : {
         "homer_id" : {
-          "type" : "strinttg",
+          "type" : "string",
           "description" : "Required unique value - its MacAddress of Homer"
         },
         "type_of_device" : {
@@ -9143,21 +9148,21 @@
             "$ref" : "#/definitions/Version_Object"
           }
         },
-        "project_id" : {
-          "type" : "string",
-          "readOnly" : true
-        },
-        "update_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
         "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
         },
         "delete_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "project_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "update_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -9194,34 +9199,6 @@
         }
       }
     },
-    "Login" : {
-      "type" : "object",
-      "required" : [ "mail", "password" ],
-      "properties" : {
-        "mail" : {
-          "type" : "string"
-        },
-        "password" : {
-          "type" : "string"
-        }
-      },
-      "description" : "Json Model for new Basic Login"
-    },
-    "SingleLibrary_New" : {
-      "type" : "object",
-      "required" : [ "library_name" ],
-      "properties" : {
-        "library_name" : {
-          "type" : "string",
-          "description" : "MinLength >= 8"
-        },
-        "description" : {
-          "type" : "string",
-          "description" : "MinLength >= 8"
-        }
-      },
-      "description" : "Json Model for new Single Library"
-    },
     "FileRecord" : {
       "type" : "object",
       "properties" : {
@@ -9247,6 +9224,34 @@
         }
       }
     },
+    "SingleLibrary_New" : {
+      "type" : "object",
+      "required" : [ "library_name" ],
+      "properties" : {
+        "library_name" : {
+          "type" : "string",
+          "description" : "MinLength >= 8"
+        },
+        "description" : {
+          "type" : "string",
+          "description" : "MinLength >= 8"
+        }
+      },
+      "description" : "Json Model for new Single Library"
+    },
+    "Login" : {
+      "type" : "object",
+      "required" : [ "mail", "password" ],
+      "properties" : {
+        "mail" : {
+          "type" : "string"
+        },
+        "password" : {
+          "type" : "string"
+        }
+      },
+      "description" : "Json Model for new Basic Login"
+    },
     "Project" : {
       "type" : "object",
       "properties" : {
@@ -9258,6 +9263,28 @@
         },
         "project_description" : {
           "type" : "string"
+        },
+        "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "delete_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "boards_id" : {
+          "type" : "array",
+          "readOnly" : true,
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "update_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
         },
         "homers_id" : {
           "type" : "array",
@@ -9308,34 +9335,12 @@
             "type" : "string"
           }
         },
-        "update_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
         "unshare_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
         },
         "share_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "boards_id" : {
-          "type" : "array",
-          "readOnly" : true,
-          "items" : {
-            "type" : "string"
-          }
-        },
-        "edit_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -9381,13 +9386,6 @@
         "description" : {
           "type" : "string"
         },
-        "type_of_boards_id" : {
-          "type" : "array",
-          "readOnly" : true,
-          "items" : {
-            "type" : "string"
-          }
-        },
         "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
@@ -9397,6 +9395,13 @@
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
+        },
+        "type_of_boards_id" : {
+          "type" : "array",
+          "readOnly" : true,
+          "items" : {
+            "type" : "string"
+          }
         }
       }
     },
@@ -9412,13 +9417,6 @@
         "description" : {
           "type" : "string"
         },
-        "versions_id" : {
-          "type" : "array",
-          "readOnly" : true,
-          "items" : {
-            "type" : "string"
-          }
-        },
         "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
@@ -9430,6 +9428,13 @@
           "default" : false
         },
         "processors_id" : {
+          "type" : "array",
+          "readOnly" : true,
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "versions_id" : {
           "type" : "array",
           "readOnly" : true,
           "items" : {
@@ -9501,17 +9506,42 @@
           "type" : "boolean",
           "default" : false
         },
-        "read_permission" : {
+        "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
         },
-        "delete_permission" : {
+        "read_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
         }
       }
+    },
+    "C_Program_Version_New" : {
+      "type" : "object",
+      "required" : [ "code", "type_of_board_id" ],
+      "properties" : {
+        "type_of_board_id" : {
+          "type" : "string"
+        },
+        "code" : {
+          "type" : "string"
+        },
+        "user_files" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/User_Files"
+          }
+        },
+        "external_libraries" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/External_Libraries"
+          }
+        }
+      },
+      "description" : "Json Model for new Version of C_Program"
     },
     "Social_Login" : {
       "type" : "object",
@@ -9534,28 +9564,6 @@
       },
       "description" : "Json Model for new Basic Login throw the social networks"
     },
-    "C_Program_Version_New" : {
-      "type" : "object",
-      "required" : [ "code" ],
-      "properties" : {
-        "code" : {
-          "type" : "string"
-        },
-        "user_files" : {
-          "type" : "array",
-          "items" : {
-            "$ref" : "#/definitions/User_Files"
-          }
-        },
-        "external_libraries" : {
-          "type" : "array",
-          "items" : {
-            "$ref" : "#/definitions/External_Libraries"
-          }
-        }
-      },
-      "description" : "Json Model for new Version of C_Program"
-    },
     "Person" : {
       "type" : "object",
       "properties" : {
@@ -9573,20 +9581,6 @@
         },
         "last_title" : {
           "type" : "string"
-        }
-      }
-    },
-    "Swagger_Grid_Terminal_Identf1" : {
-      "type" : "object",
-      "required" : [ "device_name", "device_type" ],
-      "properties" : {
-        "device_type" : {
-          "type" : "string",
-          "example" : "Mobile, WebBrowser"
-        },
-        "device_name" : {
-          "type" : "string",
-          "example" : "Iphone 5S, Chrome 4"
         }
       }
     },
@@ -9612,6 +9606,20 @@
         }
       },
       "description" : "Json Model for new Processor"
+    },
+    "Swagger_Grid_Terminal_Identf" : {
+      "type" : "object",
+      "required" : [ "device_name", "device_type" ],
+      "properties" : {
+        "device_type" : {
+          "type" : "string",
+          "example" : "Mobile, WebBrowser"
+        },
+        "device_name" : {
+          "type" : "string",
+          "example" : "Iphone 5S, Chrome 4"
+        }
+      }
     },
     "B_Program_state_cloud" : {
       "type" : "object",
@@ -9685,7 +9693,7 @@
       "required" : [ "code", "state" ],
       "properties" : {
         "state" : {
-          "type" : "string9796",
+          "type" : "string",
           "description" : "state",
           "readOnly" : true,
           "enum" : [ "Unauthorized" ]
@@ -9933,11 +9941,6 @@
             "$ref" : "#/definitions/BlockoBlock"
           }
         },
-        "project_id" : {
-          "type" : "string",
-          "description" : "This value will be in Json only if TypeOfBlock is private!",
-          "readOnly" : true
-        },
         "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
@@ -9947,6 +9950,11 @@
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
+        },
+        "project_id" : {
+          "type" : "string",
+          "description" : "This value will be in Json only if TypeOfBlock is private!",
+          "readOnly" : true
         }
       }
     },
@@ -9999,6 +10007,37 @@
       },
       "description" : "Json Model for new Version for SingleLibrary"
     },
+    "SingleLibrary" : {
+      "type" : "object",
+      "properties" : {
+        "id" : {
+          "type" : "string"
+        },
+        "description" : {
+          "type" : "string"
+        },
+        "library_name" : {
+          "type" : "string"
+        },
+        "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "delete_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "versions_id" : {
+          "type" : "array",
+          "readOnly" : true,
+          "items" : {
+            "type" : "string"
+          }
+        }
+      }
+    },
     "M_Program_New" : {
       "type" : "object",
       "required" : [ "height_lock", "m_code", "program_name", "screen_type_id", "width_lock" ],
@@ -10031,37 +10070,6 @@
         }
       },
       "description" : "Json Model for new M_Program"
-    },
-    "SingleLibrary" : {
-      "type" : "object",
-      "properties" : {
-        "id" : {
-          "type" : "string"
-        },
-        "description" : {
-          "type" : "string"
-        },
-        "library_name" : {
-          "type" : "string"
-        },
-        "versions_id" : {
-          "type" : "array",
-          "readOnly" : true,
-          "items" : {
-            "type" : "string"
-          }
-        },
-        "edit_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "delete_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        }
-      }
     },
     "TypeOfPost" : {
       "type" : "object",
@@ -10261,12 +10269,34 @@
             "$ref" : "#/definitions/Post"
           }
         },
+        "hashTags" : {
+          "type" : "array",
+          "readOnly" : true,
+          "items" : {
+            "type" : "string"
+          }
+        },
         "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
         },
         "delete_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "comment_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "answer_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "edit_confirms_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -10286,28 +10316,6 @@
           "items" : {
             "$ref" : "#/definitions/LinkedPost"
           }
-        },
-        "hashTags" : {
-          "type" : "array",
-          "readOnly" : true,
-          "items" : {
-            "type" : "string"
-          }
-        },
-        "answer_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "comment_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "edit_confirms_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
         }
       }
     },
@@ -10540,20 +10548,6 @@
       },
       "description" : "Json Model for new TypeOfBlock"
     },
-    "M_Project_New" : {
-      "type" : "object",
-      "required" : [ "program_name" ],
-      "properties" : {
-        "program_description" : {
-          "type" : "string"
-        },
-        "program_name" : {
-          "type" : "string",
-          "description" : "MinLength >= 4"
-        }
-      },
-      "description" : "Json Model for update M_Project"
-    },
     "B_Program_New" : {
       "type" : "object",
       "required" : [ "name" ],
@@ -10569,6 +10563,20 @@
       },
       "description" : "Json Model for new B_Program"
     },
+    "M_Project_New" : {
+      "type" : "object",
+      "required" : [ "program_name" ],
+      "properties" : {
+        "program_description" : {
+          "type" : "string"
+        },
+        "program_name" : {
+          "type" : "string",
+          "description" : "MinLength >= 4"
+        }
+      },
+      "description" : "Json Model for update M_Project"
+    },
     "Homer" : {
       "type" : "object",
       "properties" : {
@@ -10581,24 +10589,12 @@
         "version" : {
           "type" : "string"
         },
-        "project_id" : {
-          "type" : "string",
-          "readOnly" : true
-        },
-        "active_boards" : {
-          "type" : "array",
-          "description" : "Only if it is online homer",
-          "readOnly" : true,
-          "items" : {
-            "$ref" : "#/definitions/Board"
-          }
-        },
-        "online" : {
+        "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
         },
-        "update_permission" : {
+        "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -10610,12 +10606,24 @@
             "type" : "string"
           }
         },
-        "edit_permission" : {
+        "online" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
         },
-        "delete_permission" : {
+        "active_boards" : {
+          "type" : "array",
+          "description" : "Only if it is online homer",
+          "readOnly" : true,
+          "items" : {
+            "$ref" : "#/definitions/Board"
+          }
+        },
+        "project_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "update_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false

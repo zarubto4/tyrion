@@ -39,6 +39,7 @@ public class Global extends GlobalSettings {
             UtilTools.set_Developer_objects(); // TODO bude smazáno - slouží jen k vytvoření prvního uživatele
             UtilTools.set_Homer_Server();
             UtilTools.set_Compilation_Server();
+            UtilTools.set_Type_of_board();
 
             //UtilTools.set_API_Changes();
 

@@ -19,14 +19,17 @@ public class Swagger_C_Program_Version_New {
     @ApiModelProperty(required = true)
     public String version_name;
 
+
     @ApiModelProperty(required = false)
     public String version_description;
 
-    @ApiModelProperty(required = true)
+    @ApiModelProperty(required = false)
     public String code;
 
+    @ApiModelProperty(required = false)
     @Valid public List<User_Files> user_files;
 
+    @ApiModelProperty(required = false)
     @Valid public List<External_Libraries>  external_libraries;
 
 

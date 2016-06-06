@@ -1,5 +1,6 @@
 package utilities;
 
+import com.cedarsoftware.util.io.JsonWriter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.microsoft.azure.storage.blob.CloudBlob;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
@@ -8,6 +9,7 @@ import com.microsoft.azure.storage.blob.ListBlobItem;
 import models.blocko.Cloud_Blocko_Server;
 import models.compiler.Cloud_Compilation_Server;
 import models.compiler.FileRecord;
+import models.compiler.TypeOfBoard;
 import models.compiler.Version_Object;
 import models.grid.Screen_Size_Type;
 import models.overflow.HashTag;
@@ -20,11 +22,7 @@ import play.Logger;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.Controller;
-import utilities.swagger.swagger_diff_tools.servise_class.Swagger_Api;
-import utilities.swagger.swagger_diff_tools.servise_class.Swagger_Diff;
-import utilities.swagger.swagger_diff_tools.servise_class.Diffs;
-import utilities.swagger.swagger_diff_tools.servise_class.News;
-import utilities.swagger.swagger_diff_tools.servise_class.Remws;
+import utilities.swagger.swagger_diff_tools.servise_class.*;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -141,9 +139,6 @@ public class UtilTools extends Controller {
             fileRecord.version_object = versionObjectObject;
             fileRecord.save();
 
-            versionObjectObject.files.add(fileRecord);
-            versionObjectObject.update();
-
             return fileRecord;
     }
 
@@ -183,6 +178,34 @@ public class UtilTools extends Controller {
         return fileMain;
     }
 
+    public static void remove_file_from_Azure(FileRecord file){
+        try{
+
+            String container_name = "c-program";
+            String azureStorageLink;
+            String azurePackageLink;
+            int azureLinkVersion;
+            String filename;
+
+            Version_Object version = file.version_object;
+
+            azureLinkVersion = version.azureLinkVersion;
+            azurePackageLink = version.c_program.azurePackageLink;
+            azureStorageLink = version.c_program.azureStorageLink;
+            filename = file.file_name;
+
+
+
+            CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
+            CloudBlob blob = container.getBlockBlobReference( azureStorageLink +"/"+  azurePackageLink+"/"+ azureLinkVersion  +"/"+ filename);
+            blob.delete();
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+
     public static byte[] loadFile_inBase64(File file) throws IOException {
         byte[] data = FileUtils.readFileToByteArray(file);
         return  Base64.getEncoder().encode(data);
@@ -198,6 +221,17 @@ public class UtilTools extends Controller {
             map.put(key, value);
         }
         return  map;
+    }
+
+    public static void set_Type_of_board(){
+
+        if(TypeOfBoard.find.where().eq("name", "NUCLEO_F411RE").findUnique() == null){
+            TypeOfBoard typeOfBoard = new TypeOfBoard();
+            typeOfBoard.name = "NUCLEO_F411RE";
+            typeOfBoard.description = "testovací deska pro kompilaci";
+            typeOfBoard.save();
+        }
+
     }
 
     public static void set_Homer_Server(){
@@ -309,7 +343,7 @@ public class UtilTools extends Controller {
         try {
             String version_name = "1.06.04";
 
-            String content = readFile("app/utilities/swagger/historical_api_files/" + version_name + ".json", StandardCharsets.UTF_8);
+            String content = read_local_File_for_Swagger("app/utilities/swagger/historical_api_files/" + version_name + ".json", StandardCharsets.UTF_8);
             return Json.parse(content);
             
         }catch (Exception e){
@@ -321,14 +355,16 @@ public class UtilTools extends Controller {
     // Zde budu porovnávat změny příchozích souboru API
     public static Swagger_Diff set_API_Changes() {
                 try {
+                    System.out.println("Spouštím proceduru api changes");
 
                     logger.debug("Creating api_diff.html content");
 
                     String file_name_old = "1.06.04";
                     String file_name_new = "1.06.05";
 
-                    String content_old = readFile("app/utilities/swagger/historical_api_files/" + file_name_old + ".json", StandardCharsets.UTF_8);
-                    String content_new = readFile("app/utilities/swagger/historical_api_files/" + file_name_new + ".json", StandardCharsets.UTF_8);
+
+                    String content_old = read_local_File_for_Swagger("app/utilities/swagger/swagger_diff_tools/json_files/" + file_name_old + ".json", StandardCharsets.UTF_8);
+                    String content_new = read_local_File_for_Swagger("app/utilities/swagger/swagger_diff_tools/json_files/" + file_name_new + ".json", StandardCharsets.UTF_8);
 
                     JsonNode old_api = Json.parse(content_old);
                     JsonNode new_api = Json.parse(content_new);
@@ -336,8 +372,8 @@ public class UtilTools extends Controller {
 
 
                     Swagger_Diff swagger_Dif = new Swagger_Diff();
-                    swagger_Dif.new_Verion = file_name_new;
-                    swagger_Dif.old_Verion = file_name_old;
+                    swagger_Dif.new_Version = file_name_new;
+                    swagger_Dif.old_Version = file_name_old;
 
 
                     final Form<Swagger_Api> form_old = Form.form(Swagger_Api.class).bind(old_api);
@@ -346,26 +382,35 @@ public class UtilTools extends Controller {
                     final Form<Swagger_Api> form_new = Form.form(Swagger_Api.class).bind(new_api);
                     Swagger_Api api_new = form_new.get();
 
-
+                    System.out.println("Kontrooluji Api Tags");
                     for(Swagger_Api.Tag tag_old : api_old.tags) if(! api_new.contains_tag(tag_old.name)) swagger_Dif.add_groups.add( tag_old.name  );
-
                     for(Swagger_Api.Tag tag_new: api_new.tags) if(! api_old.contains_tag(tag_new.name)) swagger_Dif.removed_groups.add( tag_new.name  );
 
+                    System.out.println("Budu dělat operace nad modey");
+                        api_old.arrange_models( old_api.get("definitions") );
+                        api_new.arrange_models( new_api.get("definitions") );
+
+                    System.out.println("těch je v old: " + api_old.models.size());
+                    System.out.println("těch je v new: " + api_new.models.size());
 
                     for(String key : api_new.models.keySet()){
 
                         if(!api_old.models.containsKey(key)){
-                            swagger_Dif.news.add( new News(key, api_new.models.get(key) ));
+                            System.out.println("Stará verze neobsahuje něco z nové a tak budu zobrazovat NEW ");
+                            swagger_Dif.object_new.add( new News(key, JsonWriter.formatJson(  api_new.models.get(key).toString() ) ));
                         }
                         else if(api_old.models.containsKey(key) &&  !api_old.models.get(key).equals(api_new.models.get(key) )) {
 
-                            swagger_Dif.diffs.add( new Diffs(key,api_old.models.get(key), api_new.models.get(key)));
+                            System.out.println("Vládám diferenci");
+
+                            swagger_Dif.diffs.add( new Diffs( key,  JsonWriter.formatJson( api_old.models.get(key).toString()) ,  JsonWriter.formatJson( api_new.models.get(key).toString()) ));
                         }
                     }
 
                     for(String key : api_old.models.keySet()){
                         if(!api_new.models.containsKey(key)){
-                            swagger_Dif.remwses.add( new Remws(key, api_old.models.get(key)));
+                            System.out.println("Stará verze obsahuje něco co nové ne a tak budu zobrazovat v Removes ");
+                            swagger_Dif.object_removes.add( new Remws(key,  JsonWriter.formatJson( api_old.models.get(key).toString() ) ));
                         }
                     }
 
@@ -382,14 +427,22 @@ public class UtilTools extends Controller {
 
                 }catch (Exception e){
                     e.printStackTrace();
+                    throw new NullPointerException("Došlo k chybě");
                 }
-        throw new NullPointerException();
     }
 
-    public static String readFile(String path, Charset encoding) throws IOException
+    public static String read_local_File_for_Swagger(String path, Charset encoding) throws IOException
     {
-        byte[] encoded = Files.readAllBytes(Paths.get(path));
-        return new String(encoded, encoding);
+
+        File f = new File(path);
+        if(f.exists() && !f.isDirectory()) {
+            byte[] encoded = Files.readAllBytes(Paths.get(path));
+            return new String(encoded, encoding);
+        }else {
+            System.out.println("Soubor nenalezen");
+            throw new NullPointerException("Soubor nenalezen");
+        }
+
     }
 
 

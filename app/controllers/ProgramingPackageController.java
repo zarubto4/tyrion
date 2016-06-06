@@ -1048,8 +1048,8 @@ public class ProgramingPackageController extends Controller {
             }
 
             // TODO Chytré dělení na servery - kam se blocko program nahraje
-            List<Cloud_Blocko_Server> cloud_homer_servers = Cloud_Blocko_Server.find.findList();
-            Cloud_Blocko_Server destination_server = cloud_homer_servers.get(0);
+
+            Cloud_Blocko_Server destination_server = Cloud_Blocko_Server.find.where().eq("server_name", "Alfa").findUnique();
 
 
             // Vytvářím nový záznam v databázi pro běžící instanci b programu na blocko serveru

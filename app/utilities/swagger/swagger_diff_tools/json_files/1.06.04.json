@@ -27,8 +27,6 @@
   }, {
     "name" : "Person"
   }, {
-    "name" : "HArry Potter"
-  }, {
     "name" : "Social-Facebook"
   }, {
     "name" : "Social-GitHub"
@@ -3887,7 +3885,7 @@
     },
     "/grid/m_project/person" : {
       "get" : {
-        "tags" : [ "M_Program", "APP-Api" ],
+        "tags" : [ "M_Program" ],
         "summary" : "get all M_Project by Logged Person",
         "description" : "get List<M_Project> by logged person ->that's required valid token in html head",
         "operationId" : "get_M_Projects_ByLoggedPerson",
@@ -3921,12 +3919,12 @@
           }
         },
         "x-permission_description" : {
-          "M_Project.read_permission" : "read: If user have Project.update_permission = true, you can create M_project on this Project - Or you need static/dynamic permission key"
+          "M_Project.delete_permission" : "read: If user have Project.update_permission = true, you can create M_project on this Project - Or you need static/dynamic permission key"
         },
         "x-permission_required" : {
-          "M_Project.read_permission" : "true",
-          "Dynamic Permission key" : "M_Project_read.{project_id}",
-          "Static Permission key" : "M_Project_read"
+          "M_Project.remove_permission" : "true",
+          "Dynamic Permission key" : "M_Project_delete.{project_id}",
+          "Static Permission key" : "M_Project_delete"
         }
       }
     },
@@ -4123,7 +4121,7 @@
           "M_Project_create_permission" : "create: If user have Project.update_permission = true, you can create M_project on this Project - Or you need static/dynamic permission key"
         },
         "x-permission_required" : {
-          "Project_create_permission" : "true",
+          "Project.update_permission" : "true",
           "Static Permission key" : "M_Project_create"
         }
       }
@@ -8158,16 +8156,6 @@
         "description" : {
           "type" : "string"
         },
-        "delete_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "update_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
         "persons_id" : {
           "type" : "array",
           "readOnly" : true,
@@ -8181,6 +8169,16 @@
           "items" : {
             "type" : "string"
           }
+        },
+        "delete_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "update_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
         }
       }
     },
@@ -8362,6 +8360,11 @@
         "logic_json" : {
           "type" : "string"
         },
+        "read_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
         "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
@@ -8373,11 +8376,6 @@
           "default" : false
         },
         "create_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "read_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -8665,6 +8663,14 @@
           "type" : "string",
           "readOnly" : true
         },
+        "project_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "b_program_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
         "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
@@ -8679,14 +8685,6 @@
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
-        },
-        "project_id" : {
-          "type" : "string",
-          "readOnly" : true
-        },
-        "b_program_id" : {
-          "type" : "string",
-          "readOnly" : true
         }
       }
     },
@@ -8822,6 +8820,10 @@
             "$ref" : "#/definitions/Version_Object"
           }
         },
+        "project_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
         "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
@@ -8836,10 +8838,6 @@
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
-        },
-        "project_id" : {
-          "type" : "string",
-          "readOnly" : true
         },
         "program_state" : {
           "readOnly" : true,
@@ -8889,12 +8887,7 @@
           "type" : "string",
           "description" : "Visible here only when the object IS specifically required. Inversion value for \"m_code_url\" THIS or THAT!"
         },
-        "delete_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "edit_permission" : {
+        "read_qrToken_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -8907,7 +8900,12 @@
           "type" : "string",
           "readOnly" : true
         },
-        "read_qrToken_permission" : {
+        "delete_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -8968,6 +8966,10 @@
             "type" : "string"
           }
         },
+        "type_of_block_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
         "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
@@ -8977,10 +8979,6 @@
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
-        },
-        "type_of_block_id" : {
-          "type" : "string",
-          "readOnly" : true
         },
         "author_id" : {
           "type" : "string",
@@ -9143,6 +9141,10 @@
             "$ref" : "#/definitions/Version_Object"
           }
         },
+        "project_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
         "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
@@ -9157,10 +9159,6 @@
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
-        },
-        "project_id" : {
-          "type" : "string",
-          "readOnly" : true
         }
       },
       "description" : "Object represented C_Program in database"
@@ -9280,6 +9278,16 @@
             "type" : "string"
           }
         },
+        "share_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "unshare_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
         "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
@@ -9291,16 +9299,6 @@
           "default" : false
         },
         "update_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "share_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "unshare_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -9501,12 +9499,12 @@
           "type" : "boolean",
           "default" : false
         },
-        "delete_permission" : {
+        "read_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
         },
-        "read_permission" : {
+        "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -9982,6 +9980,11 @@
             "$ref" : "#/definitions/BlockoBlock"
           }
         },
+        "project_id" : {
+          "type" : "string",
+          "description" : "This value will be in Json only if TypeOfBlock is private!",
+          "readOnly" : true
+        },
         "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
@@ -9991,11 +9994,6 @@
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
-        },
-        "project_id" : {
-          "type" : "string",
-          "description" : "This value will be in Json only if TypeOfBlock is private!",
-          "readOnly" : true
         }
       }
     },
@@ -10601,6 +10599,10 @@
             "$ref" : "#/definitions/Board"
           }
         },
+        "project_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
         "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
@@ -10615,10 +10617,6 @@
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
-        },
-        "project_id" : {
-          "type" : "string",
-          "readOnly" : true
         }
       }
     },

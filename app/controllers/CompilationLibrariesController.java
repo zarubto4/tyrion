@@ -94,12 +94,15 @@ public class CompilationLibrariesController extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_C_program_New help = form.get();
 
+            Project project = Project.find.byId(project_id);
+            if(project == null ) return GlobalResult.notFoundObject("Project project_id not found");
+
             // Tvorba programu
             C_Program c_program             = new C_Program();
             c_program.program_name          = help.program_name;
             c_program.program_description   = help.program_description;
             c_program.azurePackageLink      = "personal-program";
-            c_program.project               = Project.find.byId(project_id);
+            c_program.project               = project;
             c_program.dateOfCreate          = new Date();
             c_program.setUniqueAzureStorageLink();
 
@@ -138,9 +141,44 @@ public class CompilationLibrariesController extends Controller {
     public Result get_C_Program(@ApiParam(value = "c_program_id String query", required = true) @PathParam("c_program_id") String c_program_id) {
         try {
 
-
             C_Program c_program = C_Program.find.byId(c_program_id);
+            if(c_program == null) return GlobalResult.notFoundObject("C_Program c_program not found");
+
             return GlobalResult.result_ok(Json.toJson(c_program));
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+
+    @ApiOperation(value = "get C_program Version",
+            tags = {"C_Program"},
+            notes = "get Version of C_program by query = verison_id",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            authorizations = {
+                    @Authorization(
+                            value="permission",
+                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For create new C_program, you have to own project"),
+                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Version_Object.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result  get_C_Program_Version (@ApiParam(value = "version_id String query", required = true) @PathParam("version_id") String version_id) {
+        try {
+
+            Version_Object version_object = Version_Object.find.byId(version_id);
+            if(version_object == null) return GlobalResult.notFoundObject("Version_Object version_object not found");
+
+            return GlobalResult.result_ok(Json.toJson(version_object));
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -191,6 +229,7 @@ public class CompilationLibrariesController extends Controller {
             Swagger_C_program_New help = form.get();
 
             C_Program program = C_Program.find.byId(c_program_id);
+            if(program == null ) return GlobalResult.notFoundObject("C_Program c_program_id not found");
 
             program.program_name = help.program_name;
             program.program_description = help.program_description;
@@ -267,14 +306,14 @@ public class CompilationLibrariesController extends Controller {
 
             // Nahraje do Azure a připojí do verze soubor (lze dělat i cyklem - ale název souboru musí být vždy jiný)
 
+            if(help.code != null) {
+                ObjectNode content = Json.newObject();
+                content.put("code", help.code);
+                content.set("user_files", Json.toJson(help.user_files));
+                content.set("external_libraries", Json.toJson(help.external_libraries));
 
-            ObjectNode content = Json.newObject();
-            content.put("code", help.code );
-            content.set("user_files", Json.toJson( help.user_files) );
-            content.set("external_libraries", Json.toJson( help.external_libraries) );
-
-            UtilTools.uploadAzure_Version("c-program", content.toString() , "c-program", c_program.azureStorageLink, c_program.azurePackageLink, version_object);
-
+                UtilTools.uploadAzure_Version("c-program", content.toString(), "c-program", c_program.azureStorageLink, c_program.azurePackageLink, version_object);
+            }
 
             return GlobalResult.created(Json.toJson(version_object));
 
@@ -328,19 +367,21 @@ public class CompilationLibrariesController extends Controller {
             Version_Object version_object = Version_Object.find.byId(version_id);
             if(version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
+            FileRecord old_file = FileRecord.find.where().eq("version_object.id",version_id).eq("file_name","c-program").findUnique();
+            if(old_file != null){
+                UtilTools.remove_file_from_Azure(old_file);
+                old_file.delete();
+            }
+
             version_object.c_comp_build_url = null;
 
             // Nahraje do Azure a připojí do verze soubor (lze dělat i cyklem - ale název souboru musí být vždy jiný)
-            FileRecord file = FileRecord.find.where().eq("version_object.id", version_id).where().eq("file_name", "c_program").findUnique();
-            if(file != null) file.delete();
-
             ObjectNode content = Json.newObject();
             content.put("code", help.code );
             content.set("user_files", Json.toJson( help.user_files) );
             content.set("external_libraries", Json.toJson( help.external_libraries) );
 
             UtilTools.uploadAzure_Version("c-program", content.toString() , "c-program", version_object.c_program.azureStorageLink, version_object.c_program.azurePackageLink, version_object);
-
 
             return GlobalResult.created(Json.toJson(version_object));
 
@@ -377,6 +418,7 @@ public class CompilationLibrariesController extends Controller {
             if (versionObjectObject == null) return GlobalResult.notFoundObject("Version version_id not found");
 
             C_Program c_program = C_Program.find.byId(c_program_id);
+            if(c_program == null ) return GlobalResult.notFoundObject("C_Program c_program_id not found");
 
             UtilTools.azureDelete(Server.blobClient.getContainerReference("c-program"), c_program.azurePackageLink + "/" + c_program.azureStorageLink + "/" + versionObjectObject.azureLinkVersion);
 
@@ -430,7 +472,6 @@ public class CompilationLibrariesController extends Controller {
             final Form<Swagger_C_Program_Version_Edit> form = Form.form(Swagger_C_Program_Version_Edit.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_C_Program_Version_Edit help = form.get();
-
 
             Version_Object version_object= Version_Object.find.byId(version_id);
             if (version_object == null) return GlobalResult.notFoundObject("Version version_id not found");
@@ -493,7 +534,6 @@ public class CompilationLibrariesController extends Controller {
             notes = "Compile specific version of C_program - before compilation - you have to update (save) version code",
             produces = "application/json",
             protocols = "https",
-            response =  Result_ok.class,
             code = 200,
             authorizations = {
                     @Authorization(
@@ -516,17 +556,20 @@ public class CompilationLibrariesController extends Controller {
             Version_Object version_object = Version_Object.find.byId(version_id);
             if(version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
-            FileRecord file = FileRecord.find.fetch("version_object.c_program").fetch("version_object").where().eq("version_object.id", version_id).where().eq("file_name", "c_program").findUnique();
+            FileRecord file = FileRecord.find.fetch("version_object.c_program").fetch("version_object").where().eq("version_object.id", version_id).where().eq("file_name", "c-program").findUnique();
             if(file == null) return GlobalResult.notFoundObject("First save version content");
 
             JsonNode json = Json.parse( file.get_fileRecord_from_Azure_inString() );
             Form<Swagger_C_Program_Version_Update> form = Form.form(Swagger_C_Program_Version_Update.class).bind(json);
             Swagger_C_Program_Version_Update help = form.get();
 
+            TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(help.type_of_board_id);
+            if(typeOfBoard == null) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
+
             ObjectNode result = Json.newObject();
             result.put("messageType", "build");
             // result.put("messageId", messageId); <- messageId je vkládáno až v WebSocketController_Incoming.compiler_server_make_Compilation(...)!
-            result.put("target", "NUCLEO_F411RE");
+            result.put("target", typeOfBoard.name);
             result.put("libVersion", "v0");
 
             // Code - Musím sesumírovat všechny uživatelovi okna do jednoho souboru ke kompilaci (nejedná se totiž o uživatelovi knihovny)
@@ -611,17 +654,17 @@ public class CompilationLibrariesController extends Controller {
     public Result compile_C_Program_code(){
         try{
 
-            System.out.println("Jseeeeeeem zde....................................................... .................... .......");
-
             Form<Swagger_C_Program_Version_Update> form = Form.form(Swagger_C_Program_Version_Update.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_C_Program_Version_Update help = form.get();
 
+            TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(help.type_of_board_id);
+            if(typeOfBoard == null) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
 
             ObjectNode result = Json.newObject();
             result.put("messageType", "build");
-            // result.put("messageId", messageId); <- messageId je vkládáno až v WebSocketController_Incoming.compiler_server_make_Compilation(...)!
-            result.put("target", "NUCLEO_F411RE");
+            // result.put("messageId", messageId); <- messageId je vkládáno až v WebSocketController_Incoming.compiler_server_make_Compilation(...)! (V controlleru websocketu)
+            result.put("target", typeOfBoard.name);
             result.put("libVersion", "v0");
 
             // Code - Musím sesumírovat všechny uživatelovi okna do jednoho souboru ke kompilaci (nejedná se totiž o uživatelovi knihovny)
@@ -664,13 +707,6 @@ public class CompilationLibrariesController extends Controller {
         }
 
     }
-
-
-    public Result generateProjectForEclipse(String c_program_id) {
-       // EclipseProject.createFullnewProject();
-        return GlobalResult.result_ok("In TODO"); //TODO
-    }
-
 
     @ApiOperation(value = "update Embedded Hardware with  binary file",
             tags = {"C_Program"},

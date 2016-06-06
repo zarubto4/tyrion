@@ -225,12 +225,12 @@ PUT             /compilation/c_program/version/update/:version_id               
 PUT             /compilation/c_program/version/edit/:version_id                             @controllers.CompilationLibrariesController.edit_C_Program_version(version_id)
 
 DELETE          /compilation/c_program/version/:c_program_id/:version_id                    @controllers.CompilationLibrariesController.delete_C_Program_Version(c_program_id, version_id)
-
+GET             /compilation/c_program/version/:version_id                                  @controllers.CompilationLibrariesController.get_C_Program_Version(version_id)
 POST            /compilation/c_program/version/compile                                      @controllers.CompilationLibrariesController.compile_C_Program_code()
 PUT             /compilation/c_program/version/compile/:version_id                          @controllers.CompilationLibrariesController.compile_C_Program_version(version_id)
 PUT             /compilation/c_program/version/uploud/:version_id                           @controllers.CompilationLibrariesController.uploadCompilationToBoard(version_id)
 
-GET             /compilation/c_program/eclipse/:c_program_id                                @controllers.CompilationLibrariesController.generateProjectForEclipse(c_program_id)
+
 POST            /compilation/c_program/binary                                               @controllers.CompilationLibrariesController.uploadBinaryFileToBoard()
 
 

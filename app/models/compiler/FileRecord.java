@@ -22,7 +22,7 @@ public class FileRecord extends Model {
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public String id;
                                                              public String file_name;
 
-        @JsonIgnore  @ManyToOne(cascade=CascadeType.ALL)     public Version_Object version_object;
+                                   @JsonIgnore @ManyToOne()  public Version_Object version_object;
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 

@@ -1,7 +1,282 @@
 
-
 # Verze 1.06.5 #
 ####  26.5.2016 ####
+
+**Změny General:**
+
+1) Pokud je systém ve vývojářském modu (podrobnější logování a další detaily jako je výběr destinačních serverů na Azure atd.) je systémová barva v modré.
+V případě produkčního nasazení je v červené.
+
+2) Přibyla rozpracovaná funkce Diff na provnávání API - Existují knihovny v javasriptu, které dokáží porovnat dva textové
+soubory a zvýraznit změny, bohužel javasriptu nevládnu a tak je to zatím bez zvýraznění
+
+-----
+
+####  Becki -> Websocket ####
+Byla zprovozněna funkce Websocketu pro Becki:
+
+ * Přihlašovací link je na adrese {url}/websocket/becki/{token} <- Token je stejný, jaký obdržíte po přihlášení uživatele.
+ * Počet přihlášení uživatele je neomezený (jen ne nutné se připojovat pokaždé s jiným tokenem) - Uživatel tak může být
+   přihlášen na několika počítačích. K tomuto jsem se rozhodl především kvuli možnosti kolize a co dělat když se uživatel
+   někde neodhlásí a přihlásí jinde. (A další nestandartní stavy)
+   **TODO**(Předpokládám, že by pak bylo vhodné propojit becki instance mezi sebou aby frontend mohl vzájemně synchronizovat všechno co potřebuje)
+ * Pokud chcete odzkoušet stream dat mezi blockem v Becki a blokem v Homerovi (zatím jediná věc, která na Websocketu má běžet)
+   má to několik prerekvizit.
+ * PS: Stvá se občas, že někam ještě zašlu nedefinovaný JSON příkaz
+ * TODO: Celý websocket až se ustálý, se musí důkladně zdokumentovat - zejména lidsky vysvětlit jak funguje.
+
+ * Prerekvizity:
+    * 1) Přihlášený Cloud Blocko server (zle vizuálně zkontrolovat na první stránce Tyriona (tyrion.byzance.cz) nebo (localhost:9000)
+     Blocko server si lze vytvořit na lokalu a pak se s ním připojit na websocket adresu {url}/websocket/blocko_server/:identificator (Kde identifikator je název serveru) Alfa.
+     (Zatím vždy využívejte server Alfa prosím ("Velké A!") V kodu není dodělaný rozcestník (není priorita) a vždy se defaultně vybere Alfa.
+
+
+    * 2) Blocko Program nahraný na Cloud serveru ( v případě že je správně nahraný se zobrazí jako připojený homer v sekci Websocket connection *Connected Homers (PC/RPI..)* )
+     Pokud začínáte od nuly:
+        * 1) Vytvořit si projekt    http://swagger.byzance.cz/#!/Project/postNewProject
+        * 2) Vytvořit blocko program http://swagger.byzance.cz/#!/B_Program/new_b_Program
+        * 3) Vytvořit novou verzi s kodem Blocko programu
+        * 4) Nahrát blocko program do cloudu (na jeho verzi) http://swagger.byzance.cz/#!/B_Program/upload_b_Program_ToCloud
+                Proběhne úspěšné nahrátí do blocko Serveru (Alfa)
+                V případě odpojení a připojení Blocko serveru se Tyrion dotáže, co na něm běží a eventuelně opět na Blocko server
+                nahraje příslušnou instanci Blocko Programu. Což si lze ověřit prohlédnutím aktuálně připojených websocketů,
+                nebo si vypsat B Program http://swagger.byzance.cz/#!/B_Program/get_b_Program
+
+
+            **Vizualizace Odpovědi v jakém stavu je blocko program:**
+
+                {
+                  "id": "1",
+                  "name": "Program 1",
+                    .
+                    .
+                    .
+                    .
+                  "program_state": {
+                    "uploaded": true,
+                    "m_project_id": null,
+                    "version_id": "21",         <<<<< Toto id bude odesíláno v žádosti o poskytnutí stream z blocko serveru
+                    "where": "cloud",
+                    "cloud": {
+                      "program_cloud": {
+                        "id": "22",
+                        "running_from": 1464462335768
+                      },
+                      "server_name": "Alfa"
+                    }
+                  }
+                  .
+                  .
+                  .
+                  "update_permission": true
+                }
+
+  * Žádost o zasílání "všeho" z blocko Serveru na becki" (Tento Json odesílá Becki Tyrionovi)
+
+        Žádost
+                  {
+                    "messageType"    : "subscribe_instace",
+                    "messageId"      : "SOME ID",
+                    "messageChannel" : "becki",
+                    "version_id"     : "21"        <<<<< Viz horní Json
+                  }
+
+        Možnosti odpovědi
+                  1) Bude ti zasíláno vše (instance je funční, připojená  - prostě ideální stav)
+                  {
+                    "messageType"    : "subscribe_instace",
+                    "messageId"      : "SOME ID",
+                    "messageChannel" : "becki",
+                    "status"         :  "success"
+                  }
+
+                  2) Nebo nastal problém a v "error" je uvedeno proč - Je 9 error stavů, kde se to mohlo pokazit
+                  {
+                    "messageType"    : "subscribe_instace",
+                    "messageId"      : "SOME ID",
+                    "messageChannel" : "becki",
+                    "status"         : "error"
+                    "error"          : "text problemu"
+                  }
+
+  * Cokoliv co obsahuje messegaChannel "becki" bude z blocka přeposláno přímo do becky a naopak
+
+         Z blocko serveru na Becki
+
+                  {
+                    "messageType"    : "cokoliv",
+                    "messageId"      : "SOME ID",
+                    "messageChannel" : "becki",
+                    "instanceId"     : "6f894916-fc8c-48f0-a4cb-40a859d712e5",
+                    "cokoliv"        : "fuuuuu"
+                  }
+
+         Z becki na Blocko server
+                  {
+                    "messageType"    : "cokoliv",
+                    "messageId"      : "SOME ID",
+                    "messageChannel" : "becki",
+                    "cokoliv"        : "fuuuuu"
+                  }
+
+   * Co bylo (musí se) přidáno za příkazy na blocko servery (zasílá Tyrion)
+
+          Žádost o odebírání "potřebného do becki" (Je to naprosto shodné jako s odběrem Grid,
+          ale je tu jen jiný channel)
+                    {
+                      "messageType"     :"subscribeChannel",
+                      "messageId"       :"SOME ID",
+                      "messageChannel"  :"becki",
+                      "instanceId"      :"SOME ID"
+                    }
+
+          Zrušení odběru
+                    {
+                      "messageType"     :"unSubscribeChannel",
+                      "messageId"       :"SOME ID",
+                      "messageChannel"  :"becki",
+                      "instanceId"      :"SOME ID"
+                    }
+
+-----
+
+### Compilační server ###
+
+Již v předchozích verzích byla implementována kompilace programů, teď s podporou odpovědí a otesováním.
+Stále není definováno, jak vracet, zda vracet a kam vracet, jaké vyrtuální bločky jsou vytvořeny nad hardwarem.  (David na tom pracuje)
+
+Prerekvizity tvoří:
+   * Připojený kompilační server na websocketu - Lze zkontrolovat z přehledu Tyriona.
+
+     PS: K produkčnímu serveru je trvale připojen Davidům kompilační server ubuntu1. Lze však libovolně připojovat další.
+    Tyrion si 2 a více serverů rovnoměrně zatěžuje.
+
+  * Vytvořit si hlavní projekt http://swagger.byzance.cz/#!/Project/postNewProject
+  * Vytvořit si C_Program http://swagger.byzance.cz/#!/C_Program/create_C_Program
+
+    C_program vnímám jako firmware našeho hardwaru z pohledu uživatele. Verze jsou na uživatelovi. (Verze s podporou diody, verze s podporou teploměru atd.)
+    (verze si uživatel řídí sám, to znamená že pokud verzi updatuje tak se netvoří nová - ale jen se přepíšou původní hodnoty) Vím že je to trochu krkolomné. :( Návrhy?
+
+  * Vytvořit si Verzi nad C_programem http://swagger.byzance.cz/#!/C_Program/new_C_Program_Version
+
+            Ta obsahuje JSON
+
+                 {
+                     "version_name" : "První Verze Programu",
+                     "version_description" : "Novy program"
+                 }
+
+  * Update Verze už s kodem.
+     * **code** Obsah main okna - klasická c++ kod
+     * **user_files** je pole uživatelských "záložek nebo oken" kde si muže pohodlně rozdělovat kod.
+       Ukládám to záměrně takto, aby to šlo na becki znovu zobrazit.
+     * **type_of_board_id** pro kompilátor je nutné znát hardwarové podklady (procesor atd..) proto je nunté určit pro kteoru desku se program mompiluje. (Server na začátku vytvoří jednu defaultní NUCLEO_F411RE)
+     * **external_libraries**  Externí knihovny individuálně importovaných knihoven k hardwaru.
+       **PS Je tam velmi důležité rozlišit jak se vnořují složky Ser/Ser.cpp!**
+
+
+                {
+                   "code" : "#include \"mbed.h\"\n#include \"inc_blink.h\"\n#include \"Ser/Ser.h\"\n \nSer s;\nBlink b;\n \nint main() {\n    s.write();\n    b.start();\n}\n",
+                   "type_of_board_id" : "1",
+                   "user_files" : [
+                        {
+                                 "file_name":"soubor dva",
+                                 "code" : "\n // komentar tady je super c++ kod \n"
+                        },
+                        {
+                                "file_name":"Uzivatelská třída 2 - tvoří složky",
+                                 "code" : "\n // komentar 2 \n"
+                        }
+                    ],
+                   "external_libraries":[
+                      {
+                         "library_name":"Uživatelův název SER",
+                         "files" : [
+                                  {
+                                      "file_name" :   "Ser/Ser.cpp",
+                                      "content" : "#include \"mbed.h\"\n#include \"Ser.h\"\n\nSerial pc(D1, D0); // tx, rx\n \nvoid Ser::write() {\n    pc.printf(\"Serial World!\\n\");\n}\n"
+                                  },
+                                  {
+                                      "file_name" :   "Ser/Ser.h",
+                                      "content" : "\nclass Ser\n{\npublic:\n\tvoid write();\t\n};"
+                                  }
+                            ]
+                      },
+                       {
+                         "library_name":"Uživatelův název Blink",
+                         "files" : [
+                                  {
+                                      "file_name" :   "inc_blink.cpp",
+                                      "content" : "#include \"mbed.h\"\r\n#include \"inc_blink.h\"\r\n\r\nDigitalOut myled(LED1);\r\n \r\nvoid Blink::start() {\r\n    while(1) {\r\n        myled = 1;\r\n        wait(0.1);\r\n        myled = 0;\r\n        wait(0.1);\r\n    }\r\n}\r\n"
+                                  },
+                                  {
+                                      "file_name" :   "inc_blink.h",
+                                      "content" : "\nclass Blink\n{\npublic:\n\tvoid start();\t\n};"
+                                  }
+                            ]
+                      }
+                   ]
+                }
+
+  * Kompilace:
+    * Je možná nad verzí C_programu nebo samostatně (třeba pokusné okno playground)
+
+    Komentář:  Workflow kompilace je o tom nedříve napsat kód, zkompilovat ho a pokud je kompilace úspěšná,
+    nahrát jí na hardware. Tyrion má buffery na kompilace a nějaký fičury navíc, ale to asi zatím není důležité.
+    Spíše je to připravené pro budoucnost.
+
+    Zkompilovat kod:
+
+        POST  {{url}}/compilation/c_program/version/compile
+        POST  {{url}}/compilation/c_program/version/compile/{version_id} (je vyžadováno aby byla verze uložena)
+
+        body: Zasílá se stejný JSON jako při updatu
+
+        PS: Zatím není vyřešeno jak zachytit zkompilovaný kod v "playground" a nahrát ho na HW. (Ale chtěl bych to taktéž,
+        takový playground i s HW třeba na prezentaci )
+
+   Odpověď je buď
+        {
+          "state": "ok",
+          "code": 200,
+          "message": "když tu něco je, asi zobraz uživateli"
+        }
+    nebo (To je co vrací kompilátor) - Problém je že nevím co vrací (dokumentace není), prostě ti to přepošlu
+          Ale jde z toho vyseparovat spoustu zajímavých věcí. Tady byl třeba problém že odsazení na další řádek
+          " /n "  neobsahovalo lomítko.
+        [
+          {
+            "filename": "e8d34460-8ec2-49e3-bbac-045490082b0e.cpp",
+            "line": 18,
+            "column": 2,
+            "type": "error",
+            "text": "'n' does not name a type",
+            "codeWhitespace": "  ",
+            "code": "n // komentar 2 ",
+            "adjustedColumn": 0,
+            "startIndex": 0,
+            "endIndex": 101
+          }
+        ]
+
+    Nahrát kompilaci na HW:
+
+        POST  {{url}}/compilation/c_program/version/uploud/{version_id} (je vyžadováno, aby byla verze zkompilována)
+        (Tady mám představu dvou tlačítek "Zkompiluj" a když je to úspěšné "Nahraj na HW".
+        Pro odzkoušení je na konci metody vynechán řádek pro nahrátí přímo na HW který není připojen momentálně a je to becki vracena ok odpověď.
+
+        body:
+             {
+                 "board_id" : ["1", "2"]
+             }
+
+
+
+
+
+
+----
+
 
 ### Oprava Bugů ###
 
@@ -11,6 +286,31 @@
  * fixed [TYRION-118](http://youtrack.byzance.cz/youtrack/issue/TYRION-118)
  * obsolate [TYRION-190](http://youtrack.byzance.cz/youtrack/issue/TYRION-190)
  * fixed [TYRION-222](http://youtrack.byzance.cz/youtrack/issue/TYRION-222)
+
+ Nazelezné bugy:
+  1) U vrácení verze při updatu se vrací duplicitně stejná dvě id
+  2) Při smazání verze dojde i ke smazání C_programu
+
+-----
+
+### TODO ###
+
+  * TODO 13 Důležité je dodělat ORM dokumentaci ve SWAGGERU pro kompilaci!
+  * TODO 14 AzureStorageLink a azurePackageLink přesunout pod Version_object!!! Už je to neudržitelný!!!
+  * TODO 16 Mazání souborů na Azure
+  * TODO 15 Verzování nasadit i na M_Program!
+  * TODO Swagger Dokumentace na objektu B_Program_State a B_Program!!!!!!!!!!!!
+  * TODO 12 Tomáš Z.: Dodělat možnost obnovení hesla
+  * TODO 3 Tomáš Z.: Zdokumentovat všechny Models pro Swagger
+  * TODO 4 Tomáš Z.: Přidat cyklické odmazávání BLOB v Azure, na které už neexistuje databázová vazba (Nějaká fičura co se zapne každý den ve 3 ráno a provede sekvenci kam
+      každý vývojář může přidávat metody které se provedou... (Mazání prošlých tokenů, mazání prošlých nedokončených ověření přes sociální sítě atd... Viz todo 5)
+  * TODO 5 Tomáš Z.: Přidat cyklické odmazávání Vygenerovaných nezrealizovaných spojení na sociální sítě (Linkded Account)
+  * TODO 6 Tomáš Z.: Pokud se uživatel přihlásí přes facebook, k jeho účtu bude přidělen plovoucí token. Pokud se přihlásí znova a znova..
+      budou se vtvářet další a další připojení. Je žádoucí mazat předchozí spojení pokud poznám, že je to ze stejného prohlížeče?
+      PS: Vyžaduje to tak půl dne (+ ideálně přepsat třídu s přihlášení přes facebook a odzkoušet github..
+  * TODO 8 ALL-Tyrion: Bude potřeba dodělat řešení pro prodlužování platnosti tokenu (Buď nějak magicky na Tyrionovi nebo ze strany frontendu) Asi to dodělá Tomáš.
+  * TODO 9 Přidat a vykreslit všechny objekty na dashboard Tyriona
+
 
 
 -----
