@@ -168,11 +168,18 @@ DELETE         /project/homer/:project_id/:homer_id                             
 POST           /project/b_program/:project_id                                               @controllers.ProgramingPackageController.new_b_Program(project_id)
 GET            /project/b_program/:b_program_id                                             @controllers.ProgramingPackageController.get_b_Program(b_program_id)
 PUT            /project/b_program/:b_program_id                                             @controllers.ProgramingPackageController.edit_b_Program(b_program_id)
-PUT            /project/b_program/update/:b_program_id                                      @controllers.ProgramingPackageController.update_b_program(b_program_id)
-GET            /project/b_program/version/:version_id                                       @controllers.ProgramingPackageController.get_b_Program_verison(version_id)
 DELETE         /project/b_program/:b_program_id                                             @controllers.ProgramingPackageController.remove_b_Program(b_program_id)
+
+PUT            /project/b_program/update/:b_program_id                                      @controllers.ProgramingPackageController.update_b_program(b_program_id)
+GET            /project/b_program/version/:version_id                                       @controllers.ProgramingPackageController.get_b_Program_version(version_id)
+DELETE         /project/b_program/version/:version_id                                       @controllers.ProgramingPackageController.remove_b_Program_version(version_id)
+
 PUT            /project/b_program/uploadToHomer/:b_program_id/:version_id/:homer_id         @controllers.ProgramingPackageController.uploadProgramToHomer_Immediately(b_program_id, version_id,homer_id)
 PUT            /project/b_program/uploadToCloud/:b_program_id/:version_id                   @controllers.ProgramingPackageController.upload_b_Program_ToCloud(b_program_id, version_id)
+
+# Dočasně smazány - řeším trochu jinak
+#PUT            /project/b_program/board/connect/:version_id/:board_id                       @controllers.ProgramingPackageController.connect_b_Program_hardware(version_id, board_id)
+#PUT            /project/b_program/board/disconnect/:version_id/:board_id                    @controllers.ProgramingPackageController.disconnect_b_Program_hardware(version_id, board_id)
 
 GET            /project/listOfUploadedHomers/:id                                            @controllers.ProgramingPackageController.listOfUploadedHomers(id: String)
 GET            /project/listOfHomersWaitingForUpload/:id                                    @controllers.ProgramingPackageController.listOfHomersWaitingForUpload(id: String)
@@ -185,6 +192,7 @@ GET            /project/blockoBlock/:blocko_block_id                            
 DELETE         /project/blockoBlock/:blocko_block_id                                        @controllers.ProgramingPackageController.deleteBlock(blocko_block_id)
 
 POST           /project/blockoBlock/version/:blocko_block_id                                @controllers.ProgramingPackageController.new_BlockoBlock_Version(blocko_block_id)
+POST           /project/blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.edit_BlockBlock_version(blocko_block_version_id)
 GET            /project/blockoBlock/version/all/:blocko_block_id                            @controllers.ProgramingPackageController.get_BlockoBlock_all_versions(blocko_block_id)
 GET            /project/blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.get_BlockoBlock_Version(blocko_block_version_id)
 DELETE         /project/blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.delete_BlockoBlock_Version(blocko_block_version_id)
@@ -198,14 +206,14 @@ PUT            /project/typeOfBlock/:type_of_block_id                           
 DELETE         /project/typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.deleteTypeOfBlock(type_of_block_id)
 
 
-
 #BLocko Server
 POST            /project/blocko/server                                                      @controllers.ProgramingPackageController.create_Blocko_Server()
 PUT             /project/blocko/server/:server_id                                           @controllers.ProgramingPackageController.edit_Blocko_Server(server_id)
 GET             /project/blocko/server                                                      @controllers.ProgramingPackageController.get_All_Blocko_Server()
 DELETE          /project/blocko/server/:server_id                                           @controllers.ProgramingPackageController.delete_Blocko_Server(server_id)
 
-
+#Board on Project
+GET             /project/board/all_details/:project_id                                      @controllers.ProgramingPackageController.board_all_details_for_blocko(project_id)
 
 
 

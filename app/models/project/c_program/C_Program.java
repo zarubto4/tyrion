@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import models.compiler.TypeOfBoard;
 import models.compiler.Version_Object;
 import models.project.global.Project;
 
@@ -30,10 +31,17 @@ public class C_Program extends Model {
 
                                                @JsonIgnore      public String azurePackageLink;
                                                @JsonIgnore      public String azureStorageLink;
+                                   @JsonIgnore  @ManyToOne      public TypeOfBoard type_of_board;  // Typ desky
 
 
     @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1461854312") public Date dateOfCreate;
     @OneToMany(mappedBy="c_program", cascade = CascadeType.ALL) @OrderBy("azureLinkVersion DESC") public List<Version_Object> version_objects = new ArrayList<>();
+
+
+
+/* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
+
+    @JsonProperty  @Transient public String type_of_board_id()   { return type_of_board == null ? null : type_of_board.id;}
 
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/

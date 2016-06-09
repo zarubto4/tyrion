@@ -33,13 +33,32 @@ public class B_Program extends Model {
                                                 @JsonIgnore  public String azurePackageLink;
                                                 @JsonIgnore  public String azureStorageLink;
 
-    @JsonIgnore   @OneToOne(mappedBy="b_program",cascade=CascadeType.ALL) public M_Project m_project; // TODO asi časem předělat na MayToMany!
+    @JsonIgnore   @OneToOne(mappedBy="b_program",cascade=CascadeType.ALL) public M_Project m_project;
 
-    @OneToMany(mappedBy="b_program", cascade=CascadeType.ALL) @OrderBy("azureLinkVersion DESC")     public List<Version_Object> versionObjects = new ArrayList<>();
-                                                                       @JsonProperty @Transient      public String   project_id() {  return project.id; }
+    @JsonIgnore   @OneToMany(mappedBy="b_program", cascade=CascadeType.ALL) @OrderBy("azureLinkVersion DESC") public List<Version_Object> versionObjects = new ArrayList<>();
+                                                                    @JsonProperty @Transient     public String   project_id() {  return project.id; }
 
 
 /* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/
+
+    @JsonProperty @Transient public List<Blocko_Versions> program_versions() {
+        List<Blocko_Versions> versions = new ArrayList<>();
+
+        for(Version_Object v : versionObjects){
+            Blocko_Versions bl = new Blocko_Versions();
+            bl.version_Object = v;
+            bl.connected_boards = v.b_pairs_b_program;
+
+            versions.add(bl);
+        }
+
+        return versions;
+    }
+
+    class Blocko_Versions{
+        public Version_Object version_Object;
+        public List<B_Pair> connected_boards = new ArrayList<>();
+    }
 
     @JsonProperty @Transient public B_Program_State program_state(){
 
@@ -102,7 +121,7 @@ public class B_Program extends Model {
 
     public enum permissions{ B_Program_create, B_Program_update, B_Program_read, B_Program_edit , B_Program_delete}
 
-    /* FINDER --------------------------------------------------------------------------------------------------------------*/
+/* FINDER --------------------------------------------------------------------------------------------------------------*/
      public static Finder<String,B_Program> find = new Finder<>(B_Program.class);
 }
 

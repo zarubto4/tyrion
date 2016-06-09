@@ -4,6 +4,7 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
+import models.project.b_program.B_Pair;
 import models.project.b_program.Homer;
 import models.project.global.Project;
 
@@ -23,10 +24,13 @@ public class Board extends Model {
                                     @JsonIgnore @ManyToOne       public Project project;
                                     @JsonIgnore @ManyToOne       public Homer homer;
 
+        @JsonIgnore @OneToOne(mappedBy="board",cascade=CascadeType.ALL)      public B_Pair b_pair;
+
 
     @JsonProperty  @Transient public String type_of_board_id()   { return type_of_board == null ? null : type_of_board.id; }
     @JsonProperty  @Transient public String project_id()         { return       project == null ? null : project.id; }
     @JsonProperty  @Transient public String homer_id()           { return         homer == null ? null : homer.id; }
+
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 

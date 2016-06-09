@@ -4,6 +4,7 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
+import models.project.b_program.B_Pair;
 import models.project.b_program.B_Program;
 import models.project.b_program.B_Program_Cloud;
 import models.project.b_program.B_Program_Homer;
@@ -34,20 +35,23 @@ public class Version_Object extends Model {
                                     @JsonIgnore  @ManyToOne  public LibraryGroup  libraryGroup;
                                     @JsonIgnore  @ManyToOne  public SingleLibrary singleLibrary;
 
-    // C_code / C_program ...
-                                                       @JsonIgnore  @ManyToOne      public C_Program     c_program;
-                             @JsonIgnore   @OneToOne(mappedBy="version_object")     public C_Compilation c_compilation;
+                                                        @JsonIgnore  @ManyToOne      public C_Program     c_program;
+
+                             @JsonIgnore   @OneToOne(mappedBy="version_object")      public C_Compilation  c_compilation;
 
 
 
 
-    @JsonIgnore   @Column(columnDefinition = "TEXT")     public String c_comp_build_url;
+
 
 
     // B_program / B_code ,,,
-                           @JsonIgnore @ManyToOne(cascade = CascadeType.REMOVE)    public B_Program       b_program;
+                                                        @JsonIgnore @ManyToOne     public B_Program       b_program;
     @JsonIgnore   @OneToOne(mappedBy="version_object",cascade=CascadeType.ALL)     public B_Program_Homer b_program_homer;
     @JsonIgnore   @OneToOne(mappedBy="version_object",cascade=CascadeType.ALL)     public B_Program_Cloud b_program_cloud;
+
+    @JsonIgnore @OneToMany(mappedBy="c_program_version",cascade=CascadeType.ALL)  public List<B_Pair> b_pairs_c_program = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="b_program_version",cascade=CascadeType.ALL)  public List<B_Pair> b_pairs_b_program = new ArrayList<>();
 
     // M_project
     @JsonIgnore   @OneToOne(mappedBy="b_program_version",cascade=CascadeType.ALL)  public M_Project m_project;
@@ -63,11 +67,5 @@ public class Version_Object extends Model {
     public static Finder<String, Version_Object> find = new Finder<>(Version_Object.class);
 
 
-
-/* Pomocné SET a GET (Za určitých okolností nevyhnutelné) --------------------------------------------------------------*/
-
-    public void setC_comp_build_url(String c_comp_build_url) {
-        this.c_comp_build_url = c_comp_build_url;
-    }
 
 }

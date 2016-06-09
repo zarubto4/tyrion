@@ -33,7 +33,7 @@ public class M_Project extends Model {
 
 
     @JsonIgnore @ManyToOne                                      public Project project;
-    @JsonIgnore @OneToOne   @JoinColumn(name="b_program_id")    public B_Program b_program; // TODO asi časem předělat na MayToMany!
+    @JsonIgnore @OneToOne   @JoinColumn(name="b_program_id")    public B_Program b_program;
     @JsonIgnore @OneToOne   @JoinColumn(name="vrs_obj_id")      public Version_Object b_program_version;
                                                                 public boolean auto_incrementing;
 

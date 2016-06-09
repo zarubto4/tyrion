@@ -16,15 +16,18 @@ public class Swagger_C_Program_Version_Update {
     // Nutný fiktivní contructor pro zhmotnění vnitřních tříd
     public Swagger_C_Program_Version_Update(){}
 
-    @Constraints.Required
-    @ApiModelProperty(required = true)
-    public String type_of_board_id;
 
     @Constraints.Required
     @ApiModelProperty(required = true)
     public String code;
 
+
+    @ApiModelProperty(required = true, value = "Important - if you want compile c++ code and not under version object - you have to specify type_of_board id!")
+    public String type_of_board_id;
+
+
     @Valid public List<User_Files> user_files;
+
 
     @Valid public List<External_Libraries>  external_libraries;
 

@@ -11,6 +11,7 @@ import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import io.swagger.annotations.*;
 import models.compiler.*;
 import models.project.b_program.Homer;
+import models.project.c_program.C_Compilation;
 import models.project.c_program.C_Program;
 import models.project.global.Project;
 import play.Logger;
@@ -97,6 +98,9 @@ public class CompilationLibrariesController extends Controller {
             Project project = Project.find.byId(project_id);
             if(project == null ) return GlobalResult.notFoundObject("Project project_id not found");
 
+            TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(help.type_of_board_id);
+            if(typeOfBoard == null) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
+
             // Tvorba programu
             C_Program c_program             = new C_Program();
             c_program.program_name          = help.program_name;
@@ -104,6 +108,7 @@ public class CompilationLibrariesController extends Controller {
             c_program.azurePackageLink      = "personal-program";
             c_program.project               = project;
             c_program.dateOfCreate          = new Date();
+            c_program.type_of_board         = typeOfBoard;
             c_program.setUniqueAzureStorageLink();
 
             c_program.save();
@@ -137,7 +142,6 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-  //  @Dynamic("project.c_program_owner")
     public Result get_C_Program(@ApiParam(value = "c_program_id String query", required = true) @PathParam("c_program_id") String c_program_id) {
         try {
 
@@ -220,7 +224,6 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @BodyParser.Of(BodyParser.Json.class)
-    // @Dynamic("project.c_program_owner")
     public Result edit_C_Program_Description(@ApiParam(value = "c_program_id String query", required = true) @PathParam("c_program_id") String c_program_id) {
         try {
 
@@ -231,8 +234,12 @@ public class CompilationLibrariesController extends Controller {
             C_Program program = C_Program.find.byId(c_program_id);
             if(program == null ) return GlobalResult.notFoundObject("C_Program c_program_id not found");
 
+            TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(help.type_of_board_id);
+            if(typeOfBoard == null) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
+
             program.program_name = help.program_name;
             program.program_description = help.program_description;
+            program.type_of_board = typeOfBoard;
 
             program.update();
 
@@ -372,8 +379,9 @@ public class CompilationLibrariesController extends Controller {
                 UtilTools.remove_file_from_Azure(old_file);
                 old_file.delete();
             }
+            version_object.c_compilation.delete();
 
-            version_object.c_comp_build_url = null;
+            version_object.update();
 
             // Nahraje do Azure a připojí do verze soubor (lze dělat i cyklem - ale název souboru musí být vždy jiný)
             ObjectNode content = Json.newObject();
@@ -563,13 +571,10 @@ public class CompilationLibrariesController extends Controller {
             Form<Swagger_C_Program_Version_Update> form = Form.form(Swagger_C_Program_Version_Update.class).bind(json);
             Swagger_C_Program_Version_Update help = form.get();
 
-            TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(help.type_of_board_id);
-            if(typeOfBoard == null) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
-
             ObjectNode result = Json.newObject();
             result.put("messageType", "build");
             // result.put("messageId", messageId); <- messageId je vkládáno až v WebSocketController_Incoming.compiler_server_make_Compilation(...)!
-            result.put("target", typeOfBoard.name);
+            result.put("target", version_object.c_program.type_of_board.name);
             result.put("libVersion", "v0");
 
             // Code - Musím sesumírovat všechny uživatelovi okna do jednoho souboru ke kompilaci (nejedná se totiž o uživatelovi knihovny)
@@ -601,7 +606,12 @@ public class CompilationLibrariesController extends Controller {
            if(compilation_result.has("buildUrl")){
 
 
-               version_object.setC_comp_build_url( compilation_result.get("buildUrl").asText() );
+               C_Compilation c_compilation = new C_Compilation();
+               c_compilation.c_comp_build_url = compilation_result.get("buildUrl").asText();
+               c_compilation.virtual_input_output = compilation_result.get("interface").asText();
+               c_compilation.save();
+
+               version_object.c_compilation = c_compilation;
                version_object.update();
 
                System.out.println("Vše v cajku");
@@ -658,8 +668,13 @@ public class CompilationLibrariesController extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_C_Program_Version_Update help = form.get();
 
+
+            if(help.type_of_board_id.isEmpty()) return GlobalResult.badRequest("type_of_board_id is missing!");
+
             TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(help.type_of_board_id);
             if(typeOfBoard == null) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
+
+
 
             ObjectNode result = Json.newObject();
             result.put("messageType", "build");
@@ -830,7 +845,7 @@ public class CompilationLibrariesController extends Controller {
             if(version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
 
-            if(version_object.c_comp_build_url == null || version_object.c_comp_build_url.length() < 5) return GlobalResult.result_BadRequest("The program is not yet compiled");
+            if(version_object.c_compilation == null ) return GlobalResult.result_BadRequest("The program is not yet compiled");
 
             if(FileRecord.find.where().eq("version_object.id", version_object.id).where().eq("file_name", "compilation.bin").findUnique() == null
                && WebSocketController_Incoming.compiler_cloud_servers.isEmpty()){
@@ -847,10 +862,10 @@ public class CompilationLibrariesController extends Controller {
                 // Example "http://0.0.0.0:8989/7e50e112-b2d3-4ea2-989a-89f415241268.bin"
                 // Beru z názvu url souboru až za posledním lomítkem
                 // Výsledek files/7e50e112-b2d3-4ea2-989a-89f415241268.bin
-                file = new File("files/" + version_object.c_comp_build_url.split("/")[3]);
+                file = new File("files/" + version_object.c_compilation.c_comp_build_url.split("/")[3]);
 
 
-                F.Promise<File> filePromise = ws.url(version_object.c_comp_build_url).get().map(response -> {
+                F.Promise<File> filePromise = ws.url(version_object.c_compilation.c_comp_build_url).get().map(response -> {
                     InputStream inputStream = null;
                     OutputStream outputStream = null;
                     try {
@@ -3282,7 +3297,7 @@ public class CompilationLibrariesController extends Controller {
     })
     public Result connect_Board_with_Project(@ApiParam(required = true) @PathParam("board_id")  String board_id, @ApiParam(required = true) @PathParam("project_id")  String project_id){
         try {
-            System.out.println("connect_Board_with_Project...................................................." );
+
             Board board = Board.find.byId(board_id);
             if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
 

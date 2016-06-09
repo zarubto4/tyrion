@@ -4,6 +4,7 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
+import models.project.c_program.C_Program;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ public class TypeOfBoard extends Model {
                        @JsonIgnore  @ManyToOne                  public Processor processor;
 
     @JsonIgnore @OneToMany(targetEntity= Board.class, mappedBy="type_of_board", cascade = CascadeType.ALL) public List<Board> boards = new ArrayList<>();
+    @JsonIgnore @OneToMany(targetEntity= Board.class, mappedBy="type_of_board", cascade = CascadeType.ALL) public List<C_Program> c_programs = new ArrayList<>();
 
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
@@ -28,8 +30,8 @@ public class TypeOfBoard extends Model {
     @ApiModelProperty(readOnly =true) @Transient
     @JsonProperty public String processor_id      (){ return processor == null ? null : processor.id;}
 
-    @ApiModelProperty(readOnly =true) @Transient
-    @JsonProperty public List<String> boards_id() { List<String> l = new ArrayList<>();  for( Board m : boards)  l.add(m.id); return l;  }
+    //@ApiModelProperty(readOnly =true) @Transient // Zbytečné
+    // @JsonProperty public List<String> boards_id() { List<String> l = new ArrayList<>();  for( Board m : boards)  l.add(m.id); return l;  }
 
     @ApiModelProperty(readOnly =true) @Transient
     @JsonProperty public String producer_id      (){return producer == null ? null :  producer.id;}
