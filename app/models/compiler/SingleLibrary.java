@@ -21,7 +21,7 @@ public class SingleLibrary  extends Model {
                                                  @JsonIgnore public String azureStorageLink;
                                                  @JsonIgnore public String azurePackageLink;
 
-    @JsonIgnore @OneToMany(mappedBy="singleLibrary", cascade=CascadeType.ALL) @OrderBy("azureLinkVersion DESC") public List<Version_Object> version_objects = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="single_library", cascade=CascadeType.ALL) @OrderBy("azureLinkVersion DESC") public List<Version_Object> version_objects = new ArrayList<>();
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL)   public List<Processor> processors = new ArrayList<>();
 
 
@@ -45,8 +45,10 @@ public class SingleLibrary  extends Model {
     @JsonIgnore   @Transient public Boolean read_permission()  {  return true; }
     @JsonProperty @Transient public Boolean edit_permission()  {  return SecurityController.getPerson().has_permission("SingleLibrary_edit");   }
     @JsonProperty @Transient public Boolean delete_permission(){  return SecurityController.getPerson().has_permission("SingleLibrary_delete"); }
+    @JsonProperty @Transient public Boolean update_permission(){  return SecurityController.getPerson().has_permission("SingleLibrary_update"); }
 
-    public enum permissions{SingleLibrary_create, SingleLibrary_edit, SingleLibrary_delete}
+
+    public enum permissions{SingleLibrary_create, SingleLibrary_edit, SingleLibrary_update, SingleLibrary_delete}
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String, SingleLibrary> find = new Finder<>(SingleLibrary.class);

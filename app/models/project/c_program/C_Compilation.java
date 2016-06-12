@@ -19,6 +19,9 @@ public class C_Compilation extends Model {
     @JsonIgnore @OneToOne   @JoinColumn(name="c_compilation_version")      public Version_Object version_object;
 
 
+    @Column(columnDefinition = "TEXT")      public String virtual_input_output;
+    @Column(columnDefinition = "TEXT")      public String c_comp_build_url;
+
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient

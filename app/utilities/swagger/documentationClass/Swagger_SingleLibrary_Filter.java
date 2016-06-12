@@ -12,12 +12,6 @@ public class Swagger_SingleLibrary_Filter {
     @ApiModelProperty(required = false)
     public String library_name;
 
-    @ApiModelProperty(required = false)
-    public Integer count_from;
-
-    @ApiModelProperty(required = false)
-    public Integer count_to;
-
     @ApiModelProperty(value = "Value of order", allowableValues = "group_name, id" , required = false)
     public String order;
 

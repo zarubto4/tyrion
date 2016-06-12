@@ -161,7 +161,7 @@ public class UtilTools extends Controller {
         return fileRecord;
     }
 
-    public static File file_get_File_from_Azure(String container_name, String azurePackageLink , String azureStorageLink, Integer azureLinkVersion, String filename)throws Exception{
+    public static File file_get_File_from_Azure(String container_name, String azurePackageLink , String azureStorageLink, String azureLinkVersion, String filename)throws Exception{
 
         CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
 
@@ -184,7 +184,7 @@ public class UtilTools extends Controller {
             String container_name = "c-program";
             String azureStorageLink;
             String azurePackageLink;
-            int azureLinkVersion;
+            String azureLinkVersion;
             String filename;
 
             Version_Object version = file.version_object;

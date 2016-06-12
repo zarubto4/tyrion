@@ -8,12 +8,11 @@ import models.blocko.BlockoBlock;
 import models.blocko.BlockoBlockVersion;
 import models.blocko.Cloud_Blocko_Server;
 import models.blocko.TypeOfBlock;
+import models.compiler.Board;
+import models.compiler.TypeOfBoard;
 import models.compiler.Version_Object;
 import models.person.Person;
-import models.project.b_program.B_Program;
-import models.project.b_program.B_Program_Cloud;
-import models.project.b_program.B_Program_Homer;
-import models.project.b_program.Homer;
+import models.project.b_program.*;
 import models.project.global.Project;
 import play.data.Form;
 import play.libs.Json;
@@ -30,6 +29,7 @@ import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Homer_List;
+import utilities.swagger.outboundClass.Swagger_Boards_For_Blocko;
 import utilities.webSocket.WS_BlockoServer;
 
 import javax.websocket.server.PathParam;
@@ -63,6 +63,7 @@ public class ProgramingPackageController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successfully created", response =  Project.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -103,6 +104,8 @@ public class ProgramingPackageController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response =  Project.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -139,6 +142,8 @@ public class ProgramingPackageController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response =  Project.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -172,6 +177,8 @@ public class ProgramingPackageController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response =  Result_ok.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -219,6 +226,8 @@ public class ProgramingPackageController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response =  Project.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -273,6 +282,8 @@ public class ProgramingPackageController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response = Project.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -335,6 +346,8 @@ public class ProgramingPackageController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response = Project.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -369,7 +382,6 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-
 // HOMER   #############################################################################################################
 
     @ApiOperation(value = "create new Homer",
@@ -401,6 +413,8 @@ public class ProgramingPackageController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successfully created", response =  Homer.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -444,11 +458,13 @@ public class ProgramingPackageController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response =  Result_ok.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result removeHomer(@ApiParam(value = "id String path",   required = true) @PathParam("id") String homer_id){
+    public  Result removeHomer(@ApiParam(value = "b_program_id String path",   required = true) @PathParam("id") String homer_id){
         try{
 
            Homer homer = Homer.find.byId(homer_id);
@@ -482,11 +498,13 @@ public class ProgramingPackageController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response =  Homer.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result getHomer(@ApiParam(value = "id String path",   required = true) @PathParam("id")String homer_id){
+    public  Result getHomer(@ApiParam(value = "b_program_id String path",   required = true) @PathParam("id")String homer_id){
         try {
             Homer homer = Homer.find.byId(homer_id);
             if (homer == null) return GlobalResult.notFoundObject("Homer id not found");
@@ -532,16 +550,21 @@ public class ProgramingPackageController extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Permission", value = "It requires both permission"),
+
+                    }),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Project.update_permission", value = "true"),
+                            @ExtensionProperty(name = "Homer.update_permission", value = "true"),
+                    })
             }
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response =  Project.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -574,10 +597,22 @@ public class ProgramingPackageController extends Controller {
             notes = "remove Homer",
             produces = "application/json",
             protocols = "https",
-            code = 200
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Permission", value = "It requires both permission"),
+
+                    }),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Project.update_permission", value = "true"),
+                            @ExtensionProperty(name = "Homer.update_permission", value = "true"),
+                    })
+            }
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response =  Project.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -614,12 +649,10 @@ public class ProgramingPackageController extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 201,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Project.update_permission", value = "true"),
+                    })
             }
     )
     @ApiImplicitParams(
@@ -635,6 +668,8 @@ public class ProgramingPackageController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successfully created", response =  B_Program.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -678,21 +713,21 @@ public class ProgramingPackageController extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Project.read_permission", value = "true"),
+                    })
             }
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response =  B_Program.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result get_b_Program(@ApiParam(value = "id String path", required = true) @PathParam("id") String b_program_id){
+    public  Result get_b_Program(@ApiParam(value = "b_program_id String path", required = true) @PathParam("b_program_id") String b_program_id){
         try{
 
             B_Program b_program = B_Program.find.byId(b_program_id);
@@ -713,21 +748,21 @@ public class ProgramingPackageController extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "B_program.read_permission", value = "true"),
+                    })
             }
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response =  B_Program.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result get_b_Program_verison(@ApiParam(value = "version_id String path", required = true) @PathParam("version_id") String version_id){
+    public  Result get_b_Program_version(@ApiParam(value = "version_id String path", required = true) @PathParam("version_id") String version_id){
         try{
 
             Version_Object program = Version_Object.find.byId(version_id);
@@ -748,12 +783,10 @@ public class ProgramingPackageController extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "B_program.edit_permission", value = "true"),
+                    })
             }
     )
     @ApiImplicitParams(
@@ -769,12 +802,14 @@ public class ProgramingPackageController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response =  B_Program.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public  Result edit_b_Program(@ApiParam(value = "id String path", required = true) @PathParam("id") String b_program_id){
+    public  Result edit_b_Program(@ApiParam(value = "b_program_id String path", required = true) @PathParam("b_program_id") String b_program_id){
         try{
             Swagger_B_Program_New help = Json.fromJson(request().body().asJson(), Swagger_B_Program_New.class);
 
@@ -802,12 +837,10 @@ public class ProgramingPackageController extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "B_program.update_permission", value = "true"),
+                    })
             }
     )
     @ApiImplicitParams(
@@ -823,12 +856,14 @@ public class ProgramingPackageController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response =  Version_Object.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public  Result update_b_program(@ApiParam(value = "id String path", required = true) @PathParam("id") String b_program_id){
+    public  Result update_b_program(@ApiParam(value = "b_program_id String path", required = true) @PathParam("b_program_id") String b_program_id){
         try{
 
             final Form<Swagger_B_Program_Version_New> form = Form.form(Swagger_B_Program_Version_New.class).bindFromRequest();
@@ -848,18 +883,30 @@ public class ProgramingPackageController extends Controller {
             Version_Object versionObjectObject          = new Version_Object();
             versionObjectObject.version_name            = help.version_name;
             versionObjectObject.version_description     = help.version_description;
-
-            if(b_program.versionObjects.isEmpty() ) versionObjectObject.azureLinkVersion = 1;
-            else versionObjectObject.azureLinkVersion    = ++b_program.versionObjects.get(0).azureLinkVersion; // Zvednu verzi o jednu
-
-            versionObjectObject.date_of_create      = new Date();
-            versionObjectObject.b_program           = b_program;
+            versionObjectObject.azureLinkVersion        = new Date().toString();
+            versionObjectObject.date_of_create          = new Date();
+            versionObjectObject.b_program               = b_program;
             versionObjectObject.save();
 
-            b_program.versionObjects.add(versionObjectObject);
+            for(Swagger_B_Program_Version_New.Connected_Board h_board : help.boards){
+
+                Board board = Board.find.byId(h_board.board_id);
+                if (board == null) return GlobalResult.notFoundObject("Board board_id not found");
+
+                Version_Object c_program_version = Version_Object.find.byId(h_board.c_program_version_id);
+                if (c_program_version == null) return GlobalResult.notFoundObject("B_Program b_program_id not found");
+
+                B_Pair b_pair = new B_Pair();
+                b_pair.board = board;
+                b_pair.c_program_version = c_program_version;
+                b_pair.b_program_version = versionObjectObject;
+                b_pair.save();
+
+            }
+
+            b_program.version_objects.add(versionObjectObject);
             b_program.update();
 
-            // Nahraje do Azure a připojí do verze soubor (lze dělat i cyklem - ale název souboru musí být vždy jiný)
             UtilTools.uploadAzure_Version("b-program", file_content, "program.js", b_program.azureStorageLink, b_program.azurePackageLink, versionObjectObject);
 
             return GlobalResult.result_ok(Json.toJson(versionObjectObject));
@@ -875,21 +922,21 @@ public class ProgramingPackageController extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "B_program.delete_permission", value = "true"),
+                    })
             }
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response =  Result_ok.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result remove_b_Program(@ApiParam(value = "id String path", required = true) @PathParam("id") String b_program_id){
+    public  Result remove_b_Program(@ApiParam(value = "b_program_id String path", required = true) @PathParam("b_program_id") String b_program_id){
         try{
 
             B_Program program  = B_Program.find.byId(b_program_id);
@@ -921,6 +968,151 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
+    @ApiOperation(value = "remove B Program version",
+            tags = {"B_Program"},
+            notes = "remove B_Program version object",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "B_program.delete_permission", value = "true"),
+                    })
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  Result_ok.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public  Result remove_b_Program_version(@ApiParam(value = "version_id String path", required = true) @PathParam("version_id") String version_id){
+        try{
+
+            Version_Object version_object  = Version_Object.find.byId(version_id);
+
+            if (version_object == null) return GlobalResult.notFoundObject("Version_Object id not found");
+            if (version_object.b_program == null) return GlobalResult.badRequest("B_Program not found");
+
+            if (! version_object.b_program.delete_permission() ) return GlobalResult.forbidden_Permission();
+
+
+            // Před smazáním blocko programu je nutné smazat jeho běžící cloud instance
+            System.out.println("Snažím se odstanit instance ze serverů");
+            List<B_Program_Cloud> b_program_clouds = B_Program_Cloud.find.where().eq("version_object.id", version_object.id).findList();
+            System.out.println("Počet instancí " + b_program_clouds.size()  );
+
+            for(B_Program_Cloud b_program_cloud : b_program_clouds){
+                if(  WebSocketController_Incoming.blocko_servers.containsKey(b_program_cloud.server.server_name)){
+
+                    WS_BlockoServer server = (WS_BlockoServer)  WebSocketController_Incoming.blocko_servers.get(b_program_cloud.server.server_name);
+                    WebSocketController_Incoming.blocko_server_remove_instance( server, b_program_cloud.blocko_instance_name);
+                    if(WebSocketController_Incoming.incomingConnections_homers.containsKey( b_program_cloud.blocko_instance_name ))   WebSocketController_Incoming.incomingConnections_homers.get(b_program_cloud.blocko_instance_name).onClose();
+                }
+            }
+
+            version_object.delete();
+
+            return GlobalResult.result_ok();
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+
+/*
+
+    @ApiOperation(value = "connect hardware to B Program (version) ",
+            tags = {"B_Program"},
+            notes = "sconnect to B_Program version users board",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "B_program.update_permission", value = "true"),
+                    })
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  B_Pair.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public  Result connect_b_Program_hardware(@ApiParam(value = "version_id String path", required = true) @PathParam("version_id") String version_id, @ApiParam(value = "board_id String path", required = true) @PathParam("board_id") String board_id ){
+        try{
+
+            Version_Object program  = Version_Object.find.byId(version_id);
+            if (program == null) return GlobalResult.notFoundObject("B_Program b_program_id not found");
+
+            if(program.b_program == null ) return GlobalResult.badRequest("Version_Object is not from B_Program");
+
+            Board board = Board.find.byId(board_id);
+            if (board == null) return GlobalResult.notFoundObject("Board board_id not found");
+
+            if (! program.b_program.update_permission() ) return GlobalResult.forbidden_Permission();
+
+
+            B_Pair b_pair = new B_Pair();
+            b_pair.board = board;
+            b_pair.c_program_version = program;
+            b_pair.save();
+
+
+            return GlobalResult.result_ok(Json.toJson(b_pair));
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "disconnect hardware to B Program (version) ",
+            tags = {"B_Program"},
+            notes = "disconnect to B_Program version users board",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "B_program.update_permission", value = "true"),
+                    })
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  B_Pair.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public  Result disconnect_b_Program_hardware(@ApiParam(value = "version_id String path", required = true) @PathParam("version_id") String version_id,  @ApiParam(value = "board_id String path", required = true) @PathParam("board_id") String board_id ){
+        try{
+
+            if( Version_Object.find.byId(version_id) == null) return GlobalResult.notFoundObject("B_Program b_program_id not found");
+            if( Board.find.byId(board_id) == null)            return GlobalResult.notFoundObject("Board board_id not found");
+
+            B_Pair b_pair = B_Pair.find.where().eq("c_program_version.id", version_id).eq("board.id", board_id).findUnique();
+            if(b_pair == null) return GlobalResult.badRequest("Connection not exist!");
+
+            if (! b_pair.c_program_version.b_program.update_permission() ) return GlobalResult.forbidden_Permission();
+
+            b_pair.delete();
+
+            return GlobalResult.result_ok();
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+*/
+
 
     @ApiOperation(value = "upload B_Program (version) to Homer",
             tags = {"B_Program", "Homer"},
@@ -928,7 +1120,12 @@ public class ProgramingPackageController extends Controller {
                     "you are uploading B_program version. And if connected M_Project is set to \"Auto_update\", it will automatically update all Grid Terminals.",
             produces = "application/json",
             protocols = "https",
-            code = 200
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "B_program.update_permission", value = "true"),
+                    })
+            }
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successful Uploaded",                       response = Result_ok.class),
@@ -938,9 +1135,9 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",                  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result uploadProgramToHomer_Immediately(@ApiParam(value = "id", required = true) @PathParam("id") String b_program_id,
-                                                    @ApiParam(value = "version_id", required = true) @PathParam("version_id") String version_id,
-                                                    @ApiParam(value = "id", required = true) @PathParam("id") String homer_id){
+    public  Result uploadProgramToHomer_Immediately(@ApiParam(value = "b_program_id", required = true) @PathParam("b_program_id") String b_program_id,
+                                                    @ApiParam(value = "version_id", required = true)   @PathParam("version_id") String version_id,
+                                                    @ApiParam(value = "homer_id", required = true)     @PathParam("homer_id") String homer_id){
         try {
 
             Person person = SecurityController.getPerson();
@@ -948,6 +1145,8 @@ public class ProgramingPackageController extends Controller {
             // B program, který chci nahrát do Cloudu na Blocko server
             B_Program b_program = B_Program.find.byId(b_program_id);
             if (b_program == null) return GlobalResult.notFoundObject("B_Program id not found");
+
+            if (! b_program.update_permission() ) return GlobalResult.forbidden_Permission();
 
             // Verze B programu kterou budu nahrávat do cloudu
             Version_Object version_object = Version_Object.find.byId(version_id);
@@ -1017,7 +1216,12 @@ public class ProgramingPackageController extends Controller {
             notes = "upload version of B Program to cloud. Its possible have only one version from B program in cloud. If you uploud new one - old one will be replaced",
             produces = "application/json",
             protocols = "https",
-            code = 200
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "B_program.update_permission", value = "true"),
+                    })
+            }
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successful Uploaded",                       response = B_Program_Homer.class),
@@ -1027,7 +1231,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",                  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result upload_b_Program_ToCloud(@ApiParam(value = "id String path", required = true) @PathParam("id") String b_program_id, @ApiParam(value = "version_id String path", required = true) @PathParam("version_id") String version_id){
+    public  Result upload_b_Program_ToCloud(@ApiParam(value = "b_program_id String path", required = true) @PathParam("b_program_id") String b_program_id, @ApiParam(value = "version_id String path", required = true) @PathParam("version_id") String version_id){
         try {
 
             // B program, který chci nahrát do Cloudu na Blocko server
@@ -1037,6 +1241,8 @@ public class ProgramingPackageController extends Controller {
             // Verze B programu kterou budu nahrávat do cloudu
             Version_Object version_object = Version_Object.find.where().eq("id", version_id).eq("b_program.id", b_program.id).findUnique();
             if (version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
+
+            if (! b_program.update_permission() ) return GlobalResult.forbidden_Permission();
 
             // Pokud už nějaká instance běžela, tak na ní budu nabrávat nový program a odstraním vazbu na běžící instanci b programu
             if( version_object.b_program_cloud != null ) {
@@ -1186,7 +1392,7 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Update successfuly",      response = Cloud_Blocko_Server.class),
+            @ApiResponse(code = 200, message = "Update successfully",      response = Cloud_Blocko_Server.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1951,6 +2157,27 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-///###################################################################################################################*/
+
+// BOARD ###################################################################################################################*/
+
+
+    public Result board_all_details_for_blocko(String project_id){
+        try {
+
+            Project project = Project.find.byId(project_id);
+            if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
+            if (! project.read_permission()) return GlobalResult.forbidden_Permission();
+
+            Swagger_Boards_For_Blocko boards_for_blocko = new Swagger_Boards_For_Blocko();
+            boards_for_blocko.boards = project.boards;
+            boards_for_blocko.typeOfBoards = TypeOfBoard.find.where().eq("boards.project.id", project.id ).findList();
+            boards_for_blocko.c_programs = project.c_programs;
+
+            return GlobalResult.ok(Json.toJson(boards_for_blocko));
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
 
 }

@@ -1,6 +1,5 @@
 package utilities.webSocket;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.WebSocketController_Incoming;
 
@@ -32,7 +31,7 @@ public class WS_Homer_Cloud extends WebSCType{
     }
 
     @Override
-    public JsonNode write_with_confirmation(String messageId, ObjectNode json) throws TimeoutException, InterruptedException {
+    public ObjectNode write_with_confirmation(String messageId, ObjectNode json) throws TimeoutException, InterruptedException {
         try {
 
             json.put("instanceId", super.identifikator);
@@ -44,7 +43,7 @@ public class WS_Homer_Cloud extends WebSCType{
     }
 
     @Override
-    public JsonNode write_with_confirmation(String messageId, ObjectNode json, Long time_To_TimeOutExcepting) throws TimeoutException, InterruptedException {
+    public ObjectNode write_with_confirmation(String messageId, ObjectNode json, Long time_To_TimeOutExcepting) throws TimeoutException, InterruptedException {
         try {
 
             json.put("instanceId", super.identifikator);

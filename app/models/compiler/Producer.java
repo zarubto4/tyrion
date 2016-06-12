@@ -21,6 +21,10 @@ public class Producer extends Model {
 
     @JsonIgnore @OneToMany(mappedBy="producer", cascade = CascadeType.ALL) public List<TypeOfBoard> type_of_boards = new ArrayList<>();
 
+
+
+/* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/
+
     @JsonProperty @Transient public List<String>  type_of_boards_id() { List<String> l = new ArrayList<>();  for( TypeOfBoard m : type_of_boards)  l.add(m.id); return l;  }
 
 

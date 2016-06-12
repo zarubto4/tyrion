@@ -195,7 +195,7 @@ public class WebSocketController_Incoming extends Controller {
             //-----------------------------------------------------------------------------------------------------------
 
             // POKUD JE B_PROGRAM V CLOUDU ale shodná verze neexistuje ale je povoleno auto increment
-            if (m_project.b_program_version.b_program_cloud == null &&  m_project.auto_incrementing &&  B_Program.find.where().isNotNull("versionObjects.b_program_cloud").findUnique() != null) {
+            if (m_project.b_program_version.b_program_cloud == null &&  m_project.auto_incrementing &&  B_Program.find.where().isNotNull("version_objects.b_program_cloud").findUnique() != null) {
 
                 System.out.println("Vyhrává program puštěný v cloudu s tím že propojení bude iterováno na vyšší verzi! Yeah!");
                 m_project.b_program_version = m_project.b_program.where_program_run();
@@ -245,7 +245,7 @@ public class WebSocketController_Incoming extends Controller {
                 return ws;
 
             // TODO POKUD JE B_PROGRAM V CLOUDU ale nemám schodnou verzi a zakázal jsem autoincrementování
-            } else if (! m_project.auto_incrementing && B_Program.find.where().isNotNull("versionObjects.b_program_cloud").findUnique() != null){
+            } else if (! m_project.auto_incrementing && B_Program.find.where().isNotNull("version_objects.b_program_cloud").findUnique() != null){
 
                 System.out.println("Běží nová verze v cloudu, ale je zakázáno autoincrementování!");
                 m_project_is_connected_with_older_version(terminal);
@@ -260,7 +260,7 @@ public class WebSocketController_Incoming extends Controller {
 
 
              // POKUD JE B_PROGRAM NA PC ale shodná verze neexistuje a povolil jsem auto inkrementaci
-              if( m_project.b_program_version.b_program_homer == null && m_project.auto_incrementing  && B_Program.find.where().isNotNull("versionObjects.b_program_homer").findUnique() != null) {
+              if( m_project.b_program_version.b_program_homer == null && m_project.auto_incrementing  && B_Program.find.where().isNotNull("version_objects.b_program_homer").findUnique() != null) {
 
                   System.out.println("Vyhrává program puštěný na lokálním PC ale je nutné provést opravu verzí!");
                   m_project.b_program_version = m_project.b_program.where_program_run();
@@ -308,7 +308,7 @@ public class WebSocketController_Incoming extends Controller {
 
 
                   // POKUD JE B_PROGRAM NA PC ale shodná verze neexistuje a zakázal jsem auto inkrementaci
-                } else if( ! m_project.auto_incrementing && B_Program.find.where().isNotNull("versionObjects.b_program_homer").findUnique() != null){
+                } else if( ! m_project.auto_incrementing && B_Program.find.where().isNotNull("version_objects.b_program_homer").findUnique() != null){
 
                     m_project_is_connected_with_older_version(terminal);
                     return ws;
@@ -662,9 +662,9 @@ public class WebSocketController_Incoming extends Controller {
         jsonNodes.put("messageId", messageId);
 
         System.out.println("Odeslal žádost o kompilaci");
-        JsonNode compilation_request = server.write_with_confirmation(messageId, jsonNodes);
+        ObjectNode compilation_request = server.write_with_confirmation(messageId, jsonNodes);
 
-        System.out.println("Přijal potvrzení žádost o kompilaci se  zprávou: " +compilation_request.asText() );
+        System.out.println("Přijal potvrzení žádost o kompilaci se  zprávou: " + compilation_request.asText() );
 
         if(!compilation_request.get("status").asText().equals("success")) {
             System.out.println("Zpráva neobsahovala success a tak vracím error json ");
@@ -675,16 +675,18 @@ public class WebSocketController_Incoming extends Controller {
 
         System.out.println("Zpráva obsahovala success");
 
+        JsonNode blocko_interface = compilation_request.get("interface");
+
         System.out.println("Vkládám do zásobníku reqestů kompilace odchozí žádost s klíčem " + compilation_request.get("buildId").asText());
         server.compilation_request.put(compilation_request.get("buildId").asText()  , jsonNodes);
 
 
-        class Confirmation_Thread implements Callable<JsonNode> {
+        class Confirmation_Thread implements Callable<ObjectNode> {
 
             Long breaker = (long) 1000*30;
 
             @Override
-            public JsonNode call() throws Exception {
+            public ObjectNode call() throws Exception {
 
                 while(breaker > 0){
                     Thread.sleep(1000);
@@ -695,7 +697,7 @@ public class WebSocketController_Incoming extends Controller {
 
                         System.out.println("Mažu žádost");
                         server.compilation_request.remove(compilation_request.get("buildId").asText());
-                        JsonNode compilation_result = server.compilation_results.get(compilation_request.get("buildId").asText());
+                        ObjectNode compilation_result = server.compilation_results.get(compilation_request.get("buildId").asText());
 
                         System.out.println("Mažu odpověď");
                         server.compilation_results.remove(compilation_request.get("buildId").asText());
@@ -716,11 +718,17 @@ public class WebSocketController_Incoming extends Controller {
 
         ExecutorService pool = Executors.newFixedThreadPool(3);
 
-        Callable<JsonNode> callable = new Confirmation_Thread();
-        Future<JsonNode> future = pool.submit(callable);
+        Callable<ObjectNode> callable = new Confirmation_Thread();
+        Future<ObjectNode> future = pool.submit(callable);
 
         try {
-            return future.get();
+            ObjectNode final_result = future.get();
+
+
+            System.out.println("\n\n\n Interface: " + blocko_interface);
+            final_result.set("interface", blocko_interface);
+
+            return final_result;
         } catch (Exception e) {
             System.out.println("write_with_confirmation NEstihlo se včas");
             throw new TimeoutException();

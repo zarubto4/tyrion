@@ -1,6 +1,5 @@
 package utilities.webSocket;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.WebSocketController_Incoming;
 import play.mvc.WebSocket;
@@ -67,7 +66,7 @@ public class WS_Becki_Website extends  WebSCType {
     }
 
     @Override
-    public JsonNode write_with_confirmation(String messageId, ObjectNode json, Long time_To_TimeOutExcepting) throws TimeoutException,  InterruptedException {
+    public ObjectNode write_with_confirmation(String messageId, ObjectNode json, Long time_To_TimeOutExcepting) throws TimeoutException,  InterruptedException {
 
         System.out.println("write_with_confirmation na centrální becki není implementováno!!!!!!!!!...................!!!!!!!");
 

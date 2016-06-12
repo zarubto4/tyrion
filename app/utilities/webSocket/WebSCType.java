@@ -1,7 +1,6 @@
 package utilities.webSocket;
 
 import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.WebSocketController_Incoming;
@@ -80,21 +79,21 @@ public abstract class WebSCType {
      * nedojde k během určitého intervalu k odovědi, vláknu vyprší životnost a zavolá vyjímku TimeoutException.
      */
 
-    private  Map<String, JsonNode> message_out = new HashMap<>(); // (meessageId, JsonNode)
-    private  Map<String, JsonNode> message_in  = new HashMap<>(); // (meessageId, JsonNode)
+    private  Map<String, ObjectNode> message_out = new HashMap<>(); // (meessageId, JsonNode)
+    private  Map<String, ObjectNode> message_in  = new HashMap<>(); // (meessageId, JsonNode)
 
 
-    public JsonNode write_with_confirmation(String messageId, ObjectNode json) throws TimeoutException, InterruptedException {
+    public ObjectNode write_with_confirmation(String messageId, ObjectNode json) throws TimeoutException, InterruptedException {
             return write_with_confirmation(messageId, json, (long) (250*1000) );
     }
 
-    public JsonNode write_with_confirmation(String messageId, ObjectNode json, Long time_To_TimeOutExcepting) throws TimeoutException,  InterruptedException {
+    public ObjectNode write_with_confirmation(String messageId, ObjectNode json, Long time_To_TimeOutExcepting) throws TimeoutException,  InterruptedException {
 
 
-        class Confirmation_Thread implements Callable<JsonNode>{
+        class Confirmation_Thread implements Callable<ObjectNode>{
 
             @Override
-            public JsonNode call() throws Exception {
+            public ObjectNode call() throws Exception {
 
                     System.out.println("Odesílám zprávu [" + messageId + "], na kterou požaduji potvrzení. Zpráva: " + json.toString());
 
@@ -112,7 +111,7 @@ public abstract class WebSCType {
 
                         if (message_in.containsKey(messageId)) {
                             System.out.println("Zpráva nalezena a tak zabíjím while cyklus");
-                            JsonNode message = message_in.get(messageId);
+                            ObjectNode message = message_in.get(messageId);
                             message_in.remove(messageId);
                             return message;
                         }
@@ -131,8 +130,8 @@ public abstract class WebSCType {
 
         ExecutorService pool = Executors.newFixedThreadPool(3);
 
-        Callable<JsonNode> callable = new Confirmation_Thread();
-        Future<JsonNode> future = pool.submit(callable);
+        Callable<ObjectNode> callable = new Confirmation_Thread();
+        Future<ObjectNode> future = pool.submit(callable);
 
         try {
             return future.get();

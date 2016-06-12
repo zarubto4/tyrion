@@ -1,3 +1,52 @@
+# Verze 1.06.6 #
+####  26.5.2016 ####
+
+**Změny General:**
+
+    Nová verze přináší podporu informací z kompilátoru o bločkách pro využití v blocku.
+    To co vrátí kompilátor ja nabídnu pro převzetí do blocka skrze výběr firmwaru, který lze na haerdware nahrát.
+
+    Zásadní nedořešenou otázkou je jak potunint virtuální bločky hardwaru. (Třeba přidat vstupy pro bločky, nějakou hlubší logiku,
+    když se zasílá hardwaru třeba tři strings. ( Tak základní logika PLC struktury nedovoluje mít 3 vstupy a najednou je měnit)
+
+
+
+
+
+### TODO ###
+
+  * TODO 13 Důležité je dodělat ORM dokumentaci ve SWAGGERU pro kompilaci!
+  * TODO 14 AzureStorageLink a azurePackageLink přesunout pod Version_object!!! Už je to neudržitelný!!!
+  * TODO 16 Mazání souborů na Azure
+  * TODO 15 Verzování nasadit i na M_Program!
+  * TODO Swagger Dokumentace na objektu B_Program_State a B_Program!!!!!!!!!!!!
+  * TODO 12 Tomáš Z.: Dodělat možnost obnovení hesla
+  * TODO 3 Tomáš Z.: Zdokumentovat všechny Models pro Swagger
+  * TODO 4 Tomáš Z.: Přidat cyklické odmazávání BLOB v Azure, na které už neexistuje databázová vazba (Nějaká fičura co se zapne každý den ve 3 ráno a provede sekvenci kam
+      každý vývojář může přidávat metody které se provedou... (Mazání prošlých tokenů, mazání prošlých nedokončených ověření přes sociální sítě atd... Viz todo 5)
+  * TODO 5 Tomáš Z.: Přidat cyklické odmazávání Vygenerovaných nezrealizovaných spojení na sociální sítě (Linkded Account)
+  * TODO 6 Tomáš Z.: Pokud se uživatel přihlásí přes facebook, k jeho účtu bude přidělen plovoucí token. Pokud se přihlásí znova a znova..
+      budou se vtvářet další a další připojení. Je žádoucí mazat předchozí spojení pokud poznám, že je to ze stejného prohlížeče?
+      PS: Vyžaduje to tak půl dne (+ ideálně přepsat třídu s přihlášení přes facebook a odzkoušet github..
+  * TODO 8 ALL-Tyrion: Bude potřeba dodělat řešení pro prodlužování platnosti tokenu (Buď nějak magicky na Tyrionovi nebo ze strany frontendu) Asi to dodělá Tomáš.
+  * TODO 9 Přidat a vykreslit všechny objekty na dashboard Tyriona
+
+
+
+
+  a) Takže je potřeba zprostředkovat z kompilace vytvořené virtuální bločky do blocka
+  b) V blocku dát možnost importovat hardware a verzi hardwaru (firmwaru)  - vědět co na něm běží a eventuelně nabídnout co na něm může běžet.
+
+  1) Přibyly nové API, které umožnují připojit k blocko programu (ke specifické verzi) konkrétní hardware.
+     (Ze seznamu hardwaru, který je registrován k projektu). Je nad tím provedena operace vyhledání vyrtuálních bločků hardwaru z kompilátoru tak aby si je uživatel mohl propojit společně s s blockem.
+
+        PS:  Jsou tam neřešitelné stavy kolie verzí (tak se ještě vymyslí nějaké donucovací prostředky, které zamězí v aktualizaci bez updatu navazující části)
+
+        Becki obdrží informace o desce (hardwaru) a její virtuální bločky.
+         Objekt B_Pair je zastřešující objekt, který je vázán k verzi Blocko programu a združuje hardware a jeho verzi C_programu. Když uživatel třeba jumpne zpátky na nižší verzi blocko programu, tyrion downgradne i hardware.
+
+
+-----
 
 # Verze 1.06.5 #
 ####  26.5.2016 ####

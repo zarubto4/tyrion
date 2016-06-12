@@ -39,6 +39,8 @@ public class M_Program extends Model{
 
 
 
+/* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/
+
     @ApiModelProperty(required = false, value = "Visible here only when the object is NOT specifically required. Inversion value for \"m_code\" ") @Transient
     @JsonInclude(JsonInclude.Include.NON_NULL)  @JsonProperty public String m_code_id()            {  return m_code == null ? qr_token : null ; }
 

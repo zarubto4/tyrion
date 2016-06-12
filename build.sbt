@@ -29,7 +29,6 @@ libraryDependencies ++= Seq(
   "com.cedarsoftware" % "json-io" % "4.4.0",
   "org.pegdown" % "pegdown" % "1.6.0",
 
-
   javaJdbc,
   filters,
   cache,

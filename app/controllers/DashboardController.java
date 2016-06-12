@@ -133,7 +133,7 @@ public class DashboardController extends Controller {
 
             Html menu_html = menu.render(reported_bugs, connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers, connectedCompile_servers, link_api_swagger);
             Swagger_Diff swagger_diff = UtilTools.set_API_Changes();
-            Html content = api_Div.render(swagger_diff, link_api_swagger);
+            Html content = Api_Div.render(swagger_diff, link_api_swagger);
             logger.debug("Return show_readme.html content");
 
             return ok(main.render(menu_html,
