@@ -1,5 +1,17 @@
-# Verze 1.06.6 # (Je ve vývoji) - Změny pouze pro Kompilátor - směrodatná je verze 1.06.5
+# Verze 1.06.6 #
 ####  26.5.2016 ####
+
+**Změny General:**
+
+    Nová verze přináší podporu informací z kompilátoru o bločkách pro využití v blocku.
+    To co vrátí kompilátor ja nabídnu pro převzetí do blocka skrze výběr firmwaru, který lze na haerdware nahrát.
+
+    Zásadní nedořešenou otázkou je jak potunint virtuální bločky hardwaru. (Třeba přidat vstupy pro bločky, nějakou hlubší logiku,
+    když se zasílá hardwaru třeba tři strings. ( Tak základní logika PLC struktury nedovoluje mít 3 vstupy a najednou je měnit)
+
+
+
+
 
 ### TODO ###
 
@@ -31,9 +43,7 @@
         PS:  Jsou tam neřešitelné stavy kolie verzí (tak se ještě vymyslí nějaké donucovací prostředky, které zamězí v aktualizaci bez updatu navazující části)
 
         Becki obdrží informace o desce (hardwaru) a její virtuální bločky.
-        Objekt B_Pair je zastřešující objekt, který je vázán k verzi Blocko programu a združuje hardware a jeho verzi C_programu. Když uživatel třeba jumpne zpátky na nižší verzi blocko programu, tyrion downgradne i hardware.
-
-u get B_Program - uprava program_versions -> bylo nunté ti přidat dodatečné informace - pravděpodobně to takto bude vypadat všude.
+         Objekt B_Pair je zastřešující objekt, který je vázán k verzi Blocko programu a združuje hardware a jeho verzi C_programu. Když uživatel třeba jumpne zpátky na nižší verzi blocko programu, tyrion downgradne i hardware.
 
 
 -----

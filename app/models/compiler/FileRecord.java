@@ -44,7 +44,7 @@ public class FileRecord extends Model {
     // záznam - to znamená, že file_record je vázán pouze bud k b programu, nebo jen k c programu atd...
     @JsonIgnore @Transient public File get_fileRecord_from_Azure_inFile() throws Exception{
 
-      Integer azureLinkVersion = version_object.azureLinkVersion;
+      String  azureLinkVersion = version_object.azureLinkVersion;
       String  azurePackageLink = "";
       String  azureStorageLink = "";
       String  container = "";
@@ -64,15 +64,15 @@ public class FileRecord extends Model {
                 azureStorageLink = c_program.azureStorageLink;
         }
         //else if( version_object.m_project != null){} Todo Na M_Program - zatím není verze implementována
-        else if( version_object.singleLibrary != null){
+        else if( version_object.single_library != null){
                 container = "libraries";
-                SingleLibrary singleLibrary = SingleLibrary.find.byId(version_object.singleLibrary.id);
+                SingleLibrary singleLibrary = SingleLibrary.find.byId(version_object.single_library.id);
                 azurePackageLink = singleLibrary.azurePackageLink;
                 azureStorageLink = singleLibrary.azureStorageLink;
         }
-        else if( version_object.libraryGroup != null){
+        else if( version_object.library_group != null){
                 container = "libraries";
-                LibraryGroup libraryGroup = LibraryGroup.find.byId(version_object.libraryGroup.id);
+                LibraryGroup libraryGroup = LibraryGroup.find.byId(version_object.library_group.id);
                 azurePackageLink = libraryGroup.azurePackageLink;
                 azureStorageLink = libraryGroup.azureStorageLink;
         }
@@ -114,11 +114,11 @@ public class FileRecord extends Model {
                                 ),
                                 com.avaje.ebean.Expr.or(
                                         com.avaje.ebean.Expr.and(
-                                            com.avaje.ebean.Expr.eq("version_object.singleLibrary.project.ownersOfProject.id", SecurityController.getPerson().id),
+                                            com.avaje.ebean.Expr.eq("version_object.single_library.project.ownersOfProject.id", SecurityController.getPerson().id),
                                             com.avaje.ebean.Expr.eq("id",id)
                                         ),
                                         com.avaje.ebean.Expr.and(
-                                                com.avaje.ebean.Expr.eq("version_object.libraryGroup.project.ownersOfProject.id", SecurityController.getPerson().id),
+                                                com.avaje.ebean.Expr.eq("version_object.library_group.project.ownersOfProject.id", SecurityController.getPerson().id),
                                                 com.avaje.ebean.Expr.eq("id",id)
                                         )
                                 )
@@ -154,11 +154,11 @@ public class FileRecord extends Model {
                             ),
                             com.avaje.ebean.Expr.or(
                                     com.avaje.ebean.Expr.and(
-                                            com.avaje.ebean.Expr.eq("version_object.singleLibrary.project.ownersOfProject.id", SecurityController.getPerson().id),
+                                            com.avaje.ebean.Expr.eq("version_object.single_library.project.ownersOfProject.id", SecurityController.getPerson().id),
                                             com.avaje.ebean.Expr.eq("id",id)
                                     ),
                                     com.avaje.ebean.Expr.and(
-                                            com.avaje.ebean.Expr.eq("version_object.libraryGroup.project.ownersOfProject.id", SecurityController.getPerson().id),
+                                            com.avaje.ebean.Expr.eq("version_object.library_group.project.ownersOfProject.id", SecurityController.getPerson().id),
                                             com.avaje.ebean.Expr.eq("id",id)
                                     )
                             )

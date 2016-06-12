@@ -3,6 +3,7 @@ package models.compiler;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
 import models.project.c_program.C_Program;
 
@@ -37,6 +38,18 @@ public class TypeOfBoard extends Model {
     @JsonProperty public String producer_id      (){return producer == null ? null :  producer.id;}
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+
+
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore   @Transient public Boolean create_permission(){  return SecurityController.getPerson().has_permission("TypeOfBoard_create"); }
+    @JsonIgnore   @Transient public Boolean read_permission()  {  return true; }
+    @JsonProperty @Transient public Boolean edit_permission()  {  return SecurityController.getPerson().has_permission("TypeOfBoard_edit");   }
+    @JsonProperty @Transient public Boolean delete_permission(){  return SecurityController.getPerson().has_permission("TypeOfBoard_delete"); }
+    @JsonProperty @Transient public Boolean register_new_device_permission(){ return SecurityController.getPerson().has_permission("TypeOfBoard_register_new_device"); }
+
+    public enum permissions{TypeOfBoard_create, TypeOfBoard_edit, TypeOfBoard_delete, TypeOfBoard_register_new_device}
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String, TypeOfBoard> find = new Finder<>(TypeOfBoard.class);

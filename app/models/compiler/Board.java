@@ -2,13 +2,16 @@ package models.compiler;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
+import io.swagger.annotations.ApiModelProperty;
 import models.project.b_program.B_Pair;
 import models.project.b_program.Homer;
 import models.project.global.Project;
 
 import javax.persistence.*;
+import java.util.Date;
 
 
 @Entity
@@ -20,6 +23,7 @@ public class Board extends Model {
                          @Column(columnDefinition = "TEXT")      public String personal_description;
                                     @JsonIgnore  @ManyToOne      public TypeOfBoard type_of_board;  // Typ desky
                                                                  public boolean isActive;
+                                               @JsonIgnore       public Date date_of_create;
 
                                     @JsonIgnore @ManyToOne       public Project project;
                                     @JsonIgnore @ManyToOne       public Homer homer;
@@ -34,11 +38,22 @@ public class Board extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public Boolean create_permission(){  return  ( Board.find.where().where().eq("project.ownersOfProject.id", SecurityController.getPerson().id ).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Board_Create"); }
-    @JsonIgnore @Transient public Boolean edit_permission()  {  return  ( Board.find.where().where().eq("project.ownersOfProject.id", SecurityController.getPerson().id ).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Board_edit"); }
-    @JsonIgnore @Transient public Boolean delete_permission(){  return  ( Board.find.where().where().eq("project.ownersOfProject.id", SecurityController.getPerson().id ).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Board_delete");}
+    // Floating shared documentation for Swagger
+    @JsonIgnore @Transient public static final String connection_permission_docs    = "read: If user want connect Project with board, he needs two Permission! Project.update_permission == true and also Board.first_connect_permission == true. " +
+                                                                                      "- Or user need combination of static/dynamic permission key and Board.first_connect_permission == true";
+    @JsonIgnore @Transient public static final String disconnection_permission_docs = "read: If user want remove Board from Project, he needs one single permission Project.update_permission, where hardware is registered. - Or user need static/dynamic permission key";
 
-    public enum permissions{Board_edit, Board_delete}
+                                       @JsonIgnore   @Transient public Boolean create_permission(){  return   SecurityController.getPerson().has_permission("Board_Create"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean edit_permission()  {  return   project != null && (project.update_permission()  || SecurityController.getPerson().has_permission("Board_edit"));   }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean read_permission()  {  return   project.read_permission() || update_permission() || SecurityController.getPerson().has_permission("Board_read");    }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean delete_permission(){  return   project != null && (project.update_permission()  || SecurityController.getPerson().has_permission("Board_delete")); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean update_permission(){  return   project != null && (project.update_permission()  || SecurityController.getPerson().has_permission("Board_update")); }
+
+    @ApiModelProperty(required = false, value = "It will be visible in Json object, only if value is true. This is an extraordinary value")
+    @JsonProperty  @JsonInclude(JsonInclude.Include.NON_NULL) @Transient public Boolean first_connect_permission(){  return   project != null ? null : true;}
+
+
+    public enum permissions{Board_read, Board_Create, Board_edit, Board_delete, Board_update}
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String, Board> find = new Finder<>(Board.class);

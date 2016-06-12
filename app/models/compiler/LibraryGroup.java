@@ -24,7 +24,7 @@ public class LibraryGroup extends Model {
 
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL) public List<Processor> processors = new ArrayList<>();
 
-    @JsonIgnore @OneToMany(mappedBy="libraryGroup", cascade=CascadeType.ALL) @OrderBy("azureLinkVersion DESC") public List<Version_Object> version_objects = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="library_group", cascade=CascadeType.ALL) @OrderBy("azureLinkVersion DESC") public List<Version_Object> version_objects = new ArrayList<>();
 
     @JsonProperty @Transient public List<String>   versions_id()      { List<String> l = new ArrayList<>();  for( Version_Object m : version_objects)  l.add(m.id); return l;  }
     @JsonProperty @Transient public List<String>   processors_id()    { List<String> l = new ArrayList<>();  for( Processor m      : processors)       l.add(m.id); return l;  }
@@ -45,8 +45,10 @@ public class LibraryGroup extends Model {
     @JsonIgnore   @Transient public Boolean read_permission()  {  return true; }
     @JsonProperty @Transient public Boolean edit_permission()  {  return SecurityController.getPerson().has_permission("LibraryGroup_edit");   }
     @JsonProperty @Transient public Boolean delete_permission(){  return SecurityController.getPerson().has_permission("LibraryGroup_delete"); }
+    @JsonProperty @Transient public Boolean update_permission(){  return SecurityController.getPerson().has_permission("LibraryGroup_update"); }
 
-    public enum permissions{LibraryGroup_create, LibraryGroup_edit, LibraryGroup_delete}
+
+    public enum permissions{LibraryGroup_create, LibraryGroup_edit, LibraryGroup_delete, LibraryGroup_update}
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String, LibraryGroup> find = new Finder<>(LibraryGroup.class);

@@ -1,7 +1,7 @@
 package utilities.permission;
 
-import controllers.SecurityController;
-import models.person.PersonPermission;
+        import controllers.SecurityController;
+        import models.person.PersonPermission;
 
 public class Permission {
 
@@ -9,9 +9,9 @@ public class Permission {
         //Zde porovnávám zda uživatel má oprávnění na přímo
         // nebo je ve skupině, která dané oprávnění vlastní
 
-     return   (PersonPermission.find.where().in("value", args).eq("roles.persons.id", SecurityController.getPerson().id).findRowCount() < 1)
-                &&
-              (PersonPermission.find.where().in("value", args).eq("persons.id", SecurityController.getPerson().id).findRowCount() < 1);
+        return   PersonPermission.find.where().in("value", args).eq("roles.persons.id", SecurityController.getPerson().id).findRowCount() < 1
+                ||
+                PersonPermission.find.where().in("value", args).eq("persons.id", SecurityController.getPerson().id).findRowCount() < 1;
     }
 
     public static boolean check_dynamic(String value){

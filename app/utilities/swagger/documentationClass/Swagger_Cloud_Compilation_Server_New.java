@@ -9,6 +9,7 @@ import play.data.validation.Constraints;
 public class Swagger_Cloud_Compilation_Server_New {
 
     @Constraints.Required
+    @Constraints.MinLength(value = 6, message = "The name must have at least 6 characters")
     @ApiModelProperty(value = "Unique name For Compiler server", required = true)
     public String server_name;
 

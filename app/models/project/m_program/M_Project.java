@@ -33,27 +33,29 @@ public class M_Project extends Model {
 
 
     @JsonIgnore @ManyToOne                                      public Project project;
-    @JsonIgnore @OneToOne   @JoinColumn(name="b_program_id")    public B_Program b_program;
+    @JsonIgnore @OneToOne   @JoinColumn(name="b_program_id")    public B_Program b_program; // TODO asi časem předělat na MayToMany!
     @JsonIgnore @OneToOne   @JoinColumn(name="vrs_obj_id")      public Version_Object b_program_version;
                                                                 public boolean auto_incrementing;
 
     @OneToMany(mappedBy="m_project", cascade = CascadeType.ALL) public List<M_Program> m_programs = new ArrayList<>();
 
 
+
+/* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/
+
+
     @JsonProperty @Transient public String project_id()                    {  return project.id; }
     @JsonProperty @Transient public String b_progam_connected_version_id() {  return b_program_version == null ? null : b_program_version.id;   }
     @JsonProperty @Transient public String b_program_id()                  {  return b_program         == null ? null : b_program.id; }
 
-
-
-    /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
 
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     // Floating shared documentation for Swagger
-    @JsonIgnore @Transient public static final String read_permission_docs   = "read: If user have Project.update_permission = true, you can create M_project on this Project - Or you need static/dynamic permission key";
+    @JsonIgnore @Transient public static final String read_permission_docs   = "read: If user have Project.read_permission = true, you can read M_project on this Project - Or you need static/dynamic permission key";
     @JsonIgnore @Transient public static final String create_permission_docs = "create: If user have Project.update_permission = true, you can create M_project on this Project - Or you need static/dynamic permission key";
 
     @JsonIgnore   @Transient public Boolean create_permission(){  return ( Project.find.where().eq("ownersOfProject.id",   SecurityController.getPerson().id).eq("id", project.id ).findUnique().create_permission() ) || SecurityController.getPerson().has_permission("M_Project_create");      }

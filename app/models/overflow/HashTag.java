@@ -28,5 +28,4 @@ public class HashTag extends Model {
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String,HashTag> find = new Finder<>(HashTag.class);
-
 }

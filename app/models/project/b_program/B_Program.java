@@ -35,7 +35,7 @@ public class B_Program extends Model {
 
     @JsonIgnore   @OneToOne(mappedBy="b_program",cascade=CascadeType.ALL) public M_Project m_project;
 
-    @JsonIgnore   @OneToMany(mappedBy="b_program", cascade=CascadeType.ALL) @OrderBy("azureLinkVersion DESC") public List<Version_Object> versionObjects = new ArrayList<>();
+    @JsonIgnore   @OneToMany(mappedBy="b_program", cascade=CascadeType.ALL) @OrderBy("azureLinkVersion DESC") public List<Version_Object> version_objects = new ArrayList<>();
                                                                     @JsonProperty @Transient     public String   project_id() {  return project.id; }
 
 
@@ -44,7 +44,7 @@ public class B_Program extends Model {
     @JsonProperty @Transient public List<Blocko_Versions> program_versions() {
         List<Blocko_Versions> versions = new ArrayList<>();
 
-        for(Version_Object v : versionObjects){
+        for(Version_Object v : version_objects){
             Blocko_Versions bl = new Blocko_Versions();
             bl.version_Object = v;
             bl.connected_boards = v.b_pairs_b_program;

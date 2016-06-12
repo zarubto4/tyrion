@@ -595,7 +595,6 @@ public class GridController extends Controller {
             tags = {"M_Program"},
             notes = "remove M_Program by quarry = m_program_id",
             produces = "application/json",
-            response =  Result_ok.class,
             protocols = "https",
             code = 200,
             extensions = {
@@ -613,6 +612,7 @@ public class GridController extends Controller {
     @Security.Authenticated(Secured.class)
     public Result remove_M_Program(@ApiParam(value = "m_program_id String query", required = true) @PathParam("m_program_id") String m_program_id){
         try {
+
             M_Program m_program = M_Program.find.byId(m_program_id);
             if (m_program == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
 

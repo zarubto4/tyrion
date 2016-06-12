@@ -17,7 +17,6 @@ public class Swagger_C_program_New {
     @ApiModelProperty(required = false)
     public String program_description;
 
-    @Constraints.Required
     @ApiModelProperty(required = true)
     public String type_of_board_id;
 

@@ -191,6 +191,7 @@ public class Server {
                 for(Enum en : Processor.permissions.values())               permissions.add(en.name());
                 for(Enum en : Producer.permissions.values())                permissions.add(en.name());
                 for(Enum en : SingleLibrary.permissions.values())           permissions.add(en.name());
+                for(Enum en : TypeOfBoard.permissions.values())             permissions.add(en.name());
 
             // grid
                 for(Enum en : Screen_Size_Type.permissions.values())           permissions.add(en.name());

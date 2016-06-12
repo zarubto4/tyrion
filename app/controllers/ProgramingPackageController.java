@@ -883,13 +883,9 @@ public class ProgramingPackageController extends Controller {
             Version_Object versionObjectObject          = new Version_Object();
             versionObjectObject.version_name            = help.version_name;
             versionObjectObject.version_description     = help.version_description;
-
-            if(b_program.versionObjects.isEmpty() ) versionObjectObject.azureLinkVersion = 1;
-            else versionObjectObject.azureLinkVersion    = ++b_program.versionObjects.get(0).azureLinkVersion; // Zvednu verzi o jednu
-
-
-            versionObjectObject.date_of_create      = new Date();
-            versionObjectObject.b_program           = b_program;
+            versionObjectObject.azureLinkVersion        = new Date().toString();
+            versionObjectObject.date_of_create          = new Date();
+            versionObjectObject.b_program               = b_program;
             versionObjectObject.save();
 
             for(Swagger_B_Program_Version_New.Connected_Board h_board : help.boards){
@@ -908,7 +904,7 @@ public class ProgramingPackageController extends Controller {
 
             }
 
-            b_program.versionObjects.add(versionObjectObject);
+            b_program.version_objects.add(versionObjectObject);
             b_program.update();
 
             UtilTools.uploadAzure_Version("b-program", file_content, "program.js", b_program.azureStorageLink, b_program.azurePackageLink, versionObjectObject);
@@ -996,6 +992,7 @@ public class ProgramingPackageController extends Controller {
         try{
 
             Version_Object version_object  = Version_Object.find.byId(version_id);
+
             if (version_object == null) return GlobalResult.notFoundObject("Version_Object id not found");
             if (version_object.b_program == null) return GlobalResult.badRequest("B_Program not found");
 
@@ -1004,7 +1001,7 @@ public class ProgramingPackageController extends Controller {
 
             // Před smazáním blocko programu je nutné smazat jeho běžící cloud instance
             System.out.println("Snažím se odstanit instance ze serverů");
-            List<B_Program_Cloud> b_program_clouds = B_Program_Cloud.find.where().eq("version_object.id", version_id).findList();
+            List<B_Program_Cloud> b_program_clouds = B_Program_Cloud.find.where().eq("version_object.id", version_object.id).findList();
             System.out.println("Počet instancí " + b_program_clouds.size()  );
 
             for(B_Program_Cloud b_program_cloud : b_program_clouds){

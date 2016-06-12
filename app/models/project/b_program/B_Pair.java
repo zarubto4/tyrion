@@ -26,7 +26,7 @@ public class B_Pair extends Model {
 
     @JsonProperty   @Transient public String c_program_version_id() { return c_program_version == null ? null : c_program_version.id;}
     @JsonProperty   @Transient public String c_program_id()         { return c_program_version == null ? null : c_program_version.c_program.id;}
-    @JsonProperty   @Transient public String virtual_input_output() { return c_program_version == null ? null : c_program_version.c_compilation.virtual_input_output; }
+    @JsonProperty   @Transient public String virtual_input_output() { return c_program_version.c_compilation == null ? null : c_program_version.c_compilation.virtual_input_output; }
     @JsonProperty   @Transient public String board_id()             { return board == null ? null : board.id;}
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String,B_Pair> find = new Finder<>(B_Pair.class);

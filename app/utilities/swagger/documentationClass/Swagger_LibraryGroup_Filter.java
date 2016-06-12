@@ -12,16 +12,8 @@ public class Swagger_LibraryGroup_Filter {
     @ApiModelProperty(value = "List of processor.id", required = false)
     public List<String> processors_id;
 
-
     @ApiModelProperty(required = false)
     public String group_name;
-
-    @ApiModelProperty(required = false)
-    public Integer count_from;
-
-    @ApiModelProperty(required = false)
-    public Integer count_to;
-
 
     @ApiModelProperty(value = "Value of order", allowableValues = "group_name, id, date_of_create" , required = false)
     public String order;
