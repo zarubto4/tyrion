@@ -257,7 +257,7 @@ PUT             /compilation/board/filter/:page_number                          
 GET             /compilation/board/:board_id                                                @controllers.CompilationLibrariesController.get_Board(board_id)
 DELETE          /compilation/board/deactivateBoard/:board_id                                @controllers.CompilationLibrariesController.deactivate_Board(board_id)
 PUT             /compilation/board/:board_id/:project_id                                    @controllers.CompilationLibrariesController.connect_Board_with_Project(board_id, project_id)
-DELETE          /compilation/board/:board_id                                                @controllers.CompilationLibrariesController.disconnect_Board_from_Project(board_id)
+DELETE          /compilation/board/:board_id                                                 @controllers.CompilationLibrariesController.disconnect_Board_from_Project(board_id)
 
 
 #Producer
@@ -274,6 +274,7 @@ DELETE          /compilation/typeOfBoard/:type_of_board_id                      
 GET             /compilation/typeOfBoard/all                                                @controllers.CompilationLibrariesController.get_TypeOfBoard_all()
 GET             /compilation/typeOfBoard/:type_of_board_id                                  @controllers.CompilationLibrariesController.get_TypeOfBoard(type_of_board_id)
 
+
 #LibraryGroups
 POST            /compilation/libraryGroup                                                   @controllers.CompilationLibrariesController.new_LibraryGroup()
 PUT             /compilation/libraryGroup/filter/:page_number                               @controllers.CompilationLibrariesController.get_LibraryGroup_Filter(page_number: Integer)
@@ -289,7 +290,7 @@ PUT             /compilation/libraryGroup/:libraryGroup_id                      
 
 #Single Library
 POST            /compilation/library                                                        @controllers.CompilationLibrariesController.new_SingleLibrary()
-PUT             /compilation/library/filter/:page_number                                    @controllers.CompilationLibrariesController.get_SingleLibrary_Filter(page_number: Integer)
+PUT             /compilation/library/filter                                                 @controllers.CompilationLibrariesController.get_SingleLibrary_Filter()
 POST            /compilation/library/version/:library_id                                    @controllers.CompilationLibrariesController.new_SingleLibrary_Version(library_id)
 
 GET             /compilation/library/:library_id                                            @controllers.CompilationLibrariesController.get_SingleLibrary(library_id)

@@ -1,4 +1,4 @@
-# Verze 1.06.6 #
+# Verze 1.06.6 # (nevydaná)
 ####  26.5.2016 ####
 
 **Změny General:**
@@ -10,6 +10,9 @@
     když se zasílá hardwaru třeba tři strings. ( Tak základní logika PLC struktury nedovoluje mít 3 vstupy a najednou je měnit)
 
 
+### Oprava Bugů ###
+
+ * fixed [TYRION-190](http://youtrack.byzance.cz/youtrack/issue/TYRION-190)
 
 
 
