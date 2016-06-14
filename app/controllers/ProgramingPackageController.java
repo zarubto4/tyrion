@@ -72,21 +72,25 @@ public class ProgramingPackageController extends Controller {
     public  Result postNewProject() {
         try{
 
+            // Zpracování Json
             final Form<Swagger_Project_New> form = Form.form(Swagger_Project_New.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Project_New help = form.get();
 
+            // Vytvoření objektu
             Project project  = new Project();
-
             project.project_name = help.project_name;
             project.project_description = help.project_description;
 
             project.ownersOfProject.add( SecurityController.getPerson() );
 
+            // Kontrola oprávnění těsně před uložením
             if (!project.create_permission())  return GlobalResult.forbidden_Permission();
 
+            // Uložení objektu
             project.save();
 
+            // Vrácení objektu
             return GlobalResult.created( Json.toJson(project) );
 
 
@@ -113,8 +117,10 @@ public class ProgramingPackageController extends Controller {
     public  Result getProjectsByUserAccount(){
         try {
 
+            // Získání seznamu
             List<Project> projects = SecurityController.getPerson().owningProjects;
 
+            // Vrácení seznamu
             return GlobalResult.result_ok(Json.toJson( projects ));
 
         } catch (Exception e) {
@@ -151,11 +157,14 @@ public class ProgramingPackageController extends Controller {
     public  Result getProject(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
         try {
 
+            // Kontrola objektu
             Project project = Project.find.byId(project_id);
             if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
+            // Kontrola oprávnění
             if (!project.read_permission())   return GlobalResult.forbidden_Permission();
 
+            // Vraácení objektu
             return GlobalResult.result_ok(Json.toJson(project));
 
          } catch (Exception e) {
@@ -186,13 +195,17 @@ public class ProgramingPackageController extends Controller {
     public  Result deleteProject(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
         try {
 
+            // Kontrola objektu
             Project project = Project.find.byId(project_id);
             if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
+            // Kontrola oprávnění
             if (!project.delete_permission())   return GlobalResult.forbidden_Permission();
 
+            // Smazání objektu
             project.delete();
 
+            // Vrácení potvrzení
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
@@ -205,7 +218,6 @@ public class ProgramingPackageController extends Controller {
             notes = "edit ne Project",
             produces = "application/json",
             protocols = "https",
-            response =  Project.class,
             code = 200,
             extensions = {
                     @Extension( name = "permission_required", properties = {
@@ -236,19 +248,26 @@ public class ProgramingPackageController extends Controller {
     public  Result edit_Project(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
         try {
 
+            // Zpracování Json
             final Form<Swagger_Project_New> form = Form.form(Swagger_Project_New.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Project_New help = form.get();
 
+            // Kontrola objektu
             Project project = Project.find.byId(project_id);
             if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
+            // Kontrola oprávnění
             if (!project.edit_permission() )   return GlobalResult.forbidden_Permission();
 
+            // Úprava objektu
             project.project_name = help.project_name;
             project.project_description = help.project_description;
+
+            // Uložení do DB
             project.update();
 
+            // Vrácení změny
             return GlobalResult.result_ok(Json.toJson(project));
 
 
@@ -291,29 +310,41 @@ public class ProgramingPackageController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result shareProjectWithUsers(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
         try {
+
+            // Zpracování Json
             final Form<Swagger_ShareProject_Person> form = Form.form(Swagger_ShareProject_Person.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_ShareProject_Person help = form.get();
 
+            // Kontrola objektu
             Project project = Project.find.byId(project_id);
             if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
+            // Kontrola oprávnění
             if (!project.share_permission() )   return GlobalResult.forbidden_Permission();
 
+            // Výpis velikosti pole
             System.out.println("Velikost pole : " + help.persons_id.size() );
 
+            // Získání seznamu
             List<Person> list = Person.find.where().idIn(help.persons_id).findList();
 
             for (Person person : list) {
                 if (!person.owningProjects.contains(project)) {
+
+                    // Úprava objektů
                     project.ownersOfProject.add(person);
                     person.owningProjects.add(project);
+
+                    // Uložení do DB
                     person.update();
                 }
             }
 
+            // Uložení do DB
             project.update();
 
+            // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(project));
 
         } catch (Exception e) {
@@ -355,28 +386,40 @@ public class ProgramingPackageController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result unshareProjectWithUsers(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
         try {
+
+            // Zpracování Json
             final Form<Swagger_ShareProject_Person> form = Form.form(Swagger_ShareProject_Person.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_ShareProject_Person help = form.get();
 
+            //Kontrola objektu
             Project project = Project.find.byId(project_id);
             if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
+            // Kontrola oprávnění
             if (!project.unshare_permission() )   return GlobalResult.forbidden_Permission();
 
+            // Získání seznamu
             List<Person> list = Person.find.where().idIn(help.persons_id).findList();
 
             for (Person person : list) {
                 if (person.owningProjects.contains(project)) {
+
+                    // Úprava objektů
                     project.ownersOfProject.remove(person);
                     person.owningProjects.remove(project);
+
+                    // Uložení do DB
                     person.update();
                 }
             }
 
+            // Uložení do DB
             project.update();
 
+            // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(project));
+
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }
@@ -422,21 +465,27 @@ public class ProgramingPackageController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public  Result newHomer(){
         try{
+
+            // Zpracování Json
             final Form<Swagger_Homer_New> form = Form.form(Swagger_Homer_New.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Homer_New help = form.get();
 
-
+            // Kontrola před vytvořením objektu
             if ( Homer.find.where().eq("id", help.homer_id).findUnique() != null ) return GlobalResult.result_BadRequest("Homer with this id exist");
 
+            // Vytvoření objektu
             Homer homer = new Homer();
             homer.id = help.homer_id;
             homer.type_of_device = help.type_of_device;
 
+            // Kontrola oprávnění těsně před uložením
             if (!homer.create_permission() )   return GlobalResult.forbidden_Permission();
 
+            // Uložení objektu
             homer.save();
 
+            // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(homer));
 
         } catch (Exception e) {
@@ -467,13 +516,17 @@ public class ProgramingPackageController extends Controller {
     public  Result removeHomer(@ApiParam(value = "b_program_id String path",   required = true) @PathParam("id") String homer_id){
         try{
 
+           // Kontrola objektu
            Homer homer = Homer.find.byId(homer_id);
            if(homer == null) return GlobalResult.notFoundObject("Homer id not found");
 
-            if (!homer.delete_permission() )   return GlobalResult.forbidden_Permission();
+           // Kontrola oprávnění
+           if (!homer.delete_permission() )   return GlobalResult.forbidden_Permission();
 
+           // Smazání objektu
            homer.delete();
 
+           // Vrácení potvrzení
            return GlobalResult.result_ok();
 
         } catch (Exception e) {
@@ -506,11 +559,15 @@ public class ProgramingPackageController extends Controller {
     })
     public  Result getHomer(@ApiParam(value = "b_program_id String path",   required = true) @PathParam("id")String homer_id){
         try {
+
+            // Kontrola objektu
             Homer homer = Homer.find.byId(homer_id);
             if (homer == null) return GlobalResult.notFoundObject("Homer id not found");
 
+            // Kontrola oprávnění
             if (!homer.read_permission() )   return GlobalResult.forbidden_Permission();
 
+            // Vrácení objektu
             return GlobalResult.result_ok( Json.toJson(homer) );
 
         } catch (Exception e) {
@@ -522,10 +579,12 @@ public class ProgramingPackageController extends Controller {
     public  Result get_Homers_by_Filter( @ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1", required = true) @PathParam("page_number") Integer page_number){
         try {
 
+            // Zpracování Json
             final Form<Swagger_Homer_Filter> form = Form.form(Swagger_Homer_Filter.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Homer_Filter help = form.get();
 
+            // Získání objektu
             Query<Homer> query = Ebean.find(Homer.class);
 
             // If Json contains project_ids list of id's
@@ -533,8 +592,10 @@ public class ProgramingPackageController extends Controller {
                 query.where().in("project.id", help.project_ids);
             }
 
+            // Omezení počtu vrácených objektů
             Swagger_Homer_List result = new Swagger_Homer_List(query, page_number);
 
+            // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(result));
 
         } catch (Exception e) {
@@ -572,19 +633,25 @@ public class ProgramingPackageController extends Controller {
     public  Result connectHomerWithProject(@ApiParam(value = "project_id String path",   required = true) @PathParam("project_id") String project_id, @ApiParam(value = "id String path",   required = true) @PathParam("id") String homer_id){
         try{
 
+            // Získání objektů
             Project project = Project.find.byId(project_id);
             Homer homer = Homer.find.byId(homer_id);
 
+            // Kontrola objektů
             if(project == null)  return GlobalResult.notFoundObject("Project project_id not found");
             if(homer == null)  return GlobalResult.notFoundObject("Homer id not found");
 
+            // Kontrola oprávnění
             if (!project.update_permission() ) return GlobalResult.forbidden_Permission();
             if (!homer.update_permission() )   return GlobalResult.forbidden_Permission();
 
-
+            // Úprava objektu
             homer.project = project;
+
+            // Uložení objektu
             homer.update();
 
+            // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(project));
 
         } catch (Exception e) {
@@ -620,20 +687,28 @@ public class ProgramingPackageController extends Controller {
     public  Result disconnectHomerWithProject(@ApiParam(value = "project_id String path",   required = true) @PathParam("project_id") String project_id, @ApiParam(value = "id String path",   required = true) @PathParam("id") String homer_id){
         try{
 
+            // Získání objektů
             Project project = Project.find.byId(project_id);
             Homer homer = Homer.find.byId(homer_id);
 
+            // Kontrola objektů
             if(project == null)  return GlobalResult.notFoundObject("Project project_id not found");
             if(homer == null)  return GlobalResult.notFoundObject("Homer id not found");
 
-
+            // Kontrola oprávnění
             if (!project.update_permission() ) return GlobalResult.forbidden_Permission();
             if (!homer.update_permission() )   return GlobalResult.forbidden_Permission();
 
+            // Úprava objektu
             if( project.homerList.contains(homer)) homer.project = null;
+
+            // Uložení objektu
             homer.update();
+
+            // Úprava objektu
             project.homerList.remove(homer);
 
+            // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(project));
 
         } catch (Exception e) {
@@ -678,13 +753,16 @@ public class ProgramingPackageController extends Controller {
     public  Result new_b_Program(String project_id){
         try{
 
+            // Zpracování Json
             final Form<Swagger_B_Program_New> form = Form.form(Swagger_B_Program_New.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_B_Program_New help = form.get();
 
+            // Kontrola objektu
             Project project = Project.find.byId(project_id);
             if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
+            // Kontrola oprávnění
             if (!project.update_permission() ) return GlobalResult.forbidden_Permission();
 
             // Tvorba programu
@@ -696,10 +774,13 @@ public class ProgramingPackageController extends Controller {
             b_program.project               = project;
             b_program.setUniqueAzureStorageLink();
 
+            // Kontrola oprávnění těsně před uložením
             if (!b_program.create_permission() ) return GlobalResult.forbidden_Permission();
 
+            // Uložení objektu
             b_program.save();
 
+            // Vrácení objektu
             return GlobalResult.created(Json.toJson(b_program));
 
         } catch (Exception e) {
@@ -730,11 +811,14 @@ public class ProgramingPackageController extends Controller {
     public  Result get_b_Program(@ApiParam(value = "b_program_id String path", required = true) @PathParam("b_program_id") String b_program_id){
         try{
 
+            // Kontrola objektu
             B_Program b_program = B_Program.find.byId(b_program_id);
             if (b_program == null) return GlobalResult.notFoundObject("B_Program id not found");
 
+            // Kontrola oprávnění
             if (!b_program.read_permission() ) return GlobalResult.forbidden_Permission();
 
+            // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(b_program));
 
         } catch (Exception e) {
@@ -765,11 +849,14 @@ public class ProgramingPackageController extends Controller {
     public  Result get_b_Program_version(@ApiParam(value = "version_id String path", required = true) @PathParam("version_id") String version_id){
         try{
 
+            // Kontrola objektu
             Version_Object program = Version_Object.find.byId(version_id);
             if (program == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
+            // Kontrola oprávnění
             if (! program.b_program.read_permission() ) return GlobalResult.forbidden_Permission();
 
+            // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(program));
 
         } catch (Exception e) {
@@ -811,20 +898,26 @@ public class ProgramingPackageController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public  Result edit_b_Program(@ApiParam(value = "b_program_id String path", required = true) @PathParam("b_program_id") String b_program_id){
         try{
+
+            // Zpracování Json
             Swagger_B_Program_New help = Json.fromJson(request().body().asJson(), Swagger_B_Program_New.class);
 
-
+            // Kontrola objektu
             B_Program b_program  = B_Program.find.byId(b_program_id);
             if (b_program == null) return GlobalResult.notFoundObject("B_Program id not found");
 
+            // Kontrola oprávěnní
             if (! b_program.edit_permission() ) return GlobalResult.forbidden_Permission();
 
+            // Úprava objektu
             b_program.program_description = help.program_description;
             b_program.name                  = help.name;
 
+            // Uložení objektu
             b_program.update();
-            return GlobalResult.result_ok(Json.toJson(b_program));
 
+            // Vrácení objektu
+            return GlobalResult.result_ok(Json.toJson(b_program));
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -866,6 +959,7 @@ public class ProgramingPackageController extends Controller {
     public  Result update_b_program(@ApiParam(value = "b_program_id String path", required = true) @PathParam("b_program_id") String b_program_id){
         try{
 
+            // Zpracování Json
             final Form<Swagger_B_Program_Version_New> form = Form.form(Swagger_B_Program_Version_New.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_B_Program_Version_New help = form.get();
@@ -873,10 +967,11 @@ public class ProgramingPackageController extends Controller {
             // Program který budu ukládat do data Storage v Azure
             String file_content =  help.program;
 
-            // Ověřím program
+            // Ověření programu
             B_Program b_program = B_Program.find.byId(b_program_id);
             if (b_program == null) return GlobalResult.notFoundObject("B_Program id not found");
 
+            // Kontrola oprávnění
             if (! b_program.update_permission() ) return GlobalResult.forbidden_Permission();
 
             // První nová Verze
@@ -886,29 +981,41 @@ public class ProgramingPackageController extends Controller {
             versionObjectObject.azureLinkVersion        = new Date().toString();
             versionObjectObject.date_of_create          = new Date();
             versionObjectObject.b_program               = b_program;
+
+            // Uložení objektu
             versionObjectObject.save();
 
             for(Swagger_B_Program_Version_New.Connected_Board h_board : help.boards){
 
+                // Kontrola objektu
                 Board board = Board.find.byId(h_board.board_id);
                 if (board == null) return GlobalResult.notFoundObject("Board board_id not found");
 
+                // Kontrola objektu
                 Version_Object c_program_version = Version_Object.find.byId(h_board.c_program_version_id);
                 if (c_program_version == null) return GlobalResult.notFoundObject("B_Program b_program_id not found");
 
+                // Vytvoření objektu
                 B_Pair b_pair = new B_Pair();
                 b_pair.board = board;
                 b_pair.c_program_version = c_program_version;
                 b_pair.b_program_version = versionObjectObject;
+
+                // Uložení objektu
                 b_pair.save();
 
             }
 
+            // Úprava objektu
             b_program.version_objects.add(versionObjectObject);
+
+            // Uložení objektu
             b_program.update();
 
+            // Nahrání na Azure
             UtilTools.uploadAzure_Version("b-program", file_content, "program.js", b_program.azureStorageLink, b_program.azurePackageLink, versionObjectObject);
 
+            // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(versionObjectObject));
 
         } catch (Exception e) {
@@ -939,9 +1046,11 @@ public class ProgramingPackageController extends Controller {
     public  Result remove_b_Program(@ApiParam(value = "b_program_id String path", required = true) @PathParam("b_program_id") String b_program_id){
         try{
 
+            // Kontrola objektu
             B_Program program  = B_Program.find.byId(b_program_id);
             if (program == null) return GlobalResult.notFoundObject("B_Program id not found");
 
+            // Kontrola oprávění
             if (! program.delete_permission() ) return GlobalResult.forbidden_Permission();
 
 
@@ -959,8 +1068,10 @@ public class ProgramingPackageController extends Controller {
                }
             }
 
-           program.delete();
+            // Smazání objektu
+            program.delete();
 
+            // Vrácení potvrzení
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
@@ -991,11 +1102,14 @@ public class ProgramingPackageController extends Controller {
     public  Result remove_b_Program_version(@ApiParam(value = "version_id String path", required = true) @PathParam("version_id") String version_id){
         try{
 
+            // Získání objektu
             Version_Object version_object  = Version_Object.find.byId(version_id);
 
+            // Kontrola objektu
             if (version_object == null) return GlobalResult.notFoundObject("Version_Object id not found");
             if (version_object.b_program == null) return GlobalResult.badRequest("B_Program not found");
 
+            // Kontrola oprávnění
             if (! version_object.b_program.delete_permission() ) return GlobalResult.forbidden_Permission();
 
 
@@ -1013,8 +1127,10 @@ public class ProgramingPackageController extends Controller {
                 }
             }
 
+            // Smazání objektu
             version_object.delete();
 
+            // Vrácení potvrzení
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
@@ -1140,18 +1256,23 @@ public class ProgramingPackageController extends Controller {
                                                     @ApiParam(value = "homer_id", required = true)     @PathParam("homer_id") String homer_id){
         try {
 
+            // Získání objektu
             Person person = SecurityController.getPerson();
 
+            // Kontrola objektu
             // B program, který chci nahrát do Cloudu na Blocko server
             B_Program b_program = B_Program.find.byId(b_program_id);
             if (b_program == null) return GlobalResult.notFoundObject("B_Program id not found");
 
+            // Kontrola oprávnění
             if (! b_program.update_permission() ) return GlobalResult.forbidden_Permission();
 
+            // Kontrola objektu
             // Verze B programu kterou budu nahrávat do cloudu
             Version_Object version_object = Version_Object.find.byId(version_id);
             if (version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
+            // Kontrola objektu
             // Homer na který budu nahrávat b_program
             Homer homer = Homer.find.byId(homer_id);
             if (homer == null)  return GlobalResult.notFoundObject("Homer id not found");
@@ -1163,18 +1284,21 @@ public class ProgramingPackageController extends Controller {
             Thread thread = new Thread(){ @Override public void run() {
                 try {
 
+                    //Získání objektu
                     // Na homerovi musím zabít a smazat předchozí program - jedná se pouze o nahrávání na cloud !!!
                     B_Program_Homer old_one = B_Program_Homer.find.where().eq("homer.id", homer.id).findUnique();
+
+                    // Smazání objektu
                     if (old_one != null) { old_one.delete(); }
 
-
+                    // Vytvoření objektu
                     B_Program_Homer program_homer = new B_Program_Homer();
                     program_homer.homer = homer;
                     program_homer.running_from = new Date();
                     program_homer.version_object = version_object;
 
                    if(!  WebSocketController_Incoming.homer_is_online(homer.id) ) {
-                       System.out.println("Homer není online při pokusu na něj nahrát instanci a není dodělané zpžděné nahrátí");
+                       System.out.println("Homer není online při pokusu na něj nahrát instanci a není dodělané zpožděné nahrátí");
 
                    };
 
@@ -1183,9 +1307,13 @@ public class ProgramingPackageController extends Controller {
 
                     if(result.get("status").asText().equals("success")){
 
+                        // Uložení objektu
                         program_homer.save();
 
+                        // Úprava objektu
                         version_object.b_program_homer = program_homer;
+
+                        // Uložení objektu
                         version_object.update();
 
                             NotificationController.send_notification(homer.project.ownersOfProject, Notification_level.success, "Homer was updated successfully");
@@ -1204,6 +1332,7 @@ public class ProgramingPackageController extends Controller {
 
             thread.start();
 
+            // Vrácení potvrzení
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
@@ -1234,23 +1363,29 @@ public class ProgramingPackageController extends Controller {
     public  Result upload_b_Program_ToCloud(@ApiParam(value = "b_program_id String path", required = true) @PathParam("b_program_id") String b_program_id, @ApiParam(value = "version_id String path", required = true) @PathParam("version_id") String version_id){
         try {
 
+            // Kontrola objektu
             // B program, který chci nahrát do Cloudu na Blocko server
             B_Program b_program = B_Program.find.byId(b_program_id);
             if (b_program == null) return GlobalResult.notFoundObject("B_Program id not found");
 
+            // Kontrola objektu
             // Verze B programu kterou budu nahrávat do cloudu
             Version_Object version_object = Version_Object.find.where().eq("id", version_id).eq("b_program.id", b_program.id).findUnique();
             if (version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
+            // Kontrola oprávnění
             if (! b_program.update_permission() ) return GlobalResult.forbidden_Permission();
 
-            // Pokud už nějaká instance běžela, tak na ní budu nabrávat nový program a odstraním vazbu na běžící instanci b programu
+            // Pokud už nějaká instance běžela, tak na ní budu nahrávat nový program a odstraním vazbu na běžící instanci b programu
             if( version_object.b_program_cloud != null ) {
 
-               if(WebSocketController_Incoming.incomingConnections_homers.containsKey(version_object.b_program_cloud.blocko_instance_name )) WebSocketController_Incoming.homer_destroyInstance(version_object.b_program_cloud.blocko_instance_name);
+                if(WebSocketController_Incoming.incomingConnections_homers.containsKey(version_object.b_program_cloud.blocko_instance_name )) WebSocketController_Incoming.homer_destroyInstance(version_object.b_program_cloud.blocko_instance_name);
 
-               B_Program_Cloud b_program_cloud = version_object.b_program_cloud;
-               b_program_cloud.delete();
+                // Úprava objektu
+                B_Program_Cloud b_program_cloud = version_object.b_program_cloud;
+
+                //Smazání objektu
+                b_program_cloud.delete();
             }
 
             // TODO Chytré dělení na servery - kam se blocko program nahraje
@@ -1264,6 +1399,8 @@ public class ProgramingPackageController extends Controller {
             program_cloud.version_object        = version_object;
             program_cloud.server                = destination_server;
             program_cloud.setUnique_blocko_instance_name();
+
+            // Uložení objektu
             program_cloud.save();
 
             System.out.println("blocko server size " + WebSocketController_Incoming.blocko_servers.size() );
@@ -1347,19 +1484,25 @@ public class ProgramingPackageController extends Controller {
     public Result create_Blocko_Server(){
         try{
 
+            // Zpracování Json
             final Form<Swagger_Cloud_Blocko_Server_New> form = Form.form(Swagger_Cloud_Blocko_Server_New.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Cloud_Blocko_Server_New help = form.get();
 
+            // Vytvoření objektu
             Cloud_Blocko_Server server = new Cloud_Blocko_Server();
             server.server_name = help.server_name;
             server.destination_address = Server.tyrion_webSocketAddress + "/websocket/blocko_server/" + server.server_name;
 
             server.set_hash_certificate();
 
+            // Kontrola oprávnění
             if(!server.create_permission()) return GlobalResult.forbidden_Permission();
 
+            // Uložení objektu
             server.save();
+
+            // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(server));
 
         } catch (Exception e) {
@@ -1401,18 +1544,25 @@ public class ProgramingPackageController extends Controller {
     public Result edit_Blocko_Server( @ApiParam(value = "server_id ", required = true) @PathParam("server_id") String server_id ){
         try{
 
+            // Zpracování Json
             final Form<Swagger_Cloud_Blocko_Server_New> form = Form.form(Swagger_Cloud_Blocko_Server_New.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Cloud_Blocko_Server_New help = form.get();
 
+            // Kontrola objektu
             Cloud_Blocko_Server server = Cloud_Blocko_Server.find.byId(server_id);
             if (server == null) return GlobalResult.notFoundObject("Cloud_Blocko_Server server_id not found");
 
+            // Kontrola oprávnění
             if(!server.edit_permission()) return GlobalResult.forbidden_Permission();
 
+            // Úprava objektu
             server.server_name = help.server_name;
 
+            // Uložení objektu
             server.save();
+
+            // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(server));
 
         } catch (Exception e) {
@@ -1444,8 +1594,10 @@ public class ProgramingPackageController extends Controller {
     public Result get_All_Blocko_Server(){
         try{
 
+            // Získání seznamu
             List<Cloud_Blocko_Server> servers = Cloud_Blocko_Server.find.all();
 
+            // Vrácení seznamu
             return GlobalResult.result_ok(Json.toJson(servers));
 
         } catch (Exception e) {
@@ -1474,12 +1626,17 @@ public class ProgramingPackageController extends Controller {
     public Result delete_Blocko_Server( @ApiParam(value = "server_id ", required = true) @PathParam("server_id") String server_id ){
         try{
 
+            // Kontrola objektu
             Cloud_Blocko_Server server = Cloud_Blocko_Server.find.byId(server_id);
-
             if (server == null) return GlobalResult.notFoundObject("Cloud_Compilation_Server server_id not found");
+
+            // Kontrola oprávnění
             if(!server.delete_permission()) return GlobalResult.forbidden_Permission();
 
+            // Smzání objektu
             server.delete();
+
+            // Vrácení potvrzení
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
@@ -1494,14 +1651,13 @@ public class ProgramingPackageController extends Controller {
             notes = "creating group for BlockoBlocks -> Type of block",
             produces = "application/json",
             protocols = "https",
-            response =  TypeOfBlock.class,
             code = 201,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    // TODO Description
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "TypeOfBlock.create_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "TypeOfBlock_create_permission" )
+                    })
             }
     )
     @ApiImplicitParams(
@@ -1524,30 +1680,38 @@ public class ProgramingPackageController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result newTypeOfBlock(){
         try{
+
+            // Zpracování Json
             final Form<Swagger_TypeOfBlock_New> form = Form.form(Swagger_TypeOfBlock_New.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_TypeOfBlock_New help = form.get();
 
-
+            // Vytvoření objektu
             TypeOfBlock typeOfBlock = new TypeOfBlock();
             typeOfBlock.general_description = help.general_description;
             typeOfBlock.name                = help.name;
 
-
+            // Nejedná se o privátní Typ Bločku
             if(help.project_id != null){
 
+                // Kontrola objektu
                 Project project = Project.find.byId(help.project_id);
                 if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
+                // Úprava objektu
                 typeOfBlock.project = project;
 
             }
 
+            // Kontrola oprávnění těsně před uložením podle standardu
             if (! typeOfBlock.create_permission() ) return GlobalResult.forbidden_Permission();
 
+            // Uložení objektu
             typeOfBlock.save();
 
+            // Vrácení objektu
             return GlobalResult.created( Json.toJson(typeOfBlock));
+
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }
@@ -1569,11 +1733,14 @@ public class ProgramingPackageController extends Controller {
     public Result get_TypeOfBlock(String type_of_block_id){
         try {
 
+            // Kontrola objektu
             TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(type_of_block_id);
             if(typeOfBlock == null) return GlobalResult.notFoundObject("TypeOfBlock type_of_block_id not found");
 
+            // Kontrola oprávnění
             if (! typeOfBlock.read_permission() ) return GlobalResult.forbidden_Permission();
 
+            // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(typeOfBlock));
 
         } catch (Exception e) {
@@ -1588,14 +1755,12 @@ public class ProgramingPackageController extends Controller {
             notes = "edit Type of block object",
             produces = "application/json",
             protocols = "https",
-            response =  TypeOfBlock.class,
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "TypeOfBlock.edit_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "TypeOfBlock_edit_permission" )
+                    })
             }
     )
     @ApiImplicitParams(
@@ -1619,28 +1784,37 @@ public class ProgramingPackageController extends Controller {
     public Result editTypeOfBlock(@ApiParam(value = "type_of_block_id String path",   required = true) @PathParam("type_of_block_id") String type_of_block_id){
         try{
 
+            // Zpracování Json
             final Form<Swagger_TypeOfBlock_New> form = Form.form(Swagger_TypeOfBlock_New.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_TypeOfBlock_New help = form.get();
 
+            // Kontrola objektu
             TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(type_of_block_id);
             if(typeOfBlock == null) return GlobalResult.notFoundObject("TypeOfBlock type_of_block_id not found");
 
+            // Kontrola oprávnění
             if (! typeOfBlock.edit_permission() ) return GlobalResult.forbidden_Permission();
 
+            // Úprava objektu
             typeOfBlock.general_description = help.general_description;
             typeOfBlock.name                = help.name;
 
             if(help.project_id != null){
 
+                // Kontrola objektu
                 Project project = Project.find.byId(help.project_id);
                 if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
+                // Úprava objektu
                 typeOfBlock.project = project;
 
             }
 
+            // Uložení objektu
             typeOfBlock.update();
+
+            // Vrácení objektu
             return GlobalResult.result_ok( Json.toJson(typeOfBlock));
 
         } catch (Exception e) {
@@ -1653,14 +1827,12 @@ public class ProgramingPackageController extends Controller {
             notes = "delete group for BlockoBlocks -> Type of block",
             produces = "application/json",
             protocols = "https",
-            response =  Result_ok.class,
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "TypeOfBlock.delete_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "TypeOfBlock_delete_permission")
+                    })
             }
     )
     @ApiResponses(value = {
@@ -1673,13 +1845,17 @@ public class ProgramingPackageController extends Controller {
     public Result deleteTypeOfBlock(@ApiParam(value = "type_of_block_id String path",   required = true) @PathParam("type_of_block_id") String type_of_block_id){
         try{
 
+            // Kontrola objektu
             TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(type_of_block_id);
             if(typeOfBlock == null) return GlobalResult.notFoundObject("TypeOfBlock type_of_block_id not found");
 
+            // Kontrola oprávnění
             if (! typeOfBlock.delete_permission()) return GlobalResult.forbidden_Permission();
 
+            // Smazání objektu
             typeOfBlock.delete();
 
+            // Vrácení objektu
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
@@ -1692,15 +1868,7 @@ public class ProgramingPackageController extends Controller {
             notes = "delete group for BlockoBlocks -> Type of block",
             produces = "application/json",
             protocols = "https",
-            response =  Result_ok.class,
-            code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
-            }
+            code = 200
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response =  TypeOfBlock.class, responseContainer = "List"),
@@ -1711,11 +1879,14 @@ public class ProgramingPackageController extends Controller {
     public Result getAllTypeOfBlocks(){
         try {
 
+            // Získání seznamu
             List<TypeOfBlock> typeOfBlocks = TypeOfBlock.find.where().isNull("project").findList();
             typeOfBlocks.addAll( TypeOfBlock.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id ).findList() );
 
+            // Kontrola oprávnění
             for(TypeOfBlock typeOfBlock :typeOfBlocks ) if(! typeOfBlock.read_permission())  return GlobalResult.forbidden_Permission();
 
+            // Vrácení seznamu
             return GlobalResult.result_ok(Json.toJson(typeOfBlocks));
 
         } catch (Exception e) {
@@ -1730,14 +1901,13 @@ public class ProgramingPackageController extends Controller {
             notes = "creating new independent Block object for Blocko tools",
             produces = "application/json",
             protocols = "https",
-            response =  BlockoBlock.class,
             code = 201,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    // TODO Description
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "BlockoBlock.create_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "BlockoBlock_create_permission" )
+                    })
             }
     )
     @ApiImplicitParams(
@@ -1760,27 +1930,35 @@ public class ProgramingPackageController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result new_Block(){
        try{
+
+           // Zpracování Json
            final Form<Swagger_BlockoBlock_New> form = Form.form(Swagger_BlockoBlock_New.class).bindFromRequest();
            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
            Swagger_BlockoBlock_New help = form.get();
 
+           // Vytvoření objektu
+           BlockoBlock blockoBlock = new BlockoBlock();
 
-            BlockoBlock blockoBlock = new BlockoBlock();
+           blockoBlock.general_description = help.general_description;
+           blockoBlock.name                = help.name;
+           blockoBlock.author              = SecurityController.getPerson();
 
-            blockoBlock.general_description = help.general_description;
-            blockoBlock.name                = help.name;
-            blockoBlock.author              = SecurityController.getPerson();
-
+           // Kontrola objektu
            TypeOfBlock typeOfBlock = TypeOfBlock.find.byId( help.type_of_block_id);
            if(typeOfBlock == null) return GlobalResult.notFoundObject("TypeOfBlock type_of_block_id not found");
 
+           // Úprava objektu
            blockoBlock.type_of_block = typeOfBlock;
 
+           // Kontrola oprávnění těsně před uložením
            if (! blockoBlock.create_permission() ) return GlobalResult.forbidden_Permission();
 
+           // Uložení objektu
            blockoBlock.save();
 
-            return GlobalResult.result_ok( Json.toJson(blockoBlock) );
+           // Vrácení objektu
+           return GlobalResult.result_ok( Json.toJson(blockoBlock) );
+
        } catch (Exception e) {
            return Loggy.result_internalServerError(e, request());
        }
@@ -1791,14 +1969,12 @@ public class ProgramingPackageController extends Controller {
             notes = "update basic information (name, and desription) of the independent BlockoBlock",
             produces = "application/json",
             protocols = "https",
-            response =  BlockoBlock.class,
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "BlockoBlock.edit_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "BlockoBlock_edit_permission" )
+                    })
             }
     )
     @ApiImplicitParams(
@@ -1822,28 +1998,33 @@ public class ProgramingPackageController extends Controller {
     public Result edit_Block(@ApiParam(value = "blocko_block_id String path",   required = true) @PathParam("blocko_block_id") String blocko_block_id){
         try {
 
+                // Zpracování Json
                 final Form<Swagger_BlockoBlock_New> form = Form.form(Swagger_BlockoBlock_New.class).bindFromRequest();
                 if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
                 Swagger_BlockoBlock_New help = form.get();
 
-
+                // Kontrola objektu
                 BlockoBlock blockoBlock = BlockoBlock.find.byId(blocko_block_id);
-
                 if (blockoBlock == null) return GlobalResult.notFoundObject("BlockoBlock blocko_block_id not found");
 
+                // Kontrola oprávnění
                 if (! blockoBlock.edit_permission() ) return GlobalResult.forbidden_Permission("You have no permission to edit");
 
-
+                // Úprava objektu
                 blockoBlock.general_description = help.general_description;
                 blockoBlock.name                = help.name;
 
+                // Kontrola objektu
                 TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(  help.type_of_block_id);
                 if(typeOfBlock == null) return GlobalResult.notFoundObject("TypeOfBlock type_of_block_id not found");
 
+                // Úprava objektu
                 blockoBlock.type_of_block = typeOfBlock;
 
+                // Uložení objektu
                 blockoBlock.update();
 
+                // Vrácení objektu
                 return GlobalResult.result_ok(Json.toJson(blockoBlock));
 
         } catch (Exception e) {
@@ -1857,14 +2038,13 @@ public class ProgramingPackageController extends Controller {
             notes = "get version (content) from independent BlockoBlock",
             produces = "application/json",
             protocols = "https",
-            response =  BlockoBlockVersion.class,
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    // TODO Description
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "BlockoBlockVersion.read_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "BlockoBlockVersion_read_permission")
+                    })
             }
     )
     @ApiResponses(value = {
@@ -1875,12 +2055,14 @@ public class ProgramingPackageController extends Controller {
     })
     public Result get_BlockoBlock_Version(String blocko_version_id){
         try {
+                // Kontrola objektu
                 BlockoBlockVersion blocko_version = BlockoBlockVersion.find.byId(blocko_version_id);
                 if(blocko_version == null) return GlobalResult.notFoundObject("BlockoBlock blocko_block_id not found");
 
-
+                // Kontrola oprávnění
                 if (! blocko_version.read_permission() ) return GlobalResult.forbidden_Permission("You have no permission to get that");
 
+                // Vrácení objektu
                 return GlobalResult.result_ok(Json.toJson(blocko_version));
 
         } catch (Exception e) {
@@ -1894,14 +2076,13 @@ public class ProgramingPackageController extends Controller {
             notes = "get independent BlockoBlock object",
             produces = "application/json",
             protocols = "https",
-            response =  BlockoBlock.class,
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                       @AuthorizationScope(scope = "Project_Editor", description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    // TODO Description
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "BlockoBlock.read_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "BlockoBlock_read_permission")
+                    })
             }
     )
     @ApiResponses(value = {
@@ -1912,11 +2093,14 @@ public class ProgramingPackageController extends Controller {
     })
     public Result getBlockoBlock(@ApiParam(value = "blocko_block_id String path",   required = true) @PathParam("blocko_block_id") String blocko_block_id){
         try {
+            // Kontrola objektu
             BlockoBlock blockoBlock = BlockoBlock.find.byId(blocko_block_id);
             if(blockoBlock == null) return GlobalResult.notFoundObject("BlockoBlock blocko_block_id not found");
 
+            // Kontrola oprávnění
             if (! blockoBlock.read_permission() ) return GlobalResult.forbidden_Permission();
 
+            // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(blockoBlock));
 
         } catch (Exception e) {
@@ -1930,12 +2114,11 @@ public class ProgramingPackageController extends Controller {
             notes = "delete BlockoBlock",
             produces = "application/json",
             protocols = "https",
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                       @AuthorizationScope(scope = "Project_Editor",   description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "BlockoBlock.delete_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "BlockoBlock_delete_permission")
+                    })
             }
     )
     @ApiResponses(value = {
@@ -1947,14 +2130,19 @@ public class ProgramingPackageController extends Controller {
     public Result deleteBlock(@ApiParam(value = "blocko_block_id String path",   required = true) @PathParam("blocko_block_id") String blocko_block_id){
         try {
 
+            // Kontrola objektu
             BlockoBlock blockoBlock = BlockoBlock.find.byId(blocko_block_id);
             if(blockoBlock == null) return GlobalResult.notFoundObject("BlockoBlock blocko_block_id not found");
 
+            // Kontrola oprávnění
             if (! blockoBlock.delete_permission()) return GlobalResult.forbidden_Permission();
 
+            // Smazání objektu
             blockoBlock.delete();
 
+            // Vrácení potvrzení
             return GlobalResult.result_ok();
+
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }
@@ -1965,12 +2153,11 @@ public class ProgramingPackageController extends Controller {
             notes = "delete BlockoBlock version",
             produces = "application/json",
             protocols = "https",
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                       @AuthorizationScope(scope = "Project_Editor",   description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "BlockoBlockVersion.delete_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "BlockoBlockVersion_delete_permission")
+                    })
             }
     )
     @ApiResponses(value = {
@@ -1982,13 +2169,17 @@ public class ProgramingPackageController extends Controller {
     public Result delete_BlockoBlock_Version(String blocko_block_version_id){
         try {
 
+            // Kontrola objektu
             BlockoBlockVersion version = BlockoBlockVersion.find.byId(blocko_block_version_id);
             if(version == null) return GlobalResult.notFoundObject("BlockoBlockVersion blocko_block_version_id not found");
 
+            // Kontrola oprávnění
             if (! version.delete_permission()) return GlobalResult.forbidden_Permission();
 
+            // Smazání objektu
             version.delete();
 
+            // Vrácení potvrzení
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
@@ -2002,12 +2193,12 @@ public class ProgramingPackageController extends Controller {
             produces = "application/json",
             protocols = "https",
             code = 201,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor",   description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    // TODO Description
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "BlockoBlockVersion.create_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "BlockoBlockVersion_create_permission" )
+                    })
             }
     )
     @ApiImplicitParams(
@@ -2031,12 +2222,15 @@ public class ProgramingPackageController extends Controller {
     public Result new_BlockoBlock_Version(@ApiParam(value = "blocko_block_id String path",   required = true) @PathParam("blocko_block_id") String blocko_block_id){
         try {
 
+            // Zpracování Json
             final Form<Swagger_BlockoBlock_BlockoVersion_New> form = Form.form(Swagger_BlockoBlock_BlockoVersion_New.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_BlockoBlock_BlockoVersion_New help = form.get();
 
+            // Získání objektu
             BlockoBlock blockoBlock = BlockoBlock.find.byId(blocko_block_id);
 
+            // Vytvoření objektu
             BlockoBlockVersion version = new BlockoBlockVersion();
             version.date_of_create = new Date();
 
@@ -2046,12 +2240,14 @@ public class ProgramingPackageController extends Controller {
             version.logic_json = help.logic_json;
             version.blocko_block = blockoBlock;
 
+            // Kontrola oprávnění
             if (! blockoBlock.create_permission()) return GlobalResult.forbidden_Permission();
 
+            // Uložení objektu
             version.save();
 
+            // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(blockoBlock));
-
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -2060,17 +2256,16 @@ public class ProgramingPackageController extends Controller {
 
     @ApiOperation(value = "edit BlockoBlock version",
             tags = {"Blocko-Block"},
-            notes = "You can adit only basic information of version. If you wnat update code, " +
-                    "you have to create new version!",
+            notes = "You can edit only basic information of the version. If you want to update the code, " +
+                    "you have to create a new version!",
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor",   description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "BlockoBlockVersion.edit_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "BlockoBlockVersion_edit_permission" )
+                    })
             }
     )
     @ApiImplicitParams(
@@ -2093,17 +2288,23 @@ public class ProgramingPackageController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result edit_BlockBlock_version(String blocko_block_version_id){
         try {
+
+            // Zpracování Json
             final Form<Swagger_BlockoBlock_BlockoVersion_Edit> form = Form.form(Swagger_BlockoBlock_BlockoVersion_Edit.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_BlockoBlock_BlockoVersion_Edit help = form.get();
 
-
+            // Získání objektu
             BlockoBlockVersion version = BlockoBlockVersion.find.byId(blocko_block_version_id);
 
+            // Úprava objektu
             version.version_name = help.version_name;
             version.version_description = help.version_description;
 
+            // Uložení objektu
             version.update();
+
+            // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(version));
 
         } catch (Exception e) {
@@ -2111,19 +2312,18 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-    @ApiOperation(value = "edit BlockoBlock version",
+    @ApiOperation(value = "get all BlockoBlock version",
             tags = {"Blocko-Block"},
-            notes = "You can adit only basic infromation of version. If you wnat update code, " +
-                    "you have to create new version!",
+            notes = "get all versions (content) from independent BlockoBlock",
             produces = "application/json",
             protocols = "https",
             code = 200,
-            authorizations = {
-                    @Authorization(
-                            value="permission",
-                            scopes = { @AuthorizationScope(scope = "project.owner", description = "For delete C_program, you have to own project"),
-                                    @AuthorizationScope(scope = "Project_Editor",   description = "You need Project_Editor permission")}
-                    )
+            extensions = {
+                    // TODO Description
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "BlockoBlockVersion.read_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "BlockoBlockVersion_read_permission")
+                    })
             }
     )
     @ApiImplicitParams(
@@ -2145,11 +2345,15 @@ public class ProgramingPackageController extends Controller {
     })
     public Result get_BlockoBlock_all_versions(String blocko_block_id){
         try {
+
+            // Kontrola objektu
             BlockoBlock blockoBlock = BlockoBlock.find.byId(blocko_block_id);
             if (blockoBlock == null) return GlobalResult.notFoundObject("BlockoBlock blocko_block_id not found");
+
+            // Kontrola oprávnění
             if (! blockoBlock.read_permission()) return GlobalResult.forbidden_Permission();
 
-
+            // Vrácení objektu
             return GlobalResult.ok(Json.toJson(blockoBlock.blocko_versions));
 
         } catch (Exception e) {
@@ -2164,15 +2368,20 @@ public class ProgramingPackageController extends Controller {
     public Result board_all_details_for_blocko(String project_id){
         try {
 
+            // Kontrola objektu
             Project project = Project.find.byId(project_id);
             if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
+
+            // Kontrola oprávnění
             if (! project.read_permission()) return GlobalResult.forbidden_Permission();
 
+            // Získání objektu
             Swagger_Boards_For_Blocko boards_for_blocko = new Swagger_Boards_For_Blocko();
             boards_for_blocko.boards = project.boards;
             boards_for_blocko.typeOfBoards = TypeOfBoard.find.where().eq("boards.project.id", project.id ).findList();
             boards_for_blocko.c_programs = project.c_programs;
 
+            // Vrácení objektu
             return GlobalResult.ok(Json.toJson(boards_for_blocko));
 
         } catch (Exception e) {
