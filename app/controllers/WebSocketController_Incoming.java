@@ -387,7 +387,7 @@ public class WebSocketController_Incoming extends Controller {
 
                                 System.out.println("Zasílám žádost co na serveru běží");
 
-                                JsonNode jsonNode = server.write_with_confirmation(messageId, result, (long) 15000);
+                                JsonNode jsonNode = server.write_with_confirmation( result, (long) 15000);
 
                                 System.out.println("Žádost o stavu serveru přijata");
                                 if (jsonNode.has("status")) {
@@ -545,7 +545,7 @@ public class WebSocketController_Incoming extends Controller {
         result.put("messageId", messageId);
         result.put("messageChannel", "homer-server");
 
-        return blockoServer.write_with_confirmation(messageId, result);
+        return blockoServer.write_with_confirmation(result);
     }
 
     public static JsonNode blocko_server_isInstanceExist(WS_BlockoServer blockoServer, String instance_name)  throws TimeoutException, InterruptedException{
@@ -557,7 +557,7 @@ public class WebSocketController_Incoming extends Controller {
         result.put("messageChannel", "homer-server");
         result.put("instanceId", instance_name);
 
-        return blockoServer.write_with_confirmation(messageId, result);
+        return blockoServer.write_with_confirmation( result);
     }
 
     public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, ObjectNode json){
@@ -578,7 +578,7 @@ public class WebSocketController_Incoming extends Controller {
             }
 
             System.out.println("Vytvářím nového virtuálního Homera");
-            WS_Homer_Cloud homer = new WS_Homer_Cloud(program.blocko_instance_name, blockoServer);
+            WS_Homer_Cloud homer = new WS_Homer_Cloud(program.blocko_instance_name, program.version_object.id, blockoServer);
 
 
             String messageId = UUID.randomUUID().toString();
@@ -591,7 +591,7 @@ public class WebSocketController_Incoming extends Controller {
             result.put("macAddress", program.blocko_instance_name);
 
             System.out.println("Nahrávám ho na Blocko server novou instanci");
-            JsonNode result_instance = blockoServer.write_with_confirmation( messageId, result);
+            JsonNode result_instance = blockoServer.write_with_confirmation( result);
 
             System.out.println("Nahrávám ho na Blocko server do vytvořené instnace program");
             JsonNode result_uploud = WebSocketController_Incoming.homer_UploadProgram(homer, program.id, program.version_object.files.get(0).get_fileRecord_from_Azure_inString());
@@ -619,7 +619,7 @@ public class WebSocketController_Incoming extends Controller {
         result.put("messageChannel", "homer-server");
         result.put("instanceId", instance_name);
 
-        return blockoServer.write_with_confirmation( messageId ,result );
+        return blockoServer.write_with_confirmation( result );
 
     }
 
@@ -662,7 +662,7 @@ public class WebSocketController_Incoming extends Controller {
         jsonNodes.put("messageId", messageId);
 
         System.out.println("Odeslal žádost o kompilaci");
-        ObjectNode compilation_request = server.write_with_confirmation(messageId, jsonNodes);
+        ObjectNode compilation_request = server.write_with_confirmation(jsonNodes);
 
         System.out.println("Přijal potvrzení žádost o kompilaci se  zprávou: " + compilation_request.asText() );
 
@@ -966,7 +966,7 @@ public class WebSocketController_Incoming extends Controller {
         result.put("messageId", messageId);
         result.put("messageChannel", "homer-server");
 
-        return incomingConnections_homers.get(homer_id).write_with_confirmation(messageId, result);
+        return incomingConnections_homers.get(homer_id).write_with_confirmation(result);
     }
 
     public static void homer_ping(String homer_id) throws TimeoutException, InterruptedException {
@@ -995,7 +995,7 @@ public class WebSocketController_Incoming extends Controller {
             result.put("messageChannel", "homer-server");
 
 
-            return incomingConnections_homers.get(homer_id).write_with_confirmation(messageId, result);
+            return incomingConnections_homers.get(homer_id).write_with_confirmation(result);
     }
 
     public static void homer_update_embeddedHW(String homer_id, List<String> board_id_list, byte[] fileInBase64) throws TimeoutException, InterruptedException, IOException {
@@ -1010,7 +1010,7 @@ public class WebSocketController_Incoming extends Controller {
             result.set("hardwareId", Json.toJson(board_id_list));
             result.put("base64Binary", fileInBase64);
 
-            incomingConnections_homers.get(homer_id).write_with_confirmation(messageId, result);
+            incomingConnections_homers.get(homer_id).write_with_confirmation(result);
     }
 
     public static JsonNode homer_UploadProgram(WebSCType homer, String program_id, String program) throws TimeoutException, InterruptedException {
@@ -1024,7 +1024,7 @@ public class WebSocketController_Incoming extends Controller {
             result.put("programId", program_id);
             result.put("program", program);
 
-          return homer.write_with_confirmation(messageId ,result );
+          return homer.write_with_confirmation(result );
     }
 
     public static boolean homer_is_online(String homer_id){
@@ -1039,7 +1039,7 @@ public class WebSocketController_Incoming extends Controller {
         result.put("messageId", messageId);
         result.put("messageChannel", "tyrion");
 
-        return incomingConnections_homers.get( homer.id).write_with_confirmation(messageId, result, (long) 250*25 );
+        return incomingConnections_homers.get( homer.id).write_with_confirmation(result, (long) 250*25 );
     }
 
     public static void homer_is_disconnect(WebSCType homer) {
@@ -1087,7 +1087,7 @@ public class WebSocketController_Incoming extends Controller {
         result.put("messageId", messageId);
         result.put("messageChannel", "the-grid");
 
-        homer.write_with_confirmation( messageId, result);
+        homer.write_with_confirmation(result);
     }
 
     public static void ask_for_receiving_for_Grid(WebSCType homer) throws TimeoutException, InterruptedException {
@@ -1100,7 +1100,7 @@ public class WebSocketController_Incoming extends Controller {
         result.put("messageId", messageId);
         result.put("messageChannel", "the-grid");
 
-        homer.write_with_confirmation(messageId, result);
+        homer.write_with_confirmation(result);
     }
 
     public static JsonNode ask_for_receiving_for_Becki(WebSCType homer) throws TimeoutException, InterruptedException {
@@ -1113,7 +1113,7 @@ public class WebSocketController_Incoming extends Controller {
         result.put("messageId", messageId);
         result.put("messageChannel", "becki");
 
-        return homer.write_with_confirmation(messageId, result);
+        return homer.write_with_confirmation(result);
     }
 
     public static void invalid_json_message(WebSCType homer){

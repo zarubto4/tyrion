@@ -249,14 +249,6 @@ GET             /compilation/processor                                          
 PUT             /compilation/processor/:processor_id                                        @controllers.CompilationLibrariesController.update_Processor(processor_id)
 DELETE          /compilation/processor/:processor_id                                        @controllers.CompilationLibrariesController.delete_Processor(processor_id)
 
-PUT             /compilation/processor/library/:processor_id/:library_id                    @controllers.CompilationLibrariesController.connectProcessorWithLibrary(processor_id, library_id)
-PUT             /compilation/processor/libraryGroup/:processor_id/:library_id               @controllers.CompilationLibrariesController.connectProcessorWithLibraryGroup(processor_id, library_id)
-DELETE          /compilation/processor/library/:processor_id/:library_id                    @controllers.CompilationLibrariesController.disconnectProcessorWithLibrary(processor_id, library_id)
-DELETE          /compilation/processor/libraryGroup/:processor_id/:library_id               @controllers.CompilationLibrariesController.disconnectProcessorWithLibraryGroup(processor_id, library_id)
-
-GET            /compilation/processor/libraryGroups/:processor_id                           @controllers.CompilationLibrariesController.getProcessorLibraryGroups(processor_id)
-GET            /compilation/processor/singleLibrary/:processor_id                           @controllers.CompilationLibrariesController.getProcessorSingleLibraries(processor_id)
-
 #Board
 POST            /compilation/board                                                          @controllers.CompilationLibrariesController.new_Board()
 PUT             /compilation/board/userDescription/:type_of_board_id                        @controllers.CompilationLibrariesController.edit_Board_User_Description(type_of_board_id)
@@ -265,7 +257,7 @@ PUT             /compilation/board/filter/:page_number                          
 GET             /compilation/board/:board_id                                                @controllers.CompilationLibrariesController.get_Board(board_id)
 DELETE          /compilation/board/deactivateBoard/:board_id                                @controllers.CompilationLibrariesController.deactivate_Board(board_id)
 PUT             /compilation/board/:board_id/:project_id                                    @controllers.CompilationLibrariesController.connect_Board_with_Project(board_id, project_id)
-DELETE          /compilation/board/:board_id/:project_id                                    @controllers.CompilationLibrariesController.disconnect_Board_from_Project(board_id, project_id)
+DELETE          /compilation/board/:board_id                                                @controllers.CompilationLibrariesController.disconnect_Board_from_Project(board_id)
 
 
 #Producer
@@ -274,7 +266,6 @@ PUT             /compilation/producer/:producer_id                              
 GET             /compilation/producer/all                                                   @controllers.CompilationLibrariesController.get_Producers()
 GET             /compilation/producer/:producer_id                                          @controllers.CompilationLibrariesController.get_Producer(producer_id)
 DELETE          /compilation/producer/:producer_id                                          @controllers.CompilationLibrariesController.delete_Producer(producer_id)
-GET             /compilation/producer/typeOfBoards/:producer_id                             @controllers.CompilationLibrariesController.get_Producer_TypeOfBoards(producer_id)
 
 #TypeOfBoard
 POST            /compilation/typeOfBoard                                                    @controllers.CompilationLibrariesController.new_TypeOfBoard()
@@ -282,13 +273,12 @@ PUT             /compilation/typeOfBoard/:type_of_board_id                      
 DELETE          /compilation/typeOfBoard/:type_of_board_id                                  @controllers.CompilationLibrariesController.delete_TypeOfBoard(type_of_board_id)
 GET             /compilation/typeOfBoard/all                                                @controllers.CompilationLibrariesController.get_TypeOfBoard_all()
 GET             /compilation/typeOfBoard/:type_of_board_id                                  @controllers.CompilationLibrariesController.get_TypeOfBoard(type_of_board_id)
-GET             /compilation/typeOfBoard/boards/:type_of_board_id                           @controllers.CompilationLibrariesController.getTypeOfBoardAllBoards(type_of_board_id)
 
 #LibraryGroups
 POST            /compilation/libraryGroup                                                   @controllers.CompilationLibrariesController.new_LibraryGroup()
-PUT             /compilation/libraryGroup/filter/:page_number                               @controllers.CompilationLibrariesController.get_LibraryGroup_Filter(Integer: page_number)
+PUT             /compilation/libraryGroup/filter/:page_number                               @controllers.CompilationLibrariesController.get_LibraryGroup_Filter(page_number: Integer)
 
-POST            /compilation/libraryGroup/upload/:libraryGroup_id/:version_id               @controllers.CompilationLibrariesController.upload_Library_To_LibraryGroup(libraryGroup_id, version_id)
+POST            /compilation/libraryGroup/upload/:version_id               @controllers.CompilationLibrariesController.upload_Library_To_LibraryGroup(version_id)
 
 POST            /compilation/libraryGroup/version/:libraryGroup_id                          @controllers.CompilationLibrariesController.new_LibraryGroup_Version(libraryGroup_id)
 GET             /compilation/libraryGroup/version/:version_id                               @controllers.CompilationLibrariesController.get_LibraryGroup_Version(version_id)
@@ -299,13 +289,13 @@ PUT             /compilation/libraryGroup/:libraryGroup_id                      
 
 #Single Library
 POST            /compilation/library                                                        @controllers.CompilationLibrariesController.new_SingleLibrary()
-PUT             /compilation/library/filter                                                 @controllers.CompilationLibrariesController.get_SingleLibrary_Filter()
+PUT             /compilation/library/filter/:page_number                                    @controllers.CompilationLibrariesController.get_SingleLibrary_Filter(page_number: Integer)
 POST            /compilation/library/version/:library_id                                    @controllers.CompilationLibrariesController.new_SingleLibrary_Version(library_id)
 
 GET             /compilation/library/:library_id                                            @controllers.CompilationLibrariesController.get_SingleLibrary(library_id)
 PUT             /compilation/library/:library_id                                            @controllers.CompilationLibrariesController.edit_SingleLibrary(library_id)
 DELETE          /compilation/library/:library_id                                            @controllers.CompilationLibrariesController.delete_SingleLibrary(library_id)
-POST            /compilation/library/upload/:library_id/:version_id                         @controllers.CompilationLibrariesController.upload_SingleLibrary_Version(library_id, version_id)
+POST            /compilation/library/upload/:version_id                         @controllers.CompilationLibrariesController.upload_SingleLibrary_Version( version_id)
 
 #File
 GET             /file/listOfFiles/:version_id                                               @controllers.CompilationLibrariesController.get_LibraryGroup_Version_Libraries(version_id)

@@ -66,7 +66,7 @@ public class WS_Becki_Website extends  WebSCType {
     }
 
     @Override
-    public ObjectNode write_with_confirmation(String messageId, ObjectNode json, Long time_To_TimeOutExcepting) throws TimeoutException,  InterruptedException {
+    public ObjectNode write_with_confirmation(ObjectNode json, Long time_To_TimeOutExcepting) throws TimeoutException,  InterruptedException {
 
         System.out.println("write_with_confirmation na centrální becki není implementováno!!!!!!!!!...................!!!!!!!");
 

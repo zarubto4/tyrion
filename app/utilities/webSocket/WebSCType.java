@@ -6,10 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.WebSocketController_Incoming;
 import play.mvc.WebSocket;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 
 public abstract class WebSCType {
@@ -83,12 +80,14 @@ public abstract class WebSCType {
     private  Map<String, ObjectNode> message_in  = new HashMap<>(); // (meessageId, JsonNode)
 
 
-    public ObjectNode write_with_confirmation(String messageId, ObjectNode json) throws TimeoutException, InterruptedException {
-            return write_with_confirmation(messageId, json, (long) (250*1000) );
+    public ObjectNode write_with_confirmation(ObjectNode json) throws TimeoutException, InterruptedException {
+            return write_with_confirmation( json, (long) (250*1000) );
     }
 
-    public ObjectNode write_with_confirmation(String messageId, ObjectNode json, Long time_To_TimeOutExcepting) throws TimeoutException,  InterruptedException {
+    public ObjectNode write_with_confirmation(ObjectNode json, Long time_To_TimeOutExcepting) throws TimeoutException,  InterruptedException {
 
+        String messageId = UUID.randomUUID().toString();
+        json.put("messageId", messageId );
 
         class Confirmation_Thread implements Callable<ObjectNode>{
 
@@ -144,8 +143,13 @@ public abstract class WebSCType {
 
     public void write_without_confirmation(ObjectNode json) {
 
-        System.out.println("Odesílám zprávu na kterou nepožaduji potvrzení. Zpráva: " + json.toString());
+        String messageId = UUID.randomUUID().toString();
 
+        write_without_confirmation( messageId, json);
+    }
+
+    public void write_without_confirmation(String messageId, ObjectNode json) {
+            json.put("messageId", messageId );
 
             Thread thread = new Thread(){
 
