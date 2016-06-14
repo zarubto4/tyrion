@@ -534,12 +534,16 @@ public class WebSocketController_Incoming extends Controller {
 // PRIVATE Blocko-Server ---------------------------------------------------------------------------------------------------------
 
     public static void blocko_server_is_disconnect(WS_BlockoServer blockoServer){
-        System.out.println("Ztráta spojení s Blocko serverem: " + blockoServer.identifikator);
-        System.out.println("Je nutná dodělat reakce na ztrátu spojení??? : ");
+        logger.debug("Tyrion lost connection with blocko server: " + blockoServer.identifikator);
+
+        logger.debug("Tyrion lost connection with blocko server: " + blockoServer.identifikator);
         blocko_servers.remove(blockoServer.identifikator);
+
     }
 
     public static JsonNode blocko_server_listOfInstance(WS_BlockoServer blockoServer)  throws TimeoutException, InterruptedException{
+
+        logger.debug("Tyrion: Server want knot instances on: " + blockoServer.identifikator);
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "listInstances");
@@ -577,10 +581,7 @@ public class WebSocketController_Incoming extends Controller {
             }
 
             System.out.println("Vytvářím nového virtuálního Homera");
-            WS_Homer_Cloud homer = new WS_Homer_Cloud(program.blocko_instance_name, blockoServer);
-
-
-
+            WS_Homer_Cloud homer = new WS_Homer_Cloud(program.blocko_instance_name, program.version_object.id, blockoServer);
 
             ObjectNode result = Json.newObject();
             result.put("messageType", "createInstance");
@@ -743,7 +744,8 @@ public class WebSocketController_Incoming extends Controller {
 // PRIVATE Becki -----------------------------------------------------------------------------------------------------------------
 
     public static void becki_incoming_message(WS_Becki_Website becki, ObjectNode json){
-        System.out.println("Z becki přišla zpráva: " + json.asText() );
+
+        logger.debug("Becki: " + becki.identifikator + " Incoming message: " + json.toString() );
 
         switch (json.get("messageChannel").asText()) {
 
@@ -751,90 +753,103 @@ public class WebSocketController_Incoming extends Controller {
 
                 switch (json.get("messageType").asText()) {
 
-                    case "subscribe_instance" : {
-                        try {
-                            String version_id = json.get("version_id").asText();
-                            System.out.println("Ze serveru budu chtít dostávat všechny informace z blocko serveru na verzi" + version_id);
-                            // TODO
-
-                            // Najdu Version
-                            Version_Object version = Version_Object.find.byId(version_id);
-                            if (version == null) {
-                                becki_disaprove_recive_instace_state(becki, json.get("messageId").asText(), "Version not Exist");
-                                return;
-                            }
-
-                            // Zjistím kde běží
-                            if (!blocko_servers.containsKey(version.b_program_cloud.server.server_name)) {
-                                becki_disaprove_recive_instace_state(becki, json.get("messageId").asText(), "Server is not connected");
-                                return;
-                            }
-
-                            WS_BlockoServer server = (WS_BlockoServer) blocko_servers.get(version.b_program_cloud.server.server_name);
-
-                            // Zjistit jestli tam instance opravdu běží
-                            JsonNode result_instance = blocko_server_isInstanceExist(server, version.b_program_cloud.blocko_instance_name);
-                            if(result_instance.get("status").asText().equals("error"))  {
-                                becki_disaprove_recive_instace_state(becki, json.get("messageId").asText(), result_instance.get("error").asText());
-                                return;
-                            }
-                            // Zjistím jestli existuje instnace
-                            if(!result_instance.get("exist").booleanValue())    {
-                                becki_disaprove_recive_instace_state(becki, json.get("messageId").asText(), "Instance of this version not running on this server!");
-                                return;
-                            }
-
-                            // Zjistím jestli existuje virtuální homer
-                            System.out.println("Zjištuji jestli existuje virtuální homer");
-                            if(!incomingConnections_homers.containsKey(version.b_program_cloud.blocko_instance_name) ) {
-                                System.out.println("Virtuální Homer neexistuje!!!");
-                                becki_disaprove_recive_instace_state(becki, json.get("messageId").asText(), "FATAL ERROR!!! Virtual Homer for this instance not exist!");
-                                return;
-                            }
-
-                            WebSCType homer = incomingConnections_homers.get(version.b_program_cloud.blocko_instance_name);
-
-                            // 2 - Požádat Homera o zasílání informací
-                            JsonNode result_recive = ask_for_receiving_for_Becki(homer);
-                            if(result_recive.get("status").textValue().equals("error")) becki_disaprove_recive_instace_state(becki, json.get("messageId").asText(), result_recive.get("error").textValue());
-
-                            // 1 - navázat propojení mezi instanci Homera a instancí Becki
-                            homer.subscribers_becki.add(becki);
-                            becki.subscribers_becki.add(homer);
-
-                            // 3 - Přeposílat informace na Becki
-                                // To zajistím v odběrném místě Homera!
-
-                            // Potvrdím Becki že vše je v cajku
-                            becki_aprove_recive_instace_state(becki, json.get("messageId").asText());
-
-                            return;
-                        }catch (Exception e){
-                            System.out.println("Došlo k chybě");
-                            e.printStackTrace();
-                            becki_disaprove_recive_instace_state(becki, json.get("messageId").asText(), "Unknow Error");
-                        }
-                    }
-                    case  "tyrion" : {
-                        System.out.println ("Z becki speciálně pro  Tyrion zpráva ale zatím bez reakce!" + json.asText());
+                    case "subscribe_instance": {
+                        becki_subscribe_channel(becki, json);
                         return;
                     }
 
-                    default: {
-                        System.out.println("Becki něco přeposílá do Blocka (není to žádost o propojení a ani pro Tyriona");
-
-                        // Přepošlu to na všehcny odběratele Becki
-                        if (becki.subscribers_becki != null && !becki.subscribers_becki.isEmpty())
-                        for(WebSCType ws : becki.subscribers_becki) {
-                            ws.write_without_confirmation(json);
-                        }
-                        return;
-                    }
+                    // Více typů příkazů zatím není implementováno
                 }
             }
-        }
+            case  "tyrion" : {
+                    System.out.println ("Z Becki přišla zpráva určená pro Tyrion. Nejsou ale implementovány žádné reakce." + json.asText());
+                    return;
+            }
+            case "nevin" : {
 
-        System.out.println("Další funkce nebyly implementovány - To co bylo ze strany Becki přijalo nebylo zpracováno!");
+
+            }
+
+            default: {
+                    System.out.println("Becki něco přeposílá do Blocka (není to žádost o propojení a ani pro Tyriona");
+
+                    // Přepošlu to na všehcny odběratele Becki
+                    if (becki.subscribers_becki != null && !becki.subscribers_becki.isEmpty()) {
+                        for (WebSCType ws : becki.subscribers_becki) {
+                            ws.write_without_confirmation(json);
+                        }
+                    }
+
+                    return;
+            }
+
+         }
+    }
+
+    public static void becki_subscribe_channel(WS_Becki_Website becki, ObjectNode json){
+
+            try {
+                String version_id = json.get("version_id").asText();
+                System.out.println("Ze serveru budu chtít dostávat všechny informace z blocko serveru na verzi" + version_id);
+                // TODO
+
+                // Najdu Version
+                Version_Object version = Version_Object.find.byId(version_id);
+                if (version == null) {
+                    becki_disaprove_recive_instace_state(becki, json.get("messageId").asText(), "Version not Exist");
+                    return;
+                }
+
+                // Zjistím kde běží
+                if (!blocko_servers.containsKey(version.b_program_cloud.server.server_name)) {
+                    becki_disaprove_recive_instace_state(becki, json.get("messageId").asText(), "Server is not connected");
+                    return;
+                }
+
+                WS_BlockoServer server = (WS_BlockoServer) blocko_servers.get(version.b_program_cloud.server.server_name);
+
+                // Zjistit jestli tam instance opravdu běží
+                JsonNode result_instance = blocko_server_isInstanceExist(server, version.b_program_cloud.blocko_instance_name);
+                if(result_instance.get("status").asText().equals("error"))  {
+                    becki_disaprove_recive_instace_state(becki, json.get("messageId").asText(), result_instance.get("error").asText());
+                    return;
+                }
+                // Zjistím jestli existuje instnace
+                if(!result_instance.get("exist").booleanValue())    {
+                    becki_disaprove_recive_instace_state(becki, json.get("messageId").asText(), "Instance of this version not running on this server!");
+                    return;
+                }
+
+                // Zjistím jestli existuje virtuální homer
+                System.out.println("Zjištuji jestli existuje virtuální homer");
+                if(!incomingConnections_homers.containsKey(version.b_program_cloud.blocko_instance_name) ) {
+                    System.out.println("Virtuální Homer neexistuje!!!");
+                    becki_disaprove_recive_instace_state(becki, json.get("messageId").asText(), "FATAL ERROR!!! Virtual Homer for this instance not exist!");
+                    return;
+                }
+
+                WebSCType homer = incomingConnections_homers.get(version.b_program_cloud.blocko_instance_name);
+
+                // 2 - Požádat Homera o zasílání informací
+                JsonNode result_recive = ask_for_receiving_for_Becki(homer);
+                if(result_recive.get("status").textValue().equals("error")) becki_disaprove_recive_instace_state(becki, json.get("messageId").asText(), result_recive.get("error").textValue());
+
+                // 1 - navázat propojení mezi instanci Homera a instancí Becki
+                homer.subscribers_becki.add(becki);
+                becki.subscribers_becki.add(homer);
+
+                // 3 - Přeposílat informace na Becki
+                // To zajistím v odběrném místě Homera!
+
+                // Potvrdím Becki že vše je v cajku
+                becki_aprove_recive_instace_state(becki, json.get("messageId").asText());
+
+                return;
+            }catch (Exception e){
+                System.out.println("Došlo k chybě");
+                e.printStackTrace();
+                becki_disaprove_recive_instace_state(becki, json.get("messageId").asText(), "Unknow Error");
+            }
     }
 
     public static void becki_ping(WebSCType webSCType) throws TimeoutException, InterruptedException {
@@ -893,92 +908,117 @@ public class WebSocketController_Incoming extends Controller {
     }
 // PRIVATE Homer -----------------------------------------------------------------------------------------------------------------
 
-    /** incoming Json from Homer */
+
     public static void homer_incoming_message(WebSCType homer, ObjectNode json){
+
+        logger.debug("Homer: "+ homer.identifikator + " Incoming message: " + json.toString());
+
         if(json.has("messageChannel")){
 
             switch (json.get("messageChannel").asText()){
 
                 case "the-grid" : {
+                    logger.debug("Homer: Incoming message: the-grid: Server send data to all connected terminals");
                     if(homer.subscribers_grid != null && !homer.subscribers_grid.isEmpty()) for( WebSCType webSCType : homer.subscribers_grid) webSCType.write_without_confirmation(json);
                     return;
                 }
 
                 case "tyrion" : {
-                    System.out.println ("Tyrion Příchozí zpráva, která neměla svojí žádost ze strany Tyriona: " + json.asText());
+                    logger.debug("Homer: Incoming message: tyrion: Server receive message: ");
+                    logger.debug("Homer: Incoming message: tyrion: Server don't know what to do!");
                     return;
                 }
 
                 case "becki" : {
-                    System.out.println("Budu přeposílat na becki" );
 
-                    if(homer == null ) {
-                        System.out.println("homer = null");
-                    }
+                    logger.debug("Homer: Incoming message: becki: Server send data to all connected browsers");
 
-                    if ( homer.subscribers_becki == null){
-                        System.out.println("subscribers_becki je null" );
+                    if(homer.subscribers_becki == null || homer.subscribers_becki.isEmpty() ){
+                        logger.debug("Homer: Incoming message: becki: But we have no Becki connected");
                         return;
                     }
 
-                    if( homer.subscribers_becki.isEmpty() ){
-                        System.out.println("subscribers_becki je empty" );
-                        return;
-                    }
-
-                    if(homer.subscribers_becki != null && !homer.subscribers_becki.isEmpty()){
-                        for( WebSCType webSCType : homer.subscribers_becki) webSCType.write_without_confirmation(json);
+                    for( WebSCType webSCType : homer.subscribers_becki) {
+                        webSCType.write_without_confirmation(json);
                     }
                     return;
                 }
 
-                default: System.out.println("Příchozí zpráva nemá řídící string a tak nebyla nikam předána!!"  + json.asText() );
+                default: {
+                    logger.error("ERROR \n");
+                    logger.error("Homer: Incoming message: becki: Tyrion don't recognize incoming messageChanel!!!");
+                    logger.error("ERROR \n");
+                }
 
             }
+        }else {
+            logger.error("ERROR \n");
+            logger.error("Homer: "+ homer.identifikator + " Incoming message has not messageChannel!!!!");
+            logger.error("ERROR \n");
         }
     }
 
     public static JsonNode homer_getState(String homer_id) throws TimeoutException, InterruptedException {
 
+        logger.debug("Tyrion: want to know state of Homer: " + homer_id);
 
-        ObjectNode result = Json.newObject();
-        result.put("messageType", "getState");
-        result.put("messageChannel", "homer-server");
+        if(incomingConnections_homers.containsKey(homer_id)){
 
-        return incomingConnections_homers.get(homer_id).write_with_confirmation(result);
+            ObjectNode result = Json.newObject();
+            result.put("messageType", "getState");
+            result.put("messageChannel", "homer-server");
+
+            return incomingConnections_homers.get(homer_id).write_with_confirmation(result);
+
+        }else {
+            logger.error("ERROR \n");
+            logger.error("Tyrion: Homer is not connected!");
+            logger.error("ERROR \n");
+            return  null;
+        }
     }
 
     public static void homer_ping(String homer_id) throws TimeoutException, InterruptedException {
 
+        logger.debug("Tyrion: Server want send ping to Homer: " + homer_id);
 
-        ObjectNode result = Json.newObject();
-        result.put("messageType", "ping");
-        result.put("messageChannel", "homer-server");
+        if(incomingConnections_homers.containsKey(homer_id)){
 
-        incomingConnections_homers.get(homer_id).write_without_confirmation(result);
+            ObjectNode result = Json.newObject();
+            result.put("messageType", "ping");
+            result.put("messageChannel", "homer-server");
+
+            incomingConnections_homers.get(homer_id).write_without_confirmation(result);
+
+        }else {
+            logger.error("ERROR \n");
+            logger.error("Tyrion: Homer is not connected!");
+            logger.error("ERROR \n");
+
+        }
+
     }
 
-    public static void homer_disconnect(WebSCType homer) throws TimeoutException, InterruptedException {
-        System.out.println("Chystám se násilně odpojit homer");
+    public static void homer_disconnect_homer(WebSCType homer) throws TimeoutException, InterruptedException {
+
+        logger.debug("Tyrion: Homew will be disconnected: ");
         homer.onClose();
     }
 
     public static JsonNode homer_destroyInstance(String homer_id) throws TimeoutException, InterruptedException {
 
-
+        logger.debug("Tyrion: Instruction for Homer in cloud: Destroy you instance!");
 
             ObjectNode result = Json.newObject();
             result.put("messageType", "destroyInstance");
-
             result.put("messageChannel", "homer-server");
-
 
             return incomingConnections_homers.get(homer_id).write_with_confirmation(result);
     }
 
     public static void homer_update_embeddedHW(String homer_id, List<String> board_id_list, byte[] fileInBase64) throws TimeoutException, InterruptedException, IOException {
 
-            System.out.println("Chci nahrát binární soubor na hardware ");
+        logger.debug("Tyrion: Sending to Hardware new Compilation of code");
 
             ObjectNode result = Json.newObject();
             result.put("messageType", "updateDevice");
