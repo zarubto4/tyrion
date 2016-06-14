@@ -24,19 +24,21 @@ import java.util.concurrent.*;
 
 
 public class WebSocketController_Incoming extends Controller {
+
+// Loger
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
 // Values  -------------------------------------------------------------------------------------------------------------
 
-    public static Map<String, WebSCType> incomingConnections_homers = new HashMap<>(); // (Identificator, Websocket)
+    public static Map<String, WebSCType> incomingConnections_homers    = new HashMap<>(); // (Identificator, Websocket)
     public static Map<String, WebSCType> incomingConnections_terminals = new HashMap<>(); // (Identificator, Websocket)
 
     //TODO - tohle lze teoreticky dát do databáze
-        // Sem podle ID homera uložím seznam zařízení, na která by se měl opět připojit
-        public static Map<String, ArrayList<String>> terminal_lost_connection_homer = new HashMap<>();  // (Homer Identificator, List<Terminal Identificator>)
+    // Sem podle ID homera uložím seznam zařízení, na která by se měl opět připojit
+    public static Map<String, ArrayList<String>> terminal_lost_connection_homer = new HashMap<>();  // (Homer Identificator, List<Terminal Identificator>)
 
-        // Ztracené připojení s Becki když se homer odpojil
-        public static Map<String, ArrayList<String>> becki_lost_connection_homer = new HashMap<>();
+    // Ztracené připojení s Becki když se homer odpojil
+    public static Map<String, ArrayList<String>> becki_lost_connection_homer = new HashMap<>();
 
     // Připojené servery, kde běží Homer instance jsou drženy v homer_cloud_server. Jde jen o jendoduché čisté spojení a
     // několik servisních metod. Ale aby bylo dosaženo toho, že Homer jak v cloudu tak i na fyzickém počítači byl obsluhován stejně
@@ -52,106 +54,107 @@ public class WebSocketController_Incoming extends Controller {
 
 // PUBLIC API -------------------------------------------------------------------------------------------------------------------
 
+    // Připojení Homera (Cloud i Local)
     public  WebSocket<String>  homer_connection(String homer_mac_address){
 
-        System.out.println("Příchozí připojení Homer " + homer_mac_address);
+        logger.debug("Homer Connection on mac_address: " + homer_mac_address);
 
-        // Inicializuji Websocket pro Homera
+        // Inicializace Websocketu pro Homera
         WS_Homer_Local homer = new WS_Homer_Local(homer_mac_address, incomingConnections_homers);
 
-        // Připojím se
+        // Vtvoří se zástupný objekt připojení
         WebSocket<String> webSocket = homer.connection();
+
+        logger.debug("Connection created on: " + homer_mac_address);
         homer_connection_procedure(homer);
 
+        logger.debug("Returning connection on: " + homer_mac_address);
         return  webSocket;
     }
-    public static void homer_connection_procedure(WebSCType homer) {
+    public static void         homer_connection_procedure(WebSCType homer) {
+
+        logger.debug("Homer connection procedure on: " + homer.identifikator);
+
         try {
 
-
-            // Podívám se, zda nemám už připojené a čekající terminály. se kterými bych chtěl komunikovat
+            // Podívám se, zda nemám už připojené a čekající terminály se kterými bych chtěl komunikovat
             if (terminal_lost_connection_homer.containsKey(homer.identifikator)) {
-                System.out.println("Pro Homer existuje ztracené připojení s terminálem (mobilem) ");
 
-                // Pookud ano, tak na seznamu jmen terminálů vázajících se k tomuto Homerovi provedu
+                logger.debug("Homer -> Lost Connection found with Terminal. Starting procedure for re-connection ");
+
+                // Pokud ano, tak na seznamu jmen terminálů vázajících se k tomuto Homerovi provedu následující operace
                 for (String terminal_name : terminal_lost_connection_homer.get(homer.identifikator)) {
 
-                    // kontrolu zda terminál je stále přopojený
+                    logger.debug("Homer -> Lost Connection: Terminal found: " + terminal_name);
+
+                    // zkontrolu zda terminál je stále přopojený
                     if (incomingConnections_terminals.containsKey(terminal_name)) {
 
-                        // V případě že tedy nějaké temrinály jsou připravené komunikovat, musím upozornit homera, že chci odebírat jeho změny
-                        // Takže ho u prvního oběratele budu informovat
+                        // V případě že tedy nějaké temrinály jsou připravené komunikovat, musím upozornit homera, že chci odebírat jeho změny. Takže ho u prvního oběratele budu informovat
                         if (homer.subscribers_grid.isEmpty()) {
 
-                            System.out.println("Spojení bylo obnoveno mezi Homer: " + homer.identifikator + " a terminalem: " + terminal_name);
-                            System.out.println("Budu taktéž Homera informovat o tom, že má odběratele");
                             ask_for_receiving_for_Grid(homer);
                             homer.subscribers_grid.add(incomingConnections_terminals.get(terminal_name));
                             incomingConnections_terminals.get(terminal_name).subscribers_grid.add(homer);
 
                         } else {
 
-                            System.out.println("Spojení bylo obnoveno mezi Homer: " + homer.identifikator  + " a terminalem: " + terminal_name);
                             homer.subscribers_grid.add(incomingConnections_terminals.get(terminal_name));
                             incomingConnections_terminals.get(terminal_name).subscribers_grid.add(homer);
 
-
                         }
 
-                        System.out.println("Upozorňuji terminál o znovu připojení: ");
+                        // Zasílám na terminál informaci o znovu připojení
                         homer_reconnection(incomingConnections_terminals.get(terminal_name));
                     }
                     // Pokud není připojený - vyřadím ho ze seznamu
                     else {
-                        System.out.println("Terminál se mezitím odpojil, tak ho vyřazuji z listu: ");
+                        logger.debug("Homer -> Lost Connection: Terminal "+ terminal_name +" is no more connected" );
                         terminal_lost_connection_homer.get(homer.identifikator ).remove(terminal_name);
                     }
                 }
 
                 // Po obnově spojení se všem ztracenými připojeními vyhazuji objekt ztraceného spojení z mapy vázaný na tento Homer
-                System.out.println("Odstraňuji ze seznamu ztracených spojení");
+                logger.debug("Homer -> Lost Connection: Server removing " +homer.identifikator + " lost connection");
                 terminal_lost_connection_homer.remove(homer.identifikator );
 
             } else if(becki_lost_connection_homer.containsKey(homer.identifikator)){
 
-                System.out.println("Pro Homer existuje ztracené připojení s becki");
+                logger.debug("Homer -> Lost Connection: Becki found: " + homer.identifikator);
 
-                // Pookud ano, tak na seznamu jmen becki vázajících se k tomuto Homerovi provedu
-                // becki identificator je id uživatele (protože zakrývá víc připojených instancí)
+                // Pookud ano, tak na seznamu jmen becki vázajících se k tomuto Homerovi provedu becki identificator je id uživatele (protože zakrývá víc připojených instancí)
                 for (String becki_identificator : becki_lost_connection_homer.get(homer.identifikator)) {
 
                     // kontrolu zda je becki stále připojená
                     if (becki_website.containsKey(becki_identificator)) {
 
-                        // V případě že tedy nějaké temrinály jsou připravené komunikovat, musím upozornit homera, že chci odebírat jeho změny
-                        // Takže ho u prvního oběratele budu informovat
+                        // V případě že tedy nějaké temrinály jsou připravené komunikovat, musím upozornit homera, že chci odebírat jeho změny Takže ho u prvního oběratele budu informovat
                         if (homer.subscribers_becki.isEmpty()) {
 
-                            System.out.println("Spojení bylo obnoveno mezi Homer: " + homer.identifikator + " a becki na id: " + becki_identificator);
-                            System.out.println("Budu taktéž Homera informovat o tom, že má odběratele");
+                            logger.debug("Homer -> Lost Connection: Connection with Homer: " + becki_identificator + " was restored");
                             ask_for_receiving_for_Becki(homer);
+
                             homer.subscribers_becki.add(becki_website.get(becki_identificator));
                             becki_website.get(becki_identificator).subscribers_becki.add(homer);
 
                         } else {
-                            System.out.println("Spojení bylo obnoveno mezi Homer: " + homer.identifikator  + " a becki s id: " + becki_identificator);
+
+                            logger.debug("Homer -> Lost Connection: Connection with Becki: " + becki_identificator + " was restored");
                             homer.subscribers_becki.add(becki_website.get(becki_identificator));
                             becki_website.get(becki_identificator).subscribers_becki.add(homer);
                         }
 
-                        System.out.println("Upozorňuji terminál o znovu připojení: ");
+                        logger.debug("Homer -> Lost Connection: Sending to Becki :" + becki_identificator + " that they are new receiver");
                         homer_reconnection(becki_website.get(becki_identificator));
                     }
                     // Pokud není připojený - vyřadím ho ze seznamu
                     else {
-                        System.out.println("Becki se mezitím odpojila, tak jí vyřazuji z listu");
+                        logger.debug("Homer -> Lost Connection: Becki " + becki_identificator + " is gone :( So system remove that from list");
                         becki_lost_connection_homer.get( homer.identifikator ).remove(becki_identificator);
                     }
                 }
 
             } else homer_all_terminals_are_gone(homer);
-
-
 
         }catch (Exception e){
             logger.error("Homer Connection Exception", e);
@@ -378,16 +381,15 @@ public class WebSocketController_Incoming extends Controller {
                             if (server.isReady()) {
 
 
-                                String messageId = UUID.randomUUID().toString();
 
                                 ObjectNode result = Json.newObject();
                                 result.put("messageType", "listInstances");
-                                result.put("messageId", messageId);
+
                                 result.put("messageChannel", "homer-server");
 
                                 System.out.println("Zasílám žádost co na serveru běží");
 
-                                JsonNode jsonNode = server.write_with_confirmation(messageId, result, (long) 15000);
+                                JsonNode jsonNode = server.write_with_confirmation(result, (long) 15000);
 
                                 System.out.println("Žádost o stavu serveru přijata");
                                 if (jsonNode.has("status")) {
@@ -538,26 +540,23 @@ public class WebSocketController_Incoming extends Controller {
     }
 
     public static JsonNode blocko_server_listOfInstance(WS_BlockoServer blockoServer)  throws TimeoutException, InterruptedException{
-        String messageId = UUID.randomUUID().toString();
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "listInstances");
-        result.put("messageId", messageId);
         result.put("messageChannel", "homer-server");
 
-        return blockoServer.write_with_confirmation(messageId, result);
+        return blockoServer.write_with_confirmation(result);
     }
 
     public static JsonNode blocko_server_isInstanceExist(WS_BlockoServer blockoServer, String instance_name)  throws TimeoutException, InterruptedException{
-        String messageId = UUID.randomUUID().toString();
+
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "instanceExist");
-        result.put("messageId", messageId);
         result.put("messageChannel", "homer-server");
         result.put("instanceId", instance_name);
 
-        return blockoServer.write_with_confirmation(messageId, result);
+        return blockoServer.write_with_confirmation(result);
     }
 
     public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, ObjectNode json){
@@ -581,17 +580,16 @@ public class WebSocketController_Incoming extends Controller {
             WS_Homer_Cloud homer = new WS_Homer_Cloud(program.blocko_instance_name, blockoServer);
 
 
-            String messageId = UUID.randomUUID().toString();
+
 
             ObjectNode result = Json.newObject();
             result.put("messageType", "createInstance");
-            result.put("messageId", messageId);
             result.put("messageChannel", "homer-server");
             result.put("instanceId", program.blocko_instance_name);
             result.put("macAddress", program.blocko_instance_name);
 
             System.out.println("Nahrávám ho na Blocko server novou instanci");
-            JsonNode result_instance = blockoServer.write_with_confirmation( messageId, result);
+            JsonNode result_instance = blockoServer.write_with_confirmation( result);
 
             System.out.println("Nahrávám ho na Blocko server do vytvořené instnace program");
             JsonNode result_uploud = WebSocketController_Incoming.homer_UploadProgram(homer, program.id, program.version_object.files.get(0).get_fileRecord_from_Azure_inString());
@@ -611,25 +609,19 @@ public class WebSocketController_Incoming extends Controller {
 
     public static JsonNode blocko_server_remove_instance( WS_BlockoServer blockoServer, String instance_name) throws TimeoutException, InterruptedException{
 
-        String messageId =  UUID.randomUUID().toString();
-
         ObjectNode result = Json.newObject();
         result.put("messageType", "destroyInstance");
-        result.put("messageId", messageId);
         result.put("messageChannel", "homer-server");
         result.put("instanceId", instance_name);
 
-        return blockoServer.write_with_confirmation( messageId ,result );
+        return blockoServer.write_with_confirmation(result );
 
     }
 
     public static void blocko_server_ping(WS_BlockoServer blockoServer) throws TimeoutException, InterruptedException {
 
-        String messageId = UUID.randomUUID().toString();
-
         ObjectNode result = Json.newObject();
         result.put("messageType", "ping");
-        result.put("messageId", messageId);
         result.put("messageChannel", "tyrion");
 
         blockoServer.write_without_confirmation( result);
@@ -658,11 +650,8 @@ public class WebSocketController_Incoming extends Controller {
 
         System.out.println("Vybral příslušný server");
 
-        String messageId = UUID.randomUUID().toString();
-        jsonNodes.put("messageId", messageId);
-
         System.out.println("Odeslal žádost o kompilaci");
-        ObjectNode compilation_request = server.write_with_confirmation(messageId, jsonNodes);
+        ObjectNode compilation_request = server.write_with_confirmation(jsonNodes);
 
         System.out.println("Přijal potvrzení žádost o kompilaci se  zprávou: " + compilation_request.asText() );
 
@@ -737,11 +726,9 @@ public class WebSocketController_Incoming extends Controller {
 
     public static void compiler_server_ping(WS_CompilerServer compilerServer) throws TimeoutException, InterruptedException {
 
-        String messageId = UUID.randomUUID().toString();
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "ping");
-        result.put("messageId", messageId);
         result.put("messageChannel", "tyrion");
 
 
@@ -854,11 +841,8 @@ public class WebSocketController_Incoming extends Controller {
 
         System.out.println("Budu zasílat na Becki Ping!!");
 
-        String messageId = UUID.randomUUID().toString();
-
         ObjectNode result = Json.newObject();
         result.put("messageType", "ping");
-        result.put("messageId", messageId);
         result.put("messageChannel", "tyrion");
 
         webSCType.write_without_confirmation(result);
@@ -871,11 +855,10 @@ public class WebSocketController_Incoming extends Controller {
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "subscribe_instace");
-        result.put("messageId", messageId);
         result.put("messageChannel", "blocko");
         result.put("status", "success");
 
-        webSCType.write_without_confirmation(result);
+        webSCType.write_without_confirmation(messageId, result);
 
     }
 
@@ -886,22 +869,19 @@ public class WebSocketController_Incoming extends Controller {
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "subscribe_instace");
-        result.put("messageId", messageId);
         result.put("messageChannel", "blocko");
         result.put("status", "error");
         result.put("error", error);
-        webSCType.write_without_confirmation(result);
+        webSCType.write_without_confirmation(messageId, result);
 
     }
 
     public static void becki_echo_that_becki_was_disconnect(WebSCType homer){
         System.out.println("Chci zaslat zprávu že se poslední becki odpojila a už neposlouchá blocko");
 
-        String messageId =  UUID.randomUUID().toString();
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "unSubscribeChannel");
-        result.put("messageId", messageId);
         result.put("messageChannel", "becki");
 
         homer.write_without_confirmation(result);
@@ -959,22 +939,20 @@ public class WebSocketController_Incoming extends Controller {
     }
 
     public static JsonNode homer_getState(String homer_id) throws TimeoutException, InterruptedException {
-        String messageId = UUID.randomUUID().toString();
+
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "getState");
-        result.put("messageId", messageId);
         result.put("messageChannel", "homer-server");
 
-        return incomingConnections_homers.get(homer_id).write_with_confirmation(messageId, result);
+        return incomingConnections_homers.get(homer_id).write_with_confirmation(result);
     }
 
     public static void homer_ping(String homer_id) throws TimeoutException, InterruptedException {
-        String messageId = UUID.randomUUID().toString();
+
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "ping");
-        result.put("messageId", messageId);
         result.put("messageChannel", "homer-server");
 
         incomingConnections_homers.get(homer_id).write_without_confirmation(result);
@@ -987,44 +965,38 @@ public class WebSocketController_Incoming extends Controller {
 
     public static JsonNode homer_destroyInstance(String homer_id) throws TimeoutException, InterruptedException {
 
-            String messageId = UUID.randomUUID().toString();
+
 
             ObjectNode result = Json.newObject();
             result.put("messageType", "destroyInstance");
-            result.put("messageId", messageId);
+
             result.put("messageChannel", "homer-server");
 
 
-            return incomingConnections_homers.get(homer_id).write_with_confirmation(messageId, result);
+            return incomingConnections_homers.get(homer_id).write_with_confirmation(result);
     }
 
     public static void homer_update_embeddedHW(String homer_id, List<String> board_id_list, byte[] fileInBase64) throws TimeoutException, InterruptedException, IOException {
 
             System.out.println("Chci nahrát binární soubor na hardware ");
 
-            String messageId = UUID.randomUUID().toString();
-
             ObjectNode result = Json.newObject();
             result.put("messageType", "updateDevice");
-            result.put("messageId", messageId);
             result.set("hardwareId", Json.toJson(board_id_list));
             result.put("base64Binary", fileInBase64);
 
-            incomingConnections_homers.get(homer_id).write_with_confirmation(messageId, result);
+            incomingConnections_homers.get(homer_id).write_with_confirmation(result);
     }
 
     public static JsonNode homer_UploadProgram(WebSCType homer, String program_id, String program) throws TimeoutException, InterruptedException {
 
-            String messageId =  UUID.randomUUID().toString();
-
             ObjectNode result = Json.newObject();
             result.put("messageType", "loadProgram");
-            result.put("messageId", messageId);
             result.put("messageChannel", "tyrion");
             result.put("programId", program_id);
             result.put("program", program);
 
-          return homer.write_with_confirmation(messageId ,result );
+          return homer.write_with_confirmation(result);
     }
 
     public static boolean homer_is_online(String homer_id){
@@ -1032,14 +1004,12 @@ public class WebSocketController_Incoming extends Controller {
     }
 
     public static JsonNode get_all_Connected_HW_to_Homer(Homer homer) throws TimeoutException, InterruptedException{
-        String messageId = UUID.randomUUID().toString();
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "getDeviceList");
-        result.put("messageId", messageId);
         result.put("messageChannel", "tyrion");
 
-        return incomingConnections_homers.get( homer.id).write_with_confirmation(messageId, result, (long) 250*25 );
+        return incomingConnections_homers.get( homer.id).write_with_confirmation(result, (long) 250*25 );
     }
 
     public static void homer_is_disconnect(WebSCType homer) {
@@ -1080,48 +1050,42 @@ public class WebSocketController_Incoming extends Controller {
 
         System.out.println("homer nemá  už žádného odběratele: " + homer.identifikator);
 
-        String messageId =  UUID.randomUUID().toString();
-
         ObjectNode result = Json.newObject();
         result.put("messageType", "unSubscribeChannel");
-        result.put("messageId", messageId);
         result.put("messageChannel", "the-grid");
 
-        homer.write_with_confirmation( messageId, result);
+        homer.write_with_confirmation( result);
     }
 
     public static void ask_for_receiving_for_Grid(WebSCType homer) throws TimeoutException, InterruptedException {
         System.out.println ("Chci upozornit Homera: " + homer.identifikator + " že má prvního odběratele");
 
-        String messageId =  UUID.randomUUID().toString();
+
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "subscribeChannel");
-        result.put("messageId", messageId);
         result.put("messageChannel", "the-grid");
 
-        homer.write_with_confirmation(messageId, result);
+        homer.write_with_confirmation(result);
     }
 
     public static JsonNode ask_for_receiving_for_Becki(WebSCType homer) throws TimeoutException, InterruptedException {
         System.out.println ("Chci upozornit Homera: " + homer.identifikator + " že má prvního odběratele");
 
-        String messageId =  UUID.randomUUID().toString();
+
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "subscribeChannel");
-        result.put("messageId", messageId);
         result.put("messageChannel", "becki");
 
-        return homer.write_with_confirmation(messageId, result);
+        return homer.write_with_confirmation(result);
     }
 
     public static void invalid_json_message(WebSCType homer){
-        String messageId =  UUID.randomUUID().toString();
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "JsonUnrecognized");
-        result.put("messageId", messageId);
+
 
         homer.write_without_confirmation(result);
     }
@@ -1162,11 +1126,10 @@ public class WebSocketController_Incoming extends Controller {
     public static void server_violently_terminate_terminal(WebSCType terminal){
         System.out.println("Terminál se pokusil zaslat zpváu na Blocko ale žádné blocko nemá na sobě připojené - tedy zbyteční a packet zahazuji");
 
-        String messageId =  UUID.randomUUID().toString();
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "NEmáš žádné Grid odběratele - zprává nebyla přeposlána \"");
-        result.put("messageId", messageId);
+
 
         terminal.write_without_confirmation(result);
 
@@ -1177,15 +1140,11 @@ public class WebSocketController_Incoming extends Controller {
 
     public static void terminal_ping(WebSCType terminal) throws TimeoutException, InterruptedException {
 
-        String messageId = UUID.randomUUID().toString();
-
         ObjectNode result = Json.newObject();
         result.put("messageType", "ping");
-        result.put("messageId", messageId);
         result.put("messageChannel", "tyrion");
 
         terminal.write_without_confirmation(result);
-
     }
 
     public static void terminal_disconnect(WebSCType terminal) throws TimeoutException, InterruptedException {
@@ -1196,13 +1155,8 @@ public class WebSocketController_Incoming extends Controller {
     public static void server_plained_terminate_terminal(WebSCType terminal){
         System.out.println("Server odesílá zprávu, že bude plánované odstavení");
 
-        String messageId =  UUID.randomUUID().toString();
-
         ObjectNode result = Json.newObject();
         result.put("messageType", "Ahoj, server se restartuje mezi 5 a 9");
-        result.put("messageId", messageId);
-
-
 
         terminal.write_without_confirmation(result);
     }
@@ -1227,11 +1181,8 @@ public class WebSocketController_Incoming extends Controller {
     public static void homer_reconnection(WebSCType terminal){
         System.out.println("Chci upozornit terminál že se Homer Připojil: ");
 
-        String messageId =  UUID.randomUUID().toString();
-
         ObjectNode result = Json.newObject();
         result.put("messageType", "Homer se znovu připojil!!");
-        result.put("messageId", messageId);
 
         terminal.write_without_confirmation(result);
     }
@@ -1240,12 +1191,8 @@ public class WebSocketController_Incoming extends Controller {
 
         System.out.println("Chci zaslat zprávu že homer není pripojen a jsem v metodě homer_is_not_connected_yet");
 
-
-        String messageId =  UUID.randomUUID().toString();
-
         ObjectNode result = Json.newObject();
         result.put("messageType", "homer není pripojen!");
-        result.put("messageId", messageId);
 
         terminal.write_without_confirmation(result);
 
@@ -1254,11 +1201,8 @@ public class WebSocketController_Incoming extends Controller {
     public static void echo_that_home_was_disconnect(WebSCType terminal){
         System.out.println("Chci zaslat zprávu že se homer odpojil");
 
-        String messageId =  UUID.randomUUID().toString();
-
         ObjectNode result = Json.newObject();
         result.put("messageType", "unSubscribeChannel");
-        result.put("messageId", messageId);
         result.put("messageChannel", "the-grid");
 
         terminal.write_without_confirmation(result);
@@ -1267,12 +1211,8 @@ public class WebSocketController_Incoming extends Controller {
     public static void terminal_you_have_not_followers(WebSCType terminal){
         System.out.println("Terminál se pokusil zaslat zpváu na Blocko ale žádné blocko nemá na sobě připojené - tedy zbytečné a packet zahazuji");
 
-
-        String messageId =  UUID.randomUUID().toString();
-
         ObjectNode result = Json.newObject();
         result.put("messageType", "NEmáš žádné Grid odběratele - zprává nebyla přeposlána ");
-        result.put("messageId", messageId);
 
         terminal.write_without_confirmation(result);
     }
@@ -1280,11 +1220,9 @@ public class WebSocketController_Incoming extends Controller {
     public static void terminal_blocko_program_not_running_anywhere(WebSCType terminal){
         System.out.println("Blocko program nikde něběží");
 
-        String messageId =  UUID.randomUUID().toString();
-
         ObjectNode result = Json.newObject();
         result.put("messageType", "M_Program je sice spojený, ale program pro Homera nikde neběží a není tedy co kam zasílat");
-        result.put("messageId", messageId);
+
 
         terminal.write_without_confirmation(result);
 
@@ -1293,11 +1231,9 @@ public class WebSocketController_Incoming extends Controller {
     public static void m_project_is_connected_with_older_version(WebSCType terminal) throws TimeoutException, InterruptedException{
         System.out.println("M Project je napevno navázaný na verzi, která neběží a auto-propojení je zakázáno!");
 
-        String messageId =  UUID.randomUUID().toString();
-
         ObjectNode result = Json.newObject();
         result.put("messageType", "M Project je napevno navázaný na verzi, která neběží a auto-propojení je zakázáno!");
-        result.put("messageId", messageId);
+
 
         terminal.write_without_confirmation(result);
 

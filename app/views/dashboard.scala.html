@@ -3,14 +3,13 @@
 @import utilities.webSocket.WS_CompilerServer
 @import java.util.List
 @import models.blocko.Cloud_Blocko_Server
+@import models.person.Person
 @import java.util.Map
 @import scala.collection.JavaConversions.mapAsScalaMap
 @import models.compiler.Cloud_Compilation_Server
-
-
-
-
 @import utilities.webSocket.WS_CompilerServer
+
+
 @(      person: Integer,            project: Integer,
         homer: Integer,             b_program: Integer,
         board: Integer,             file_record: Integer,
@@ -39,7 +38,7 @@
           <div class="row">
 
             <div class="col-lg-3 col-xs-6"><div class="small-box bg-aqua"><div class="inner">
-                  <h3>@person</h3>
+                  <h3>@Person.find.findRowCount()</h3>
                   <p>Registered Person</p>
                   </div><div class="icon"><i class="ion ion-person"></i></div> </div>
             </div>

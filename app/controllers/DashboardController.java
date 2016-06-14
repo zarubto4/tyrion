@@ -35,8 +35,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
+/**
+ * CONTROLLER je určen pro jednoduchý frontend, který slouží pro zobrazení stavu backendu, základních informací,
+ * ovládání websocketu a čtení readme. Dále podpora pro porovnávání změn nad dokumentací ze Swaggeru.
+ * */
 public class DashboardController extends Controller {
 
+    // Logger pro zaznamenávání chyb
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
     Integer connectedHomers          =  WebSocketController_Incoming.incomingConnections_homers.size();
@@ -54,8 +59,6 @@ public class DashboardController extends Controller {
 
     // Úvodní zobrazení Dashboard
     public Result index() {
-
-        logger.info("Creating index.html content");
 
         Html menu_html = menu.render(reported_bugs, connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers, connectedCompile_servers, link_api_swagger);
 
@@ -91,13 +94,7 @@ public class DashboardController extends Controller {
                 Cloud_Compilation_Server.find.all()
         );
 
-        logger.info("Return html content");
-
-        return ok( main.render(menu_html,
-                content_html,
-                server_mode,
-                server_version));
-
+        return ok( main.render(menu_html, content_html, server_mode, server_version));
     }
 
 // README ###############################################################################################################

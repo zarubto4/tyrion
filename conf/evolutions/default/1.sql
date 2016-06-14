@@ -69,6 +69,7 @@ create table board (
   personal_description      TEXT,
   type_of_board_id          varchar(255),
   is_active                 boolean,
+  date_of_create            timestamp,
   project_id                varchar(255),
   homer_id                  varchar(255),
   constraint pk_board primary key (id))
@@ -370,12 +371,11 @@ create table version_object (
   id                        varchar(255) not null,
   version_name              varchar(255),
   version_description       TEXT,
-  azure_link_version        integer,
+  azure_link_version        varchar(255),
   date_of_create            timestamp,
   library_group_id          varchar(255),
   single_library_id         varchar(255),
   c_program_id              varchar(255),
-  c_comp_build_url          TEXT,
   b_program_id              varchar(255),
   constraint pk_version_object primary key (id))
 ;
@@ -574,10 +574,10 @@ alter table type_of_board add constraint fk_type_of_board_producer_36 foreign ke
 create index ix_type_of_board_producer_36 on type_of_board (producer_id);
 alter table type_of_board add constraint fk_type_of_board_processor_37 foreign key (processor_id) references processor (id);
 create index ix_type_of_board_processor_37 on type_of_board (processor_id);
-alter table version_object add constraint fk_version_object_libraryGrou_38 foreign key (library_group_id) references library_group (id);
-create index ix_version_object_libraryGrou_38 on version_object (library_group_id);
-alter table version_object add constraint fk_version_object_singleLibra_39 foreign key (single_library_id) references single_library (id);
-create index ix_version_object_singleLibra_39 on version_object (single_library_id);
+alter table version_object add constraint fk_version_object_library_gro_38 foreign key (library_group_id) references library_group (id);
+create index ix_version_object_library_gro_38 on version_object (library_group_id);
+alter table version_object add constraint fk_version_object_single_libr_39 foreign key (single_library_id) references single_library (id);
+create index ix_version_object_single_libr_39 on version_object (single_library_id);
 alter table version_object add constraint fk_version_object_c_program_40 foreign key (c_program_id) references c_program (id);
 create index ix_version_object_c_program_40 on version_object (c_program_id);
 alter table version_object add constraint fk_version_object_b_program_41 foreign key (b_program_id) references b_program (id);

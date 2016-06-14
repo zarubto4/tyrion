@@ -39,7 +39,9 @@ import java.util.Map;
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class SecurityController extends Controller {
 
+
 //######################################################################################################################
+
     public static Person getPerson() {
         return (Person) Http.Context.current().args.get("person");
     }
