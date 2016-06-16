@@ -3116,7 +3116,7 @@ public class CompilationLibrariesController extends Controller {
             if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
 
             // Kontrola oprávnění
-            if(board.read_permission()) return GlobalResult.forbidden_Permission();
+            if(!board.read_permission()) return GlobalResult.forbidden_Permission();
 
             // vrácení objektu
             return GlobalResult.result_ok(Json.toJson(board));
