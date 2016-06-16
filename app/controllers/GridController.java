@@ -119,6 +119,7 @@ public class GridController extends Controller {
     @Security.Authenticated(Secured.class)
     public Result get_M_Project(@ApiParam(value = "m_project_id String query", required = true) @PathParam("m_project_id") String m_project_id){
         try {
+
             M_Project m_project = M_Project.find.byId(m_project_id);
             if (m_project == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
 
@@ -163,6 +164,7 @@ public class GridController extends Controller {
     @Security.Authenticated(Secured.class)
     public Result edit_M_Project(@ApiParam(value = "m_project_id String query", required = true) @PathParam("m_project_id") String m_project_id){
         try{
+
             final Form<Swagger_M_Project_New> form = Form.form(Swagger_M_Project_New.class).bindFromRequest();
             if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_M_Project_New help = form.get();
@@ -188,7 +190,6 @@ public class GridController extends Controller {
             tags = {"M_Program"},
             notes = "remove M_Project by query = m_project_id",
             produces = "application/json",
-            response =  Result_ok.class,
             protocols = "https",
             code = 200,
             extensions = {
@@ -333,7 +334,7 @@ public class GridController extends Controller {
             M_Project m_project = M_Project.find.byId(m_project_id);
             if (m_project == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
 
-            if (!m_project.update_permission())                 return GlobalResult.forbidden_Permission();
+            if (!m_project.update_permission())  return GlobalResult.forbidden_Permission();
 
             m_project.b_program_version = null;
             m_project.auto_incrementing = false;
@@ -803,7 +804,7 @@ public class GridController extends Controller {
             code = 200,
             extensions = {
                     @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Screen_Size_Type.read_permission", value = "true"),
+                            @ExtensionProperty(name = "Screen_Size_Type.edit_permission", value = "true"),
                     })
             }
     )

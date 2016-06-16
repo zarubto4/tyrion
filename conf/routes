@@ -290,7 +290,7 @@ PUT             /compilation/libraryGroup/:libraryGroup_id                      
 
 #Single Library
 POST            /compilation/library                                                        @controllers.CompilationLibrariesController.new_SingleLibrary()
-PUT             /compilation/library/filter                                                 @controllers.CompilationLibrariesController.get_SingleLibrary_Filter()
+PUT             /compilation/library/filter/:page_number                                    @controllers.CompilationLibrariesController.get_SingleLibrary_Filter(page_number: Integer)
 POST            /compilation/library/version/:library_id                                    @controllers.CompilationLibrariesController.new_SingleLibrary_Version(library_id)
 
 GET             /compilation/library/:library_id                                            @controllers.CompilationLibrariesController.get_SingleLibrary(library_id)

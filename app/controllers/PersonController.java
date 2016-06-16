@@ -307,7 +307,7 @@ public class PersonController extends Controller {
             code = 200,
             extensions = {
                     @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Person.edit_permission", value = "true"),
+                            @ExtensionProperty(name = "FloatingPersonToken.delete_permission", value = "true"),
                     })
             }
     )

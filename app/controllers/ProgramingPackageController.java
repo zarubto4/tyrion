@@ -545,7 +545,7 @@ public class ProgramingPackageController extends Controller {
                             @ExtensionProperty(name = "Homer.read_permission", value = Homer.read_permission_docs),
                     }),
                     @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Homer.remove_permission", value = "true"),
+                            @ExtensionProperty(name = "Homer.read_permission", value = "true"),
                     })
             }
     )

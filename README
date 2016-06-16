@@ -1,4 +1,4 @@
-# Verze 1.06.6 # (nevydaná)
+﻿# Verze 1.06.6 # (nevydaná)
 ####  26.5.2016 ####
 
 **Změny General:**
@@ -12,6 +12,15 @@
 
 ### Oprava Bugů ###
 
+ * fixed [TYRION-249](http://youtrack.byzance.cz/youtrack/issue/TYRION-249)
+ * fixed [TYRION-248](http://youtrack.byzance.cz/youtrack/issue/TYRION-248)
+ * fixed [TYRION-247](http://youtrack.byzance.cz/youtrack/issue/TYRION-247)
+ * fixed [TYRION-231](http://youtrack.byzance.cz/youtrack/issue/TYRION-231)
+ * fixed [TYRION-229](http://youtrack.byzance.cz/youtrack/issue/TYRION-229)
+ * fixed [TYRION-228](http://youtrack.byzance.cz/youtrack/issue/TYRION-228)
+ * fixed [TYRION-227](http://youtrack.byzance.cz/youtrack/issue/TYRION-227)
+ * fixed [TYRION-226](http://youtrack.byzance.cz/youtrack/issue/TYRION-226)
+ * fixed [TYRION-199](http://youtrack.byzance.cz/youtrack/issue/TYRION-199)
  * fixed [TYRION-190](http://youtrack.byzance.cz/youtrack/issue/TYRION-190)
 
 

@@ -153,7 +153,7 @@ public class OverFlowController  extends Controller {
                 query.setOrder(orderBy);
             }
 
-
+            // TODO TOM - FILTER PATTERN
             List<Post> list = query.findList();
 
 
@@ -801,17 +801,6 @@ public class OverFlowController  extends Controller {
                     })
             }
     )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_TypeOfPost_New",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",      response = Result_ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -1058,8 +1047,8 @@ public class OverFlowController  extends Controller {
             code = 200,
             extensions = {
                     @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "TypeOfConfirm.edit_confirms_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "TypeOfConfirm_edit" )
+                            @ExtensionProperty(name = "Post.edit_confirms_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "Post_edit" )
                     })
             }
     )
@@ -1077,6 +1066,8 @@ public class OverFlowController  extends Controller {
 
             Post post = Post.find.byId(post_id);
             if(post == null)  return GlobalResult.notFoundObject("Post post_id not found");
+
+            if (!post.edit_confirms_permission())  return GlobalResult.forbidden_Permission();
 
             if(!post.typeOfConfirms.contains(typeOfConfirms)) post.typeOfConfirms.add(typeOfConfirms);
 
@@ -1096,8 +1087,8 @@ public class OverFlowController  extends Controller {
             code = 200,
             extensions = {
                     @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "TypeOfConfirm.edit_confirms_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "TypeOfConfirm_edit" )
+                            @ExtensionProperty(name = "Post.edit_confirms_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "Post_edit" )
                     })
             }
     )

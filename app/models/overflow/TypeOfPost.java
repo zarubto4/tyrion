@@ -2,6 +2,7 @@ package models.overflow;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
 
 import javax.persistence.*;
@@ -22,10 +23,10 @@ public class TypeOfPost extends Model {
 
     @JsonIgnore @Transient public static final String create_permission_docs = "create: User have to own static key \"TypeOfPost_create\" ";
 
-    @JsonIgnore @Transient public Boolean create_permission(){  return  SecurityController.getPerson().has_permission("TypeOfPost_create");}
-    @JsonIgnore @Transient public Boolean read_permission()  {  return true; }
-    @Transient public Boolean edit_permission()  { return  SecurityController.getPerson().has_permission("TypeOfPost_edit");}
-    @Transient public Boolean delete_permission(){ return  SecurityController.getPerson().has_permission("TypeOfPost_delete");}
+    @JsonIgnore   @Transient public Boolean create_permission(){  return  SecurityController.getPerson().has_permission("TypeOfPost_create");}
+    @JsonIgnore   @Transient public Boolean read_permission()  {  return true; }
+    @JsonProperty @Transient public Boolean edit_permission()  { return  SecurityController.getPerson().has_permission("TypeOfPost_edit");}
+    @JsonProperty @Transient public Boolean delete_permission(){ return  SecurityController.getPerson().has_permission("TypeOfPost_delete");}
 
     public enum permissions{  TypeOfPost_create, TypeOfPost_edit, TypeOfPost_delete}
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
