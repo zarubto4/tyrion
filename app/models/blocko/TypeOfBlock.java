@@ -42,7 +42,7 @@ public class TypeOfBlock extends Model {
     }
     @JsonIgnore @Transient public Boolean read_permission(){
             if(project != null) return  ( project.read_permission() || SecurityController.getPerson().has_permission("TypeOfBlock_read") );
-             return SecurityController.getPerson().has_permission("TypeOfBlock_read");
+            return SecurityController.getPerson().has_permission("TypeOfBlock_read");
     }
 
     @JsonIgnore @Transient  public Boolean update_permission(){

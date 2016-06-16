@@ -13,7 +13,10 @@
 ### Oprava Bugů ###
 
  * fixed [TYRION-190](http://youtrack.byzance.cz/youtrack/issue/TYRION-190)
-
+ * fixed [TYRION-262](http://youtrack.byzance.cz/youtrack/issue/TYRION-262)
+ * fixed [TYRION-246](http://youtrack.byzance.cz/youtrack/issue/TYRION-246)
+ * fixed [TYRION-251](http://youtrack.byzance.cz/youtrack/issue/TYRION-251)
+ * Obsolate [TYRION-64](http://youtrack.byzance.cz/youtrack/issue/TYRION-64)
 
 
 ### TODO ###
@@ -127,7 +130,7 @@ Byla zprovozněna funkce Websocketu pro Becki:
 
         Žádost
                   {
-                    "messageType"    : "subscribe_instace",
+                    "messageType"    : "subscribe_instance",
                     "messageId"      : "SOME ID",
                     "messageChannel" : "becki",
                     "version_id"     : "21"        <<<<< Viz horní Json
@@ -136,7 +139,7 @@ Byla zprovozněna funkce Websocketu pro Becki:
         Možnosti odpovědi
                   1) Bude ti zasíláno vše (instance je funční, připojená  - prostě ideální stav)
                   {
-                    "messageType"    : "subscribe_instace",
+                    "messageType"    : "subscribe_instance",
                     "messageId"      : "SOME ID",
                     "messageChannel" : "becki",
                     "status"         :  "success"
@@ -144,7 +147,7 @@ Byla zprovozněna funkce Websocketu pro Becki:
 
                   2) Nebo nastal problém a v "error" je uvedeno proč - Je 9 error stavů, kde se to mohlo pokazit
                   {
-                    "messageType"    : "subscribe_instace",
+                    "messageType"    : "subscribe_instance",
                     "messageId"      : "SOME ID",
                     "messageChannel" : "becki",
                     "status"         : "error"

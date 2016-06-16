@@ -323,9 +323,6 @@ public class ProgramingPackageController extends Controller {
             // Kontrola oprávnění
             if (!project.share_permission() )   return GlobalResult.forbidden_Permission();
 
-            // Výpis velikosti pole
-            System.out.println("Velikost pole : " + help.persons_id.size() );
-
             // Získání seznamu
             List<Person> list = Person.find.where().idIn(help.persons_id).findList();
 
@@ -1055,9 +1052,8 @@ public class ProgramingPackageController extends Controller {
 
 
             // Před smazáním blocko programu je nutné smazat jeho běžící cloud instance
-            System.out.println("Snažím se odstanit instance ze serverů");
             List<B_Program_Cloud> b_program_clouds = B_Program_Cloud.find.where().eq("version_object.b_program.id", program.id).findList();
-            System.out.println("Počet instancí " + b_program_clouds.size()  );
+
 
             for(B_Program_Cloud b_program_cloud : b_program_clouds){
                if(  WebSocketController_Incoming.blocko_servers.containsKey(b_program_cloud.server.server_name)){
@@ -1114,9 +1110,7 @@ public class ProgramingPackageController extends Controller {
 
 
             // Před smazáním blocko programu je nutné smazat jeho běžící cloud instance
-            System.out.println("Snažím se odstanit instance ze serverů");
             List<B_Program_Cloud> b_program_clouds = B_Program_Cloud.find.where().eq("version_object.id", version_object.id).findList();
-            System.out.println("Počet instancí " + b_program_clouds.size()  );
 
             for(B_Program_Cloud b_program_cloud : b_program_clouds){
                 if(  WebSocketController_Incoming.blocko_servers.containsKey(b_program_cloud.server.server_name)){
@@ -1299,8 +1293,8 @@ public class ProgramingPackageController extends Controller {
 
                    if(!  WebSocketController_Incoming.homer_is_online(homer.id) ) {
                        System.out.println("Homer není online při pokusu na něj nahrát instanci a není dodělané zpožděné nahrátí");
-
-                   };
+                       this.interrupt();
+                   }
 
 
                     JsonNode result = WebSocketController_Incoming.homer_UploadProgram(WebSocketController_Incoming.incomingConnections_homers.get(homer.id), version_object.id, version_object.files.get(0).get_fileRecord_from_Azure_inString());
@@ -1403,16 +1397,12 @@ public class ProgramingPackageController extends Controller {
             // Uložení objektu
             program_cloud.save();
 
-            System.out.println("blocko server size " + WebSocketController_Incoming.blocko_servers.size() );
-
             if(! WebSocketController_Incoming.blocko_servers.containsKey( destination_server.server_name) ) return GlobalResult.result_BadRequest("Server is offline");
 
             // Vytvářím instanci na serveru
             WS_BlockoServer server = (WS_BlockoServer) WebSocketController_Incoming.blocko_servers.get(destination_server.server_name);
 
             JsonNode result =  WebSocketController_Incoming.blocko_server_add_instance(server, program_cloud);
-
-            System.out.println("Příchozí zpráva: " + result.asText() );
 
             if( result.get("status").asText().equals("success") ) {
                 // Ukládám po úspěšné nastartvoání programu v cloudu jeho databázový ekvivalent
@@ -1957,7 +1947,7 @@ public class ProgramingPackageController extends Controller {
            blockoBlock.save();
 
            // Vrácení objektu
-           return GlobalResult.result_ok( Json.toJson(blockoBlock) );
+           return GlobalResult.created( Json.toJson(blockoBlock) );
 
        } catch (Exception e) {
            return Loggy.result_internalServerError(e, request());

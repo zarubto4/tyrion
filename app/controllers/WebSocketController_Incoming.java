@@ -71,7 +71,7 @@ public class WebSocketController_Incoming extends Controller {
         logger.debug("Returning connection on: " + homer_mac_address);
         return  webSocket;
     }
-    public static void         homer_connection_procedure(WebSCType homer) {
+    public static void  homer_connection_procedure(WebSCType homer) {
 
         logger.debug("Homer connection procedure on: " + homer.identifikator);
 
@@ -162,34 +162,31 @@ public class WebSocketController_Incoming extends Controller {
     }
 
     public  WebSocket<String>  mobile_connection(String m_project_id, String terminal_id) {
-
         try {
-            System.out.println("Příchozí připojení Terminal " + m_project_id + " a zařízení se jménem " + terminal_id);
+
+            logger.debug("Terminal: Incoming connection on terminal: " + terminal_id + " on project " + m_project_id);
 
             if (incomingConnections_terminals.containsKey(terminal_id)) {
-                System.out.println("Příchozí jméno terminálu už je aktuálně přihlášené!!");
-                return WebSocket.reject(forbidden("Příchozí jméno terminálu už je aktuálně přihlášené!!"));
+                logger.debug("Terminal: Incoming connection on terminal: " + terminal_id + " is already used");
+                return WebSocket.reject(forbidden());
             }
             if (Grid_Terminal.find.where().eq("terminal_id", terminal_id).findUnique() == null) {
-                System.out.println("Příchozí jméno zařízení není uloženo v databázi a je odmítnuto!!");
-                return WebSocket.reject(forbidden("Příchozí jméno zařízení není uloženo v databázi a je odmítnuto!!"));
+                logger.debug("Terminal: Incoming connection on terminal: " + terminal_id + " is not registred in database");
+                return WebSocket.reject(forbidden());
             }
-
 
             M_Project m_project = M_Project.find.byId(m_project_id);
 
             if (m_project == null) {
-                System.out.println("Příchozí M_Projekt neexistuje");
-                return WebSocket.reject(forbidden("Příchozí M_Projekt neexistuje"));
+                logger.debug("Terminal: Incoming connection on terminal: " + terminal_id + " where "+ m_project_id +" is not registered in database");
+                return WebSocket.reject(forbidden());
             }
             if (m_project.b_program_version == null) {
-                System.out.println("Příchozí připojení M_Projektu - M_programu není propojeno s Blocko Programem");
-                return WebSocket.reject(forbidden("Příchozí připojení M_Projektu - M_programu není propojeno s Blocko Programem"));
+                logger.debug("Terminal: Incoming connection on terminal: " + terminal_id + " where "+ m_project_id +" where M_Project is not connected with B_progrm");
+                return WebSocket.reject(forbidden());
             }
 
             //----------------------------------------------------------------------------------------------------------------------
-
-            System.out.println("Právě se pouštím do odhalování na co se terminál může připojit..................................");
 
             WS_Grid_Terminal terminal = new WS_Grid_Terminal(terminal_id, m_project_id, incomingConnections_terminals);
             WebSocket<String> ws = terminal.connection();
@@ -199,8 +196,8 @@ public class WebSocketController_Incoming extends Controller {
 
             // POKUD JE B_PROGRAM V CLOUDU ale shodná verze neexistuje ale je povoleno auto increment
             if (m_project.b_program_version.b_program_cloud == null &&  m_project.auto_incrementing &&  B_Program.find.where().isNotNull("version_objects.b_program_cloud").findUnique() != null) {
+                logger.debug("Terminal: Program on Cloud win but system have to iterate to new version: ");
 
-                System.out.println("Vyhrává program puštěný v cloudu s tím že propojení bude iterováno na vyšší verzi! Yeah!");
                 m_project.b_program_version = m_project.b_program.where_program_run();
                 m_project.update();
 
@@ -209,48 +206,52 @@ public class WebSocketController_Incoming extends Controller {
             // POKUD JE B_PROGRAM V CLOUDU a má shodnou verzi
             if (m_project.b_program_version.b_program_cloud != null) {
 
-                System.out.println("Vyhrává program puštěný v cloudu! Yeah!");
+
+                logger.debug("Terminal: Program on Cloud win");
 
                 String homer_identificator = m_project.b_program_version.b_program_cloud.blocko_instance_name;
                 String server_name =  Cloud_Blocko_Server.find.where().eq("cloud_programs.version_object.m_project.id", m_project.id ).findUnique().server_name;
 
-                System.out.println("Budu propojovat s Homer: " + homer_identificator);
-                System.out.println("Budu propojovat se Serverem: " + server_name);
+                logger.debug("Terminal: Connection with Server " + server_name);
+                logger.debug("Terminal: Connection with Homer " + homer_identificator);
 
-                System.out.println("Je Cloud Server Připojený?: " + blocko_servers.containsKey(server_name));
+
+                logger.debug("Tyrion: Is CLoud server connected?");
                 if (!blocko_servers.containsKey(server_name)) {
-                    System.out.println("   Cloud Blocko server není připojen a proto vytvořím ztracené spojení na Terminál");
+
+                    logger.debug("Tyrion: No its not - So Server make procedure for archive this state");
 
                     if (terminal_lost_connection_homer.containsKey(homer_identificator)) {
-                        System.out.println("   Ztracené spojení už bylo dávno vytvořeno ale pořád nejsem spojen a tak přidávám další hodnotu: " + homer_identificator);
+
                         terminal_lost_connection_homer.get(homer_identificator).add(terminal_id);
 
                     } else {
-                        System.out.println("   Ještě žádné ztracené spojení nebylo vytvořeno s " + homer_identificator + " A tak vytvářím a přidávám první hodnotu");
                         ArrayList<String> list = new ArrayList<>(4);
                         list.add(terminal_id);
                         WebSocketController_Incoming.terminal_lost_connection_homer.put(homer_identificator, list);
                     }
 
-                    System.out.println("   Chystám se upozornit terminál že Local Homer není připojený");
+                    logger.debug("Tyrion: Sending to Terminal, that homer is nto connected yet");
                     WebSocketController_Incoming.homer_is_not_connected_yet(terminal);
-                    System.out.println("      Upozornil jsem terminál že Homer není připojený");
 
                     return ws;
                 }
 
-                System.out.println("Budu propojovat s Cloud Homerem protože je připojený: " + homer_identificator);
+                logger.debug("Tyrion: Homer is online, so connection will be successful");
                 WebSCType homer = WebSocketController_Incoming.incomingConnections_homers.get(homer_identificator);
 
                 terminal.subscribers_grid.add(WebSocketController_Incoming.incomingConnections_homers.get(homer_identificator));
                 if (homer.subscribers_grid.isEmpty()) WebSocketController_Incoming.ask_for_receiving_for_Grid(homer);
+
                 homer.subscribers_grid.add(terminal);
                 return ws;
 
             // TODO POKUD JE B_PROGRAM V CLOUDU ale nemám schodnou verzi a zakázal jsem autoincrementování
             } else if (! m_project.auto_incrementing && B_Program.find.where().isNotNull("version_objects.b_program_cloud").findUnique() != null){
 
-                System.out.println("Běží nová verze v cloudu, ale je zakázáno autoincrementování!");
+                logger.debug("Tyrion: Warning: B_program is in cloud, but autoincrement is prohibited!!!");
+                logger.warn ("Tyrion: Warning: B_program is in cloud, but autoincrement is prohibited!!!");
+
                 m_project_is_connected_with_older_version(terminal);
                 return ws;
             }
@@ -260,12 +261,10 @@ public class WebSocketController_Incoming extends Controller {
             // Tohle je fyzické nasazení B programu na PC
             //-----------------------------------------------------------------------------------------------------------
 
-
-
              // POKUD JE B_PROGRAM NA PC ale shodná verze neexistuje a povolil jsem auto inkrementaci
               if( m_project.b_program_version.b_program_homer == null && m_project.auto_incrementing  && B_Program.find.where().isNotNull("version_objects.b_program_homer").findUnique() != null) {
 
-                  System.out.println("Vyhrává program puštěný na lokálním PC ale je nutné provést opravu verzí!");
+                  logger.debug("Tyrion: Homer is on local computer, but Tyrion have to repair versions");
                   m_project.b_program_version = m_project.b_program.where_program_run();
                   m_project.update();
 
@@ -273,34 +272,34 @@ public class WebSocketController_Incoming extends Controller {
               // POKUD JE B_PROGRAM NA PC a má shodnou verzi
               if (m_project.b_program_version.b_program_homer != null) {
 
-                  System.out.println("Vyhrává program puštěný na lokálním PC! Yeah!");
+                  logger.debug("Tyrion: Homer is on local computer");
 
                   String homer_identificator = m_project.b_program_version.b_program_homer.homer.id;
-                  System.out.println("Budu propojovat s Homer: " + homer_identificator);
 
-                  System.out.println("Je Homer Připojený?: " + incomingConnections_homers.containsKey(homer_identificator));
+                  logger.debug("Tyrion: Connection will be on Homer: " + homer_identificator);
+
+                  logger.debug("Tyrion: is Homer online?");
+
                   if (!WebSocketController_Incoming.incomingConnections_homers.containsKey(homer_identificator)) {
-                      System.out.println("   Není připojen a proto budu zařazovat do mapy ztracených spojení");
+
+                      logger.debug("Tyrion: No its not - So Server make procedure for archive this state");
 
                       if (WebSocketController_Incoming.terminal_lost_connection_homer.containsKey(homer_identificator)) {
-                          System.out.println("   Ztracené spojení už bylo dávno vytvořeno ale pořád nejsem spojen a tak přidávám další hodnotu: " + homer_identificator);
-                          WebSocketController_Incoming.terminal_lost_connection_homer.get(homer_identificator).add(terminal_id);
+                         WebSocketController_Incoming.terminal_lost_connection_homer.get(homer_identificator).add(terminal_id);
 
                       } else {
-                          System.out.println("   Ještě žádné ztracené spojení nebylo vytvořeno s " + homer_identificator + " A tak vytvářím a přidávám první hodnotu");
                           ArrayList<String> list = new ArrayList<>(4);
                           list.add(terminal_id);
                           WebSocketController_Incoming.terminal_lost_connection_homer.put(homer_identificator, list);
                       }
 
-                      System.out.println("   Chystám se upozornit terminál že Local Homer není připojený");
+                      logger.debug("Tyrion: Sending to Terminal, that homer is nto connected yet");
                       WebSocketController_Incoming.homer_is_not_connected_yet(terminal);
-                      System.out.println("      Upozornil jsem terminál že Homer není připojený");
 
                       return ws;
                   }
 
-                  System.out.println("Budu propojovat s Homer protože je připojený: " + homer_identificator);
+                  logger.debug("Tyrion: Homer is online, so connection will be successful");
                   WebSCType homer = WebSocketController_Incoming.incomingConnections_homers.get(homer_identificator);
 
                   terminal.subscribers_grid.add(WebSocketController_Incoming.incomingConnections_homers.get(homer_identificator));
@@ -313,54 +312,60 @@ public class WebSocketController_Incoming extends Controller {
                   // POKUD JE B_PROGRAM NA PC ale shodná verze neexistuje a zakázal jsem auto inkrementaci
                 } else if( ! m_project.auto_incrementing && B_Program.find.where().isNotNull("version_objects.b_program_homer").findUnique() != null){
 
-                    m_project_is_connected_with_older_version(terminal);
-                    return ws;
+                  logger.debug("Tyrion: Warning: B_program is in cloud, but autoincrement is prohibited!!!");
+                  logger.warn ("Tyrion: Warning: B_program is in cloud, but autoincrement is prohibited!!!");
+
+                  m_project_is_connected_with_older_version(terminal);
+                   return ws;
 
                 }
 
+                 logger.warn ("Tyrion: Warning!!! homer is not in cloud and also on local computer!");
 
                  terminal_blocko_program_not_running_anywhere(terminal);
                  return ws;
 
 
-
         }catch (Exception e){
             logger.error("Mobile / terminal Web Socket connection", e);
-            return WebSocket.reject(forbidden("Server side error"));
+            return WebSocket.reject(forbidden());
         }
     }
     public  WebSocket<String>  blocko_cloud_server_connection(String server_name){
         try{
-            System.out.println("Připojuje se mi homer cloud server: " + server_name);
 
-            System.out.println("Ověřuji zda je server "+ server_name + " platný a mohu ho nechat připojit"); // TODO - přidat ověření ještě pomocí HASHe co už je v objektu definován
+            logger.debug("Cloud Server: Incoming connection: Server:  " + server_name);
+
             Cloud_Blocko_Server blocko_server = Cloud_Blocko_Server.find.where().eq("server_name", server_name).findUnique();
             if(blocko_server== null) return WebSocket.reject(forbidden("Server side error - unrecognized name"));
 
             if(blocko_servers.containsKey(server_name)) {
-                System.out.println("Na Tyrionovi je už připojen Homer Cloud server a tak zkouším zaslat ping");
+                logger.warn("Server is connected -> Tyrion try to send ping");
                 try {
-                    blocko_servers.get(server_name).out.write("ping");
+
+                    WS_BlockoServer ws_blockoServer = (WS_BlockoServer) blocko_servers.get(server_name);
+                    blocko_server_ping(ws_blockoServer);
                 }catch (Exception e){
-                    System.out.println("Ping se nezdařil - server ztratil spojení a tak ho odmazávám");
+                    logger.warn("Ping Failed - Tyrion remove previous connection");
                     blocko_servers.get(server_name).onClose();
                 }
-                System.out.println("Na Tyrionovi je už připojen Homer Cloud server se stejným jménem - nedovolím další připojení");
+
+                logger.warn("Server is already connected and working!! Its prohibited connected to Tyrion with same name");
                 return WebSocket.reject(forbidden("Server side error - already connected"));
             }
-            System.out.println("Inicializuji Websocket pro Blocko cloud server:");
-            // Inicializuji Websocket pro Homera
+
+
+            logger.debug("Tyrion inicialize connection for Homer Server");
             WS_BlockoServer server = new WS_BlockoServer(server_name, blocko_servers);
 
             // Připojím se
-            System.out.println("Připojuji se:");
+            logger.debug("Connection is successful");
             WebSocket<String> webSocket = server.connection();
 
             // Procedury kontroly - informovat třeba všechny klienty o tom, že se server připojil. Kontzrola co tam běží a další píčoviny
+            logger.debug("Tyrion have to control what is on the server side ");
 
-            System.out.println("Dochází ke kontrole serveru");
-
-            //1 GET state - a vyhodnocením v jakém stavu se server nachází a popřípadě
+            // GET state - a vyhodnocením v jakém stavu se server nachází a popřípadě
             // na něj nahraji nebo smažu nekonzistenntí clou dprogramy, které by na něm měly být
 
             class Control_Blocko_Server_Thread extends Thread{
@@ -376,79 +381,86 @@ public class WebSocketController_Incoming extends Controller {
                             sleep(500);
                             interrupter-=500;
 
-                            System.out.println("Spouštím kontrolu zda na Blocko serveru běží vše tak jak má");
-                            // System.out.println("Zbávý času " + interrupter);
+                            logger.debug("Blocko Server: In control cycle: Iteration: " + interrupter);
+
                             if (server.isReady()) {
 
-
+                                logger.debug("Blocko Server: Tyrion send to Blocko Server request for listInstances");
 
                                 ObjectNode result = Json.newObject();
                                 result.put("messageType", "listInstances");
-
                                 result.put("messageChannel", "homer-server");
+                                JsonNode jsonNode = server.write_with_confirmation(result, (long) 25000);
 
-                                System.out.println("Zasílám žádost co na serveru běží");
+                                logger.debug("Blocko Server: In control cycle: Iteration: " + interrupter);
 
-                                JsonNode jsonNode = server.write_with_confirmation(result, (long) 15000);
-
-                                System.out.println("Žádost o stavu serveru přijata");
                                 if (jsonNode.has("status")) {
 
-                                    if(jsonNode.get("status").equals("error")){
-                                        System.out.println("Server odpověděl chybou - reakce nebude žádná");
+                                    if (jsonNode.get("status").asText().equals("error")) {
                                         interrupt();
                                     }
 
-                                    System.out.println("Server odpověděl a zaslal pole instancí");
+                                    logger.debug("Blocko Server: Respond with list of instances");
 
                                     List<String> instances_on_server = new ArrayList<>();
-                                        final JsonNode arrNode = jsonNode.get("instances");
-                                        for (final JsonNode objNode : arrNode) instances_on_server.add(objNode.asText());
-                                        System.out.println("Počet běžících instancí je " + instances_on_server.size());
+                                    final JsonNode arrNode = jsonNode.get("instances");
+                                    for (final JsonNode objNode : arrNode) instances_on_server.add(objNode.asText());
+
+                                    logger.debug("Blocko Server: Number of instances on server");
 
 
                                     List<String> instances_in_database = new ArrayList<>();
-                                        for(B_Program_Cloud cloud_program: B_Program_Cloud.find.where().eq("server.id", blocko_server.id).select("blocko_instance_name").findList() ) instances_in_database.add(cloud_program.blocko_instance_name);
-                                        System.out.println("Počet instancí které by měly běžet na serveru " + instances_in_database.size());
-                                    //
+                                    for (B_Program_Cloud cloud_program : B_Program_Cloud.find.where().eq("server.id", blocko_server.id).select("blocko_instance_name").findList())
+                                        instances_in_database.add(cloud_program.blocko_instance_name);
+                                    logger.debug("Blocko Server: The number of instances that should run on a server: " + instances_in_database.size());
 
-                                    List<String> instances_on_server_copy   = new ArrayList<>(instances_on_server);
-                                    System.out.println("Počet obdržených instancí z Blocko serveru " + instances_on_server_copy.size());
+                                    List<String> instances_on_server_copy = new ArrayList<>(instances_on_server);
+                                    logger.debug("Blocko Server: The number of instances that should run on a server: " + instances_on_server_copy.size());
+
 
                                     List<String> instances_in_database_copy = new ArrayList<>(instances_in_database);
-                                    System.out.println("Počet instancí z Databáze " + instances_in_database_copy.size());
+                                    logger.debug("Blocko Server: The number of instances from database: " + instances_in_database_copy.size());
 
                                     instances_in_database.removeAll(instances_on_server);
-                                    System.out.println("Počet instancí které se budou nahrávat na server " + instances_in_database.size());
-                                    for(String instance : instances_in_database) System.out.println("Instance která by měla být na Blocko serveru " + instance);
+
+                                    logger.debug("Blocko Server: The number of instances that will be recorded on the server " + instances_in_database.size());
 
                                     instances_on_server_copy.removeAll(instances_in_database_copy);
-                                    System.out.println("Počet instancí které se budou mazat ze serveru " + instances_on_server_copy.size());
-                                    for(String instance : instances_on_server_copy) System.out.println("Instance kterou bych měl smazat z blocko serveru " + instance);
+                                    logger.debug("Blocko Server:  The number of instances to be deleted from the server" + instances_on_server_copy.size());
 
-                                    List<B_Program_Cloud> b_programs = B_Program_Cloud.find.where().in("blocko_instance_name",  instances_in_database ).findList();
+                                    List<B_Program_Cloud> b_programs = B_Program_Cloud.find.where().in("blocko_instance_name", instances_in_database).findList();
 
-                                    if(!b_programs.isEmpty()) System.out.println("Začínám na server nahrávat nové instance ");
-                                    for (B_Program_Cloud b_program : b_programs) {
-                                        try {
-                                            WebSocketController_Incoming.blocko_server_add_instance(server, b_program);
-                                        }catch (Exception e){
-                                            e.printStackTrace();
-                                            System.out.println("Instance " + b_program.blocko_instance_name + " se nepodařilo správně nahrát na blocko server");
+                                    if (!b_programs.isEmpty()) {
+
+                                        logger.debug("Blocko Server: Starting to uploud new instnces to server");
+
+                                        for (B_Program_Cloud b_program : b_programs) {
+                                            try {
+                                                WebSocketController_Incoming.blocko_server_add_instance(server, b_program);
+                                            } catch (Exception e) {
+                                                logger.warn("Instance " + b_program.blocko_instance_name + "  failed to upload properly on the server Blocko");
+                                            }
                                         }
                                     }
 
-                                    if(!instances_on_server_copy.isEmpty()) System.out.println("Začínám se zerveru odtraňovat instnance ");
-                                    for (String blocko_instance_name : instances_on_server_copy) {
-                                        try {
-                                           JsonNode remove_instance = blocko_server_remove_instance(server, blocko_instance_name);
-                                            // TODO teoreticky bych měl reagovat na to když se to nepovede (když přijde v Json "Error" ??
-                                        }catch (Exception e){
-                                            System.out.println("Nepodařilo se ze serveru odstranit instanci");
+                                    if(!instances_on_server_copy.isEmpty()) {
+
+                                        logger.debug("Blocko Server: Starting to remove the server instance ");
+
+                                        for (String blocko_instance_name : instances_on_server_copy) {
+                                            try {
+
+                                                JsonNode remove_instance = blocko_server_remove_instance(server, blocko_instance_name);
+                                                if (remove_instance.get("status").asText().equals("error")) {
+                                                    logger.debug("Blocko Server: Fail when Tyrion try to remove instance from Blocko server");
+                                                }
+                                            } catch (Exception e) {
+                                                logger.error("Blocko Server: Eception wher Tyrion try to remove instance from Blocko server", e);
+                                            }
                                         }
                                     }
 
-                                    System.out.println("Ukončuji úspěšně spouštěcí proceduru");
+                                    logger.error("Blocko Server: Successfully finished connection procedure");
                                     interrupter = (long) 0;
 
                                 }else throw new Exception("Result hasn't status in Json");
@@ -460,14 +472,16 @@ public class WebSocketController_Incoming extends Controller {
                 }
             }
 
+            logger.debug("Blocko Server: Starting connection control procedure");
             new Control_Blocko_Server_Thread().start();
 
-            System.out.println("Připojil jsem se");
+            logger.debug("Blocko Server: Succesfuly connected");
             return webSocket;
 
         }catch (Exception e){
-            Loggy.error("Cloud Blocko Server  Web Socket connection", e);
-            return WebSocket.reject(forbidden("Server side error"));
+            logger.error("Blocko Server: Fail connection");
+            logger.error("Something was wrong", e);
+            return WebSocket.reject(forbidden());
         }
     }
     public  WebSocket<String>  compilator_server_connection (String server_name){
@@ -497,14 +511,15 @@ public class WebSocketController_Incoming extends Controller {
     }
     public  WebSocket<String>  becki_website_connection (String security_token){
         try{
-            System.out.println("Připojuje se mi Websocket z Becki " + security_token);
 
-            System.out.println("Ověřuji zda je token platný a mohu ho nechat připojit");
+            logger.debug("Becki: Incoming connection: " + security_token);
 
+            logger.debug("Becki: Controlling of incoming token " + security_token);
             Person person = Person.findByAuthToken(security_token);
-            if(person == null) return WebSocket.reject(forbidden("Unrecognized Token"));
-
-            System.out.println("Je platný");
+            if(person == null){
+                logger.warn("Becki: Incoming token " + security_token + " is invalid!");
+                return WebSocket.reject(forbidden());
+            }
 
             WS_Becki_Website website;
 
@@ -515,12 +530,11 @@ public class WebSocketController_Incoming extends Controller {
                 becki_website.put(person.id , website);
             }
 
-            System.out.println("Ověřuji zda už není připojený");
-            if(website.all_person_Connections != null && website.all_person_Connections.containsKey(security_token)) return WebSocket.reject(forbidden("Already connected Token"));
-
+            logger.warn("Becki: Check if token is connected already");
+            if(website.all_person_Connections != null && website.all_person_Connections.containsKey(security_token)) return WebSocket.reject(forbidden());
             WS_Becki_Single_Connection website_connection = new WS_Becki_Single_Connection(security_token, website);
 
-            System.out.println("Compilační server se připojit");
+            logger.warn("Becki: Connection successfully");
             return website_connection.connection();
 
         }catch (Exception e){
@@ -535,15 +549,12 @@ public class WebSocketController_Incoming extends Controller {
 
     public static void blocko_server_is_disconnect(WS_BlockoServer blockoServer){
         logger.debug("Tyrion lost connection with blocko server: " + blockoServer.identifikator);
-
-        logger.debug("Tyrion lost connection with blocko server: " + blockoServer.identifikator);
         blocko_servers.remove(blockoServer.identifikator);
-
     }
 
     public static JsonNode blocko_server_listOfInstance(WS_BlockoServer blockoServer)  throws TimeoutException, InterruptedException{
 
-        logger.debug("Tyrion: Server want knot instances on: " + blockoServer.identifikator);
+        logger.debug("Tyrion: Server want know instances on: " + blockoServer.identifikator);
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "listInstances");
@@ -716,7 +727,7 @@ public class WebSocketController_Incoming extends Controller {
 
 
             System.out.println("\n\n\n Interface: " + blocko_interface);
-            final_result.put("interface", blocko_interface);
+            final_result.set("interface", blocko_interface);
 
             return final_result;
         } catch (Exception e) {
@@ -791,18 +802,17 @@ public class WebSocketController_Incoming extends Controller {
             try {
                 String version_id = json.get("version_id").asText();
                 System.out.println("Ze serveru budu chtít dostávat všechny informace z blocko serveru na verzi" + version_id);
-                // TODO
 
                 // Najdu Version
                 Version_Object version = Version_Object.find.byId(version_id);
                 if (version == null) {
-                    becki_disaprove_recive_instace_state(becki, json.get("messageId").asText(), "Version not Exist");
+                    becki_disaprove_recive_instance_state(becki, json.get("messageId").asText(), "Version not Exist");
                     return;
                 }
 
                 // Zjistím kde běží
                 if (!blocko_servers.containsKey(version.b_program_cloud.server.server_name)) {
-                    becki_disaprove_recive_instace_state(becki, json.get("messageId").asText(), "Server is not connected");
+                    becki_disaprove_recive_instance_state(becki, json.get("messageId").asText(), "Server is not connected");
                     return;
                 }
 
@@ -811,12 +821,12 @@ public class WebSocketController_Incoming extends Controller {
                 // Zjistit jestli tam instance opravdu běží
                 JsonNode result_instance = blocko_server_isInstanceExist(server, version.b_program_cloud.blocko_instance_name);
                 if(result_instance.get("status").asText().equals("error"))  {
-                    becki_disaprove_recive_instace_state(becki, json.get("messageId").asText(), result_instance.get("error").asText());
+                    becki_disaprove_recive_instance_state(becki, json.get("messageId").asText(), result_instance.get("error").asText());
                     return;
                 }
                 // Zjistím jestli existuje instnace
                 if(!result_instance.get("exist").booleanValue())    {
-                    becki_disaprove_recive_instace_state(becki, json.get("messageId").asText(), "Instance of this version not running on this server!");
+                    becki_disaprove_recive_instance_state(becki, json.get("messageId").asText(), "Instance of this version not running on this server!");
                     return;
                 }
 
@@ -824,7 +834,7 @@ public class WebSocketController_Incoming extends Controller {
                 System.out.println("Zjištuji jestli existuje virtuální homer");
                 if(!incomingConnections_homers.containsKey(version.b_program_cloud.blocko_instance_name) ) {
                     System.out.println("Virtuální Homer neexistuje!!!");
-                    becki_disaprove_recive_instace_state(becki, json.get("messageId").asText(), "FATAL ERROR!!! Virtual Homer for this instance not exist!");
+                    becki_disaprove_recive_instance_state(becki, json.get("messageId").asText(), "FATAL ERROR!!! Virtual Homer for this instance not exist!");
                     return;
                 }
 
@@ -832,7 +842,7 @@ public class WebSocketController_Incoming extends Controller {
 
                 // 2 - Požádat Homera o zasílání informací
                 JsonNode result_recive = ask_for_receiving_for_Becki(homer);
-                if(result_recive.get("status").textValue().equals("error")) becki_disaprove_recive_instace_state(becki, json.get("messageId").asText(), result_recive.get("error").textValue());
+                if(result_recive.get("status").textValue().equals("error")) becki_disaprove_recive_instance_state(becki, json.get("messageId").asText(), result_recive.get("error").textValue());
 
                 // 1 - navázat propojení mezi instanci Homera a instancí Becki
                 homer.subscribers_becki.add(becki);
@@ -842,13 +852,13 @@ public class WebSocketController_Incoming extends Controller {
                 // To zajistím v odběrném místě Homera!
 
                 // Potvrdím Becki že vše je v cajku
-                becki_aprove_recive_instace_state(becki, json.get("messageId").asText());
+                becki_aprove_recive_instance_state(becki, json.get("messageId").asText());
 
                 return;
             }catch (Exception e){
                 System.out.println("Došlo k chybě");
                 e.printStackTrace();
-                becki_disaprove_recive_instace_state(becki, json.get("messageId").asText(), "Unknow Error");
+                becki_disaprove_recive_instance_state(becki, json.get("messageId").asText(), "Unknow Error");
             }
     }
 
@@ -864,12 +874,12 @@ public class WebSocketController_Incoming extends Controller {
     }
 
     // Tady odpovídám zpět na žádost o zasílání informací z Blocko serveru
-    public static void becki_aprove_recive_instace_state(WebSCType webSCType, String messageId){
+    public static void becki_aprove_recive_instance_state(WebSCType webSCType, String messageId){
 
         System.out.println("Budu zasílat na Becki že jsem zpracoval úspěšně žádost o zasílání informací z Blocka");
 
         ObjectNode result = Json.newObject();
-        result.put("messageType", "subscribe_instace");
+        result.put("messageType", "subscribe_instance");
         result.put("messageChannel", "blocko");
         result.put("status", "success");
 
@@ -878,7 +888,7 @@ public class WebSocketController_Incoming extends Controller {
     }
 
     // Tady odpovídám zpět na žádost o zasílání informací z Blocko serveru (ale něco se posralo a tak to nefunguje)
-    public static void becki_disaprove_recive_instace_state(WebSCType webSCType, String messageId, String error){
+    public static void becki_disaprove_recive_instance_state(WebSCType webSCType, String messageId, String error){
 
         System.out.println("Budu zasílat na Becki že jsem zpracoval úspěšně žádost o zasílání informací z Blocka");
 
@@ -1054,7 +1064,7 @@ public class WebSocketController_Incoming extends Controller {
 
     public static void homer_is_disconnect(WebSCType homer) {
 
-        System.out.println("Homer se odlásil - mažu z mapy připojení ale přidávám do mapy ztracených připojení" + homer.identifikator);
+        logger.debug("Lost connection with Homer: " + homer.identifikator + " deleting that from connection map and add to lost connection map");
         incomingConnections_homers.remove(homer.identifikator);
 
         ArrayList<String> list = new ArrayList<>();
@@ -1088,7 +1098,7 @@ public class WebSocketController_Incoming extends Controller {
 
     public static void homer_all_terminals_are_gone(WebSCType homer) throws TimeoutException, InterruptedException {
 
-        System.out.println("homer nemá  už žádného odběratele: " + homer.identifikator);
+        logger.debug("Homer: " + homer.identifikator + "  does not have any subscribers:");
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "unSubscribeChannel");
@@ -1098,9 +1108,8 @@ public class WebSocketController_Incoming extends Controller {
     }
 
     public static void ask_for_receiving_for_Grid(WebSCType homer) throws TimeoutException, InterruptedException {
-        System.out.println ("Chci upozornit Homera: " + homer.identifikator + " že má prvního odběratele");
 
-
+        logger.debug("Homer: " + homer.identifikator + ", server want send you request for receiving for Grid:");
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "subscribeChannel");
@@ -1110,9 +1119,8 @@ public class WebSocketController_Incoming extends Controller {
     }
 
     public static JsonNode ask_for_receiving_for_Becki(WebSCType homer) throws TimeoutException, InterruptedException {
-        System.out.println ("Chci upozornit Homera: " + homer.identifikator + " že má prvního odběratele");
 
-
+        logger.debug("Homer: " + homer.identifikator + ", server want send you request for receiving for Becki:");
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "subscribeChannel");
@@ -1121,22 +1129,22 @@ public class WebSocketController_Incoming extends Controller {
         return homer.write_with_confirmation(result);
     }
 
-    public static void invalid_json_message(WebSCType homer){
+    public static void invalid_json_message(WebSCType ws){
+
+        logger.debug("Invalid message from: " + ws.identifikator);
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "JsonUnrecognized");
-
-
-        homer.write_without_confirmation(result);
+        ws.write_without_confirmation(result);
     }
 
 // PRIVATE Terminal ---------------------------------------------------------------------------------------------------------
 
     /** incoming Json from Terminal */
     public static void incoming_message_terminal(WebSCType terminal, ObjectNode json){
-        // To Terminals
-        if(json.has("messageChannel")){
 
+
+        if(json.has("messageChannel")){
 
             System.out.println("messageChannel je: " + json.get("messageChannel").asText()  );
             switch ( json.get("messageChannel").asText() ){
@@ -1158,8 +1166,6 @@ public class WebSocketController_Incoming extends Controller {
                 }
             }
         }
-
-
         System.out.println("Příchozí zpráva neobsahuje messageChannel");
     }
 
@@ -1169,7 +1175,6 @@ public class WebSocketController_Incoming extends Controller {
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "NEmáš žádné Grid odběratele - zprává nebyla přeposlána \"");
-
 
         terminal.write_without_confirmation(result);
 
@@ -1269,14 +1274,15 @@ public class WebSocketController_Incoming extends Controller {
     }
 
     public static void m_project_is_connected_with_older_version(WebSCType terminal) throws TimeoutException, InterruptedException{
-        System.out.println("M Project je napevno navázaný na verzi, která neběží a auto-propojení je zakázáno!");
+
+        logger.warn ("Tyrion: Warning!");
+        logger.warn ("Tyrion: Warning: M_Project is connected to version in Homer Server and without permission to auto-increment!");
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "M Project je napevno navázaný na verzi, která neběží a auto-propojení je zakázáno!");
-
+        result.put("messageChannel", "the-grid");
 
         terminal.write_without_confirmation(result);
-
     }
 
 // Test & Control API ---------------------------------------------------------------------------------------------------------

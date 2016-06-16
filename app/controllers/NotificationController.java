@@ -57,16 +57,16 @@ public class NotificationController extends Controller {
 
               try {
                   if (connected_accounts.containsKey(person.id)) {
-                    System.out.println("connected_accounts stále obsahuje person.id");
+                    logger.error("connected_accounts stále obsahuje person.id");
                     if (connected_accounts.get(person.id).containsKey(token.authToken)) {
-                      System.out.println("connected_accounts nad person.id stále obsahuje token.authToken");
+                      logger.error("connected_accounts nad person.id stále obsahuje token.authToken");
                       connected_accounts.get(person.id).get(token.authToken).close();
                       connected_accounts.get(person.id).remove(token.authToken);
                     }else{
-                      System.out.println("connected_accounts stále obsahuje person.id ale už neobsahuje token");
+                      logger.error("connected_accounts stále obsahuje person.id ale už neobsahuje token");
                     }
                   } else {
-                    System.out.println("connected_accounts neobsahuje person.id");
+                    logger.error("connected_accounts neobsahuje person.id");
                   }
               } catch (Exception b) {
 
@@ -100,16 +100,11 @@ public class NotificationController extends Controller {
   })
   public Result subscribe_notification(@ApiParam(value = "token_value", required = true) @PathParam("token_value") String token_value ) {
 
-    System.out.println("Pripojuje se mi notifikace s tokenem " + token_value);
+    logger.debug("Incoming request for subscribing of notifications on token:" + token_value);
 
 
     FloatingPersonToken token = FloatingPersonToken.find.where().eq("authToken",token_value).findUnique();
     if(token == null) return GlobalResult.result_Unauthorized();
-
-    if(connected_accounts.containsKey(token.person.id) && connected_accounts.get(token.person.id).containsKey(token_value) ) {
-      System.out.println("Mám v mapě osobu i token!");
-    }
-
 
     // Token je používán, pravděpodobně došlo k obnovení okna prohlížeče a proto je nutné zahodit předchozí spojení,
     // které se bohužel umí samo odpojit až ve chvíli kdy mu server chce něco odeslat.
@@ -277,9 +272,7 @@ public class NotificationController extends Controller {
   @ApiResponses(value = { @ApiResponse(code = 200, message = "successfully sent",  response = Result_ok.class)})
   public Result sendSomething(String level, String message) {
 
-    System.out.println("Počet spojení je: " + connected_accounts.size());
     send_notification(Person.find.where().eq("mail", "admin@byzance.cz").findUnique(), Notification_level.error, message);
-
     return ok();
   }
 
