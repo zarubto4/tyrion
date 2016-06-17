@@ -44,10 +44,10 @@ public class Board extends Model {
     @JsonIgnore @Transient public static final String disconnection_permission_docs = "read: If user want remove Board from Project, he needs one single permission Project.update_permission, where hardware is registered. - Or user need static/dynamic permission key";
 
                                        @JsonIgnore   @Transient public Boolean create_permission(){  return   SecurityController.getPerson().has_permission("Board_Create"); }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean edit_permission()  {  return   project != null && (project.update_permission()  || SecurityController.getPerson().has_permission("Board_edit"));   }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean read_permission()  {  return   project.read_permission() || update_permission() || SecurityController.getPerson().has_permission("Board_read");    }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean delete_permission(){  return   project != null && (project.update_permission()  || SecurityController.getPerson().has_permission("Board_delete")); }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean update_permission(){  return   project != null && (project.update_permission()  || SecurityController.getPerson().has_permission("Board_update")); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean edit_permission()  {  return  (project != null && project.update_permission())|| SecurityController.getPerson().has_permission("Board_edit")  ;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean read_permission()  {  return  (project != null && project.read_permission()  )|| SecurityController.getPerson().has_permission("Board_read")  ;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean delete_permission(){  return  (project != null && project.update_permission())|| SecurityController.getPerson().has_permission("Board_delete");}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean update_permission(){  return  (project != null && project.update_permission())|| SecurityController.getPerson().has_permission("Board_update");}
 
     @ApiModelProperty(required = false, value = "It will be visible in Json object, only if value is true. This is an extraordinary value")
     @JsonProperty  @JsonInclude(JsonInclude.Include.NON_NULL) @Transient public Boolean first_connect_permission(){  return   project != null ? null : true;}

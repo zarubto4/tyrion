@@ -2585,7 +2585,7 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful created",      response = TypeOfBoard.class),
+            @ApiResponse(code = 201, message = "Successfully created",    response = TypeOfBoard.class),
             @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -3116,7 +3116,7 @@ public class CompilationLibrariesController extends Controller {
             if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
 
             // Kontrola oprávnění
-            if(board.read_permission()) return GlobalResult.forbidden_Permission();
+            if(!board.read_permission()) return GlobalResult.forbidden_Permission();
 
             // vrácení objektu
             return GlobalResult.result_ok(Json.toJson(board));
