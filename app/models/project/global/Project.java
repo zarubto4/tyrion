@@ -7,13 +7,20 @@ import controllers.SecurityController;
 import models.blocko.TypeOfBlock;
 import models.compiler.Board;
 import models.grid.Screen_Size_Type;
+import models.overflow.HashTag;
+import models.overflow.Post;
 import models.person.Person;
 import models.project.b_program.B_Program;
 import models.project.b_program.Homer;
 import models.project.c_program.C_Program;
+import models.project.community.Documentation;
+import models.project.community.PrintedModel;
+import models.project.community.RequiredHW;
 import models.project.m_program.M_Project;
+import utilities.project.Project_type;
 
 import javax.persistence.*;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,6 +54,19 @@ public class Project extends Model {
     @JsonProperty @Transient public List<String> type_of_blocks_id()   { List<String> l = new ArrayList<>();  for( TypeOfBlock m      : type_of_blocks)    l.add(m.id); return l;  }
     @JsonProperty @Transient public List<String> screen_size_types_id(){ List<String> l = new ArrayList<>();  for( Screen_Size_Type m : screen_size_types) l.add(m.id); return l;  }
 
+    // Community -----------------------------------------
+    // TODO metody vracející id všech prvků listu
+    //public Image mainImage;  TODO obrázek
+    public Project_type typeOfProject;
+    @OneToOne public Documentation documentation;
+    @JsonIgnore public List<Project> similarProjects = new ArrayList<>();
+    @JsonIgnore public List<RequiredHW> requiredHW = new ArrayList<>();
+    @JsonIgnore public List<PrintedModel> printedModels = new ArrayList<>();
+    public int views;
+    @JsonIgnore public List<Person> followers = new ArrayList<>();
+    @JsonIgnore public List<Person> editors = new ArrayList<>();
+    @JsonIgnore public List<Post> posts = new ArrayList<>();
+    @JsonIgnore public List<HashTag> hashTags = new ArrayList<>();
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 

@@ -50,6 +50,8 @@ public class Loggy{
         descriptionBuilder.append("\n");
         descriptionBuilder.append("    Exception type: " +exception.getClass().getName());
         descriptionBuilder.append("\n");
+        descriptionBuilder.append("    Exception message: " +exception.getMessage());
+        descriptionBuilder.append("\n");
         descriptionBuilder.append("    Time: " + new Date().toString());
         descriptionBuilder.append("\n");
         descriptionBuilder.append("    Request Type: " + request.method());
@@ -68,7 +70,7 @@ public class Loggy{
         descriptionBuilder.append("\n");
 
         descriptionBuilder.append("    Stack trace: \n");
-        for (StackTraceElement element : Thread.currentThread().getStackTrace()) {    // formátování stack trace
+        for (StackTraceElement element : exception.getStackTrace()) {    // formátování stack trace
             descriptionBuilder.append("        " + element);
             descriptionBuilder.append("\n");
         }

@@ -206,6 +206,9 @@ DELETE         /project/typeOfBlock/:type_of_block_id                           
 
 
 
+#Community
+PUT             /project/documentation/:project_id                                          @controllers.CommunityProjectController.new_Documentation(project_id)
+GET             /project/documentation/:project_id                                          @controllers.CommunityProjectController.get_Documentation(project_id)
 #BLocko Server
 POST            /project/blocko/server                                                      @controllers.ProgramingPackageController.create_Blocko_Server()
 PUT             /project/blocko/server/:server_id                                           @controllers.ProgramingPackageController.edit_Blocko_Server(server_id)
