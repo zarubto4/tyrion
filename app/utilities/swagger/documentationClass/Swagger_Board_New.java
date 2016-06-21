@@ -17,4 +17,5 @@ public class Swagger_Board_New {
         @Constraints.Required
         @ApiModelProperty(value = "Must be unique!!!, The hardware_id must have 8 hexadecimal characters!", required = true)
         public List<String>  hardware_unique_ids;
+
 }

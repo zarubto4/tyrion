@@ -175,7 +175,7 @@ GET            /project/b_program/version/:version_id                           
 DELETE         /project/b_program/version/:version_id                                       @controllers.ProgramingPackageController.remove_b_Program_version(version_id)
 
 PUT            /project/b_program/uploadToHomer/:b_program_id/:version_id/:homer_id         @controllers.ProgramingPackageController.uploadProgramToHomer_Immediately(b_program_id, version_id,homer_id)
-PUT            /project/b_program/uploadToCloud/:b_program_id/:version_id                   @controllers.ProgramingPackageController.upload_b_Program_ToCloud(b_program_id, version_id)
+PUT            /project/b_program/uploadToCloud/:version_id                                 @controllers.ProgramingPackageController.upload_b_Program_ToCloud(version_id)
 
 # Dočasně smazány - řeším trochu jinak
 #PUT            /project/b_program/board/connect/:version_id/:board_id                       @controllers.ProgramingPackageController.connect_b_Program_hardware(version_id, board_id)
@@ -205,10 +205,6 @@ PUT            /project/typeOfBlock/:type_of_block_id                           
 DELETE         /project/typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.deleteTypeOfBlock(type_of_block_id)
 
 
-
-#Community
-PUT             /project/documentation/:project_id                                          @controllers.CommunityProjectController.new_Documentation(project_id)
-GET             /project/documentation/:project_id                                          @controllers.CommunityProjectController.get_Documentation(project_id)
 #BLocko Server
 POST            /project/blocko/server                                                      @controllers.ProgramingPackageController.create_Blocko_Server()
 PUT             /project/blocko/server/:server_id                                           @controllers.ProgramingPackageController.edit_Blocko_Server(server_id)
@@ -232,13 +228,12 @@ PUT             /compilation/c_program/c_program/:c_program_id                  
 DELETE          /compilation/c_program/c_program/:c_program_id                              @controllers.CompilationLibrariesController.delete_C_Program(c_program_id)
 
 POST            /compilation/c_program/version/create/:c_program_id                         @controllers.CompilationLibrariesController.new_C_Program_Version(c_program_id)
-PUT             /compilation/c_program/version/update/:version_id                           @controllers.CompilationLibrariesController.update_C_Program_Version(version_id)
 PUT             /compilation/c_program/version/edit/:version_id                             @controllers.CompilationLibrariesController.edit_C_Program_version(version_id)
 
 DELETE          /compilation/c_program/version/:version_id                                  @controllers.CompilationLibrariesController.delete_C_Program_Version(version_id)
 GET             /compilation/c_program/version/:version_id                                  @controllers.CompilationLibrariesController.get_C_Program_Version(version_id)
 POST            /compilation/c_program/version/compile                                      @controllers.CompilationLibrariesController.compile_C_Program_code()
-PUT             /compilation/c_program/version/compile/:version_id                          @controllers.CompilationLibrariesController.compile_C_Program_version(version_id)
+POST            /compilation/c_program/version/compile/:version_id                          @controllers.CompilationLibrariesController.compile_C_Program_version(version_id)
 PUT             /compilation/c_program/version/uploud/:version_id                           @controllers.CompilationLibrariesController.uploadCompilationToBoard(version_id)
 
 

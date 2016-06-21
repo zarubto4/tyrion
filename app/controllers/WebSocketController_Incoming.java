@@ -215,8 +215,8 @@ public class WebSocketController_Incoming extends Controller {
                 logger.debug("Terminal: Connection with Server " + server_name);
                 logger.debug("Terminal: Connection with Homer " + homer_identificator);
 
-
                 logger.debug("Tyrion: Is CLoud server connected?");
+
                 if (!blocko_servers.containsKey(server_name)) {
 
                     logger.debug("Tyrion: No its not - So Server make procedure for archive this state");
@@ -372,7 +372,7 @@ public class WebSocketController_Incoming extends Controller {
 
                 @Override
                 public void run() {
-                   Long interrupter = (long) 150000;
+                   Long interrupter = (long) 6000;
                     try {
 
                         while (interrupter > 0) {
@@ -460,7 +460,7 @@ public class WebSocketController_Incoming extends Controller {
                                         }
                                     }
 
-                                    logger.error("Blocko Server: Successfully finished connection procedure");
+                                    logger.debug("Blocko Server: Successfully finished connection procedure");
                                     interrupter = (long) 0;
 
                                 }else throw new Exception("Result hasn't status in Json");
@@ -581,7 +581,7 @@ public class WebSocketController_Incoming extends Controller {
 
     public static JsonNode blocko_server_add_instance(WS_BlockoServer blockoServer, B_Program_Cloud program) throws Exception, TimeoutException, InterruptedException{
 
-            System.out.println("Nahrávám novou instanci na server " + blockoServer.identifikator);
+            logger.debug("Tyrion uploud new instance to server" + blockoServer.identifikator);
 
             if (WebSocketController_Incoming.incomingConnections_homers.containsKey(program.blocko_instance_name)) {
 
@@ -598,7 +598,7 @@ public class WebSocketController_Incoming extends Controller {
             result.put("messageType", "createInstance");
             result.put("messageChannel", "homer-server");
             result.put("instanceId", program.blocko_instance_name);
-            result.put("macAddress", program.blocko_instance_name);
+            result.put("macAddress", program.macAddress);
 
             System.out.println("Nahrávám ho na Blocko server novou instanci");
             JsonNode result_instance = blockoServer.write_with_confirmation( result);

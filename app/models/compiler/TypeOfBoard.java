@@ -21,6 +21,7 @@ public class TypeOfBoard extends Model {
                        @Column(columnDefinition = "TEXT")       public String description;
                        @JsonIgnore  @ManyToOne                  public Producer producer;
                        @JsonIgnore  @ManyToOne                  public Processor processor;
+                                                                public Boolean connectible_to_internet;
 
     @JsonIgnore @OneToMany(targetEntity= Board.class, mappedBy="type_of_board", cascade = CascadeType.ALL) public List<Board> boards = new ArrayList<>();
     @JsonIgnore @OneToMany(targetEntity= Board.class, mappedBy="type_of_board", cascade = CascadeType.ALL) public List<C_Program> c_programs = new ArrayList<>();

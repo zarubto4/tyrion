@@ -2,7 +2,6 @@ package models.compiler;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import models.project.b_program.B_Pair;
 import models.project.b_program.B_Program;
@@ -45,16 +44,16 @@ public class Version_Object extends Model {
 
     @JsonIgnore @OneToMany(mappedBy="c_program_version",cascade=CascadeType.ALL)    public List<B_Pair> b_pairs_c_program = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="b_program_version",cascade=CascadeType.ALL)    public List<B_Pair> b_pairs_b_program = new ArrayList<>();
-    // M_project
+
+    @JsonIgnore  @OneToOne(mappedBy="version_master_board",cascade=CascadeType.ALL) public B_Pair master_board_b_pair;
+
+
     @JsonIgnore   @OneToOne(mappedBy="b_program_version",cascade=CascadeType.ALL)   public M_Project m_project;
-
-
 
 
 /* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/
 
 
-    @JsonProperty @Transient  public List<String> files_id(){ List<String> l = new ArrayList<>();  for( FileRecord m : files) l.add(m.id); return l;  }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 

@@ -18,9 +18,8 @@ public class B_Pair extends Model {
 
                       @JsonIgnore @ManyToOne(cascade=CascadeType.ALL )      public Version_Object b_program_version;
                       @JsonIgnore @ManyToOne(cascade=CascadeType.ALL )      public Version_Object c_program_version;
-                      @JsonIgnore @OneToOne @JoinColumn(name="board_id")    public Board board;
-
-
+                      @JsonIgnore @ManyToOne(cascade=CascadeType.ALL )      public Board board;
+         @JsonIgnore @OneToOne   @JoinColumn(name="version_master_board")      public Version_Object version_master_board;
 
 /* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/
 

@@ -12,6 +12,7 @@ import models.compiler.Board;
 import models.compiler.TypeOfBoard;
 import models.compiler.Version_Object;
 import models.person.Person;
+import models.person.PersonPermission;
 import models.project.b_program.*;
 import models.project.global.Project;
 import play.data.Form;
@@ -40,6 +41,9 @@ import java.util.concurrent.TimeoutException;
 @Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Secured.class)
 public class ProgramingPackageController extends Controller {
+
+// Loger  ##############################################################################################################
+    static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
 // GENERAL PROJECT #####################################################################################################
 
@@ -972,15 +976,37 @@ public class ProgramingPackageController extends Controller {
             if (! b_program.update_permission() ) return GlobalResult.forbidden_Permission();
 
             // První nová Verze
-            Version_Object versionObjectObject          = new Version_Object();
-            versionObjectObject.version_name            = help.version_name;
-            versionObjectObject.version_description     = help.version_description;
-            versionObjectObject.azureLinkVersion        = new Date().toString();
-            versionObjectObject.date_of_create          = new Date();
-            versionObjectObject.b_program               = b_program;
+            Version_Object version_object          = new Version_Object();
+            version_object.version_name            = help.version_name;
+            version_object.version_description     = help.version_description;
+            version_object.azureLinkVersion        = new Date().toString();
+            version_object.date_of_create          = new Date();
+            version_object.b_program               = b_program;
+
+            // Definování main Board
+            B_Pair b_pair_main = new B_Pair();
+                Board board_main = Board.find.byId(help.main_board.board_id);
+
+            System.out.println("Board Main = " + board_main.id);
+
+                if (board_main == null) return GlobalResult.notFoundObject("Board board_id not found");
+                if (!board_main.type_of_board.connectible_to_internet) return GlobalResult.badRequest("Main Board must be internet connectible!");
+
+                Version_Object c_program_version_main = Version_Object.find.byId(help.main_board.c_program_version_id);
+                if (c_program_version_main == null) return GlobalResult.notFoundObject("C_Program Version_Object c_program_version_id not found");
+                if( c_program_version_main.c_program == null ) return GlobalResult.badRequest("Version is not from C_Program");
+
+                b_pair_main.board = board_main;
+                b_pair_main.c_program_version = c_program_version_main;
+                b_pair_main.version_master_board = version_object;
+            b_pair_main.save();
+
+
+            // Synchronizce
+            version_object.master_board_b_pair = b_pair_main;
 
             // Uložení objektu
-            versionObjectObject.save();
+            version_object.save();
 
             for(Swagger_B_Program_Version_New.Connected_Board h_board : help.boards){
 
@@ -990,13 +1016,17 @@ public class ProgramingPackageController extends Controller {
 
                 // Kontrola objektu
                 Version_Object c_program_version = Version_Object.find.byId(h_board.c_program_version_id);
-                if (c_program_version == null) return GlobalResult.notFoundObject("B_Program b_program_id not found");
+                if (c_program_version == null) return GlobalResult.notFoundObject("C_Program Version_Object c_program_version_id not found");
+                if( c_program_version.c_program == null ) return GlobalResult.notFoundObject("Version is not from C_Program");
+
+
+                if( board.type_of_board.id .equals( c_program_version.c_program.type_of_board.id ) ) return GlobalResult.badRequest("You want upload C++ program version" +c_program_version.id  + " thats not compatible with hardware " + board.id);
 
                 // Vytvoření objektu
                 B_Pair b_pair = new B_Pair();
                 b_pair.board = board;
                 b_pair.c_program_version = c_program_version;
-                b_pair.b_program_version = versionObjectObject;
+                b_pair.b_program_version = version_object;
 
                 // Uložení objektu
                 b_pair.save();
@@ -1004,18 +1034,19 @@ public class ProgramingPackageController extends Controller {
             }
 
             // Úprava objektu
-            b_program.version_objects.add(versionObjectObject);
+            b_program.version_objects.add(version_object);
 
             // Uložení objektu
             b_program.update();
 
             // Nahrání na Azure
-            UtilTools.uploadAzure_Version("b-program", file_content, "program.js", b_program.azureStorageLink, b_program.azurePackageLink, versionObjectObject);
+             UtilTools.uploadAzure_Version("b-program", file_content, "program.js", b_program.azureStorageLink, b_program.azurePackageLink, version_object, B_Program.class);
 
             // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(versionObjectObject));
+            return GlobalResult.result_ok(Json.toJson(version_object));
 
         } catch (Exception e) {
+            e.printStackTrace();
             return Loggy.result_internalServerError(e, request());
         }
     }
@@ -1354,18 +1385,18 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",                  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result upload_b_Program_ToCloud(@ApiParam(value = "b_program_id String path", required = true) @PathParam("b_program_id") String b_program_id, @ApiParam(value = "version_id String path", required = true) @PathParam("version_id") String version_id){
+    public  Result upload_b_Program_ToCloud(@ApiParam(value = "version_id String path", required = true) @PathParam("version_id") String version_id){
         try {
 
             // Kontrola objektu
-            // B program, který chci nahrát do Cloudu na Blocko server
-            B_Program b_program = B_Program.find.byId(b_program_id);
-            if (b_program == null) return GlobalResult.notFoundObject("B_Program id not found");
+            // Verze B programu kterou budu nahrávat do cloudu
+            Version_Object version_object = Version_Object.find.byId(version_id);
+            if (version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
             // Kontrola objektu
-            // Verze B programu kterou budu nahrávat do cloudu
-            Version_Object version_object = Version_Object.find.where().eq("id", version_id).eq("b_program.id", b_program.id).findUnique();
-            if (version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
+            // B program, který chci nahrát do Cloudu na Blocko server
+            if (version_object.b_program == null) return GlobalResult.badRequest("Version_Object is not version of B_Program");
+            B_Program b_program = version_object.b_program;
 
             // Kontrola oprávnění
             if (! b_program.update_permission() ) return GlobalResult.forbidden_Permission();
@@ -1382,9 +1413,9 @@ public class ProgramingPackageController extends Controller {
                 b_program_cloud.delete();
             }
 
-            // TODO Chytré dělení na servery - kam se blocko program nahraje
-
+            // TODO Chytré dělení na servery - kam se blocko program nahraje??
             Cloud_Blocko_Server destination_server = Cloud_Blocko_Server.find.where().eq("server_name", "Alfa").findUnique();
+            if(! WebSocketController_Incoming.blocko_servers.containsKey( destination_server.server_name) ) return GlobalResult.result_BadRequest("Server is offline");
 
 
             // Vytvářím nový záznam v databázi pro běžící instanci b programu na blocko serveru
@@ -1392,12 +1423,20 @@ public class ProgramingPackageController extends Controller {
             program_cloud.running_from          = new Date();
             program_cloud.version_object        = version_object;
             program_cloud.server                = destination_server;
+
+            // TODO http://youtrack.byzance.cz/youtrack/issue/TYRION-263
+            if(version_object.master_board_b_pair == null ) {
+                logger.warn("Creating instance in Blocko server: System dont know mac Adress of Yoda device!!!");
+                program_cloud.macAddress = "null";
+            }else {
+                program_cloud.macAddress = version_object.master_board_b_pair.board.id;
+            }
+
             program_cloud.setUnique_blocko_instance_name();
 
             // Uložení objektu
             program_cloud.save();
 
-            if(! WebSocketController_Incoming.blocko_servers.containsKey( destination_server.server_name) ) return GlobalResult.result_BadRequest("Server is offline");
 
             // Vytvářím instanci na serveru
             WS_BlockoServer server = (WS_BlockoServer) WebSocketController_Incoming.blocko_servers.get(destination_server.server_name);
@@ -1692,6 +1731,12 @@ public class ProgramingPackageController extends Controller {
                 typeOfBlock.project = project;
 
             }
+
+            System.out.println("");
+            PersonPermission permission = PersonPermission.find.byId("TypeOfBlock_create");
+            if(permission == null)  System.out.println("Oprávnění neexistuje");
+            else System.out.println("Oprávnění existuje");
+
 
             // Kontrola oprávnění těsně před uložením podle standardu
             if (! typeOfBlock.create_permission() ) return GlobalResult.forbidden_Permission();

@@ -47,7 +47,8 @@ public class B_Program extends Model {
         for(Version_Object v : version_objects){
             Blocko_Versions bl = new Blocko_Versions();
             bl.version_Object = v;
-            bl.connected_boards = v.b_pairs_b_program;
+            bl.connected_boards = v.b_pairs_b_program == null ? null : v.b_pairs_b_program ;
+            bl.master_board = v.master_board_b_pair == null ? null : v.master_board_b_pair;
 
             versions.add(bl);
         }
@@ -58,6 +59,7 @@ public class B_Program extends Model {
     class Blocko_Versions{
         public Version_Object version_Object;
         public List<B_Pair> connected_boards = new ArrayList<>();
+        public B_Pair master_board;
     }
 
     @JsonProperty @Transient public B_Program_State program_state(){

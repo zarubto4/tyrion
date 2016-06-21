@@ -2,8 +2,6 @@ package models.compiler;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers.SecurityController;
 import models.project.b_program.B_Program;
 import models.project.c_program.C_Program;
 import play.libs.Json;
@@ -17,25 +15,19 @@ import java.util.Scanner;
 @Entity
 public class FileRecord extends Model {
 
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public String id;
                                                              public String file_name;
 
                                    @JsonIgnore @ManyToOne()  public Version_Object version_object;
+                                               @JsonIgnore   public String name_of_parent_object;
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
-
-    // @JsonProperty public String file_content_link()   { return Server.tyrion_serverAddress + "/file/fileRecord/" +id; }
-
-    @JsonProperty public String content() {
-        try {
-            return get_fileRecord_from_Azure_inString();
-        } catch (Exception e) {
-            return null;
-        }
-
-    }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
@@ -51,34 +43,47 @@ public class FileRecord extends Model {
 
         System.out.println(Json.toJson(version_object));
 
-        if( version_object.b_program != null){
-                 container = "b-program";
-                 B_Program b_program = B_Program.find.byId(version_object.b_program.id);
-                 azurePackageLink = b_program.azurePackageLink;
-                 azureStorageLink = b_program.azureStorageLink;
-             }
-        else if( version_object.c_program != null){
+        switch (name_of_parent_object){
+
+            case "B_Program" : {
+                container = "b-program";
+                B_Program b_program = B_Program.find.byId(version_object.b_program.id);
+                azurePackageLink = b_program.azurePackageLink;
+                azureStorageLink = b_program.azureStorageLink;
+                break;
+            }
+
+            case "C_Program" : {
                 container = "c-program";
                 C_Program c_program = C_Program.find.byId(version_object.c_program.id);
                 azurePackageLink = c_program.azurePackageLink;
                 azureStorageLink = c_program.azureStorageLink;
-        }
-        //else if( version_object.m_project != null){} Todo Na M_Program - zatím není verze implementována
-        else if( version_object.single_library != null){
+                break;
+            }
+
+            case "SingleLibrary" : {
                 container = "libraries";
                 SingleLibrary singleLibrary = SingleLibrary.find.byId(version_object.single_library.id);
                 azurePackageLink = singleLibrary.azurePackageLink;
                 azureStorageLink = singleLibrary.azureStorageLink;
-        }
-        else if( version_object.library_group != null){
+                break;
+            }
+
+            case "LibraryGroup" : {
                 container = "libraries";
                 LibraryGroup libraryGroup = LibraryGroup.find.byId(version_object.library_group.id);
                 azurePackageLink = libraryGroup.azurePackageLink;
                 azureStorageLink = libraryGroup.azureStorageLink;
+                break;
+            }
+
+            default: {
+                logger.error("FileRecord (uvnitř třídy) nenašel cestu k požadovanému souboru");
+                throw new Exception("FileRecord (uvnitř třídy) nenašel cestu k požadovanému souboru");
+            }
+
         }
 
-
-        if(azurePackageLink.length() < 1) throw new Exception("FileRecord (uvnitř třídy) nenašel cestu k požadovanému souboru");
         return UtilTools.file_get_File_from_Azure(container, azurePackageLink, azureStorageLink,  azureLinkVersion, file_name);
 
     }
@@ -97,87 +102,6 @@ public class FileRecord extends Model {
 
     }
 
-/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
-
-    @JsonProperty @Transient  public Boolean edit_permission()  {
-        return  (   FileRecord.find.where()
-                        .or(
-                                com.avaje.ebean.Expr.or(
-                                        com.avaje.ebean.Expr.and(
-                                                com.avaje.ebean.Expr.eq("version_object.b_program.project.ownersOfProject.id", SecurityController.getPerson().id),
-                                                com.avaje.ebean.Expr.eq("id",id)
-                                        ),
-                                        com.avaje.ebean.Expr.and(
-                                                com.avaje.ebean.Expr.eq("version_object.c_program.project.ownersOfProject.id", SecurityController.getPerson().id),
-                                                com.avaje.ebean.Expr.eq("id",id)
-                                        )
-                                ),
-                                com.avaje.ebean.Expr.or(
-                                        com.avaje.ebean.Expr.and(
-                                            com.avaje.ebean.Expr.eq("version_object.single_library.project.ownersOfProject.id", SecurityController.getPerson().id),
-                                            com.avaje.ebean.Expr.eq("id",id)
-                                        ),
-                                        com.avaje.ebean.Expr.and(
-                                                com.avaje.ebean.Expr.eq("version_object.library_group.project.ownersOfProject.id", SecurityController.getPerson().id),
-                                                com.avaje.ebean.Expr.eq("id",id)
-                                        )
-                                )
-                        )
-                        .or(
-                                com.avaje.ebean.Expr.and(
-                                        com.avaje.ebean.Expr.eq("version_object.m_project.project.ownersOfProject.id", SecurityController.getPerson().id),
-                                        com.avaje.ebean.Expr.eq("id",id)
-                                ),
-                                com.avaje.ebean.Expr.and(                      // TODO M_Project Version!!!
-                                        com.avaje.ebean.Expr.eq("version_object.b_program.project.ownersOfProject.id", SecurityController.getPerson().id),
-                                        com.avaje.ebean.Expr.eq("id",id)
-                                )
-                        )
-                        .findRowCount() > 0
-                        ||
-                        SecurityController.getPerson().has_permission("FileRecord.edit")
-                );
-    }
-
-    @JsonProperty @Transient  public Boolean delete_permission() {
-        return  (   FileRecord.find.where()
-                    .or(
-                            com.avaje.ebean.Expr.or(
-                                    com.avaje.ebean.Expr.and(
-                                            com.avaje.ebean.Expr.eq("version_object.b_program.project.ownersOfProject.id", SecurityController.getPerson().id),
-                                            com.avaje.ebean.Expr.eq("id",id)
-                                    ),
-                                    com.avaje.ebean.Expr.and(
-                                            com.avaje.ebean.Expr.eq("version_object.c_program.project.ownersOfProject.id", SecurityController.getPerson().id),
-                                            com.avaje.ebean.Expr.eq("id",id)
-                                    )
-                            ),
-                            com.avaje.ebean.Expr.or(
-                                    com.avaje.ebean.Expr.and(
-                                            com.avaje.ebean.Expr.eq("version_object.single_library.project.ownersOfProject.id", SecurityController.getPerson().id),
-                                            com.avaje.ebean.Expr.eq("id",id)
-                                    ),
-                                    com.avaje.ebean.Expr.and(
-                                            com.avaje.ebean.Expr.eq("version_object.library_group.project.ownersOfProject.id", SecurityController.getPerson().id),
-                                            com.avaje.ebean.Expr.eq("id",id)
-                                    )
-                            )
-                    )
-                    .or(
-                            com.avaje.ebean.Expr.and(
-                                    com.avaje.ebean.Expr.eq("version_object.m_project.project.ownersOfProject.id", SecurityController.getPerson().id),
-                                    com.avaje.ebean.Expr.eq("id",id)
-                            ),
-                            com.avaje.ebean.Expr.and(                      // TODO M_Project Version!!!
-                                    com.avaje.ebean.Expr.eq("version_object.b_program.project.ownersOfProject.id", SecurityController.getPerson().id),
-                                    com.avaje.ebean.Expr.eq("id",id)
-                            )
-                    )
-                    .findRowCount() > 0
-                    ||
-                    SecurityController.getPerson().has_permission("FileRecord.edit")
-                 );
-    }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String, FileRecord> find = new Finder<>(FileRecord.class);

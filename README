@@ -1,13 +1,119 @@
-﻿# Verze 1.06.6 # (nevydaná)
-####  26.5.2016 ####
+﻿# Verze 1.06.6 #
+####  20.6.2016 ####
 
 **Změny General:**
 
-    Nová verze přináší podporu informací z kompilátoru o bločkách pro využití v blocku.
-    To co vrátí kompilátor ja nabídnu pro převzetí do blocka skrze výběr firmwaru, který lze na haerdware nahrát.
+    Nová verze přináší podporu informací z kompilátoru o bločkách (které vyseparuje kompilátor) pro využití v blocku.
+    To co vrátí kompilátor ja nabídnuto pro převzetí do blocka skrze výběr firmwaru, který lze na hardware nahrát. Bude pospáno níže.
 
-    Zásadní nedořešenou otázkou je jak potunint virtuální bločky hardwaru. (Třeba přidat vstupy pro bločky, nějakou hlubší logiku,
-    když se zasílá hardwaru třeba tři strings. ( Tak základní logika PLC struktury nedovoluje mít 3 vstupy a najednou je měnit)
+    Bylo opraveno a částečně implementována změna objektů verzí. Často se stávalo že ke kokrétní verzi Třeba C-Programu bylo nutné
+    přidat další doplňující infomrmace - například zda je verze už zkompilovana, nebo k ní má Tyrion archivovaný kompilační soubor.
+    Proto byla vytvořena struktura, která je pro vývojáře Tyrionu od teď závazná. Doplňující je také změna poskytnutí dat o souboru.
+    Kdy bylo nunté vzhledem ke kompilátoru a knihovnám informovat o názvu souboru ještě před tím, než ho frontend stáhne.
+
+    file_name -  chápu že není zdokumentované jak se soubor bude jmenovat jedinný problém je že nelze podle Azure použít podtržítko
+
+    **Pole verzí**
+        "program_versions": [
+
+
+            {
+              "version_object": {   // Původní objekt byl nezměněn - jen byl zanořen
+                "id": "1",
+                "version_name": "První Verze",
+                "version_description": "Novy program",
+                "date_of_create": 1466082597558,
+                "files": [            // Změna vrácení id soubor - přidává se i název souboru a to pro podporu do budnoucna
+                  {
+                    "id": "1",
+                    "file_name": "c-program"
+                  },
+                  {
+                    "file_name" : "comp.bin",
+                    "id" : "2"
+                  }
+                ]
+              },
+              "successfully_compiled": false,   // Dodatečné informace podle nutnosti k danému objektu
+              "virtual_input_output": null,
+              "compilation_restored": false,
+              "runing_on_board": null
+            },
+            {
+            ..... další version_object
+            }
+          ],
+
+
+
+### Podpora kompilace Readme dokumentace než bude dopsána podrobněji do WIKI ###
+
+ * Vytvoříš C_program nad Projektem
+  [Swagger New C_program](http://swagger.byzance.cz/?url=http://localhost:9000/api-docs#!/C_Program/create_C_Program)
+
+    Pokud tam žádná verze verze ještě není - automaticky to skočí do okna k editaci kodu. Možnost tlačítko save
+    a výzva k pojmenování první verze pokud uživatel klikne na uložit. (Výzva k pojmenování a popisu)
+
+ * Vytvoříš verzi nad C_program
+   [Swagger New Version](http://swagger.byzance.cz/?url=http://localhost:9000/api-docs#!/C_Program/new_C_Program_Version)
+
+ * Pokud uživatel přijde znovu, otevře si C_program tak tam má možnost editovat kod (verzi). Pokud uloží - je
+   nutné ho vyzvat udělat novou verzi s novým číslem a popisem. Pro možnost kontinuálního ukládání navrhuji mít ještě při potvrzení
+   uložení další tlačítko "uložit a předchozí verzi zahodit" nebo něco takového.
+
+    Uživatel má před uložením možnost průběžně si vše kompilovat na API, kde je nutné přiložit  "type_of_board_id" : "1",
+    [Swagger Compile Code](http://swagger.byzance.cz/?url=http://localhost:9000/api-docs#!/C_Program/compile_C_Program_code)
+                    {
+                       "type_of_board_id" : "1",
+                       "code" : "#include \"mbed.h\"\n#include \"inc_blink.h\"\n#include \"Ser/Ser.h\"\n \nSer s;\nBlink b;\n \nint main() {\n    s.write();\n    b.start();\n}\n",
+                       "user_files" : [
+                            {
+                                     "file_name":"soubor dva",
+                                     "code" : "\n // komentar \n"
+                            },
+                            {
+                                    "file_name":"Uzivatelská třída 2 - tvoří složky",
+                                     "code" : "\n // komentar 2 \n"
+                            }
+                        ],
+                       "external_libraries":[
+                          {
+                             "library_name":"Uživatelův název SER",
+                             "files" : [
+                                      {
+                                          "file_name" :   "Ser/Ser.cpp",
+                                          "content" : "#include \"mbed.h\"\n#include \"Ser.h\"\n\nSerial pc(D1, D0); // tx, rx\n \nvoid Ser::write() {\n    pc.printf(\"Serial World!\\n\");\n}\n"
+                                      },
+                                      {
+                                          "file_name" :   "Ser/Ser.h",
+                                          "content" : "\nclass Ser\n{\npublic:\n\tvoid write();\t\n};"
+                                      }
+                                ]
+                          },
+                           {
+                             "library_name":"Uživatelův název Blink",
+                             "files" : [
+                                      {
+                                          "file_name" :   "inc_blink.cpp",
+                                          "content" : "#include \"mbed.h\"\r\n#include \"inc_blink.h\"\r\n\r\nDigitalOut myled(LED1);\r\n \r\nvoid Blink::start() {\r\n    while(1) {\r\n        myled = 1;\r\n        wait(0.1);\r\n        myled = 0;\r\n        wait(0.1);\r\n    }\r\n}\r\n"
+                                      },
+                                      {
+                                          "file_name" :   "inc_blink.h",
+                                          "content" : "\nclass Blink\n{\npublic:\n\tvoid start();\t\n};"
+                                      }
+                                ]
+                          }
+                       ]
+                    }
+
+ * Pokud uživatel uložil kod a nemá zkompilováno je alternativa nechat si zkompilovat verzi C_programu nad Verzí
+   [Swagger Compile Version](http://swagger.byzance.cz/?url=http://localhost:9000/api-docs#!/C_Program/compile_C_Program_version)
+
+
+
+
+Uživatel si vytvoří C_Program http://swagger.byzance.cz/?url=http://localhost:9000/api-docs
+
 
 
 ### Oprava Bugů ###
@@ -26,17 +132,39 @@
  * fixed [TYRION-262](http://youtrack.byzance.cz/youtrack/issue/TYRION-262)
  * fixed [TYRION-246](http://youtrack.byzance.cz/youtrack/issue/TYRION-246)
  * fixed [TYRION-251](http://youtrack.byzance.cz/youtrack/issue/TYRION-251)
+ * fixed [TYRION-250](http://youtrack.byzance.cz/youtrack/issue/TYRION-250)
+ * fixed [TYRION-255](http://youtrack.byzance.cz/youtrack/issue/TYRION-255)
+ * fixed [TYRION-200](http://youtrack.byzance.cz/youtrack/issue/TYRION-200)
+ * fixed [TYRION-254](http://youtrack.byzance.cz/youtrack/issue/TYRION-254)
+ * fixed [TYRION-253](http://youtrack.byzance.cz/youtrack/issue/TYRION-253)
+
  * Obsolate [TYRION-64](http://youtrack.byzance.cz/youtrack/issue/TYRION-64)
+
+
+
+Update firmware yoda
+
+Request:
+
+ {
+    "messageType": "updateYodaFirmware",
+    "messageId": "SOME ID",
+    "messageChannel": "tyrion",
+    "firmware": "SOME BASE64 FIRMWARE"
+ }
+Reply:
+
+ {
+    "messageType": "updateYodaFirmware",
+    "messageId": "SOME ID",
+    "messageChannel": "tyrion",
+    "status": "success/error"
+ }
+
 
 
 ### TODO ###
 
-  * TODO 13 Důležité je dodělat ORM dokumentaci ve SWAGGERU pro kompilaci!
-  * TODO 14 AzureStorageLink a azurePackageLink přesunout pod Version_object!!! Už je to neudržitelný!!!
-  * TODO 16 Mazání souborů na Azure
-  * TODO 15 Verzování nasadit i na M_Program!
-  * TODO Swagger Dokumentace na objektu B_Program_State a B_Program!!!!!!!!!!!!
-  * TODO 12 Tomáš Z.: Dodělat možnost obnovení hesla
   * TODO 3 Tomáš Z.: Zdokumentovat všechny Models pro Swagger
   * TODO 4 Tomáš Z.: Přidat cyklické odmazávání BLOB v Azure, na které už neexistuje databázová vazba (Nějaká fičura co se zapne každý den ve 3 ráno a provede sekvenci kam
       každý vývojář může přidávat metody které se provedou... (Mazání prošlých tokenů, mazání prošlých nedokončených ověření přes sociální sítě atd... Viz todo 5)
@@ -46,8 +174,13 @@
       PS: Vyžaduje to tak půl dne (+ ideálně přepsat třídu s přihlášení přes facebook a odzkoušet github..
   * TODO 8 ALL-Tyrion: Bude potřeba dodělat řešení pro prodlužování platnosti tokenu (Buď nějak magicky na Tyrionovi nebo ze strany frontendu) Asi to dodělá Tomáš.
   * TODO 9 Přidat a vykreslit všechny objekty na dashboard Tyriona
-
-
+  * TODO 13 Důležité je dodělat ORM dokumentaci ve SWAGGERU pro kompilaci!
+  * TODO 14 AzureStorageLink a azurePackageLink přesunout pod Version_object!!! Už je to neudržitelný!!!
+  * TODO 16 Mazání souborů na Azure
+  * TODO 15 Verzování nasadit i na M_Program!
+  * TODO Swagger Dokumentace na objektu B_Program_State a B_Program!!!!!!!!!!!!
+  * TODO 12 Tomáš Z.: Dodělat možnost obnovení hesla
+  * TODO 17 Link je také v kodu http://youtrack.byzance.cz/youtrack/issue/TYRION-263
 
 
   a) Takže je potřeba zprostředkovat z kompilace vytvořené virtuální bločky do blocka

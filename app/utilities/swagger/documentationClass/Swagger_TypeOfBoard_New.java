@@ -13,4 +13,6 @@ public class Swagger_TypeOfBoard_New {
     @Constraints.Required @ApiModelProperty(required = true, value = "Required valid producer_id")    public String producer_id;
     @Constraints.Required @ApiModelProperty(required = true, value = "Required valid processor_id")   public String processor_id;
 
+    @Constraints.Required @ApiModelProperty(value = "If device can connect to internet", required = true) public Boolean connectible_to_internet;
+
 }

@@ -19,8 +19,8 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.twirl.api.Html;
 import utilities.Server;
-import utilities.UtilTools;
 import utilities.loggy.Loggy;
+import utilities.swagger.swagger_diff_tools.Swagger_diff_Controller;
 import utilities.swagger.swagger_diff_tools.servise_class.Swagger_Diff;
 import utilities.webSocket.*;
 import views.html.*;
@@ -129,7 +129,7 @@ public class DashboardController extends Controller {
             for (String line : Files.readAllLines(Paths.get("README"), StandardCharsets.UTF_8)) text += line + "\n";
 
             Html menu_html = menu.render(reported_bugs, connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers, connectedCompile_servers, link_api_swagger);
-            Swagger_Diff swagger_diff = UtilTools.set_API_Changes();
+            Swagger_Diff swagger_diff = Swagger_diff_Controller.set_API_Changes();
             Html content = Api_Div.render(swagger_diff, link_api_swagger);
             logger.debug("Return show_readme.html content");
 

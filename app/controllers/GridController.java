@@ -679,8 +679,6 @@ public class GridController extends Controller {
             Screen_Size_Type screen_size_type = new Screen_Size_Type();
             screen_size_type.name = help.name;
 
-
-
             screen_size_type.landscape_height = help.landscape_height;
             screen_size_type.landscape_width = help.landscape_width;
             screen_size_type.landscape_square_height = help.landscape_square_height;

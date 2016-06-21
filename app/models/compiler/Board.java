@@ -11,7 +11,9 @@ import models.project.b_program.Homer;
 import models.project.global.Project;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 
 @Entity
@@ -28,7 +30,8 @@ public class Board extends Model {
                                     @JsonIgnore @ManyToOne       public Project project;
                                     @JsonIgnore @ManyToOne       public Homer homer;
 
-        @JsonIgnore @OneToOne(mappedBy="board",cascade=CascadeType.ALL)      public B_Pair b_pair;
+
+    @JsonIgnore  @OneToMany(mappedBy="board",cascade=CascadeType.ALL)    public List<B_Pair> b_pair = new ArrayList<>();
 
 
     @JsonProperty  @Transient public String type_of_board_id()   { return type_of_board == null ? null : type_of_board.id; }

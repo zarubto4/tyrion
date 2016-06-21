@@ -2,6 +2,7 @@ package utilities.swagger.swagger_diff_tools.servise_class;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
+import play.data.validation.Constraints;
 
 import javax.validation.Valid;
 import java.util.*;
@@ -12,8 +13,11 @@ public class Swagger_Api {
     public String host;
 
     @Valid public Info info;
+
+    @Constraints.Required
     @Valid public List<Tag> tags;
 
+    @Constraints.Required
     @JsonIgnore public Map<String, JsonNode> models = new HashMap<>();
 
 
@@ -35,7 +39,6 @@ public class Swagger_Api {
 
     public static class Tag {
         public Tag(){}
-
         public String name;
     }
 
