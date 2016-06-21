@@ -34,6 +34,7 @@ import utilities.swagger.outboundClass.Swagger_Boards_For_Blocko;
 import utilities.webSocket.WS_BlockoServer;
 
 import javax.websocket.server.PathParam;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
@@ -995,11 +996,12 @@ public class ProgramingPackageController extends Controller {
                 Version_Object c_program_version_main = Version_Object.find.byId(help.main_board.c_program_version_id);
                 if (c_program_version_main == null) return GlobalResult.notFoundObject("C_Program Version_Object c_program_version_id not found");
                 if( c_program_version_main.c_program == null ) return GlobalResult.badRequest("Version is not from C_Program");
+                if(! c_program_version_main.c_program.read_permission()) return GlobalResult.result_BadRequest("You cannot used Main board in children Array!");
 
                 b_pair_main.board = board_main;
                 b_pair_main.c_program_version = c_program_version_main;
                 b_pair_main.version_master_board = version_object;
-            b_pair_main.save();
+
 
 
             // Synchronizce
@@ -1008,11 +1010,17 @@ public class ProgramingPackageController extends Controller {
             // Uložení objektu
             version_object.save();
 
+            // List do kterého vložím všechny objekty, které vytvořím a uložím je až všechny projdu - protože je musím kontrolovat!
+            List<B_Pair> b_pairs = new ArrayList<>();
+
             for(Swagger_B_Program_Version_New.Connected_Board h_board : help.boards){
 
+                if(h_board.board_id.equals(board_main.id)) return GlobalResult.result_BadRequest("You cannot used Main board in children Array!");
                 // Kontrola objektu
                 Board board = Board.find.byId(h_board.board_id);
                 if (board == null) return GlobalResult.notFoundObject("Board board_id not found");
+
+                if(!board.update_permission()) return GlobalResult.forbidden_Permission();
 
                 // Kontrola objektu
                 Version_Object c_program_version = Version_Object.find.byId(h_board.c_program_version_id);
@@ -1029,9 +1037,13 @@ public class ProgramingPackageController extends Controller {
                 b_pair.b_program_version = version_object;
 
                 // Uložení objektu
-                b_pair.save();
+                b_pairs.add(b_pair);
 
             }
+
+            b_pair_main.save();
+            for(B_Pair p : b_pairs) p.save();
+
 
             // Úprava objektu
             b_program.version_objects.add(version_object);
@@ -1141,16 +1153,16 @@ public class ProgramingPackageController extends Controller {
 
 
             // Před smazáním blocko programu je nutné smazat jeho běžící cloud instance
-            List<B_Program_Cloud> b_program_clouds = B_Program_Cloud.find.where().eq("version_object.id", version_object.id).findList();
+            B_Program_Cloud b_program_cloud = version_object.b_program_cloud;
 
-            for(B_Program_Cloud b_program_cloud : b_program_clouds){
-                if(  WebSocketController_Incoming.blocko_servers.containsKey(b_program_cloud.server.server_name)){
+            if(  WebSocketController_Incoming.blocko_servers.containsKey(b_program_cloud.server.server_name)){
 
                     WS_BlockoServer server = (WS_BlockoServer)  WebSocketController_Incoming.blocko_servers.get(b_program_cloud.server.server_name);
                     WebSocketController_Incoming.blocko_server_remove_instance( server, b_program_cloud.blocko_instance_name);
-                    if(WebSocketController_Incoming.incomingConnections_homers.containsKey( b_program_cloud.blocko_instance_name ))   WebSocketController_Incoming.incomingConnections_homers.get(b_program_cloud.blocko_instance_name).onClose();
-                }
+
+                if(WebSocketController_Incoming.incomingConnections_homers.containsKey( b_program_cloud.blocko_instance_name ))   WebSocketController_Incoming.incomingConnections_homers.get(b_program_cloud.blocko_instance_name).onClose();
             }
+
 
             // Smazání objektu
             version_object.delete();
@@ -1424,7 +1436,7 @@ public class ProgramingPackageController extends Controller {
             program_cloud.version_object        = version_object;
             program_cloud.server                = destination_server;
 
-            // TODO http://youtrack.byzance.cz/youtrack/issue/TYRION-263
+            // TODO http://youtrack.byzance.cz/youtrack/issue/TYRION-263 // Podpora pro více Yodů
             if(version_object.master_board_b_pair == null ) {
                 logger.warn("Creating instance in Blocko server: System dont know mac Adress of Yoda device!!!");
                 program_cloud.macAddress = "null";
