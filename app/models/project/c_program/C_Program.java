@@ -28,16 +28,16 @@ public class C_Program extends Model {
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)     public String id;
                                                                 public String program_name;
                           @Column(columnDefinition = "TEXT")    public String program_description;
-     @JsonIgnore @ManyToOne(cascade = CascadeType.ALL)    public Project project;
+           @JsonIgnore @ManyToOne()    public Project project;
 
 
                                                @JsonIgnore      public String azurePackageLink;
                                                @JsonIgnore      public String azureStorageLink;
-     @JsonIgnore  @ManyToOne(cascade = CascadeType.ALL)      public TypeOfBoard type_of_board;  // Typ desky
+           @JsonIgnore  @ManyToOne(fetch = FetchType.EAGER)     public TypeOfBoard type_of_board;  // Typ desky
 
 
     @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1461854312") public Date dateOfCreate;
-    @JsonIgnore @OneToMany(mappedBy="c_program", cascade = CascadeType.ALL) @OrderBy("azureLinkVersion DESC") public List<Version_Object> version_objects = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="c_program", cascade = CascadeType.ALL, fetch = FetchType.EAGER) @OrderBy("azureLinkVersion DESC") public List<Version_Object> version_objects = new ArrayList<>();
 
 
 
@@ -78,6 +78,8 @@ public class C_Program extends Model {
 
         Swagger_C_Program_Version c_program_versions= new Swagger_C_Program_Version();
 
+        if(version_object.compilation_in_progress) { c_program_versions.compilation_in_progress = true;}
+        c_program_versions.compilable = version_object.compilable;
         c_program_versions.version_object = version_object;
         c_program_versions.successfully_compiled = version_object.c_compilation != null;
         if(version_object.c_compilation != null ) c_program_versions.virtual_input_output = version_object.c_compilation.virtual_input_output;
@@ -87,6 +89,12 @@ public class C_Program extends Model {
         }
 
         return c_program_versions;
+    }
+
+
+    @JsonIgnore @Transient
+    public TypeOfBoard getType_of_board(){
+        return type_of_board;
     }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/

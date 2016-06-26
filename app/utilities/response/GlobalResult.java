@@ -54,6 +54,17 @@ public class GlobalResult extends Controller {
 
     }
 
+    public static Result result_BadRequest(String message, String state){
+
+        Result_BadRequest result = new Result_BadRequest();
+        result.message = message;
+        result.state = state;
+
+        CoreResponse.cors();
+        return Controller.badRequest(Json.toJson(result));
+
+    }
+
     public static Result result_BadRequest(JsonNode o){
 
         CoreResponse.cors();

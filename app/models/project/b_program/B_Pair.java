@@ -16,10 +16,10 @@ public class B_Pair extends Model {
 
     @JsonIgnore @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)     public String id;
 
-                      @JsonIgnore @ManyToOne(cascade=CascadeType.ALL )      public Version_Object b_program_version;
-                      @JsonIgnore @ManyToOne(cascade=CascadeType.ALL )      public Version_Object c_program_version;
-                      @JsonIgnore @ManyToOne(cascade=CascadeType.ALL )      public Board board;
-         @JsonIgnore @OneToOne   @JoinColumn(name="version_master_board")      public Version_Object version_master_board;
+                      @JsonIgnore @ManyToOne()      public Version_Object b_program_version;
+                      @JsonIgnore @ManyToOne()      public Version_Object c_program_version;
+                      @JsonIgnore @ManyToOne()      public Board board;
+         @JsonIgnore @OneToOne(cascade=CascadeType.ALL)   @JoinColumn(name="version_master_board")   public Version_Object version_master_board;
 
 /* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/
 

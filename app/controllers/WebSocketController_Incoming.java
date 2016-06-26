@@ -8,7 +8,6 @@ import models.compiler.Version_Object;
 import models.person.Person;
 import models.project.b_program.B_Program;
 import models.project.b_program.B_Program_Cloud;
-import models.project.b_program.Homer;
 import models.project.m_program.Grid_Terminal;
 import models.project.m_program.M_Project;
 import play.libs.Json;
@@ -604,7 +603,7 @@ public class WebSocketController_Incoming extends Controller {
             JsonNode result_instance = blockoServer.write_with_confirmation( result);
 
             System.out.println("Nahrávám ho na Blocko server do vytvořené instnace program");
-            JsonNode result_uploud = WebSocketController_Incoming.homer_UploadProgram(homer, program.id, program.version_object.files.get(0).get_fileRecord_from_Azure_inString());
+            JsonNode result_uploud = WebSocketController_Incoming.homer_upload_program(homer, program.id, program.version_object.files.get(0).get_fileRecord_from_Azure_inString());
 
             System.out.println("Přidávám nového virtuálního Homera do privátní mapy blocko serveru");
             blockoServer.virtual_homers.put(program.blocko_instance_name, homer);
@@ -617,7 +616,6 @@ public class WebSocketController_Incoming extends Controller {
             return result_uploud;
 
     }
-
 
     public static JsonNode blocko_server_remove_instance( WS_BlockoServer blockoServer, String instance_name) throws TimeoutException, InterruptedException{
 
@@ -654,31 +652,23 @@ public class WebSocketController_Incoming extends Controller {
 
     public static JsonNode compiler_server_make_Compilation(Person compilator, ObjectNode jsonNodes) throws TimeoutException, InterruptedException {
 
-        // 1. Vybrat náhodný server kde se provede kompilace
-        System.out.println("Tyrion chce odeslat soubor ke kompilaci");
-
         List<String> keys      = new ArrayList<>(compiler_cloud_servers.keySet());
         WS_CompilerServer server = (WS_CompilerServer) compiler_cloud_servers.get( keys.get( new Random().nextInt(keys.size())) );
 
-        System.out.println("Vybral příslušný server");
-
-        System.out.println("Odeslal žádost o kompilaci");
         ObjectNode compilation_request = server.write_with_confirmation(jsonNodes);
 
-        System.out.println("Přijal potvrzení žádost o kompilaci se  zprávou: " + compilation_request.asText() );
 
+        logger.debug("Server will send request for compilation to compilation server: " + server.identifikator + "and now must wait for result");
         if(!compilation_request.get("status").asText().equals("success")) {
-            System.out.println("Zpráva neobsahovala success a tak vracím error json ");
+
+            logger.debug("Incoming message has not contains state = success");
+
             ObjectNode error_result = Json.newObject();
             error_result.put("error", "Something was wrong");
             return  error_result;
         }
 
-        System.out.println("Zpráva obsahovala success");
-
         JsonNode blocko_interface = compilation_request.get("interface");
-
-        System.out.println("Vkládám do zásobníku reqestů kompilace odchozí žádost s klíčem " + compilation_request.get("buildId").asText());
         server.compilation_request.put(compilation_request.get("buildId").asText()  , jsonNodes);
 
 
@@ -694,20 +684,18 @@ public class WebSocketController_Incoming extends Controller {
                     breaker-=1000;
 
                     if(server.compilation_results.containsKey( compilation_request.get("buildId").asText() )) {
-                        System.out.println("Kompilace dokončena protože server zavěsil do Result odpověď");
+                       // Kompilace dokončena protože server zavěsil do Result odpověď
 
-                        System.out.println("Mažu žádost");
+                        // Mažu žádost
                         server.compilation_request.remove(compilation_request.get("buildId").asText());
                         ObjectNode compilation_result = server.compilation_results.get(compilation_request.get("buildId").asText());
 
-                        System.out.println("Mažu odpověď");
+                        // Mažu odpověď
                         server.compilation_results.remove(compilation_request.get("buildId").asText());
 
-                        System.out.println("Vracím Odpověď");
+                        // Vracím odpověď
                         return compilation_result;
                     }
-
-                    System.out.println("Kompilace stále probíhá");
                 }
 
                 server.compilation_request.remove(compilation_request.get("buildId").asText());
@@ -725,13 +713,11 @@ public class WebSocketController_Incoming extends Controller {
         try {
             ObjectNode final_result = future.get();
 
-
-            System.out.println("\n\n\n Interface: " + blocko_interface);
             final_result.set("interface", blocko_interface);
 
             return final_result;
         } catch (Exception e) {
-            System.out.println("write_with_confirmation NEstihlo se včas");
+            logger.error("Compilation TimeoutException", e );
             throw new TimeoutException();
         }
     }
@@ -1015,7 +1001,7 @@ public class WebSocketController_Incoming extends Controller {
         homer.onClose();
     }
 
-    public static JsonNode homer_destroyInstance(String homer_id) throws TimeoutException, InterruptedException {
+    public static JsonNode homer_destroy_instance(String homer_id) throws TimeoutException, InterruptedException {
 
         logger.debug("Tyrion: Instruction for Homer in cloud: Destroy you instance!");
 
@@ -1038,7 +1024,7 @@ public class WebSocketController_Incoming extends Controller {
             incomingConnections_homers.get(homer_id).write_with_confirmation(result);
     }
 
-    public static JsonNode homer_UploadProgram(WebSCType homer, String program_id, String program) throws TimeoutException, InterruptedException {
+    public static JsonNode homer_upload_program(WebSCType homer, String program_id, String program) throws TimeoutException, InterruptedException {
 
             ObjectNode result = Json.newObject();
             result.put("messageType", "loadProgram");
@@ -1049,17 +1035,17 @@ public class WebSocketController_Incoming extends Controller {
           return homer.write_with_confirmation(result);
     }
 
-    public static boolean homer_is_online(String homer_id){
+    public static boolean homer_online_state(String homer_id){
         return incomingConnections_homers.containsKey(homer_id);
     }
 
-    public static JsonNode get_all_Connected_HW_to_Homer(Homer homer) throws TimeoutException, InterruptedException{
+    public static JsonNode homer_get_device_list(WebSCType homer) throws TimeoutException, InterruptedException{
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "getDeviceList");
         result.put("messageChannel", "tyrion");
 
-        return incomingConnections_homers.get( homer.id).write_with_confirmation(result, (long) 250*25 );
+        return homer.write_with_confirmation(result);
     }
 
     public static void homer_is_disconnect(WebSCType homer) {

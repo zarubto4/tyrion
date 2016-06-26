@@ -3,15 +3,15 @@
 
 **Změny General:**
 
-    Nová verze přináší podporu informací z kompilátoru o bločkách (které vyseparuje kompilátor) pro využití v blocku.
-    To co vrátí kompilátor ja nabídnuto pro převzetí do blocka skrze výběr firmwaru, který lze na hardware nahrát. Bude pospáno níže.
+Nová verze přináší podporu informací z kompilátoru o bločkách (které vyseparuje kompilátor) pro využití v blocku.
+To co vrátí kompilátor ja nabídnuto pro převzetí do blocka skrze výběr firmwaru, který lze na hardware nahrát. Bude pospáno níže.
 
-    Bylo opraveno a částečně implementována změna objektů verzí. Často se stávalo že ke kokrétní verzi Třeba C-Programu bylo nutné
-    přidat další doplňující infomrmace - například zda je verze už zkompilovana, nebo k ní má Tyrion archivovaný kompilační soubor.
-    Proto byla vytvořena struktura, která je pro vývojáře Tyrionu od teď závazná. Doplňující je také změna poskytnutí dat o souboru.
-    Kdy bylo nunté vzhledem ke kompilátoru a knihovnám informovat o názvu souboru ještě před tím, než ho frontend stáhne.
+Bylo opraveno a částečně implementována změna objektů verzí. Často se stávalo že ke kokrétní verzi Třeba C-Programu bylo nutné
+přidat další doplňující infomrmace - například zda je verze už zkompilovana, nebo k ní má Tyrion archivovaný kompilační soubor.
+Proto byla vytvořena struktura, která je pro vývojáře Tyrionu od teď závazná. Doplňující je také změna poskytnutí dat o souboru.
+Kdy bylo nunté vzhledem ke kompilátoru a knihovnám informovat o názvu souboru ještě před tím, než ho frontend stáhne.
 
-    file_name -  chápu že není zdokumentované jak se soubor bude jmenovat jedinný problém je že nelze podle Azure použít podtržítko
+ * file_name -  chápu že není zdokumentované jak se soubor bude jmenovat jedinný problém je že nelze podle Azure použít podtržítko
 
     **Pole verzí**
         "program_versions": [
@@ -34,7 +34,16 @@
                   }
                 ]
               },
-              "successfully_compiled": false,   // Dodatečné informace podle nutnosti k danému objektu
+
+              // Dodatečné informace podle nutnosti k danému objektu
+
+              "successfully_compiled": false,    <- V případě že kompilační server potvrdil že je v kodu chyba
+              "compilable": true,                <- V případě že kompilační server nebyl třeba online atd( prostě není potvrzeno že nelze kod uspešně zkompilovat)
+                                                    Dokud není zkomilovano a zamitnotu je tu true
+              "compilation_in_progress": "true", <- V případě že compilace trvá déle než (hodně sekund) tak se ukazuje stav true. False není - pokud je false nedává
+                                                    smysl ti to zasílat a proto to v Json není.
+                                                    Výjmečně musí být boolean hodnota ve "stringu" a to z důvodů nemožnosti vložit do booleanu null a tím vynutit
+                                                    vynechání null objketů v Json
               "virtual_input_output": null,
               "compilation_restored": false,
               "runing_on_board": null
@@ -63,6 +72,8 @@
 
     Uživatel má před uložením možnost průběžně si vše kompilovat na API, kde je nutné přiložit  "type_of_board_id" : "1",
     [Swagger Compile Code](http://swagger.byzance.cz/?url=http://localhost:9000/api-docs#!/C_Program/compile_C_Program_code)
+
+
                     {
                        "type_of_board_id" : "1",
                        "code" : "#include \"mbed.h\"\n#include \"inc_blink.h\"\n#include \"Ser/Ser.h\"\n \nSer s;\nBlink b;\n \nint main() {\n    s.write();\n    b.start();\n}\n",
@@ -106,13 +117,66 @@
                        ]
                     }
 
- * Pokud uživatel uložil kod a nemá zkompilováno je alternativa nechat si zkompilovat verzi C_programu nad Verzí
+ * Pokud uživatel uložil kod jako novou verzi
    [Swagger Compile Version](http://swagger.byzance.cz/?url=http://localhost:9000/api-docs#!/C_Program/compile_C_Program_version)
+   server jí uloží a zkompiluje pokud nemá vhodnou cach předchozích kompilací (což je zatím spekulativně fungující fičura) proto vždy dojde k tomu že jí server pošle ke kompilaci.
+   Po uložení (odpověď na uložení) máš informaci že se server pustil do snahy verzi kompilovat.
+        "successfully_compiled": false,    <- V případě že kompilační server potvrdil že je v kodu chyba a false do té doby dokud není potvrzen opak
+        "compilable": true,                <- V případě že kompilační server nebyl třeba online atd( prostě není potvrzeno že nelze kod uspešně zkompilovat)
+                                                          Dokud není zkomilovano a zamitnotu je tu true
+        "compilation_in_progress": "true", <- V případě že compilace trvá déle než (hodně sekund) tak se ukazuje stav true.
+
+
+### Nahrátí Bocko programu do Homer serveru ###
+
+ Pak následuje nahrání do blocko programu - s implementací hardwaru a dalších firuč.
+
+ * Máš projekt - v něm C_Programy a verze c_Programu
+ * Máš vytvořený HW (Desky) - Alespoň jedna deska musí být TypeOfBoard kde connectible_to_internet = true
+  (Tento TypeOfBoard ti mimochodem defaultně připravuju při spuštění)
+ * Ostatní desky si třeba vytvoř na TypeOfBoard ("Bezdrát", "Drát") a nějaký desky k tomu
+ * Vytvoří si blocko program,
+ * Pak verzi do kterého můžeš připojit hardware.
+
+ *  PS: Abych ti usnadnil implementaci HW do blocko programu tak jsem ti vytvořil API
+      http://swagger.byzance.cz/#!/B_Program/board_all_details_for_blocko
+        - Máš seznam HW který mužeš imlementovat
+        - C_Programy které můžeš nahrát na HW (Určíš takzvané páry - Desku a verzi C_prgramu) Jen je už na tobě ohlídat si aby si vybral C_progrma s typem desky
+          že ho spojuješ s deskou se stejným typem desky
+
+        * Vyžaduje to určení Master desky (náš Yoda) - respektive TypeOfBoard kde je connectible_to_internetv = true!
+        * Vybereš jaký program C_program (verzi) chceš nahrát na master desku - nebu mužeš nechat tu, která je momentálně na HW nahraná.
+        * Vybereš další zařízení do sítě HW prvků.
+
+        **Verze blocko programu může vypadat takto**
+        {
+          "version_name": "verze 1.01",
+          "version_description": "Verze 1",
+
+           "main_board" : {
+             "board_id" : "AAAAAAAA",
+             "c_program_version_id" : "61"
+           },
+
+          "boards" : [
+            {
+                "board_id" : "EEEEEE_1",
+                "c_program_version_id" : "562"
+            },
+            {
+                "board_id" : "EEEEEE_2",
+                "c_program_version_id" : "562"
+            }
+          ],
+          "program": "{\"blocks\":{\"b1\":{\"type\":\"digitalInput\",\"visualType\":\"pushButton\",\"hwId\":\"tg_btn1in\",\"config\":{\"hwId\":\"tg_btn1in\"},\"editor\":{\"x\":270,\"y\":100},\"outputs\":{\"output\":[{\"block\":\"b4\",\"connector\":\"input\"}]}},\"b4\":{\"type\":\"digitalOutput\",\"visualType\":\"light\",\"hwId\":\"hw_034BB5C9\",\"config\":{\"hwId\":\"hw_034BB5C9\"},\"editor\":{\"x\":920,\"y\":110},\"outputs\":{}},\"b9\":{\"type\":\"digitalOutput\",\"visualType\":\"light\",\"hwId\":\"hw_65BC43F0\",\"config\":{\"hwId\":\"hw_65BC43F0\"},\"editor\":{\"x\":920,\"y\":210},\"outputs\":{}},\"b11\":{\"type\":\"digitalInput\",\"visualType\":\"switch\",\"hwId\":\"tg_btn2in\",\"config\":{\"hwId\":\"tg_btn2in\"},\"editor\":{\"x\":280,\"y\":190},\"outputs\":{\"output\":[{\"block\":\"b9\",\"connector\":\"input\"}]}}}}"
+        }
 
 
 
 
-Uživatel si vytvoří C_Program http://swagger.byzance.cz/?url=http://localhost:9000/api-docs
+
+
+
 
 
 

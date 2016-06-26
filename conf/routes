@@ -211,8 +211,7 @@ PUT             /project/blocko/server/:server_id                               
 GET             /project/blocko/server                                                      @controllers.ProgramingPackageController.get_All_Blocko_Server()
 DELETE          /project/blocko/server/:server_id                                           @controllers.ProgramingPackageController.delete_Blocko_Server(server_id)
 
-#Board on Project
-GET             /project/board/all_details/:project_id                                      @controllers.ProgramingPackageController.board_all_details_for_blocko(project_id)
+
 
 
 
@@ -233,7 +232,7 @@ PUT             /compilation/c_program/version/edit/:version_id                 
 DELETE          /compilation/c_program/version/:version_id                                  @controllers.CompilationLibrariesController.delete_C_Program_Version(version_id)
 GET             /compilation/c_program/version/:version_id                                  @controllers.CompilationLibrariesController.get_C_Program_Version(version_id)
 POST            /compilation/c_program/version/compile                                      @controllers.CompilationLibrariesController.compile_C_Program_code()
-POST            /compilation/c_program/version/compile/:version_id                          @controllers.CompilationLibrariesController.compile_C_Program_version(version_id)
+PUT             /compilation/c_program/version/compile/:version_id                          @controllers.CompilationLibrariesController.compile_C_Program_version(version_id)
 PUT             /compilation/c_program/version/uploud/:version_id                           @controllers.CompilationLibrariesController.uploadCompilationToBoard(version_id)
 
 
@@ -255,8 +254,10 @@ PUT             /compilation/board/filter/:page_number                          
 GET             /compilation/board/:board_id                                                @controllers.CompilationLibrariesController.get_Board(board_id)
 DELETE          /compilation/board/deactivateBoard/:board_id                                @controllers.CompilationLibrariesController.deactivate_Board(board_id)
 PUT             /compilation/board/:board_id/:project_id                                    @controllers.CompilationLibrariesController.connect_Board_with_Project(board_id, project_id)
-DELETE          /compilation/board/:board_id                                                 @controllers.CompilationLibrariesController.disconnect_Board_from_Project(board_id)
+DELETE          /compilation/board/:board_id                                                @controllers.CompilationLibrariesController.disconnect_Board_from_Project(board_id)
 
+#Board on Project
+GET             /project/board/all_details/:project_id                                      @controllers.CompilationLibrariesController.board_all_details_for_blocko(project_id)
 
 #Producer
 POST            /compilation/producer                                                       @controllers.CompilationLibrariesController.new_Producer()

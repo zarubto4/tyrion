@@ -23,8 +23,8 @@ public class TypeOfBoard extends Model {
                        @JsonIgnore  @ManyToOne                  public Processor processor;
                                                                 public Boolean connectible_to_internet;
 
-    @JsonIgnore @OneToMany(targetEntity= Board.class, mappedBy="type_of_board", cascade = CascadeType.ALL) public List<Board> boards = new ArrayList<>();
-    @JsonIgnore @OneToMany(targetEntity= Board.class, mappedBy="type_of_board", cascade = CascadeType.ALL) public List<C_Program> c_programs = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="type_of_board", cascade = CascadeType.ALL) public List<Board> boards = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="type_of_board", cascade = CascadeType.ALL) public List<C_Program> c_programs = new ArrayList<>();
 
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
@@ -32,15 +32,10 @@ public class TypeOfBoard extends Model {
     @ApiModelProperty(readOnly =true) @Transient
     @JsonProperty public String processor_id      (){ return processor == null ? null : processor.id;}
 
-    //@ApiModelProperty(readOnly =true) @Transient // Zbytečné
-    // @JsonProperty public List<String> boards_id() { List<String> l = new ArrayList<>();  for( Board m : boards)  l.add(m.id); return l;  }
-
     @ApiModelProperty(readOnly =true) @Transient
     @JsonProperty public String producer_id      (){return producer == null ? null :  producer.id;}
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
-
-
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
@@ -54,5 +49,6 @@ public class TypeOfBoard extends Model {
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String, TypeOfBoard> find = new Finder<>(TypeOfBoard.class);
+
 
 }

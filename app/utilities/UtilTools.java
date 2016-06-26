@@ -173,7 +173,7 @@ public class UtilTools extends Controller {
 
     public static void set_Type_of_board(){
 
-        if(TypeOfBoard.find.where().eq("name", "NUCLEO_F411RE").findUnique() == null){
+        if(TypeOfBoard.find.where().eq("name", "NUCLEO_F411RE").findList() == null){
             TypeOfBoard typeOfBoard = new TypeOfBoard();
             typeOfBoard.name = "NUCLEO_F411RE";
             typeOfBoard.connectible_to_internet = true;

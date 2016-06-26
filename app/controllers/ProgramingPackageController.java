@@ -29,8 +29,8 @@ import utilities.notification.Notification_level;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
+import utilities.swagger.outboundClass.Filter_List.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Homer_List;
-import utilities.swagger.outboundClass.Swagger_Boards_For_Blocko;
 import utilities.webSocket.WS_BlockoServer;
 
 import javax.websocket.server.PathParam;
@@ -950,7 +950,7 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Version_Object.class),
+            @ApiResponse(code = 200, message = "Ok Result", response =  Swagger_B_Program_Version.class),
             @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -988,14 +988,13 @@ public class ProgramingPackageController extends Controller {
             B_Pair b_pair_main = new B_Pair();
                 Board board_main = Board.find.byId(help.main_board.board_id);
 
-            System.out.println("Board Main = " + board_main.id);
-
                 if (board_main == null) return GlobalResult.notFoundObject("Board board_id not found");
-                if (!board_main.type_of_board.connectible_to_internet) return GlobalResult.badRequest("Main Board must be internet connectible!");
+                logger.debug("main board is: " + board_main.id + " Type: " + board_main.type_of_board.name);
+                if (!board_main.type_of_board.connectible_to_internet) return GlobalResult.result_BadRequest("Main Board must be internet connectible!");
 
                 Version_Object c_program_version_main = Version_Object.find.byId(help.main_board.c_program_version_id);
                 if (c_program_version_main == null) return GlobalResult.notFoundObject("C_Program Version_Object c_program_version_id not found");
-                if( c_program_version_main.c_program == null ) return GlobalResult.badRequest("Version is not from C_Program");
+                if( c_program_version_main.c_program == null ) return GlobalResult.result_BadRequest("Version is not from C_Program");
                 if(! c_program_version_main.c_program.read_permission()) return GlobalResult.result_BadRequest("You cannot used Main board in children Array!");
 
                 b_pair_main.board = board_main;
@@ -1028,7 +1027,14 @@ public class ProgramingPackageController extends Controller {
                 if( c_program_version.c_program == null ) return GlobalResult.notFoundObject("Version is not from C_Program");
 
 
-                if( board.type_of_board.id .equals( c_program_version.c_program.type_of_board.id ) ) return GlobalResult.badRequest("You want upload C++ program version" +c_program_version.id  + " thats not compatible with hardware " + board.id);
+                if( TypeOfBoard.find.where().eq("c_programs.id", c_program_version.c_program.id ).where().eq("boards.id", board.id).findRowCount() < 1){
+
+                    System.out.println("Hledám jestli je Type OF board == 0");
+                    return GlobalResult.result_BadRequest("You want upload C++ program version" +c_program_version.id  + " thats not compatible with hardware " + board.id);
+                }
+
+             //   if( board.type_of_board.id .equals( c_program_version.c_program.type_of_board.id ) )
+
 
                 // Vytvoření objektu
                 B_Pair b_pair = new B_Pair();
@@ -1051,11 +1057,14 @@ public class ProgramingPackageController extends Controller {
             // Uložení objektu
             b_program.update();
 
+            // Update verze
+            version_object.refresh();
+
             // Nahrání na Azure
              UtilTools.uploadAzure_Version("b-program", file_content, "program.js", b_program.azureStorageLink, b_program.azurePackageLink, version_object, B_Program.class);
 
             // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(version_object));
+            return GlobalResult.result_ok(Json.toJson( version_object.b_program.program_version(version_object) ));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -1146,23 +1155,28 @@ public class ProgramingPackageController extends Controller {
 
             // Kontrola objektu
             if (version_object == null) return GlobalResult.notFoundObject("Version_Object id not found");
-            if (version_object.b_program == null) return GlobalResult.badRequest("B_Program not found");
+            if (version_object.b_program == null) return GlobalResult.result_BadRequest("B_Program not found");
 
             // Kontrola oprávnění
             if (! version_object.b_program.delete_permission() ) return GlobalResult.forbidden_Permission();
 
 
-            // Před smazáním blocko programu je nutné smazat jeho běžící cloud instance
-            B_Program_Cloud b_program_cloud = version_object.b_program_cloud;
+            // Před smazáním verze je nutné smazat jeho běžící cloud instanco
+            //* Jestli tedy nějaké
+            if(version_object.b_program_cloud != null) {
+                B_Program_Cloud b_program_cloud = version_object.b_program_cloud;
 
-            if(  WebSocketController_Incoming.blocko_servers.containsKey(b_program_cloud.server.server_name)){
+                Cloud_Blocko_Server server_cloud = Cloud_Blocko_Server.find.where().eq("cloud_programs.id", version_object.b_program_cloud.id).findUnique();
 
-                    WS_BlockoServer server = (WS_BlockoServer)  WebSocketController_Incoming.blocko_servers.get(b_program_cloud.server.server_name);
-                    WebSocketController_Incoming.blocko_server_remove_instance( server, b_program_cloud.blocko_instance_name);
+                if (WebSocketController_Incoming.blocko_servers.containsKey(server_cloud.server_name)) {
 
-                if(WebSocketController_Incoming.incomingConnections_homers.containsKey( b_program_cloud.blocko_instance_name ))   WebSocketController_Incoming.incomingConnections_homers.get(b_program_cloud.blocko_instance_name).onClose();
+                    WS_BlockoServer server = (WS_BlockoServer) WebSocketController_Incoming.blocko_servers.get(b_program_cloud.server.server_name);
+                    WebSocketController_Incoming.blocko_server_remove_instance(server, b_program_cloud.blocko_instance_name);
+
+                    if (WebSocketController_Incoming.incomingConnections_homers.containsKey(b_program_cloud.blocko_instance_name))
+                        WebSocketController_Incoming.incomingConnections_homers.get(b_program_cloud.blocko_instance_name).onClose();
+                }
             }
-
 
             // Smazání objektu
             version_object.delete();
@@ -1315,7 +1329,7 @@ public class ProgramingPackageController extends Controller {
             if (homer == null)  return GlobalResult.notFoundObject("Homer id not found");
 
 
-            if(! WebSocketController_Incoming.homer_is_online(homer_id)) return GlobalResult.result_BadRequest("Device is not online");
+            if(! WebSocketController_Incoming.homer_online_state(homer_id)) return GlobalResult.result_BadRequest("Device is not online");
 
 
             Thread thread = new Thread(){ @Override public void run() {
@@ -1334,13 +1348,13 @@ public class ProgramingPackageController extends Controller {
                     program_homer.running_from = new Date();
                     program_homer.version_object = version_object;
 
-                   if(!  WebSocketController_Incoming.homer_is_online(homer.id) ) {
+                   if(!  WebSocketController_Incoming.homer_online_state(homer.id) ) {
                        System.out.println("Homer není online při pokusu na něj nahrát instanci a není dodělané zpožděné nahrátí");
                        this.interrupt();
                    }
 
 
-                    JsonNode result = WebSocketController_Incoming.homer_UploadProgram(WebSocketController_Incoming.incomingConnections_homers.get(homer.id), version_object.id, version_object.files.get(0).get_fileRecord_from_Azure_inString());
+                    JsonNode result = WebSocketController_Incoming.homer_upload_program(WebSocketController_Incoming.incomingConnections_homers.get(homer.id), version_object.id, version_object.files.get(0).get_fileRecord_from_Azure_inString());
 
                     if(result.get("status").asText().equals("success")){
 
@@ -1407,7 +1421,7 @@ public class ProgramingPackageController extends Controller {
 
             // Kontrola objektu
             // B program, který chci nahrát do Cloudu na Blocko server
-            if (version_object.b_program == null) return GlobalResult.badRequest("Version_Object is not version of B_Program");
+            if (version_object.b_program == null) return GlobalResult.result_BadRequest("Version_Object is not version of B_Program");
             B_Program b_program = version_object.b_program;
 
             // Kontrola oprávnění
@@ -1416,7 +1430,7 @@ public class ProgramingPackageController extends Controller {
             // Pokud už nějaká instance běžela, tak na ní budu nahrávat nový program a odstraním vazbu na běžící instanci b programu
             if( version_object.b_program_cloud != null ) {
 
-                if(WebSocketController_Incoming.incomingConnections_homers.containsKey(version_object.b_program_cloud.blocko_instance_name )) WebSocketController_Incoming.homer_destroyInstance(version_object.b_program_cloud.blocko_instance_name);
+                if(WebSocketController_Incoming.incomingConnections_homers.containsKey(version_object.b_program_cloud.blocko_instance_name )) WebSocketController_Incoming.homer_destroy_instance(version_object.b_program_cloud.blocko_instance_name);
 
                 // Úprava objektu
                 B_Program_Cloud b_program_cloud = version_object.b_program_cloud;
@@ -2411,29 +2425,5 @@ public class ProgramingPackageController extends Controller {
 
 // BOARD ###################################################################################################################*/
 
-
-    public Result board_all_details_for_blocko(String project_id){
-        try {
-
-            // Kontrola objektu
-            Project project = Project.find.byId(project_id);
-            if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
-
-            // Kontrola oprávnění
-            if (! project.read_permission()) return GlobalResult.forbidden_Permission();
-
-            // Získání objektu
-            Swagger_Boards_For_Blocko boards_for_blocko = new Swagger_Boards_For_Blocko();
-            boards_for_blocko.boards = project.boards;
-            boards_for_blocko.typeOfBoards = TypeOfBoard.find.where().eq("boards.project.id", project.id ).findList();
-            boards_for_blocko.c_programs = project.c_programs;
-
-            // Vrácení objektu
-            return GlobalResult.ok(Json.toJson(boards_for_blocko));
-
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
 
 }

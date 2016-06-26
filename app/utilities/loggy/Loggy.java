@@ -80,7 +80,7 @@ public class Loggy{
         String summary = summaryBuilder.toString();
         String description = descriptionBuilder.toString();
 
-        error(id, summary, description);
+        // error(id, summary, description);
 
         exception.printStackTrace();
 
