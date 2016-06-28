@@ -33,11 +33,11 @@ public class Board extends Model {
 
                                     @JsonIgnore @ManyToOne       public Project project;
                                     @JsonIgnore @ManyToOne       public Homer homer;
-                                                @ManyToOne       public Version_Object actual_c_program_version;
+                                    @JsonIgnore @ManyToOne       public Version_Object actual_c_program_version;
 
 
-    @JsonIgnore  @OneToMany(mappedBy="board",cascade=CascadeType.ALL)                public List<B_Pair> b_pair = new ArrayList<>();
-    @JsonIgnore  @OneToMany(mappedBy="board_for_update",cascade=CascadeType.ALL)     public List<C_Program_Update_Plan> c_program_update_plans = new ArrayList<>();
+    @JsonIgnore  @OneToMany(mappedBy="board",cascade=CascadeType.ALL, fetch = FetchType.EAGER)            public List<B_Pair> b_pair = new ArrayList<>();
+    @JsonIgnore  @OneToOne(mappedBy="board_for_update", cascade=CascadeType.ALL, fetch = FetchType.EAGER) public C_Program_Update_Plan c_program_update_plans;
 /* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/
 
     @JsonProperty  @Transient public String type_of_board_id()   { return type_of_board == null ? null : type_of_board.id; }
@@ -47,7 +47,7 @@ public class Board extends Model {
     @JsonProperty  @Transient public Board_status status()       {
 
         // Složený SQL dotaz pro nalezení funkční běžící instance (B_Pair)
-        B_Pair b_pairs = B_Pair.find.where().or(
+        B_Pair b_pair_main = B_Pair.find.where().or(
                 com.avaje.ebean.Expr.or(
                         com.avaje.ebean.Expr.isNotNull("b_program_version.b_program_homer"),
                         com.avaje.ebean.Expr.isNotNull("b_program_version.b_program_cloud")
@@ -58,58 +58,59 @@ public class Board extends Model {
                 )
         ).where().eq("board.id", id).findUnique();
 
-        if(b_pairs == null){
-            Board_status board_status = new Board_status();
+        System.out.println("1");
+        Board_status board_status = new Board_status();
+
+
+        if(b_pair_main == null){
             board_status.where = "nowhere";
-            return  board_status;
         }
 
+        if(b_pair_main != null) {
 
             // Určím nadřazenou verzi (Yoda má  version_master_board ostatní b_program_version )
             Version_Object version_object;
-            if(b_pairs.b_program_version != null) version_object = b_pairs.b_program_version;
-            else version_object = b_pairs.version_master_board;
+            if (b_pair_main.b_program_version != null) version_object = b_pair_main.b_program_version;
+            else version_object = b_pair_main.version_master_board;
 
-            if(version_object.b_program_cloud != null) {
-
-                System.out.println("Jakou mám mít verzi C_Programu?");
-
-
-                System.out.print("C_program verze: ");
-
-
-                Board_status board_status = new Board_status();
+            if (version_object.b_program_cloud != null) {
                 board_status.where = "cloud";
-                board_status.b_program_id = version_object.b_program.id;
-                board_status.b_program_version_id = version_object.id;
-                if(actual_c_program_version != null){
+            }
+
+            System.out.println("4");
+
+            if (version_object.b_program_homer != null) {
+                board_status.where = "local";
+            }
+
+            board_status.b_program_id = version_object.b_program.id;
+            board_status.b_program_version_id = version_object.id;
+        }
+
+
+
+        if(actual_c_program_version != null){
                     board_status.actual_c_program_id = actual_c_program_version.c_program.id;
                     board_status.actual_c_program_version_id = actual_c_program_version.id;
-                }else{
-                    board_status.required_c_program_id = b_pairs.c_program_id();
-                    board_status.required_c_program_version_id = b_pairs.c_program_version_id();
+        }
+
+        System.out.println("6");
+
+        if(c_program_update_plans != null){
+
+                    board_status.required_c_program_id = c_program_update_plans.c_program_version_for_update.c_program.id;
+                    board_status.required_c_program_version_id = c_program_update_plans.c_program_version_for_update.id;
                 }
 
-                return board_status;
-            }
+        System.out.println("7");
 
-            if(version_object.b_program_homer != null) {
-                Board_status board_status = new Board_status();
-                board_status.where = "local";
-                board_status.b_program_id = version_object.b_program.id;
-                board_status.b_program_version_id = version_object.id;
-                return board_status;
-            }
+        return board_status;
 
-
-        // V případě že Deska nikde není (není Yoda ani Padavan) - dotáži se některých serverů, zda tam deska není připojená
-
-
-
-        return null;
     }
 
     class Board_status{
+
+        @ApiModelProperty(value = "it can be only: {cloud} pr {local}", readOnly = true, required = true)
         public String where;
         public String b_program_id;
         public String b_program_version_id;
@@ -122,7 +123,7 @@ public class Board extends Model {
     }
 
 
-    @JsonProperty  @Transient public boolean up_to_date(){return  true;}
+    @JsonProperty  @Transient public boolean up_to_date(){return (c_program_update_plans == null);}
 
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/

@@ -9,6 +9,7 @@ import models.blocko.BlockoBlockVersion;
 import models.blocko.Cloud_Blocko_Server;
 import models.blocko.TypeOfBlock;
 import models.compiler.Board;
+import models.compiler.C_Program_Update_Plan;
 import models.compiler.TypeOfBoard;
 import models.compiler.Version_Object;
 import models.person.Person;
@@ -23,6 +24,7 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utilities.Server;
 import utilities.UtilTools;
+import utilities.hardware_updater.Master_Updater;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured;
 import utilities.notification.Notification_level;
@@ -37,6 +39,7 @@ import javax.websocket.server.PathParam;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
@@ -980,7 +983,7 @@ public class ProgramingPackageController extends Controller {
             Version_Object version_object          = new Version_Object();
             version_object.version_name            = help.version_name;
             version_object.version_description     = help.version_description;
-            version_object.azureLinkVersion        = new Date().toString();
+            version_object.azureLinkVersion        = UUID.randomUUID().toString();;
             version_object.date_of_create          = new Date();
             version_object.b_program               = b_program;
 
@@ -1008,6 +1011,9 @@ public class ProgramingPackageController extends Controller {
 
             // Uložení objektu
             version_object.save();
+
+
+
 
             // List do kterého vložím všechny objekty, které vytvořím a uložím je až všechny projdu - protože je musím kontrolovat!
             List<B_Pair> b_pairs = new ArrayList<>();
@@ -1047,9 +1053,9 @@ public class ProgramingPackageController extends Controller {
 
             }
 
+            // Uložím vše
             b_pair_main.save();
             for(B_Pair p : b_pairs) p.save();
-
 
             // Úprava objektu
             b_program.version_objects.add(version_object);
@@ -1190,95 +1196,6 @@ public class ProgramingPackageController extends Controller {
     }
 
 
-/*
-
-    @ApiOperation(value = "connect hardware to B Program (version) ",
-            tags = {"B_Program"},
-            notes = "sconnect to B_Program version users board",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "B_program.update_permission", value = "true"),
-                    })
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  B_Pair.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public  Result connect_b_Program_hardware(@ApiParam(value = "version_id String path", required = true) @PathParam("version_id") String version_id, @ApiParam(value = "board_id String path", required = true) @PathParam("board_id") String board_id ){
-        try{
-
-            Version_Object program  = Version_Object.find.byId(version_id);
-            if (program == null) return GlobalResult.notFoundObject("B_Program b_program_id not found");
-
-            if(program.b_program == null ) return GlobalResult.badRequest("Version_Object is not from B_Program");
-
-            Board board = Board.find.byId(board_id);
-            if (board == null) return GlobalResult.notFoundObject("Board board_id not found");
-
-            if (! program.b_program.update_permission() ) return GlobalResult.forbidden_Permission();
-
-
-            B_Pair b_pair = new B_Pair();
-            b_pair.board = board;
-            b_pair.c_program_version = program;
-            b_pair.save();
-
-
-            return GlobalResult.result_ok(Json.toJson(b_pair));
-
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "disconnect hardware to B Program (version) ",
-            tags = {"B_Program"},
-            notes = "disconnect to B_Program version users board",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "B_program.update_permission", value = "true"),
-                    })
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  B_Pair.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public  Result disconnect_b_Program_hardware(@ApiParam(value = "version_id String path", required = true) @PathParam("version_id") String version_id,  @ApiParam(value = "board_id String path", required = true) @PathParam("board_id") String board_id ){
-        try{
-
-            if( Version_Object.find.byId(version_id) == null) return GlobalResult.notFoundObject("B_Program b_program_id not found");
-            if( Board.find.byId(board_id) == null)            return GlobalResult.notFoundObject("Board board_id not found");
-
-            B_Pair b_pair = B_Pair.find.where().eq("c_program_version.id", version_id).eq("board.id", board_id).findUnique();
-            if(b_pair == null) return GlobalResult.badRequest("Connection not exist!");
-
-            if (! b_pair.c_program_version.b_program.update_permission() ) return GlobalResult.forbidden_Permission();
-
-            b_pair.delete();
-
-            return GlobalResult.result_ok();
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-*/
 
 
     @ApiOperation(value = "upload B_Program (version) to Homer",
@@ -1419,6 +1336,7 @@ public class ProgramingPackageController extends Controller {
             Version_Object version_object = Version_Object.find.byId(version_id);
             if (version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
+
             // Kontrola objektu
             // B program, který chci nahrát do Cloudu na Blocko server
             if (version_object.b_program == null) return GlobalResult.result_BadRequest("Version_Object is not version of B_Program");
@@ -1428,6 +1346,15 @@ public class ProgramingPackageController extends Controller {
             if (! b_program.update_permission() ) return GlobalResult.forbidden_Permission();
 
             // Pokud už nějaká instance běžela, tak na ní budu nahrávat nový program a odstraním vazbu na běžící instanci b programu
+            B_Program_Cloud old_cloud_program = B_Program_Cloud.find.where().eq("version_object.b_program.id", b_program.id).findUnique();
+            if(old_cloud_program != null){
+                // Pokud nahrávám tu samou verzi do cloudu - tak nemá smysl jí smazat a nahrát - proto potvrdím Ok
+                if(old_cloud_program.version_object.id.equals(version_id)) return GlobalResult.result_ok();
+
+                // V opačném příadě smažu
+                old_cloud_program.delete();
+            }
+
             if( version_object.b_program_cloud != null ) {
 
                 if(WebSocketController_Incoming.incomingConnections_homers.containsKey(version_object.b_program_cloud.blocko_instance_name )) WebSocketController_Incoming.homer_destroy_instance(version_object.b_program_cloud.blocko_instance_name);
@@ -1471,7 +1398,31 @@ public class ProgramingPackageController extends Controller {
 
             if( result.get("status").asText().equals("success") ) {
                 // Ukládám po úspěšné nastartvoání programu v cloudu jeho databázový ekvivalent
+                // Vytvořím update plan pro zařízení, která nejsou uptodate
+
+                List<B_Pair> list = program_cloud.version_object.b_pairs_b_program;  // PAdavan zařízení
+                list.add(program_cloud.version_object.master_board_b_pair);          // Master board
+
+                List<C_Program_Update_Plan> c_program_update_plans = new ArrayList<>();
+
+
+                for(B_Pair p : list){
+                    if(p.board.actual_c_program_version == null || !p.board.actual_c_program_version.id.equals(p.c_program_version.id)){
+
+                        if(p.board.c_program_update_plans != null) p.board.c_program_update_plans.delete();
+
+                        C_Program_Update_Plan plan = new C_Program_Update_Plan();
+                        plan.board_for_update =  p.board;
+                        plan.c_program_version_for_update = p.c_program_version;
+                        plan.date_of_create = new Date();
+                        plan.save();
+                        c_program_update_plans.add(plan);
+                    }
+                }
+                Master_Updater.add_new_device_for_update( version_object.b_program.project_id(), c_program_update_plans );
+
                 return GlobalResult.result_ok();
+
             }
 
             // Neproběhlo to úspěšně smažu zástupný objekt!!!

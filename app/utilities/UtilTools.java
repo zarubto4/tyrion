@@ -29,6 +29,7 @@ import java.util.*;
 
 public class UtilTools extends Controller {
 
+    // Loger
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
     public static void add_hashTags_to_Post( List<String> hash_tags, Post post){
@@ -70,6 +71,7 @@ public class UtilTools extends Controller {
 
 
     public static FileRecord uploadAzure_Version(String container_name, String file_content, String file_name, String azureStorageLink, String azurePackageLink, Version_Object version_object, Class object) throws Exception{
+        logger.debug("Azure load: "+ container_name +"/"+ azureStorageLink +"/" + azurePackageLink  +"/" + version_object.azureLinkVersion  +"/" + file_name );
 
         CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
         CloudBlockBlob blob = container.getBlockBlobReference(azureStorageLink +"/" + azurePackageLink  +"/" + version_object.azureLinkVersion  +"/" + file_name);
@@ -89,7 +91,14 @@ public class UtilTools extends Controller {
         return fileRecord;
     }
 
+
     public static FileRecord uploadAzure_Version(String container_name, File file, String file_name, String azureStorageLink, String azurePackageLink, Version_Object version_object, Class object) throws Exception{
+
+        if(azureStorageLink == null) throw new Exception("azureStorageLink == null");
+        if(azurePackageLink == null) throw new Exception("azurePackageLink == null");
+        if(version_object == null)   throw new Exception("version_object == null");
+
+        logger.debug("Azure load: "+ container_name +"/"+ azureStorageLink +"/" + azurePackageLink  +"/" + version_object.azureLinkVersion  +"/" + file_name );
 
         CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
         CloudBlockBlob blob = container.getBlockBlobReference(azureStorageLink +"/" + azurePackageLink  +"/" + version_object.azureLinkVersion  +"/" + file_name);
@@ -106,18 +115,23 @@ public class UtilTools extends Controller {
         version_object.files.add(fileRecord);
         version_object.update();
 
+            // Sobor smažu z adresáře
+            try {
+                file.delete();
+            }catch (Exception e){}
+
         return fileRecord;
     }
 
-    public static File file_get_File_from_Azure(String container_name, String azurePackageLink , String azureStorageLink, String azureLinkVersion, String filename)throws Exception{
+    public static File file_get_File_from_Azure(String container_name, String azurePackageLink , String azureStorageLink, String azureLinkVersion, String file_name)throws Exception{
 
         CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
 
-        System.out.println("azure adresa: " + container_name + "/" +  azureStorageLink   +"/"+  azurePackageLink +"/"+ azureLinkVersion  +"/"+ filename);
+        logger.debug("Azure load: "+ container_name +"/"+ azureStorageLink +"/" + azurePackageLink  +"/" + azureLinkVersion  +"/" + file_name );
 
-        CloudBlob blob = container.getBlockBlobReference( azureStorageLink +"/"+  azurePackageLink+"/"+ azureLinkVersion  +"/"+ filename);
+        CloudBlob blob = container.getBlockBlobReference( azureStorageLink +"/"+  azurePackageLink+"/"+ azureLinkVersion  +"/"+ file_name);
 
-        File fileMain = new File("files/" + azurePackageLink + azureStorageLink + azureLinkVersion + filename);
+        File fileMain = new File("files/" + azurePackageLink + azureStorageLink + azureLinkVersion + file_name);
         // Tento soubor se nesmí zapomínat mazat!!!!
         OutputStream outputStreamMain = new FileOutputStream (fileMain);
 
@@ -159,6 +173,7 @@ public class UtilTools extends Controller {
         return  Base64.getEncoder().encode(data);
     }
 
+
     public static Map<String, String> getMap_From_querry(Set<Map.Entry<String, String[]>> url){
         Map<String, String> map = new HashMap<>();
 
@@ -173,7 +188,8 @@ public class UtilTools extends Controller {
 
     public static void set_Type_of_board(){
 
-        if(TypeOfBoard.find.where().eq("name", "NUCLEO_F411RE").findList() == null){
+        if(TypeOfBoard.find.where().eq("name", "NUCLEO_F411RE").findList().size() < 1){
+
             TypeOfBoard typeOfBoard = new TypeOfBoard();
             typeOfBoard.name = "NUCLEO_F411RE";
             typeOfBoard.connectible_to_internet = true;
@@ -286,7 +302,6 @@ public class UtilTools extends Controller {
         }
 
     }
-
 
 
 

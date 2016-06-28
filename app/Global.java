@@ -34,14 +34,15 @@ public class Global extends GlobalSettings {
            logger.warn("Setting Directory for Files");
            Server.setDirectory();
 
+           logger.warn("Starting actualization threads");
+           Server.startThreads();
+
 
     //****************************************************************************************************************************
             UtilTools.set_Developer_objects(); // TODO bude smazáno - slouží jen k vytvoření prvního uživatele
             UtilTools.set_Homer_Server();
             UtilTools.set_Compilation_Server();
             UtilTools.set_Type_of_board();
-
-            //UtilTools.set_API_Changes();
 
 
        }catch (Exception e){

@@ -25,6 +25,7 @@ import models.project.m_program.M_Project;
 import org.slf4j.LoggerFactory;
 import play.Configuration;
 import play.Play;
+import utilities.hardware_updater.Master_Updater;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -234,5 +235,14 @@ public class Server {
         if (!file.exists()) {
             if (file.mkdir())  play.Logger.warn("Directory \"file\" is created!");
         }
+    }
+
+    public static void startThreads() {
+
+        //1. Nastartovat aktualizační vlákna
+        Master_Updater.start_thread_box();
+
+        //2. ?
+
     }
 }

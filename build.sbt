@@ -28,7 +28,7 @@ libraryDependencies ++= Seq(
   "commons-codec" % "commons-codec" % "1.9",
   "com.cedarsoftware" % "json-io" % "4.4.0",
   "org.pegdown" % "pegdown" % "1.6.0",
-
+  "net.sf.ehcache" % "ehcache" % "2.10.2",
 
   javaJdbc,
   filters,

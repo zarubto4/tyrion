@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import models.compiler.FileRecord;
 import models.compiler.TypeOfBoard;
 import models.compiler.Version_Object;
 import models.project.b_program.B_Pair;
@@ -78,11 +79,16 @@ public class C_Program extends Model {
 
         Swagger_C_Program_Version c_program_versions= new Swagger_C_Program_Version();
 
-        if(version_object.compilation_in_progress) { c_program_versions.compilation_in_progress = true;}
-        c_program_versions.compilable = version_object.compilable;
-        c_program_versions.version_object = version_object;
-        c_program_versions.successfully_compiled = version_object.c_compilation != null;
-        if(version_object.c_compilation != null ) c_program_versions.virtual_input_output = version_object.c_compilation.virtual_input_output;
+
+        c_program_versions.compilation_in_progress  = version_object.compilation_in_progress;
+        c_program_versions.compilable               = version_object.compilable;
+        c_program_versions.version_object           = version_object;
+        c_program_versions.successfully_compiled    = version_object.c_compilation != null;
+        c_program_versions.compilation_restored     = FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "compilation.bin").findRowCount() > 0;
+
+        if(version_object.c_compilation != null ) {
+            c_program_versions.virtual_input_output = version_object.c_compilation.virtual_input_output;
+        }
 
         for(B_Pair b_pair : version_object.b_pairs_c_program){
             c_program_versions.runing_on_board.add(b_pair.board.id);

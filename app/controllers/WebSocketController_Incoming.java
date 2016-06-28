@@ -3,13 +3,13 @@ package controllers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.blocko.Cloud_Blocko_Server;
-import models.compiler.Cloud_Compilation_Server;
-import models.compiler.Version_Object;
+import models.compiler.*;
 import models.person.Person;
 import models.project.b_program.B_Program;
 import models.project.b_program.B_Program_Cloud;
 import models.project.m_program.Grid_Terminal;
 import models.project.m_program.M_Project;
+import org.apache.commons.codec.binary.Base64;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -23,6 +23,7 @@ import java.util.concurrent.*;
 
 
 public class WebSocketController_Incoming extends Controller {
+
 
 // Loger
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
@@ -904,7 +905,6 @@ public class WebSocketController_Incoming extends Controller {
     }
 // PRIVATE Homer -----------------------------------------------------------------------------------------------------------------
 
-
     public static void homer_incoming_message(WebSCType homer, ObjectNode json){
 
         logger.debug("Homer: "+ homer.identifikator + " Incoming message: " + json.toString());
@@ -1012,16 +1012,18 @@ public class WebSocketController_Incoming extends Controller {
             return incomingConnections_homers.get(homer_id).write_with_confirmation(result);
     }
 
-    public static void homer_update_embeddedHW(String homer_id, List<String> board_id_list, byte[] fileInBase64) throws TimeoutException, InterruptedException, IOException {
+    public static JsonNode homer_update_embeddedHW(WebSCType homer, List<String> board_id_list, String string_code) throws TimeoutException, InterruptedException, IOException {
 
         logger.debug("Tyrion: Sending to Hardware new Compilation of code");
 
             ObjectNode result = Json.newObject();
             result.put("messageType", "updateDevice");
             result.set("hardwareId", Json.toJson(board_id_list));
-            result.put("base64Binary", fileInBase64);
 
-            incomingConnections_homers.get(homer_id).write_with_confirmation(result);
+            byte[]   bytesEncoded = Base64.encodeBase64(string_code .getBytes());
+            result.put("base64Binary", bytesEncoded);
+
+          return homer.write_with_confirmation(result);
     }
 
     public static JsonNode homer_upload_program(WebSCType homer, String program_id, String program) throws TimeoutException, InterruptedException {

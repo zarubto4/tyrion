@@ -19,6 +19,7 @@ import play.libs.ws.WSResponse;
 import play.mvc.*;
 import utilities.Server;
 import utilities.UtilTools;
+import utilities.hardware_updater.Master_Updater;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
@@ -335,6 +336,7 @@ public class CompilationLibrariesController extends Controller {
             version_object.version_name        = help.version_name;
             version_object.version_description = help.version_description;
             version_object.date_of_create = new Date();
+            version_object.azureLinkVersion = UUID.randomUUID().toString();
             version_object.c_program = c_program;
 
             // Zkontroluji oprávnění
@@ -396,6 +398,19 @@ public class CompilationLibrariesController extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
     }
+
+    public String download_file_from_Compiler_Server(String url){
+
+        F.Promise<WSResponse> responsePromise = ws.url(url)
+                .setContentType("undefined")
+                .setRequestTimeout(2500)
+                .get();
+
+        String body = responsePromise.get(2500).getBody();
+
+        return body;
+    }
+
 
     @ApiOperation(value = "delete Version in C_program",
             tags = {"C_Program"},
@@ -645,6 +660,16 @@ public class CompilationLibrariesController extends Controller {
                // Ukládám kompilační objekt
                c_compilation.save();
 
+                logger.debug("Trying download bin file");
+               try{
+
+                   String body = download_file_from_Compiler_Server( c_compilation.c_comp_build_url);
+                   if( body != null) {
+                        // Daný soubor potřebuji dostat na Azure a Propojit s verzí
+                        UtilTools.uploadAzure_Version("c-program", body, "compilation.bin", version_object.c_program.azureStorageLink, version_object.c_program.azurePackageLink, version_object, C_Program.class);
+                   }
+               }catch (Exception e){}
+
                return GlobalResult.result_ok(Json.toJson(new Swagger_Compilation_Ok() ));
            }
             // Kompilace nebyla úspěšná a tak vracím obsah neuspěšné kompilace
@@ -879,35 +904,34 @@ public class CompilationLibrariesController extends Controller {
             Swagger_UploadBinaryFileToBoard help = form.get();
 
 
-
             // Ověření objektu
-            Version_Object version_object = Version_Object.find.byId(version_id);
-            if(version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
+            Version_Object c_program_version = Version_Object.find.byId(version_id);
+            if(c_program_version == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
             // Ověření zda je kompilovatelná verze a nebo zda kompilace stále neběží
-            if(!version_object.compilable || version_object.compilation_in_progress) return GlobalResult.result_BadRequest("You cannot upload uncompilable version or compilation in progress");
+            if(!c_program_version.compilable || c_program_version.compilation_in_progress) return GlobalResult.result_BadRequest("You cannot upload uncompilable version or compilation in progress");
 
             //Zkontroluji validitu Verze zda sedí k C_Programu
-            if(version_object.c_program == null) return GlobalResult.result_BadRequest("Version_Object its not version of C_Program");
+            if(c_program_version.c_program == null) return GlobalResult.result_BadRequest("Version_Object its not version of C_Program");
 
             // Zkontroluji oprávnění
-            if(! version_object.c_program.read_permission())  return GlobalResult.forbidden_Permission();
+            if(! c_program_version.c_program.read_permission())  return GlobalResult.forbidden_Permission();
 
             //Zkontroluji zda byla verze už zkompilována
-            if(version_object.c_compilation == null) return GlobalResult.result_BadRequest("The program is not yet compiled");
+            if(c_program_version.c_compilation == null) return GlobalResult.result_BadRequest("The program is not yet compiled");
 
             // Pokud nemám kompilaci a zároveň je kompilační server offline - oznámím nemožnost pokračovat
-            if(FileRecord.find.where().eq("version_object.id", version_object.id).where().eq("file_name", "compilation.bin").findUnique() == null && WebSocketController_Incoming.compiler_cloud_servers.isEmpty()){
+            if(FileRecord.find.where().eq("version_object.id", c_program_version.id).where().eq("file_name", "compilation.bin").findUnique() == null && WebSocketController_Incoming.compiler_cloud_servers.isEmpty()){
                 return GlobalResult.result_BadRequest("We have not your historic compilation and int the same time compilation server for compile your code is offline! So we cannot do anything now :((( ");
             }
 
-            String typeOfBoard_id = version_object.c_program.type_of_board_id();
-
+            String typeOfBoard_id = c_program_version.c_program.type_of_board_id();
 
             // Vyhledání objektů
             List<Board> board_from_request = Board.find.where().idIn(help.board_id).findList();
             if(board_from_request.size() == 0) return GlobalResult.result_BadRequest("no device is available. Does not exist or is decommissioned.");
 
+            // Vyseparované desky nad který lze provádět nějaké operace
             List<Board> board_for_update = Board.find.where().idIn(help.board_id).findList();
             // Kontrola oprávnění
             for(Board board : board_from_request){
@@ -915,73 +939,23 @@ public class CompilationLibrariesController extends Controller {
                 if(board.update_permission() && board.type_of_board_id().equals(typeOfBoard_id)) board_for_update.add(board);
             }
 
+           List<C_Program_Update_Plan> c_program_update_plans = new ArrayList<>();
 
+            for(Board board : board_for_update){
+                board.c_program_update_plans.delete();
 
-            // Jestli ještě Tyrion nemá na Azure kompilaci (bin file) - tak si jí stáhne a uloží a dále s ní pracuje
-            final File file;
-            FileRecord file_record = FileRecord.find.where().eq("version_object.id", version_object.id).where().eq("file_name", "compilation.bin").findUnique();
+                C_Program_Update_Plan plan = new C_Program_Update_Plan();
+                plan.board_for_update = board;
+                plan.c_program_version_for_update = c_program_version;
+                plan.save();
 
-            // Pokud kompilaci  (bin soubor nemám) tak jí stáhnu z kompilačního serveru
-            if( file_record == null) {
-
-                System.out.println("Bin file ještě nemám - stahuju z Compilatoru!");
-
-                // write the inputStream to a File
-                // Example "http://0.0.0.0:8989/7e50e112-b2d3-4ea2-989a-89f415241268.bin"
-                // Beru z názvu url souboru až za posledním lomítkem
-                // Výsledek files/7e50e112-b2d3-4ea2-989a-89f415241268.bin
-                file = new File("files/" + version_object.c_compilation.c_comp_build_url.split("/")[3]);
-
-                F.Promise<File> filePromise = ws.url(version_object.c_compilation.c_comp_build_url).get().map(response -> {
-                    InputStream inputStream = null;
-                    OutputStream outputStream = null;
-                    try {
-                        inputStream = response.getBodyAsStream();
-                        outputStream = new FileOutputStream(file);
-
-                        int read = 0;
-                        byte[] buffer = new byte[1024];
-
-                        while ((read = inputStream.read(buffer)) != -1) {
-                            outputStream.write(buffer, 0, read);
-                        }
-
-                        return file;
-                    } catch (IOException e) {
-                        throw e;
-                    } finally {
-                        if (inputStream != null) {
-                            inputStream.close();
-                        }
-                        if (outputStream != null) {
-                            outputStream.close();
-                        }
-                    }
-                });
-
-                filePromise.get(1000);
-
-                // Daný soubor potřebuji dostat na Azure a Propojit s verzí
-                UtilTools.uploadAzure_Version("c-program", file, "compilation.bin", version_object.c_program.azureStorageLink, version_object.c_program.azurePackageLink, version_object, C_Program.class);
+                c_program_update_plans.add(plan);
             }
 
-            // Pokud kompilaci  (bin soubor mám) tak si jí stáhnu z Azure
-            else{
-                file = file_record.get_fileRecord_from_Azure_inFile();
-            }
+            Master_Updater.add_new_device_for_update( c_program_version.c_program.project_id(), c_program_update_plans );
 
 
-            //While( ) vlákno!
-                // Nahraji na HW
-                // TODO
-                System.out.println("Nahrávám na HARDWARE - Což ještě bohužel není implementováno");
-                for(Board board : board_for_update){
-                        // TODO
-                }
 
-
-            // Smažu soubor se kterým server pracoval
-            file.delete();
 
             // Vracím odpověď
             return GlobalResult.result_ok("Procedura byla spuštěna - uživatel bude informován!");
@@ -1521,7 +1495,7 @@ public class CompilationLibrariesController extends Controller {
 
             // Tvorba Verze
             Version_Object version_object      = new Version_Object();
-            version_object.azureLinkVersion    = new Date().toString();
+            version_object.azureLinkVersion    = UUID.randomUUID().toString();
             version_object.date_of_create      = new Date();
             version_object.version_name        = help.version_name;
             version_object.version_description = help.version_description;
@@ -2033,7 +2007,7 @@ public class CompilationLibrariesController extends Controller {
 
             // Vytvářím novou verzi
             Version_Object version_object = new Version_Object();
-            version_object.azureLinkVersion  = new Date().toString();
+            version_object.azureLinkVersion  = UUID.randomUUID().toString();;
             version_object.date_of_create = new Date();
             version_object.version_name = help.version_name;
             version_object.version_description = help.version_description;
@@ -3252,4 +3226,5 @@ public class CompilationLibrariesController extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
     }
+
 }
