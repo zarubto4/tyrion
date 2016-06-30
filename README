@@ -1,4 +1,12 @@
-﻿# Verze 1.06.6 #
+﻿# Verze 1.06.6.1 #
+
+  * Bylo dodělána obnova hesla.
+  * Propojení uživatelských účtu s wordpressem
+
+http://youtrack.byzance.cz/youtrack/issue/TYRION-271
+
+
+# Verze 1.06.6 #
 ####  20.6.2016 ####
 
 **Změny General:**
@@ -243,7 +251,6 @@ Reply:
   * TODO 16 Mazání souborů na Azure
   * TODO 15 Verzování nasadit i na M_Program!
   * TODO Swagger Dokumentace na objektu B_Program_State a B_Program!!!!!!!!!!!!
-  * TODO 12 Tomáš Z.: Dodělat možnost obnovení hesla
   * TODO 17 Link je také v kodu http://youtrack.byzance.cz/youtrack/issue/TYRION-263
 
 

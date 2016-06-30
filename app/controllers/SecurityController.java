@@ -30,7 +30,7 @@ import utilities.swagger.outboundClass.Login_Social_Network;
 import utilities.swagger.outboundClass.Swagger_Login_Token;
 import utilities.swagger.outboundClass.Swagger_Person_All_Details;
 
-import javax.inject.Inject;
+import com.google.inject.Inject;
 import javax.websocket.server.PathParam;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +39,8 @@ import java.util.Map;
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class SecurityController extends Controller {
 
+    // Rest Api call client
+    @Inject WSClient ws;
 
 //######################################################################################################################
 
@@ -83,7 +85,6 @@ public class SecurityController extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Login_IncomingLogin help = form.get();
 
-
             Person person = Person.findByEmailAddressAndPassword(help.mail, help.password);
             if (person == null) return GlobalResult.forbidden_Permission("Email or password are wrong");
 
@@ -110,6 +111,35 @@ public class SecurityController extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
     }
+
+
+    static String nonce = null;
+    public Result wordpress_login() {
+        try {
+
+            final Form<Login_IncomingLogin> form = Form.form(Login_IncomingLogin.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Login_IncomingLogin help = form.get();
+
+
+            if(nonce == null) {
+                JsonNode jsonRequest_nonce = ws.url("https://www.byzance.cz/api/get_nonce/?controller=auth&method=generate_auth_cookie").get().get(5000).asJson();
+
+                if (!jsonRequest_nonce.has("nonce")) return GlobalResult.result_BadRequest("Authentication server error!");
+                nonce = jsonRequest_nonce.get("nonce").asText();
+            }
+
+            JsonNode jsonRequest = ws.url("https://www.byzance.cz/api/auth/generate_auth_cookie/?nonce=" + nonce  + "&username=" + help.mail + "&password=" + help.password).get().get(5000).asJson();
+            System.out.println(jsonRequest.toString());
+
+            return GlobalResult.result_ok(jsonRequest);
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+
 
     @ApiOperation(value = "get Person by token (after Oauth2 Login -> Facebook, GitHub, Twitter)",
             tags = {"Access", "Person", "Social-GitHub", "Social-Facebook"},
@@ -187,7 +217,7 @@ public class SecurityController extends Controller {
 
 //#### Oaut pro příjem Requestů zvenčí ################################################################################
 
-    @Inject WSClient ws;
+
     // Metoda slouží pro příjem autentifikačních klíču ze sociálních sítí když se přihlásí uživatel.
     // Taktéž spojuje přihlášené účty pod jednu cvirtuální Person - aby v systému bylo jendotné rozpoznávání.
     // V nějaké fázy je nutné mít mail - pokud ho nedostaneme od sociální služby - mělo by někde v kodu být upozornění pro fontEnd
@@ -364,6 +394,7 @@ public class SecurityController extends Controller {
     })
     public Result GitHub( @ApiParam(value = "this is return url address in format  /link/link", required = true) @PathParam("return_link")  String return_link){
         try {
+
             FloatingPersonToken floatingPersonToken = FloatingPersonToken.setProviderKey("GitHub");
 
             floatingPersonToken.returnUrl = return_link;

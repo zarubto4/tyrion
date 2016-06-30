@@ -9,7 +9,7 @@
 ### Testovací ############ Testovací ############### Testovací ################ Testovací ###########################################################################
 ###################################################################################f#################################################################################
 
-GET             /test1                                      @controllers.WikyController.test1()
+POST            /test1                                      @controllers.SecurityController.wordpress_login()
 GET             /test2                                      @controllers.WikyController.test2()
 GET             /test3                                      @controllers.WikyController.test3()
 

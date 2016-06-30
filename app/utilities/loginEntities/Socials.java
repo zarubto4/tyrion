@@ -27,6 +27,21 @@ public class Socials {
         return Facebook;
     }
 
+    public static OAuthService WordPress(String state){
+
+        final OAuthService Facebook = new ServiceBuilder()
+                .provider(new FacebookApi())
+                .apiKey(Server.WordPress_apiKey)
+                .apiSecret(Server.WordPress_clientSecret)
+                .state(state)
+                .callback(Server.WordPress_callBack)
+                .build();
+
+        return Facebook;
+    }
+
+
+
     public static OAuthService GitHub(String state){
 
         final OAuthService GitHub = new ServiceBuilder()

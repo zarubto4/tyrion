@@ -13,7 +13,6 @@ import models.compiler.C_Program_Update_Plan;
 import models.compiler.TypeOfBoard;
 import models.compiler.Version_Object;
 import models.person.Person;
-import models.person.PersonPermission;
 import models.project.b_program.*;
 import models.project.global.Project;
 import play.data.Form;
@@ -1703,17 +1702,12 @@ public class ProgramingPackageController extends Controller {
                 // Kontrola objektu
                 Project project = Project.find.byId(help.project_id);
                 if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
+                if(! project.update_permission()) return GlobalResult.forbidden_Permission();
 
                 // Úprava objektu
                 typeOfBlock.project = project;
 
             }
-
-            System.out.println("");
-            PersonPermission permission = PersonPermission.find.byId("TypeOfBlock_create");
-            if(permission == null)  System.out.println("Oprávnění neexistuje");
-            else System.out.println("Oprávnění existuje");
-
 
             // Kontrola oprávnění těsně před uložením podle standardu
             if (! typeOfBlock.create_permission() ) return GlobalResult.forbidden_Permission();

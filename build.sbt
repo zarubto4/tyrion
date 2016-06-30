@@ -29,6 +29,7 @@ libraryDependencies ++= Seq(
   "com.cedarsoftware" % "json-io" % "4.4.0",
   "org.pegdown" % "pegdown" % "1.6.0",
   "net.sf.ehcache" % "ehcache" % "2.10.2",
+  "com.microsoft.azure" % "adal4j" % "1.1.3",
 
   javaJdbc,
   filters,

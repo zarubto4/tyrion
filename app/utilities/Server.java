@@ -55,6 +55,12 @@ public class Server {
     public static String Facebook_url;
     public static String Facebook_apiKey;
 
+    public static String WordPress_callBack;
+    public static String WordPress_clientSecret;
+    public static String WordPress_url;
+    public static String WordPress_apiKey;
+
+
     public static Boolean server_mode;
     public static String server_version;
 
@@ -103,6 +109,11 @@ public class Server {
             Facebook_url                        = Configuration.root().getString("Facebook.localhost.url");
             Facebook_apiKey                     = Configuration.root().getString("Facebook.localhost.apiKey  ");
 
+            WordPress_callBack                   = tyrion_serverAddress + Configuration.root().getString("WordPress.localhost.callBack");
+            WordPress_clientSecret               = Configuration.root().getString("WordPress.localhost.clientSecret");
+            WordPress_url                        = Configuration.root().getString("WordPress.localhost.url");
+            WordPress_apiKey                     = Configuration.root().getString("WordPress.localhost.apiKey  ");
+
         }
         else   {
 
@@ -129,6 +140,10 @@ public class Server {
             Facebook_url                        = Configuration.root().getString("Facebook.production.url");
             Facebook_apiKey                     = Configuration.root().getString("Facebook.production.apiKey  ");
 
+            WordPress_callBack                   = tyrion_serverAddress + Configuration.root().getString("WordPress.production.callBack");
+            WordPress_clientSecret               = Configuration.root().getString("WordPress.production.clientSecret");
+            WordPress_url                        = Configuration.root().getString("WordPress.production.url");
+            WordPress_apiKey                     = Configuration.root().getString("WordPress.production.apiKey  ");
 
         }
 
