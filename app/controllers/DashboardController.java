@@ -19,8 +19,8 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.twirl.api.Html;
 import utilities.Server;
-import utilities.UtilTools;
 import utilities.loggy.Loggy;
+import utilities.swagger.swagger_diff_tools.Swagger_diff_Controller;
 import utilities.swagger.swagger_diff_tools.servise_class.Swagger_Diff;
 import utilities.webSocket.*;
 import views.html.*;
@@ -35,8 +35,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
+/**
+ * CONTROLLER je určen pro jednoduchý frontend, který slouží pro zobrazení stavu backendu, základních informací,
+ * ovládání websocketu a čtení readme. Dále podpora pro porovnávání změn nad dokumentací ze Swaggeru.
+ * */
 public class DashboardController extends Controller {
 
+    // Logger pro zaznamenávání chyb
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
     Integer connectedHomers          =  WebSocketController_Incoming.incomingConnections_homers.size();
@@ -54,8 +59,6 @@ public class DashboardController extends Controller {
 
     // Úvodní zobrazení Dashboard
     public Result index() {
-
-        logger.info("Creating index.html content");
 
         Html menu_html = menu.render(reported_bugs, connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers, connectedCompile_servers, link_api_swagger);
 
@@ -91,13 +94,7 @@ public class DashboardController extends Controller {
                 Cloud_Compilation_Server.find.all()
         );
 
-        logger.info("Return html content");
-
-        return ok( main.render(menu_html,
-                content_html,
-                server_mode,
-                server_version));
-
+        return ok( main.render(menu_html, content_html, server_mode, server_version));
     }
 
 // README ###############################################################################################################
@@ -132,7 +129,7 @@ public class DashboardController extends Controller {
             for (String line : Files.readAllLines(Paths.get("README"), StandardCharsets.UTF_8)) text += line + "\n";
 
             Html menu_html = menu.render(reported_bugs, connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers, connectedCompile_servers, link_api_swagger);
-            Swagger_Diff swagger_diff = UtilTools.set_API_Changes();
+            Swagger_Diff swagger_diff = Swagger_diff_Controller.set_API_Changes();
             Html content = Api_Div.render(swagger_diff, link_api_swagger);
             logger.debug("Return show_readme.html content");
 

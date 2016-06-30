@@ -4,7 +4,6 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.compiler.Version_Object;
 import models.project.b_program.B_Program;
@@ -16,12 +15,6 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
-@ApiModel( value =
-        "<h3>Permissions:</h3>" +
-        "<span style=\"color: green\">"    + M_Project.create_permission_docs +  "</span>" +
-        "<br><span style=\"color: blue\">" + M_Project.read_permission_docs +    "</span>" +
-        "<br>"
-)
 public class M_Project extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/

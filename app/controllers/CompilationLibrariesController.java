@@ -6,8 +6,6 @@ import com.avaje.ebean.Query;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
-import com.microsoft.azure.storage.blob.CloudBlobContainer;
-import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import io.swagger.annotations.*;
 import models.compiler.*;
 import models.project.c_program.C_Compilation;
@@ -17,9 +15,11 @@ import play.data.Form;
 import play.libs.F;
 import play.libs.Json;
 import play.libs.ws.WSClient;
+import play.libs.ws.WSResponse;
 import play.mvc.*;
 import utilities.Server;
 import utilities.UtilTools;
+import utilities.hardware_updater.Master_Updater;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
@@ -28,8 +28,7 @@ import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Board_List;
 import utilities.swagger.outboundClass.Filter_List.Swagger_LibraryGroup_List;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Single_Library_List;
-import utilities.swagger.outboundClass.Swagger_Compilation_Build_Error;
-import utilities.swagger.outboundClass.Swagger_File_Content;
+import utilities.swagger.outboundClass.*;
 
 import javax.websocket.server.PathParam;
 import java.io.*;
@@ -46,7 +45,12 @@ import java.util.*;
 @Security.Authenticated(Secured.class)
 public class CompilationLibrariesController extends Controller {
 
-    @Inject WSClient ws; // Určeno pro stahování souborů z kompilačního serveru
+    // Rest Api call client
+    @Inject WSClient ws;
+
+    // Loger
+    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+
 
 // C_ Program && Version ###############################################################################################*/
 
@@ -183,7 +187,7 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Version_Object.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_C_Program_Version.class),
             @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -198,13 +202,13 @@ public class CompilationLibrariesController extends Controller {
             if(version_object == null) return GlobalResult.notFoundObject("Version_Object version_object not found");
 
             //Zkontroluji validitu Verze zda sedí k C_Programu
-            if(version_object.c_program == null) return GlobalResult.badRequest("Version_Object its not version of C_Program");
+            if(version_object.c_program == null) return GlobalResult.result_BadRequest("Version_Object its not version of C_Program");
 
             // Zkontroluji oprávnění
             if(! version_object.c_program.read_permission())  return GlobalResult.forbidden_Permission();
 
             // Vracím Objekt
-            return GlobalResult.result_ok(Json.toJson(version_object));
+            return GlobalResult.result_ok(Json.toJson(version_object.c_program.program_version(version_object)));
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -304,14 +308,15 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful created",      response = C_Program.class),
+            @ApiResponse(code = 200, message = "Successful created",      response = Swagger_C_Program_Version.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result new_C_Program_Version(@ApiParam(value = "c_program_id String query", required = true) @PathParam("c_program_id") String c_program_id){
+    public Result new_C_Program_Version(@ApiParam(value = "version_id String query", required = true) @PathParam("c_program_id") String c_program_id){
         try{
 
             // Zpracování Json
@@ -331,98 +336,13 @@ public class CompilationLibrariesController extends Controller {
             version_object.version_name        = help.version_name;
             version_object.version_description = help.version_description;
             version_object.date_of_create = new Date();
+            version_object.azureLinkVersion = UUID.randomUUID().toString();
             version_object.c_program = c_program;
-
-            // Nastavím azure Link version (adresářovou cestu souboru na unikátní jmono (aktuální čas)
-            version_object.azureLinkVersion = new Date().toString();
-
-            // Uložení změn
-            version_object.save();
-
-            // Přiřazení verze do Objektu
-            c_program.version_objects.add(version_object);
-
-            // Uložení změn
-            c_program.update();
-
-            // Nahraji do Azure Json v této podobě a připojí do verze soubor
-            if(help.code != null) {
-                ObjectNode content = Json.newObject();
-                content.put("code", help.code);
-                content.set("user_files", Json.toJson(help.user_files));
-                content.set("external_libraries", Json.toJson(help.external_libraries));
-
-                UtilTools.uploadAzure_Version("c-program", content.toString(), "c-program", c_program.azureStorageLink, c_program.azurePackageLink, version_object);
-            }
-
-            // Vrácení objektu
-            return GlobalResult.created(Json.toJson(c_program));
-
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "update Version of C_Program",
-            tags = {"C_Program"},
-            notes = "Update C_program Version code",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "C_Program.update_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "C_program_update"),
-                    })
-            }
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_C_Program_Version_Update",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successful updated",      response = Version_Object.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result update_C_Program_Version(@ApiParam(value = "version_id String query", required = true) @PathParam("c_program_id") String version_id){
-        try{
-
-            // Zpracování Json
-            Form<Swagger_C_Program_Version_Update> form = Form.form(Swagger_C_Program_Version_Update.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-            Swagger_C_Program_Version_Update help = form.get();
-
-            // Ověření objektu
-            Version_Object version_object = Version_Object.find.byId(version_id);
-            if(version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
-
-            //Zkontroluji validitu Verze zda sedí k C_Programu
-            if(version_object.c_program == null) return GlobalResult.badRequest("Version_Object its not version of C_Program");
 
             // Zkontroluji oprávnění
             if(!version_object.c_program.update_permission()) return GlobalResult.forbidden_Permission();
 
-            // Smažu předchozí soubor  pokud existuje
-            FileRecord old_file = FileRecord.find.where().eq("version_object.id",version_id).eq("file_name","c-program").findUnique();
-            if(old_file != null){
-                UtilTools.remove_file_from_Azure(old_file);
-                old_file.delete();
-            }
-
-            // Smažu předchozí soubor  pokud existuje
-            if(version_object.c_compilation != null)  version_object.c_compilation.delete();
+            version_object.save();
 
             // Nahraje do Azure a připojí do verze soubor
             ObjectNode  content = Json.newObject();
@@ -431,15 +351,66 @@ public class CompilationLibrariesController extends Controller {
                         content.set("external_libraries", Json.toJson( help.external_libraries) );
 
             // Content se nahraje na Azure
-            UtilTools.uploadAzure_Version("c-program", content.toString() , "c-program", version_object.c_program.azureStorageLink, version_object.c_program.azurePackageLink, version_object);
+            UtilTools.uploadAzure_Version("c-program", content.toString() , "c-program", version_object.c_program.azureStorageLink, version_object.c_program.azurePackageLink, version_object, C_Program.class);
+
+
+            String token = request().getHeader("X-AUTH-TOKEN");
+            version_object.compilation_in_progress = true;
+            version_object.compilable = true;
+            version_object.update();
+
+            Thread compile_that = new Thread() {
+                @Override
+                public void run() {
+                    try {
+
+
+                       F.Promise<WSResponse> responsePromise = ws.url(Server.tyrion_serverAddress + "/compilation/c_program/version/compile/" + version_object.id)
+                                .setContentType("undefined")
+                                .setMethod("PUT")
+                                .setHeader("X-AUTH-TOKEN", token)
+                                .setRequestTimeout(50000)
+                                .put("");
+
+                        JsonNode result = responsePromise.get(50000).asJson();
+
+                         // At se deje co se deje nakonci stejnak musím změnit stav compilation_in_progress = false.
+                         // A objekt hledám znovu protože na druhe strane ho nekdo mohl updatovat o nove iformace a ty bych updatem na puvodnim objeektu přemazal
+                         Version_Object update_version = Version_Object.find.byId(version_object.id);
+                         update_version.compilation_in_progress = false;
+                         update_version.update();
+                         return;
+
+
+                    }catch (Exception e){
+                        logger.error("Error while server tried compile version of C_program", e);
+                    }
+
+                }
+            };
+
+            compile_that.start();
 
             // Vracím vytvořený objekt
-            return GlobalResult.created(Json.toJson(version_object));
+            return GlobalResult.created(Json.toJson(c_program.program_version(version_object)));
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }
     }
+
+    public String download_file_from_Compiler_Server(String url){
+
+        F.Promise<WSResponse> responsePromise = ws.url(url)
+                .setContentType("undefined")
+                .setRequestTimeout(2500)
+                .get();
+
+        String body = responsePromise.get(2500).getBody();
+
+        return body;
+    }
+
 
     @ApiOperation(value = "delete Version in C_program",
             tags = {"C_Program"},
@@ -469,7 +440,7 @@ public class CompilationLibrariesController extends Controller {
             if (version_object == null) return GlobalResult.notFoundObject("Version version_id not found");
 
             // Zkontroluji validitu Verze zda sedí k C_Programu
-            if(version_object.c_program == null) return GlobalResult.badRequest("Version_Object its not version of C_Program");
+            if(version_object.c_program == null) return GlobalResult.result_BadRequest("Version_Object its not version of C_Program");
 
             // Kontrola oprávnění
             if(!version_object.c_program.delete_permission()) return GlobalResult.forbidden_Permission();
@@ -598,7 +569,7 @@ public class CompilationLibrariesController extends Controller {
     @ApiOperation(value = "compile C_program Version",
             tags = {"C_Program"},
             notes = "Compile specific version of C_program - before compilation - you have to update (save) version code",
-            produces = "application/json",
+            produces = "multipart/form-data",
             protocols = "https",
             code = 200,
             extensions = {
@@ -612,7 +583,7 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Compilation successful", response =  Result_ok.class),
+            @ApiResponse(code = 200, message = "Compilation successful", response =  C_Compilation.class),
             @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 400, message = "Compilation unsuccessful", response =  Swagger_Compilation_Build_Error.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -622,6 +593,8 @@ public class CompilationLibrariesController extends Controller {
     public Result compile_C_Program_version( @ApiParam(value = "version_id String query",   required = true) @PathParam("version_id") String version_id ){
         try{
 
+            logger.debug("Starting compilation on version_id = " + version_id);
+
             // Ověření objektu
             Version_Object version_object = Version_Object.find.byId(version_id);
             if(version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
@@ -630,36 +603,51 @@ public class CompilationLibrariesController extends Controller {
             FileRecord file = FileRecord.find.fetch("version_object.c_program").fetch("version_object").where().eq("version_object.id", version_id).where().eq("file_name", "c-program").findUnique();
             if(file == null) return GlobalResult.notFoundObject("First save version content");
 
+            // Smažu předchozí kompilaci
+            if(version_object.c_program == null) return GlobalResult.result_BadRequest("Version is not version of C_Program");
+
             // Kontrola oprávnění
             if(!version_object.c_program.read_permission()) return GlobalResult.forbidden_Permission();
 
             // Smažu předchozí kompilaci
-            if(version_object.c_compilation != null) version_object.c_compilation.delete();
+            if(version_object.c_compilation != null) return GlobalResult.result_ok(Json.toJson( new Swagger_Compilation_Ok()));
 
             // Zpracování Json
             JsonNode json = Json.parse( file.get_fileRecord_from_Azure_inString() );
             Form<Swagger_C_Program_Version_Update> form = Form.form(Swagger_C_Program_Version_Update.class).bind(json);
             Swagger_C_Program_Version_Update help = form.get();
 
+
+            TypeOfBoard typeOfBoard = TypeOfBoard.find.where().eq("c_programs.id", version_object.c_program.id).findUnique();
+            if(typeOfBoard == null) return GlobalResult.result_BadRequest("Version is not version of C_Program");
+
+
+            logger.debug("Server has all the information it needs ");
+
             // Vytvářím objekt, jež se zašle přes websocket ke kompilaci
             ObjectNode result = Json.newObject();
                        result.put("messageType", "build");
-                       result.put("target", version_object.c_program.type_of_board.name);
+                       result.put("target", typeOfBoard.name);
                        result.put("libVersion", "v0");
+                       result.put("versionId", version_id);
                        result.put("code", help.comprimate_code());
                        result.set("includes", help.includes());
 
+            logger.debug("Server checks compilation server");
             // Kontroluji zda je nějaký kompilační server připojený
-            if(WebSocketController_Incoming.compiler_cloud_servers.isEmpty()) return GlobalResult.result_BadRequest("Compilation server is offline!");
+            if(WebSocketController_Incoming.compiler_cloud_servers.isEmpty()) return GlobalResult.result_BadRequest("Compilation server is offline!", "server_offline");
 
+            logger.debug("Server send c++ program for compilation");
             // Odesílám na compilační server
             JsonNode compilation_result = WebSocketController_Incoming.compiler_server_make_Compilation(SecurityController.getPerson(), result);
 
 
             // V případě úspěšného buildu obsahuje příchozí JsonNode buildUrl
            if( compilation_result.has("buildUrl") ){
-
+               logger.debug("Build was succesfull");
                // Updatuji verzi - protože vše proběhlo v pořádku
+               version_object.compilation_in_progress = false;
+               version_object.compilable = true;
                version_object.update();
 
                // Vytvářím objekt hotové kompilace
@@ -672,19 +660,46 @@ public class CompilationLibrariesController extends Controller {
                // Ukládám kompilační objekt
                c_compilation.save();
 
-               return GlobalResult.result_ok();
+                logger.debug("Trying download bin file");
+               try{
+
+                   String body = download_file_from_Compiler_Server( c_compilation.c_comp_build_url);
+                   if( body != null) {
+                        // Daný soubor potřebuji dostat na Azure a Propojit s verzí
+                        UtilTools.uploadAzure_Version("c-program", body, "compilation.bin", version_object.c_program.azureStorageLink, version_object.c_program.azurePackageLink, version_object, C_Program.class);
+                   }
+               }catch (Exception e){}
+
+               return GlobalResult.result_ok(Json.toJson(new Swagger_Compilation_Ok() ));
            }
             // Kompilace nebyla úspěšná a tak vracím obsah neuspěšné kompilace
            else if(compilation_result.has("buildErrors")){
-               return GlobalResult.result_BadRequest(Json.toJson(compilation_result.get("buildErrors")));
+               logger.debug("Build wasn't succesfull - buildErrors");
+               version_object.compilable = false;
+               version_object.update();
+
+               Form< Swagger_Compilation_Build_Error> form_compilation =  Form.form(Swagger_Compilation_Build_Error.class).bind(compilation_result.get("buildErrors").get(0) );
+               Swagger_Compilation_Build_Error swagger_compilation_build_error = form_compilation.get();
+
+
+               return GlobalResult.result_BadRequest(Json.toJson( swagger_compilation_build_error ));
 
             // Nebylo úspěšné ani odeslání reqestu - Chyba v konfiguraci a tak vracím defaulní chybz
            }else if(compilation_result.has("error") ){
-               return GlobalResult.result_BadRequest(Json.toJson(compilation_result.get("error")));
+
+               logger.debug("Build wasn't successful - error in communication");
+               version_object.compilable = false;
+               version_object.update();
+
+               return GlobalResult.result_BadRequest("system_error");
            }
 
+            logger.error("Build wasn't successful - unknown error!!");
+            version_object.compilable = false;
+            version_object.update();
+
            // Neznámá chyba se kterou nebylo počítání
-           return GlobalResult.result_BadRequest("Unknown error");
+           return GlobalResult.result_BadRequest("unknown_error");
 
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
@@ -731,7 +746,7 @@ public class CompilationLibrariesController extends Controller {
             Swagger_C_Program_Version_Update help = form.get();
 
             // Ověření objektu
-            if(help.type_of_board_id.isEmpty()) return GlobalResult.badRequest("type_of_board_id is missing!");
+            if(help.type_of_board_id.isEmpty()) return GlobalResult.result_BadRequest("type_of_board_id is missing!");
 
             // Ověření objektu
             TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(help.type_of_board_id);
@@ -745,7 +760,7 @@ public class CompilationLibrariesController extends Controller {
                        result.put("code", help.comprimate_code());
                        result.set("includes", help.includes());
 
-                        if(WebSocketController_Incoming.compiler_cloud_servers.isEmpty()) return GlobalResult.result_BadRequest("Compilation server is offline!");
+            if(WebSocketController_Incoming.compiler_cloud_servers.isEmpty()) return GlobalResult.result_BadRequest("Compilation server is offline!");
 
             // Odesílám na compilační server
             JsonNode compilation_result = WebSocketController_Incoming.compiler_server_make_Compilation(SecurityController.getPerson(), result);
@@ -815,13 +830,14 @@ public class CompilationLibrariesController extends Controller {
             Swagger_UploadBinaryFileToBoard help = form.get();
 
             // Vyhledání objektů
-            List<Board> boardList = Board.find.where().idIn(help.board_id).findList();
-            if(boardList.size() == 0) return GlobalResult.result_BadRequest("no devices to update");
+            List<Board> board_from_request = Board.find.where().idIn(help.board_id).findList();
+            if(board_from_request.size() == 0) return GlobalResult.result_BadRequest("no device is available. Does not exist or is decommissioned.");
 
+            List<Board> board_for_update = Board.find.where().idIn(help.board_id).findList();
             // Kontrola oprávnění
-            for(Board board : boardList){
+            for(Board board : board_from_request){
                 // Kontrola oprávnění
-                if(!board.update_permission()) return GlobalResult.forbidden_Permission();
+                if(board.update_permission()) board_for_update.add(board);
             }
 
             // Přijmu soubor
@@ -829,7 +845,7 @@ public class CompilationLibrariesController extends Controller {
             Http.MultipartFormData.FilePart file = body.getFile("file");
 
             // Zkontroluji soubor
-            if (file == null) return GlobalResult.notFoundObject("File not found");
+            if (file == null) return GlobalResult.notFoundObject("Bin File not found!");
             byte[] file_inBase64 = UtilTools.loadFile_inBase64( file.getFile() );
 
 
@@ -887,98 +903,62 @@ public class CompilationLibrariesController extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_UploadBinaryFileToBoard help = form.get();
 
-            // Vyhledání objektů
-            List<Board> boardList = Board.find.where().idIn(help.board_id).findList();
-            if(boardList.size() == 0) return GlobalResult.result_BadRequest("no devices to update");
-
-            // Kontrola oprávnění
-            for(Board board : boardList){
-                // Kontrola oprávnění
-                if(!board.update_permission()) return GlobalResult.forbidden_Permission();
-            }
 
             // Ověření objektu
-            Version_Object version_object = Version_Object.find.byId(version_id);
-            if(version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
+            Version_Object c_program_version = Version_Object.find.byId(version_id);
+            if(c_program_version == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
+
+            // Ověření zda je kompilovatelná verze a nebo zda kompilace stále neběží
+            if(!c_program_version.compilable || c_program_version.compilation_in_progress) return GlobalResult.result_BadRequest("You cannot upload uncompilable version or compilation in progress");
 
             //Zkontroluji validitu Verze zda sedí k C_Programu
-            if(version_object.c_program == null) return GlobalResult.badRequest("Version_Object its not version of C_Program");
+            if(c_program_version.c_program == null) return GlobalResult.result_BadRequest("Version_Object its not version of C_Program");
 
             // Zkontroluji oprávnění
-            if(! version_object.c_program.read_permission())  return GlobalResult.forbidden_Permission();
+            if(! c_program_version.c_program.read_permission())  return GlobalResult.forbidden_Permission();
 
             //Zkontroluji zda byla verze už zkompilována
-            if(version_object.c_compilation == null) return GlobalResult.result_BadRequest("The program is not yet compiled");
+            if(c_program_version.c_compilation == null) return GlobalResult.result_BadRequest("The program is not yet compiled");
 
             // Pokud nemám kompilaci a zároveň je kompilační server offline - oznámím nemožnost pokračovat
-            if(FileRecord.find.where().eq("version_object.id", version_object.id).where().eq("file_name", "compilation.bin").findUnique() == null && WebSocketController_Incoming.compiler_cloud_servers.isEmpty()){
+            if(FileRecord.find.where().eq("version_object.id", c_program_version.id).where().eq("file_name", "compilation.bin").findUnique() == null && WebSocketController_Incoming.compiler_cloud_servers.isEmpty()){
                 return GlobalResult.result_BadRequest("We have not your historic compilation and int the same time compilation server for compile your code is offline! So we cannot do anything now :((( ");
             }
 
-            // Jestli ještě Tyrion nemá na Azure kompilaci (bin file) - tak si jí stáhne a uloží a dále s ní pracuje
-            final File file;
-            FileRecord file_record = FileRecord.find.where().eq("version_object.id", version_object.id).where().eq("file_name", "compilation.bin").findUnique();
+            String typeOfBoard_id = c_program_version.c_program.type_of_board_id();
 
-            // Pokud kompilaci  (bin soubor nemám) tak jí stáhnu z kompilačního serveru
-            if( file_record == null) {
+            // Vyhledání objektů
+            List<Board> board_from_request = Board.find.where().idIn(help.board_id).findList();
+            if(board_from_request.size() == 0) return GlobalResult.result_BadRequest("no device is available. Does not exist or is decommissioned.");
 
-                System.out.println("Bin file ještě nemám - stahuju z Compilatoru!");
-
-                // write the inputStream to a File
-                // Example "http://0.0.0.0:8989/7e50e112-b2d3-4ea2-989a-89f415241268.bin"
-                // Beru z názvu url souboru až za posledním lomítkem
-                // Výsledek files/7e50e112-b2d3-4ea2-989a-89f415241268.bin
-                file = new File("files/" + version_object.c_compilation.c_comp_build_url.split("/")[3]);
-
-                F.Promise<File> filePromise = ws.url(version_object.c_compilation.c_comp_build_url).get().map(response -> {
-                    InputStream inputStream = null;
-                    OutputStream outputStream = null;
-                    try {
-                        inputStream = response.getBodyAsStream();
-                        outputStream = new FileOutputStream(file);
-
-                        int read = 0;
-                        byte[] buffer = new byte[1024];
-
-                        while ((read = inputStream.read(buffer)) != -1) {
-                            outputStream.write(buffer, 0, read);
-                        }
-
-                        return file;
-                    } catch (IOException e) {
-                        throw e;
-                    } finally {
-                        if (inputStream != null) {
-                            inputStream.close();
-                        }
-                        if (outputStream != null) {
-                            outputStream.close();
-                        }
-                    }
-                });
-
-                filePromise.get(1000);
-
-                // Daný soubor potřebuji dostat na Azure a Propojit s verzí
-                UtilTools.uploadAzure_Version("c-program", file, "compilation.bin", version_object.c_program.azureStorageLink, version_object.c_program.azurePackageLink, version_object);
+            // Vyseparované desky nad který lze provádět nějaké operace
+            List<Board> board_for_update = Board.find.where().idIn(help.board_id).findList();
+            // Kontrola oprávnění
+            for(Board board : board_from_request){
+                // Kontrola oprávnění
+                if(board.update_permission() && board.type_of_board_id().equals(typeOfBoard_id)) board_for_update.add(board);
             }
 
-            // Pokud kompilaci  (bin soubor mám) tak si jí stáhnu z Azure
-            else{
-                file = file_record.get_fileRecord_from_Azure_inFile();
+           List<C_Program_Update_Plan> c_program_update_plans = new ArrayList<>();
+
+            for(Board board : board_for_update){
+                board.c_program_update_plans.delete();
+
+                C_Program_Update_Plan plan = new C_Program_Update_Plan();
+                plan.board_for_update = board;
+                plan.c_program_version_for_update = c_program_version;
+                plan.save();
+
+                c_program_update_plans.add(plan);
             }
 
-            // TODO
-
-            System.out.println("Nahrávám na HARDWARE - Což ještě bohužel není implementováno");
+            Master_Updater.add_new_device_for_update( c_program_version.c_program.project_id(), c_program_update_plans );
 
 
 
-            // Smažu soubor se kterým server pracoval
-            file.delete();
 
             // Vracím odpověď
-            return GlobalResult.result_ok();
+            return GlobalResult.result_ok("Procedura byla spuštěna - uživatel bude informován!");
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -1419,13 +1399,6 @@ public class CompilationLibrariesController extends Controller {
                     })
             }
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful created",      response = LibraryGroup.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(
@@ -1437,6 +1410,13 @@ public class CompilationLibrariesController extends Controller {
                     )
             }
     )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successful created",      response = LibraryGroup.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @BodyParser.Of(BodyParser.Json.class)
     public Result new_LibraryGroup() {
         try {
@@ -1515,7 +1495,7 @@ public class CompilationLibrariesController extends Controller {
 
             // Tvorba Verze
             Version_Object version_object      = new Version_Object();
-            version_object.azureLinkVersion    = new Date().toString();
+            version_object.azureLinkVersion    = UUID.randomUUID().toString();
             version_object.date_of_create      = new Date();
             version_object.version_name        = help.version_name;
             version_object.version_description = help.version_description;
@@ -1571,7 +1551,7 @@ public class CompilationLibrariesController extends Controller {
             if (version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
             // Kontrola validity
-            if (version_object.library_group == null) return GlobalResult.badRequest("Version object is not version of Library Group");
+            if (version_object.library_group == null) return GlobalResult.result_BadRequest("Version object is not version of Library Group");
             LibraryGroup library_group = version_object.library_group;
 
             // Kontrola oprávnění
@@ -1590,21 +1570,8 @@ public class CompilationLibrariesController extends Controller {
                 // Mám soubor
                 File libraryFile = file.getFile();
 
-                // Připojuji se a tvořím cestu souboru
-                CloudBlobContainer container = Server.blobClient.getContainerReference("libraries");
+                UtilTools.uploadAzure_Version("libraries", libraryFile, "library.txt", library_group.azureStorageLink, library_group.azurePackageLink, version_object, LibraryGroup.class);
 
-                String azurePath =library_group.azureStorageLink + "/" +  library_group.azurePackageLink + "/" + version_object.azureLinkVersion + "/" + fileName;
-
-                CloudBlockBlob blob = container.getBlockBlobReference(azurePath);
-
-                blob.upload(new FileInputStream(libraryFile), libraryFile.length());
-
-                fileRecord = new FileRecord();
-                fileRecord.file_name = fileName;
-                fileRecord.version_object = version_object;
-                fileRecord.save();
-
-                version_object.save();
             }
 
             // Vracím Objekt
@@ -1703,14 +1670,6 @@ public class CompilationLibrariesController extends Controller {
                     })
             }
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successful created",      response = LibraryGroup.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(
@@ -1722,6 +1681,14 @@ public class CompilationLibrariesController extends Controller {
                     )
             }
     )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successful created",      response = LibraryGroup.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @BodyParser.Of(BodyParser.Json.class)
     public Result editLibraryGroup(@ApiParam(value = "libraryGroup_id String query", required = true) @PathParam("libraryGroup_id") String libraryGroup_id) {
         try {
@@ -1904,7 +1871,6 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 200
             // TODO oprávnění
-
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_File_Content.class),
@@ -1918,7 +1884,6 @@ public class CompilationLibrariesController extends Controller {
             // Kontrola validity objektu
             FileRecord fileRecord = FileRecord.find.fetch("version_object").where().eq("id", file_record_id).findUnique();
             if (fileRecord == null) return GlobalResult.notFoundObject("FileRecord file_record_id not found");
-
 
             // Swagger_File_Content - Zástupný dokumentační objekt
 
@@ -2042,7 +2007,7 @@ public class CompilationLibrariesController extends Controller {
 
             // Vytvářím novou verzi
             Version_Object version_object = new Version_Object();
-            version_object.azureLinkVersion  = new Date().toString();
+            version_object.azureLinkVersion  = UUID.randomUUID().toString();;
             version_object.date_of_create = new Date();
             version_object.version_name = help.version_name;
             version_object.version_description = help.version_description;
@@ -2073,10 +2038,12 @@ public class CompilationLibrariesController extends Controller {
             if(version_object == null ) return GlobalResult.result_BadRequest("Version_Object with version_id not exist");
 
             // Kontrola zda je verze verzí single library
-            if(version_object.single_library == null ) return GlobalResult.badRequest("Version is not version of SingleLibrary");
+            if(version_object.single_library == null ) return GlobalResult.result_BadRequest("Version is not version of SingleLibrary");
 
             // ZDa už neobsahuje soubor
             if (version_object.files.size() > 0) return GlobalResult.result_BadRequest("Version_Object has file already.. Create new Version_Object ");
+            version_object.date_of_create = new Date();
+            version_object.update();
 
             // Kontrola jména
             String fileName = file.getFilename();
@@ -2085,24 +2052,8 @@ public class CompilationLibrariesController extends Controller {
             // Tvorba souboru
             File libraryFile = file.getFile();
 
-            //Tvorba zástupného objektu v DB
-            FileRecord fileRecord =  new FileRecord();
-            fileRecord.file_name = fileName;
-            fileRecord.save();
-
-            // Nahrátí souboru na cloud azure server
-            CloudBlobContainer container = Server.blobClient.getContainerReference("libraries");
-            String azurePath = version_object.single_library.azureStorageLink + "/" +  version_object.single_library.azurePackageLink + "/" + version_object.azureLinkVersion + "/" + fileName;
-            CloudBlockBlob blob = container.getBlockBlobReference(azurePath);
-
-            blob.upload(new FileInputStream(libraryFile), libraryFile.length());
-
-            // Uprava verze
-            version_object.files.add(fileRecord);
-            version_object.date_of_create = new Date();
-
-            // Uložení verze
-            version_object.update();
+            // Nahraji soubor na Azure
+            UtilTools.uploadAzure_Version("libraries", libraryFile, "library.txt", version_object.single_library .azureStorageLink, version_object.single_library.azurePackageLink, version_object, SingleLibrary.class);
 
             // Vrácení verze
             return GlobalResult.result_ok(Json.toJson(version_object));
@@ -2180,7 +2131,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result get_SingleLibrary_Filter( @ApiParam(value = "page_number is Integer. 1,2,3...n For first call, use 1",required = true) @PathParam("page_number") Integer page_number ) {
+    public Result get_SingleLibrary_Filter( @ApiParam(value = "page_number is Integer. 1,2,3...n For first call, use 1",required = true) @PathParam("page_number") Integer page_number) {
         try {
 
             // Zpracování Json
@@ -2585,7 +2536,7 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful created",      response = TypeOfBoard.class),
+            @ApiResponse(code = 201, message = "Successfully created",    response = TypeOfBoard.class),
             @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -2615,6 +2566,7 @@ public class CompilationLibrariesController extends Controller {
             typeOfBoard.description = help.description;
             typeOfBoard.processor = processor;
             typeOfBoard.producer = producer;
+            typeOfBoard.connectible_to_internet = help.connectible_to_internet;
 
             // Kontorluji oprávnění
             if(!typeOfBoard.create_permission()) return GlobalResult.forbidden_Permission();
@@ -2622,7 +2574,7 @@ public class CompilationLibrariesController extends Controller {
             // Uložení objektu do DB
             typeOfBoard.save();
 
-            return GlobalResult.result_ok(Json.toJson(typeOfBoard));
+            return GlobalResult.created(Json.toJson(typeOfBoard));
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -2996,7 +2948,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result get_Board_Filter(@ApiParam(value = "page_number is Integer. May missing or contain  1,2...n For first call, use 1", required = false) @PathParam("page_number") Integer page_number) {
+    public Result get_Board_Filter(@ApiParam(value = "page_number is Integer. Contain  1,2...n. For first call, use 1", required = false) @PathParam("page_number") Integer page_number) {
         try {
 
             // Zpracování Json
@@ -3116,7 +3068,7 @@ public class CompilationLibrariesController extends Controller {
             if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
 
             // Kontrola oprávnění
-            if(board.read_permission()) return GlobalResult.forbidden_Permission();
+            if(!board.read_permission()) return GlobalResult.forbidden_Permission();
 
             // vrácení objektu
             return GlobalResult.result_ok(Json.toJson(board));
@@ -3162,7 +3114,7 @@ public class CompilationLibrariesController extends Controller {
             if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
             // Kontrola oprávnění
-            if(!board.first_connect_permission()) return GlobalResult.badRequest("Board is already registred");
+            if(!board.first_connect_permission()) return GlobalResult.result_BadRequest("Board is already registred");
 
             // Kontrola oprávnění
             if(!project.update_permission()) return GlobalResult.forbidden_Permission();
@@ -3231,5 +3183,48 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
+
+    @ApiOperation(value = "get Boards details for integration to Blocko program",
+            tags = {"Blocko", "B_Program"},
+            notes = "get all boards that user can integrate to Blocko program",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "project.read_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "Project_read_permission")
+                    })
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  Swagger_Boards_For_Blocko.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result board_all_details_for_blocko(@ApiParam(required = true) @PathParam("project_id")   String project_id){
+        try {
+
+            // Kontrola objektu
+            Project project = Project.find.byId(project_id);
+            if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
+
+            // Kontrola oprávnění
+            if (! project.read_permission()) return GlobalResult.forbidden_Permission();
+
+            // Získání objektu
+            Swagger_Boards_For_Blocko boards_for_blocko = new Swagger_Boards_For_Blocko();
+            boards_for_blocko.boards = project.boards;
+            boards_for_blocko.typeOfBoards = TypeOfBoard.find.where().eq("boards.project.id", project.id ).findList();
+            boards_for_blocko.c_programs = project.c_programs;
+
+            // Vrácení objektu
+            return GlobalResult.ok(Json.toJson(boards_for_blocko));
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
 
 }

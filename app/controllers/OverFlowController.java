@@ -22,12 +22,10 @@ import utilities.response.response_objects.Result_PermissionRequired;
 import utilities.response.response_objects.Result_Unauthorized;
 import utilities.response.response_objects.Result_ok;
 import utilities.swagger.documentationClass.*;
+import utilities.swagger.outboundClass.Filter_List.Swagger_Post_List;
 
 import javax.websocket.server.PathParam;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class OverFlowController  extends Controller {
@@ -81,12 +79,12 @@ public class OverFlowController  extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Post.class, responseContainer =  "List"),
+            @ApiResponse(code = 200, message = "Ok Result", response = Swagger_Post_List.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
 
     @BodyParser.Of(BodyParser.Json.class)
-    public Result get_Post_ByFilter(){
+    public Result get_Post_ByFilter(@ApiParam(value = "page_number is Integer. Contain  1,2...n. For first call, use 1", required = false) @PathParam("page_number") Integer page_number){
         try {
 
             final Form<Swagger_Post_Filter> form = Form.form(Swagger_Post_Filter.class).bindFromRequest();
@@ -100,17 +98,13 @@ public class OverFlowController  extends Controller {
 
             // If contains HashTags
             if(help.hash_tags != null ){
-                List<String> hashTags =help.hash_tags;
-                Set<String> HashTagset = new HashSet<>(hashTags);
-                query.where().in("hashTagsList.postHashTagId", HashTagset);
+                query.where().in("hashTagsList.postHashTagId", help.hash_tags);
 
             }
 
             // If contains confirms
             if(help.confirms != null){
-                List<String> confirms = help.confirms;
-                Set<String> confirmsSet = new HashSet<>(confirms);
-                 query.where().in("hashTagsList.postHashTagId", confirmsSet);
+                 query.where().in("hashTagsList.postHashTagId", help.confirms);
             }
 
             // From date
@@ -154,10 +148,10 @@ public class OverFlowController  extends Controller {
             }
 
 
-            List<Post> list = query.findList();
+            // Vytvářím seznam podle stránky
+            Swagger_Post_List result = new Swagger_Post_List(query, page_number);
 
-
-            return GlobalResult.result_ok(Json.toJson(list));
+            return GlobalResult.result_ok(Json.toJson(result));
 
         } catch (Exception e){
             return Loggy.result_internalServerError(e, request());
@@ -801,17 +795,6 @@ public class OverFlowController  extends Controller {
                     })
             }
     )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_TypeOfPost_New",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",      response = Result_ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -1058,8 +1041,8 @@ public class OverFlowController  extends Controller {
             code = 200,
             extensions = {
                     @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "TypeOfConfirm.edit_confirms_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "TypeOfConfirm_edit" )
+                            @ExtensionProperty(name = "Post.edit_confirms_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "Post_edit" )
                     })
             }
     )
@@ -1077,6 +1060,8 @@ public class OverFlowController  extends Controller {
 
             Post post = Post.find.byId(post_id);
             if(post == null)  return GlobalResult.notFoundObject("Post post_id not found");
+
+            if (!post.edit_confirms_permission())  return GlobalResult.forbidden_Permission();
 
             if(!post.typeOfConfirms.contains(typeOfConfirms)) post.typeOfConfirms.add(typeOfConfirms);
 
@@ -1096,8 +1081,8 @@ public class OverFlowController  extends Controller {
             code = 200,
             extensions = {
                     @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "TypeOfConfirm.edit_confirms_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "TypeOfConfirm_edit" )
+                            @ExtensionProperty(name = "Post.edit_confirms_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "Post_edit" )
                     })
             }
     )

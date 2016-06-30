@@ -1,14 +1,268 @@
+﻿# Verze 1.06.6 #
+####  20.6.2016 ####
+
+**Změny General:**
+
+Nová verze přináší podporu informací z kompilátoru o bločkách (které vyseparuje kompilátor) pro využití v blocku.
+To co vrátí kompilátor ja nabídnuto pro převzetí do blocka skrze výběr firmwaru, který lze na hardware nahrát. Bude pospáno níže.
+
+Bylo opraveno a částečně implementována změna objektů verzí. Často se stávalo že ke kokrétní verzi Třeba C-Programu bylo nutné
+přidat další doplňující infomrmace - například zda je verze už zkompilovana, nebo k ní má Tyrion archivovaný kompilační soubor.
+Proto byla vytvořena struktura, která je pro vývojáře Tyrionu od teď závazná. Doplňující je také změna poskytnutí dat o souboru.
+Kdy bylo nunté vzhledem ke kompilátoru a knihovnám informovat o názvu souboru ještě před tím, než ho frontend stáhne.
+
+ * file_name -  chápu že není zdokumentované jak se soubor bude jmenovat jedinný problém je že nelze podle Azure použít podtržítko
+
+    **Pole verzí**
+        "program_versions": [
+
+
+            {
+              "version_object": {   // Původní objekt byl nezměněn - jen byl zanořen
+                "id": "1",
+                "version_name": "První Verze",
+                "version_description": "Novy program",
+                "date_of_create": 1466082597558,
+                "files": [            // Změna vrácení id soubor - přidává se i název souboru a to pro podporu do budnoucna
+                  {
+                    "id": "1",
+                    "file_name": "c-program"
+                  },
+                  {
+                    "file_name" : "comp.bin",
+                    "id" : "2"
+                  }
+                ]
+              },
+
+              // Dodatečné informace podle nutnosti k danému objektu
+
+              "successfully_compiled": false,    <- V případě že kompilační server potvrdil že je v kodu chyba
+              "compilable": true,                <- V případě že kompilační server nebyl třeba online atd( prostě není potvrzeno že nelze kod uspešně zkompilovat)
+                                                    Dokud není zkomilovano a zamitnotu je tu true
+              "compilation_in_progress": "true", <- V případě že compilace trvá déle než (hodně sekund) tak se ukazuje stav true. False není - pokud je false nedává
+                                                    smysl ti to zasílat a proto to v Json není.
+                                                    Výjmečně musí být boolean hodnota ve "stringu" a to z důvodů nemožnosti vložit do booleanu null a tím vynutit
+                                                    vynechání null objketů v Json
+              "virtual_input_output": null,
+              "compilation_restored": false,
+              "runing_on_board": null
+            },
+            {
+            ..... další version_object
+            }
+          ],
+
+
+
+### Podpora kompilace Readme dokumentace než bude dopsána podrobněji do WIKI ###
+
+ * Vytvoříš C_program nad Projektem
+  [Swagger New C_program](http://swagger.byzance.cz/?url=http://localhost:9000/api-docs#!/C_Program/create_C_Program)
+
+    Pokud tam žádná verze verze ještě není - automaticky to skočí do okna k editaci kodu. Možnost tlačítko save
+    a výzva k pojmenování první verze pokud uživatel klikne na uložit. (Výzva k pojmenování a popisu)
+
+ * Vytvoříš verzi nad C_program
+   [Swagger New Version](http://swagger.byzance.cz/?url=http://localhost:9000/api-docs#!/C_Program/new_C_Program_Version)
+
+ * Pokud uživatel přijde znovu, otevře si C_program tak tam má možnost editovat kod (verzi). Pokud uloží - je
+   nutné ho vyzvat udělat novou verzi s novým číslem a popisem. Pro možnost kontinuálního ukládání navrhuji mít ještě při potvrzení
+   uložení další tlačítko "uložit a předchozí verzi zahodit" nebo něco takového.
+
+    Uživatel má před uložením možnost průběžně si vše kompilovat na API, kde je nutné přiložit  "type_of_board_id" : "1",
+    [Swagger Compile Code](http://swagger.byzance.cz/?url=http://localhost:9000/api-docs#!/C_Program/compile_C_Program_code)
+
+
+                    {
+                       "type_of_board_id" : "1",
+                       "code" : "#include \"mbed.h\"\n#include \"inc_blink.h\"\n#include \"Ser/Ser.h\"\n \nSer s;\nBlink b;\n \nint main() {\n    s.write();\n    b.start();\n}\n",
+                       "user_files" : [
+                            {
+                                     "file_name":"soubor dva",
+                                     "code" : "\n // komentar \n"
+                            },
+                            {
+                                    "file_name":"Uzivatelská třída 2 - tvoří složky",
+                                     "code" : "\n // komentar 2 \n"
+                            }
+                        ],
+                       "external_libraries":[
+                          {
+                             "library_name":"Uživatelův název SER",
+                             "files" : [
+                                      {
+                                          "file_name" :   "Ser/Ser.cpp",
+                                          "content" : "#include \"mbed.h\"\n#include \"Ser.h\"\n\nSerial pc(D1, D0); // tx, rx\n \nvoid Ser::write() {\n    pc.printf(\"Serial World!\\n\");\n}\n"
+                                      },
+                                      {
+                                          "file_name" :   "Ser/Ser.h",
+                                          "content" : "\nclass Ser\n{\npublic:\n\tvoid write();\t\n};"
+                                      }
+                                ]
+                          },
+                           {
+                             "library_name":"Uživatelův název Blink",
+                             "files" : [
+                                      {
+                                          "file_name" :   "inc_blink.cpp",
+                                          "content" : "#include \"mbed.h\"\r\n#include \"inc_blink.h\"\r\n\r\nDigitalOut myled(LED1);\r\n \r\nvoid Blink::start() {\r\n    while(1) {\r\n        myled = 1;\r\n        wait(0.1);\r\n        myled = 0;\r\n        wait(0.1);\r\n    }\r\n}\r\n"
+                                      },
+                                      {
+                                          "file_name" :   "inc_blink.h",
+                                          "content" : "\nclass Blink\n{\npublic:\n\tvoid start();\t\n};"
+                                      }
+                                ]
+                          }
+                       ]
+                    }
+
+ * Pokud uživatel uložil kod jako novou verzi
+   [Swagger Compile Version](http://swagger.byzance.cz/?url=http://localhost:9000/api-docs#!/C_Program/compile_C_Program_version)
+   server jí uloží a zkompiluje pokud nemá vhodnou cach předchozích kompilací (což je zatím spekulativně fungující fičura) proto vždy dojde k tomu že jí server pošle ke kompilaci.
+   Po uložení (odpověď na uložení) máš informaci že se server pustil do snahy verzi kompilovat.
+        "successfully_compiled": false,    <- V případě že kompilační server potvrdil že je v kodu chyba a false do té doby dokud není potvrzen opak
+        "compilable": true,                <- V případě že kompilační server nebyl třeba online atd( prostě není potvrzeno že nelze kod uspešně zkompilovat)
+                                                          Dokud není zkomilovano a zamitnotu je tu true
+        "compilation_in_progress": "true", <- V případě že compilace trvá déle než (hodně sekund) tak se ukazuje stav true.
+
+
+### Nahrátí Bocko programu do Homer serveru ###
+
+ Pak následuje nahrání do blocko programu - s implementací hardwaru a dalších firuč.
+
+ * Máš projekt - v něm C_Programy a verze c_Programu
+ * Máš vytvořený HW (Desky) - Alespoň jedna deska musí být TypeOfBoard kde connectible_to_internet = true
+  (Tento TypeOfBoard ti mimochodem defaultně připravuju při spuštění)
+ * Ostatní desky si třeba vytvoř na TypeOfBoard ("Bezdrát", "Drát") a nějaký desky k tomu
+ * Vytvoří si blocko program,
+ * Pak verzi do kterého můžeš připojit hardware.
+
+ *  PS: Abych ti usnadnil implementaci HW do blocko programu tak jsem ti vytvořil API
+      http://swagger.byzance.cz/#!/B_Program/board_all_details_for_blocko
+        - Máš seznam HW který mužeš imlementovat
+        - C_Programy které můžeš nahrát na HW (Určíš takzvané páry - Desku a verzi C_prgramu) Jen je už na tobě ohlídat si aby si vybral C_progrma s typem desky
+          že ho spojuješ s deskou se stejným typem desky
+
+        * Vyžaduje to určení Master desky (náš Yoda) - respektive TypeOfBoard kde je connectible_to_internetv = true!
+        * Vybereš jaký program C_program (verzi) chceš nahrát na master desku - nebu mužeš nechat tu, která je momentálně na HW nahraná.
+        * Vybereš další zařízení do sítě HW prvků.
+
+        **Verze blocko programu může vypadat takto**
+        {
+          "version_name": "verze 1.01",
+          "version_description": "Verze 1",
+
+           "main_board" : {
+             "board_id" : "AAAAAAAA",
+             "c_program_version_id" : "61"
+           },
+
+          "boards" : [
+            {
+                "board_id" : "EEEEEE_1",
+                "c_program_version_id" : "562"
+            },
+            {
+                "board_id" : "EEEEEE_2",
+                "c_program_version_id" : "562"
+            }
+          ],
+          "program": "{\"blocks\":{\"b1\":{\"type\":\"digitalInput\",\"visualType\":\"pushButton\",\"hwId\":\"tg_btn1in\",\"config\":{\"hwId\":\"tg_btn1in\"},\"editor\":{\"x\":270,\"y\":100},\"outputs\":{\"output\":[{\"block\":\"b4\",\"connector\":\"input\"}]}},\"b4\":{\"type\":\"digitalOutput\",\"visualType\":\"light\",\"hwId\":\"hw_034BB5C9\",\"config\":{\"hwId\":\"hw_034BB5C9\"},\"editor\":{\"x\":920,\"y\":110},\"outputs\":{}},\"b9\":{\"type\":\"digitalOutput\",\"visualType\":\"light\",\"hwId\":\"hw_65BC43F0\",\"config\":{\"hwId\":\"hw_65BC43F0\"},\"editor\":{\"x\":920,\"y\":210},\"outputs\":{}},\"b11\":{\"type\":\"digitalInput\",\"visualType\":\"switch\",\"hwId\":\"tg_btn2in\",\"config\":{\"hwId\":\"tg_btn2in\"},\"editor\":{\"x\":280,\"y\":190},\"outputs\":{\"output\":[{\"block\":\"b9\",\"connector\":\"input\"}]}}}}"
+        }
+
+
+
+
+
+
+
+
+
+
+### Oprava Bugů ###
+
+ * fixed [TYRION-256](http://youtrack.byzance.cz/youtrack/issue/TYRION-256)
+ * fixed [TYRION-249](http://youtrack.byzance.cz/youtrack/issue/TYRION-249)
+ * fixed [TYRION-248](http://youtrack.byzance.cz/youtrack/issue/TYRION-248)
+ * fixed [TYRION-247](http://youtrack.byzance.cz/youtrack/issue/TYRION-247)
+ * fixed [TYRION-231](http://youtrack.byzance.cz/youtrack/issue/TYRION-231)
+ * fixed [TYRION-229](http://youtrack.byzance.cz/youtrack/issue/TYRION-229)
+ * fixed [TYRION-228](http://youtrack.byzance.cz/youtrack/issue/TYRION-228)
+ * fixed [TYRION-227](http://youtrack.byzance.cz/youtrack/issue/TYRION-227)
+ * fixed [TYRION-226](http://youtrack.byzance.cz/youtrack/issue/TYRION-226)
+ * fixed [TYRION-199](http://youtrack.byzance.cz/youtrack/issue/TYRION-199)
+ * fixed [TYRION-190](http://youtrack.byzance.cz/youtrack/issue/TYRION-190)
+ * fixed [TYRION-262](http://youtrack.byzance.cz/youtrack/issue/TYRION-262)
+ * fixed [TYRION-246](http://youtrack.byzance.cz/youtrack/issue/TYRION-246)
+ * fixed [TYRION-251](http://youtrack.byzance.cz/youtrack/issue/TYRION-251)
+ * fixed [TYRION-250](http://youtrack.byzance.cz/youtrack/issue/TYRION-250)
+ * fixed [TYRION-255](http://youtrack.byzance.cz/youtrack/issue/TYRION-255)
+ * fixed [TYRION-200](http://youtrack.byzance.cz/youtrack/issue/TYRION-200)
+ * fixed [TYRION-254](http://youtrack.byzance.cz/youtrack/issue/TYRION-254)
+ * fixed [TYRION-253](http://youtrack.byzance.cz/youtrack/issue/TYRION-253)
+
+ * Obsolate [TYRION-64](http://youtrack.byzance.cz/youtrack/issue/TYRION-64)
+
+
+
+Update firmware yoda
+
+Request:
+
+ {
+    "messageType": "updateYodaFirmware",
+    "messageId": "SOME ID",
+    "messageChannel": "tyrion",
+    "firmware": "SOME BASE64 FIRMWARE"
+ }
+Reply:
+
+ {
+    "messageType": "updateYodaFirmware",
+    "messageId": "SOME ID",
+    "messageChannel": "tyrion",
+    "status": "success/error"
+ }
+
+
+
+### TODO ###
+
+  * TODO 3 Tomáš Z.: Zdokumentovat všechny Models pro Swagger
+  * TODO 4 Tomáš Z.: Přidat cyklické odmazávání BLOB v Azure, na které už neexistuje databázová vazba (Nějaká fičura co se zapne každý den ve 3 ráno a provede sekvenci kam
+      každý vývojář může přidávat metody které se provedou... (Mazání prošlých tokenů, mazání prošlých nedokončených ověření přes sociální sítě atd... Viz todo 5)
+  * TODO 5 Tomáš Z.: Přidat cyklické odmazávání Vygenerovaných nezrealizovaných spojení na sociální sítě (Linkded Account)
+  * TODO 6 Tomáš Z.: Pokud se uživatel přihlásí přes facebook, k jeho účtu bude přidělen plovoucí token. Pokud se přihlásí znova a znova..
+      budou se vtvářet další a další připojení. Je žádoucí mazat předchozí spojení pokud poznám, že je to ze stejného prohlížeče?
+      PS: Vyžaduje to tak půl dne (+ ideálně přepsat třídu s přihlášení přes facebook a odzkoušet github..
+  * TODO 8 ALL-Tyrion: Bude potřeba dodělat řešení pro prodlužování platnosti tokenu (Buď nějak magicky na Tyrionovi nebo ze strany frontendu) Asi to dodělá Tomáš.
+  * TODO 9 Přidat a vykreslit všechny objekty na dashboard Tyriona
+  * TODO 13 Důležité je dodělat ORM dokumentaci ve SWAGGERU pro kompilaci!
+  * TODO 14 AzureStorageLink a azurePackageLink přesunout pod Version_object!!! Už je to neudržitelný!!!
+  * TODO 16 Mazání souborů na Azure
+  * TODO 15 Verzování nasadit i na M_Program!
+  * TODO Swagger Dokumentace na objektu B_Program_State a B_Program!!!!!!!!!!!!
+  * TODO 12 Tomáš Z.: Dodělat možnost obnovení hesla
+  * TODO 17 Link je také v kodu http://youtrack.byzance.cz/youtrack/issue/TYRION-263
+
+
+  a) Takže je potřeba zprostředkovat z kompilace vytvořené virtuální bločky do blocka
+  b) V blocku dát možnost importovat hardware a verzi hardwaru (firmwaru)  - vědět co na něm běží a eventuelně nabídnout co na něm může běžet.
+
+  1) Přibyly nové API, které umožnují připojit k blocko programu (ke specifické verzi) konkrétní hardware.
+     (Ze seznamu hardwaru, který je registrován k projektu). Je nad tím provedena operace vyhledání vyrtuálních bločků hardwaru z kompilátoru tak aby si je uživatel mohl propojit společně s s blockem.
+
+        PS:  Jsou tam neřešitelné stavy kolie verzí (tak se ještě vymyslí nějaké donucovací prostředky, které zamězí v aktualizaci bez updatu navazující části)
+
+        Becki obdrží informace o desce (hardwaru) a její virtuální bločky.
+         Objekt B_Pair je zastřešující objekt, který je vázán k verzi Blocko programu a združuje hardware a jeho verzi C_programu. Když uživatel třeba jumpne zpátky na nižší verzi blocko programu, tyrion downgradne i hardware.
+
+
 -----
 
-# Verze 1.06.5.2 #
-####  12.5.2016 ####
-
-Opravy na websocketu pro radka před přechodem na 1.06.6
-
-
 # Verze 1.06.5 #
-####  6.5.2016 ####
-
+####  26.5.2016 ####
 
 **Změny General:**
 
@@ -83,7 +337,7 @@ Byla zprovozněna funkce Websocketu pro Becki:
 
         Žádost
                   {
-                    "messageType"    : "subscribe_instace",
+                    "messageType"    : "subscribe_instance",
                     "messageId"      : "SOME ID",
                     "messageChannel" : "becki",
                     "version_id"     : "21"        <<<<< Viz horní Json
@@ -92,7 +346,7 @@ Byla zprovozněna funkce Websocketu pro Becki:
         Možnosti odpovědi
                   1) Bude ti zasíláno vše (instance je funční, připojená  - prostě ideální stav)
                   {
-                    "messageType"    : "subscribe_instace",
+                    "messageType"    : "subscribe_instance",
                     "messageId"      : "SOME ID",
                     "messageChannel" : "becki",
                     "status"         :  "success"
@@ -100,7 +354,7 @@ Byla zprovozněna funkce Websocketu pro Becki:
 
                   2) Nebo nastal problém a v "error" je uvedeno proč - Je 9 error stavů, kde se to mohlo pokazit
                   {
-                    "messageType"    : "subscribe_instace",
+                    "messageType"    : "subscribe_instance",
                     "messageId"      : "SOME ID",
                     "messageChannel" : "becki",
                     "status"         : "error"

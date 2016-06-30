@@ -11,6 +11,9 @@ import java.util.concurrent.*;
 
 public abstract class WebSCType {
 
+    // Loger
+    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+
     public Map<String, WebSCType> maps;
     public List<WebSCType> subscribers_grid  = new ArrayList<>();
     public List<WebSCType> subscribers_becki = new ArrayList<>();
@@ -30,7 +33,7 @@ public abstract class WebSCType {
     public void onMessage(String message){
         try {
 
-            System.out.println("Příchozí zpráva " + message);
+            logger.debug("Incoming message: " + message);
 
             ObjectNode json = (ObjectNode) new ObjectMapper().readTree(message);
 
@@ -81,7 +84,7 @@ public abstract class WebSCType {
 
 
     public ObjectNode write_with_confirmation(ObjectNode json) throws TimeoutException, InterruptedException {
-            return write_with_confirmation( json, (long) (250*1000) );
+            return write_with_confirmation( json, (long) (5000) );
     }
 
     public ObjectNode write_with_confirmation(ObjectNode json, Long time_To_TimeOutExcepting) throws TimeoutException,  InterruptedException {
@@ -94,29 +97,28 @@ public abstract class WebSCType {
             @Override
             public ObjectNode call() throws Exception {
 
-                    System.out.println("Odesílám zprávu [" + messageId + "], na kterou požaduji potvrzení. Zpráva: " + json.toString());
+                    logger.debug("Server send message.id [" + messageId + "], which requires confirmation. Message: " + json.toString());
 
                     message_out.put(messageId, json);
                     out.write(json.toString());
 
-                    System.out.println("Zapínám vlákno");
+
                     Long breaker = time_To_TimeOutExcepting;
 
                     while (breaker > 0) {
-                        breaker-=250;
-                        System.out.println("Zbejvá času " + breaker);
 
+                        breaker-=250;
                         Thread.sleep(250);
 
                         if (message_in.containsKey(messageId)) {
-                            System.out.println("Zpráva nalezena a tak zabíjím while cyklus");
+                            logger.debug("Result found");
                             ObjectNode message = message_in.get(messageId);
                             message_in.remove(messageId);
                             return message;
                         }
 
                         if (breaker == 0) {
-                            System.out.println("Time out Exception - Čas ve vlákně vypršel ");
+                            logger.debug("Time out Exception - on message.id: [" + messageId + "]");
                             message_out.remove(messageId);
                             throw new TimeoutException();
                         }
@@ -135,7 +137,7 @@ public abstract class WebSCType {
         try {
             return future.get();
         } catch (Exception e) {
-            System.out.println("write_with_confirmation NEstihlo se včas");
+            logger.error("TimeoutException on message.id: [" + messageId + "]");
             throw new TimeoutException();
         }
 
@@ -170,7 +172,7 @@ public abstract class WebSCType {
                         }
 
                     }catch (Exception e){
-                        System.out.println("JSON Nebylo možné odeslat: " + json.toString());
+                        logger.error("It was not possible to send JSON: " + json.toString());
                     }
 
                 }

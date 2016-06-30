@@ -39,7 +39,9 @@ import java.util.Map;
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class SecurityController extends Controller {
 
+
 //######################################################################################################################
+
     public static Person getPerson() {
         return (Person) Http.Context.current().args.get("person");
     }
@@ -313,13 +315,8 @@ public class SecurityController extends Controller {
             F.Promise<JsonNode> jsonPromise = wsrequest.get().map(rsp -> { return rsp.asJson();});
             JsonNode jsonRequest = jsonPromise.get(10000);
 
-            System.out.println("Příchozí JSON: " + jsonRequest.toString());
-            System.out.println("floatingPersonToken.providerUserId:" + floatingPersonToken.providerUserId);
-
-
             List<FloatingPersonToken> before_registred = FloatingPersonToken.find.where().eq("providerUserId", jsonRequest.get("id").asText() ).where().ne("connection_id", floatingPersonToken.connection_id).findList();
             if (!before_registred.isEmpty()){
-                System.out.println("Tento uživatel se nepřihlašuje poprvné");
                 floatingPersonToken.person = before_registred.get(0).person;
                 floatingPersonToken.providerUserId = jsonRequest.get("id").asText();
                 floatingPersonToken.update();

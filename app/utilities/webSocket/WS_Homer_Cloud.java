@@ -7,13 +7,18 @@ import java.util.concurrent.TimeoutException;
 
 public class WS_Homer_Cloud extends WebSCType{
 
-    public WS_BlockoServer blockoServer;
-    public String version_id;
+    // Loger
+    static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
-    public WS_Homer_Cloud (String identificator, String version_id,   WS_BlockoServer blockoServer) {
+    // Obslužné objekty pro tym Websocketu
+    public WS_BlockoServer blockoServer;
+    public String version_id = "ERROR"; // Pro první inicializaci a pro případ, že se version_id nedosadí a aby to bylo v komunikaci všude jasně vidět
+
+    // Kontstruktor sloužící pro vytvoření objektu
+    public WS_Homer_Cloud (String identificator,  String version_id,  WS_BlockoServer blockoServer) {
         super();
-        super.identifikator = identificator;
         this.version_id = version_id;
+        super.identifikator = identificator;
         this.blockoServer = blockoServer;
         super.webSCtype = this;
     }
@@ -37,7 +42,7 @@ public class WS_Homer_Cloud extends WebSCType{
         try {
 
             json.put("instanceId", super.identifikator);
-            return blockoServer.write_with_confirmation( json);
+            return blockoServer.write_with_confirmation(json);
 
         }catch (Exception e){
             throw new InterruptedException();
@@ -45,7 +50,7 @@ public class WS_Homer_Cloud extends WebSCType{
     }
 
     @Override
-    public ObjectNode write_with_confirmation(ObjectNode json, Long time_To_TimeOutExcepting) throws TimeoutException, InterruptedException {
+    public ObjectNode write_with_confirmation( ObjectNode json, Long time_To_TimeOutExcepting) throws TimeoutException, InterruptedException {
         try {
 
             json.put("instanceId", super.identifikator);
@@ -66,11 +71,10 @@ public class WS_Homer_Cloud extends WebSCType{
 
     @Override
     public void onMessage(ObjectNode json) {
+        logger.debug("Cloud Homer: "+ super.identifikator + " on blocko version: " + version_id + " Incoming message: " + json.toString());
 
         json.put("version_id", version_id);
         json.remove("instanceId");
-
-        System.out.println("příchozí zpráva v WS_Homer_cloud: " + json.asText());
         WebSocketController_Incoming.homer_incoming_message(this, json);
 
 

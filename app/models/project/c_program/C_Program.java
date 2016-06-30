@@ -6,10 +6,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.compiler.Board;
+import models.compiler.FileRecord;
 import models.compiler.TypeOfBoard;
 import models.compiler.Version_Object;
+import models.project.b_program.B_Pair;
 import models.project.global.Project;
+import utilities.swagger.outboundClass.Swagger_C_Program_Version;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -27,36 +29,42 @@ public class C_Program extends Model {
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)     public String id;
                                                                 public String program_name;
                           @Column(columnDefinition = "TEXT")    public String program_description;
-                                      @JsonIgnore @ManyToOne    public Project project;
-                                   @Transient  @JsonProperty    public String  project_id(){ return project.id; }
+           @JsonIgnore @ManyToOne()    public Project project;
+
 
                                                @JsonIgnore      public String azurePackageLink;
                                                @JsonIgnore      public String azureStorageLink;
-                                   @JsonIgnore  @ManyToOne      public TypeOfBoard type_of_board;  // Typ desky
+           @JsonIgnore  @ManyToOne(fetch = FetchType.EAGER)     public TypeOfBoard type_of_board;  // Typ desky
 
 
     @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1461854312") public Date dateOfCreate;
-    @JsonIgnore @OneToMany(mappedBy="c_program", cascade = CascadeType.ALL) @OrderBy("azureLinkVersion DESC") public List<Version_Object> version_objects = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="c_program", cascade = CascadeType.ALL, fetch = FetchType.EAGER) @OrderBy("azureLinkVersion DESC") public List<Version_Object> version_objects = new ArrayList<>();
 
 
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
-
+    @JsonProperty  @Transient public String project_id(){ return project.id; }
     @JsonProperty  @Transient public String type_of_board_id()   { return type_of_board == null ? null : type_of_board.id;}
 
-    @JsonProperty @Transient public List<C_Program_Versions> program_versions() {
-        List<C_Program_Versions> versions = new ArrayList<>();
+    @JsonProperty @Transient public List<Swagger_C_Program_Version> program_versions() {
+        List<Swagger_C_Program_Version> versions = new ArrayList<>();
 
         for(Version_Object v : version_objects){
 
-            C_Program_Versions c_program_versions= new C_Program_Versions();
+            Swagger_C_Program_Version c_program_versions= new Swagger_C_Program_Version();
 
             c_program_versions.version_object = v;
             c_program_versions.successfully_compiled = v.c_compilation != null;
             if(v.c_compilation != null ) c_program_versions.virtual_input_output = v.c_compilation.virtual_input_output;
 
             versions.add(c_program_versions);
+
+            for(B_Pair b_pair : v.b_pairs_c_program){
+                c_program_versions.runing_on_board.add(b_pair.board.id);
+            }
         }
+
+
 
         return versions;
     }
@@ -64,12 +72,35 @@ public class C_Program extends Model {
 /* Private Documentation Class -----------------------------------------------------------------------------------------*/
 
     // Určeno pro metodu program_versions tohoto objektu
-    class C_Program_Versions{
-        public Version_Object version_object;
-        public boolean successfully_compiled;
-        public String virtual_input_output;
-        public boolean compilation_restored;
-        public List<Board> runing_on_board;
+
+    // Objekt určený k vracení verze
+    @JsonIgnore @Transient
+    public Swagger_C_Program_Version program_version(Version_Object version_object){
+
+        Swagger_C_Program_Version c_program_versions= new Swagger_C_Program_Version();
+
+
+        c_program_versions.compilation_in_progress  = version_object.compilation_in_progress;
+        c_program_versions.compilable               = version_object.compilable;
+        c_program_versions.version_object           = version_object;
+        c_program_versions.successfully_compiled    = version_object.c_compilation != null;
+        c_program_versions.compilation_restored     = FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "compilation.bin").findRowCount() > 0;
+
+        if(version_object.c_compilation != null ) {
+            c_program_versions.virtual_input_output = version_object.c_compilation.virtual_input_output;
+        }
+
+        for(B_Pair b_pair : version_object.b_pairs_c_program){
+            c_program_versions.runing_on_board.add(b_pair.board.id);
+        }
+
+        return c_program_versions;
+    }
+
+
+    @JsonIgnore @Transient
+    public TypeOfBoard getType_of_board(){
+        return type_of_board;
     }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/

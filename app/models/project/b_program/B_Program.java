@@ -3,13 +3,20 @@ package models.project.b_program;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import controllers.SecurityController;
+import controllers.WebSocketController_Incoming;
 import io.swagger.annotations.ApiModelProperty;
 import models.blocko.Cloud_Blocko_Server;
+import models.compiler.Board;
 import models.compiler.Version_Object;
 import models.project.global.Project;
 import models.project.m_program.M_Project;
+import play.data.Form;
+import utilities.swagger.documentationClass.Swagger_Homer_DeviceList_Result;
 import utilities.swagger.outboundClass.B_Program_State;
+import utilities.swagger.outboundClass.Filter_List.Swagger_B_Program_Version;
+import utilities.webSocket.WS_Homer_Cloud;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -41,13 +48,14 @@ public class B_Program extends Model {
 
 /* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient public List<Blocko_Versions> program_versions() {
-        List<Blocko_Versions> versions = new ArrayList<>();
+    @JsonProperty @Transient public List<Swagger_B_Program_Version> program_versions() {
+        List<Swagger_B_Program_Version> versions = new ArrayList<>();
 
         for(Version_Object v : version_objects){
-            Blocko_Versions bl = new Blocko_Versions();
+            Swagger_B_Program_Version bl = new Swagger_B_Program_Version();
             bl.version_Object = v;
-            bl.connected_boards = v.b_pairs_b_program;
+            bl.connected_boards = v.b_pairs_b_program == null ? null : v.b_pairs_b_program ;
+            bl.master_board = v.master_board_b_pair == null ? null : v.master_board_b_pair;
 
             versions.add(bl);
         }
@@ -55,10 +63,6 @@ public class B_Program extends Model {
         return versions;
     }
 
-    class Blocko_Versions{
-        public Version_Object version_Object;
-        public List<B_Pair> connected_boards = new ArrayList<>();
-    }
 
     @JsonProperty @Transient public B_Program_State program_state(){
 
@@ -79,18 +83,54 @@ public class B_Program extends Model {
             state.where = "cloud";
 
             Cloud_Blocko_Server server = Cloud_Blocko_Server.find.where().eq("cloud_programs.id", version_object.b_program_cloud.id).findUnique();
+            state.set_Cloud_State(version_object.b_program_cloud, server.server_name, WebSocketController_Incoming.incomingConnections_homers.containsKey( version_object.b_program_cloud.blocko_instance_name )  );
 
-            state.set_Cloud_State(version_object.b_program_cloud, server.server_name );
+            if(WebSocketController_Incoming.incomingConnections_homers.containsKey( version_object.b_program_cloud.blocko_instance_name ) ){
+                WS_Homer_Cloud homer = (WS_Homer_Cloud) WebSocketController_Incoming.incomingConnections_homers.get( version_object.b_program_cloud.blocko_instance_name );
+                try {
+                    JsonNode result = WebSocketController_Incoming.homer_get_device_list(homer);
+
+                    Form<Swagger_Homer_DeviceList_Result> form = Form.form(Swagger_Homer_DeviceList_Result.class).bind(result);
+                    Swagger_Homer_DeviceList_Result help = form.get();
+
+                    if(help != null &&  help.status.equals("success")){
+                       List<Board> boardList = Board.find.where().idIn(help.deviceList).findList();
+                        state.online_boards.addAll(boardList);
+                    }
+                }catch (Exception e){}
+
+            }
+
+
+
         }
         else {
             state.where = "homer";
-            state.set_Local_State(version_object.b_program_homer, version_object.b_program_homer.homer);
+            state.set_Local_State(version_object.b_program_homer, version_object.b_program_homer.homer, WebSocketController_Incoming.incomingConnections_homers.containsKey( version_object.b_program_cloud.blocko_instance_name ) );
+            // Tady doplnit dotaz na HW který tam běží
+            System.out.println("------------------------NApiču dopiš se co je u cloudu");
 
         }
 
         return state;
     }
 
+/* Private Documentation Class -----------------------------------------------------------------------------------------*/
+
+    // Určeno pro metodu program_versions tohoto objektu
+
+    // Objekt určený k vracení verze
+    @JsonIgnore @Transient
+    public Swagger_B_Program_Version program_version(Version_Object version_object){
+
+        Swagger_B_Program_Version b_program_version = new Swagger_B_Program_Version();
+
+        b_program_version.version_Object    = version_object;
+        b_program_version.connected_boards  = version_object.b_pairs_b_program == null ? null : version_object.b_pairs_b_program ;
+        b_program_version.master_board      = version_object.master_board_b_pair == null ? null : version_object.master_board_b_pair;
+
+        return b_program_version;
+    }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 

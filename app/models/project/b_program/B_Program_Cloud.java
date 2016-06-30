@@ -20,6 +20,7 @@ public class B_Program_Cloud extends Model {
                                           @JsonIgnore @ManyToOne    public Cloud_Blocko_Server server;
                                                      @JsonIgnore    public String blocko_instance_name;
           @JsonIgnore @OneToOne   @JoinColumn(name="vrs_obj_id")    public Version_Object version_object;
+                                                                    public String macAddress;
 
     @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1461854312") public Date     running_from;
 

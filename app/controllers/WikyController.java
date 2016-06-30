@@ -10,7 +10,12 @@ public class WikyController extends Controller {
 
 
      public Result test1(){
+
+
+        System.out.println("Test1");
+
          return ok();
+
      }
 
     // Testovací logger

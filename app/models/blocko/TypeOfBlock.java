@@ -37,18 +37,19 @@ public class TypeOfBlock extends Model {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient public Boolean create_permission(){
-        if(project != null) return  ( Project.find.where().eq("ownersOfProject.id", SecurityController.getPerson().id ).where().eq("id", project.id).findRowCount() < 1  || SecurityController.getPerson().has_permission("TypeOfBlock_create") );
-        return SecurityController.getPerson().has_permission("TypeOfBlock_create");
+        if(project == null) {
+            return SecurityController.getPerson().has_permission("TypeOfBlock_create");
+        }
+        else return project.update_permission();
     }
-    @JsonIgnore @Transient public Boolean read_permission(){
-            if(project != null) return  ( project.read_permission() || SecurityController.getPerson().has_permission("TypeOfBlock_read") );
-             return SecurityController.getPerson().has_permission("TypeOfBlock_read");
+
+    @JsonIgnore @Transient public Boolean read_permission() {
+        return project == null || (project.read_permission() || SecurityController.getPerson().has_permission("TypeOfBlock_read"));
+
     }
 
     @JsonIgnore @Transient  public Boolean update_permission(){
-        if(project != null) return  ( project.update_permission() || SecurityController.getPerson().has_permission("TypeOfBlock_read") );
-        return SecurityController.getPerson().has_permission("TypeOfBlock_read");
-
+        return (project.update_permission() || SecurityController.getPerson().has_permission("TypeOfBlock_update"));
     }
     @JsonProperty @Transient  public Boolean edit_permission(){
         if(project != null) return  ( project.edit_permission() || SecurityController.getPerson().has_permission("TypeOfBlock_edit") );
@@ -59,7 +60,7 @@ public class TypeOfBlock extends Model {
         return SecurityController.getPerson().has_permission("TypeOfBlock_delete");
     }
 
-    public enum permissions{TypeOfBlock_create, TypeOfBlock_read, TypeOfBlock_edit , TypeOfBlock_delete}
+    public enum permissions{TypeOfBlock_create, TypeOfBlock_read, TypeOfBlock_edit , TypeOfBlock_delete, TypeOfBlock_update}
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String,TypeOfBlock> find = new Finder<>(TypeOfBlock.class);
