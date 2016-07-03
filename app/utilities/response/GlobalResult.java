@@ -113,6 +113,25 @@ public class GlobalResult extends Controller {
         return Controller.forbidden(Json.toJson(resultPermissionRequired));
     }
 
+//**********************************************************************************************************************
+
+
+    public static Status external_server_is_offline(String message){
+        CoreResponse.cors();
+
+        Result_serverIsOffline serverIsOffline = new Result_serverIsOffline();
+        serverIsOffline.message = message;
+
+        return Controller.badRequest(Json.toJson(serverIsOffline));
+    }
+
+    public static Status external_server_is_offline(){
+        CoreResponse.cors();
+
+        Result_serverIsOffline serverIsOffline = new Result_serverIsOffline();
+
+        return Controller.badRequest(Json.toJson(serverIsOffline));
+    }
 
 //**********************************************************************************************************************
 

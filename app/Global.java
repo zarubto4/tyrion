@@ -63,6 +63,11 @@ public class Global extends GlobalSettings {
         logger.warn("Disconnection all Terminals");
         WebSocketController_Incoming.disconnect_all_mobiles();
 
+        logger.warn("Disconnection all Blocko Servers");
+        WebSocketController_Incoming.disconnect_all_Blocko_Servers();
+
+        logger.warn("Disconnection all Compilation Servers");
+        WebSocketController_Incoming.disconnect_all_Compilation_Servers();
     }
 
 

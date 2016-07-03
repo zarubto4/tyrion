@@ -15,7 +15,6 @@ import models.overflow.Post;
 import models.person.Person;
 import models.person.PersonPermission;
 import models.person.SecurityRole;
-import org.apache.commons.io.FileUtils;
 import play.Logger;
 import play.mvc.Controller;
 
@@ -69,8 +68,7 @@ public class UtilTools extends Controller {
         }
     }
 
-
-    public static FileRecord uploadAzure_Version(String container_name, String file_content, String file_name, String azureStorageLink, String azurePackageLink, Version_Object version_object, Class object) throws Exception{
+    public static FileRecord uploadAzure_Version(String container_name, String file_content, String file_name, String azureStorageLink, String azurePackageLink, Version_Object version_object) throws Exception{
         logger.debug("Azure load: "+ container_name +"/"+ azureStorageLink +"/" + azurePackageLink  +"/" + version_object.azureLinkVersion  +"/" + file_name );
 
         CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
@@ -82,7 +80,7 @@ public class UtilTools extends Controller {
         FileRecord fileRecord = new FileRecord();
         fileRecord.file_name = file_name;
         fileRecord.version_object = version_object;
-        fileRecord.name_of_parent_object = object.getSimpleName();
+        fileRecord.file_path = container_name +"/"+ azureStorageLink +"/" + azurePackageLink  +"/" + version_object.azureLinkVersion  +"/" + file_name;
         fileRecord.save();
 
         version_object.files.add(fileRecord);
@@ -92,7 +90,7 @@ public class UtilTools extends Controller {
     }
 
 
-    public static FileRecord uploadAzure_Version(String container_name, File file, String file_name, String azureStorageLink, String azurePackageLink, Version_Object version_object, Class object) throws Exception{
+    public static FileRecord uploadAzure_Version(String container_name, File file, String file_name, String azureStorageLink, String azurePackageLink, Version_Object version_object) throws Exception{
 
         if(azureStorageLink == null) throw new Exception("azureStorageLink == null");
         if(azurePackageLink == null) throw new Exception("azurePackageLink == null");
@@ -109,7 +107,7 @@ public class UtilTools extends Controller {
         FileRecord fileRecord = new FileRecord();
         fileRecord.file_name = file_name;
         fileRecord.version_object = version_object;
-        fileRecord.name_of_parent_object = object.getSimpleName();
+        fileRecord.file_path = container_name +"/"+ azureStorageLink +"/" + azurePackageLink  +"/" + version_object.azureLinkVersion  +"/" + file_name;
         fileRecord.save();
 
         version_object.files.add(fileRecord);
@@ -123,21 +121,92 @@ public class UtilTools extends Controller {
         return fileRecord;
     }
 
-    public static File file_get_File_from_Azure(String container_name, String azurePackageLink , String azureStorageLink, String azureLinkVersion, String file_name)throws Exception{
+    public static File file_get_File_from_Azure(String file_path)throws Exception{
 
-        CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
+        int slash = file_path.indexOf("/");
+        String container_name = file_path.substring(0,slash);
+        String real_file_path = file_path.substring(slash+1);
 
-        logger.debug("Azure load: "+ container_name +"/"+ azureStorageLink +"/" + azurePackageLink  +"/" + azureLinkVersion  +"/" + file_name );
+        logger.debug("Azure load path: " + file_path );
+        logger.debug("Azure Container: " + container_name);
+        logger.debug("Real File  Path: " + real_file_path);
 
-        CloudBlob blob = container.getBlockBlobReference( azureStorageLink +"/"+  azurePackageLink+"/"+ azureLinkVersion  +"/"+ file_name);
+        CloudBlobContainer container = Server.blobClient.getContainerReference(container_name );
 
-        File fileMain = new File("files/" + azurePackageLink + azureStorageLink + azureLinkVersion + file_name);
+        CloudBlob blob = container.getBlockBlobReference(real_file_path );
+
+        File fileMain = new File("files/" + UUID.randomUUID().toString()  );
+
         // Tento soubor se nesmí zapomínat mazat!!!!
         OutputStream outputStreamMain = new FileOutputStream (fileMain);
 
         blob.download(outputStreamMain);
 
         return fileMain;
+    }
+
+    public static String get_encoded_binary_file_from_azure(String file_path) throws Exception {
+
+            int slash = file_path.indexOf("/");
+            String container_name = file_path.substring(0,slash);
+            String real_file_path = file_path.substring(slash+1);
+
+            logger.debug("Azure load path: " + file_path );
+            logger.debug("Azure Container: " + container_name);
+            logger.debug("Real File  Path: " + real_file_path);
+
+            CloudBlobContainer container = Server.blobClient.getContainerReference(container_name );
+
+            CloudBlob blob = container.getBlockBlobReference(real_file_path );
+
+            File binary_file = new File("files/" + UUID.randomUUID().toString()  );
+
+            // Tento soubor se nesmí zapomínat mazat!!!!
+            OutputStream outputStreamMain = new FileOutputStream (binary_file);
+            blob.download(outputStreamMain);
+
+            String encodedBase64 = null;
+
+                FileInputStream fileInputStreamReader = new FileInputStream(binary_file);
+                byte[] bytes = new byte[(int)binary_file.length()];
+                fileInputStreamReader.read(bytes);
+                encodedBase64 = new String(Base64.getEncoder().encode(bytes));
+
+                return encodedBase64;
+
+    }
+
+    public static String get_encoded_binary_file_from_File(File binary_file) throws Exception {
+
+        String encodedBase64 = null;
+
+        FileInputStream fileInputStreamReader = new FileInputStream(binary_file);
+        byte[] bytes = new byte[(int)binary_file.length()];
+        fileInputStreamReader.read(bytes);
+        encodedBase64 = new String(Base64.getEncoder().encode(bytes));
+
+        return encodedBase64;
+
+    }
+
+    public static FileRecord create_Binary_file(String file_content, String file_name) throws Exception{
+        logger.debug("Azure create_Binary_file: binaryFile/"+ file_name );
+
+        String authToken = UUID.randomUUID().toString();
+
+        CloudBlobContainer container = Server.blobClient.getContainerReference("binary-file");
+        CloudBlockBlob blob = container.getBlockBlobReference( authToken +"/" + file_name );
+
+        InputStream is = new ByteArrayInputStream(file_content.getBytes());
+        blob.upload(is, -1);
+
+        FileRecord fileRecord = new FileRecord();
+        fileRecord.file_name = file_name;
+        fileRecord.file_path = "binary-file" +"/" + authToken +"/" + file_name;
+        fileRecord.save();
+
+
+        return fileRecord;
     }
 
     public static void remove_file_from_Azure(FileRecord file){
@@ -166,13 +235,6 @@ public class UtilTools extends Controller {
             e.printStackTrace();
         }
     }
-
-
-    public static byte[] loadFile_inBase64(File file) throws IOException {
-        byte[] data = FileUtils.readFileToByteArray(file);
-        return  Base64.getEncoder().encode(data);
-    }
-
 
     public static Map<String, String> getMap_From_querry(Set<Map.Entry<String, String[]>> url){
         Map<String, String> map = new HashMap<>();
@@ -304,5 +366,19 @@ public class UtilTools extends Controller {
     }
 
 
+    public static String get_String_from_file(File file) {
+        try {
+            Scanner scanner = new Scanner(file);
+            String text = scanner.useDelimiter("\\A").next();
+            scanner.close();
 
+            if(! file.delete()) logger.warn("File wasn't removed from folder!");
+
+            return text;
+
+        }catch (Exception e){
+            logger.error("Get string from file exception!", e);
+            return null;
+        }
+    }
 }

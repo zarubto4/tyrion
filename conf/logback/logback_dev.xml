@@ -24,7 +24,7 @@
     <logger name="com.avaje.ebeaninternal.server.core.XmlConfigLoader" level="TRACE" />
     <logger name="com.avaje.ebeaninternal.server.lib.BackgroundThread" level="TRACE" />
     <logger name="com.gargoylesoftware.htmlunit.javascript" level="TRACE" />
-    <logger name="org.avaje.ebean.SQL" level="WARNING" />
+    <logger name="org.avaje.ebean.SQL" level="WARN" />
 
 
     <logger name="play" level="INFO" />

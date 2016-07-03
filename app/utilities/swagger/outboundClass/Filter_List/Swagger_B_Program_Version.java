@@ -10,4 +10,5 @@ public class Swagger_B_Program_Version {
     public Version_Object version_Object;
     public List<B_Pair> connected_boards = new ArrayList<>();
     public B_Pair master_board;
+    public String program;
 }

@@ -6,9 +6,12 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
+import models.blocko.Cloud_Blocko_Server;
 import models.project.b_program.B_Pair;
 import models.project.b_program.Homer;
+import models.project.c_program.C_Program_Update_Plan;
 import models.project.global.Project;
+import utilities.swagger.outboundClass.Swagger_Board_status;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -34,17 +37,18 @@ public class Board extends Model {
                                     @JsonIgnore @ManyToOne       public Project project;
                                     @JsonIgnore @ManyToOne       public Homer homer;
                                     @JsonIgnore @ManyToOne       public Version_Object actual_c_program_version;
-
+                                    @JsonIgnore                  public String alternative_program_name;
+                                  @JsonIgnore @ManyToOne()       public Cloud_Blocko_Server server;  // Pouze pokud je připojen přímo na blocko server!
 
     @JsonIgnore  @OneToMany(mappedBy="board",cascade=CascadeType.ALL, fetch = FetchType.EAGER)            public List<B_Pair> b_pair = new ArrayList<>();
-    @JsonIgnore  @OneToOne(mappedBy="board_for_update", cascade=CascadeType.ALL, fetch = FetchType.EAGER) public C_Program_Update_Plan c_program_update_plans;
+    @JsonIgnore  @OneToMany(mappedBy="board", cascade=CascadeType.ALL, fetch = FetchType.EAGER) public List<C_Program_Update_Plan> c_program_update_plans;
 /* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/
 
     @JsonProperty  @Transient public String type_of_board_id()   { return type_of_board == null ? null : type_of_board.id; }
     @JsonProperty  @Transient public String project_id()         { return       project == null ? null : project.id; }
 
 
-    @JsonProperty  @Transient public Board_status status()       {
+    @JsonProperty  @Transient public Swagger_Board_status status()       {
 
         // Složený SQL dotaz pro nalezení funkční běžící instance (B_Pair)
         B_Pair b_pair_main = B_Pair.find.where().or(
@@ -58,8 +62,8 @@ public class Board extends Model {
                 )
         ).where().eq("board.id", id).findUnique();
 
-        System.out.println("1");
-        Board_status board_status = new Board_status();
+
+        Swagger_Board_status board_status = new Swagger_Board_status();
 
 
         if(b_pair_main == null){
@@ -77,7 +81,7 @@ public class Board extends Model {
                 board_status.where = "cloud";
             }
 
-            System.out.println("4");
+
 
             if (version_object.b_program_homer != null) {
                 board_status.where = "local";
@@ -87,40 +91,27 @@ public class Board extends Model {
             board_status.b_program_version_id = version_object.id;
         }
 
-
+        if(alternative_program_name != null ) board_status.actual_program = alternative_program_name;
 
         if(actual_c_program_version != null){
                     board_status.actual_c_program_id = actual_c_program_version.c_program.id;
                     board_status.actual_c_program_version_id = actual_c_program_version.id;
         }
 
-        System.out.println("6");
 
-        if(c_program_update_plans != null){
+        if(!c_program_update_plans.isEmpty()){
 
-                    board_status.required_c_program_id = c_program_update_plans.c_program_version_for_update.c_program.id;
-                    board_status.required_c_program_version_id = c_program_update_plans.c_program_version_for_update.id;
-                }
+            C_Program_Update_Plan plan = C_Program_Update_Plan.find.where().eq("board.id", id).order().asc("actualization_procedure.date_of_create").setMaxRows(1).findUnique();
 
-        System.out.println("7");
+            board_status.required_c_program_id = plan.c_program_version_for_update.c_program.id;
+            board_status.required_c_program_version_id = plan.c_program_version_for_update.id;
+         }
+
 
         return board_status;
 
     }
 
-    class Board_status{
-
-        @ApiModelProperty(value = "it can be only: {cloud} pr {local}", readOnly = true, required = true)
-        public String where;
-        public String b_program_id;
-        public String b_program_version_id;
-
-        public String actual_c_program_id;
-        public String actual_c_program_version_id;
-
-        public String required_c_program_id;
-        public String required_c_program_version_id;
-    }
 
 
     @JsonProperty  @Transient public boolean up_to_date(){return (c_program_update_plans == null);}
@@ -144,6 +135,14 @@ public class Board extends Model {
 
 
     public enum permissions{Board_read, Board_Create, Board_edit, Board_delete, Board_update}
+
+
+/* ZVLÁŠTNÍ POMOCNÉ METODY ---------------------------------------------------------------------------------------------*/
+
+    @Override
+    public void update(){
+        super.update();
+    }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String, Board> find = new Finder<>(Board.class);

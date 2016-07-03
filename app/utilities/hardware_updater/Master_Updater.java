@@ -1,12 +1,13 @@
 package utilities.hardware_updater;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import controllers.WebSocketController_Incoming;
 import models.compiler.Board;
-import models.compiler.C_Program_Update_Plan;
 import models.compiler.FileRecord;
-import models.compiler.Version_Object;
 import models.project.b_program.B_Program_Cloud;
+import models.project.c_program.Actualization_procedure;
+import models.project.c_program.C_Program_Update_Plan;
+import utilities.hardware_updater.States.C_ProgramUpdater_State;
+import utilities.webSocket.WS_BlockoServer;
 import utilities.webSocket.WebSCType;
 
 import java.util.ArrayList;
@@ -29,45 +30,53 @@ public class Master_Updater{
 
     public static void start_thread_box(){
         logger.debug("Master Update will be started");
-        update_thread.start();
         comprimator_thread.start();
     }
 
-    public static void destroy_thread(){
-        update_thread.interrupt();
-        comprimator_thread.interrupt();
-    }
 
-    public static void add_new_device_for_update(String project_id, List<C_Program_Update_Plan> device_for_update){
-        devices_for_update.addAll(device_for_update);
-    }
+    public static void add_new_Procedure(Actualization_procedure procedure){
 
-    public static void add_new_device_for_update(String project_id, C_Program_Update_Plan device_for_update){
-        devices_for_update.add(device_for_update);
+        logger.debug("Master Updater - new incoming procedure");
+
+        procedures.add(procedure);
+
+        if(comprimator_thread.getState() == Thread.State.TIMED_WAITING) {
+            logger.debug("Thread is sleeping - wait for interrupt!");
+            comprimator_thread.interrupt();
+        }
     }
 
 // ** Comprimator Thread -----------------------------------------------------------------------------------------------
 
-    static List<C_Program_Update_Plan> devices_for_update = new ArrayList<>();
+   public static List<Actualization_procedure> procedures = new ArrayList<>();
 
     static Thread comprimator_thread = new Thread() {
         @Override
         public void run() {
+
+
+            logger.info("Independent Thread in Master updater now working") ;
+
             while(true){
                 try{
 
-                    if(!devices_for_update.isEmpty()) {
 
-                        System.out.println("Vlákno přípravy C_programu šlape") ;
+                    if(!procedures.isEmpty()) {
 
-                        C_Program_Update_Plan plan =  devices_for_update.get(0);
+                        logger.debug("Master updater Thread is running. Tasks to solve: " + procedures.size() );
 
-                        new Master_Updater().board_update_Pair( plan );
+                        Actualization_procedure procedure =  procedures.get(0);
+                        actualization_update_procedure( procedure );
+                        procedures.remove(procedure);
 
-                        devices_for_update.remove(plan);
                     }
-                    else sleep(5000);
+                    else{
+                        logger.debug("Master updater Thread has not other tasks. Going to sleep!");
+                        sleep(500000000);
+                    }
 
+                }catch (InterruptedException i){
+                    // Do nothing
                 }catch (Exception e){
                     logger.error("Master Updater Error", e);
                 }
@@ -77,113 +86,132 @@ public class Master_Updater{
 
 // ** Updater Thread -----------------------------------------------------------------------------------------------
 
-    static public ArrayList<Actualization_Task> task_list = new ArrayList<>();
+    public static void actualization_update_procedure(Actualization_procedure procedure){
 
-    static Thread update_thread = new Thread() {
-        @Override
-        public void run() {
-            while(true){
-                try{
 
-                    if(!task_list.isEmpty()) {
+           Map<String, String> files_codes = new HashMap<>(); // < c_program_version_id, code of program >
 
-                        logger.debug("Počet zařízení k aktualizaci ještě: " + task_list.size() );
+        logger.debug("Master Updater: actualization_update_procedure or" + ( procedure.id == null ? "virtual procedure" : ("real procedure" + procedure.id) ) );
 
-                        Actualization_Task task = task_list.get(0);
+           for (C_Program_Update_Plan plan : procedure.updates) {
+               try {
 
-                        System.out.println("Odesílám požadavek na aktualizaci!");
-                        JsonNode result = WebSocketController_Incoming.homer_update_embeddedHW(task.homer, task.device_ids, task.code );
+               // Desku kterou chci updatovat
+               Board board  = plan.board;
+               String id    = plan.c_program_version_for_update != null ? plan.c_program_version_for_update.id : ( plan.binary_file.file_name + "_" + plan.binary_file.id);
+               WS_BlockoServer server = null;
+               WebSCType actual_homer = null;
 
-                        System.out.println("Odpověď na Aktualizaci:" + result.toString());
-                        System.out.println("Ještě neřeším reakci");
-                        task_list.remove(task);
+               // Verze k updatu
+               //1
+               B_Program_Cloud b_program_cloud = B_Program_Cloud.find.where().or(
+                       com.avaje.ebean.Expr.eq("version_object.master_board_b_pair.board.id", board.id),
+                       com.avaje.ebean.Expr.eq("version_object.b_pairs_b_program.board.id", board.id)
+               ).findUnique();
 
+               if (b_program_cloud != null) {
+
+                   logger.debug("Hardware (board) is running under cloud blocko program");
+                   logger.debug("Blocko Instance: " + b_program_cloud.blocko_instance_name);
+                   logger.debug("Server: " + b_program_cloud.server.server_name) ;
+
+
+                   if(! WebSocketController_Incoming.blocko_servers.containsKey( b_program_cloud.server.server_name )){
+                       logger.debug("Server is offline. Putting off the task for later ");
+                       plan.state = C_ProgramUpdater_State.homer_server_is_offline;
+                       plan.update();
+                       break;
+                   }
+                   server = (WS_BlockoServer) WebSocketController_Incoming.blocko_servers.get( b_program_cloud.server.server_name );
+
+                   if (!WebSocketController_Incoming.incomingConnections_homers.containsKey(b_program_cloud.blocko_instance_name)) {
+                       logger.debug("Homer is offline. Putting off the task for later ");
+                       plan.state = C_ProgramUpdater_State.homer_is_offline;
+                       plan.update();
+                       break;
+                   }
+
+                   logger.debug("Instance of blocko program is online and connected with Tyrion");
+                   actual_homer = WebSocketController_Incoming.incomingConnections_homers.get(b_program_cloud.blocko_instance_name);
+
+               }
+
+               //2 Lokální Homer
+               // TODO Lokální homer
+
+              else if (board.server != null) {
+
+                   logger.debug("Hardware is not paired with any Blocko program in the cloud or locally with homer, but still connect to the server: " + board.server.server_name);
+
+
+                    if(! WebSocketController_Incoming.blocko_servers.containsKey( board.server.server_name )){
+                        logger.debug("Server is offline");
+                        plan.state = C_ProgramUpdater_State.homer_server_is_offline;
+                        plan.update();
+                        break;
                     }
-                    else sleep(5000);
 
-                }catch (Exception e){
-                    logger.error("Master Updater Error", e);
-                }
-            }
-        }
-    };
-
-
-
- //   /Users/zaruba/ownCloud/Git/Tyrion/build.sbt
-    public void board_update_Pair(C_Program_Update_Plan plan){
-       try{
-
-            Map<String, String> files_codes = new HashMap<>(); // < c_program_version_id, code of program >
-
-            System.out.println("Updatuji seznam Hardwaru");
-
-
-                // Desku kterou chci updatovat
-                Board board = plan.board_for_update;
-                String id = plan.c_program_version_for_update.id;
-
-                // Verze k updatu
-                Version_Object c_program_version_for_update = plan.c_program_version_for_update;
-
-
-                B_Program_Cloud b_program_cloud = B_Program_Cloud.find.where().or(
-                        com.avaje.ebean.Expr.eq("version_object.master_board_b_pair.board.id", board.id),
-                        com.avaje.ebean.Expr.eq("version_object.b_pairs_b_program.board.id", board.id)
-                ).findUnique();
-
-
-                System.out.println("Blocko Instnance: " + b_program_cloud.blocko_instance_name);
-                System.out.println("Server Kde to běží" + b_program_cloud.server.server_name);
-
-
-                // Zajištuji do paměti kod k nahrátí
-                if (!files_codes.containsKey(id)) {
-
-                    System.out.println("Nemám compilačku v bufferu a tak jí tahám z azure");
-
-                    FileRecord file_record = FileRecord.find.where().eq("version_object.id", id).where().eq("file_name", "compilation.bin").findUnique();
-                    if (file_record != null) {
-                        System.out.println("V azure byla");
-                        files_codes.put(id, file_record.get_fileRecord_from_Azure_inString());
-                    } else {
-                        System.out.println("V azure nebyla");
-                        System.out.println("Spouštím proceduru dodatečné procedury");
-                        // TODO
-                        return;
-                    }
+                    server = (WS_BlockoServer) WebSocketController_Incoming.blocko_servers.get( board.server.server_name );
                 }
 
-                System.out.println("Komprimace updatu proběhla!");
+
+               // Zajištuji do paměti kod k nahrátí
+               if (!files_codes.containsKey(id)) {
+
+                   logger.debug("Actualization Bin file is not in buffer! Server must download that from Azure Blob server!");
+
+                   if(plan.binary_file != null) {
+                       logger.debug("User uploud own binary file to update");
+                       FileRecord  file_record = plan.binary_file;
+                       files_codes.put(  ( plan.binary_file.file_name + "_" + plan.binary_file.id) , file_record.get_Encoded_binary_file_From_Azure_inString() );
+                   }
+                   else if( plan.c_program_version_for_update != null){
+
+                       FileRecord file_record = FileRecord.find.where().eq("version_object.id", plan.c_program_version_for_update.id ).eq("file_name", "compilation.bin").findUnique();
+
+                       if(file_record != null) {
+                           logger.debug("User create own C_program and server has bin file of that");
+                           files_codes.put(plan.c_program_version_for_update.id, file_record.get_Encoded_binary_file_From_Azure_inString() );
+                       }
+                       else{
+                           System.out.println("..........V Blob serveru nebyla - musí se vtvořit");
+                           System.out.println("..........Spouštím proceduru dodatečné procedury protože kompilačku v azure nemám");
+                           System.out.println("..........Tato procedura chybí!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                           // TODO
+                           break;
+                       }
+                   }
 
 
-
-                // Zkontroluji instanci Homera zda běží
-                if (!WebSocketController_Incoming.incomingConnections_homers.containsKey(b_program_cloud.blocko_instance_name)) {
-
-                    logger.debug("Homer is offline. Putting off the task for later ");
-                    return;
-
-                }
-
-                logger.debug("Homer is online for update ");
-                WebSCType homer = WebSocketController_Incoming.incomingConnections_homers.get(b_program_cloud.blocko_instance_name);
+               }
 
 
-                Actualization_Task task = new Actualization_Task();
-                task.homer = homer;
-                task.code = files_codes.get(id);
-                task.device_ids.add( plan.board_for_update.id );
-                task_list.add(task);
+                   if(server == null) {
+                       logger.debug("The equipment has never entered into the system. Tyrion has no chance do anything! So Tyrion must wait for device!");
 
+                       plan.state = C_ProgramUpdater_State.waiting_for_device;
+                       plan.update();
+                       break;
+                   }
 
-        }catch (Exception e){
-            logger.error("Error while server tried compile version of C_program", e);
-        }
+                   // Aktualizační task, který budu posílat na server!
+                   Actualization_Task task = new Actualization_Task();
+                   task.homer = actual_homer;
+                   task.code = files_codes.get(id);
+                   task.device_ids = board.id;
 
+                   logger.debug("Actualization task is ready. Sending to Server object to server blocko independent Thread");
+                   server.add_task(task);
+
+               }catch(Exception e) {
+                   logger.error("Error while server tried compile version of C_program", e);
+                   plan.state = C_ProgramUpdater_State.critical_error;
+                   plan.update();
+                   break;
+               }
+           }
 
     }
-
 
 
 }

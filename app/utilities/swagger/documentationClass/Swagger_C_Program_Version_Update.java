@@ -12,7 +12,7 @@ import java.util.List;
 
 
 @ApiModel(description = "Json Model for new Version of C_Program",
-          value = "C_Program_Version_New")
+          value = "C_Program_Version_Update")
 public class Swagger_C_Program_Version_Update {
 
     // Nutný fiktivní contructor pro zhmotnění vnitřních tříd

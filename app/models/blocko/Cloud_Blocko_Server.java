@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
 import controllers.WebSocketController_Incoming;
+import models.compiler.Board;
 import models.project.b_program.B_Program_Cloud;
 
 import javax.persistence.*;
@@ -23,6 +24,7 @@ public class Cloud_Blocko_Server extends Model{
                                                                 public String destination_address;
 
     @JsonIgnore @OneToMany(mappedBy="server", cascade = CascadeType.ALL) public List<B_Program_Cloud> cloud_programs  = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="server") public List<Board>  boards  = new ArrayList<>();
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 

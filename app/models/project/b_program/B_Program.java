@@ -9,6 +9,7 @@ import controllers.WebSocketController_Incoming;
 import io.swagger.annotations.ApiModelProperty;
 import models.blocko.Cloud_Blocko_Server;
 import models.compiler.Board;
+import models.compiler.FileRecord;
 import models.compiler.Version_Object;
 import models.project.global.Project;
 import models.project.m_program.M_Project;
@@ -52,12 +53,16 @@ public class B_Program extends Model {
         List<Swagger_B_Program_Version> versions = new ArrayList<>();
 
         for(Version_Object v : version_objects){
-            Swagger_B_Program_Version bl = new Swagger_B_Program_Version();
-            bl.version_Object = v;
-            bl.connected_boards = v.b_pairs_b_program == null ? null : v.b_pairs_b_program ;
-            bl.master_board = v.master_board_b_pair == null ? null : v.master_board_b_pair;
+            Swagger_B_Program_Version b_program_version = new Swagger_B_Program_Version();
+            b_program_version.version_Object = v;
+            b_program_version.connected_boards = v.b_pairs_b_program == null ? null : v.b_pairs_b_program ;
+            b_program_version.master_board = v.master_board_b_pair == null ? null : v.master_board_b_pair;
 
-            versions.add(bl);
+
+            FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", v.id).eq("file_name", "program.js").findUnique();
+            if(fileRecord != null) b_program_version.program             = fileRecord.get_fileRecord_from_Azure_inString();
+
+            versions.add(b_program_version);
         }
 
         return versions;
@@ -128,6 +133,11 @@ public class B_Program extends Model {
         b_program_version.version_Object    = version_object;
         b_program_version.connected_boards  = version_object.b_pairs_b_program == null ? null : version_object.b_pairs_b_program ;
         b_program_version.master_board      = version_object.master_board_b_pair == null ? null : version_object.master_board_b_pair;
+
+        FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "program.js").findUnique();
+        if(fileRecord != null) b_program_version.program             = fileRecord.get_fileRecord_from_Azure_inString();
+
+
 
         return b_program_version;
     }

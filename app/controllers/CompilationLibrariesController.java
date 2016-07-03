@@ -19,7 +19,6 @@ import play.libs.ws.WSResponse;
 import play.mvc.*;
 import utilities.Server;
 import utilities.UtilTools;
-import utilities.hardware_updater.Master_Updater;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
@@ -31,7 +30,7 @@ import utilities.swagger.outboundClass.Filter_List.Swagger_Single_Library_List;
 import utilities.swagger.outboundClass.*;
 
 import javax.websocket.server.PathParam;
-import java.io.*;
+import java.io.File;
 import java.util.*;
 
 /**
@@ -308,7 +307,7 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successful created",      response = Swagger_C_Program_Version.class),
+            @ApiResponse(code = 201, message = "Successful created",      response = Swagger_C_Program_Version.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -351,7 +350,7 @@ public class CompilationLibrariesController extends Controller {
                         content.set("external_libraries", Json.toJson( help.external_libraries) );
 
             // Content se nahraje na Azure
-            UtilTools.uploadAzure_Version("c-program", content.toString() , "c-program", version_object.c_program.azureStorageLink, version_object.c_program.azurePackageLink, version_object, C_Program.class);
+            UtilTools.uploadAzure_Version("c-program", content.toString() , "c-program.json", version_object.c_program.azureStorageLink, version_object.c_program.azurePackageLink, version_object);
 
 
             String token = request().getHeader("X-AUTH-TOKEN");
@@ -666,7 +665,7 @@ public class CompilationLibrariesController extends Controller {
                    String body = download_file_from_Compiler_Server( c_compilation.c_comp_build_url);
                    if( body != null) {
                         // Daný soubor potřebuji dostat na Azure a Propojit s verzí
-                        UtilTools.uploadAzure_Version("c-program", body, "compilation.bin", version_object.c_program.azureStorageLink, version_object.c_program.azurePackageLink, version_object, C_Program.class);
+                        UtilTools.uploadAzure_Version("c-program", body, "compilation.bin", version_object.c_program.azureStorageLink, version_object.c_program.azurePackageLink, version_object);
                    }
                }catch (Exception e){}
 
@@ -789,7 +788,7 @@ public class CompilationLibrariesController extends Controller {
     }
 
     @ApiOperation(value = "update Embedded Hardware with  binary file",
-            tags = {"C_Program"},
+            tags = {"C_Program", "Actualization"},
             notes = "Upload Binary file and choose hardware_id for update. Result (HTML code) will be every time 200. - Its because upload, restart, etc.. operation need more than ++30 second " +
                     "There is also problem / chance that Tyrion didn't find where Embedded hardware is. So you have to listening Server Sent Events (SSE) and show \"future\" message to the user!",
             produces = "application/json",
@@ -816,43 +815,39 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response =  Result_ok.class),
+            @ApiResponse(code = 400, message = "External server where is hardware is offline", response = Result_serverIsOffline.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result uploadBinaryFileToBoard() {
+    public Result uploadBinaryFileToBoard(@ApiParam(value = "version_id ", required = true) @PathParam("version_id") String board_id ) {
         try{
 
-            // Ověření objektu
-            final Form<Swagger_UploadBinaryFileToBoard> form = Form.form(Swagger_UploadBinaryFileToBoard.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-            Swagger_UploadBinaryFileToBoard help = form.get();
-
             // Vyhledání objektů
-            List<Board> board_from_request = Board.find.where().idIn(help.board_id).findList();
-            if(board_from_request.size() == 0) return GlobalResult.result_BadRequest("no device is available. Does not exist or is decommissioned.");
+            Board board = Board.find.byId(board_id);
+            if(board == null) return GlobalResult.notFoundObject("Board board_id object not found");
 
-            List<Board> board_for_update = Board.find.where().idIn(help.board_id).findList();
-            // Kontrola oprávnění
-            for(Board board : board_from_request){
-                // Kontrola oprávnění
-                if(board.update_permission()) board_for_update.add(board);
-            }
+            if(!board.update_permission())  return GlobalResult.forbidden_Permission();
 
             // Přijmu soubor
             Http.MultipartFormData body = request().body().asMultipartFormData();
-            Http.MultipartFormData.FilePart file = body.getFile("file");
+            Http.MultipartFormData.FilePart file_from_request = body.getFile("file");
+
+            if (file_from_request == null) return GlobalResult.notFoundObject("Bin File not found!");
+
+            File file = file_from_request.getFile();
+
+            int dot = file_from_request.getFilename().lastIndexOf(".");
+            String file_type = file_from_request.getFilename().substring(dot);
+            String file_name = file_from_request.getFilename().substring(0,dot);
 
             // Zkontroluji soubor
-            if (file == null) return GlobalResult.notFoundObject("Bin File not found!");
-            byte[] file_inBase64 = UtilTools.loadFile_inBase64( file.getFile() );
+            if(!file_type.equals(".bin")) return GlobalResult.result_BadRequest("Wrong type of File - \"Bin\" required! ");
+            if( (file.length() / 1024) > 500) return GlobalResult.result_BadRequest("File is bigger than 500K b");
 
+             // Existuje Homer?
+             ActualizationController.add_new_actualization_request(board.project, board, file, file_from_request.getFilename());
 
-            // Nahraju na HW
-            // TODO samostané vlákno co by odpověď vrátilo hned a zbytek notifikací
-
-            // Vrátím potvrzení
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
@@ -861,7 +856,7 @@ public class CompilationLibrariesController extends Controller {
     }
 
     @ApiOperation(value = "update Embedded Hardware with C_program compilation",
-            tags = {"C_Program"},
+            tags = {"C_Program", "Actualization" },
             notes = "Upload compilation to list of hardware. Compilation is on Version oc C_program. And before uplouding compilation, you must succesfuly compile required version before! " +
                     "Result (HTML code) will be every time 200. - Its because upload, restart, etc.. operation need more than ++30 second " +
                     "There is also problem / chance that Tyrion didn't find where Embedded hardware is. So you have to listening Server Sent Events (SSE) and show \"future\" message to the user!",
@@ -895,7 +890,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result uploadCompilationToBoard(String version_id) {
+    public Result uploadCompilationToBoard( @ApiParam(value = "version_id ", required = true) @PathParam("version_id") String version_id) {
         try {
 
             // Zpracování Json
@@ -908,14 +903,15 @@ public class CompilationLibrariesController extends Controller {
             Version_Object c_program_version = Version_Object.find.byId(version_id);
             if(c_program_version == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
+            // Zkontroluji oprávnění
+            if(! c_program_version.c_program.read_permission())  return GlobalResult.forbidden_Permission();
+
             // Ověření zda je kompilovatelná verze a nebo zda kompilace stále neběží
             if(!c_program_version.compilable || c_program_version.compilation_in_progress) return GlobalResult.result_BadRequest("You cannot upload uncompilable version or compilation in progress");
 
             //Zkontroluji validitu Verze zda sedí k C_Programu
             if(c_program_version.c_program == null) return GlobalResult.result_BadRequest("Version_Object its not version of C_Program");
 
-            // Zkontroluji oprávnění
-            if(! c_program_version.c_program.read_permission())  return GlobalResult.forbidden_Permission();
 
             //Zkontroluji zda byla verze už zkompilována
             if(c_program_version.c_compilation == null) return GlobalResult.result_BadRequest("The program is not yet compiled");
@@ -939,23 +935,7 @@ public class CompilationLibrariesController extends Controller {
                 if(board.update_permission() && board.type_of_board_id().equals(typeOfBoard_id)) board_for_update.add(board);
             }
 
-           List<C_Program_Update_Plan> c_program_update_plans = new ArrayList<>();
-
-            for(Board board : board_for_update){
-                board.c_program_update_plans.delete();
-
-                C_Program_Update_Plan plan = new C_Program_Update_Plan();
-                plan.board_for_update = board;
-                plan.c_program_version_for_update = c_program_version;
-                plan.save();
-
-                c_program_update_plans.add(plan);
-            }
-
-            Master_Updater.add_new_device_for_update( c_program_version.c_program.project_id(), c_program_update_plans );
-
-
-
+            ActualizationController.add_new_actualization_request(c_program_version.c_program.project , board_for_update, c_program_version );
 
             // Vracím odpověď
             return GlobalResult.result_ok("Procedura byla spuštěna - uživatel bude informován!");
@@ -1570,7 +1550,7 @@ public class CompilationLibrariesController extends Controller {
                 // Mám soubor
                 File libraryFile = file.getFile();
 
-                UtilTools.uploadAzure_Version("libraries", libraryFile, "library.txt", library_group.azureStorageLink, library_group.azurePackageLink, version_object, LibraryGroup.class);
+                UtilTools.uploadAzure_Version("libraries", libraryFile, "library.txt", library_group.azureStorageLink, library_group.azurePackageLink, version_object);
 
             }
 
@@ -2053,7 +2033,7 @@ public class CompilationLibrariesController extends Controller {
             File libraryFile = file.getFile();
 
             // Nahraji soubor na Azure
-            UtilTools.uploadAzure_Version("libraries", libraryFile, "library.txt", version_object.single_library .azureStorageLink, version_object.single_library.azurePackageLink, version_object, SingleLibrary.class);
+            UtilTools.uploadAzure_Version("libraries", libraryFile, "library.txt", version_object.single_library .azureStorageLink, version_object.single_library.azurePackageLink, version_object);
 
             // Vrácení verze
             return GlobalResult.result_ok(Json.toJson(version_object));
@@ -3114,7 +3094,7 @@ public class CompilationLibrariesController extends Controller {
             if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
             // Kontrola oprávnění
-            if(!board.first_connect_permission()) return GlobalResult.result_BadRequest("Board is already registred");
+            if(board.first_connect_permission() == null ) return GlobalResult.result_BadRequest("Board is already registered");
 
             // Kontrola oprávnění
             if(!project.update_permission()) return GlobalResult.forbidden_Permission();

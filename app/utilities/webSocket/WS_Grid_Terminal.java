@@ -29,7 +29,7 @@ public class WS_Grid_Terminal extends  WebSCType {
     @Override
     public void onMessage(ObjectNode json) {
         System.out.println("příchozí zpráva v WS_Grid_Terminal: " + json.toString());
-         WebSocketController_Incoming.incoming_message_terminal(this, json);
+         WebSocketController_Incoming.terminal_incoming_message(this, json);
     }
 
 

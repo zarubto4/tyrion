@@ -3,7 +3,9 @@ package controllers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.blocko.Cloud_Blocko_Server;
-import models.compiler.*;
+import models.compiler.Board;
+import models.compiler.Cloud_Compilation_Server;
+import models.compiler.Version_Object;
 import models.person.Person;
 import models.project.b_program.B_Program;
 import models.project.b_program.B_Program_Cloud;
@@ -12,7 +14,6 @@ import models.project.m_program.M_Project;
 import org.apache.commons.codec.binary.Base64;
 import play.libs.Json;
 import play.mvc.Controller;
-import play.mvc.Result;
 import play.mvc.WebSocket;
 import utilities.loggy.Loggy;
 import utilities.webSocket.*;
@@ -50,7 +51,6 @@ public class WebSocketController_Incoming extends Controller {
 
     // Becki (frontend) spojení na synchronizaci blocka atd.. - Podporován režim multipřihlášení.
     public static Map<String, WebSCType> becki_website = new HashMap<>(); // (Person_id - Identificator, List of Websocket connections - Identificator je Token)
-
 
 // PUBLIC API -------------------------------------------------------------------------------------------------------------------
 
@@ -105,7 +105,7 @@ public class WebSocketController_Incoming extends Controller {
                         }
 
                         // Zasílám na terminál informaci o znovu připojení
-                        homer_reconnection(incomingConnections_terminals.get(terminal_name));
+                        terminal_homer_reconnection(incomingConnections_terminals.get(terminal_name));
                     }
                     // Pokud není připojený - vyřadím ho ze seznamu
                     else {
@@ -145,7 +145,7 @@ public class WebSocketController_Incoming extends Controller {
                         }
 
                         logger.debug("Homer -> Lost Connection: Sending to Becki :" + becki_identificator + " that they are new receiver");
-                        homer_reconnection(becki_website.get(becki_identificator));
+                        terminal_homer_reconnection(becki_website.get(becki_identificator));
                     }
                     // Pokud není připojený - vyřadím ho ze seznamu
                     else {
@@ -232,7 +232,7 @@ public class WebSocketController_Incoming extends Controller {
                     }
 
                     logger.debug("Tyrion: Sending to Terminal, that homer is nto connected yet");
-                    WebSocketController_Incoming.homer_is_not_connected_yet(terminal);
+                    WebSocketController_Incoming.terminal_homer_is_not_connected_yet(terminal);
 
                     return ws;
                 }
@@ -294,7 +294,7 @@ public class WebSocketController_Incoming extends Controller {
                       }
 
                       logger.debug("Tyrion: Sending to Terminal, that homer is nto connected yet");
-                      WebSocketController_Incoming.homer_is_not_connected_yet(terminal);
+                      WebSocketController_Incoming.terminal_homer_is_not_connected_yet(terminal);
 
                       return ws;
                   }
@@ -486,14 +486,14 @@ public class WebSocketController_Incoming extends Controller {
     }
     public  WebSocket<String>  compilator_server_connection (String server_name){
         try{
-            System.out.println("Připojuje se mi Kompilační server: " + server_name);
+            logger.debug("Compilation server is connecting. Server: " + server_name);
 
-            System.out.println("Ověřuji zda je server platný a mohu ho nechat připojit"); // TODO - přidat ověření ještě pomocí HASHe co už je v objektu definován
+            logger.debug("Control Server and its unique names!"); // TODO - přidat ověření ještě pomocí HASHe co už je v objektu definován
             Cloud_Compilation_Server cloud_compilation_server = Cloud_Compilation_Server.find.where().eq("server_name", server_name).findUnique();
             if(cloud_compilation_server == null) return WebSocket.reject(forbidden("Server side error - unrecognized name"));
 
             if(compiler_cloud_servers.containsKey(server_name)) {
-                System.out.println("Na Tyrionovi je už připojen cKompilační server se stejným jménem - nedovolím další připojení");
+                logger.debug("At Tyrion is already connected server compilation of the same name - will not allow another connection");
                 return WebSocket.reject(forbidden("Server side error - already connected"));
             }
 
@@ -501,11 +501,11 @@ public class WebSocketController_Incoming extends Controller {
             WS_CompilerServer server = new WS_CompilerServer( cloud_compilation_server.server_name, cloud_compilation_server.destination_address, compiler_cloud_servers );
 
             // Připojím se
-            System.out.println("Compilační server se připojit");
+            logger.debug("Compiling server connect");
             return server.connection();
 
         }catch (Exception e){
-            Loggy.error("Cloud Compiler Server Web Socket connection", e);
+            logger.error("Cloud Compiler Server Web Socket connection", e);
             return WebSocket.reject(forbidden("Server side error"));
         }
     }
@@ -546,6 +546,43 @@ public class WebSocketController_Incoming extends Controller {
     }
 
 // PRIVATE Blocko-Server ---------------------------------------------------------------------------------------------------------
+public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, ObjectNode json){
+
+    logger.debug("BlockoServer: "+ blockoServer.identifikator + " Incoming message: " + json.toString());
+
+    if(json.has("messageChannel")){
+
+        switch (json.get("messageChannel").asText()){
+
+            case "homer-server" : {
+
+                switch (json.get("messageType").asText()){
+
+                    case "yodaDisconnected" : {
+                        logger.debug("yodaDisconnected");
+                        blocko_server_yodaDisconnected(blockoServer,json);
+                        return;
+                    }
+                    case "yodaConnected" : {
+                        logger.debug("yodaConnected");
+                        blocko_server_yodaConnected(blockoServer,json);
+                        return;
+                    }
+                }
+            }
+            default: {
+                logger.error("ERROR");
+                logger.error("Homer: Incoming message: becki: Tyrion don't recognize incoming messageChanel!!!");
+                logger.error("ERROR");
+            }
+
+        }
+    }else {
+        logger.error("ERROR");
+        logger.error("Homer: "+ blockoServer.identifikator + " Incoming message has not messageChannel!!!!");
+        logger.error("ERROR");
+    }
+}
 
     public static void blocko_server_is_disconnect(WS_BlockoServer blockoServer){
         logger.debug("Tyrion lost connection with blocko server: " + blockoServer.identifikator);
@@ -574,25 +611,18 @@ public class WebSocketController_Incoming extends Controller {
         return blockoServer.write_with_confirmation(result);
     }
 
-    public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, ObjectNode json){
-        System.out.println("Speciálně  server2server přišla zpráva: " + json.asText() );
-        System.out.println("Zatím není implementovaná žádná reakce na příchozá zprávu z Blocko serveru !!" );
-    }
-
-    public static JsonNode blocko_server_add_instance(WS_BlockoServer blockoServer, B_Program_Cloud program) throws Exception, TimeoutException, InterruptedException{
+    public static WebSCType blocko_server_add_instance(WS_BlockoServer blockoServer, B_Program_Cloud program) throws Exception{
 
             logger.debug("Tyrion uploud new instance to server" + blockoServer.identifikator);
 
             if (WebSocketController_Incoming.incomingConnections_homers.containsKey(program.blocko_instance_name)) {
 
                 System.out.println("Při přidávání instance do serveru: " + blockoServer.identifikator + " bylo zjištěno že v mapě už existuje jméno homera");
-                ObjectNode result = Json.newObject();
-                result.put("status", "success");
-                return result;
+                return WebSocketController_Incoming.incomingConnections_homers.get(program.blocko_instance_name);
             }
 
-            System.out.println("Vytvářím nového virtuálního Homera");
-            WS_Homer_Cloud homer = new WS_Homer_Cloud(program.blocko_instance_name, program.version_object.id, blockoServer);
+            logger.debug("Creating new  Homer");
+            WS_Homer_Cloud homer = new WS_Homer_Cloud(program.blocko_instance_name, program.version_object.id , blockoServer);
 
             ObjectNode result = Json.newObject();
             result.put("messageType", "createInstance");
@@ -600,23 +630,51 @@ public class WebSocketController_Incoming extends Controller {
             result.put("instanceId", program.blocko_instance_name);
             result.put("macAddress", program.macAddress);
 
-            System.out.println("Nahrávám ho na Blocko server novou instanci");
+            logger.debug("Sending to server request for new instance ");
             JsonNode result_instance = blockoServer.write_with_confirmation( result);
 
-            System.out.println("Nahrávám ho na Blocko server do vytvořené instnace program");
+            logger.debug("Sending Blocko Program ");
             JsonNode result_uploud = WebSocketController_Incoming.homer_upload_program(homer, program.id, program.version_object.files.get(0).get_fileRecord_from_Azure_inString());
 
-            System.out.println("Přidávám nového virtuálního Homera do privátní mapy blocko serveru");
+            logger.debug("Adding a new virtual Homer in private server maps in Controller");
             blockoServer.virtual_homers.put(program.blocko_instance_name, homer);
 
-            System.out.println("Spouštím připojovací proceduru");
+            logger.debug("Initiating connection procedures");
             homer_connection_procedure(homer);
 
             incomingConnections_homers.put(homer.identifikator, homer);
 
-            return result_uploud;
+            return homer;
 
     }
+
+    public static WebSCType blocko_server_add_fake_instance(WS_BlockoServer blockoServer, String  instance_name, String macAddress) throws Exception{
+
+        logger.debug("Tyrion uploud FAKE new instance to server" + blockoServer.identifikator);
+
+        if (WebSocketController_Incoming.incomingConnections_homers.containsKey(instance_name)) {
+            logger.warn("When adding FAKE instance in the server: " + blockoServer.identifikator + "it was found that the site exists name of Homer instnace!!!!");
+            return WebSocketController_Incoming.incomingConnections_homers.get(instance_name);
+        }
+
+        logger.debug("Creating new Fake Homer for updating on Homer Server");
+        WS_Homer_Cloud homer = new WS_Homer_Cloud(instance_name, "null", blockoServer);
+
+
+        ObjectNode result = Json.newObject();
+        result.put("messageType", "createInstance");
+        result.put("messageChannel", "homer-server");
+        result.put("instanceId", instance_name);
+        result.put("macAddress", macAddress);
+
+        logger.debug("Upload instance to server!");
+        JsonNode result_instance = blockoServer.write_with_confirmation( result);
+
+        return homer;
+
+    }
+
+
 
     public static JsonNode blocko_server_remove_instance( WS_BlockoServer blockoServer, String instance_name) throws TimeoutException, InterruptedException{
 
@@ -629,25 +687,104 @@ public class WebSocketController_Incoming extends Controller {
 
     }
 
-    public static void blocko_server_ping(WS_BlockoServer blockoServer) throws TimeoutException, InterruptedException {
+    public static void blocko_server_ping(WS_BlockoServer blockoServer){
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "ping");
-        result.put("messageChannel", "tyrion");
+        result.put("messageChannel", "homer-server");
 
         blockoServer.write_without_confirmation( result);
     }
 
-    public static void blocko_server_disconnect(WS_BlockoServer blockoServer) throws TimeoutException, InterruptedException {
-        System.out.println("Chystám se násilně odpojit server");
-        blockoServer.onClose();
+    public static void blocko_server_unregistered_board_are_connected(WS_BlockoServer blockoServer, String macAddress){
+
+        ObjectNode result = Json.newObject();
+        result.put("messageType", "unregisteredHardware");
+        result.put("messageChannel", "homer-server");
+        result.put("macAddress", macAddress);
+
+        blockoServer.write_without_confirmation(result);
+
+    }
+
+    public static void blocko_server_yodaConnected(WS_BlockoServer blockoServer, ObjectNode json){
+        try {
+            if(json.has("macAddress")) {
+
+                Board board = Board.find.byId(json.get("macAddress").asText());
+
+                if(board == null){
+                    logger.warn("WARN! WARN! WARN! WARN!");
+                    logger.warn("Unregistered Hardware connected to Blocko server - " + blockoServer.identifikator);
+                    logger.warn("Unregistered Hardware: " +  json.get("macAddress").asText() );
+                    logger.warn("WARN! WARN! WARN! WARN!");
+
+                    blocko_server_unregistered_board_are_connected(blockoServer, json.get("macAddress").asText());
+                    return;
+                }
+
+                logger.debug("Board connected to Blocko server");
+
+                if(board.server == null){
+
+                    logger.debug("The Board is not yet matched the Server");
+                    Cloud_Blocko_Server server = Cloud_Blocko_Server.find.where().eq("server_name", blockoServer.identifikator).findUnique();
+
+                    if(server == null) {
+                        logger.error("blocko_server_yodaConnected => server not exist!!!!");
+                        return;
+                    }
+
+
+                    server.boards.add(board);
+                    server.refresh();
+                    server.update();
+
+                    board.refresh();
+                    board.server = server;
+                    board.isActive = true;
+                    board.update();
+                }
+
+               ActualizationController.hardware_connected(board);
+
+
+            }else {
+                logger.error("Incoming message: Yoda Connected: has not macAddress!!!!");
+            }
+        }catch (Exception e){
+            logger.error("Blocko Server - Yoda Connected ERROR", e);
+        }
+    }
+
+    public static void blocko_server_yodaDisconnected(WS_BlockoServer blockoServer, ObjectNode json){
+        try {
+
+            if(json.has("macAddress")) {
+
+                Board board = Board.find.byId(json.get("macAddress").asText());
+                if(board == null){
+                    logger.warn("WARN! WARN! WARN! WARN!");
+                    logger.warn("Unregistered Hardware disconnected to Blocko server - " + blockoServer.identifikator);
+                    logger.warn("Unregistered Hardware: " +  json.get("macAddress").asText() );
+                    logger.warn("WARN! WARN! WARN! WARN!");
+                    return;
+                }
+
+                ActualizationController.hardware_disconnected(board);
+
+            }else {
+                logger.error("Incoming message: Yoda Disconnected: has not macAddress!!!!");
+            }
+        }catch (Exception e){
+            logger.error("Blocko Server - Yoda Connected ERROR", e);
+        }
     }
 
 // PRIVATE Compiler-Server --------------------------------------------------------------------------------------------------------
 
     public static void compiler_server_is_disconnect(WS_CompilerServer compilerServer)  {
-        System.out.println("Ztráta spojení s Compilačním serverem: " + compilerServer.identifikator);
-        System.out.println("Je nutná dodělat reakce na ztrátu spojení??? : ");
+        logger.debug("Connection lost with compilation server!: " + compilerServer.identifikator);
         compiler_cloud_servers.remove(compilerServer.identifikator);
     }
 
@@ -735,8 +872,8 @@ public class WebSocketController_Incoming extends Controller {
     }
 
     public static void compilation_server_incoming_message(WS_CompilerServer server, ObjectNode json){
-        System.out.println("Speciálně  server2server přišla zpráva: " + json.asText() );
-        System.out.println("Zatím není implementovaná žádná reakce na příchozá zprávu z Compilačního serveru !!");
+        logger.warn("Speciálně  server2server přišla zpráva: " + json.asText() );
+        logger.warn("Zatím není implementovaná žádná reakce na příchozá zprávu z Compilačního serveru !!");
     }
 
 // PRIVATE Becki -----------------------------------------------------------------------------------------------------------------
@@ -744,44 +881,47 @@ public class WebSocketController_Incoming extends Controller {
     public static void becki_incoming_message(WS_Becki_Website becki, ObjectNode json){
 
         logger.debug("Becki: " + becki.identifikator + " Incoming message: " + json.toString() );
+        if(json.has("messageChannel")) {
 
-        switch (json.get("messageChannel").asText()) {
+            switch (json.get("messageChannel").asText()) {
 
-            case "becki": {
+                case "becki": {
+                    switch (json.get("messageType").asText()) {
 
-                switch (json.get("messageType").asText()) {
+                        case "subscribe_instance": {
+                            becki_subscribe_channel(becki, json);
+                            return;
+                        }
+                        default: {
+                            logger.error("ERROR \n");
+                            logger.error("Becki: "+ becki.identifikator + " Incoming message on messageChannel \"becki\" has not unknown messageType!!!!");
+                            logger.error("ERROR \n");
+                        }
 
-                    case "subscribe_instance": {
-                        becki_subscribe_channel(becki, json);
-                        return;
                     }
-
-                    // Více typů příkazů zatím není implementováno
                 }
-            }
-            case  "tyrion" : {
-                    System.out.println ("Z Becki přišla zpráva určená pro Tyrion. Nejsou ale implementovány žádné reakce." + json.asText());
+                case "tyrion": {
+                    logger.warn("Homer: Incoming message: Tyrion: Server receive message: ");
+                    logger.warn("Homer: Incoming message: Tyrion: Server don't know what to do!");
                     return;
-            }
-            case "nevin" : {
+                }
 
-
-            }
-
-            default: {
-                    System.out.println("Becki něco přeposílá do Blocka (není to žádost o propojení a ani pro Tyriona");
-
+                default: {
                     // Přepošlu to na všehcny odběratele Becki
                     if (becki.subscribers_becki != null && !becki.subscribers_becki.isEmpty()) {
                         for (WebSCType ws : becki.subscribers_becki) {
                             ws.write_without_confirmation(json);
                         }
                     }
+                }
 
-                    return;
             }
 
-         }
+        }else {
+            logger.error("ERROR \n");
+            logger.error("Becki: "+ becki.identifikator + " Incoming message has not messageChannel!!!!");
+            logger.error("ERROR \n");
+        }
     }
 
     public static void becki_subscribe_channel(WS_Becki_Website becki, ObjectNode json){
@@ -793,13 +933,13 @@ public class WebSocketController_Incoming extends Controller {
                 // Najdu Version
                 Version_Object version = Version_Object.find.byId(version_id);
                 if (version == null) {
-                    becki_disaprove_recive_instance_state(becki, json.get("messageId").asText(), "Version not Exist");
+                    becki_disapprove_receive_instance_state(becki, json.get("messageId").asText(), "Version not Exist");
                     return;
                 }
 
                 // Zjistím kde běží
                 if (!blocko_servers.containsKey(version.b_program_cloud.server.server_name)) {
-                    becki_disaprove_recive_instance_state(becki, json.get("messageId").asText(), "Server is not connected");
+                    becki_disapprove_receive_instance_state(becki, json.get("messageId").asText(), "Server is not connected");
                     return;
                 }
 
@@ -808,12 +948,12 @@ public class WebSocketController_Incoming extends Controller {
                 // Zjistit jestli tam instance opravdu běží
                 JsonNode result_instance = blocko_server_isInstanceExist(server, version.b_program_cloud.blocko_instance_name);
                 if(result_instance.get("status").asText().equals("error"))  {
-                    becki_disaprove_recive_instance_state(becki, json.get("messageId").asText(), result_instance.get("error").asText());
+                    becki_disapprove_receive_instance_state(becki, json.get("messageId").asText(), result_instance.get("error").asText());
                     return;
                 }
                 // Zjistím jestli existuje instnace
                 if(!result_instance.get("exist").booleanValue())    {
-                    becki_disaprove_recive_instance_state(becki, json.get("messageId").asText(), "Instance of this version not running on this server!");
+                    becki_disapprove_receive_instance_state(becki, json.get("messageId").asText(), "Instance of this version not running on this server!");
                     return;
                 }
 
@@ -821,7 +961,7 @@ public class WebSocketController_Incoming extends Controller {
                 System.out.println("Zjištuji jestli existuje virtuální homer");
                 if(!incomingConnections_homers.containsKey(version.b_program_cloud.blocko_instance_name) ) {
                     System.out.println("Virtuální Homer neexistuje!!!");
-                    becki_disaprove_recive_instance_state(becki, json.get("messageId").asText(), "FATAL ERROR!!! Virtual Homer for this instance not exist!");
+                    becki_disapprove_receive_instance_state(becki, json.get("messageId").asText(), "FATAL ERROR!!! Virtual Homer for this instance not exist!");
                     return;
                 }
 
@@ -829,7 +969,7 @@ public class WebSocketController_Incoming extends Controller {
 
                 // 2 - Požádat Homera o zasílání informací
                 JsonNode result_recive = ask_for_receiving_for_Becki(homer);
-                if(result_recive.get("status").textValue().equals("error")) becki_disaprove_recive_instance_state(becki, json.get("messageId").asText(), result_recive.get("error").textValue());
+                if(result_recive.get("status").textValue().equals("error")) becki_disapprove_receive_instance_state(becki, json.get("messageId").asText(), result_recive.get("error").textValue());
 
                 // 1 - navázat propojení mezi instanci Homera a instancí Becki
                 homer.subscribers_becki.add(becki);
@@ -839,13 +979,13 @@ public class WebSocketController_Incoming extends Controller {
                 // To zajistím v odběrném místě Homera!
 
                 // Potvrdím Becki že vše je v cajku
-                becki_aprove_recive_instance_state(becki, json.get("messageId").asText());
+                becki_approve_receive_instance_state(becki, json.get("messageId").asText());
 
-                return;
+
             }catch (Exception e){
                 System.out.println("Došlo k chybě");
                 e.printStackTrace();
-                becki_disaprove_recive_instance_state(becki, json.get("messageId").asText(), "Unknow Error");
+                becki_disapprove_receive_instance_state(becki, json.get("messageId").asText(), "Unknow Error");
             }
     }
 
@@ -861,7 +1001,7 @@ public class WebSocketController_Incoming extends Controller {
     }
 
     // Tady odpovídám zpět na žádost o zasílání informací z Blocko serveru
-    public static void becki_aprove_recive_instance_state(WebSCType webSCType, String messageId){
+    public static void becki_approve_receive_instance_state(WebSCType webSCType, String messageId){
 
         System.out.println("Budu zasílat na Becki že jsem zpracoval úspěšně žádost o zasílání informací z Blocka");
 
@@ -875,7 +1015,7 @@ public class WebSocketController_Incoming extends Controller {
     }
 
     // Tady odpovídám zpět na žádost o zasílání informací z Blocko serveru (ale něco se posralo a tak to nefunguje)
-    public static void becki_disaprove_recive_instance_state(WebSCType webSCType, String messageId, String error){
+    public static void becki_disapprove_receive_instance_state(WebSCType webSCType, String messageId, String error){
 
         System.out.println("Budu zasílat na Becki že jsem zpracoval úspěšně žádost o zasílání informací z Blocka");
 
@@ -920,13 +1060,12 @@ public class WebSocketController_Incoming extends Controller {
                 }
 
                 case "tyrion" : {
-                    logger.debug("Homer: Incoming message: tyrion: Server receive message: ");
-                    logger.debug("Homer: Incoming message: tyrion: Server don't know what to do!");
+                    logger.warn("Homer: Incoming message: tyrion: Server receive message: ");
+                    logger.warn("Homer: Incoming message: tyrion: Server don't know what to do!");
                     return;
                 }
 
                 case "becki" : {
-
                     logger.debug("Homer: Incoming message: becki: Server send data to all connected browsers");
 
                     if(homer.subscribers_becki == null || homer.subscribers_becki.isEmpty() ){
@@ -995,12 +1134,6 @@ public class WebSocketController_Incoming extends Controller {
 
     }
 
-    public static void homer_disconnect_homer(WebSCType homer) throws TimeoutException, InterruptedException {
-
-        logger.debug("Tyrion: Homew will be disconnected: ");
-        homer.onClose();
-    }
-
     public static JsonNode homer_destroy_instance(String homer_id) throws TimeoutException, InterruptedException {
 
         logger.debug("Tyrion: Instruction for Homer in cloud: Destroy you instance!");
@@ -1010,20 +1143,6 @@ public class WebSocketController_Incoming extends Controller {
             result.put("messageChannel", "homer-server");
 
             return incomingConnections_homers.get(homer_id).write_with_confirmation(result);
-    }
-
-    public static JsonNode homer_update_embeddedHW(WebSCType homer, List<String> board_id_list, String string_code) throws TimeoutException, InterruptedException, IOException {
-
-        logger.debug("Tyrion: Sending to Hardware new Compilation of code");
-
-            ObjectNode result = Json.newObject();
-            result.put("messageType", "updateDevice");
-            result.set("hardwareId", Json.toJson(board_id_list));
-
-            byte[]   bytesEncoded = Base64.encodeBase64(string_code .getBytes());
-            result.put("base64Binary", bytesEncoded);
-
-          return homer.write_with_confirmation(result);
     }
 
     public static JsonNode homer_upload_program(WebSCType homer, String program_id, String program) throws TimeoutException, InterruptedException {
@@ -1061,7 +1180,7 @@ public class WebSocketController_Incoming extends Controller {
             list.add(terminal.identifikator);
             terminal.subscribers_grid.remove(homer);
             // Informuji že jsem ztratil spojení
-            echo_that_home_was_disconnect(terminal);
+            terminal_echo_that_home_was_disconnect(terminal);
         }
 
         terminal_lost_connection_homer.put(homer.identifikator, list);
@@ -1077,7 +1196,7 @@ public class WebSocketController_Incoming extends Controller {
                 ws_list.add(becki.identifikator);
                 becki_lost_connection_homer.put(homer.identifikator, ws_list);
             }
-            echo_that_home_was_disconnect(becki);
+            terminal_echo_that_home_was_disconnect(becki);
         }
 
 
@@ -1126,49 +1245,67 @@ public class WebSocketController_Incoming extends Controller {
         ws.write_without_confirmation(result);
     }
 
+    public static JsonNode homer_update_Yoda_firmware(WebSCType homer, String code) throws TimeoutException, InterruptedException {
+
+        logger.debug("Homer: " + homer.identifikator + ", will update Yoda");
+
+        ObjectNode result = Json.newObject();
+        result.put("messageType", "updateYodaFirmware");
+        result.put("messageChannel", "tyrion");
+        result.put("firmware", code );
+
+        return homer.write_with_confirmation(result);
+    }
+
+    public static JsonNode homer_update_embeddedHW(WebSCType homer, List<String> board_id_list, String string_code) throws TimeoutException, InterruptedException, IOException {
+
+        logger.debug("Tyrion: Sending to Hardware new Compilation of code");
+
+        ObjectNode result = Json.newObject();
+        result.put("messageType", "updateDevice");
+        result.set("hardwareId", Json.toJson(board_id_list));
+
+        byte[]   bytesEncoded = Base64.encodeBase64(string_code .getBytes());
+        result.put("base64Binary", bytesEncoded);
+
+        return homer.write_with_confirmation(result);
+    }
+
 // PRIVATE Terminal ---------------------------------------------------------------------------------------------------------
 
-    /** incoming Json from Terminal */
-    public static void incoming_message_terminal(WebSCType terminal, ObjectNode json){
+    public static void terminal_incoming_message(WebSCType terminal, ObjectNode json){
 
+        logger.debug("Terminal: "+ terminal.identifikator + " Incoming message: " + json.toString());
 
         if(json.has("messageChannel")){
 
-            System.out.println("messageChannel je: " + json.get("messageChannel").asText()  );
             switch ( json.get("messageChannel").asText() ){
 
                 case "the-grid" : {
-                    System.out.println("the-grid - Přeposílám na odběratele");
 
                     if(terminal.subscribers_grid.isEmpty()) terminal_you_have_not_followers(terminal);
                     for( WebSCType webSCType :  terminal.subscribers_grid) {
-
-                        System.out.println( "Zpráva je přeposílána na + " + webSCType.identifikator);
                         webSCType.write_without_confirmation(json);
                     }
                     return;
                 }
                 case "tyrion" : {
-                    System.out.println("Zprávu jsem poslal na Tyrion");
-
+                    logger.warn("Homer: Incoming message: Tyrion: Server receive message: ");
+                    logger.warn("Homer: Incoming message: Tyrion: Server don't know what to do!");
+                    return;
+                }
+                default: {
+                    logger.error("ERROR \n");
+                    logger.error("Homer: "+ terminal.identifikator + " Incoming message has not messageChannel!!!!");
+                    logger.error("ERROR \n");
                 }
             }
+
+        }else {
+            logger.error("ERROR \n");
+            logger.error("Homer: "+ terminal.identifikator + " Incoming message has not messageChannel!!!!");
+            logger.error("ERROR \n");
         }
-        System.out.println("Příchozí zpráva neobsahuje messageChannel");
-    }
-
-    public static void server_violently_terminate_terminal(WebSCType terminal){
-        System.out.println("Terminál se pokusil zaslat zpváu na Blocko ale žádné blocko nemá na sobě připojené - tedy zbyteční a packet zahazuji");
-
-
-        ObjectNode result = Json.newObject();
-        result.put("messageType", "NEmáš žádné Grid odběratele - zprává nebyla přeposlána \"");
-
-        terminal.write_without_confirmation(result);
-
-        try {
-            terminal.close();
-        }catch (Exception e){}
     }
 
     public static void terminal_ping(WebSCType terminal) throws TimeoutException, InterruptedException {
@@ -1180,59 +1317,52 @@ public class WebSocketController_Incoming extends Controller {
         terminal.write_without_confirmation(result);
     }
 
-    public static void terminal_disconnect(WebSCType terminal) throws TimeoutException, InterruptedException {
-        System.out.println("Chystám se násilně odpojit terminal");
-        terminal.onClose();
-    }
-
-    public static void server_plained_terminate_terminal(WebSCType terminal){
-        System.out.println("Server odesílá zprávu, že bude plánované odstavení");
-
-        ObjectNode result = Json.newObject();
-        result.put("messageType", "Ahoj, server se restartuje mezi 5 a 9");
-
-        terminal.write_without_confirmation(result);
-    }
-
     public static void terminal_is_disconnected(WebSCType terminal){
 
         terminal.maps.remove(terminal.identifikator);
 
         for(WebSCType subscriber : terminal.subscribers_grid){
-            System.out.println("Remove from subscriber list  " + subscriber.identifikator);
+            logger.debug("Remove from subscriber list  " + subscriber.identifikator);
+
             subscriber.subscribers_grid.remove(terminal);
             if(subscriber.subscribers_grid.isEmpty()){
 
                 try {
                     WebSocketController_Incoming.homer_all_terminals_are_gone(subscriber);
-                }catch (Exception e){ System.out.println("Při odesílání informace so tom, že Homera, už nikoho neposlouchá se něco posralo");}
+                }catch (Exception e){
+                    logger.debug("When Tyrion try to send terminals, that homer is offline SHIT HAPPENS!!!", e);
+                }
             }
         }
 
     }
 
-    public static void homer_reconnection(WebSCType terminal){
-        System.out.println("Chci upozornit terminál že se Homer Připojil: ");
+    public static void terminal_homer_reconnection(WebSCType terminal){
+
+        logger.debug("Terminal: "  + terminal.identifikator + " Homer is online now!");
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "Homer se znovu připojil!!");
+        result.put("TODO", "Tato zpráva není oficiálně definovaná");
 
         terminal.write_without_confirmation(result);
+
     }
 
-    public static void homer_is_not_connected_yet(WebSCType terminal){
+    public static void terminal_homer_is_not_connected_yet(WebSCType terminal){
 
-        System.out.println("Chci zaslat zprávu že homer není pripojen a jsem v metodě homer_is_not_connected_yet");
+        logger.debug("Terminal: "  + terminal.identifikator + " your homer is still not connected yet");
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "homer není pripojen!");
+        result.put("TODO", "Tato zpráva není oficiálně definovaná");
 
         terminal.write_without_confirmation(result);
 
     }
 
-    public static void echo_that_home_was_disconnect(WebSCType terminal){
-        System.out.println("Chci zaslat zprávu že se homer odpojil");
+    public static void terminal_echo_that_home_was_disconnect(WebSCType terminal){
+        logger.debug("Terminal: "  + terminal.identifikator + " Homer is offline now - we don't know what happens!!");
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "unSubscribeChannel");
@@ -1242,19 +1372,21 @@ public class WebSocketController_Incoming extends Controller {
     }
 
     public static void terminal_you_have_not_followers(WebSCType terminal){
-        System.out.println("Terminál se pokusil zaslat zpváu na Blocko ale žádné blocko nemá na sobě připojené - tedy zbytečné a packet zahazuji");
+        logger.debug("Terminal: " + terminal.identifikator + " wanted send message to Blocko program in Homer - but terminal is not connected with any Blocko program ");
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "NEmáš žádné Grid odběratele - zprává nebyla přeposlána ");
+        result.put("TODO", "Tato zpráva není oficiálně definovaná");
 
         terminal.write_without_confirmation(result);
     }
 
     public static void terminal_blocko_program_not_running_anywhere(WebSCType terminal){
-        System.out.println("Blocko program nikde něběží");
+        logger.debug("Message for Terminal: " + terminal.identifikator + ": Blocko program not runing enywhere!");
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "M_Program je sice spojený, ale program pro Homera nikde neběží a není tedy co kam zasílat");
+        result.put("TODO", "Tato zpráva není oficiálně definovaná");
 
 
         terminal.write_without_confirmation(result);
@@ -1275,7 +1407,23 @@ public class WebSocketController_Incoming extends Controller {
 
 // Test & Control API ---------------------------------------------------------------------------------------------------------
 
+    public static void server_violently_terminate_terminal(WebSCType terminal){
+
+        ObjectNode result = Json.newObject();
+        result.put("messageType", "Budeš něžně odpojen!");
+        result.put("TODO", "Tato zpráva není oficiálně definovaná");
+
+        terminal.write_without_confirmation(result);
+
+        try {
+            terminal.close();
+        }catch (Exception e){}
+    }
+
     public static void disconnect_all_homers(){
+
+        logger.warn("Tyrion is shutting down: Trying safety disconnect all connected Homer");
+
         for (Map.Entry<String, WebSCType> entry :  WebSocketController_Incoming.incomingConnections_homers.entrySet())
         {
             server_violently_terminate_terminal(entry.getValue());
@@ -1283,26 +1431,33 @@ public class WebSocketController_Incoming extends Controller {
     }
 
     public static void disconnect_all_mobiles() {
+
+        logger.warn("Tyrion is shutting down: Trying safety disconnect all connected Homer");
+
         for (Map.Entry<String, WebSCType> entry :  WebSocketController_Incoming.incomingConnections_terminals.entrySet())
         {
             server_violently_terminate_terminal(entry.getValue());
         }
     }
 
-    public Result disconnect_all_mobiles_result() {
-        for (Map.Entry<String, WebSCType> entry :  WebSocketController_Incoming.incomingConnections_terminals.entrySet())
+    public static void disconnect_all_Blocko_Servers() {
+
+        logger.warn("Tyrion is shutting down: Trying safety disconnect all connected Homer");
+
+        for (Map.Entry<String, WebSCType> entry :  WebSocketController_Incoming.blocko_servers.entrySet())
         {
             server_violently_terminate_terminal(entry.getValue());
         }
-        return ok();
     }
 
-    public Result disconnect_all_homers_result() {
-        for (Map.Entry<String, WebSCType> entry :  WebSocketController_Incoming.incomingConnections_homers.entrySet())
+    public static void disconnect_all_Compilation_Servers() {
+
+        logger.warn("Tyrion is shutting down: Trying safety disconnect all connected Homer");
+
+        for (Map.Entry<String, WebSCType> entry :  WebSocketController_Incoming.compiler_cloud_servers.entrySet())
         {
             server_violently_terminate_terminal(entry.getValue());
         }
-        return ok();
     }
 
 

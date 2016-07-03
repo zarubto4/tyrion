@@ -57,14 +57,15 @@ public class C_Program extends Model {
             c_program_versions.successfully_compiled = v.c_compilation != null;
             if(v.c_compilation != null ) c_program_versions.virtual_input_output = v.c_compilation.virtual_input_output;
 
+            FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", v.id).eq("file_name", "c-program.json").findUnique();
+            if(fileRecord != null) c_program_versions.version_code             = fileRecord.get_fileRecord_from_Azure_inString();
+
             versions.add(c_program_versions);
 
             for(B_Pair b_pair : v.b_pairs_c_program){
                 c_program_versions.runing_on_board.add(b_pair.board.id);
             }
         }
-
-
 
         return versions;
     }
@@ -85,6 +86,9 @@ public class C_Program extends Model {
         c_program_versions.version_object           = version_object;
         c_program_versions.successfully_compiled    = version_object.c_compilation != null;
         c_program_versions.compilation_restored     = FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "compilation.bin").findRowCount() > 0;
+
+        FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "c-program.json").findUnique();
+        if(fileRecord != null) c_program_versions.version_code             = fileRecord.get_fileRecord_from_Azure_inString();
 
         if(version_object.c_compilation != null ) {
             c_program_versions.virtual_input_output = version_object.c_compilation.virtual_input_output;
@@ -130,3 +134,6 @@ public class C_Program extends Model {
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String,C_Program> find = new Finder<>(C_Program.class);
 }
+
+//c-program/e06d45e1-702d-4190-96d0-9d0106c0ed63/personal-program/78127ef7-4eb6-4828-8aa9-efa8068bf3ce/c-program
+//c-program/e06d45e1-702d-4190-96d0-9d0106c0ed63/personal-program/78127ef7-4eb6-4828-8aa9-efa8068bf3ce/c-program

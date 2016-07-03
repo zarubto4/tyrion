@@ -1,9 +1,45 @@
 ﻿# Verze 1.06.6.1 #
 
-  * Bylo dodělána obnova hesla.
+
+TYRION-278 POST
+
+
+### Oprava Bugů ###
+
+ * fixed [TYRION-278](http://youtrack.byzance.cz/youtrack/issue/TYRION-278)
+ * fixed [TYRION-271](http://youtrack.byzance.cz/youtrack/issue/TYRION-271)
+ * fixed [TYRION-277](http://youtrack.byzance.cz/youtrack/issue/TYRION-277)
+ * fixed [TYRION-274](http://youtrack.byzance.cz/youtrack/issue/TYRION-274)
+ * fixed [TYRION-272](http://youtrack.byzance.cz/youtrack/issue/TYRION-272)
+  * fixed [TYRION-272](http://youtrack.byzance.cz/youtrack/issue/TYRION-272)
+
+### TODO ###
+
+  * TODO 3 Tomáš Z.: Zdokumentovat všechny Models pro Swagger
+  * TODO 4 Tomáš Z.: Přidat cyklické odmazávání BLOB v Azure, na které už neexistuje databázová vazba (Nějaká fičura co se zapne každý den ve 3 ráno a provede sekvenci kam
+      každý vývojář může přidávat metody které se provedou... (Mazání prošlých tokenů, mazání prošlých nedokončených ověření přes sociální sítě atd... Viz todo 5)
+  * TODO 5 Tomáš Z.: Přidat cyklické odmazávání Vygenerovaných nezrealizovaných spojení na sociální sítě (Linkded Account)
+  * TODO 6 Tomáš Z.: Pokud se uživatel přihlásí přes facebook, k jeho účtu bude přidělen plovoucí token. Pokud se přihlásí znova a znova..
+      budou se vtvářet další a další připojení. Je žádoucí mazat předchozí spojení pokud poznám, že je to ze stejného prohlížeče?
+      PS: Vyžaduje to tak půl dne (+ ideálně přepsat třídu s přihlášení přes facebook a odzkoušet github..
+  * TODO 8 ALL-Tyrion: Bude potřeba dodělat řešení pro prodlužování platnosti tokenu (Buď nějak magicky na Tyrionovi nebo ze strany frontendu) Asi to dodělá Tomáš.
+  * TODO 9 Přidat a vykreslit všechny objekty na dashboard Tyriona
+  * TODO 13 Důležité je dodělat ORM dokumentaci ve SWAGGERU pro kompilaci!
+  * TODO 14 AzureStorageLink a azurePackageLink přesunout pod Version_object!!! Už je to neudržitelný!!!
+  * TODO 16 Mazání souborů na Azure
+  * TODO 15 Verzování nasadit i na M_Program!
+  * TODO Swagger Dokumentace na objektu B_Program_State a B_Program!!!!!!!!!!!!
+  * TODO 17 Link je také v kodu http://youtrack.byzance.cz/youtrack/issue/TYRION-263
   * Propojení uživatelských účtu s wordpressem
+  * Připojit místo vykompilované verze vlastní binárku a umožnit plošné aktualizování vlastní binárkou
+  * Obnova hesla
+  * Radek - ukoly: Možnost napsat plugin pro aktualizaci přes USB a plugin do Eclipsu / intellij pro možnost nahrávat na konkrétní zařízení
+
+
 
 http://youtrack.byzance.cz/youtrack/issue/TYRION-271
+
+
 
 
 # Verze 1.06.6 #
@@ -212,26 +248,6 @@ Kdy bylo nunté vzhledem ke kompilátoru a knihovnám informovat o názvu soubor
 
  * Obsolate [TYRION-64](http://youtrack.byzance.cz/youtrack/issue/TYRION-64)
 
-
-
-Update firmware yoda
-
-Request:
-
- {
-    "messageType": "updateYodaFirmware",
-    "messageId": "SOME ID",
-    "messageChannel": "tyrion",
-    "firmware": "SOME BASE64 FIRMWARE"
- }
-Reply:
-
- {
-    "messageType": "updateYodaFirmware",
-    "messageId": "SOME ID",
-    "messageChannel": "tyrion",
-    "status": "success/error"
- }
 
 
 

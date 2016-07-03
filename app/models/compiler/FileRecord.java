@@ -2,14 +2,15 @@ package models.compiler;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import models.project.b_program.B_Program;
-import models.project.c_program.C_Program;
-import play.libs.Json;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import models.project.c_program.C_Program_Update_Plan;
 import utilities.UtilTools;
 
 import javax.persistence.*;
 import java.io.File;
-import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
@@ -21,11 +22,13 @@ public class FileRecord extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public String id;
-                                                             public String file_name;
+    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)     public String id;
+                                                                public String file_name;
+                                                 @JsonIgnore    public String file_path;
 
-                                   @JsonIgnore @ManyToOne()  public Version_Object version_object;
-                                               @JsonIgnore   public String name_of_parent_object;
+                                   @JsonIgnore @ManyToOne()     public Version_Object version_object;
+             @JsonIgnore @OneToMany(mappedBy="binary_file")     public List<C_Program_Update_Plan> c_program_update_plen  = new ArrayList<>();
+
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
@@ -36,74 +39,44 @@ public class FileRecord extends Model {
     // záznam - to znamená, že file_record je vázán pouze bud k b programu, nebo jen k c programu atd...
     @JsonIgnore @Transient public File get_fileRecord_from_Azure_inFile() throws Exception{
 
-      String  azureLinkVersion = version_object.azureLinkVersion;
-      String  azurePackageLink = "";
-      String  azureStorageLink = "";
-      String  container = "";
+        return UtilTools.file_get_File_from_Azure(file_path);
 
-        System.out.println(Json.toJson(version_object));
+    }
 
-        switch (name_of_parent_object){
+    @JsonIgnore @Transient  public String get_fileRecord_from_Azure_inString(){
+        try {
 
-            case "B_Program" : {
-                container = "b-program";
-                B_Program b_program = B_Program.find.byId(version_object.b_program.id);
-                azurePackageLink = b_program.azurePackageLink;
-                azureStorageLink = b_program.azureStorageLink;
-                break;
-            }
+            File file = this.get_fileRecord_from_Azure_inFile();
+            return UtilTools.get_String_from_file(file);
 
-            case "C_Program" : {
-                container = "c-program";
-                C_Program c_program = C_Program.find.byId(version_object.c_program.id);
-                azurePackageLink = c_program.azurePackageLink;
-                azureStorageLink = c_program.azureStorageLink;
-                break;
-            }
 
-            case "SingleLibrary" : {
-                container = "libraries";
-                SingleLibrary singleLibrary = SingleLibrary.find.byId(version_object.single_library.id);
-                azurePackageLink = singleLibrary.azurePackageLink;
-                azureStorageLink = singleLibrary.azureStorageLink;
-                break;
-            }
-
-            case "LibraryGroup" : {
-                container = "libraries";
-                LibraryGroup libraryGroup = LibraryGroup.find.byId(version_object.library_group.id);
-                azurePackageLink = libraryGroup.azurePackageLink;
-                azureStorageLink = libraryGroup.azureStorageLink;
-                break;
-            }
-
-            default: {
-                logger.error("FileRecord (uvnitř třídy) nenašel cestu k požadovanému souboru");
-                throw new Exception("FileRecord (uvnitř třídy) nenašel cestu k požadovanému souboru");
-            }
-
+        }catch (Exception e){
+            logger.error("Error when parsing Json File to Json Node", e);
+            return null;
         }
+    }
 
-        return UtilTools.file_get_File_from_Azure(container, azurePackageLink, azureStorageLink,  azureLinkVersion, file_name);
+    @JsonIgnore @Transient public String get_Encoded_binary_file_From_Azure_inString() throws Exception{
+
+        return UtilTools. get_encoded_binary_file_from_azure(this.file_path);
 
     }
 
-    @JsonIgnore @Transient  public String get_fileRecord_from_Azure_inString() throws Exception {
+    @JsonIgnore @Transient public JsonNode get_file_As_Json(){
+          try {
 
-        File file = this.get_fileRecord_from_Azure_inFile();
+              File file = this.get_fileRecord_from_Azure_inFile();
+              String string =  UtilTools.get_String_from_file(file);
+              return  new ObjectMapper().readTree(string);
 
-        Scanner scanner = new Scanner( file );
-        String text = scanner.useDelimiter("\\A").next();
-        scanner.close();
-
-        file.delete();
-
-        return text;
-
+          }catch (Exception e){
+             logger.error("Error when parsing Json File to Json Node", e);
+             return null;
+          }
     }
 
 
-/* FINDER --------------------------------------------------------------------------------------------------------------*/
+    /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String, FileRecord> find = new Finder<>(FileRecord.class);
 
 }

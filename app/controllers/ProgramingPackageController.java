@@ -9,7 +9,6 @@ import models.blocko.BlockoBlockVersion;
 import models.blocko.Cloud_Blocko_Server;
 import models.blocko.TypeOfBlock;
 import models.compiler.Board;
-import models.compiler.C_Program_Update_Plan;
 import models.compiler.TypeOfBoard;
 import models.compiler.Version_Object;
 import models.person.Person;
@@ -23,7 +22,6 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utilities.Server;
 import utilities.UtilTools;
-import utilities.hardware_updater.Master_Updater;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured;
 import utilities.notification.Notification_level;
@@ -33,6 +31,7 @@ import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Filter_List.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Homer_List;
 import utilities.webSocket.WS_BlockoServer;
+import utilities.webSocket.WebSCType;
 
 import javax.websocket.server.PathParam;
 import java.util.ArrayList;
@@ -1034,7 +1033,6 @@ public class ProgramingPackageController extends Controller {
 
                 if( TypeOfBoard.find.where().eq("c_programs.id", c_program_version.c_program.id ).where().eq("boards.id", board.id).findRowCount() < 1){
 
-                    System.out.println("Hledám jestli je Type OF board == 0");
                     return GlobalResult.result_BadRequest("You want upload C++ program version" +c_program_version.id  + " thats not compatible with hardware " + board.id);
                 }
 
@@ -1066,7 +1064,7 @@ public class ProgramingPackageController extends Controller {
             version_object.refresh();
 
             // Nahrání na Azure
-             UtilTools.uploadAzure_Version("b-program", file_content, "program.js", b_program.azureStorageLink, b_program.azurePackageLink, version_object, B_Program.class);
+             UtilTools.uploadAzure_Version("b-program", file_content, "program.js", b_program.azureStorageLink, b_program.azurePackageLink, version_object);
 
             // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson( version_object.b_program.program_version(version_object) ));
@@ -1393,45 +1391,18 @@ public class ProgramingPackageController extends Controller {
             // Vytvářím instanci na serveru
             WS_BlockoServer server = (WS_BlockoServer) WebSocketController_Incoming.blocko_servers.get(destination_server.server_name);
 
-            JsonNode result =  WebSocketController_Incoming.blocko_server_add_instance(server, program_cloud);
+            try {
+                WebSCType homer = WebSocketController_Incoming.blocko_server_add_instance(server, program_cloud);
 
-            if( result.get("status").asText().equals("success") ) {
-                // Ukládám po úspěšné nastartvoání programu v cloudu jeho databázový ekvivalent
-                // Vytvořím update plan pro zařízení, která nejsou uptodate
-
-                List<B_Pair> list = program_cloud.version_object.b_pairs_b_program;  // PAdavan zařízení
-                list.add(program_cloud.version_object.master_board_b_pair);          // Master board
-
-                List<C_Program_Update_Plan> c_program_update_plans = new ArrayList<>();
-
-
-                for(B_Pair p : list){
-                    if(p.board.actual_c_program_version == null || !p.board.actual_c_program_version.id.equals(p.c_program_version.id)){
-
-                        if(p.board.c_program_update_plans != null) p.board.c_program_update_plans.delete();
-
-                        C_Program_Update_Plan plan = new C_Program_Update_Plan();
-                        plan.board_for_update =  p.board;
-                        plan.c_program_version_for_update = p.c_program_version;
-                        plan.date_of_create = new Date();
-                        plan.save();
-                        c_program_update_plans.add(plan);
-                    }
-                }
-                Master_Updater.add_new_device_for_update( version_object.b_program.project_id(), c_program_update_plans );
-
+                ActualizationController.add_new_actualization_request(b_program.project, program_cloud);
                 return GlobalResult.result_ok();
 
+            }catch (Exception e){
+                // Neproběhlo to úspěšně smažu zástupný objekt!!!
+                program_cloud.delete();
+                return GlobalResult.result_BadRequest("Došlo k chybě");
             }
 
-            // Neproběhlo to úspěšně smažu zástupný objekt!!!
-            program_cloud.delete();
-            return GlobalResult.result_BadRequest("Došlo k chybě");
-
-         } catch (TimeoutException a) {
-            return GlobalResult.result_BadRequest("Nepodařilo se včas nahrát na server");
-         } catch (InterruptedException a) {
-            return GlobalResult.result_BadRequest("Vlákno nahrávání bylo přerušeno ");
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }
@@ -2369,6 +2340,9 @@ public class ProgramingPackageController extends Controller {
 
 
 // BOARD ###################################################################################################################*/
+
+
+// ACTUALIZATION PROCEDUES ###################################################################################################################*/
 
 
 }
