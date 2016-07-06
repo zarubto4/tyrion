@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import controllers.SecurityController;
 import controllers.WebSocketController_Incoming;
 import io.swagger.annotations.ApiModelProperty;
-import models.blocko.Cloud_Blocko_Server;
 import models.compiler.Board;
 import models.compiler.FileRecord;
 import models.compiler.Version_Object;
@@ -55,8 +54,8 @@ public class B_Program extends Model {
         for(Version_Object v : version_objects){
             Swagger_B_Program_Version b_program_version = new Swagger_B_Program_Version();
             b_program_version.version_Object = v;
-            b_program_version.connected_boards = v.b_pairs_b_program == null ? null : v.b_pairs_b_program ;
-            b_program_version.master_board = v.master_board_b_pair == null ? null : v.master_board_b_pair;
+            b_program_version.connected_boards = v.padavan_board_pairs == null ? null : v.padavan_board_pairs ;
+            b_program_version.master_board = v.yoda_board_pair == null ? null : v.yoda_board_pair;
 
 
             FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", v.id).eq("file_name", "program.js").findUnique();
@@ -84,14 +83,12 @@ public class B_Program extends Model {
         state.uploaded = true;
         state.version_id = version_object.id;
 
-        if( version_object.b_program_cloud != null ) {
+        if( version_object.homer_instance.cloud_homer_server != null ) {
             state.where = "cloud";
+            state.set_Cloud_State(version_object.homer_instance, version_object.homer_instance.cloud_homer_server, WebSocketController_Incoming.incomingConnections_homers.containsKey( version_object.homer_instance.blocko_instance_name )  );
 
-            Cloud_Blocko_Server server = Cloud_Blocko_Server.find.where().eq("cloud_programs.id", version_object.b_program_cloud.id).findUnique();
-            state.set_Cloud_State(version_object.b_program_cloud, server.server_name, WebSocketController_Incoming.incomingConnections_homers.containsKey( version_object.b_program_cloud.blocko_instance_name )  );
-
-            if(WebSocketController_Incoming.incomingConnections_homers.containsKey( version_object.b_program_cloud.blocko_instance_name ) ){
-                WS_Homer_Cloud homer = (WS_Homer_Cloud) WebSocketController_Incoming.incomingConnections_homers.get( version_object.b_program_cloud.blocko_instance_name );
+            if(WebSocketController_Incoming.incomingConnections_homers.containsKey( version_object.homer_instance.blocko_instance_name ) ){
+                WS_Homer_Cloud homer = (WS_Homer_Cloud) WebSocketController_Incoming.incomingConnections_homers.get( version_object.homer_instance.blocko_instance_name );
                 try {
                     JsonNode result = WebSocketController_Incoming.homer_get_device_list(homer);
 
@@ -111,9 +108,9 @@ public class B_Program extends Model {
         }
         else {
             state.where = "homer";
-            state.set_Local_State(version_object.b_program_homer, version_object.b_program_homer.homer, WebSocketController_Incoming.incomingConnections_homers.containsKey( version_object.b_program_cloud.blocko_instance_name ) );
+            state.set_Local_State(version_object.homer_instance, version_object.homer_instance.private_server, WebSocketController_Incoming.incomingConnections_homers.containsKey( version_object.homer_instance.blocko_instance_name ) );
             // Tady doplnit dotaz na HW který tam běží
-            System.out.println("------------------------NApiču dopiš se co je u cloudu");
+            System.out.println("------------------------NApiču dopiš co je u cloudu");
 
         }
 
@@ -131,8 +128,8 @@ public class B_Program extends Model {
         Swagger_B_Program_Version b_program_version = new Swagger_B_Program_Version();
 
         b_program_version.version_Object    = version_object;
-        b_program_version.connected_boards  = version_object.b_pairs_b_program == null ? null : version_object.b_pairs_b_program ;
-        b_program_version.master_board      = version_object.master_board_b_pair == null ? null : version_object.master_board_b_pair;
+        b_program_version.connected_boards  = version_object.padavan_board_pairs == null ? null : version_object.padavan_board_pairs ;
+        b_program_version.master_board      = version_object.yoda_board_pair == null ? null : version_object.yoda_board_pair;
 
         FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "program.js").findUnique();
         if(fileRecord != null) b_program_version.program             = fileRecord.get_fileRecord_from_Azure_inString();
@@ -152,11 +149,11 @@ public class B_Program extends Model {
     }
 
     @JsonIgnore @Transient  public Version_Object where_program_run(){
-        Version_Object version_object = Version_Object.find.where().eq("b_program.id", id).where().or(
-                com.avaje.ebean.Expr.isNotNull("b_program_cloud"),
-                com.avaje.ebean.Expr.isNotNull("b_program_homer")
-        ).findUnique();
-
+        Version_Object version_object = Version_Object.find
+                    .where()
+                    .eq("b_program.id", id)
+                    .isNotNull("homer_instance")
+        .findUnique();
         return  version_object;
     }
 

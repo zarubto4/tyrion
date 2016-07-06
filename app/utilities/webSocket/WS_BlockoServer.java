@@ -3,12 +3,13 @@ package utilities.webSocket;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.WebSocketController_Incoming;
+import models.project.b_program.Homer_Instance;
+import models.project.b_program.servers.Cloud_Homer_Server;
 import utilities.hardware_updater.Actualization_Task;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 public class WS_BlockoServer extends WebSCType{
 
@@ -29,10 +30,11 @@ public class WS_BlockoServer extends WebSCType{
     @Override
     public void onClose() {
 
-        System.out.println("Server se odpojil a tak je nutné zabít všechny jeho instnace Homerů v globální mapě");
+        logger.warn("Blocko server disconnected - Starting cancaled procedure with virtual Homers");
+
         for (Map.Entry<String, WebSCType> entry : virtual_homers.entrySet())
         {
-            System.out.println("Zabíjím virtuální instanci " +entry.getKey());
+            logger.debug("Killing virtual instance: " +entry.getKey());
             entry.getValue().onClose();
         }
 
@@ -50,7 +52,8 @@ public class WS_BlockoServer extends WebSCType{
                 ws.onMessage(json);
             }catch (NullPointerException e){
                 if(! virtual_homers.containsKey (json.get("instanceId").asText())){
-                 logger.warn("Komunikuje se mnou instance, která nebyla vytvořená Tyrionem");
+                    logger.warn("Something is wrong. Message from Instance, which not created by Tyrion!");
+                    logger.warn("Message is interrupt!");
                 }
             }
         }
@@ -108,12 +111,22 @@ public class WS_BlockoServer extends WebSCType{
                             try {
                                 System.out.println("Homer ještě neexistuje a tak je ho nutné vytvořit");
 
-                                WS_Homer_Cloud homer = (WS_Homer_Cloud) WebSocketController_Incoming.blocko_server_add_fake_instance(this_server, UUID.randomUUID().toString(),  task.device_ids );
+                                Homer_Instance temporary_instance = new Homer_Instance();
+                                temporary_instance.setUnique_blocko_instance_name();
+                                temporary_instance.cloud_homer_server = Cloud_Homer_Server.find.where().eq("server_name", this_server.identifikator).findUnique();
+                                temporary_instance.private_instance_board = task.board;
+                                temporary_instance.macAddress = task.board.id;
+                                temporary_instance.project = task.board.project;
+                                temporary_instance.save();
+
+                                task.board.refresh();
+                                task.board.private_instance = temporary_instance;
+                                task.board.update();
+
+                                WS_Homer_Cloud homer = (WS_Homer_Cloud) WebSocketController_Incoming.blocko_server_add_instance(this_server, temporary_instance );
+
                                 JsonNode result = WebSocketController_Incoming.homer_update_Yoda_firmware(homer, task.code);
                                 System.out.println("Odpověď na Aktualizaci:" + result.toString());
-
-                                result = WebSocketController_Incoming.blocko_server_remove_instance(this_server, homer.identifikator);
-                                System.out.println("Odpověď na Odstranění intance:" + result.toString());
 
                                 task_list.remove(task);
 

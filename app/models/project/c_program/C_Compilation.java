@@ -21,6 +21,7 @@ public class C_Compilation extends Model {
 
     @Column(columnDefinition = "TEXT")      public String virtual_input_output;
     @Column(columnDefinition = "TEXT")      public String c_comp_build_url;
+    @JsonIgnore   @ManyToOne                public FileRecord bin_compilation_file;
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 

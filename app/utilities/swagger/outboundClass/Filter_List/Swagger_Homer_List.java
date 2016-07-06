@@ -4,7 +4,7 @@ package utilities.swagger.outboundClass.Filter_List;
 import com.avaje.ebean.Query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.project.b_program.Homer;
+import models.project.b_program.servers.Private_Homer_Server;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +16,7 @@ public class Swagger_Homer_List {
 /* Content--------------------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true, readOnly = true)
-    public List<Homer> content;
+    public List<Private_Homer_Server> content;
 
 /* Basic Filter Value --------------------------------------------------------------------------------------------------*/
 
@@ -34,7 +34,7 @@ public class Swagger_Homer_List {
 
 /* Set -----------------------------------------------------------------------------------------------------------------*/
 
-    public Swagger_Homer_List(Query<Homer> query , int page_number){
+    public Swagger_Homer_List(Query<Private_Homer_Server> query , int page_number){
 
         if(page_number < 1) page_number = 1;
         this.content =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findList();

@@ -1,15 +1,17 @@
 package models.compiler;
 
+import com.avaje.ebean.Expr;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
-import models.blocko.Cloud_Blocko_Server;
 import models.project.b_program.B_Pair;
-import models.project.b_program.Homer;
-import models.project.c_program.C_Program_Update_Plan;
+import models.project.b_program.Homer_Instance;
+import models.project.b_program.servers.Cloud_Homer_Server;
+import models.project.b_program.servers.Private_Homer_Server;
+import models.project.c_program.actualization.C_Program_Update_Plan;
 import models.project.global.Project;
 import utilities.swagger.outboundClass.Swagger_Board_status;
 
@@ -35,13 +37,19 @@ public class Board extends Model {
                                                @JsonIgnore       public Date date_of_create;
 
                                     @JsonIgnore @ManyToOne       public Project project;
-                                    @JsonIgnore @ManyToOne       public Homer homer;
+
                                     @JsonIgnore @ManyToOne       public Version_Object actual_c_program_version;
                                     @JsonIgnore                  public String alternative_program_name;
-                                  @JsonIgnore @ManyToOne()       public Cloud_Blocko_Server server;  // Pouze pokud je připojen přímo na blocko server!
+
+                                  @JsonIgnore @ManyToOne()       public Cloud_Homer_Server latest_know_server;  // Pouze pokud je připojen přímo na blocko cloud_blocko_server!
+                                  @JsonIgnore @ManyToOne()       public Private_Homer_Server private_homer_servers;
 
     @JsonIgnore  @OneToMany(mappedBy="board",cascade=CascadeType.ALL, fetch = FetchType.EAGER)            public List<B_Pair> b_pair = new ArrayList<>();
     @JsonIgnore  @OneToMany(mappedBy="board", cascade=CascadeType.ALL, fetch = FetchType.EAGER) public List<C_Program_Update_Plan> c_program_update_plans;
+
+                                                                 // Vlastní instance pouze pro HW - V Případě že nebude aktivní instance s Blocko Programem.
+                 @JsonIgnore @OneToOne(fetch = FetchType.EAGER)  public Homer_Instance private_instance;
+
 /* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/
 
     @JsonProperty  @Transient public String type_of_board_id()   { return type_of_board == null ? null : type_of_board.id; }
@@ -51,16 +59,10 @@ public class Board extends Model {
     @JsonProperty  @Transient public Swagger_Board_status status()       {
 
         // Složený SQL dotaz pro nalezení funkční běžící instance (B_Pair)
-        B_Pair b_pair_main = B_Pair.find.where().or(
-                com.avaje.ebean.Expr.or(
-                        com.avaje.ebean.Expr.isNotNull("b_program_version.b_program_homer"),
-                        com.avaje.ebean.Expr.isNotNull("b_program_version.b_program_cloud")
-                ),
-                com.avaje.ebean.Expr.or(
-                        com.avaje.ebean.Expr.isNotNull("version_master_board.b_program_homer"),
-                        com.avaje.ebean.Expr.isNotNull("version_master_board.b_program_cloud")
-                )
-        ).where().eq("board.id", id).findUnique();
+        B_Pair b_pair_main = B_Pair.find.where().disjunction()
+                    .add( Expr.isNotNull("padavan_board_pair.homer_instance"))
+                    .add( Expr.isNotNull("yoda_board_pair.homer_instance"))
+                .where().eq("board.id", id).findUnique();
 
 
         Swagger_Board_status board_status = new Swagger_Board_status();
@@ -72,18 +74,18 @@ public class Board extends Model {
 
         if(b_pair_main != null) {
 
-            // Určím nadřazenou verzi (Yoda má  version_master_board ostatní b_program_version )
+            // Určím nadřazenou verzi (Yoda má  yoda_board_pair ostatní padavan_board_pair )
             Version_Object version_object;
-            if (b_pair_main.b_program_version != null) version_object = b_pair_main.b_program_version;
-            else version_object = b_pair_main.version_master_board;
+            if (b_pair_main.padavan_board_pair != null) version_object = b_pair_main.padavan_board_pair;
+            else version_object = b_pair_main.yoda_board_pair;
 
-            if (version_object.b_program_cloud != null) {
+            if (version_object.homer_instance.cloud_homer_server != null) {
                 board_status.where = "cloud";
             }
 
 
 
-            if (version_object.b_program_homer != null) {
+            if (version_object.homer_instance.private_server != null) {
                 board_status.where = "local";
             }
 
@@ -145,7 +147,7 @@ public class Board extends Model {
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Finder<String, Board> find = new Finder<>(Board.class);
+    public static Model.Finder<String, Board> find = new Finder<>(Board.class);
 
 
 }

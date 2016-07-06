@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.scribejava.core.model.*;
 import com.github.scribejava.core.oauth.OAuthService;
+import com.google.inject.Inject;
 import io.swagger.annotations.*;
 import models.person.FloatingPersonToken;
 import models.person.Person;
@@ -30,7 +31,6 @@ import utilities.swagger.outboundClass.Login_Social_Network;
 import utilities.swagger.outboundClass.Swagger_Login_Token;
 import utilities.swagger.outboundClass.Swagger_Person_All_Details;
 
-import com.google.inject.Inject;
 import javax.websocket.server.PathParam;
 import java.util.ArrayList;
 import java.util.List;
@@ -125,7 +125,7 @@ public class SecurityController extends Controller {
             if(nonce == null) {
                 JsonNode jsonRequest_nonce = ws.url("https://www.byzance.cz/api/get_nonce/?controller=auth&method=generate_auth_cookie").get().get(5000).asJson();
 
-                if (!jsonRequest_nonce.has("nonce")) return GlobalResult.result_BadRequest("Authentication server error!");
+                if (!jsonRequest_nonce.has("nonce")) return GlobalResult.result_BadRequest("Authentication cloud_blocko_server error!");
                 nonce = jsonRequest_nonce.get("nonce").asText();
             }
 
@@ -144,9 +144,9 @@ public class SecurityController extends Controller {
     @ApiOperation(value = "get Person by token (after Oauth2 Login -> Facebook, GitHub, Twitter)",
             tags = {"Access", "Person", "Social-GitHub", "Social-Facebook"},
             notes = "If you want login to system with social networks - you can used facebook, github or twitter api " +
-                    "just ask for token, server responds with object where is token and redirection link. Redirect user " +
+                    "just ask for token, cloud_blocko_server responds with object where is token and redirection link. Redirect user " +
                     "to this link and after returning to success page that you filled in ask for token, ask again to this api " +
-                    "and server respond with Person Object and with Roles and Permissions lists",
+                    "and cloud_blocko_server respond with Person Object and with Roles and Permissions lists",
             produces = "application/json",
             response =  Swagger_Person_All_Details.class,
             protocols = "https",
@@ -379,7 +379,7 @@ public class SecurityController extends Controller {
             tags = {"Access", "Social-GitHub"},
             notes = "For login via GitHub \n\n "+
                     "If you want login to system with social networks - you can used Facebook, GitHub, Twitter... api " +
-                    "just ask via this Api and server responds with object where is token and redirection link. After that redirect user " +
+                    "just ask via this Api and cloud_blocko_server responds with object where is token and redirection link. After that redirect user " +
                     "to this link and after returning to your success page you have to ask again (api - get Person by token ) for information about logged Person",
             produces = "application/json",
             response =  Login_Social_Network.class,
@@ -422,7 +422,7 @@ public class SecurityController extends Controller {
             tags = {"Access", "Social-Facebook"},
             notes = "For login via Facebook \n\n "+
                     "If you want login to system with social networks - you can used Facebook, GitHub, Twitter... api " +
-                    "just ask via this Api and server responds with object where is token and redirection link. After that redirect user " +
+                    "just ask via this Api and cloud_blocko_server responds with object where is token and redirection link. After that redirect user " +
                     "to this link and after returning to your success page you have to ask again (api - get Person by token ) for information about logged Person",
             produces = "application/json",
             response =  Login_Social_Network.class,
@@ -507,13 +507,24 @@ public class SecurityController extends Controller {
 
     @ApiOperation( value = "option", hidden = true)
     public Result option(){
+
         return GlobalResult.result_ok();
     }
 
     @ApiOperation( value = "optionLink", hidden = true)
     public Result optionLink(String url){
-        CoreResponse.cors();
-        response().setHeader("Access-Control-Link", url);
+        CoreResponse.cors(url);
+
+        System.out.println("Response");
+
+        for( String s : response().getHeaders().keySet()){
+            System.out.println(s);
+        }
+
+
+
         return ok();
+
     }
 }
+

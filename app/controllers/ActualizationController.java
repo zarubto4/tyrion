@@ -6,9 +6,9 @@ import models.compiler.Board;
 import models.compiler.FileRecord;
 import models.compiler.Version_Object;
 import models.project.b_program.B_Pair;
-import models.project.b_program.B_Program_Cloud;
-import models.project.c_program.Actualization_procedure;
-import models.project.c_program.C_Program_Update_Plan;
+import models.project.b_program.Homer_Instance;
+import models.project.c_program.actualization.Actualization_procedure;
+import models.project.c_program.actualization.C_Program_Update_Plan;
 import models.project.global.Project;
 import play.libs.Json;
 import play.mvc.Controller;
@@ -142,10 +142,7 @@ public class ActualizationController extends Controller {
     }
 
 
-
 // Private -------------------------------------------------------------------------------------------------------------
-
-
 
     public static void add_new_actualization_request(Project project, Board board, File file, String file_name){
             List<Board> boards = new ArrayList<>();
@@ -158,7 +155,7 @@ public class ActualizationController extends Controller {
 
             logger.debug("Incoming new Actualization request with user bin file! ");
 
-            String binary_file = UtilTools.get_encoded_binary_file_from_File(file);
+            String binary_file = UtilTools.get_encoded_binary_string_from_File(file);
             FileRecord fileRecord = UtilTools.create_Binary_file(binary_file, file_name);
 
             logger.debug("Creating new actualization procedure");
@@ -210,7 +207,6 @@ public class ActualizationController extends Controller {
                 C_Program_Update_Plan plan = new C_Program_Update_Plan();
                 plan.board = board;
                 plan.binary_file = fileRecord;
-                plan.actualization_procedure.state = Actual_procedure_State.in_progress;
                 plan.actualization_procedure = procedure;
                 plan.save();
                 procedure.updates.add(plan);
@@ -308,7 +304,7 @@ public class ActualizationController extends Controller {
 
     }
 
-    public static void add_new_actualization_request(Project project, B_Program_Cloud program_cloud) {
+    public static void add_new_actualization_request(Project project, Homer_Instance program_cloud) {
 
         try {
             logger.debug("Incoming new Actualization request under program_cloud!");
@@ -322,10 +318,10 @@ public class ActualizationController extends Controller {
             procedure.save();
 
             // Seznam zařízení určených k Updatu
-            List<B_Pair> list = program_cloud.version_object.b_pairs_b_program;
+            List<B_Pair> list = program_cloud.version_object.padavan_board_pairs;
 
             // Přidání do seznamu Master Yodu
-            list.add(program_cloud.version_object.master_board_b_pair);
+            list.add(program_cloud.version_object.yoda_board_pair);
 
             // Sem sesbírám aktualizační procedury, kterých se týkají změny v old_plans
             Map<String, Actualization_procedure> actualization_procedures = new HashMap<>();

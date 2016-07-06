@@ -504,7 +504,7 @@ public class GridController extends Controller {
 
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = M_Project.class),
+            @ApiResponse(code = 200, message = "Ok Result", response = M_Program.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -643,7 +643,7 @@ public class GridController extends Controller {
                             @ExtensionProperty(name = "Screen_Size_Type.create_permission", value = Screen_Size_Type.create_permission_docs ),
                     }),
                     @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Screen_Size_Type.create_permission", value = "true"),
+                            @ExtensionProperty(name = "Project.update_permission", value = "true"),
                             @ExtensionProperty(name = "Static Permission key", value = "Screen_Size_Type_create" ),
                     })
             }

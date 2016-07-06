@@ -4,7 +4,8 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import models.project.c_program.C_Program_Update_Plan;
+import models.project.c_program.C_Compilation;
+import models.project.c_program.actualization.C_Program_Update_Plan;
 import utilities.UtilTools;
 
 import javax.persistence.*;
@@ -28,7 +29,7 @@ public class FileRecord extends Model {
 
                                    @JsonIgnore @ManyToOne()     public Version_Object version_object;
              @JsonIgnore @OneToMany(mappedBy="binary_file")     public List<C_Program_Update_Plan> c_program_update_plen  = new ArrayList<>();
-
+    @JsonIgnore @OneToMany(mappedBy="bin_compilation_file")     public List<C_Compilation> c_compilations_binary_files  = new ArrayList<>();
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
@@ -54,12 +55,6 @@ public class FileRecord extends Model {
             logger.error("Error when parsing Json File to Json Node", e);
             return null;
         }
-    }
-
-    @JsonIgnore @Transient public String get_Encoded_binary_file_From_Azure_inString() throws Exception{
-
-        return UtilTools. get_encoded_binary_file_from_azure(this.file_path);
-
     }
 
     @JsonIgnore @Transient public JsonNode get_file_As_Json(){

@@ -5,12 +5,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import models.project.b_program.B_Pair;
 import models.project.b_program.B_Program;
-import models.project.b_program.B_Program_Cloud;
-import models.project.b_program.B_Program_Homer;
-import models.project.c_program.Actualization_procedure;
+import models.project.b_program.Homer_Instance;
+import models.project.c_program.actualization.Actualization_procedure;
 import models.project.c_program.C_Compilation;
 import models.project.c_program.C_Program;
-import models.project.c_program.C_Program_Update_Plan;
+import models.project.c_program.actualization.C_Program_Update_Plan;
 import models.project.m_program.M_Project;
 
 import javax.persistence.*;
@@ -45,18 +44,17 @@ public class Version_Object extends Model {
     @JsonIgnore @OneToMany(mappedBy="actual_c_program_version",  cascade = CascadeType.ALL)     public List<Board>  c_program_version_boards  = new ArrayList<>(); // Používám pro zachycení, která verze C_programu na desce běží
     @JsonIgnore @OneToMany(mappedBy="c_program_version_for_update",cascade=CascadeType.ALL)     public List<C_Program_Update_Plan> c_program_update_plans = new ArrayList<>();
 
-                                                        @JsonIgnore @ManyToOne()    public B_Program     b_program;
-    @JsonIgnore   @OneToOne(mappedBy="version_object",cascade=CascadeType.ALL)      public B_Program_Homer b_program_homer;
-    @JsonIgnore   @OneToOne(mappedBy="version_object",cascade=CascadeType.ALL)      public B_Program_Cloud b_program_cloud;
+                                                        @JsonIgnore @ManyToOne()    public B_Program      b_program;
+    @JsonIgnore   @OneToOne(mappedBy="version_object",cascade=CascadeType.ALL)      public Homer_Instance homer_instance;
 
 
-    @JsonIgnore   @OneToMany(mappedBy="c_program_version",cascade=CascadeType.ALL)  public List<B_Pair> b_pairs_c_program = new ArrayList<>();
-    @JsonIgnore   @OneToMany(mappedBy="b_program_version",cascade=CascadeType.ALL)  public List<B_Pair> b_pairs_b_program = new ArrayList<>();
+    @JsonIgnore  @OneToMany(mappedBy="c_program_version",cascade=CascadeType.ALL)  public List<B_Pair> b_pairs_c_program = new ArrayList<>();
+    @JsonIgnore  @OneToMany(mappedBy="padavan_board_pair",cascade=CascadeType.ALL)  public List<B_Pair> padavan_board_pairs = new ArrayList<>();
 
-    @JsonIgnore  @OneToOne(mappedBy="version_master_board",cascade=CascadeType.ALL) public B_Pair master_board_b_pair;
+    @JsonIgnore  @OneToOne(mappedBy="yoda_board_pair",cascade=CascadeType.ALL) public B_Pair yoda_board_pair;
 
     // M_Project -------------------------
-    @JsonIgnore   @OneToOne(mappedBy="b_program_version", fetch = FetchType.LAZY)   public M_Project m_project;
+    @JsonIgnore  @OneToOne(mappedBy="b_program_version", fetch = FetchType.LAZY)   public M_Project m_project;
 
 
     // Actual Procedure -------------------------

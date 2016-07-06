@@ -36,29 +36,17 @@ public class TypeOfBlock extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public Boolean create_permission(){
-        if(project == null) {
-            return SecurityController.getPerson().has_permission("TypeOfBlock_create");
-        }
-        else return project.update_permission();
-    }
+    // Floating shared documentation for Swagger
+    @JsonIgnore @Transient public static final String read_permission_docs   = "read: If user have Project.read_permission = true, you can read TypeOfBlock on this Project ( You get ids of list of TypeOfBLocks in object \"project\" in json)  - Or you need static/dynamic permission key";
+    @JsonIgnore @Transient public static final String create_permission_docs = "create: If user have Project.update_permission = true, you can create TypeOfBlock on this Project - Or you need static/dynamic permission key if user want create public TypeOfBlock";
 
-    @JsonIgnore @Transient public Boolean read_permission() {
-        return project == null || (project.read_permission() || SecurityController.getPerson().has_permission("TypeOfBlock_read"));
 
-    }
 
-    @JsonIgnore @Transient  public Boolean update_permission(){
-        return (project.update_permission() || SecurityController.getPerson().has_permission("TypeOfBlock_update"));
-    }
-    @JsonProperty @Transient  public Boolean edit_permission(){
-        if(project != null) return  ( project.edit_permission() || SecurityController.getPerson().has_permission("TypeOfBlock_edit") );
-        return SecurityController.getPerson().has_permission("TypeOfBlock_edit");
-    }
-    @JsonProperty @Transient public Boolean delete_permission(){
-        if(project != null) return  ( project.update_permission() || SecurityController.getPerson().has_permission("TypeOfBlock_delete") );
-        return SecurityController.getPerson().has_permission("TypeOfBlock_delete");
-    }
+    @JsonIgnore @Transient public Boolean create_permission()  {return (project != null ? project.update_permission() : false ) || SecurityController.getPerson().has_permission("TypeOfBlock_create");}
+    @JsonIgnore @Transient public Boolean read_permission()    {return (project != null ? project.read_permission()   : false ) || SecurityController.getPerson().has_permission("TypeOfBlock_read");}
+    @JsonIgnore @Transient  public Boolean update_permission() {return (project != null ? project.update_permission() : false ) || SecurityController.getPerson().has_permission("TypeOfBlock_update");}
+    @JsonProperty @Transient  public Boolean edit_permission() {return (project != null ? project.edit_permission()   : false ) || SecurityController.getPerson().has_permission("TypeOfBlock_edit");}
+    @JsonProperty @Transient public Boolean delete_permission(){return (project != null ? project.update_permission() : false ) || SecurityController.getPerson().has_permission("TypeOfBlock_delete");}
 
     public enum permissions{TypeOfBlock_create, TypeOfBlock_read, TypeOfBlock_edit , TypeOfBlock_delete, TypeOfBlock_update}
 

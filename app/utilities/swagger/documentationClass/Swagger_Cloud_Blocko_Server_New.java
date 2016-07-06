@@ -9,7 +9,7 @@ import play.data.validation.Constraints;
 public class Swagger_Cloud_Blocko_Server_New {
 
     @Constraints.Required
-    @ApiModelProperty(value = "Unique name For Blocko server", required = true)
+    @ApiModelProperty(value = "Unique name For Blocko cloud_blocko_server", required = true)
     public String server_name;
 
 }

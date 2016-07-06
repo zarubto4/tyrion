@@ -1,18 +1,7 @@
 package controllers;
 
-import models.blocko.Cloud_Blocko_Server;
-import models.compiler.*;
-import models.grid.Screen_Size_Type;
-import models.notification.Notification;
-import models.overflow.Post;
-import models.person.Person;
-import models.project.b_program.B_Program;
-import models.project.b_program.Homer;
-import models.project.c_program.C_Program;
-import models.project.global.Project;
-import models.project.m_program.Grid_Terminal;
-import models.project.m_program.M_Program;
-import models.project.m_program.M_Project;
+import models.compiler.Cloud_Compilation_Server;
+import models.project.b_program.servers.Cloud_Homer_Server;
 import org.pegdown.PegDownProcessor;
 import play.libs.F;
 import play.mvc.Controller;
@@ -23,7 +12,13 @@ import utilities.loggy.Loggy;
 import utilities.swagger.swagger_diff_tools.Swagger_diff_Controller;
 import utilities.swagger.swagger_diff_tools.servise_class.Swagger_Diff;
 import utilities.webSocket.*;
-import views.html.*;
+import views.html.dashboard;
+import views.html.loggy;
+import views.html.main;
+import views.html.readme;
+import views.html.menu;
+import views.html.websocket;
+import views.html.Api_Div;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -68,29 +63,13 @@ public class DashboardController extends Controller {
         for (Map.Entry<String, WebSCType> entry : map_blocko.entrySet()) blockoServerMap.put(entry.getKey(), (WS_BlockoServer) entry.getValue());
 
         Map<String, WS_CompilerServer> compilerServerMap = new HashMap<>();
-
         Map<String, WebSCType> map_compile =  WebSocketController_Incoming.compiler_cloud_servers;
         for (Map.Entry<String, WebSCType> entry : map_compile.entrySet()) compilerServerMap.put(entry.getKey(), (WS_CompilerServer) entry.getValue());
 
         Html content_html = dashboard.render(
-                Person.find.findRowCount(),
-                Project.find.findRowCount(),
-                Homer.find.findRowCount(),
-                B_Program.find.findRowCount(),
-                Board.find.findRowCount(),
-                FileRecord.find.findRowCount(),
-                Producer.find.findRowCount(),
-                TypeOfBoard.find.findRowCount(),
-                Screen_Size_Type.find.findRowCount(),
-                Notification.find.findRowCount(),
-                Post.find.findRowCount(),
-                C_Program.find.findRowCount(),
-                Grid_Terminal.find.findRowCount(),
-                M_Program.find.findRowCount(),
-                M_Project.find.findRowCount(),
                 blockoServerMap,
-                Cloud_Blocko_Server.find.all(),
                 compilerServerMap,
+                Cloud_Homer_Server.find.all(),
                 Cloud_Compilation_Server.find.all()
         );
 

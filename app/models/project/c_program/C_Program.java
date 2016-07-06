@@ -50,21 +50,7 @@ public class C_Program extends Model {
         List<Swagger_C_Program_Version> versions = new ArrayList<>();
 
         for(Version_Object v : version_objects){
-
-            Swagger_C_Program_Version c_program_versions= new Swagger_C_Program_Version();
-
-            c_program_versions.version_object = v;
-            c_program_versions.successfully_compiled = v.c_compilation != null;
-            if(v.c_compilation != null ) c_program_versions.virtual_input_output = v.c_compilation.virtual_input_output;
-
-            FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", v.id).eq("file_name", "c-program.json").findUnique();
-            if(fileRecord != null) c_program_versions.version_code             = fileRecord.get_fileRecord_from_Azure_inString();
-
-            versions.add(c_program_versions);
-
-            for(B_Pair b_pair : v.b_pairs_c_program){
-                c_program_versions.runing_on_board.add(b_pair.board.id);
-            }
+            versions.add(program_version(v));
         }
 
         return versions;
@@ -80,12 +66,11 @@ public class C_Program extends Model {
 
         Swagger_C_Program_Version c_program_versions= new Swagger_C_Program_Version();
 
-
         c_program_versions.compilation_in_progress  = version_object.compilation_in_progress;
         c_program_versions.compilable               = version_object.compilable;
         c_program_versions.version_object           = version_object;
         c_program_versions.successfully_compiled    = version_object.c_compilation != null;
-        c_program_versions.compilation_restored     = FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "compilation.bin").findRowCount() > 0;
+        c_program_versions.compilation_restored     = FileRecord.find.where().eq("c_compilations_binary_files.version_object.c_program.id", id).where().eq("file_name", "compilation.bin").findRowCount() > 0;
 
         FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "c-program.json").findUnique();
         if(fileRecord != null) c_program_versions.version_code             = fileRecord.get_fileRecord_from_Azure_inString();

@@ -3,7 +3,7 @@ package utilities.response.response_objects;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-@ApiModel(value="External server is offline", description="External servers (compilation, blocko server etc.) are offline")
+@ApiModel(value="External cloud_blocko_server is offline", description="External servers (compilation, blocko cloud_blocko_server etc.) are offline")
 public class Result_serverIsOffline {
 
     @ApiModelProperty(value = "state", allowableValues = "Object not Found", required = true, readOnly = true)

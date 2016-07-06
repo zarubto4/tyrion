@@ -22,7 +22,7 @@ public abstract class WebSCType {
     public WebSocket.Out<String> out;
     public String identifikator;
 
-    public abstract void onClose(); //  Určeno pro možnost výběru, přes kterou metodu v controlleru se pokyn vykoná. Především proto, aby na to mohl server globálně reagovat, uzavřel ostatní vlákna atd.
+    public abstract void onClose(); //  Určeno pro možnost výběru, přes kterou metodu v controlleru se pokyn vykoná. Především proto, aby na to mohl cloud_blocko_server globálně reagovat, uzavřel ostatní vlákna atd.
     public void close(){ if(out != null) out.close(); }
     public abstract void onMessage(ObjectNode json);
     public boolean isReady(){

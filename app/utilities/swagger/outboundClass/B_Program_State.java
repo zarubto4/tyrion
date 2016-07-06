@@ -2,9 +2,9 @@ package utilities.swagger.outboundClass;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import models.compiler.Board;
-import models.project.b_program.B_Program_Cloud;
-import models.project.b_program.B_Program_Homer;
-import models.project.b_program.Homer;
+import models.project.b_program.Homer_Instance;
+import models.project.b_program.servers.Cloud_Homer_Server;
+import models.project.b_program.servers.Private_Homer_Server;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,35 +27,34 @@ public class B_Program_State {
 
 // --- SET STATE -------------------------------------------------------------------------------------------------------
 
-    public void set_Cloud_State(B_Program_Cloud program_cloud, String server_name, boolean online ){
+    public void set_Cloud_State(Homer_Instance instance, Cloud_Homer_Server server, boolean online ){
 
         cloud = new B_Program_state_cloud();
-        cloud.program_cloud = program_cloud;
-        cloud.server_name = server_name;
+        cloud.instance = instance;
+        cloud.server_name = server.server_name;
         this.online = online;
     }
 
-    public void set_Local_State(B_Program_Homer program_homer, Homer homer, boolean online ){
+    public void set_Local_State(Homer_Instance instance, Private_Homer_Server server, boolean online ){
 
         local = new B_Program_state_local();
-        local.program_homer = program_homer;
-        local.homer = homer;
+        local.instance = instance;
+        local.server = server;
         this.online = online;
     }
 
 // --- STATE CLASS -----------------------------------------------------------------------------------------------------
 
     class B_Program_state_cloud{
-        public B_Program_Cloud program_cloud;
+        public Homer_Instance instance;
         public String server_name;
 
     }
 
 
     class B_Program_state_local{
-        public B_Program_Homer program_homer;
-        public Homer homer;
-
+        public Homer_Instance instance;
+        public Private_Homer_Server server;
     }
 
 }

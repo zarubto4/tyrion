@@ -88,7 +88,7 @@ public class NotificationController extends Controller {
           tags = {"Notifications"},
           notes = "get EventSource for subscribing all notification. Its not possible document everything about this connection in Swagger, " +
                   "so you have to read more on our wiki https://wiki.byzance.cz/wiki/doku.php?id=notifikacni_centrum \n\n\n " +
-                  "All incoming data server send in Json",
+                  "All incoming data cloud_blocko_server send in Json",
           produces = "text/event-stream",
           protocols = "https - Server-Sent Events",
           code = 200
@@ -107,7 +107,7 @@ public class NotificationController extends Controller {
     if(token == null) return GlobalResult.result_Unauthorized();
 
     // Token je používán, pravděpodobně došlo k obnovení okna prohlížeče a proto je nutné zahodit předchozí spojení,
-    // které se bohužel umí samo odpojit až ve chvíli kdy mu server chce něco odeslat.
+    // které se bohužel umí samo odpojit až ve chvíli kdy mu cloud_blocko_server chce něco odeslat.
     if(connected_accounts.containsKey(token.person.id) && connected_accounts.get(token.person.id).containsKey(token_value) ) {
       connected_accounts.get(token.person.id).get(token_value).close();
       connected_accounts.get(token.person.id).remove(token_value);

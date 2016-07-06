@@ -1,4 +1,4 @@
-package models.project.c_program;
+package models.project.c_program.actualization;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -30,6 +30,7 @@ public class C_Program_Update_Plan extends Model {
               @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)    public Board board; // Deska k aktualizaci
 
 
+                                                                // Aktualizace je vázána buď na verzi C++ kodu nebo na soubor, nahraný uživatelem
                         /** OR **/  @JsonIgnore @ManyToOne()    public Version_Object c_program_version_for_update; // C_program k aktualizaci
                         /** OR **/  @JsonIgnore @ManyToOne()    public FileRecord binary_file;
 
@@ -72,16 +73,18 @@ public class C_Program_Update_Plan extends Model {
     public static Model.Finder<String,C_Program_Update_Plan> find = new Model.Finder<>(C_Program_Update_Plan.class);
 
 
+/* POMOCNÉ TŘÍDY -------------------------------------------------------------------------------------------------------*/
+
+    class C_Program_Update_program{
+        public String c_program_id;
+        public String c_program_version_id;
+        public String c_program_program_name;
+        public String c_program_version_name;
+    }
+
 }
 
 
-// Pomocné Třídy
 
-class C_Program_Update_program{
 
-    public String c_program_id;
-    public String c_program_version_id;
-    public String c_program_program_name;
-    public String c_program_version_name;
-}
 

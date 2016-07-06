@@ -4,7 +4,7 @@ import com.microsoft.azure.storage.blob.CloudBlob;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import com.microsoft.azure.storage.blob.ListBlobItem;
-import models.blocko.Cloud_Blocko_Server;
+import models.project.b_program.servers.Cloud_Homer_Server;
 import models.compiler.Cloud_Compilation_Server;
 import models.compiler.FileRecord;
 import models.compiler.TypeOfBoard;
@@ -145,38 +145,8 @@ public class UtilTools extends Controller {
         return fileMain;
     }
 
-    public static String get_encoded_binary_file_from_azure(String file_path) throws Exception {
 
-            int slash = file_path.indexOf("/");
-            String container_name = file_path.substring(0,slash);
-            String real_file_path = file_path.substring(slash+1);
-
-            logger.debug("Azure load path: " + file_path );
-            logger.debug("Azure Container: " + container_name);
-            logger.debug("Real File  Path: " + real_file_path);
-
-            CloudBlobContainer container = Server.blobClient.getContainerReference(container_name );
-
-            CloudBlob blob = container.getBlockBlobReference(real_file_path );
-
-            File binary_file = new File("files/" + UUID.randomUUID().toString()  );
-
-            // Tento soubor se nesmí zapomínat mazat!!!!
-            OutputStream outputStreamMain = new FileOutputStream (binary_file);
-            blob.download(outputStreamMain);
-
-            String encodedBase64 = null;
-
-                FileInputStream fileInputStreamReader = new FileInputStream(binary_file);
-                byte[] bytes = new byte[(int)binary_file.length()];
-                fileInputStreamReader.read(bytes);
-                encodedBase64 = new String(Base64.getEncoder().encode(bytes));
-
-                return encodedBase64;
-
-    }
-
-    public static String get_encoded_binary_file_from_File(File binary_file) throws Exception {
+    public static String get_encoded_binary_string_from_File(File binary_file) throws Exception {
 
         String encodedBase64 = null;
 
@@ -188,6 +158,17 @@ public class UtilTools extends Controller {
         return encodedBase64;
 
     }
+
+    public static String get_encoded_binary_string_from_body(String binary_body) throws Exception {
+
+        String encodedBase64 = null;
+
+        encodedBase64 = new String(Base64.getEncoder().encode(binary_body.getBytes()));
+
+        return encodedBase64;
+
+    }
+
 
     public static FileRecord create_Binary_file(String file_content, String file_name) throws Exception{
         logger.debug("Azure create_Binary_file: binaryFile/"+ file_name );
@@ -250,10 +231,10 @@ public class UtilTools extends Controller {
 
     public static void set_Type_of_board(){
 
-        if(TypeOfBoard.find.where().eq("name", "NUCLEO_F411RE").findList().size() < 1){
+        if(TypeOfBoard.find.where().eq("name", "BYZANCE_YODAG2").findList().size() < 1){
 
             TypeOfBoard typeOfBoard = new TypeOfBoard();
-            typeOfBoard.name = "NUCLEO_F411RE";
+            typeOfBoard.name = "BYZANCE_YODAG2";
             typeOfBoard.connectible_to_internet = true;
             typeOfBoard.description = "testovací deska pro kompilaci";
             typeOfBoard.save();
@@ -263,16 +244,16 @@ public class UtilTools extends Controller {
 
     public static void set_Homer_Server(){
 
-        if(Cloud_Blocko_Server.find.where().eq("server_name", "Alfa").findUnique() == null ){
-            Cloud_Blocko_Server server = new Cloud_Blocko_Server();
+        if(Cloud_Homer_Server.find.where().eq("server_name", "Alfa").findUnique() == null ){
+            Cloud_Homer_Server server = new Cloud_Homer_Server();
             server.server_name = "Alfa";
             server.destination_address = Server.tyrion_webSocketAddress + "/websocket/compilation_server/" + server.server_name;
             server.set_hash_certificate();
             server.save();
         }
 
-        if(Cloud_Blocko_Server.find.where().eq("server_name", "Beta").findUnique() == null ){
-            Cloud_Blocko_Server server = new Cloud_Blocko_Server();
+        if(Cloud_Homer_Server.find.where().eq("server_name", "Beta").findUnique() == null ){
+            Cloud_Homer_Server server = new Cloud_Homer_Server();
             server.server_name = "Beta";
             server.destination_address = Server.tyrion_webSocketAddress + "/websocket/compilation_server/" + server.server_name;
             server.set_hash_certificate();

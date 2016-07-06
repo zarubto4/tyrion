@@ -28,10 +28,14 @@ public class BlockoBlockVersion extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient public Boolean create_permission()  {  return  ( BlockoBlockVersion.find.where().eq("blocko_block.author.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) ||  SecurityController.getPerson().has_permission("BlockoBlock_create"); }
-    @JsonProperty @Transient public Boolean read_permission()    {  return  ( BlockoBlockVersion.find.where().eq("blocko_block.author.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) ||  SecurityController.getPerson().has_permission("BlockoBlock_read");   }
-    @JsonProperty @Transient public Boolean edit_permission()    {  return  ( BlockoBlockVersion.find.where().eq("blocko_block.author.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) ||  SecurityController.getPerson().has_permission("BlockoBlock_edit");   }
-    @JsonProperty @Transient public Boolean delete_permission()  {  return  ( BlockoBlockVersion.find.where().eq("blocko_block.author.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) ||  SecurityController.getPerson().has_permission("BlockoBlock_delete"); }
+    @JsonIgnore @Transient public static final String read_permission_docs   = "read: If user can read BlockoBlock, than can read all Versions from list of BlockoBlock ( You get ids of list of version in object \"BlockoBlocks\" in json)  - Or you need static/dynamic permission key";
+    @JsonIgnore @Transient public static final String create_permission_docs = "create: If user have BlockoBlock.update_permission = true, you can create new version of BlockoBlocks on this BlockoBlock - Or you need static/dynamic permission key if user want create version of BlockoBlock in public BlockoBlock in public TypeOfBlock";
+
+
+    @JsonProperty @Transient public Boolean create_permission()  {  return  blocko_block.update_permission() ||  SecurityController.getPerson().has_permission("BlockoBlock_create"); }
+    @JsonProperty @Transient public Boolean read_permission()    {  return  blocko_block.read_permission()   ||  SecurityController.getPerson().has_permission("BlockoBlock_read");   }
+    @JsonProperty @Transient public Boolean edit_permission()    {  return  blocko_block.update_permission() || SecurityController.getPerson().has_permission("BlockoBlock_edit");   }
+    @JsonProperty @Transient public Boolean delete_permission()  {  return  blocko_block.update_permission() ||  SecurityController.getPerson().has_permission("BlockoBlock_delete"); }
 
     public enum permissions{BlockoBlock_create, BlockoBlock_read, BlockoBlock_edit, BlockoBlock_delete}
 

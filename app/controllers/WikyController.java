@@ -4,7 +4,6 @@ package controllers;
 import models.compiler.FileRecord;
 import play.mvc.Controller;
 import play.mvc.Result;
-import utilities.UtilTools;
 import utilities.loggy.Loggy;
 
 
@@ -25,10 +24,7 @@ public class WikyController extends Controller {
         try {
             FileRecord fileRecord = FileRecord.find.byId("21");
 
-           String string = UtilTools.get_encoded_binary_file_from_azure(fileRecord.file_path);
-
-
-            return ok( new String(string));
+             return ok();
 
         } catch (Exception e) {
             e.printStackTrace();

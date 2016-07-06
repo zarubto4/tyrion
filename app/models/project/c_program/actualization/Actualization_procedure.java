@@ -1,4 +1,4 @@
-package models.project.c_program;
+package models.project.c_program.actualization;
 
 import com.avaje.ebean.Expr;
 import com.avaje.ebean.Model;
@@ -25,7 +25,9 @@ public class Actualization_procedure extends Model {
 
                                                             public Date date_of_create;
                                                             public Date date_of_finish;
-                           @Enumerated(EnumType.STRING)     public Actual_procedure_State state;
+             @JsonIgnore   @Enumerated(EnumType.STRING)     public Actual_procedure_State state;
+
+
                            @JsonIgnore     @ManyToOne()     public Project project;
                            @JsonIgnore     @ManyToOne()     public Version_Object b_program_version_procedure;
 
@@ -36,7 +38,7 @@ public class Actualization_procedure extends Model {
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty public Program_Actualization b_program_actualization(){
+    @JsonProperty @Transient public Program_Actualization b_program_actualization(){
 
         if(b_program_version_procedure != null ) {
             Program_Actualization program_actualization = new  Program_Actualization();
@@ -51,6 +53,10 @@ public class Actualization_procedure extends Model {
         return null;
     }
 
+    @JsonProperty @Transient public Actual_procedure_State state (){
+        update_state();
+        return state;
+    }
 
 
 
@@ -66,27 +72,50 @@ public class Actualization_procedure extends Model {
         // Metoda je vyvolána, pokud chceme synchronizovat Aktualizační proceduru a nějakým způsobem jí označit
         // Třeba kolik procent už je vykonáno
 
-        int completed = C_Program_Update_Plan.find.where()
-                            .eq("actualization_procedure.id",id).where()
-                                .disjunction()
-                                    .add(Expr.eq("state",C_ProgramUpdater_State.complete      ))
-                                    .add(Expr.eq("state",C_ProgramUpdater_State.canceled       ))
-                                    .add(Expr.eq("state",C_ProgramUpdater_State.override       ))
-                                    .add(Expr.eq("state",C_ProgramUpdater_State.critical_error ))
-                                    .add(Expr.isNull("state"))
-                            .findRowCount();
-
         int all = C_Program_Update_Plan.find.where()
-                            .eq("actualization_procedure.id",id)
-                            .findRowCount();
+                .eq("actualization_procedure.id",id)
+                .findRowCount();
 
+        int complete = C_Program_Update_Plan.find.where()
+                .eq("actualization_procedure.id",id).where()
+                .eq("state",C_ProgramUpdater_State.complete)
+                .findRowCount();
 
-        if( ( completed * 1.0 / all ) == 1.0 ){
+        if( ( ( complete ) * 1.0 / all ) == 1.0 ){
             date_of_finish = new Date();
-            state = Actual_procedure_State.complete;
+            state = Actual_procedure_State.successful_complete;
+            this.update();
+            return;
         }
 
-        this.update();
+        int canceled = C_Program_Update_Plan.find.where()
+                .eq("actualization_procedure.id",id).where()
+                .eq("state",C_ProgramUpdater_State.canceled)
+                .findRowCount();
+
+        int override = C_Program_Update_Plan.find.where()
+                .eq("actualization_procedure.id",id).where()
+                .eq("state",C_ProgramUpdater_State.override)
+                .findRowCount();
+
+        if( ( ( complete + canceled + override ) * 1.0 / all ) == 1.0 ){
+            date_of_finish = new Date();
+            state = Actual_procedure_State.complete;
+            this.update();
+            return;
+        }
+
+        int critical_error = C_Program_Update_Plan.find.where()
+                .eq("actualization_procedure.id",id).where()
+                .eq("state",C_ProgramUpdater_State.critical_error)
+                .findRowCount();
+
+        if( ( (critical_error +override + canceled + complete ) * 1.0 / all ) == 1.0 ){
+            date_of_finish = new Date();
+            state = Actual_procedure_State.complete_with_error;
+            this.update();
+            return;
+        }
 
     }
 
@@ -126,12 +155,9 @@ public class Actualization_procedure extends Model {
 
 
 // Pomocné Třídy
-
 class Program_Actualization{
-
     public String b_program_id;
     public String b_program_version_id;
     public String b_program_name;
     public String b_program_version_name;
-
 }

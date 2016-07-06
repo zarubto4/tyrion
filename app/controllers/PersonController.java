@@ -21,6 +21,7 @@ import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.Swagger_Person_New;
 import utilities.swagger.documentationClass.Swagger_Person_Update;
+import utilities.swagger.outboundClass.Swagger_Entity_Validation;
 
 import javax.inject.Inject;
 import javax.websocket.server.PathParam;
@@ -341,19 +342,22 @@ public class PersonController extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Its possible used that",  response = Result_ok.class),
+            @ApiResponse(code = 200, message = "Result if its possible to used that",  response = Swagger_Entity_Validation.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result valid_Person_mail(@ApiParam(value = "mail value for server side unique control", required = true) @PathParam("person_id") String mail){
+    public  Result valid_Person_mail(@ApiParam(value = "mail value for cloud_blocko_server side unique control", required = true) @PathParam("person_id") String mail){
         try{
 
-            if(Person.find.where().ieq("mail", mail).findUnique() == null ) return GlobalResult.result_ok();
+            Swagger_Entity_Validation validation = new Swagger_Entity_Validation();
+            if(Person.find.where().ieq("mail", mail).findUnique() == null ) {
+                validation.valid = true;
+                return GlobalResult.result_ok(Json.toJson(validation));
+            }
 
-            Result_ok result_ok = new Result_ok();
-            result_ok.code = 400;
-            result_ok.message = "email is used";
-            CoreResponse.cors();
-            return ok(Json.toJson(result_ok));
+            validation.valid = false;
+            validation.message = "email is used";
+
+            return GlobalResult.result_ok(Json.toJson(validation));
 
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
@@ -371,7 +375,7 @@ public class PersonController extends Controller {
             @ApiResponse(code = 200, message = "Its possible used that",  response = Result_ok.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result valid_Person_NickName(@ApiParam(value = "nick_name value for server side - it must be unique", required = true) @PathParam("nick_name")  String nick_name){
+    public  Result valid_Person_NickName(@ApiParam(value = "nick_name value for cloud_blocko_server side - it must be unique", required = true) @PathParam("nick_name")  String nick_name){
         try{
 
             if(Person.find.where().ieq("nick_name", nick_name).findUnique() == null ) return GlobalResult.result_ok();

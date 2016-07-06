@@ -24,7 +24,6 @@ public class Swagger_C_Program_Version_New {
     public String version_description;
 
 
-
     @ApiModelProperty(required = false)
     public String code;
 

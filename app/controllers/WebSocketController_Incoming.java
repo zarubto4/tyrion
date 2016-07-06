@@ -2,16 +2,15 @@ package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import models.blocko.Cloud_Blocko_Server;
 import models.compiler.Board;
 import models.compiler.Cloud_Compilation_Server;
 import models.compiler.Version_Object;
 import models.person.Person;
 import models.project.b_program.B_Program;
-import models.project.b_program.B_Program_Cloud;
+import models.project.b_program.Homer_Instance;
+import models.project.b_program.servers.Cloud_Homer_Server;
 import models.project.m_program.Grid_Terminal;
 import models.project.m_program.M_Project;
-import org.apache.commons.codec.binary.Base64;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.WebSocket;
@@ -29,7 +28,7 @@ public class WebSocketController_Incoming extends Controller {
 // Loger
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
-// Values  -------------------------------------------------------------------------------------------------------------
+// Values  --------------------------------------------- ----------------------------------------------------------------
 
     public static Map<String, WebSCType> incomingConnections_homers    = new HashMap<>(); // (Identificator, Websocket)
     public static Map<String, WebSCType> incomingConnections_terminals = new HashMap<>(); // (Identificator, Websocket)
@@ -195,7 +194,7 @@ public class WebSocketController_Incoming extends Controller {
             //-----------------------------------------------------------------------------------------------------------
 
             // POKUD JE B_PROGRAM V CLOUDU ale shodná verze neexistuje ale je povoleno auto increment
-            if (m_project.b_program_version.b_program_cloud == null &&  m_project.auto_incrementing &&  B_Program.find.where().isNotNull("version_objects.b_program_cloud").findUnique() != null) {
+            if (m_project.b_program_version.homer_instance == null &&  m_project.auto_incrementing &&  B_Program.find.where().isNotNull("version_objects.b_program_cloud").findUnique() != null) {
                 logger.debug("Terminal: Program on Cloud win but system have to iterate to new version: ");
 
                 m_project.b_program_version = m_project.b_program.where_program_run();
@@ -204,18 +203,18 @@ public class WebSocketController_Incoming extends Controller {
             }
 
             // POKUD JE B_PROGRAM V CLOUDU a má shodnou verzi
-            if (m_project.b_program_version.b_program_cloud != null) {
+            if (m_project.b_program_version.homer_instance != null) {
 
 
                 logger.debug("Terminal: Program on Cloud win");
 
-                String homer_identificator = m_project.b_program_version.b_program_cloud.blocko_instance_name;
-                String server_name =  Cloud_Blocko_Server.find.where().eq("cloud_programs.version_object.m_project.id", m_project.id ).findUnique().server_name;
+                String homer_identificator = m_project.b_program_version.homer_instance.blocko_instance_name;
+                String server_name =  Cloud_Homer_Server.find.where().eq("cloud_programs.version_object.m_project.id", m_project.id ).findUnique().server_name;
 
                 logger.debug("Terminal: Connection with Server " + server_name);
                 logger.debug("Terminal: Connection with Homer " + homer_identificator);
 
-                logger.debug("Tyrion: Is CLoud server connected?");
+                logger.debug("Tyrion: Is CLoud cloud_blocko_server connected?");
 
                 if (!blocko_servers.containsKey(server_name)) {
 
@@ -262,7 +261,7 @@ public class WebSocketController_Incoming extends Controller {
             //-----------------------------------------------------------------------------------------------------------
 
              // POKUD JE B_PROGRAM NA PC ale shodná verze neexistuje a povolil jsem auto inkrementaci
-              if( m_project.b_program_version.b_program_homer == null && m_project.auto_incrementing  && B_Program.find.where().isNotNull("version_objects.b_program_homer").findUnique() != null) {
+              if( m_project.b_program_version.homer_instance.private_server == null && m_project.auto_incrementing  && B_Program.find.where().isNotNull("version_objects.b_program_homer").findUnique() != null) {
 
                   logger.debug("Tyrion: Homer is on local computer, but Tyrion have to repair versions");
                   m_project.b_program_version = m_project.b_program.where_program_run();
@@ -270,11 +269,11 @@ public class WebSocketController_Incoming extends Controller {
 
               }
               // POKUD JE B_PROGRAM NA PC a má shodnou verzi
-              if (m_project.b_program_version.b_program_homer != null) {
+              if (m_project.b_program_version.homer_instance.private_server != null) {
 
                   logger.debug("Tyrion: Homer is on local computer");
 
-                  String homer_identificator = m_project.b_program_version.b_program_homer.homer.id;
+                  String homer_identificator = m_project.b_program_version.homer_instance.private_server.id;
 
                   logger.debug("Tyrion: Connection will be on Homer: " + homer_identificator);
 
@@ -336,7 +335,7 @@ public class WebSocketController_Incoming extends Controller {
 
             logger.debug("Cloud Server: Incoming connection: Server:  " + server_name);
 
-            Cloud_Blocko_Server blocko_server = Cloud_Blocko_Server.find.where().eq("server_name", server_name).findUnique();
+            Cloud_Homer_Server blocko_server = Cloud_Homer_Server.find.where().eq("server_name", server_name).findUnique();
             if(blocko_server== null) return WebSocket.reject(forbidden("Server side error - unrecognized name"));
 
             if(blocko_servers.containsKey(server_name)) {
@@ -362,10 +361,10 @@ public class WebSocketController_Incoming extends Controller {
             logger.debug("Connection is successful");
             WebSocket<String> webSocket = server.connection();
 
-            // Procedury kontroly - informovat třeba všechny klienty o tom, že se server připojil. Kontzrola co tam běží a další píčoviny
-            logger.debug("Tyrion have to control what is on the server side ");
+            // Procedury kontroly - informovat třeba všechny klienty o tom, že se cloud_blocko_server připojil. Kontzrola co tam běží a další píčoviny
+            logger.debug("Tyrion have to control what is on the cloud_blocko_server side ");
 
-            // GET state - a vyhodnocením v jakém stavu se server nachází a popřípadě
+            // GET state - a vyhodnocením v jakém stavu se cloud_blocko_server nachází a popřípadě
             // na něj nahraji nebo smažu nekonzistenntí clou dprogramy, které by na něm měly být
 
             class Control_Blocko_Server_Thread extends Thread{
@@ -406,16 +405,16 @@ public class WebSocketController_Incoming extends Controller {
                                     final JsonNode arrNode = jsonNode.get("instances");
                                     for (final JsonNode objNode : arrNode) instances_on_server.add(objNode.asText());
 
-                                    logger.debug("Blocko Server: Number of instances on server");
+                                    logger.debug("Blocko Server: Number of instances on cloud_blocko_server");
 
 
                                     List<String> instances_in_database = new ArrayList<>();
-                                    for (B_Program_Cloud cloud_program : B_Program_Cloud.find.where().eq("server.id", blocko_server.id).select("blocko_instance_name").findList())
+                                    for (Homer_Instance cloud_program : Homer_Instance.find.where().eq("cloud_homer_server.id", blocko_server.id).select("blocko_instance_name").findList())
                                         instances_in_database.add(cloud_program.blocko_instance_name);
-                                    logger.debug("Blocko Server: The number of instances that should run on a server: " + instances_in_database.size());
+                                    logger.debug("Blocko Server: The number of instances that should run on a cloud_blocko_server: " + instances_in_database.size());
 
                                     List<String> instances_on_server_copy = new ArrayList<>(instances_on_server);
-                                    logger.debug("Blocko Server: The number of instances that should run on a server: " + instances_on_server_copy.size());
+                                    logger.debug("Blocko Server: The number of instances that should run on a cloud_blocko_server: " + instances_on_server_copy.size());
 
 
                                     List<String> instances_in_database_copy = new ArrayList<>(instances_in_database);
@@ -423,39 +422,39 @@ public class WebSocketController_Incoming extends Controller {
 
                                     instances_in_database.removeAll(instances_on_server);
 
-                                    logger.debug("Blocko Server: The number of instances that will be recorded on the server " + instances_in_database.size());
+                                    logger.debug("Blocko Server: The number of instances that will be recorded on the cloud_blocko_server " + instances_in_database.size());
 
                                     instances_on_server_copy.removeAll(instances_in_database_copy);
-                                    logger.debug("Blocko Server:  The number of instances to be deleted from the server" + instances_on_server_copy.size());
+                                    logger.debug("Blocko Server:  The number of instances to be deleted from the cloud_blocko_server" + instances_on_server_copy.size());
 
-                                    List<B_Program_Cloud> b_programs = B_Program_Cloud.find.where().in("blocko_instance_name", instances_in_database).findList();
+                                    List<Homer_Instance> b_programs = Homer_Instance.find.where().in("blocko_instance_name", instances_in_database).findList();
 
                                     if (!b_programs.isEmpty()) {
 
-                                        logger.debug("Blocko Server: Starting to uploud new instnces to server");
+                                        logger.debug("Blocko Server: Starting to uploud new instnces to cloud_blocko_server");
 
-                                        for (B_Program_Cloud b_program : b_programs) {
+                                        for (Homer_Instance b_program : b_programs) {
                                             try {
                                                 WebSocketController_Incoming.blocko_server_add_instance(server, b_program);
                                             } catch (Exception e) {
-                                                logger.warn("Instance " + b_program.blocko_instance_name + "  failed to upload properly on the server Blocko");
+                                                logger.warn("Instance " + b_program.blocko_instance_name + "  failed to upload properly on the cloud_blocko_server Blocko");
                                             }
                                         }
                                     }
 
                                     if(!instances_on_server_copy.isEmpty()) {
 
-                                        logger.debug("Blocko Server: Starting to remove the server instance ");
+                                        logger.debug("Blocko Server: Starting to remove the cloud_blocko_server instance ");
 
                                         for (String blocko_instance_name : instances_on_server_copy) {
                                             try {
 
                                                 JsonNode remove_instance = blocko_server_remove_instance(server, blocko_instance_name);
                                                 if (remove_instance.get("status").asText().equals("error")) {
-                                                    logger.debug("Blocko Server: Fail when Tyrion try to remove instance from Blocko server");
+                                                    logger.debug("Blocko Server: Fail when Tyrion try to remove instance from Blocko cloud_blocko_server");
                                                 }
                                             } catch (Exception e) {
-                                                logger.error("Blocko Server: Eception wher Tyrion try to remove instance from Blocko server", e);
+                                                logger.error("Blocko Server: Eception wher Tyrion try to remove instance from Blocko cloud_blocko_server", e);
                                             }
                                         }
                                     }
@@ -486,14 +485,14 @@ public class WebSocketController_Incoming extends Controller {
     }
     public  WebSocket<String>  compilator_server_connection (String server_name){
         try{
-            logger.debug("Compilation server is connecting. Server: " + server_name);
+            logger.debug("Compilation cloud_blocko_server is connecting. Server: " + server_name);
 
             logger.debug("Control Server and its unique names!"); // TODO - přidat ověření ještě pomocí HASHe co už je v objektu definován
             Cloud_Compilation_Server cloud_compilation_server = Cloud_Compilation_Server.find.where().eq("server_name", server_name).findUnique();
             if(cloud_compilation_server == null) return WebSocket.reject(forbidden("Server side error - unrecognized name"));
 
             if(compiler_cloud_servers.containsKey(server_name)) {
-                logger.debug("At Tyrion is already connected server compilation of the same name - will not allow another connection");
+                logger.debug("At Tyrion is already connected cloud_blocko_server compilation of the same name - will not allow another connection");
                 return WebSocket.reject(forbidden("Server side error - already connected"));
             }
 
@@ -501,7 +500,7 @@ public class WebSocketController_Incoming extends Controller {
             WS_CompilerServer server = new WS_CompilerServer( cloud_compilation_server.server_name, cloud_compilation_server.destination_address, compiler_cloud_servers );
 
             // Připojím se
-            logger.debug("Compiling server connect");
+            logger.debug("Compiling cloud_blocko_server connect");
             return server.connection();
 
         }catch (Exception e){
@@ -572,7 +571,7 @@ public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, 
             }
             default: {
                 logger.error("ERROR");
-                logger.error("Homer: Incoming message: becki: Tyrion don't recognize incoming messageChanel!!!");
+                logger.error("Blocko Server Incoming message not recognize incoming messageChanel!!!");
                 logger.error("ERROR");
             }
 
@@ -585,7 +584,7 @@ public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, 
 }
 
     public static void blocko_server_is_disconnect(WS_BlockoServer blockoServer){
-        logger.debug("Tyrion lost connection with blocko server: " + blockoServer.identifikator);
+        logger.debug("Tyrion lost connection with blocko cloud_blocko_server: " + blockoServer.identifikator);
         blocko_servers.remove(blockoServer.identifikator);
     }
 
@@ -611,33 +610,37 @@ public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, 
         return blockoServer.write_with_confirmation(result);
     }
 
-    public static WebSCType blocko_server_add_instance(WS_BlockoServer blockoServer, B_Program_Cloud program) throws Exception{
+    public static WebSCType blocko_server_add_instance(WS_BlockoServer blockoServer, Homer_Instance instance) throws Exception{
 
-            logger.debug("Tyrion uploud new instance to server" + blockoServer.identifikator);
+            logger.debug("Tyrion uploud new instance to cloud_blocko_server" + blockoServer.identifikator);
 
-            if (WebSocketController_Incoming.incomingConnections_homers.containsKey(program.blocko_instance_name)) {
+            if (WebSocketController_Incoming.incomingConnections_homers.containsKey(instance.blocko_instance_name)) {
 
                 System.out.println("Při přidávání instance do serveru: " + blockoServer.identifikator + " bylo zjištěno že v mapě už existuje jméno homera");
-                return WebSocketController_Incoming.incomingConnections_homers.get(program.blocko_instance_name);
+                return WebSocketController_Incoming.incomingConnections_homers.get(instance.blocko_instance_name);
             }
 
             logger.debug("Creating new  Homer");
-            WS_Homer_Cloud homer = new WS_Homer_Cloud(program.blocko_instance_name, program.version_object.id , blockoServer);
+            WS_Homer_Cloud homer = new WS_Homer_Cloud(instance.blocko_instance_name, instance.version_object != null ? instance.version_object.id : "null" , blockoServer);
 
             ObjectNode result = Json.newObject();
             result.put("messageType", "createInstance");
             result.put("messageChannel", "homer-server");
-            result.put("instanceId", program.blocko_instance_name);
-            result.put("macAddress", program.macAddress);
+            result.put("instanceId", instance.blocko_instance_name);
+            result.put("macAddress", instance.macAddress);
 
-            logger.debug("Sending to server request for new instance ");
+            logger.debug("Sending to cloud_blocko_server request for new instance ");
             JsonNode result_instance = blockoServer.write_with_confirmation( result);
 
-            logger.debug("Sending Blocko Program ");
-            JsonNode result_uploud = WebSocketController_Incoming.homer_upload_program(homer, program.id, program.version_object.files.get(0).get_fileRecord_from_Azure_inString());
+            logger.debug("Sending Blocko Program if Exist");
+            if( instance.version_object != null) {
+                JsonNode result_uploud = WebSocketController_Incoming.homer_upload_program(homer, instance.id, instance.version_object.files.get(0).get_fileRecord_from_Azure_inString());
+            }else {
+                logger.debug("Blocko Version wasnt in Homer_Instnace");
+            }
 
-            logger.debug("Adding a new virtual Homer in private server maps in Controller");
-            blockoServer.virtual_homers.put(program.blocko_instance_name, homer);
+            logger.debug("Adding a new virtual Homer in private cloud_blocko_server maps in Controller");
+            blockoServer.virtual_homers.put(instance.blocko_instance_name, homer);
 
             logger.debug("Initiating connection procedures");
             homer_connection_procedure(homer);
@@ -648,31 +651,35 @@ public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, 
 
     }
 
-    public static WebSCType blocko_server_add_fake_instance(WS_BlockoServer blockoServer, String  instance_name, String macAddress) throws Exception{
+    public static JsonNode blocko_server_update_instance(WebSCType homer, Homer_Instance instance) throws Exception{
 
-        logger.debug("Tyrion uploud FAKE new instance to server" + blockoServer.identifikator);
+        logger.debug("Tyrion update instance on Homer" + homer.identifikator);
 
-        if (WebSocketController_Incoming.incomingConnections_homers.containsKey(instance_name)) {
-            logger.warn("When adding FAKE instance in the server: " + blockoServer.identifikator + "it was found that the site exists name of Homer instnace!!!!");
-            return WebSocketController_Incoming.incomingConnections_homers.get(instance_name);
+
+        WS_Homer_Cloud cloud_homer = (WS_Homer_Cloud) homer;
+
+        logger.debug("Upravuji Version Id in Homer");
+        if(instance.version_object != null) cloud_homer.version_id = instance.version_object.id;
+
+
+        logger.debug("Sending Blocko Program if Exist");
+
+        JsonNode result_uploud = WebSocketController_Incoming.homer_upload_program(homer, instance.id, instance.version_object.files.get(0).get_fileRecord_from_Azure_inString());
+
+        if(result_uploud.get("status").asText().equals("success")){
+
+            logger.debug("Uploading of new program to instance was successful");
+         //   homer_connection_procedure(homer); - Nejsem si jist jestli není potřeba nějak updatovat a upozornit zařízení že se třeba změnila rozložení pro grid!
+            return result_uploud;
+
+        }else {
+            logger.warn("Uploading of new program to instance wasnt successful!!");
+            return result_uploud;
         }
-
-        logger.debug("Creating new Fake Homer for updating on Homer Server");
-        WS_Homer_Cloud homer = new WS_Homer_Cloud(instance_name, "null", blockoServer);
-
-
-        ObjectNode result = Json.newObject();
-        result.put("messageType", "createInstance");
-        result.put("messageChannel", "homer-server");
-        result.put("instanceId", instance_name);
-        result.put("macAddress", macAddress);
-
-        logger.debug("Upload instance to server!");
-        JsonNode result_instance = blockoServer.write_with_confirmation( result);
-
-        return homer;
-
     }
+
+
+
 
 
 
@@ -715,7 +722,7 @@ public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, 
 
                 if(board == null){
                     logger.warn("WARN! WARN! WARN! WARN!");
-                    logger.warn("Unregistered Hardware connected to Blocko server - " + blockoServer.identifikator);
+                    logger.warn("Unregistered Hardware connected to Blocko cloud_blocko_server - " + blockoServer.identifikator);
                     logger.warn("Unregistered Hardware: " +  json.get("macAddress").asText() );
                     logger.warn("WARN! WARN! WARN! WARN!");
 
@@ -723,15 +730,15 @@ public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, 
                     return;
                 }
 
-                logger.debug("Board connected to Blocko server");
+                logger.debug("Board connected to Blocko cloud_blocko_server");
 
-                if(board.server == null){
+                if(board.latest_know_server == null){
 
                     logger.debug("The Board is not yet matched the Server");
-                    Cloud_Blocko_Server server = Cloud_Blocko_Server.find.where().eq("server_name", blockoServer.identifikator).findUnique();
+                    Cloud_Homer_Server server = Cloud_Homer_Server.find.where().eq("server_name", blockoServer.identifikator).findUnique();
 
                     if(server == null) {
-                        logger.error("blocko_server_yodaConnected => server not exist!!!!");
+                        logger.error("blocko_server_yodaConnected => cloud_blocko_server not exist!!!!");
                         return;
                     }
 
@@ -741,7 +748,7 @@ public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, 
                     server.update();
 
                     board.refresh();
-                    board.server = server;
+                    board.latest_know_server = server;
                     board.isActive = true;
                     board.update();
                 }
@@ -765,7 +772,7 @@ public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, 
                 Board board = Board.find.byId(json.get("macAddress").asText());
                 if(board == null){
                     logger.warn("WARN! WARN! WARN! WARN!");
-                    logger.warn("Unregistered Hardware disconnected to Blocko server - " + blockoServer.identifikator);
+                    logger.warn("Unregistered Hardware disconnected to Blocko cloud_blocko_server - " + blockoServer.identifikator);
                     logger.warn("Unregistered Hardware: " +  json.get("macAddress").asText() );
                     logger.warn("WARN! WARN! WARN! WARN!");
                     return;
@@ -784,7 +791,7 @@ public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, 
 // PRIVATE Compiler-Server --------------------------------------------------------------------------------------------------------
 
     public static void compiler_server_is_disconnect(WS_CompilerServer compilerServer)  {
-        logger.debug("Connection lost with compilation server!: " + compilerServer.identifikator);
+        logger.debug("Connection lost with compilation cloud_blocko_server!: " + compilerServer.identifikator);
         compiler_cloud_servers.remove(compilerServer.identifikator);
     }
 
@@ -796,7 +803,7 @@ public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, 
         ObjectNode compilation_request = server.write_with_confirmation(jsonNodes);
 
 
-        logger.debug("Server will send request for compilation to compilation server: " + server.identifikator + "and now must wait for result");
+        logger.debug("Server will send request for compilation to compilation cloud_blocko_server: " + server.identifikator + "and now must wait for result");
         if(!compilation_request.get("status").asText().equals("success")) {
 
             logger.debug("Incoming message has not contains state = success");
@@ -822,7 +829,7 @@ public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, 
                     breaker-=1000;
 
                     if(server.compilation_results.containsKey( compilation_request.get("buildId").asText() )) {
-                       // Kompilace dokončena protože server zavěsil do Result odpověď
+                       // Kompilace dokončena protože cloud_blocko_server zavěsil do Result odpověď
 
                         // Mažu žádost
                         server.compilation_request.remove(compilation_request.get("buildId").asText());
@@ -938,34 +945,34 @@ public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, 
                 }
 
                 // Zjistím kde běží
-                if (!blocko_servers.containsKey(version.b_program_cloud.server.server_name)) {
+                if (!blocko_servers.containsKey(version.homer_instance.cloud_homer_server.server_name)) {
                     becki_disapprove_receive_instance_state(becki, json.get("messageId").asText(), "Server is not connected");
                     return;
                 }
 
-                WS_BlockoServer server = (WS_BlockoServer) blocko_servers.get(version.b_program_cloud.server.server_name);
+                WS_BlockoServer server = (WS_BlockoServer) blocko_servers.get(version.homer_instance.cloud_homer_server.server_name);
 
                 // Zjistit jestli tam instance opravdu běží
-                JsonNode result_instance = blocko_server_isInstanceExist(server, version.b_program_cloud.blocko_instance_name);
+                JsonNode result_instance = blocko_server_isInstanceExist(server, version.homer_instance.blocko_instance_name);
                 if(result_instance.get("status").asText().equals("error"))  {
                     becki_disapprove_receive_instance_state(becki, json.get("messageId").asText(), result_instance.get("error").asText());
                     return;
                 }
                 // Zjistím jestli existuje instnace
                 if(!result_instance.get("exist").booleanValue())    {
-                    becki_disapprove_receive_instance_state(becki, json.get("messageId").asText(), "Instance of this version not running on this server!");
+                    becki_disapprove_receive_instance_state(becki, json.get("messageId").asText(), "Instance of this version not running on this cloud_blocko_server!");
                     return;
                 }
 
                 // Zjistím jestli existuje virtuální homer
                 System.out.println("Zjištuji jestli existuje virtuální homer");
-                if(!incomingConnections_homers.containsKey(version.b_program_cloud.blocko_instance_name) ) {
+                if(!incomingConnections_homers.containsKey(version.homer_instance.blocko_instance_name) ) {
                     System.out.println("Virtuální Homer neexistuje!!!");
                     becki_disapprove_receive_instance_state(becki, json.get("messageId").asText(), "FATAL ERROR!!! Virtual Homer for this instance not exist!");
                     return;
                 }
 
-                WebSCType homer = incomingConnections_homers.get(version.b_program_cloud.blocko_instance_name);
+                WebSCType homer = incomingConnections_homers.get(version.homer_instance.blocko_instance_name);
 
                 // 2 - Požádat Homera o zasílání informací
                 JsonNode result_recive = ask_for_receiving_for_Becki(homer);
@@ -1079,9 +1086,30 @@ public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, 
                     return;
                 }
 
+                case "homer-server" : {
+
+                    switch (json.get("messageType").asText()){
+
+                        case "yodaDisconnected" : {
+                            WS_Homer_Cloud homer_cloud = (WS_Homer_Cloud) homer;
+
+                            logger.debug("yodaDisconnected");
+                            blocko_server_yodaDisconnected(homer_cloud.blockoServer ,json);
+                            return;
+                        }
+                        case "yodaConnected" : {
+                            WS_Homer_Cloud homer_cloud = (WS_Homer_Cloud) homer;
+
+                            logger.debug("yodaConnected");
+                            blocko_server_yodaConnected(homer_cloud.blockoServer ,json);
+                            return;
+                        }
+                    }
+                }
+
                 default: {
                     logger.error("ERROR \n");
-                    logger.error("Homer: Incoming message: becki: Tyrion don't recognize incoming messageChanel!!!");
+                    logger.error("Homer: Incoming message: Tyrion don't recognize incoming messageChanel!!!");
                     logger.error("ERROR \n");
                 }
 
@@ -1216,7 +1244,7 @@ public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, 
 
     public static void ask_for_receiving_for_Grid(WebSCType homer) throws TimeoutException, InterruptedException {
 
-        logger.debug("Homer: " + homer.identifikator + ", server want send you request for receiving for Grid:");
+        logger.debug("Homer: " + homer.identifikator + ", cloud_blocko_server want send you request for receiving for Grid:");
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "subscribeChannel");
@@ -1227,7 +1255,7 @@ public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, 
 
     public static JsonNode ask_for_receiving_for_Becki(WebSCType homer) throws TimeoutException, InterruptedException {
 
-        logger.debug("Homer: " + homer.identifikator + ", server want send you request for receiving for Becki:");
+        logger.debug("Homer: " + homer.identifikator + ", cloud_blocko_server want send you request for receiving for Becki:");
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "subscribeChannel");
@@ -1264,9 +1292,7 @@ public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, 
         ObjectNode result = Json.newObject();
         result.put("messageType", "updateDevice");
         result.set("hardwareId", Json.toJson(board_id_list));
-
-        byte[]   bytesEncoded = Base64.encodeBase64(string_code .getBytes());
-        result.put("base64Binary", bytesEncoded);
+        result.put("base64Binary", string_code);
 
         return homer.write_with_confirmation(result);
     }

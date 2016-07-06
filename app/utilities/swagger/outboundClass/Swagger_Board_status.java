@@ -17,7 +17,7 @@ public class Swagger_Board_status {
     @ApiModelProperty(value = "Can be with null value", readOnly = true, required = true)
     public String b_program_version_id;
 
-    @ApiModelProperty(value = "It in Object only if user upload own binary firmware to hardware and server used file name for naming of this value" +
+    @ApiModelProperty(value = "It in Object only if user upload own binary firmware to hardware and cloud_blocko_server used file name for naming of this value" +
             "If user used classic build with Byzance - its not visible in Json!", readOnly = true, required = false)
     @JsonInclude(JsonInclude.Include.NON_NULL) public String actual_program;
 

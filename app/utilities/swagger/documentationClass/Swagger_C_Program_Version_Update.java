@@ -70,8 +70,10 @@ public class Swagger_C_Program_Version_Update {
 
     
     public ObjectNode includes(){
+
         ObjectNode includes = Json.newObject();
-        
+        if(external_libraries == null ) return  null;
+
         for(External_Libraries external_library : external_libraries){
             for(External_Libraries.File_Lib file_lib : external_library.files){
                 includes.put(file_lib.file_name , file_lib.content);

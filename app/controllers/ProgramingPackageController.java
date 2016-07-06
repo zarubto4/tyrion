@@ -6,13 +6,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.*;
 import models.blocko.BlockoBlock;
 import models.blocko.BlockoBlockVersion;
-import models.blocko.Cloud_Blocko_Server;
 import models.blocko.TypeOfBlock;
 import models.compiler.Board;
 import models.compiler.TypeOfBoard;
 import models.compiler.Version_Object;
 import models.person.Person;
-import models.project.b_program.*;
+import models.project.b_program.B_Pair;
+import models.project.b_program.B_Program;
+import models.project.b_program.Homer_Instance;
+import models.project.b_program.servers.Cloud_Homer_Server;
+import models.project.b_program.servers.Private_Homer_Server;
 import models.project.global.Project;
 import play.data.Form;
 import play.libs.Json;
@@ -30,6 +33,7 @@ import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Filter_List.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Homer_List;
+import utilities.swagger.outboundClass.Filter_List.Swagger_LibraryGroup_List;
 import utilities.webSocket.WS_BlockoServer;
 import utilities.webSocket.WebSCType;
 
@@ -438,10 +442,10 @@ public class ProgramingPackageController extends Controller {
             code = 201,
             extensions = {
                     @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Homer.create_permission", value = Homer.create_permission_docs ),
+                            @ExtensionProperty(name = "Homer.create_permission", value = Private_Homer_Server.create_permission_docs ),
                     }),
                     @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Homer.create_permission", value = "true"),
+                            @ExtensionProperty(name = "Project.update_permission", value = "true"),
                             @ExtensionProperty(name = "Static Permission key", value =  "Homer_create_permission" )
                     })
             }
@@ -458,7 +462,7 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successfully created", response =  Homer.class),
+            @ApiResponse(code = 201, message = "Successfully created", response =  Private_Homer_Server.class),
             @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -475,21 +479,27 @@ public class ProgramingPackageController extends Controller {
             Swagger_Homer_New help = form.get();
 
             // Kontrola před vytvořením objektu
-            if ( Homer.find.where().eq("id", help.homer_id).findUnique() != null ) return GlobalResult.result_BadRequest("Homer with this id exist");
+            if ( Private_Homer_Server.find.where().eq("mac_address", help.mac_address).findUnique() != null ) return GlobalResult.result_BadRequest("Homer with this id exist");
 
             // Vytvoření objektu
-            Homer homer = new Homer();
-            homer.id = help.homer_id;
-            homer.type_of_device = help.type_of_device;
+            Private_Homer_Server privateHomerServer = new Private_Homer_Server();
+            privateHomerServer.mac_address = help.mac_address;
+            privateHomerServer.type_of_device = help.type_of_device;
+
+            if(help.project_id != null){
+                Project project = Project.find.byId(help.project_id);
+                if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
+                privateHomerServer.project = project;
+            }
 
             // Kontrola oprávnění těsně před uložením
-            if (!homer.create_permission() )   return GlobalResult.forbidden_Permission();
+            if (!privateHomerServer.create_permission() )   return GlobalResult.forbidden_Permission();
 
             // Uložení objektu
-            homer.save();
+            privateHomerServer.save();
 
             // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(homer));
+            return GlobalResult.result_ok(Json.toJson(privateHomerServer));
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -520,14 +530,14 @@ public class ProgramingPackageController extends Controller {
         try{
 
            // Kontrola objektu
-           Homer homer = Homer.find.byId(homer_id);
-           if(homer == null) return GlobalResult.notFoundObject("Homer id not found");
+           Private_Homer_Server privateHomerServer = Private_Homer_Server.find.byId(homer_id);
+           if(privateHomerServer == null) return GlobalResult.notFoundObject("Homer id not found");
 
            // Kontrola oprávnění
-           if (!homer.delete_permission() )   return GlobalResult.forbidden_Permission();
+           if (!privateHomerServer.delete_permission() )   return GlobalResult.forbidden_Permission();
 
            // Smazání objektu
-           homer.delete();
+           privateHomerServer.delete();
 
            // Vrácení potvrzení
            return GlobalResult.result_ok();
@@ -545,7 +555,7 @@ public class ProgramingPackageController extends Controller {
             code = 200,
             extensions = {
                     @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Homer.read_permission", value = Homer.read_permission_docs),
+                            @ExtensionProperty(name = "Homer.read_permission", value = Private_Homer_Server.read_permission_docs),
                     }),
                     @Extension( name = "permission_required", properties = {
                             @ExtensionProperty(name = "Homer.read_permission", value = "true"),
@@ -553,7 +563,7 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Homer.class),
+            @ApiResponse(code = 200, message = "Ok Result", response =  Private_Homer_Server.class),
             @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -564,14 +574,14 @@ public class ProgramingPackageController extends Controller {
         try {
 
             // Kontrola objektu
-            Homer homer = Homer.find.byId(homer_id);
-            if (homer == null) return GlobalResult.notFoundObject("Homer id not found");
+            Private_Homer_Server privateHomerServer = Private_Homer_Server.find.byId(homer_id);
+            if (privateHomerServer == null) return GlobalResult.notFoundObject("Homer id not found");
 
             // Kontrola oprávnění
-            if (!homer.read_permission() )   return GlobalResult.forbidden_Permission();
+            if (!privateHomerServer.read_permission() )   return GlobalResult.forbidden_Permission();
 
             // Vrácení objektu
-            return GlobalResult.result_ok( Json.toJson(homer) );
+            return GlobalResult.result_ok( Json.toJson(privateHomerServer) );
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -579,7 +589,36 @@ public class ProgramingPackageController extends Controller {
     }
 
 
-    public  Result get_Homers_by_Filter( @ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1", required = true) @PathParam("page_number") Integer page_number){
+    @ApiOperation(value = "get Homers with Filters parameters",
+            tags = {"Homer"},
+            notes = "If you want get all or only some Homers you can use filter parameters in Json. But EveryTime server return maximal 25 objects \n\n" +
+                    "so, you have to used that limit for frontend pagination -> first round (0,25), second round (26, 50) etc... in Json we help you with pages list \n ",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
+                    }),
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Homer_Filter",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok result",               response = Swagger_LibraryGroup_List.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public  Result get_Homers_by_Filter( @ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) @PathParam("page_number") Integer page_number){
         try {
 
             // Zpracování Json
@@ -588,7 +627,7 @@ public class ProgramingPackageController extends Controller {
             Swagger_Homer_Filter help = form.get();
 
             // Získání objektu
-            Query<Homer> query = Ebean.find(Homer.class);
+            Query<Private_Homer_Server> query = Ebean.find(Private_Homer_Server.class);
 
             // If Json contains project_ids list of id's
             if(help.project_ids != null ){
@@ -638,21 +677,21 @@ public class ProgramingPackageController extends Controller {
 
             // Získání objektů
             Project project = Project.find.byId(project_id);
-            Homer homer = Homer.find.byId(homer_id);
+            Private_Homer_Server privateHomerServer = Private_Homer_Server.find.byId(homer_id);
 
             // Kontrola objektů
             if(project == null)  return GlobalResult.notFoundObject("Project project_id not found");
-            if(homer == null)  return GlobalResult.notFoundObject("Homer id not found");
+            if(privateHomerServer == null)  return GlobalResult.notFoundObject("Homer id not found");
 
             // Kontrola oprávnění
             if (!project.update_permission() ) return GlobalResult.forbidden_Permission();
-            if (!homer.update_permission() )   return GlobalResult.forbidden_Permission();
+            if (!privateHomerServer.update_permission() )   return GlobalResult.forbidden_Permission();
 
             // Úprava objektu
-            homer.project = project;
+            privateHomerServer.project = project;
 
             // Uložení objektu
-            homer.update();
+            privateHomerServer.update();
 
             // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(project));
@@ -692,24 +731,24 @@ public class ProgramingPackageController extends Controller {
 
             // Získání objektů
             Project project = Project.find.byId(project_id);
-            Homer homer = Homer.find.byId(homer_id);
+            Private_Homer_Server privateHomerServer = Private_Homer_Server.find.byId(homer_id);
 
             // Kontrola objektů
             if(project == null)  return GlobalResult.notFoundObject("Project project_id not found");
-            if(homer == null)  return GlobalResult.notFoundObject("Homer id not found");
+            if(privateHomerServer == null)  return GlobalResult.notFoundObject("Homer id not found");
 
             // Kontrola oprávnění
             if (!project.update_permission() ) return GlobalResult.forbidden_Permission();
-            if (!homer.update_permission() )   return GlobalResult.forbidden_Permission();
+            if (!privateHomerServer.update_permission() )   return GlobalResult.forbidden_Permission();
 
             // Úprava objektu
-            if( project.homerList.contains(homer)) homer.project = null;
+            if( project.privateHomerServerList.contains(privateHomerServer)) privateHomerServer.project = null;
 
             // Uložení objektu
-            homer.update();
+            privateHomerServer.update();
 
             // Úprava objektu
-            project.homerList.remove(homer);
+            project.privateHomerServerList.remove(privateHomerServer);
 
             // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(project));
@@ -1000,12 +1039,12 @@ public class ProgramingPackageController extends Controller {
 
                 b_pair_main.board = board_main;
                 b_pair_main.c_program_version = c_program_version_main;
-                b_pair_main.version_master_board = version_object;
+                b_pair_main.yoda_board_pair = version_object;
 
 
 
             // Synchronizce
-            version_object.master_board_b_pair = b_pair_main;
+            version_object.yoda_board_pair = b_pair_main;
 
             // Uložení objektu
             version_object.save();
@@ -1043,7 +1082,7 @@ public class ProgramingPackageController extends Controller {
                 B_Pair b_pair = new B_Pair();
                 b_pair.board = board;
                 b_pair.c_program_version = c_program_version;
-                b_pair.b_program_version = version_object;
+                b_pair.padavan_board_pair = version_object;
 
                 // Uložení objektu
                 b_pairs.add(b_pair);
@@ -1107,15 +1146,15 @@ public class ProgramingPackageController extends Controller {
 
 
             // Před smazáním blocko programu je nutné smazat jeho běžící cloud instance
-            List<B_Program_Cloud> b_program_clouds = B_Program_Cloud.find.where().eq("version_object.b_program.id", program.id).findList();
+            List<Homer_Instance> blockoInstnaces = Homer_Instance.find.where().eq("version_object.b_program.id", program.id).findList();
 
 
-            for(B_Program_Cloud b_program_cloud : b_program_clouds){
-               if(  WebSocketController_Incoming.blocko_servers.containsKey(b_program_cloud.server.server_name)){
+            for(Homer_Instance blockoInstnace : blockoInstnaces){
+               if(  WebSocketController_Incoming.blocko_servers.containsKey(blockoInstnace.cloud_homer_server.server_name)){
 
-                   WS_BlockoServer server = (WS_BlockoServer)  WebSocketController_Incoming.blocko_servers.get(b_program_cloud.server.server_name);
-                   WebSocketController_Incoming.blocko_server_remove_instance( server, b_program_cloud.blocko_instance_name);
-                   if(WebSocketController_Incoming.incomingConnections_homers.containsKey( b_program_cloud.blocko_instance_name ))   WebSocketController_Incoming.incomingConnections_homers.get(b_program_cloud.blocko_instance_name).onClose();
+                   WS_BlockoServer server = (WS_BlockoServer)  WebSocketController_Incoming.blocko_servers.get(blockoInstnace.cloud_homer_server.server_name);
+                   WebSocketController_Incoming.blocko_server_remove_instance( server, blockoInstnace.blocko_instance_name);
+                   if(WebSocketController_Incoming.incomingConnections_homers.containsKey( blockoInstnace.blocko_instance_name ))   WebSocketController_Incoming.incomingConnections_homers.get(blockoInstnace.blocko_instance_name).onClose();
                }
             }
 
@@ -1166,18 +1205,18 @@ public class ProgramingPackageController extends Controller {
 
             // Před smazáním verze je nutné smazat jeho běžící cloud instanco
             //* Jestli tedy nějaké
-            if(version_object.b_program_cloud != null) {
-                B_Program_Cloud b_program_cloud = version_object.b_program_cloud;
+            if(version_object.homer_instance != null) {
+                Homer_Instance blockoInstnace = version_object.homer_instance;
 
-                Cloud_Blocko_Server server_cloud = Cloud_Blocko_Server.find.where().eq("cloud_programs.id", version_object.b_program_cloud.id).findUnique();
+                Cloud_Homer_Server server_cloud = Cloud_Homer_Server.find.where().eq("cloud_programs.id", version_object.homer_instance.id).findUnique();
 
                 if (WebSocketController_Incoming.blocko_servers.containsKey(server_cloud.server_name)) {
 
-                    WS_BlockoServer server = (WS_BlockoServer) WebSocketController_Incoming.blocko_servers.get(b_program_cloud.server.server_name);
-                    WebSocketController_Incoming.blocko_server_remove_instance(server, b_program_cloud.blocko_instance_name);
+                    WS_BlockoServer server = (WS_BlockoServer) WebSocketController_Incoming.blocko_servers.get(blockoInstnace.cloud_homer_server.server_name);
+                    WebSocketController_Incoming.blocko_server_remove_instance(server, blockoInstnace.blocko_instance_name);
 
-                    if (WebSocketController_Incoming.incomingConnections_homers.containsKey(b_program_cloud.blocko_instance_name))
-                        WebSocketController_Incoming.incomingConnections_homers.get(b_program_cloud.blocko_instance_name).onClose();
+                    if (WebSocketController_Incoming.incomingConnections_homers.containsKey(blockoInstnace.blocko_instance_name))
+                        WebSocketController_Incoming.incomingConnections_homers.get(blockoInstnace.blocko_instance_name).onClose();
                 }
             }
 
@@ -1225,7 +1264,7 @@ public class ProgramingPackageController extends Controller {
             Person person = SecurityController.getPerson();
 
             // Kontrola objektu
-            // B program, který chci nahrát do Cloudu na Blocko server
+            // B program, který chci nahrát do Cloudu na Blocko cloud_blocko_server
             B_Program b_program = B_Program.find.byId(b_program_id);
             if (b_program == null) return GlobalResult.notFoundObject("B_Program id not found");
 
@@ -1239,8 +1278,8 @@ public class ProgramingPackageController extends Controller {
 
             // Kontrola objektu
             // Homer na který budu nahrávat b_program
-            Homer homer = Homer.find.byId(homer_id);
-            if (homer == null)  return GlobalResult.notFoundObject("Homer id not found");
+            Private_Homer_Server private_homer_server = Private_Homer_Server.find.byId(homer_id);
+            if (private_homer_server == null)  return GlobalResult.notFoundObject("Homer id not found");
 
 
             if(! WebSocketController_Incoming.homer_online_state(homer_id)) return GlobalResult.result_BadRequest("Device is not online");
@@ -1251,24 +1290,24 @@ public class ProgramingPackageController extends Controller {
 
                     //Získání objektu
                     // Na homerovi musím zabít a smazat předchozí program - jedná se pouze o nahrávání na cloud !!!
-                    B_Program_Homer old_one = B_Program_Homer.find.where().eq("homer.id", homer.id).findUnique();
+                    Homer_Instance old_one = Homer_Instance.find.where().eq("homer.id", private_homer_server.id).findUnique();
 
                     // Smazání objektu
                     if (old_one != null) { old_one.delete(); }
 
                     // Vytvoření objektu
-                    B_Program_Homer program_homer = new B_Program_Homer();
-                    program_homer.homer = homer;
+                    Homer_Instance program_homer = new Homer_Instance();
+                    program_homer.private_server = private_homer_server;
                     program_homer.running_from = new Date();
                     program_homer.version_object = version_object;
 
-                   if(!  WebSocketController_Incoming.homer_online_state(homer.id) ) {
+                   if(!  WebSocketController_Incoming.homer_online_state(private_homer_server.id) ) {
                        System.out.println("Homer není online při pokusu na něj nahrát instanci a není dodělané zpožděné nahrátí");
                        this.interrupt();
                    }
 
 
-                    JsonNode result = WebSocketController_Incoming.homer_upload_program(WebSocketController_Incoming.incomingConnections_homers.get(homer.id), version_object.id, version_object.files.get(0).get_fileRecord_from_Azure_inString());
+                    JsonNode result = WebSocketController_Incoming.homer_upload_program(WebSocketController_Incoming.incomingConnections_homers.get(private_homer_server.id), version_object.id, version_object.files.get(0).get_fileRecord_from_Azure_inString());
 
                     if(result.get("status").asText().equals("success")){
 
@@ -1276,21 +1315,21 @@ public class ProgramingPackageController extends Controller {
                         program_homer.save();
 
                         // Úprava objektu
-                        version_object.b_program_homer = program_homer;
+                        version_object.homer_instance = program_homer;
 
                         // Uložení objektu
                         version_object.update();
 
-                            NotificationController.send_notification(homer.project.ownersOfProject, Notification_level.success, "Homer was updated successfully");
+                            NotificationController.send_notification(private_homer_server.project.ownersOfProject, Notification_level.success, "Homer was updated successfully");
 
-                    } else  NotificationController.send_notification(homer.project.ownersOfProject, Notification_level.error,   "Attempt updating Homer device to new version. Update Error - " + result.get("error").asText());
+                    } else  NotificationController.send_notification(private_homer_server.project.ownersOfProject, Notification_level.error,   "Attempt updating Homer device to new version. Update Error - " + result.get("error").asText());
 
                 } catch (TimeoutException e) {
-                    NotificationController.send_notification(homer.project.ownersOfProject, Notification_level.error, "Attempt updating Homer device to new version. Timeout for connection.");
+                    NotificationController.send_notification(private_homer_server.project.ownersOfProject, Notification_level.error, "Attempt updating Homer device to new version. Timeout for connection.");
                 } catch (InterruptedException e){
-                    NotificationController.send_notification(homer.project.ownersOfProject, Notification_level.error, "Attempt updating Homer device to new version. Server side problem.");
+                    NotificationController.send_notification(private_homer_server.project.ownersOfProject, Notification_level.error, "Attempt updating Homer device to new version. Server side problem.");
                 } catch (Exception e ){
-                    NotificationController.send_notification(homer.project.ownersOfProject, Notification_level.error, "Attempt updating Homer device to new version. Critical bug with loading. The error was automatically reported to technical support.");
+                    NotificationController.send_notification(private_homer_server.project.ownersOfProject, Notification_level.error, "Attempt updating Homer device to new version. Critical bug with loading. The error was automatically reported to technical support.");
                 }
 
             }};
@@ -1318,7 +1357,7 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successful Uploaded",                       response = B_Program_Homer.class),
+            @ApiResponse(code = 200, message = "Successful Uploaded",                       response = Homer_Instance.class),
             @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",                      response = Result_Unauthorized.class),
@@ -1328,70 +1367,91 @@ public class ProgramingPackageController extends Controller {
     public  Result upload_b_Program_ToCloud(@ApiParam(value = "version_id String path", required = true) @PathParam("version_id") String version_id){
         try {
 
-            // Kontrola objektu
-            // Verze B programu kterou budu nahrávat do cloudu
+            // Kontrola objektu: Verze B programu kterou budu nahrávat do cloudu
             Version_Object version_object = Version_Object.find.byId(version_id);
             if (version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
 
-            // Kontrola objektu
-            // B program, který chci nahrát do Cloudu na Blocko server
+            // Kontrola objektu: B program, který chci nahrát do Cloudu na Blocko cloud_blocko_server
             if (version_object.b_program == null) return GlobalResult.result_BadRequest("Version_Object is not version of B_Program");
             B_Program b_program = version_object.b_program;
 
             // Kontrola oprávnění
             if (! b_program.update_permission() ) return GlobalResult.forbidden_Permission();
 
+            // Kontroluji přítomnost Yody
+            if(version_object.yoda_board_pair == null || version_object.yoda_board_pair.board == null) return GlobalResult.result_BadRequest("Version needs Main Board connectible to internet!");
+
+
             // Pokud už nějaká instance běžela, tak na ní budu nahrávat nový program a odstraním vazbu na běžící instanci b programu
-            B_Program_Cloud old_cloud_program = B_Program_Cloud.find.where().eq("version_object.b_program.id", b_program.id).findUnique();
-            if(old_cloud_program != null){
-                // Pokud nahrávám tu samou verzi do cloudu - tak nemá smysl jí smazat a nahrát - proto potvrdím Ok
-                if(old_cloud_program.version_object.id.equals(version_id)) return GlobalResult.result_ok();
+            Homer_Instance old_cloud_instance = Homer_Instance.find.where().eq("version_object.yoda_board_pair.board.id", version_object.yoda_board_pair.board.id).findUnique();
 
-                // V opačném příadě smažu
-                old_cloud_program.delete();
+            if(old_cloud_instance != null){
+                return GlobalResult.result_BadRequest("Master Device is used in another working instance, you cannoct create two instance with same Master Device");
             }
 
-            if( version_object.b_program_cloud != null ) {
 
-                if(WebSocketController_Incoming.incomingConnections_homers.containsKey(version_object.b_program_cloud.blocko_instance_name )) WebSocketController_Incoming.homer_destroy_instance(version_object.b_program_cloud.blocko_instance_name);
+            Homer_Instance temporary_yoda_instance = Homer_Instance.find.where().eq("private_instance_board.board.id", version_object.yoda_board_pair.board.id).findUnique();
+            if(temporary_yoda_instance != null){
+                System.out.println("Yoda měl už vlastní historickou instanci! Proto jí musím transformovat na klasickou blocko instanci");
 
-                // Úprava objektu
-                B_Program_Cloud b_program_cloud = version_object.b_program_cloud;
+                Board yoda = temporary_yoda_instance.private_instance_board;
+                yoda.private_instance = null;
+                yoda.update();
 
-                //Smazání objektu
-                b_program_cloud.delete();
+                temporary_yoda_instance.private_instance_board = null;
+                temporary_yoda_instance.running_from = new Date();
+                temporary_yoda_instance.version_object = version_object;
+
+                if(! WebSocketController_Incoming.incomingConnections_homers.containsKey(temporary_yoda_instance.blocko_instance_name)) return GlobalResult.result_BadRequest("Instance in cloud is offline");
+                WebSCType homer = WebSocketController_Incoming.incomingConnections_homers.get(temporary_yoda_instance.blocko_instance_name);
+
+                JsonNode result_upload = WebSocketController_Incoming.blocko_server_update_instance(homer, temporary_yoda_instance );
+
+                if(result_upload.get("status").asText().equals("success")) {
+
+                    ActualizationController.add_new_actualization_request(b_program.project, temporary_yoda_instance);
+                    return GlobalResult.result_ok();
+
+                }else {
+                    logger.error("Upload instance to Cloud \n" + result_upload.textValue());
+                    return GlobalResult.badRequest("Something is wrong");
+                }
             }
+
+            System.out.println("Yoda instnaci neměl a tak začínám na zelené louce!");
 
             // TODO Chytré dělení na servery - kam se blocko program nahraje??
-            Cloud_Blocko_Server destination_server = Cloud_Blocko_Server.find.where().eq("server_name", "Alfa").findUnique();
-            if(! WebSocketController_Incoming.blocko_servers.containsKey( destination_server.server_name) ) return GlobalResult.result_BadRequest("Server is offline");
+            Cloud_Homer_Server destination_server = Cloud_Homer_Server.find.where().eq("server_name", "Alfa").findUnique();
+           //  if(! WebSocketController_Incoming.blocko_servers.containsKey( destination_server.server_name) ) return GlobalResult.result_BadRequest("Server is offline");
+           // Instance se dá nahrát se spožděním - Upozornění v Result
+
 
 
             // Vytvářím nový záznam v databázi pro běžící instanci b programu na blocko serveru
-            B_Program_Cloud program_cloud       = new B_Program_Cloud();
+            Homer_Instance program_cloud        = new Homer_Instance();
             program_cloud.running_from          = new Date();
             program_cloud.version_object        = version_object;
-            program_cloud.server                = destination_server;
+            program_cloud.cloud_homer_server    = destination_server;
 
             // TODO http://youtrack.byzance.cz/youtrack/issue/TYRION-263 // Podpora pro více Yodů
-            if(version_object.master_board_b_pair == null ) {
-                logger.warn("Creating instance in Blocko server: System dont know mac Adress of Yoda device!!!");
-                program_cloud.macAddress = "null";
-            }else {
-                program_cloud.macAddress = version_object.master_board_b_pair.board.id;
+            if( version_object.yoda_board_pair == null || version_object.yoda_board_pair.board == null ) {
+                return GlobalResult.result_BadRequest("Server need Master Board!");
             }
 
+            program_cloud.macAddress = version_object.yoda_board_pair.board.id;
             program_cloud.setUnique_blocko_instance_name();
 
             // Uložení objektu
             program_cloud.save();
 
-
-            // Vytvářím instanci na serveru
-            WS_BlockoServer server = (WS_BlockoServer) WebSocketController_Incoming.blocko_servers.get(destination_server.server_name);
+            if(!WebSocketController_Incoming.blocko_servers.containsKey(destination_server.server_name)){
+                return GlobalResult.result_ok("Its not uploaded yet because server is offline, but we will do that when it will be possible");
+            }
 
             try {
+                // Vytvářím instanci na serveru
+                WS_BlockoServer server = (WS_BlockoServer) WebSocketController_Incoming.blocko_servers.get(destination_server.server_name);
                 WebSCType homer = WebSocketController_Incoming.blocko_server_add_instance(server, program_cloud);
 
                 ActualizationController.add_new_actualization_request(b_program.project, program_cloud);
@@ -1399,7 +1459,6 @@ public class ProgramingPackageController extends Controller {
 
             }catch (Exception e){
                 // Neproběhlo to úspěšně smažu zástupný objekt!!!
-                program_cloud.delete();
                 return GlobalResult.result_BadRequest("Došlo k chybě");
             }
 
@@ -1407,6 +1466,24 @@ public class ProgramingPackageController extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
     }
+
+
+    public Result create_list_of_instances(){
+        try{
+
+            //1. Verze Blocko programu
+
+            //2. Yodu
+
+            //3.
+            return ok();
+
+        }catch (Exception e){
+          return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+
 
     //TODO
     public Result listOfUploadedHomers(String id) {
@@ -1431,7 +1508,7 @@ public class ProgramingPackageController extends Controller {
             code = 201,
             extensions = {
                     @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Cloud_Blocko_Server.create_permission", value = Cloud_Blocko_Server.create_permission_docs ),
+                            @ExtensionProperty(name = "Cloud_Blocko_Server.create_permission", value = Cloud_Homer_Server.create_permission_docs ),
                     }),
                     @Extension( name = "permission_required", properties = {
                             @ExtensionProperty(name = "Cloud_Blocko_Server.create_permission", value = "true"),
@@ -1451,7 +1528,7 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful created",      response = Cloud_Blocko_Server.class),
+            @ApiResponse(code = 201, message = "Successful created",      response = Cloud_Homer_Server.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1466,7 +1543,7 @@ public class ProgramingPackageController extends Controller {
             Swagger_Cloud_Blocko_Server_New help = form.get();
 
             // Vytvoření objektu
-            Cloud_Blocko_Server server = new Cloud_Blocko_Server();
+            Cloud_Homer_Server server = new Cloud_Homer_Server();
             server.server_name = help.server_name;
             server.destination_address = Server.tyrion_webSocketAddress + "/websocket/blocko_server/" + server.server_name;
 
@@ -1511,7 +1588,7 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Update successfully",      response = Cloud_Blocko_Server.class),
+            @ApiResponse(code = 200, message = "Update successfully",      response = Cloud_Homer_Server.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1526,7 +1603,7 @@ public class ProgramingPackageController extends Controller {
             Swagger_Cloud_Blocko_Server_New help = form.get();
 
             // Kontrola objektu
-            Cloud_Blocko_Server server = Cloud_Blocko_Server.find.byId(server_id);
+            Cloud_Homer_Server server = Cloud_Homer_Server.find.byId(server_id);
             if (server == null) return GlobalResult.notFoundObject("Cloud_Blocko_Server server_id not found");
 
             // Kontrola oprávnění
@@ -1554,7 +1631,7 @@ public class ProgramingPackageController extends Controller {
             code = 200,
             extensions = {
                     @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Cloud_Blocko_Server.read_permission", value = Cloud_Blocko_Server.read_permission_docs ),
+                            @ExtensionProperty(name = "Cloud_Blocko_Server.read_permission", value = Cloud_Homer_Server.read_permission_docs ),
                     }),
                     @Extension( name = "permission_required", properties = {
                             @ExtensionProperty(name = "Cloud_Blocko_Server.read_permission", value = "true"),
@@ -1563,7 +1640,7 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",      response = Cloud_Blocko_Server.class, responseContainer = "List "),
+            @ApiResponse(code = 200, message = "Ok Result",      response = Cloud_Homer_Server.class, responseContainer = "List "),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
@@ -1571,7 +1648,7 @@ public class ProgramingPackageController extends Controller {
         try{
 
             // Získání seznamu
-            List<Cloud_Blocko_Server> servers = Cloud_Blocko_Server.find.all();
+            List<Cloud_Homer_Server> servers = Cloud_Homer_Server.find.all();
 
             // Vrácení seznamu
             return GlobalResult.result_ok(Json.toJson(servers));
@@ -1603,7 +1680,7 @@ public class ProgramingPackageController extends Controller {
         try{
 
             // Kontrola objektu
-            Cloud_Blocko_Server server = Cloud_Blocko_Server.find.byId(server_id);
+            Cloud_Homer_Server server = Cloud_Homer_Server.find.byId(server_id);
             if (server == null) return GlobalResult.notFoundObject("Cloud_Compilation_Server server_id not found");
 
             // Kontrola oprávnění
@@ -1629,9 +1706,11 @@ public class ProgramingPackageController extends Controller {
             protocols = "https",
             code = 201,
             extensions = {
-                    // TODO Description
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "TypeOfBlock_create_permission", value = TypeOfBlock.create_permission_docs ),
+                    }),
                     @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "TypeOfBlock.create_permission", value = "true"),
+                            @ExtensionProperty(name = "Project.update_permission", value = "true"),
                             @ExtensionProperty(name = "Static Permission key", value =  "TypeOfBlock_create_permission" )
                     })
             }
@@ -1699,7 +1778,17 @@ public class ProgramingPackageController extends Controller {
             notes = "get BlockoBlock ",
             produces = "application/json",
             protocols = "https",
-            code = 200
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "TypeOfBlock_read_permission", value = TypeOfBlock.read_permission_docs ),
+                    }),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Project == null - Public TypeOfBlock", value = "Permission not Required!"),
+                            @ExtensionProperty(name = "Project.read_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "TypeOfBlock_create_permission" )
+                    })
+            }
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response =  TypeOfBlock.class),
@@ -1880,9 +1969,11 @@ public class ProgramingPackageController extends Controller {
             protocols = "https",
             code = 201,
             extensions = {
-                    // TODO Description
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "BlockoBlock_create_permission", value = BlockoBlock.create_permission_docs ),
+                    }),
                     @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "BlockoBlock.create_permission", value = "true"),
+                            @ExtensionProperty(name = "TypeOfBlocko.update_permission", value = "true"),
                             @ExtensionProperty(name = "Static Permission key", value =  "BlockoBlock_create_permission" )
                     })
             }
@@ -2017,9 +2108,11 @@ public class ProgramingPackageController extends Controller {
             protocols = "https",
             code = 200,
             extensions = {
-                    // TODO Description
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "BlockoBlockVersion_read_permission", value = BlockoBlockVersion.read_permission_docs ),
+                    }),
                     @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "BlockoBlockVersion.read_permission", value = "true"),
+                            @ExtensionProperty(name = "BlockoBlock.read_permission", value = "true"),
                             @ExtensionProperty(name = "Static Permission key", value =  "BlockoBlockVersion_read_permission")
                     })
             }
@@ -2055,7 +2148,9 @@ public class ProgramingPackageController extends Controller {
             protocols = "https",
             code = 200,
             extensions = {
-                    // TODO Description
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "BlockoBlock_read_permission", value = BlockoBlock.read_permission_docs ),
+                    }),
                     @Extension( name = "permission_required", properties = {
                             @ExtensionProperty(name = "BlockoBlock.read_permission", value = "true"),
                             @ExtensionProperty(name = "Static Permission key", value =  "BlockoBlock_read_permission")
@@ -2171,9 +2266,11 @@ public class ProgramingPackageController extends Controller {
             protocols = "https",
             code = 201,
             extensions = {
-                    // TODO Description
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "BlockoBlockVersion_creat_permission", value = BlockoBlockVersion.create_permission_docs ),
+                    }),
                     @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "BlockoBlockVersion.create_permission", value = "true"),
+                            @ExtensionProperty(name = "BlockoBlock.update_permission", value = "true"),
                             @ExtensionProperty(name = "Static Permission key", value =  "BlockoBlockVersion_create_permission" )
                     })
             }
@@ -2218,7 +2315,7 @@ public class ProgramingPackageController extends Controller {
             version.blocko_block = blockoBlock;
 
             // Kontrola oprávnění
-            if (! blockoBlock.create_permission()) return GlobalResult.forbidden_Permission();
+            if (! version.create_permission()) return GlobalResult.forbidden_Permission();
 
             // Uložení objektu
             version.save();
@@ -2296,9 +2393,11 @@ public class ProgramingPackageController extends Controller {
             protocols = "https",
             code = 200,
             extensions = {
-                    // TODO Description
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "BlockoBlockVersion_readd_permission", value = BlockoBlockVersion.read_permission_docs),
+                    }),
                     @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "BlockoBlockVersion.read_permission", value = "true"),
+                            @ExtensionProperty(name = "BlockoBlock.read_permission", value = "true"),
                             @ExtensionProperty(name = "Static Permission key", value =  "BlockoBlockVersion_read_permission")
                     })
             }

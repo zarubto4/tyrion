@@ -9,9 +9,10 @@ import models.compiler.Board;
 import models.grid.Screen_Size_Type;
 import models.person.Person;
 import models.project.b_program.B_Program;
-import models.project.b_program.Homer;
-import models.project.c_program.Actualization_procedure;
+import models.project.b_program.Homer_Instance;
+import models.project.b_program.servers.Private_Homer_Server;
 import models.project.c_program.C_Program;
+import models.project.c_program.actualization.Actualization_procedure;
 import models.project.m_program.M_Project;
 
 import javax.persistence.*;
@@ -28,7 +29,7 @@ public class Project extends Model {
                                                              public String project_name;
                                                              public String project_description;
 
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Homer>                    homerList         = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Private_Homer_Server> privateHomerServerList = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<B_Program>                b_programs        = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<C_Program>                c_programs        = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<M_Project>                m_projects        = new ArrayList<>();
@@ -36,11 +37,13 @@ public class Project extends Model {
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<TypeOfBlock>              type_of_blocks    = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Board>                    boards            = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Actualization_procedure>  procedures        = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Homer_Instance>  instances        = new ArrayList<>();
+
 
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "owningProjects")  @JoinTable(name = "connected_projects") public List<Person> ownersOfProject = new ArrayList<>();
 
 
-    @JsonProperty @Transient public List<String> homers_id()           { List<String> l = new ArrayList<>();  for( Homer m            : homerList)         l.add(m.id); return l;  }
+    @JsonProperty @Transient public List<String> homers_id()           { List<String> l = new ArrayList<>();  for( Private_Homer_Server m            : privateHomerServerList)         l.add(m.id); return l;  }
     @JsonProperty @Transient public List<String> boards_id()           { List<String> l = new ArrayList<>();  for( Board m            : boards)            l.add(m.id); return l;  }
     @JsonProperty @Transient public List<String> b_programs_id()       { List<String> l = new ArrayList<>();  for( B_Program m        : b_programs)        l.add(m.id); return l;  }
     @JsonProperty @Transient public List<String> c_programs_id()       { List<String> l = new ArrayList<>();  for( C_Program m        : c_programs)        l.add(m.id); return l;  }
@@ -62,7 +65,7 @@ public class Project extends Model {
     @JsonProperty @Transient public Boolean update_permission()    {  return ( Project.find.where().eq("ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Project_update");  }
     @JsonIgnore   @Transient public Boolean read_permission()      {  return ( Project.find.where().eq("ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Project_read");}
 
-    @JsonProperty @Transient public Boolean unshare_permission()   {  return ( Project.find.where().eq("ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Project_unshare"); }
+    @JsonProperty @Transient public Boolean  unshare_permission()  {  return ( Project.find.where().eq("ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Project_unshare"); }
     @JsonProperty @Transient  public Boolean share_permission ()   {  return ( Project.find.where().eq("ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Project_share");   }
 
     @JsonProperty @Transient public Boolean edit_permission()      {  return ( Project.find.where().eq("ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Project_edit");    }
@@ -71,7 +74,7 @@ public class Project extends Model {
     public enum permissions{Project_update, Project_read, Project_unshare , Project_share, Project_edit, Project_delete}
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-   public static Finder<String,Project> find = new Finder<>(Project.class);
+   public static Model.Finder<String,Project> find = new Finder<>(Project.class);
 
 }
 

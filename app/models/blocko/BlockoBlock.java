@@ -3,7 +3,6 @@ package models.blocko;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers.SecurityController;
 import models.person.Person;
 
 import javax.persistence.*;
@@ -22,7 +21,7 @@ public class BlockoBlock extends Model {
                                     @JsonIgnore @ManyToOne     public Person author;
                                     @JsonIgnore @ManyToOne     public TypeOfBlock type_of_block;
 
-    @JsonIgnore @OneToMany(mappedBy="blocko_block", cascade = CascadeType.ALL) @OrderBy("dateOfCreate desc") public List<BlockoBlockVersion> blocko_versions = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="blocko_block", cascade = CascadeType.ALL) @OrderBy("date_of_create desc") public List<BlockoBlockVersion> blocko_versions = new ArrayList<>();
 
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
@@ -34,43 +33,15 @@ public class BlockoBlock extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore  @Transient  public Boolean create_permission() {
-        if( TypeOfBlock.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id ).where().eq("id", type_of_block.id).findRowCount() < 1) return false;
-        if(! author.id.equals( SecurityController.getPerson().id ) ) return false;
-        if(! type_of_block.update_permission() )return false;
-        return true;
-    }
+    // Floating shared documentation for Swagger
+    @JsonIgnore @Transient public static final String read_permission_docs   = "read: If user can read TypeOfBlock, than can read all BlockoBlocks from list of TypeOfBlock ( You get ids of list of BlockoBlocks in object \"BlockoBlocks\" in json)  - Or you need static/dynamic permission key";
+    @JsonIgnore @Transient public static final String create_permission_docs = "create: If user have TypeOfBlock.update_permission = true, you can create new BlockoBlocks on this TypeOfBlock - Or you need static/dynamic permission key if user want create BlockoBlock in public TypeOfBlock";
 
-    @JsonProperty @Transient public Boolean edit_permission() {
-        return BlockoBlock.find.where()
-                        .or(
-                                com.avaje.ebean.Expr.eq("type_of_block.project.ownersOfProject.id", SecurityController.getPerson().id),
-                                com.avaje.ebean.Expr.eq("author.id", SecurityController.getPerson().id)
-                        ).eq("id", id).findRowCount() > 0
-                        ||
-                        SecurityController.getPerson().has_permission("BlockoBlock.create");
-    }
-
-    @JsonIgnore  @Transient  public Boolean read_permission() {
-        return BlockoBlock.find.where()
-                        .or(
-                                com.avaje.ebean.Expr.eq("type_of_block.project.ownersOfProject.id", SecurityController.getPerson().id),
-                                com.avaje.ebean.Expr.eq("author.id", SecurityController.getPerson().id)
-                        ).eq("id", id).findRowCount() > 0
-                        ||
-                        SecurityController.getPerson().has_permission("BlockoBlock.read");
-    }
-
-    @JsonProperty @Transient  public Boolean delete_permission() {
-        return
-                BlockoBlock.find.where()
-                        .or(
-                                com.avaje.ebean.Expr.eq("type_of_block.project.ownersOfProject.id", SecurityController.getPerson().id),
-                                com.avaje.ebean.Expr.eq("author.id", SecurityController.getPerson().id)
-                        ).eq("id", id).findRowCount() > 0
-                        ||
-                        SecurityController.getPerson().has_permission("BlockoBlock.delete");
-    }
+    @JsonIgnore  @Transient  public Boolean create_permission()  {return  type_of_block.update_permission();}
+    @JsonProperty @Transient public Boolean edit_permission()    {return  type_of_block.update_permission();}
+    @JsonProperty @Transient public Boolean update_permission()  {return  type_of_block.update_permission();}
+    @JsonIgnore  @Transient  public Boolean read_permission()    {return  type_of_block.read_permission();}
+    @JsonProperty @Transient  public Boolean delete_permission() {return  type_of_block.delete_permission();}
 
 
 

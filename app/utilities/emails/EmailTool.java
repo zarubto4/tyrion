@@ -15,7 +15,7 @@ public class EmailTool{
 
         return new Email()
                 .setSubject("Validation of your account")
-                .setFrom("Byzance IoT Platform <server@byzance.cz>")
+                .setFrom("Byzance IoT Platform <cloud_blocko_server@byzance.cz>")
                 .addTo( name + "<"+ userMail +">")
                 .setBodyText("A text message")
                 .setBodyHtml(html);

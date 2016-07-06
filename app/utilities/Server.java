@@ -7,7 +7,7 @@ import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import models.blocko.BlockoBlock;
 import models.blocko.BlockoBlockVersion;
-import models.blocko.Cloud_Blocko_Server;
+import models.project.b_program.servers.Cloud_Homer_Server;
 import models.blocko.TypeOfBlock;
 import models.compiler.*;
 import models.grid.Screen_Size_Type;
@@ -17,7 +17,7 @@ import models.person.Person;
 import models.person.PersonPermission;
 import models.person.SecurityRole;
 import models.project.b_program.B_Program;
-import models.project.b_program.Homer;
+import models.project.b_program.servers.Private_Homer_Server;
 import models.project.c_program.C_Program;
 import models.project.global.Project;
 import models.project.m_program.M_Program;
@@ -197,7 +197,7 @@ public class Server {
             // Blocko
                 for(Enum en : BlockoBlock.permissions.values())             permissions.add(en.name());
                 for(Enum en : BlockoBlockVersion.permissions.values())      permissions.add(en.name());
-                for(Enum en : Cloud_Blocko_Server.permissions.values())     permissions.add(en.name());
+                for(Enum en : Cloud_Homer_Server.permissions.values())     permissions.add(en.name());
                 for(Enum en : TypeOfBlock.permissions.values())             permissions.add(en.name());
 
             // compiler
@@ -230,7 +230,7 @@ public class Server {
                 // c_program
                     for(Enum en : C_Program.permissions.values())           permissions.add(en.name());
                 // global
-                    for(Enum en : Homer.permissions.values())               permissions.add(en.name());
+                    for(Enum en : Private_Homer_Server.permissions.values())               permissions.add(en.name());
                     for(Enum en : Project.permissions.values())             permissions.add(en.name());
                 // m_project
                     for(Enum en : M_Project.permissions.values())           permissions.add(en.name());
