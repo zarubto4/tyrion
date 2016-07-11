@@ -1003,7 +1003,7 @@ public class CompilationLibrariesController extends Controller {
             server.save();
 
             // Vracím objekt
-            return GlobalResult.result_ok(Json.toJson(server));
+            return GlobalResult.created(Json.toJson(server));
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -2007,7 +2007,37 @@ public class CompilationLibrariesController extends Controller {
     }
 
 
-    @BodyParser.Of(BodyParser.Json.class)
+    @ApiOperation(value = "Upload file to SingleLibrary",
+            tags = {"SingleLibrary"},
+            notes = "Upload file to SingleLibrary in txt format",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "SingleLibrary.update_permission", value =  "true" ),
+                            @ExtensionProperty(name = "Static Permission key", value =  "SingleLibrary_update" ),
+                    })
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            required = true,
+                            paramType = "body",
+                            value = "File in file.txt format"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+
+            @ApiResponse(code = 200, message = "Successful uploaded",     response = Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.MultipartFormData.class)
     public Result upload_SingleLibrary_Version( @ApiParam(required = true) @PathParam("version_id") String version_id){
         try{
 
@@ -2224,7 +2254,7 @@ public class CompilationLibrariesController extends Controller {
             code = 200,
             extensions = {
                     @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "SingleLibrary.detele_permission", value =  "true" ),
+                            @ExtensionProperty(name = "SingleLibrary.delete_permission", value =  "true" ),
                             @ExtensionProperty(name = "Static Permission key", value =  "SingleLibrary_delete" ),
                     })
             }

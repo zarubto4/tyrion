@@ -18,7 +18,6 @@ public class Swagger_Homer_New {
     @ApiModelProperty(value = "Its a name of Device", example = "Raspberry, ServerPC..", required = true)
     public String type_of_device;
 
-    @Constraints.Required
-    @ApiModelProperty(required = false, value = "Required if user want used Homer witch project")
+    @ApiModelProperty(required = false, value = "Required if user want used Homer with project")
     public String project_id;
 }

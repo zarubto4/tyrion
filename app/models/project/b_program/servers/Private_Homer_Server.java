@@ -37,13 +37,13 @@ public class Private_Homer_Server extends Model {
     @JsonIgnore @Transient public static final String read_permission_docs   = "read: If user have Project.update_permission = true, you can create Private_Homer_Server on this Project - Or you need static/dynamic permission key";
     @JsonIgnore @Transient public static final String create_permission_docs = "Its not allowed to create Homer by user. Homer (installed on PC or created in cloud) must build itself in DB - there are private APIs for Homer-Js! User can only connect this homer with own Project in Homer program (there is Login and buttons for connect to project";
 
-    @JsonIgnore   @Transient public Boolean create_permission()  {  return (project != null ? project.update_permission() : false ) || SecurityController.getPerson().has_permission("Homer_create");  }
-    @JsonProperty @Transient public Boolean update_permission()  {  return (project != null ? project.update_permission() : false ) || SecurityController.getPerson().has_permission("Homer_update");  }
-    @JsonIgnore   @Transient public Boolean read_permission()    {  return (project != null ? project.read_permission()   : false ) || SecurityController.getPerson().has_permission("Homer_read");    }
-    @JsonProperty @Transient public Boolean edit_permission()    {  return (project != null ? project.update_permission() : false ) || SecurityController.getPerson().has_permission("Homer_edit");    }
-    @JsonProperty @Transient public Boolean delete_permission()  {  return (project != null ? project.update_permission() : false ) || SecurityController.getPerson().has_permission("Homer_delete");  }
+    @JsonIgnore   @Transient public Boolean create_permission()  {  return (project != null ? project.update_permission() : false ) || SecurityController.getPerson().has_permission("Private_Homer_Server_create");  }
+    @JsonProperty @Transient public Boolean update_permission()  {  return (project != null ? project.update_permission() : false ) || SecurityController.getPerson().has_permission("Private_Homer_Server_update");  }
+    @JsonIgnore   @Transient public Boolean read_permission()    {  return (project != null ? project.read_permission()   : false ) || SecurityController.getPerson().has_permission("Private_Homer_Server_read");    }
+    @JsonProperty @Transient public Boolean edit_permission()    {  return (project != null ? project.update_permission() : false ) || SecurityController.getPerson().has_permission("Private_Homer_Server_edit");    }
+    @JsonProperty @Transient public Boolean delete_permission()  {  return (project != null ? project.update_permission() : false ) || SecurityController.getPerson().has_permission("Private_Homer_Server_delete");  }
 
-    public enum permissions{Homer_create, Homer_update, Homer_read, Homer_edit, Homer_delete}
+    public enum permissions{Private_Homer_Server_create, Private_Homer_Server_update, Private_Homer_Server_read, Private_Homer_Server_edit, Private_Homer_Server_delete}
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String,Private_Homer_Server> find = new Finder<>(Private_Homer_Server.class);

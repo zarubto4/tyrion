@@ -5,8 +5,8 @@ import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 
 @ApiModel(description = "Json Model for new Blocko Server",
-          value = "Blocko_Server")
-public class Swagger_Cloud_Blocko_Server_New {
+          value = "Cloud_Homer_Server")
+public class Swagger_Cloud_Homer_Server_New {
 
     @Constraints.Required
     @ApiModelProperty(value = "Unique name For Blocko cloud_blocko_server", required = true)

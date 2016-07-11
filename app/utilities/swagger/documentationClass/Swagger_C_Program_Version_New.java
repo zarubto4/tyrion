@@ -16,7 +16,7 @@ public class Swagger_C_Program_Version_New {
 
     @Constraints.Required
     @Constraints.MinLength(value = 8, message = "The name must have at least 8 characters")
-    @ApiModelProperty(required = true)
+    @ApiModelProperty(required = true, value = "The name must have at least 8 characters")
     public String version_name;
 
 

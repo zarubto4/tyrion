@@ -17,6 +17,6 @@ public class Swagger_LibraryGroup_New {
 
     @Constraints.Required
     @Constraints.MinLength(value = 8, message = "The name must have at least 8 characters")
-    @ApiModelProperty(required = true)
+    @ApiModelProperty(required = true, value = "The name must have at least 8 characters")
     public String group_name;
 }

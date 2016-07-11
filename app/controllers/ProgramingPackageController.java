@@ -442,11 +442,11 @@ public class ProgramingPackageController extends Controller {
             code = 201,
             extensions = {
                     @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Homer.create_permission", value = Private_Homer_Server.create_permission_docs ),
+                            @ExtensionProperty(name = "Private_Homer_Server.create_permission", value = Private_Homer_Server.create_permission_docs ),
                     }),
                     @Extension( name = "permission_required", properties = {
                             @ExtensionProperty(name = "Project.update_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "Homer_create_permission" )
+                            @ExtensionProperty(name = "Static Permission key", value =  "Private_Homer_Server_create" )
                     })
             }
     )
@@ -499,7 +499,7 @@ public class ProgramingPackageController extends Controller {
             privateHomerServer.save();
 
             // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(privateHomerServer));
+            return GlobalResult.created(Json.toJson(privateHomerServer));
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -514,7 +514,7 @@ public class ProgramingPackageController extends Controller {
             code = 200,
             extensions = {
                     @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Homer.delete_permission", value = "true"),
+                            @ExtensionProperty(name = "Private_Homer_Server.delete_permission", value = "true"),
                     })
             }
     )
@@ -555,10 +555,11 @@ public class ProgramingPackageController extends Controller {
             code = 200,
             extensions = {
                     @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Homer.read_permission", value = Private_Homer_Server.read_permission_docs),
+                            @ExtensionProperty(name = "Private_Homer_Server.read_permission", value = Private_Homer_Server.read_permission_docs),
                     }),
                     @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Homer.read_permission", value = "true"),
+                            @ExtensionProperty(name = "Private_Homer_Server.read_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "Private_Homer_Server_read" )
                     })
             }
     )
@@ -1508,11 +1509,11 @@ public class ProgramingPackageController extends Controller {
             code = 201,
             extensions = {
                     @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Cloud_Blocko_Server.create_permission", value = Cloud_Homer_Server.create_permission_docs ),
+                            @ExtensionProperty(name = "Cloud_Homer_Server.create_permission", value = Cloud_Homer_Server.create_permission_docs ),
                     }),
                     @Extension( name = "permission_required", properties = {
                             @ExtensionProperty(name = "Cloud_Blocko_Server.create_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "Cloud_Blocko_Server_create_permission" )
+                            @ExtensionProperty(name = "Static Permission key", value =  "Cloud_Homer_Server_creat" )
                     })
             }
     )
@@ -1520,7 +1521,7 @@ public class ProgramingPackageController extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Cloud_Compilation_Server_New",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Cloud_Homer_Server_New",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -1538,9 +1539,9 @@ public class ProgramingPackageController extends Controller {
         try{
 
             // Zpracování Json
-            final Form<Swagger_Cloud_Blocko_Server_New> form = Form.form(Swagger_Cloud_Blocko_Server_New.class).bindFromRequest();
+            final Form<Swagger_Cloud_Homer_Server_New> form = Form.form(Swagger_Cloud_Homer_Server_New.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-            Swagger_Cloud_Blocko_Server_New help = form.get();
+            Swagger_Cloud_Homer_Server_New help = form.get();
 
             // Vytvoření objektu
             Cloud_Homer_Server server = new Cloud_Homer_Server();
@@ -1556,7 +1557,7 @@ public class ProgramingPackageController extends Controller {
             server.save();
 
             // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(server));
+            return GlobalResult.created(Json.toJson(server));
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -1571,8 +1572,8 @@ public class ProgramingPackageController extends Controller {
             code = 200,
             extensions = {
                     @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Cloud_Blocko_Server.edit_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "Cloud_Blocko_Server_edit_permission" )
+                            @ExtensionProperty(name = "Cloud_Homer_Server.edit_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "Cloud_Homer_Server_edit" )
                     })
             }
     )
@@ -1580,7 +1581,7 @@ public class ProgramingPackageController extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Cloud_Compilation_Server_New",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Cloud_Homer_Server_New",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -1598,9 +1599,9 @@ public class ProgramingPackageController extends Controller {
         try{
 
             // Zpracování Json
-            final Form<Swagger_Cloud_Blocko_Server_New> form = Form.form(Swagger_Cloud_Blocko_Server_New.class).bindFromRequest();
+            final Form<Swagger_Cloud_Homer_Server_New> form = Form.form(Swagger_Cloud_Homer_Server_New.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-            Swagger_Cloud_Blocko_Server_New help = form.get();
+            Swagger_Cloud_Homer_Server_New help = form.get();
 
             // Kontrola objektu
             Cloud_Homer_Server server = Cloud_Homer_Server.find.byId(server_id);
@@ -1631,11 +1632,11 @@ public class ProgramingPackageController extends Controller {
             code = 200,
             extensions = {
                     @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Cloud_Blocko_Server.read_permission", value = Cloud_Homer_Server.read_permission_docs ),
+                            @ExtensionProperty(name = "Cloud_Homer_Server.read_permission", value = Cloud_Homer_Server.read_permission_docs ),
                     }),
                     @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Cloud_Blocko_Server.read_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "Cloud_Blocko_Server_read_permission")
+                            @ExtensionProperty(name = "Cloud_Homer_Server.read_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "Cloud_Homer_Server_read")
                     })
             }
     )
@@ -1666,8 +1667,8 @@ public class ProgramingPackageController extends Controller {
             code = 200,
             extensions = {
                     @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Cloud_Blocko_Server.delete_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "Cloud_Blocko_Server_delete_permission")
+                            @ExtensionProperty(name = "Cloud_Homer_Server.delete_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "Cloud_Homer_Server_delete")
                     })
             }
     )
@@ -2321,7 +2322,7 @@ public class ProgramingPackageController extends Controller {
             version.save();
 
             // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(blockoBlock));
+            return GlobalResult.created(Json.toJson(blockoBlock));
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());

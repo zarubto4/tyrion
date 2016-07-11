@@ -44,7 +44,7 @@ public class TypeOfBlock extends Model {
 
     @JsonIgnore @Transient public Boolean create_permission()  {return (project != null ? project.update_permission() : false ) || SecurityController.getPerson().has_permission("TypeOfBlock_create");}
     @JsonIgnore @Transient public Boolean read_permission()    {return (project != null ? project.read_permission()   : false ) || SecurityController.getPerson().has_permission("TypeOfBlock_read");}
-    @JsonIgnore @Transient  public Boolean update_permission() {return (project != null ? project.update_permission() : false ) || SecurityController.getPerson().has_permission("TypeOfBlock_update");}
+    @JsonProperty @Transient  public Boolean update_permission() {return (project != null ? project.update_permission() : false ) || SecurityController.getPerson().has_permission("TypeOfBlock_update");}
     @JsonProperty @Transient  public Boolean edit_permission() {return (project != null ? project.edit_permission()   : false ) || SecurityController.getPerson().has_permission("TypeOfBlock_edit");}
     @JsonProperty @Transient public Boolean delete_permission(){return (project != null ? project.update_permission() : false ) || SecurityController.getPerson().has_permission("TypeOfBlock_delete");}
 
