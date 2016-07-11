@@ -969,7 +969,7 @@ public class ProgramingPackageController extends Controller {
 
     @ApiOperation(value = "create new Version of B Program",
             tags = {"B_Program"},
-            notes = "edit basic infromation in B_Program object",
+            notes = "edit basic information in B_Program object",
             produces = "application/json",
             protocols = "https",
             code = 200,
