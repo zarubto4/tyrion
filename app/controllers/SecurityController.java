@@ -207,7 +207,7 @@ public class SecurityController extends Controller {
                 FloatingPersonToken.find.where().eq("authToken", token).findUnique().deleteAuthToken();
             }catch (Exception e){}
 
-            // JE nutné garantovat vždy odpověď ok za všech sytuací kromě kritického selhální
+            // JE nutné garantovat vždy odpověď ok za všech situací kromě kritického selhální
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
@@ -220,7 +220,7 @@ public class SecurityController extends Controller {
 
     // Metoda slouží pro příjem autentifikačních klíču ze sociálních sítí když se přihlásí uživatel.
     // Taktéž spojuje přihlášené účty pod jednu cvirtuální Person - aby v systému bylo jendotné rozpoznávání.
-    // V nějaké fázy je nutné mít mail - pokud ho nedostaneme od sociální služby - mělo by někde v kodu být upozornění pro fontEnd
+    // V nějaké fázy je nutné mít mail - pokud ho nedostaneme od sociální služby - mělo by někde v kodu být upozornění pro frontEnd
     // Aby doplnil uživatel svůj mail - hlavní identifikátor!
     @ApiOperation( value = "GET_github_oauth", hidden = true)
     public Result GET_github_oauth(String url) {

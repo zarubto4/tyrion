@@ -2,6 +2,7 @@ package controllers;
 
 import io.swagger.annotations.*;
 import models.person.FloatingPersonToken;
+import models.person.PasswordRecoveryToken;
 import models.person.Person;
 import models.person.ValidationToken;
 import play.api.libs.mailer.MailerClient;
@@ -20,11 +21,14 @@ import utilities.response.CoreResponse;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.Swagger_Person_New;
+import utilities.swagger.documentationClass.Swagger_Person_Password_New;
+import utilities.swagger.documentationClass.Swagger_Person_Password_RecoveryEmail;
 import utilities.swagger.documentationClass.Swagger_Person_Update;
 import utilities.swagger.outboundClass.Swagger_Entity_Validation;
 
 import javax.inject.Inject;
 import javax.websocket.server.PathParam;
+import java.util.Date;
 import java.util.List;
 
 @Api(value = "Not Documented API - InProgress or Stuck") // Překrývá nezdokumentované API do jednotné serverové kategorie ve Swaggeru.
@@ -118,6 +122,66 @@ public class PersonController extends Controller {
            validationToken.delete();
 
             return GlobalResult.redirect( Server.becki_accountAuthorizedSuccessful );
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+
+    public Result sendPasswordRecoveryEmail(){
+        try{
+
+            final Form<Swagger_Person_Password_RecoveryEmail> form = Form.form(Swagger_Person_Password_RecoveryEmail.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Person_Password_RecoveryEmail help = form.get();
+
+            Person person = Person.find.where().eq("mail", help.mail).findUnique();
+            if(person == null) return GlobalResult.result_ok();
+
+            PasswordRecoveryToken passwordRecoveryToken = new PasswordRecoveryToken();
+            passwordRecoveryToken.setPasswordRecoveryToken();
+            passwordRecoveryToken.person = person;
+            passwordRecoveryToken.time_of_creation = new Date();
+            passwordRecoveryToken.save();
+
+            String link = Server.becki_passwordReset + "&token=" + passwordRecoveryToken.password_recovery_token;
+
+            try {
+                Email email = new EmailTool().sendPasswordRecoveryEmail(help.mail, link);
+                mailerClient.send(email);
+
+            } catch (Exception e) {
+                logger.error ("Sending mail -> critical error", e);
+                e.printStackTrace();
+            }
+            return GlobalResult.result_ok();
+        }catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "Password recovery", hidden = true)
+    public Result personPasswordRecovery() {
+        try{
+
+            final Form<Swagger_Person_Password_New> form = Form.form(Swagger_Person_Password_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Person_Password_New help = form.get();
+
+            Person person = Person.find.where().eq("mail", help.mail).findUnique();
+            PasswordRecoveryToken passwordRecoveryToken = PasswordRecoveryToken.find.where().eq("password_recovery_token", help.password_recovery_token).findUnique();
+
+            if(person == null || passwordRecoveryToken == null || !passwordRecoveryToken.person.id.equals(person.id)) return GlobalResult.result_BadRequest("Password change was unsuccessful");
+
+            if(((new java.util.Date()).getTime() - passwordRecoveryToken.time_of_creation.getTime()) > 86400000 ) return GlobalResult.result_BadRequest("You must recover your password in 24 hours.");
+
+            person.setSha(help.password);
+
+            person.update();
+
+            passwordRecoveryToken.delete();
+
+            return GlobalResult.result_ok("Password was changed successfully");
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }

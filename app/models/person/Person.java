@@ -31,6 +31,7 @@ public class Person extends Model {
 
                                                 @JsonIgnore     public boolean mailValidated;
                                        @Column(length = 64)     private byte[] shaPassword;
+    @JsonIgnore @OneToOne(mappedBy = "person")                  public PasswordRecoveryToken passwordRecoveryToken;
 
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<Project>              owningProjects            = new ArrayList<>();
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<Post>                 postLiker                 = new ArrayList<>();    // Propojení, které byly uživatelem hodnoceny (jak negativně, tak pozitivně)
