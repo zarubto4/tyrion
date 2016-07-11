@@ -20,7 +20,10 @@
         <link rel="stylesheet" href="@routes.Assets.at("plugins/datepicker/datepicker3.css")">
         <link rel="stylesheet" href="@routes.Assets.at("plugins/daterangepicker/daterangepicker-bs3.css")">
         <link rel="stylesheet" href="@routes.Assets.at("plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css")">
+        <link rel="stylesheet" href="@routes.Assets.at("plugins/jsdifflib/diffview.css")">
 
+        <script  src="@routes.Assets.at("plugins/jQuery/jQuery-2.1.4.min.js")"></script>
+        <script  src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
         <script src="@routes.Assets.versioned("bootstrap/js/bootstrap.min.js")"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
         <script src="@routes.Assets.at("plugins/morris/morris.min.js")"></script>
@@ -34,6 +37,8 @@
         <script src="@routes.Assets.at("plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.min.js")"></script>
         <script src="@routes.Assets.at("plugins/slimScroll/jquery.slimscroll.min.js")"></script>
         <script src="@routes.Assets.at("plugins/fastclick/fastclick.min.js")"></script>
+        <script src="@routes.Assets.at("plugins/jsdifflib/difflib.js")"></script>
+        <script src="@routes.Assets.at("plugins/jsdifflib/diffview.js")"></script>
     </head>
 
     @if(mode){
@@ -93,24 +98,13 @@
                     <strong>Copyright &copy; 2016-2017 <a href="http://byzance.cz.com">Byzance ltd</a>.</strong> All rights reserved.
                 </footer>
 
-                    <!-- Control Sidebar -->
-                <aside class="control-sidebar control-sidebar-dark">
-                        <!-- Create the tabs -->
-                    <ul class="nav nav-tabs nav-justified control-sidebar-tabs">
-                        <li><a href="#control-sidebar-home-tab" data-toggle="tab"><i class="fa fa-home"></i></a></li>
-                        <li><a href="#control-sidebar-settings-tab" data-toggle="tab"><i class="fa fa-gears"></i></a></li>
-                    </ul>
-
-                </aside>
-
                     <!-- /.control-sidebar -->
                 <!-- Add the sidebar's background. This div must be placed
            immediately after the control sidebar -->
                 <div class="control-sidebar-bg"></div>
             </div><!-- ./wrapper -->
 
-           <script  src="@routes.Assets.at("plugins/jQuery/jQuery-2.1.4.min.js")"></script>
-           <script  src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
+
 
            <script> $.widget.bridge('uibutton', $.ui.button);</script>
 

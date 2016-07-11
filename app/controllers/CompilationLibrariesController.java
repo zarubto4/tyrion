@@ -559,6 +559,7 @@ public class CompilationLibrariesController extends Controller {
             notes = "Compile specific version of C_program - before compilation - you have to update (save) version code",
             produces = "application/json",
             protocols = "https",
+            consumes ="text/html",
             code = 200,
             extensions = {
                     @Extension(name = "permission_description", properties = {
@@ -578,7 +579,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result compile_C_Program_version( @ApiParam(value = "version_id String query",   required = true) @PathParam("version_id") String version_id ){
+    public Result compile_C_Program_version( @ApiParam(value = "version_id String query", required = true) @PathParam("version_id") String version_id ){
         try{
 
             logger.debug("Starting compilation on version_id = " + version_id);

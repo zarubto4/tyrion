@@ -14,6 +14,9 @@ import utilities.response.GlobalResult;
 import utilities.swagger.swagger_diff_tools.servise_class.*;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 public class Swagger_diff_Controller extends Controller {
 
@@ -52,8 +55,8 @@ public class Swagger_diff_Controller extends Controller {
 
             logger.debug("Creating api_diff.html content");
 
-            String file_name_old = "1.06.05";
-            String file_name_new = "1.06.06";
+            String file_name_old = "1.06.06";
+            String file_name_new = "1.06.06.1";
 
             JsonNode old_api = read_local_File_for_Swagger(file_name_old );
             JsonNode new_api = read_local_File_for_Swagger(file_name_new );
@@ -73,44 +76,85 @@ public class Swagger_diff_Controller extends Controller {
             Swagger_Api api_new = form_new.get();
 
 
+            // skupiny v API -------------------------------------------------------------------------------------------
             logger.debug("Checking API TAGS");
-            for(Swagger_Api.Tag tag_old : api_old.tags) if(! api_new.contains_tag(tag_old.name)) swagger_Dif.add_groups.add( tag_old.name  );
-            for(Swagger_Api.Tag tag_new : api_new.tags) if(! api_old.contains_tag(tag_new.name)) swagger_Dif.removed_groups.add( tag_new.name  );
+            for(Swagger_Api.Tag tag_old : api_old.tags) if(! api_new.contains_tag(tag_old.name)) swagger_Dif.removed_groups.add( tag_old.name  );
+            for(Swagger_Api.Tag tag_new : api_new.tags) if(! api_old.contains_tag(tag_new.name)) swagger_Dif.add_groups.add( tag_new.name  );
 
+
+
+
+            // modely v API --------------------------------------------------------------------------------------------
             logger.debug("Checking Models");
-            api_old.arrange_models( old_api.get("definitions") );
-            api_new.arrange_models( new_api.get("definitions") );
-
-            System.out.println("těch je v old: " + api_old.models.size());
-            System.out.println("těch je v new: " + api_new.models.size());
 
             for(String key : api_new.models.keySet()){
 
                 if(!api_old.models.containsKey(key)){
-                    System.out.println("Stará verze neobsahuje něco z nové a tak budu zobrazovat NEW ");
                     swagger_Dif.object_new.add( new News(key, JsonWriter.formatJson(  api_new.models.get(key).toString() ) ));
                 }
                 else if(api_old.models.containsKey(key) &&  !api_old.models.get(key).equals(api_new.models.get(key) )) {
-
-                    System.out.println("Vládám diferenci");
-
-                    swagger_Dif.diffs.add( new Diffs( key,  JsonWriter.formatJson( api_old.models.get(key).toString()) ,  JsonWriter.formatJson( api_new.models.get(key).toString()) ));
+                    swagger_Dif.object_diffs.add( new Diffs( key,  JsonWriter.formatJson( api_old.models.get(key).toString()) ,  JsonWriter.formatJson( api_new.models.get(key).toString()) ));
                 }
             }
 
             for(String key : api_old.models.keySet()){
                 if(!api_new.models.containsKey(key)){
-                    System.out.println("Stará verze obsahuje něco co nové ne a tak budu zobrazovat v Removes ");
                     swagger_Dif.object_removes.add( new Remws(key,  JsonWriter.formatJson( api_old.models.get(key).toString() ) ));
                 }
             }
 
-//
 
-            //--------------------------------------------------------------------------------------------------
+            // API requesty --------------------------------------------------------------------------------------------
+            Map<String, JsonNode> old_paths = new HashMap<>();
+            Map<String, JsonNode> new_paths = new HashMap<>();
+
+            Iterator<String> iterator_old =  old_api.get("paths").fieldNames();
+            while( iterator_old.hasNext() ) {
+
+                String name = iterator_old.next();
+
+                old_paths.put(
+                        name,
+                        old_api.get("paths").get(name)
+                );
+            }
+
+            Iterator<String> iterator_new =  new_api.get("paths").fieldNames();
+            while( iterator_new.hasNext() ) {
+
+                String name = iterator_new.next();
+
+                new_paths.put(
+                        name,
+                        new_api.get("paths").get(name)
+                );
+            }
+
+
+            for(String key : new_paths.keySet()){
+
+                if(!old_paths.containsKey(key)){
+                    swagger_Dif.paths_new.add( new News(key, JsonWriter.formatJson(  new_paths.get(key).toString() ) ));
+                }
+                else if(old_paths.containsKey(key) &&  !old_paths.get(key).toString().equals( new_paths.get(key).toString() )) {
+                    swagger_Dif.paths_diffs.add( new Diffs( key,  JsonWriter.formatJson( old_paths.get(key).toString()) ,  JsonWriter.formatJson( new_paths.get(key).toString()) ));
+                }
+            }
+
+            for(String key : old_paths.keySet()){
+                if(!new_paths.containsKey(key)){
+                    swagger_Dif.paths_removes.add( new Remws(key,  JsonWriter.formatJson( old_paths.get(key).toString() ) ));
+                }
+            }
+
+
+
 
             logger.debug("Return swagger_Dif Object");
             return swagger_Dif;
+
+
+
 
         }catch (Exception e ) {
             e.printStackTrace();
