@@ -5,12 +5,12 @@
 
 create table actualization_procedure (
   id                        varchar(255) not null,
-  date_of_create            timestamp,
-  date_of_finish            timestamp,
-  state                     varchar(19),
+  state                     integer,
   project_id                varchar(255),
   b_program_version_procedure_id varchar(255),
-  constraint ck_actualization_procedure_state check (state in ('successful_complete','complete','complete_with_error','canceled','in_progress')),
+  date_of_create            timestamp,
+  date_of_finish            timestamp,
+  constraint ck_actualization_procedure_state check (state in (0,1,2,3,4)),
   constraint pk_actualization_procedure primary key (id))
 ;
 
@@ -102,7 +102,7 @@ create table c_program_update_plan (
   c_program_version_for_update_id varchar(255),
   binary_file_id            varchar(255),
   state                     varchar(23),
-  constraint ck_c_program_update_plan_state check (state in ('complete','canceled','in_progress','override','waiting_for_device','homer_is_offline','homer_server_is_offline','critical_error')),
+  constraint ck_c_program_update_plan_state check (state in ('complete','canceled','in_progress','overwritten','waiting_for_device','instance_inaccessible','homer_server_is_offline','critical_error')),
   constraint pk_c_program_update_plan primary key (id))
 ;
 

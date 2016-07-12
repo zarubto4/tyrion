@@ -20,9 +20,9 @@ public class C_Compilation extends Model {
     @JsonIgnore @OneToOne   @JoinColumn(name="c_compilation_version")      public Version_Object version_object;
 
 
-    @ApiModelProperty(required = true, value = virtual_input_output_docu) @Column(columnDefinition = "TEXT")      public String virtual_input_output;
-                    @JsonIgnore   @Column(columnDefinition = "TEXT")      public String c_comp_build_url;
-                    @JsonIgnore   @ManyToOne                                public FileRecord bin_compilation_file;
+    @ApiModelProperty(required = true, value = virtual_input_output_docu) @Column(columnDefinition = "TEXT")       public String virtual_input_output;
+                                                            @JsonIgnore   @Column(columnDefinition = "TEXT")       public String c_comp_build_url;
+                                                            @JsonIgnore   @ManyToOne                               public FileRecord bin_compilation_file;
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 

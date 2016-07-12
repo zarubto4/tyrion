@@ -25,19 +25,21 @@ public class Actualization_procedure extends Model {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)     public String id; // Vlastní id je přidělováno
 
 
-             @JsonIgnore   @Enumerated(EnumType.STRING)     public Actual_procedure_State state;
+    @ApiModelProperty(required = true, value = "Find description on Model Actual_procedure_State")   public Actual_procedure_State state;
 
 
                            @JsonIgnore     @ManyToOne()     public Project project;
                            @JsonIgnore     @ManyToOne()     public Version_Object b_program_version_procedure;
 
 
-    @OneToMany(mappedBy="actualization_procedure", cascade = CascadeType.ALL, fetch = FetchType.LAZY)   public List<C_Program_Update_Plan> updates = new ArrayList<>();
+    @ApiModelProperty(required = true, value = "Can be empty")  @OneToMany(mappedBy="actualization_procedure", cascade = CascadeType.ALL, fetch = FetchType.LAZY)   public List<C_Program_Update_Plan> updates = new ArrayList<>();
 
 
-    @ApiModelProperty(required = true, value = "Format:")                                                                         public Date date_of_create;
-    @ApiModelProperty(required = true, value = "can be empty, which means that the procedure is not done yet" +
-                                               "Format: ")  public Date date_of_finish;
+    @ApiModelProperty(required = true, value = "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
+                                                example = "1466163478925")   public Date date_of_create;
+    @ApiModelProperty(required = true, value = "can be empty, which means that the procedure is not done yet. " +
+                                               "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
+                                                example = "1466163478925")   public Date date_of_finish;
 
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
@@ -169,17 +171,4 @@ public class Actualization_procedure extends Model {
         @ApiModelProperty(required = true, value = "Can be empty")  public String b_program_version_name;
     }
 
-
-
-/* DESCRIPTION - DOCUMENTATION ---------------------------------------------------------------------------------------------------------*/
-    @JsonIgnore @Transient public final static String state_documentation = "States of update plan for each board is: \n\n"
-            + C_ProgramUpdater_State.canceled         + " State where the procedure is canceled by system or board owner" + "\n"
-            + C_ProgramUpdater_State.complete         + " State where procedure was absolutely successful" + "\n"
-            + C_ProgramUpdater_State.overwritten      + " State where procedure was overwritten by newer versions" + "\n"
-            + C_ProgramUpdater_State.in_progress      + " State where system is installing new firmware to board. Its not possible terminate this procedure in this time" + "\n"
-            + C_ProgramUpdater_State.instance_inaccessible + " State where instance in Homer wasn't accessible while update procedure" + "\n"
-            + C_ProgramUpdater_State.homer_server_is_offline + " State where server where board is connected wasn't accessible while update procedure" + "\n"
-            + C_ProgramUpdater_State.waiting_for_device + " State where board is not connected to Homer Server and Main Center is waiting for that" + "\n"
-            + C_ProgramUpdater_State.waiting_for_device + " State where shit happens - Server don't know what happens - Automatically reported to BackEnd development team" + "\n"
-            ;
 }

@@ -34,8 +34,7 @@ public class C_Program_Update_Plan extends Model {
                         /** OR **/  @JsonIgnore @ManyToOne()    public Version_Object c_program_version_for_update; // C_program k aktualizaci
                         /** OR **/  @JsonIgnore @ManyToOne()    public FileRecord binary_file;
 
-    @ApiModelProperty(required = true, value = "state_documentation")  @Enumerated(EnumType.STRING)    public C_ProgramUpdater_State state;
-
+    @ApiModelProperty(required = true, value = "Find description on Model C_ProgramUpdater_State")  @Enumerated(EnumType.STRING)    public C_ProgramUpdater_State state;
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
@@ -81,19 +80,6 @@ public class C_Program_Update_Plan extends Model {
         @ApiModelProperty(required = true, value = "Can be empty") public String c_program_program_name;
         @ApiModelProperty(required = true, value = "Can be empty") public String c_program_version_name;
     }
-
-
-/* DESCRIPTION - DOCUMENTATION ---------------------------------------------------------------------------------------------------------*/
-    @JsonIgnore @Transient public final static String state_documentation = "States of update plan for each board is: \n\n"
-            + C_ProgramUpdater_State.canceled         + " State where the procedure is canceled by system or board owner" + "\n"
-            + C_ProgramUpdater_State.complete         + " State where procedure was absolutely successful" + "\n"
-            + C_ProgramUpdater_State.overwritten      + " State where procedure was overwritten by newer versions" + "\n"
-            + C_ProgramUpdater_State.in_progress      + " State where system is installing new firmware to board. Its not possible terminate this procedure in this time" + "\n"
-            + C_ProgramUpdater_State.instance_inaccessible + " State where instance in Homer wasn't accessible while update procedure" + "\n"
-            + C_ProgramUpdater_State.homer_server_is_offline + " State where server where board is connected wasn't accessible while update procedure" + "\n"
-            + C_ProgramUpdater_State.waiting_for_device + " State where board is not connected to Homer Server and Main Center is waiting for that" + "\n"
-            + C_ProgramUpdater_State.waiting_for_device + " State where shit happens - Server don't know what happens - Automatically reported to BackEnd development team" + "\n"
-            ;
 
 
 }

@@ -796,7 +796,7 @@ public class CompilationLibrariesController extends Controller {
                     "There is also problem / chance that Tyrion didn't find where Embedded hardware is. So you have to listening Server Sent Events (SSE) and show \"future\" message to the user!",
             produces = "application/json",
             protocols = "https",
-            consumes = "multipart/form-data",
+            consumes = "application/octet-stream",
             code = 200,
             extensions = {
                     @Extension(name = "permission_required", properties = {
@@ -805,21 +805,11 @@ public class CompilationLibrariesController extends Controller {
                     })
             }
     )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_UploadBinaryFileToBoard",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response =  Result_ok.class),
             @ApiResponse(code = 400, message = "External cloud_blocko_server where is hardware is offline", response = Result_serverIsOffline.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 400, message = "Server reject file",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })

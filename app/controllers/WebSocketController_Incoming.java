@@ -678,11 +678,6 @@ public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, 
         }
     }
 
-
-
-
-
-
     public static JsonNode blocko_server_remove_instance( WS_BlockoServer blockoServer, String instance_name) throws TimeoutException, InterruptedException{
 
         ObjectNode result = Json.newObject();
@@ -896,7 +891,11 @@ public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, 
                     switch (json.get("messageType").asText()) {
 
                         case "subscribe_instance": {
-                            becki_subscribe_channel(becki, json);
+                            becki_subscribe_instance(becki, json);
+                            return;
+                        }
+                        case "unsubscribe_instance": {
+                            becki_unsubscribe_instance(becki, json);
                             return;
                         }
                         default: {
@@ -931,7 +930,7 @@ public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, 
         }
     }
 
-    public static void becki_subscribe_channel(WS_Becki_Website becki, ObjectNode json){
+    public static void becki_subscribe_instance(WS_Becki_Website becki, ObjectNode json){
 
             try {
                 String version_id = json.get("version_id").asText();
@@ -940,13 +939,13 @@ public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, 
                 // Najdu Version
                 Version_Object version = Version_Object.find.byId(version_id);
                 if (version == null) {
-                    becki_disapprove_receive_instance_state(becki, json.get("messageId").asText(), "Version not Exist");
+                    becki_disapprove_subscribtion_instance_state(becki, json.get("messageId").asText(), "Version not Exist");
                     return;
                 }
 
                 // Zjistím kde běží
                 if (!blocko_servers.containsKey(version.homer_instance.cloud_homer_server.server_name)) {
-                    becki_disapprove_receive_instance_state(becki, json.get("messageId").asText(), "Server is not connected");
+                    becki_disapprove_subscribtion_instance_state(becki, json.get("messageId").asText(), "Server is not connected");
                     return;
                 }
 
@@ -955,12 +954,12 @@ public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, 
                 // Zjistit jestli tam instance opravdu běží
                 JsonNode result_instance = blocko_server_isInstanceExist(server, version.homer_instance.blocko_instance_name);
                 if(result_instance.get("status").asText().equals("error"))  {
-                    becki_disapprove_receive_instance_state(becki, json.get("messageId").asText(), result_instance.get("error").asText());
+                    becki_disapprove_subscribtion_instance_state(becki, json.get("messageId").asText(), result_instance.get("error").asText());
                     return;
                 }
                 // Zjistím jestli existuje instnace
                 if(!result_instance.get("exist").booleanValue())    {
-                    becki_disapprove_receive_instance_state(becki, json.get("messageId").asText(), "Instance of this version not running on this cloud_blocko_server!");
+                    becki_disapprove_subscribtion_instance_state(becki, json.get("messageId").asText(), "Instance of this version not running on this cloud_blocko_server!");
                     return;
                 }
 
@@ -968,7 +967,7 @@ public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, 
                 System.out.println("Zjištuji jestli existuje virtuální homer");
                 if(!incomingConnections_homers.containsKey(version.homer_instance.blocko_instance_name) ) {
                     System.out.println("Virtuální Homer neexistuje!!!");
-                    becki_disapprove_receive_instance_state(becki, json.get("messageId").asText(), "FATAL ERROR!!! Virtual Homer for this instance not exist!");
+                    becki_disapprove_subscribtion_instance_state(becki, json.get("messageId").asText(), "FATAL ERROR!!! Virtual Homer for this instance not exist!");
                     return;
                 }
 
@@ -976,25 +975,80 @@ public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, 
 
                 // 2 - Požádat Homera o zasílání informací
                 JsonNode result_recive = ask_for_receiving_for_Becki(homer);
-                if(result_recive.get("status").textValue().equals("error")) becki_disapprove_receive_instance_state(becki, json.get("messageId").asText(), result_recive.get("error").textValue());
+                if(result_recive.get("status").textValue().equals("error")) becki_disapprove_subscribtion_instance_state(becki, json.get("messageId").asText(), result_recive.get("error").textValue());
 
                 // 1 - navázat propojení mezi instanci Homera a instancí Becki
                 homer.subscribers_becki.add(becki);
                 becki.subscribers_becki.add(homer);
 
-                // 3 - Přeposílat informace na Becki
-                // To zajistím v odběrném místě Homera!
 
-                // Potvrdím Becki že vše je v cajku
-                becki_approve_receive_instance_state(becki, json.get("messageId").asText());
-
+                becki_approve_subscribtion_instance_state( becki, json.get("messageId").asText() );
 
             }catch (Exception e){
-                System.out.println("Došlo k chybě");
                 e.printStackTrace();
-                becki_disapprove_receive_instance_state(becki, json.get("messageId").asText(), "Unknow Error");
+                becki_disapprove_subscribtion_instance_state(becki, json.get("messageId").asText(), "Unknow Error");
             }
     }
+
+    public static void becki_unsubscribe_instance(WS_Becki_Website becki, ObjectNode json){
+        try{
+
+            String version_id = json.get("version_id").asText();
+            System.out.println("Becki nechce nadále příjmat požadavky z instance" + version_id);
+
+            // Najdu Version
+            Version_Object version = Version_Object.find.byId(version_id);
+            if (version == null) {
+                becki_disapprove_unsubscribtion_instance_state(becki, json.get("messageId").asText(), "Version not Exist");
+                return;
+            }
+
+            // Zjistím kde běží
+            if (!blocko_servers.containsKey(version.homer_instance.cloud_homer_server.server_name)) {
+                becki_disapprove_unsubscribtion_instance_state(becki, json.get("messageId").asText(), "Server is not connected");
+                return;
+            }
+
+            WS_BlockoServer server = (WS_BlockoServer) blocko_servers.get(version.homer_instance.cloud_homer_server.server_name);
+
+            // Zjistit jestli tam instance opravdu běží
+            JsonNode result_instance = blocko_server_isInstanceExist(server, version.homer_instance.blocko_instance_name);
+            if(result_instance.get("status").asText().equals("error"))  {
+                becki_disapprove_unsubscribtion_instance_state(becki, json.get("messageId").asText(), result_instance.get("error").asText());
+                return;
+            }
+            // Zjistím jestli existuje instnace
+            if(!result_instance.get("exist").booleanValue())    {
+                becki_disapprove_unsubscribtion_instance_state(becki, json.get("messageId").asText(), "Instance of this version not running on this cloud_blocko_server!");
+                return;
+            }
+
+            // Zjistím jestli existuje virtuální homer
+            System.out.println("Zjištuji jestli existuje virtuální homer");
+            if(!incomingConnections_homers.containsKey(version.homer_instance.blocko_instance_name) ) {
+                System.out.println("Virtuální Homer neexistuje!!!");
+                becki_disapprove_unsubscribtion_instance_state(becki, json.get("messageId").asText(), "FATAL ERROR!!! Virtual Homer for this instance not exist!");
+                return;
+            }
+
+            WebSCType homer = incomingConnections_homers.get(version.homer_instance.blocko_instance_name);
+
+            if(! becki.subscribers_becki.contains( homer) ) becki_disapprove_unsubscribtion_instance_state(becki, json.get("messageId").asText(), "Homer is not listening Becki");
+
+
+            // 1 - navázat propojení mezi instanci Homera a instancí Becki
+            homer.subscribers_becki.remove(becki);
+            becki.subscribers_becki.remove(homer);
+
+            becki_approve_unsubscribtion_instance_state( becki, json.get("messageId").asText());
+
+
+        }catch (Exception e){
+            e.printStackTrace();
+            becki_disapprove_unsubscribtion_instance_state(becki, json.get("messageId").asText(), "Unknow Error");
+        }
+    }
+
 
     public static void becki_ping(WebSCType webSCType) throws TimeoutException, InterruptedException {
 
@@ -1007,22 +1061,42 @@ public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, 
         webSCType.write_without_confirmation(result);
     }
 
-    // Tady odpovídám zpět na žádost o zasílání informací z Blocko serveru
-    public static void becki_approve_receive_instance_state(WebSCType webSCType, String messageId){
 
-        System.out.println("Budu zasílat na Becki že jsem zpracoval úspěšně žádost o zasílání informací z Blocka");
+    public static void becki_approve_subscribtion_instance_state(WS_Becki_Website becki, String messageId){
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "subscribe_instance");
         result.put("messageChannel", "blocko");
         result.put("status", "success");
 
+        becki.write_without_confirmation( messageId, result);
+    }
+
+    public static void becki_approve_unsubscribtion_instance_state(WS_Becki_Website becki, String messageId){
+
+        ObjectNode result = Json.newObject();
+        result.put("messageType", "unsubscribe_instance");
+        result.put("messageChannel", "blocko");
+        result.put("status", "success");
+
+        becki.write_without_confirmation( messageId, result);
+    }
+
+    // Tady odpovídám zpět na žádost o zasílání informací z Blocko serveru (ale něco se posralo a tak to nefunguje)
+    public static void becki_disapprove_subscribtion_instance_state(WebSCType webSCType, String messageId, String error){
+
+        System.out.println("Budu zasílat na Becki že jsem zpracoval úspěšně žádost o zasílání informací z Blocka");
+
+        ObjectNode result = Json.newObject();
+        result.put("messageType", "subscribe_instace");
+        result.put("messageChannel", "blocko");
+        result.put("status", "error");
+        result.put("error", error);
         webSCType.write_without_confirmation(messageId, result);
 
     }
 
-    // Tady odpovídám zpět na žádost o zasílání informací z Blocko serveru (ale něco se posralo a tak to nefunguje)
-    public static void becki_disapprove_receive_instance_state(WebSCType webSCType, String messageId, String error){
+    public static void becki_disapprove_unsubscribtion_instance_state(WebSCType webSCType, String messageId, String error){
 
         System.out.println("Budu zasílat na Becki že jsem zpracoval úspěšně žádost o zasílání informací z Blocka");
 
