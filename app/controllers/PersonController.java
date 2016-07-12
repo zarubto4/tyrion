@@ -138,6 +138,8 @@ public class PersonController extends Controller {
             Person person = Person.find.where().eq("mail", help.mail).findUnique();
             if(person == null) return GlobalResult.result_ok();
 
+            //SMazat předchozí objekt
+
             PasswordRecoveryToken passwordRecoveryToken = new PasswordRecoveryToken();
             passwordRecoveryToken.setPasswordRecoveryToken();
             passwordRecoveryToken.person = person;
@@ -171,11 +173,26 @@ public class PersonController extends Controller {
             Person person = Person.find.where().eq("mail", help.mail).findUnique();
             PasswordRecoveryToken passwordRecoveryToken = PasswordRecoveryToken.find.where().eq("password_recovery_token", help.password_recovery_token).findUnique();
 
-            if(person == null || passwordRecoveryToken == null || !passwordRecoveryToken.person.id.equals(person.id)) return GlobalResult.result_BadRequest("Password change was unsuccessful");
+            if(person == null || passwordRecoveryToken == null || !passwordRecoveryToken.person.id.equals(person.id)) {
+                // Smazat token
+                return GlobalResult.result_BadRequest("Password change was unsuccessful");
+            }
 
-            if(((new java.util.Date()).getTime() - passwordRecoveryToken.time_of_creation.getTime()) > 86400000 ) return GlobalResult.result_BadRequest("You must recover your password in 24 hours.");
+            if(((new java.util.Date()).getTime() - passwordRecoveryToken.time_of_creation.getTime()) > 86400000 ){
+                // Smazat token nepřepisovat heslo
+                return GlobalResult.result_BadRequest("You must recover your password in 24 hours.");
+            }
+
+            // Smazat token
+            // Smazat předchozí přihlášení
+
+
+
+
 
             person.setSha(help.password);
+
+            System.out.println(Person.getSha512(help.password));
 
             person.update();
 
@@ -436,19 +453,22 @@ public class PersonController extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Its possible used that",  response = Result_ok.class),
+            @ApiResponse(code = 200, message = "Its possible used that",  response = Swagger_Entity_Validation.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public  Result valid_Person_NickName(@ApiParam(value = "nick_name value for cloud_blocko_server side - it must be unique", required = true) @PathParam("nick_name")  String nick_name){
         try{
 
-            if(Person.find.where().ieq("nick_name", nick_name).findUnique() == null ) return GlobalResult.result_ok();
+            Swagger_Entity_Validation validation = new Swagger_Entity_Validation();
+            if(Person.find.where().ieq("nick_name", nick_name).findUnique() == null ){
+                validation.valid = true;
+                return GlobalResult.result_ok(Json.toJson(validation));
+            }
 
-            Result_ok result_ok = new Result_ok();
-            result_ok.code = 400;
-            result_ok.message = "nickname is used";
-            CoreResponse.cors();
-            return ok(Json.toJson(result_ok));
+            validation.valid = false;
+            validation.message = "nick_name is used";
+
+            return ok(Json.toJson(validation));
 
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());

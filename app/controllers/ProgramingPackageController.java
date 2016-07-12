@@ -615,7 +615,7 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result",               response = Swagger_LibraryGroup_List.class),
+            @ApiResponse(code = 200, message = "Ok result",               response = Swagger_Homer_List.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)

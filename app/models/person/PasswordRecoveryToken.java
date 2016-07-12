@@ -22,8 +22,8 @@ public class PasswordRecoveryToken extends Model{
     @Transient
     public void  setPasswordRecoveryToken(){
         while(true){ // I need Unique Value
-            password_recovery_token = UUID.randomUUID().toString();
-            if (PasswordRecoveryToken.find.where().eq("password_recovery_token",password_recovery_token).findUnique() == null) break;
+            this.password_recovery_token = UUID.randomUUID().toString();
+            if (PasswordRecoveryToken.find.where().eq("password_recovery_token",this.password_recovery_token).findUnique() == null) break;
         }
     }
 

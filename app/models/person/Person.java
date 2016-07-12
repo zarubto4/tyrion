@@ -30,8 +30,11 @@ public class Person extends Model {
                                                                 public String last_title;
 
                                                 @JsonIgnore     public boolean mailValidated;
-                                       @Column(length = 64)     private byte[] shaPassword;
-    @JsonIgnore @OneToOne(mappedBy = "person")                  public PasswordRecoveryToken passwordRecoveryToken;
+
+
+
+    @Column(length = 64)     private byte[] shaPassword;
+    @JsonIgnore  @OneToOne(mappedBy = "person")                 public PasswordRecoveryToken passwordRecoveryToken;
 
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<Project>              owningProjects            = new ArrayList<>();
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<Post>                 postLiker                 = new ArrayList<>();    // Propojení, které byly uživatelem hodnoceny (jak negativně, tak pozitivně)
@@ -62,7 +65,13 @@ public class Person extends Model {
 
     @JsonIgnore @Transient
     public void setSha(String value) {
-        this.shaPassword = getSha512(value);
+        setShaPassword( getSha512(value) );
+    }
+
+    // Z důvodu Cashování Play na SETTER a GETTER byla zvolena tato "zbytečná metoda" - slouží jen pro Definování HASH hesla ( New, Recovery)
+    @JsonIgnore
+    public void setShaPassword(byte[] shaPassword) {
+        this.shaPassword = shaPassword;
     }
 
     @JsonIgnore @Transient
