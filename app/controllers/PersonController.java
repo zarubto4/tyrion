@@ -1,5 +1,7 @@
 package controllers;
 
+import com.avaje.ebean.Ebean;
+import com.avaje.ebean.Query;
 import io.swagger.annotations.*;
 import models.person.FloatingPersonToken;
 import models.person.PasswordRecoveryToken;
@@ -128,6 +130,30 @@ public class PersonController extends Controller {
     }
 
 
+
+    @ApiOperation(value = "send password recovery email",
+            tags = {"Access"},
+            notes = "sends email with link for changing forgotten password",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Person_Password_RecoveryEmail",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK",                      response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
     public Result sendPasswordRecoveryEmail(){
         try{
 
@@ -135,19 +161,31 @@ public class PersonController extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Person_Password_RecoveryEmail help = form.get();
 
+            String link;
+
             Person person = Person.find.where().eq("mail", help.mail).findUnique();
             if(person == null) return GlobalResult.result_ok();
 
-            //SMazat předchozí objekt
+            PasswordRecoveryToken previousToken = PasswordRecoveryToken.find.where().eq("person_id",person.id).findUnique();
 
-            PasswordRecoveryToken passwordRecoveryToken = new PasswordRecoveryToken();
-            passwordRecoveryToken.setPasswordRecoveryToken();
-            passwordRecoveryToken.person = person;
-            passwordRecoveryToken.time_of_creation = new Date();
-            passwordRecoveryToken.save();
+            if(!(previousToken == null)) if(((new java.util.Date()).getTime() - previousToken.time_of_creation.getTime()) > 900000)
+            {
+                previousToken.delete();
+                previousToken = null;
+            }
 
-            String link = Server.becki_passwordReset + "&token=" + passwordRecoveryToken.password_recovery_token;
+            if(previousToken == null){
 
+                PasswordRecoveryToken passwordRecoveryToken = new PasswordRecoveryToken();
+                passwordRecoveryToken.setPasswordRecoveryToken();
+                passwordRecoveryToken.person = person;
+                passwordRecoveryToken.time_of_creation = new Date();
+                passwordRecoveryToken.save();
+
+                link = Server.becki_passwordReset + "&token=" + passwordRecoveryToken.password_recovery_token;
+            }else {
+                link = Server.becki_passwordReset + "&token=" + previousToken.password_recovery_token;
+            }
             try {
                 Email email = new EmailTool().sendPasswordRecoveryEmail(help.mail, link);
                 mailerClient.send(email);
@@ -162,7 +200,30 @@ public class PersonController extends Controller {
         }
     }
 
-    @ApiOperation(value = "Password recovery", hidden = true)
+    @ApiOperation(value = "change person password",
+            tags = {"Access"},
+            notes = "changes password if password_recovery_token is not older than 24 hours, deletes all FloatingPersonTokens",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Person_Password_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK",                      response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
     public Result personPasswordRecovery() {
         try{
 
@@ -171,28 +232,25 @@ public class PersonController extends Controller {
             Swagger_Person_Password_New help = form.get();
 
             Person person = Person.find.where().eq("mail", help.mail).findUnique();
-            PasswordRecoveryToken passwordRecoveryToken = PasswordRecoveryToken.find.where().eq("password_recovery_token", help.password_recovery_token).findUnique();
 
-            if(person == null || passwordRecoveryToken == null || !passwordRecoveryToken.person.id.equals(person.id)) {
-                // Smazat token
+            PasswordRecoveryToken passwordRecoveryToken = PasswordRecoveryToken.find.where().eq("password_recovery_token", help.password_recovery_token).findUnique();
+            if(passwordRecoveryToken == null) return GlobalResult.result_BadRequest("Password change was unsuccessful");
+
+            if(person == null || !passwordRecoveryToken.person.id.equals(person.id)) {
+                passwordRecoveryToken.delete();
                 return GlobalResult.result_BadRequest("Password change was unsuccessful");
             }
 
             if(((new java.util.Date()).getTime() - passwordRecoveryToken.time_of_creation.getTime()) > 86400000 ){
-                // Smazat token nepřepisovat heslo
+                passwordRecoveryToken.delete();
                 return GlobalResult.result_BadRequest("You must recover your password in 24 hours.");
             }
 
-            // Smazat token
-            // Smazat předchozí přihlášení
-
-
-
-
+            for ( FloatingPersonToken floatingPersonToken : person.floatingPersonTokens  ) {
+                floatingPersonToken.delete();
+            }
 
             person.setSha(help.password);
-
-            System.out.println(Person.getSha512(help.password));
 
             person.update();
 
@@ -212,7 +270,8 @@ public class PersonController extends Controller {
             code = 200
     )
       @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",      response = Person.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Person.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -238,7 +297,7 @@ public class PersonController extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",      response = Person.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Person.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -271,6 +330,7 @@ public class PersonController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -319,6 +379,7 @@ public class PersonController extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successful updated",      response = Person.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -395,7 +456,7 @@ public class PersonController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Its possible used that",  response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Not Found object", response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Not Found object",        response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured.class)

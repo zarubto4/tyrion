@@ -72,8 +72,8 @@ DELETE         /coreClient/person/person/:id                    @controllers.Per
 GET            /mail_person_authentication                      @controllers.PersonController.email_Person_authentitaction(mail,token)
 
 #Password recovery
-POST            /mail_person_password_recovery                  @controllers.PersonController.sendPasswordRecoveryEmail()
-PUT             /person_password_recovery                       @controllers.PersonController.personPasswordRecovery()
+POST            /coreClient/mail_person_password_recovery       @controllers.PersonController.sendPasswordRecoveryEmail()
+PUT             /coreClient/person_password_recovery            @controllers.PersonController.personPasswordRecovery()
 
 ### PERMISSION ############ PERMISSION ############### PERMISSION ################ PERMISSION ################# PERMISSION #####################################################
 ################################################################################################################################################################################
