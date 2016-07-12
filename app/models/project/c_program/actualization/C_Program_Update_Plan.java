@@ -23,7 +23,7 @@ public class C_Program_Update_Plan extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @Id  @GeneratedValue(strategy = GenerationType.SEQUENCE)    public String id; // Vlastní id je přidělováno
+    @Id  @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true) public String id;
 
               @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)    public Actualization_procedure actualization_procedure;
 
@@ -34,12 +34,12 @@ public class C_Program_Update_Plan extends Model {
                         /** OR **/  @JsonIgnore @ManyToOne()    public Version_Object c_program_version_for_update; // C_program k aktualizaci
                         /** OR **/  @JsonIgnore @ManyToOne()    public FileRecord binary_file;
 
-                                @Enumerated(EnumType.STRING)    public C_ProgramUpdater_State state;
+    @ApiModelProperty(required = true, value = "state_documentation")  @Enumerated(EnumType.STRING)    public C_ProgramUpdater_State state;
 
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient public String board_id()             { return board.id;  }
+    @JsonProperty @ApiModelProperty(required = true)  @Transient public String board_id()             { return board.id;  }
 
 
     @ApiModelProperty(required = false, value = "Is visible only if user send compilation under C_program in system  ( OR state for binary_file)") @Transient
@@ -76,15 +76,26 @@ public class C_Program_Update_Plan extends Model {
 /* POMOCNÉ TŘÍDY -------------------------------------------------------------------------------------------------------*/
 
     class C_Program_Update_program{
-        public String c_program_id;
-        public String c_program_version_id;
-        public String c_program_program_name;
-        public String c_program_version_name;
+        @ApiModelProperty(required = true, value = "Can be empty") public String c_program_id;
+        @ApiModelProperty(required = true, value = "Can be empty") public String c_program_version_id;
+        @ApiModelProperty(required = true, value = "Can be empty") public String c_program_program_name;
+        @ApiModelProperty(required = true, value = "Can be empty") public String c_program_version_name;
     }
 
+
+/* DESCRIPTION - DOCUMENTATION ---------------------------------------------------------------------------------------------------------*/
+    @JsonIgnore @Transient public final static String state_documentation = "States of update plan for each board is: \n\n"
+            + C_ProgramUpdater_State.canceled         + " State where the procedure is canceled by system or board owner" + "\n"
+            + C_ProgramUpdater_State.complete         + " State where procedure was absolutely successful" + "\n"
+            + C_ProgramUpdater_State.overwritten      + " State where procedure was overwritten by newer versions" + "\n"
+            + C_ProgramUpdater_State.in_progress      + " State where system is installing new firmware to board. Its not possible terminate this procedure in this time" + "\n"
+            + C_ProgramUpdater_State.instance_inaccessible + " State where instance in Homer wasn't accessible while update procedure" + "\n"
+            + C_ProgramUpdater_State.homer_server_is_offline + " State where server where board is connected wasn't accessible while update procedure" + "\n"
+            + C_ProgramUpdater_State.waiting_for_device + " State where board is not connected to Homer Server and Main Center is waiting for that" + "\n"
+            + C_ProgramUpdater_State.waiting_for_device + " State where shit happens - Server don't know what happens - Automatically reported to BackEnd development team" + "\n"
+            ;
+
+
 }
-
-
-
 
 

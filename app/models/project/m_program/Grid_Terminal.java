@@ -27,6 +27,9 @@ public class Grid_Terminal extends Model {
     @ApiModelProperty(required = true, example = "Iphone 5S, Chrome 4")
     public String device_name;
 
+    // public Integer resolution_hight;
+    // public Integer resolution_weight; -resolution_weight teoreticky potřebné pro vývojáře Gridu 
+
     @ApiModelProperty(required = false, readOnly = true, value = "Only if Device is connected with logged Person")
     @JsonIgnore public Person person;
 
@@ -35,9 +38,9 @@ public class Grid_Terminal extends Model {
 
 
     // lokální nedořešené oprávnění
-    public Boolean ws_permission;
-    public Boolean m_program_access;
-    public Boolean up_to_date;
+    @ApiModelProperty(required = true)  public Boolean ws_permission;
+    @ApiModelProperty(required = true)  public Boolean m_program_access;
+    @ApiModelProperty(required = true)  public Boolean up_to_date;
 
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/

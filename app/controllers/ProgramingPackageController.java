@@ -1174,6 +1174,7 @@ public class ProgramingPackageController extends Controller {
             tags = {"B_Program"},
             notes = "remove B_Program version object",
             produces = "application/json",
+            consumes = "",
             protocols = "https",
             code = 200,
             extensions = {

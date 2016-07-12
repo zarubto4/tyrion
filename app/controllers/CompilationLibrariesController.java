@@ -864,6 +864,7 @@ public class CompilationLibrariesController extends Controller {
                     "Result (HTML code) will be every time 200. - Its because upload, restart, etc.. operation need more than ++30 second " +
                     "There is also problem / chance that Tyrion didn't find where Embedded hardware is. So you have to listening Server Sent Events (SSE) and show \"future\" message to the user!",
             produces = "application/json",
+            consumes = "application/json",
             protocols = "https",
             code = 200,
             extensions = {

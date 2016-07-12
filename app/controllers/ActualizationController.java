@@ -180,7 +180,7 @@ public class ActualizationController extends Controller {
                             .eq("board.id", board.id).where()
                                 .disjunction()
                                     .add(Expr.eq("state",C_ProgramUpdater_State.waiting_for_device     ))
-                                    .add(Expr.eq("state",C_ProgramUpdater_State.homer_is_offline       ))
+                                    .add(Expr.eq("state",C_ProgramUpdater_State.instance_inaccessible))
                                     .add(Expr.eq("state",C_ProgramUpdater_State.homer_server_is_offline))
                                     .add(Expr.isNull("state"))
                             .findList();
@@ -197,7 +197,7 @@ public class ActualizationController extends Controller {
                             actualization_procedures.put(old_plan.actualization_procedure.id, old_plan.actualization_procedure);
                         }
 
-                        old_plan.state = C_ProgramUpdater_State.override;
+                        old_plan.state = C_ProgramUpdater_State.overwritten;
                         old_plan.update();
                     }
 
@@ -258,7 +258,7 @@ public class ActualizationController extends Controller {
                     .eq("board.id", board.id).where()
                     .disjunction()
                     .add(Expr.eq("state",C_ProgramUpdater_State.waiting_for_device     ))
-                    .add(Expr.eq("state",C_ProgramUpdater_State.homer_is_offline       ))
+                    .add(Expr.eq("state",C_ProgramUpdater_State.instance_inaccessible))
                     .add(Expr.eq("state",C_ProgramUpdater_State.homer_server_is_offline))
                     .add(Expr.isNull("state"))
                     .findList();
@@ -276,7 +276,7 @@ public class ActualizationController extends Controller {
                     actualization_procedures.put(old_plan.actualization_procedure.id, old_plan.actualization_procedure);
                 }
 
-                old_plan.state = C_ProgramUpdater_State.override;
+                old_plan.state = C_ProgramUpdater_State.overwritten;
                 old_plan.update();
             }
 
@@ -337,7 +337,7 @@ public class ActualizationController extends Controller {
                         .eq("board.id", p.board.id).where()
                         .disjunction()
                         .add(Expr.eq("state", C_ProgramUpdater_State.waiting_for_device))
-                        .add(Expr.eq("state", C_ProgramUpdater_State.homer_is_offline))
+                        .add(Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible))
                         .add(Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline))
                         .add(Expr.isNull("state"))
                         .findList();
@@ -355,7 +355,7 @@ public class ActualizationController extends Controller {
                         actualization_procedures.put(old_plan.actualization_procedure.id, old_plan.actualization_procedure);
                     }
 
-                    old_plan.state = C_ProgramUpdater_State.override;
+                    old_plan.state = C_ProgramUpdater_State.overwritten;
                     old_plan.update();
                 }
 
@@ -393,9 +393,9 @@ public class ActualizationController extends Controller {
         logger.debug("Tyrion Checking actualization state of connected board:" + board.id);
 
         List<C_Program_Update_Plan> plans = C_Program_Update_Plan.find.where().eq("board.id", board.id).disjunction()
-                .add(   Expr.eq("state","waiting_for_device")     )
-                .add(   Expr.eq("state","homer_is_offline")     )
-                .add(   Expr.eq("state","homer_server_is_offline") ).order().asc("id").findList();
+                .add(   Expr.eq("state", C_ProgramUpdater_State.waiting_for_device)         )
+                .add(   Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible)      )
+                .add(   Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline)    ).order().asc("id").findList();
 
         if(plans.size() == 1){
 
@@ -412,7 +412,7 @@ public class ActualizationController extends Controller {
             logger.error("Earlier plans are terminate! Last one - by ID is used now!");
 
             for(int i = 1; i < plans.size(); i++ ){
-                plans.get(i).state = C_ProgramUpdater_State.override;
+                plans.get(i).state = C_ProgramUpdater_State.overwritten;
                 plans.get(i).update();
             }
 

@@ -3,6 +3,7 @@ package utilities.swagger.outboundClass;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.compiler.Version_Object;
+import models.project.c_program.C_Compilation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,11 +28,11 @@ public class Swagger_C_Program_Version {
     @ApiModelProperty(required = true, readOnly = true)
     public boolean compilable;
 
-    @ApiModelProperty(required = true, readOnly = true, value = "Code in Json - same structure like when user saved that!")
+    @ApiModelProperty(required = false, readOnly = true )
     public String version_code;
 
 
-    @ApiModelProperty(required = true, readOnly = true)
+    @ApiModelProperty(required = true, readOnly = true, value = "Value can be empty, Server cannot guarantee that. External documentation: " + C_Compilation.virtual_input_output_docu)
     public String virtual_input_output;
 
     @ApiModelProperty(required = true, readOnly = true)

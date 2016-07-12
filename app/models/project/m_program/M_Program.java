@@ -24,18 +24,18 @@ public class M_Program extends Model{
                             @Column(columnDefinition = "TEXT")  public String program_description;
                 @JsonIgnore @Column(columnDefinition = "TEXT")  public String programInString;
 
-                                                                public boolean height_lock;
-                                                                public boolean width_lock;
-                                                                public String qr_token;
+                        @ApiModelProperty(required = true)      public boolean height_lock;
+                        @ApiModelProperty(required = true)      public boolean width_lock;
+                        @ApiModelProperty(required = true)      public String qr_token;
 
     @JsonIgnore @ManyToOne      public M_Project m_project;
     @JsonIgnore @ManyToOne      public Screen_Size_Type screen_size_type;
 
-    @Transient @JsonProperty public String m_project_id()             {  return m_project.id; }
-    @Transient @JsonProperty public String screen_size_type_id()      {  return screen_size_type.id; }
+    @Transient @JsonProperty @ApiModelProperty(required = true) public String m_project_id()             {  return m_project.id; }
+    @Transient @JsonProperty @ApiModelProperty(required = true) public String screen_size_type_id()      {  return screen_size_type.id; }
 
-    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1458315085338") public Date date_of_create;
-    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1458315085338") public Date last_update;
+    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp in millis", example = "1458315085338") public Date date_of_create;
+    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp in millis", example = "1458315085338") public Date last_update;
 
 
 

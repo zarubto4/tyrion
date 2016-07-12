@@ -131,7 +131,7 @@ public class Master_Updater{
 
                    if (!WebSocketController_Incoming.incomingConnections_homers.containsKey(homer_instance.blocko_instance_name)) {
                        logger.debug("Homer is offline. Putting off the task for later ");
-                       plan.state = C_ProgramUpdater_State.homer_is_offline;
+                       plan.state = C_ProgramUpdater_State.instance_inaccessible;
                        plan.update();
                        break;
                    }

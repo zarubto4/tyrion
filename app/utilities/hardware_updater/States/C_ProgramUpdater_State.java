@@ -9,11 +9,11 @@ public enum C_ProgramUpdater_State {
     in_progress,        // Proces probíhá - němělo by do něj být zasahováno!
 
                         //Stav kdy je procedura považována za trvale ukončenou!
-    override,           // Stav který vyvolal systém, protože přišla nová "čerstvější" aktualizace
+    overwritten,           // Stav který vyvolal systém, protože přišla nová "čerstvější" aktualizace
 
 
     waiting_for_device,      // Stav kdy je stále možné zařízení aktulaizovat
-    homer_is_offline,        // Stav kdy je stále možné zařízení aktulaizovat
+    instance_inaccessible,        // Stav kdy je stále možné zařízení aktulaizovat
     homer_server_is_offline, // Stav kdy je stále možné zařízení aktulaizovat
 
 

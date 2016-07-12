@@ -2,6 +2,7 @@ package models.project.c_program;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModelProperty;
 import models.compiler.FileRecord;
 import models.compiler.Version_Object;
 
@@ -19,9 +20,9 @@ public class C_Compilation extends Model {
     @JsonIgnore @OneToOne   @JoinColumn(name="c_compilation_version")      public Version_Object version_object;
 
 
-    @Column(columnDefinition = "TEXT")      public String virtual_input_output;
-    @Column(columnDefinition = "TEXT")      public String c_comp_build_url;
-    @JsonIgnore   @ManyToOne                public FileRecord bin_compilation_file;
+    @ApiModelProperty(required = true, value = virtual_input_output_docu) @Column(columnDefinition = "TEXT")      public String virtual_input_output;
+                    @JsonIgnore   @Column(columnDefinition = "TEXT")      public String c_comp_build_url;
+                    @JsonIgnore   @ManyToOne                                public FileRecord bin_compilation_file;
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
@@ -33,6 +34,10 @@ public class C_Compilation extends Model {
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String,C_Compilation> find = new Finder<>(C_Compilation.class);
 
+
+
+/* DESCRIPTION - DOCUMENTATION ---------------------------------------------------------------------------------------------------------*/
+    @JsonIgnore @Transient public final static String virtual_input_output_docu = "dsafsdfsdf"; // TODO https://youtrack.byzance.cz/youtrack/issue/TYRION-304
+
 }
 
-// Tenhle objekt by měl mít teoreticky jen krátkou životnost a každý den by se měli mazat historie kompilací, protože je zbytečné je držet v paměti.

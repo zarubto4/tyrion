@@ -158,7 +158,6 @@ PUT            /project/homer/filter/:page_number                               
 DELETE         /project/homer/:homer_id                                                     @controllers.ProgramingPackageController.removeHomer(homer_id)
 GET            /project/homer/:homer_id                                                     @controllers.ProgramingPackageController.getHomer(homer_id)
 
-
 #Project - connection
 PUT            /project/homer/:project_id/:homer_id                                         @controllers.ProgramingPackageController.connectHomerWithProject(project_id, homer_id)
 DELETE         /project/homer/:project_id/:homer_id                                         @controllers.ProgramingPackageController.disconnectHomerWithProject(project_id, homer_id)
