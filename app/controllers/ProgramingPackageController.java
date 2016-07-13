@@ -27,7 +27,6 @@ import utilities.Server;
 import utilities.UtilTools;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured;
-import utilities.notification.Notification_level;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
@@ -1262,8 +1261,6 @@ public class ProgramingPackageController extends Controller {
                                                     @ApiParam(value = "homer_id", required = true)     @PathParam("homer_id") String homer_id){
         try {
 
-            // Získání objektu
-            Person person = SecurityController.getPerson();
 
             // Kontrola objektu
             // B program, který chci nahrát do Cloudu na Blocko cloud_blocko_server
@@ -1302,36 +1299,30 @@ public class ProgramingPackageController extends Controller {
                     program_homer.private_server = private_homer_server;
                     program_homer.running_from = new Date();
                     program_homer.version_object = version_object;
+                    program_homer.save();
 
-                   if(!  WebSocketController_Incoming.homer_online_state(private_homer_server.id) ) {
-                       System.out.println("Homer není online při pokusu na něj nahrát instanci a není dodělané zpožděné nahrátí");
+
+                    version_object.homer_instance = program_homer;
+                    // Uložení objektu
+                    version_object.update();
+
+
+
+                    if(!  WebSocketController_Incoming.homer_online_state(private_homer_server.id) ) {
+                       NotificationController.uploud_of_Instance_was_unsuccesfull( SecurityController.getPerson() , program_homer , "One of the components of the server is not available");
                        this.interrupt();
                    }
-
 
                     JsonNode result = WebSocketController_Incoming.homer_upload_program(WebSocketController_Incoming.incomingConnections_homers.get(private_homer_server.id), version_object.id, version_object.files.get(0).get_fileRecord_from_Azure_inString());
 
                     if(result.get("status").asText().equals("success")){
+                       NotificationController.uploud_of_Instance_was_succesfull ( SecurityController.getPerson() , program_homer);
+                    } else {
+                        NotificationController.uploud_of_Instance_was_unsuccesfull( SecurityController.getPerson() , program_homer , result.get("error").asText() );
+                    }
 
-                        // Uložení objektu
-                        program_homer.save();
-
-                        // Úprava objektu
-                        version_object.homer_instance = program_homer;
-
-                        // Uložení objektu
-                        version_object.update();
-
-                            NotificationController.send_notification(private_homer_server.project.ownersOfProject, Notification_level.success, "Homer was updated successfully");
-
-                    } else  NotificationController.send_notification(private_homer_server.project.ownersOfProject, Notification_level.error,   "Attempt updating Homer device to new version. Update Error - " + result.get("error").asText());
-
-                } catch (TimeoutException e) {
-                    NotificationController.send_notification(private_homer_server.project.ownersOfProject, Notification_level.error, "Attempt updating Homer device to new version. Timeout for connection.");
-                } catch (InterruptedException e){
-                    NotificationController.send_notification(private_homer_server.project.ownersOfProject, Notification_level.error, "Attempt updating Homer device to new version. Server side problem.");
-                } catch (Exception e ){
-                    NotificationController.send_notification(private_homer_server.project.ownersOfProject, Notification_level.error, "Attempt updating Homer device to new version. Critical bug with loading. The error was automatically reported to technical support.");
+                } catch (Exception e) {
+                    NotificationController.uploud_of_Instance_was_unsuccesfull_with_error( SecurityController.getPerson() , version_object);
                 }
 
             }};

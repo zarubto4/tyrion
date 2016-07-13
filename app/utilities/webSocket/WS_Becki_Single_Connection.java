@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 public class WS_Becki_Single_Connection extends  WebSCType {
 
     WS_Becki_Website person_connection;
+    public boolean notification_subscriber = false;
 
     public WS_Becki_Single_Connection(String person_id, WS_Becki_Website person_connection) {
         super();
@@ -24,6 +25,7 @@ public class WS_Becki_Single_Connection extends  WebSCType {
 
     @Override
     public void onMessage(ObjectNode json) {
+        json.put("single_connection_token", this.identifikator);
         person_connection.onMessage(json);
     }
 }

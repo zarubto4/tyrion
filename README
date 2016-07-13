@@ -1,10 +1,49 @@
-﻿# Verze 1.06.6.1 #
+﻿# Verze 1.06.6.3 #
 
+-----
 
-TYRION-278 POST
+## 1. ##
+Cílem této verze bylo vyřešit všechny problémy, které trápí vývojáře Becki a nastavit po meetingu nové standardy vývoje. Jde především o zapisování změn, hotový a použitelný changelog a difftool přístupný mezi posledními dvěma verzemi. SLouží jak vývojářům Becki, Tyrionu, tak navázaných (GRID aplikací) 
+
+## 2. ##
+Podle tracku [TYRION-261](http://youtrack.byzance.cz/youtrack/issue/TYRION-261) bylo doimplementováno, jak odhlásit příjmanou instanci - což vede k tomu, že až teď jde oteoreticky odebírat více instancí najendou. Jedinným orzdílem příkazu odebírání "subscribe" je "unsubscribe"
+		
+
+## 3. ##	
+Doplnění Dokumentace a popisu k novým Api jež slouží k zobrazení aktualizací HW. 
+
+## 4. ##
+Vázáno na přechod Notifikací na WebScoket - Před implementací je prerekvizita funkčního notifikačního centra postaveného na WebSocketu). Tímto Backend uzavírá všechny předchozí bugy spojené s notifikačním centrem Přes SSE za zastaralé a dále nepodporované.
+
+	1) Pro odběr notifikací je nutné se přihlásit k odběru Websocketu
+	2) Požádat Tyrion o zasílání notifikací - Z důvodu podpory více přihlášení jednoho uživatele se 	přihlášení provede jen na tom spojení uživatele, které si o to požádá! 
+		 {
+		 	"messageChannel" : "becki",
+			"messageType"    : "subscribe_notification",
+			"messageId"	 : " some random message nuber for response"		 
+		 }
+	3) Odhlášení probíhá obdobně 
+       		 {
+       		 	"messageChannel" : "becki",
+       			"messageType"    : "unsubscribe_notification",
+       			"messageId"	 : " some random message nuber for response"		 
+       		 }
+	4) Po té Becki začne dostávat 	 
+
+ChangeLog
+ * uploadBinaryFileToBoard  [TYRION-301](http://youtrack.byzance.cz/youtrack/issue/TYRION-301) - Jednak opraveno ale taktéž při opravě bylo vyřazeno chybně vyžadované tělo s ID zařízení, PLAY neumí přijmout soubor i Json naráz. Vyžadován momentálně pouze soubor a v URL uvedené jedno ID souboru. (PS fungovat by to mělo jako před tím, jen ten vyžadující Json tam bylo chybnou dokumentací navíc) (Tato API je taktéž výlučná - čistě pro vývojáře individuálně - masivní nahrávání bin souboru bude provedeno jinou procedurou než tato API)
 
 
 ### Oprava Bugů ###
+
+* fixed [TYRION-185](http://youtrack.byzance.cz/youtrack/issue/TYRION-185)
+* fixed [TYRION-258](http://youtrack.byzance.cz/youtrack/issue/TYRION-258)
+* Uzavřeno uzavřeno [TYRION-70](http://youtrack.byzance.cz/youtrack/issue/TYRION-70)
+* fixed [TYRION-257](http://youtrack.byzance.cz/youtrack/issue/TYRION-257)
+* fixed [TYRION-257](http://youtrack.byzance.cz/youtrack/issue/TYRION-280)
+* fixed [TYRION-299](http://youtrack.byzance.cz/youtrack/issue/TYRION-299)
+
+http://youtrack.byzance.cz/youtrack/issue/TYRION-271??
 
  * fixed [TYRION-278](http://youtrack.byzance.cz/youtrack/issue/TYRION-278)
  * fixed [TYRION-271](http://youtrack.byzance.cz/youtrack/issue/TYRION-271)
@@ -46,9 +85,6 @@ TYRION-278 POST
   * Obnova hesla
   * Radek - ukoly: Možnost napsat plugin pro aktualizaci přes USB a plugin do Eclipsu / intellij pro možnost nahrávat na konkrétní zařízení
 
-
-
-http://youtrack.byzance.cz/youtrack/issue/TYRION-271
 
 
 

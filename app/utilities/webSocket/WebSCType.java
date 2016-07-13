@@ -3,7 +3,7 @@ package utilities.webSocket;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import controllers.WebSocketController_Incoming;
+import play.libs.Json;
 import play.mvc.WebSocket;
 
 import java.util.*;
@@ -46,10 +46,18 @@ public abstract class WebSCType {
 
             onMessage(json);
         }catch (JsonParseException e){
-            WebSocketController_Incoming.invalid_json_message(webSCtype);
+
+            ObjectNode result = Json.newObject();
+            result.put("messageType", "JsonUnrecognized");
+            webSCtype.write_without_confirmation(result);
+
         }catch (Exception e){
-            WebSocketController_Incoming.invalid_json_message(webSCtype);
+
+            ObjectNode result = Json.newObject();
+            result.put("messageType", "JsonUnrecognized");
+            webSCtype.write_without_confirmation(result);
             e.printStackTrace();
+
         }
 
     }

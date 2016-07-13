@@ -41,9 +41,8 @@ public class WS_Becki_Website extends  WebSCType {
             WebSocketController_Incoming.becki_website.remove(super.identifikator);
 
             // a informuji odběratele o tom že je nikdo neodebírá
-            for(WebSCType ws : super.subscribers_becki){
-                System.out.println("Upozornuju odběratele becki že už tu žádná není identificator: " + ws.identifikator );
-                WebSocketController_Incoming.becki_echo_that_becki_was_disconnect(ws);
+            for(WebSCType homer : super.subscribers_becki){
+                WebSocketController_Incoming.homer_unsubscribe_blocko_instance( (WS_Homer_Cloud) homer);
             }
 
             this.onClose();
@@ -69,12 +68,11 @@ public class WS_Becki_Website extends  WebSCType {
     public ObjectNode write_with_confirmation(ObjectNode json, Long time_To_TimeOutExcepting) throws TimeoutException,  InterruptedException {
 
         System.out.println("write_with_confirmation na centrální becki není implementováno!!!!!!!!!...................!!!!!!!");
-
         return null;
     }
+
     @Override
     public void onMessage(ObjectNode json) {
-        System.out.println("příchozí zpráva z Becki: " + json.toString());
          WebSocketController_Incoming.becki_incoming_message(this, json);
     }
 }
