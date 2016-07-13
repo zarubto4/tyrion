@@ -72,9 +72,9 @@ public class SecurityController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successful logged",      response = Swagger_Login_Token.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 401, message = "Wrong Email or Password",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 200, message = "Successfully logged",       response = Swagger_Login_Token.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing",   response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Wrong Email or Password",   response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -153,7 +153,7 @@ public class SecurityController extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successful logged",       response = Swagger_Person_All_Details.class),
+            @ApiResponse(code = 200, message = "Successfully logged",     response = Swagger_Person_All_Details.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Wrong Email or Password", response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -194,9 +194,9 @@ public class SecurityController extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successful logged",      response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 401, message = "Wrong Email or Password",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 200, message = "Successfully logged out",   response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing",   response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Wrong Email or Password",   response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result logout() {
@@ -387,9 +387,9 @@ public class SecurityController extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successful created",      response = Login_Social_Network.class),
+            @ApiResponse(code = 200, message = "Successfully created",    response = Login_Social_Network.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 401, message = "Wrong Email or Password",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 401, message = "Wrong Email or Password", response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result GitHub( @ApiParam(value = "this is return url address in format  /link/link", required = true) @PathParam("return_link")  String return_link){
@@ -430,9 +430,9 @@ public class SecurityController extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successful created",      response = Login_Social_Network.class),
+            @ApiResponse(code = 200, message = "Successfully created",    response = Login_Social_Network.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 401, message = "Wrong Email or Password",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 401, message = "Wrong Email or Password", response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result Facebook(@ApiParam(value = "this is return url address in format  ?return_link=/link/link", required = true) @PathParam("return_link") String return_link){

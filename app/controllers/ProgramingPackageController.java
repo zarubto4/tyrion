@@ -17,14 +17,17 @@ import models.project.b_program.Homer_Instance;
 import models.project.b_program.servers.Cloud_Homer_Server;
 import models.project.b_program.servers.Private_Homer_Server;
 import models.project.global.Project;
+import play.api.libs.mailer.MailerClient;
 import play.data.Form;
 import play.libs.Json;
+import play.libs.mailer.Email;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.Server;
 import utilities.UtilTools;
+import utilities.emails.EmailTool;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured;
 import utilities.notification.Notification_level;
@@ -36,6 +39,7 @@ import utilities.swagger.outboundClass.Filter_List.Swagger_Homer_List;
 import utilities.webSocket.WS_BlockoServer;
 import utilities.webSocket.WebSCType;
 
+import javax.inject.Inject;
 import javax.websocket.server.PathParam;
 import java.util.ArrayList;
 import java.util.Date;
@@ -46,6 +50,8 @@ import java.util.concurrent.TimeoutException;
 @Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Secured.class)
 public class ProgramingPackageController extends Controller {
+
+    @Inject MailerClient mailerClient;
 
 // Loger  ##############################################################################################################
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
@@ -332,10 +338,31 @@ public class ProgramingPackageController extends Controller {
             // Kontrola oprávnění
             if (!project.share_permission() )   return GlobalResult.forbidden_Permission();
 
-            // Získání seznamu
-            List<Person> list = Person.find.where().idIn(help.persons_id).findList();
+            // Získání seznamu uživatelů, kteří jsou regostrovaní(listIn) a kteří ne(listOut)
+            List<Person> listIn = new ArrayList<>();
+            List<String> listOut = help.persons_mail;
 
-            for (Person person : list) {
+            // Roztřídění seznamů
+            for (String mail : listOut){
+                Person person =  Person.find.where().eq("mail",mail).findUnique();
+                if(!(person == null)){
+                    listIn.add(person);
+                    listOut.remove(person.mail);
+                }
+            }
+
+            for (String mail : listOut){
+                try {
+                    Email email = new EmailTool().sendInvitationEmail(mail, link);
+                    mailerClient.send(email);
+
+                } catch (Exception e) {
+                    logger.error ("Sending mail -> critical error", e);
+                    e.printStackTrace();
+                }
+            }
+
+            for (Person person : listIn) {
                 if (!person.owningProjects.contains(project)) {
 
                     // Úprava objektů
@@ -382,11 +409,11 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Project.class),
+            @ApiResponse(code = 200, message = "Ok Result",                                 response = Project.class),
             @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",                      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",                  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -406,7 +433,7 @@ public class ProgramingPackageController extends Controller {
             if (!project.unshare_permission() )   return GlobalResult.forbidden_Permission();
 
             // Získání seznamu
-            List<Person> list = Person.find.where().idIn(help.persons_id).findList();
+            List<Person> list = Person.find.where().eq("mail",help.persons_mail).findList();
 
             for (Person person : list) {
                 if (person.owningProjects.contains(project)) {
@@ -2299,7 +2326,7 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successfully created",    response =  BlockoBlockVersion.class),
+            @ApiResponse(code = 201, message = "Successfully created",    response = BlockoBlockVersion.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
