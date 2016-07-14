@@ -23,5 +23,4 @@ public class Swagger_Person_New {
     @Constraints.MinLength(value = 8)
     @Constraints.Required
     public String password;
-
 }

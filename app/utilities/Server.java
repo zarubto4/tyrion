@@ -44,6 +44,7 @@ public class Server {
     public static String becki_accountAuthorizedSuccessful;
     public static String becki_accountAuthorizedFailed;
     public static String becki_passwordReset;
+    public static String becki_invitationToCollaborate;
 
     public static String GitHub_callBack;
     public static String GitHub_clientSecret;
@@ -97,7 +98,8 @@ public class Server {
             becki_redirectFail                  = "http://" + Configuration.root().getString("Becki.localhost.redirectFail");
             becki_accountAuthorizedSuccessful   = "http://" + Configuration.root().getString("Becki.localhost.accountAuthorizedSuccessful");
             becki_accountAuthorizedFailed       = "http://" + Configuration.root().getString("Becki.localhost.accountAuthorizedFailed");
-            becki_passwordReset                 = "http://" + Configuration.root().getString("Becki.localhost.passwordReset ");
+            becki_passwordReset                 = "http://" + Configuration.root().getString("Becki.localhost.passwordReset");
+            becki_invitationToCollaborate       = "http://" + Configuration.root().getString("Becki.localhost.invitationToCollaborate");
 
             GitHub_callBack                     = tyrion_serverAddress + Configuration.root().getString("GitHub.localhost.callBack");
             GitHub_clientSecret                 = Configuration.root().getString("GitHub.localhost.clientSecret");
@@ -128,6 +130,7 @@ public class Server {
             becki_accountAuthorizedSuccessful   = "http://" + Configuration.root().getString("Becki.production.accountAuthorizedSuccessful");
             becki_accountAuthorizedFailed       = "http://" + Configuration.root().getString("Becki.production.accountAuthorizedFailed");
             becki_passwordReset                 = "http://" + Configuration.root().getString("Becki.production.passwordReset ");
+            becki_invitationToCollaborate       = "http://" + Configuration.root().getString("Becki.production.invitationToCollaborate");
 
 
             GitHub_callBack                     = tyrion_serverAddress + Configuration.root().getString("GitHub.production.callBack");

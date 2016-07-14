@@ -16,5 +16,4 @@ public class Swagger_ShareProject_Person {
     @ApiModelProperty(required = true)
     public List<String> persons_mail;
 
-
  }

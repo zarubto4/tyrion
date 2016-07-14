@@ -10,6 +10,7 @@ import models.blocko.TypeOfBlock;
 import models.compiler.Board;
 import models.compiler.TypeOfBoard;
 import models.compiler.Version_Object;
+import models.person.InvitationToken;
 import models.person.Person;
 import models.project.b_program.B_Pair;
 import models.project.b_program.B_Program;
@@ -338,7 +339,7 @@ public class ProgramingPackageController extends Controller {
             // Kontrola oprávnění
             if (!project.share_permission() )   return GlobalResult.forbidden_Permission();
 
-            // Získání seznamu uživatelů, kteří jsou regostrovaní(listIn) a kteří ne(listOut)
+            // Získání seznamu uživatelů, kteří jsou registrovaní(listIn) a kteří ne(listOut)
             List<Person> listIn = new ArrayList<>();
             List<String> listOut = help.persons_mail;
 
@@ -352,6 +353,20 @@ public class ProgramingPackageController extends Controller {
             }
 
             for (String mail : listOut){
+                InvitationToken invitationToken = InvitationToken.find.where().eq("mail", mail).findUnique();
+                if(invitationToken == null){
+                    invitationToken = new InvitationToken();
+                    invitationToken.setInvitationToken();
+                    invitationToken.mail = mail;
+                    invitationToken.time_of_creation = new Date();
+                    invitationToken.owner = SecurityController.getPerson();
+                    invitationToken.project = project;
+                    invitationToken.save();
+                    project.invitations.add(invitationToken);
+                }
+
+                String link = Server.becki_invitationToCollaborate + "&token=" + invitationToken.invitation_token + "&mail=" + mail;
+
                 try {
                     Email email = new EmailTool().sendInvitationEmail(mail, link);
                     mailerClient.send(email);
@@ -363,15 +378,19 @@ public class ProgramingPackageController extends Controller {
             }
 
             for (Person person : listIn) {
-                if (!person.owningProjects.contains(project)) {
 
-                    // Úprava objektů
-                    project.ownersOfProject.add(person);
-                    person.owningProjects.add(project);
-
-                    // Uložení do DB
-                    person.update();
+                InvitationToken invitationToken = InvitationToken.find.where().eq("mail", person.mail).findUnique();
+                if(invitationToken == null){
+                    invitationToken = new InvitationToken();
+                    invitationToken.setInvitationToken();
+                    invitationToken.mail = person.mail;
+                    invitationToken.time_of_creation = new Date();
+                    invitationToken.owner = SecurityController.getPerson();
+                    invitationToken.project = project;
+                    invitationToken.save();
+                    project.invitations.add(invitationToken);
                 }
+                // TODO tady bude notifikace
             }
 
             // Uložení do DB
@@ -381,6 +400,61 @@ public class ProgramingPackageController extends Controller {
             return GlobalResult.result_ok(Json.toJson(project));
 
         } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+
+    @ApiOperation(value = "add participant to a Project",
+            tags = {"Project", "Board"},
+            notes = "adds Person to a Project, every piece of information is held in InvitationToken",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Project.share_permission", value = "true")
+                    })
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",            response = Project.class),
+            @ApiResponse(code = 400, message = "Objects not found",    response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result addParticipantToProject(String token, boolean decision ){
+        try{
+
+            // Kontroly objektů
+            InvitationToken invitationToken = InvitationToken.find.where().eq("invitation_token",token).findUnique();
+            if(invitationToken == null) return GlobalResult.notFoundObject("Invitation no longer exists");
+
+            Person person = Person.find.where().eq("mail", invitationToken.mail).findUnique();
+            if(person == null) return GlobalResult.notFoundObject("Person does not exist");
+
+            Project project = invitationToken.project;
+            if(project == null) return GlobalResult.notFoundObject("Project no longer exists");
+
+            if ((!person.owningProjects.contains(project))&&(decision)) {
+
+                // Úprava objektů
+                project.ownersOfProject.add(person);
+                person.owningProjects.add(project);
+            }
+
+            // Smazání tokenu
+            invitationToken.delete();
+
+            if(!decision){
+                // TODO notifikace, že pozvání nebylo přijato
+            }
+
+            // Uložení do DB
+            person.update();
+            project.update();
+
+            return GlobalResult.result_ok();
+        }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
         }
     }

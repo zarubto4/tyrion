@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @Entity
 public class PasswordRecoveryToken extends Model{
-    /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
+/* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)     public String id;
     @OneToOne @JoinColumn(name = "person_id")                   public Person person;

@@ -3,10 +3,7 @@ package controllers;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.Query;
 import io.swagger.annotations.*;
-import models.person.FloatingPersonToken;
-import models.person.PasswordRecoveryToken;
-import models.person.Person;
-import models.person.ValidationToken;
+import models.person.*;
 import play.api.libs.mailer.MailerClient;
 import play.data.Form;
 import play.libs.Json;
@@ -37,13 +34,14 @@ import java.util.List;
 public class PersonController extends Controller {
 
     @Inject MailerClient mailerClient;
+    @Inject ProgramingPackageController programingPackageController;
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
 //######################################################################################################################
 
     @ApiOperation(value = "register new Person",
             tags = {"Person"},
-            notes = "create new Person with unique email and nick_name",
+            notes = "create new Person with unique email and nick_name, for standard registration leave invitationToken empty, it's used only if someone is invited via email",
             produces = "application/json",
             protocols = "https",
             code = 201
@@ -73,8 +71,6 @@ public class PersonController extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Person_New help = form.get();
 
-
-
             if (Person.find.where().eq("nick_name", help.nick_name).findUnique() != null)
                 return GlobalResult.result_BadRequest("nick name is used");
             if (Person.find.where().eq("mail", help.mail).findUnique() != null)
@@ -90,17 +86,31 @@ public class PersonController extends Controller {
             person.setSha(help.password);
             person.save();
 
-            ValidationToken validationToken = new ValidationToken().setValidation(person.mail);
+            InvitationToken invitationToken = InvitationToken.find.where().eq("mail", person.mail).findUnique();
 
-            String link = Server.tyrion_serverAddress + "/mail_person_authentication" + "?mail=" + person.mail + "&token=" + validationToken.authToken;
+            if(invitationToken == null) {
 
-            try {
-                Email email = new EmailTool().sendEmailValidation(help.nick_name , person.mail, link);
-                mailerClient.send(email);
+                ValidationToken validationToken = new ValidationToken().setValidation(person.mail);
 
-            } catch (Exception e) {
-                logger.error ("Sending mail -> critical error", e);
-                e.printStackTrace();
+                String link = Server.tyrion_serverAddress + "/mail_person_authentication" + "?mail=" + person.mail + "&token=" + validationToken.authToken;
+
+                try {
+                    Email email = new EmailTool().sendEmailValidation(help.nick_name, person.mail, link);
+                    mailerClient.send(email);
+
+                } catch (Exception e) {
+                    logger.error("Sending mail -> critical error", e);
+                    e.printStackTrace();
+                }
+            }else{
+                person.mailValidated = true;
+                person.update();
+
+                try {
+                    programingPackageController.addParticipantToProject(invitationToken.invitation_token, true);
+                }catch(Exception e){
+                    return Loggy.result_internalServerError(e, request());
+                }
             }
 
             return GlobalResult.created(Json.toJson(person));
