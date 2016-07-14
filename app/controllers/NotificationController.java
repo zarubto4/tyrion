@@ -216,7 +216,18 @@ public class NotificationController extends Controller {
   }
 
 
-  public static void project_invitation(Person person, Project project){
+  public static void project_invitation(Person owner, Person receiver, Project project){
+
+    Notification notification = new Notification(Notification_level.info, receiver)
+            .setText("User")
+            .setObject(Person.class, owner.id, owner.full_name)
+            .setText("wants to invite into the project ")
+            .setBoldText(project.project_name +".")
+            .setText("Do you agree?")
+            .setLink_ToTyrion("Yes", "url dressa")
+            .setText(" / ")
+            .setLink_ToTyrion("No", "url adresa")
+            .setText(".");
 
       // Odeslání pozvánky do přijetí do projektu
       // Tato notifikace by se měla uložit  - je tam parametr "přečtena"
