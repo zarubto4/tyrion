@@ -41,7 +41,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.TimeoutException;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Secured.class)
@@ -1309,20 +1308,20 @@ public class ProgramingPackageController extends Controller {
 
 
                     if(!  WebSocketController_Incoming.homer_online_state(private_homer_server.id) ) {
-                       NotificationController.uploud_of_Instance_was_unsuccesfull( SecurityController.getPerson() , program_homer , "One of the components of the server is not available");
+                       NotificationController.unload_of_Instance_was_unsuccessfull( SecurityController.getPerson() , program_homer , "One of the components of the server is not available");
                        this.interrupt();
                    }
 
                     JsonNode result = WebSocketController_Incoming.homer_upload_program(WebSocketController_Incoming.incomingConnections_homers.get(private_homer_server.id), version_object.id, version_object.files.get(0).get_fileRecord_from_Azure_inString());
 
                     if(result.get("status").asText().equals("success")){
-                       NotificationController.uploud_of_Instance_was_succesfull ( SecurityController.getPerson() , program_homer);
+                       NotificationController.upload_of_Instance_was_successful( SecurityController.getPerson() , program_homer);
                     } else {
-                        NotificationController.uploud_of_Instance_was_unsuccesfull( SecurityController.getPerson() , program_homer , result.get("error").asText() );
+                       NotificationController.unload_of_Instance_was_unsuccessfull( SecurityController.getPerson() , program_homer , result.get("error").asText() );
                     }
 
                 } catch (Exception e) {
-                    NotificationController.uploud_of_Instance_was_unsuccesfull_with_error( SecurityController.getPerson() , version_object);
+                    NotificationController.unload_of_Instance_was_unsuccessfull_with_error( SecurityController.getPerson() , version_object);
                 }
 
             }};

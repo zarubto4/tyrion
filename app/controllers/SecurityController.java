@@ -48,7 +48,7 @@ public class SecurityController extends Controller {
         return (Person) Http.Context.current().args.get("person");
     }
     public static Person getPerson(Http.Context context) {
-        return (Person) context.current().args.get("person");
+        return (Person) Http.Context.current().args.get("person");
     }
 
 //######################################################################################################################
@@ -125,7 +125,7 @@ public class SecurityController extends Controller {
             if(nonce == null) {
                 JsonNode jsonRequest_nonce = ws.url("https://www.byzance.cz/api/get_nonce/?controller=auth&method=generate_auth_cookie").get().get(5000).asJson();
 
-                if (!jsonRequest_nonce.has("nonce")) return GlobalResult.result_BadRequest("Authentication cloud_blocko_server error!");
+                if (!jsonRequest_nonce.has("nonce")) return GlobalResult.result_BadRequest("Authentication server error!");
                 nonce = jsonRequest_nonce.get("nonce").asText();
             }
 
@@ -144,9 +144,9 @@ public class SecurityController extends Controller {
     @ApiOperation(value = "get Person by token (after Oauth2 Login -> Facebook, GitHub, Twitter)",
             tags = {"Access", "Person", "Social-GitHub", "Social-Facebook"},
             notes = "If you want login to system with social networks - you can used facebook, github or twitter api " +
-                    "just ask for token, cloud_blocko_server responds with object where is token and redirection link. Redirect user " +
+                    "just ask for token, server responds with object where is token and redirection link. Redirect user " +
                     "to this link and after returning to success page that you filled in ask for token, ask again to this api " +
-                    "and cloud_blocko_server respond with Person Object and with Roles and Permissions lists",
+                    "and server respond with Person Object and with Roles and Permissions lists",
             produces = "application/json",
             response =  Swagger_Person_All_Details.class,
             protocols = "https",
@@ -205,7 +205,10 @@ public class SecurityController extends Controller {
             try {
                 String token = request().getHeader("X-AUTH-TOKEN");
                 FloatingPersonToken.find.where().eq("authToken", token).findUnique().deleteAuthToken();
-            }catch (Exception e){}
+
+            }catch (Exception e){
+                e.printStackTrace();
+            }
 
             // JE nutné garantovat vždy odpověď ok za všech sytuací kromě kritického selhální
             return GlobalResult.result_ok();

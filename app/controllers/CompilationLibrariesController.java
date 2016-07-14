@@ -30,7 +30,7 @@ import utilities.swagger.outboundClass.Filter_List.Swagger_Single_Library_List;
 import utilities.swagger.outboundClass.*;
 
 import javax.websocket.server.PathParam;
-import java.io.File;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -55,7 +55,7 @@ public class CompilationLibrariesController extends Controller {
 
     @ApiOperation(value = "Create new C_Program",
                   tags = {"C_Program"},
-                  notes = "If you want create new C_program in project.id = {project_id}. Send required json values and cloud_blocko_server respond with new object",
+                  notes = "If you want create new C_program in project.id = {project_id}. Send required json values and cloud_compilation_server respond with new object",
                   produces = "application/json",
                   protocols = "https",
                   code = 201,
@@ -216,7 +216,7 @@ public class CompilationLibrariesController extends Controller {
 
     @ApiOperation(value = "Edit C_Program",
             tags = {"C_Program"},
-            notes = "If you want edit base information about C_program by  query = c_program_id. Send required json values and cloud_blocko_server respond with new object",
+            notes = "If you want edit base information about C_program by  query = c_program_id. Send required json values and cloud_compilation_server respond with new object",
             produces = "application/json",
             protocols = "https",
             code = 200,
@@ -284,7 +284,7 @@ public class CompilationLibrariesController extends Controller {
 
     @ApiOperation(value = "new Version of C_Program",
             tags = {"C_Program"},
-            notes = "If you want add new code to C_program by query = c_program_id. Send required json values and cloud_blocko_server respond with new object",
+            notes = "If you want add new code to C_program by query = c_program_id. Send required json values and cloud_compilation_server respond with new object",
             produces = "application/json",
             protocols = "https",
             code = 201,
@@ -382,7 +382,7 @@ public class CompilationLibrariesController extends Controller {
 
 
                     }catch (Exception e){
-                        logger.error("Error while cloud_blocko_server tried compile version of C_program", e);
+                        logger.error("Error while cloud_compilation_server tried compile version of C_program", e);
                     }
 
                 }
@@ -622,17 +622,23 @@ public class CompilationLibrariesController extends Controller {
                        result.put("code", help.comprimate_code());
                        result.set("includes", help.includes() == null ? Json.newObject() : help.includes() );
 
-            logger.debug("Server checks compilation cloud_blocko_server");
-            // Kontroluji zda je nějaký kompilační cloud_blocko_server připojený
-            if(WebSocketController_Incoming.compiler_cloud_servers.isEmpty()) return GlobalResult.result_BadRequest("Compilation cloud_blocko_server is offline!", "server_offline");
+            logger.debug("Server checks compilation cloud_compilation_server");
+            // Kontroluji zda je nějaký kompilační cloud_compilation_server připojený
+            if(WebSocketController_Incoming.compiler_cloud_servers.isEmpty()) return GlobalResult.result_BadRequest("Compilation cloud_compilation_server is offline!", "server_offline");
 
             logger.debug("Server send c++ program for compilation");
-            // Odesílám na compilační cloud_blocko_server
+            // Odesílám na compilační cloud_compilation_server
+
+            NotificationController.starting_of_compilation(SecurityController.getPerson(), version_object);
+
             JsonNode compilation_result = WebSocketController_Incoming.compiler_server_make_Compilation(SecurityController.getPerson(), result);
 
 
             // V případě úspěšného buildu obsahuje příchozí JsonNode buildUrl
            if( compilation_result.has("buildUrl") ){
+
+               NotificationController.successful_compilation(SecurityController.getPerson(), version_object);
+
                logger.debug("Build was succesfull");
                // Updatuji verzi - protože vše proběhlo v pořádku
                version_object.compilation_in_progress = false;
@@ -658,14 +664,15 @@ public class CompilationLibrariesController extends Controller {
                            .setRequestTimeout(2500)
                            .get();
 
-                   String body = responsePromise.get(2500).getBody();
+
+                   byte[] body = responsePromise.get(2500).asByteArray();
 
                    logger.debug("Compilatin server respond successfuly");
                    if( body != null) {
                         // Daný soubor potřebuji dostat na Azure a Propojit s verzí
 
-                        String binary_file_in_string = UtilTools.get_encoded_binary_string_from_body(body);
-                        c_compilation.bin_compilation_file =  UtilTools.create_Binary_file( binary_file_in_string, "compilation.bin");
+                          String binary_file_in_string = UtilTools.get_encoded_binary_string_from_body(body);
+                         c_compilation.bin_compilation_file =  UtilTools.create_Binary_file( binary_file_in_string, "compilation.bin");
 
                    }
                }catch (Exception e){}
@@ -676,6 +683,9 @@ public class CompilationLibrariesController extends Controller {
            }
             // Kompilace nebyla úspěšná a tak vracím obsah neuspěšné kompilace
            else if(compilation_result.has("buildErrors")){
+
+               NotificationController.unsuccessful_compilation_warn( SecurityController.getPerson(), version_object, compilation_result.get("buildErrors").asText() );
+
                logger.debug("Build wasn't succesfull - buildErrors");
                version_object.compilable = false;
                version_object.update();
@@ -688,6 +698,8 @@ public class CompilationLibrariesController extends Controller {
 
             // Nebylo úspěšné ani odeslání reqestu - Chyba v konfiguraci a tak vracím defaulní chybz
            }else if(compilation_result.has("error") ){
+
+               NotificationController.unsuccessful_compilation_error( SecurityController.getPerson(), version_object,  compilation_result.get("error").asText());
 
                logger.debug("Build wasn't successful - error in communication");
                version_object.compilable = false;
@@ -762,9 +774,9 @@ public class CompilationLibrariesController extends Controller {
                        result.put("code", help.comprimate_code());
                        result.set("includes", help.includes() == null ? Json.newObject() : help.includes() );
 
-            if(WebSocketController_Incoming.compiler_cloud_servers.isEmpty()) return GlobalResult.result_BadRequest("Compilation cloud_blocko_server is offline!");
+            if(WebSocketController_Incoming.compiler_cloud_servers.isEmpty()) return GlobalResult.result_BadRequest("Compilation cloud_compilation_server is offline!");
 
-            // Odesílám na compilační cloud_blocko_server
+            // Odesílám na compilační cloud_compilation_server
             JsonNode compilation_result = WebSocketController_Incoming.compiler_server_make_Compilation(SecurityController.getPerson(), result);
 
             // V případě úspěšného buildu obsahuje příchozí JsonNode buildUrl
@@ -807,7 +819,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response =  Result_ok.class),
-            @ApiResponse(code = 400, message = "External cloud_blocko_server where is hardware is offline", response = Result_serverIsOffline.class),
+            @ApiResponse(code = 400, message = "External cloud_Homer_server where is hardware is offline", response = Result_serverIsOffline.class),
             @ApiResponse(code = 400, message = "Server reject file",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
@@ -838,8 +850,8 @@ public class CompilationLibrariesController extends Controller {
             if(!file_type.equals(".bin")) return GlobalResult.result_BadRequest("Wrong type of File - \"Bin\" required! ");
             if( (file.length() / 1024) > 500) return GlobalResult.result_BadRequest("File is bigger than 500K b");
 
-             // Existuje Homer?
-             ActualizationController.add_new_actualization_request(board.project, board, file, file_from_request.getFilename());
+            // Existuje Homer?
+            ActualizationController.add_new_actualization_request(board.project, board, file, file_from_request.getFilename());
 
             return GlobalResult.result_ok();
 
@@ -910,9 +922,9 @@ public class CompilationLibrariesController extends Controller {
             //Zkontroluji zda byla verze už zkompilována
             if(c_program_version.c_compilation == null) return GlobalResult.result_BadRequest("The program is not yet compiled");
 
-            // Pokud nemám kompilaci a zároveň je kompilační cloud_blocko_server offline - oznámím nemožnost pokračovat
+            // Pokud nemám kompilaci a zároveň je kompilační cloud_compilation_server offline - oznámím nemožnost pokračovat
             if(c_program_version.c_compilation.bin_compilation_file == null && WebSocketController_Incoming.compiler_cloud_servers.isEmpty()){
-                return GlobalResult.result_BadRequest("We have not your historic compilation and int the same time compilation cloud_blocko_server for compile your code is offline! So we cannot do anything now :((( ");
+                return GlobalResult.result_BadRequest("We have not your historic compilation and int the same time compilation cloud_compilation_server for compile your code is offline! So we cannot do anything now :((( ");
             }
 
             String typeOfBoard_id = c_program_version.c_program.type_of_board_id();
@@ -928,6 +940,7 @@ public class CompilationLibrariesController extends Controller {
                 // Kontrola oprávnění
                 if(board.update_permission() && board.type_of_board_id().equals(typeOfBoard_id)) board_for_update.add(board);
             }
+
 
             ActualizationController.add_new_actualization_request(c_program_version.c_program.project , board_for_update, c_program_version );
 
@@ -1136,7 +1149,7 @@ public class CompilationLibrariesController extends Controller {
 
     @ApiOperation(value = "Create new Processor",
             tags = {"Processor"},
-            notes = "If you want create new Processor. Send required json values and cloud_blocko_server respond with new object",
+            notes = "If you want create new Processor. Send required json values and server respond with new object",
             produces = "application/json",
             protocols = "https",
             code = 201,
@@ -1258,7 +1271,7 @@ public class CompilationLibrariesController extends Controller {
 
     @ApiOperation(value = "update Processor",
             tags = {"Processor"},
-            notes = "If you want update Processor.id by query = processor_id . Send required json values and cloud_blocko_server respond with update object",
+            notes = "If you want update Processor.id by query = processor_id . Send required json values and server respond with update object",
             produces = "application/json",
             protocols = "https",
             code = 200,
@@ -1363,7 +1376,7 @@ public class CompilationLibrariesController extends Controller {
 
     @ApiOperation(value = "Create new LibraryGroup",
             tags = {"LibraryGroup"},
-            notes = "If you want create new LibraryGroup. Send required json values and cloud_blocko_server respond with new object",
+            notes = "If you want create new LibraryGroup. Send required json values and server respond with new object",
             produces = "application/json",
             protocols = "https",
             code = 201,
@@ -1423,7 +1436,7 @@ public class CompilationLibrariesController extends Controller {
 
     @ApiOperation(value = "Create new Version in LibraryGroup",
             tags = {"LibraryGroup"},
-            notes = "If you want create new versinon in LibraryGroup query = libraryGroup_id. Send required json values and cloud_blocko_server respond with new object",
+            notes = "If you want create new versinon in LibraryGroup query = libraryGroup_id. Send required json values and server respond with new object",
             produces = "application/json",
             protocols = "https",
             code = 201,
@@ -1634,7 +1647,7 @@ public class CompilationLibrariesController extends Controller {
 
     @ApiOperation(value = "edit LibraryGroup",
             tags = {"LibraryGroup"},
-            notes = "If you want edit LibraryGroup by query libraryGroup_id. Send required json values and cloud_blocko_server respond with new object",
+            notes = "If you want edit LibraryGroup by query libraryGroup_id. Send required json values and server respond with new object",
             produces = "application/json",
             protocols = "https",
             code = 200,

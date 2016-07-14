@@ -174,6 +174,8 @@ public class Master_Updater{
 
                        if(plan.c_program_version_for_update.c_compilation.bin_compilation_file != null) {
                            logger.debug("User create own C_program and cloud_blocko_server has bin file of that");
+
+
                            files_codes.put(plan.c_program_version_for_update.id, plan.c_program_version_for_update.c_compilation.bin_compilation_file.get_fileRecord_from_Azure_inString() );
                        }
                        else{

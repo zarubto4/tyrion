@@ -98,6 +98,7 @@ public class WS_BlockoServer extends WebSCType{
 
                         Actualization_Task task = task_list.get(0);
 
+
                         System.out.println("Odesílám požadavek na aktualizaci!");
 
                         if(task.homer != null){
@@ -124,6 +125,7 @@ public class WS_BlockoServer extends WebSCType{
                                 task.board.update();
 
                                 WS_Homer_Cloud homer = (WS_Homer_Cloud) WebSocketController_Incoming.blocko_server_add_instance(this_server, temporary_instance );
+
 
                                 JsonNode result = WebSocketController_Incoming.homer_update_Yoda_firmware(homer, task.code);
                                 System.out.println("Odpověď na Aktualizaci:" + result.toString());

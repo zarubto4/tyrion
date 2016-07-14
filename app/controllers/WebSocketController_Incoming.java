@@ -749,7 +749,16 @@ public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, 
                     board.update();
                 }
 
-               ActualizationController.hardware_connected(board);
+                List<Person> persons = Person.find.where().eq("owningProjects.boards.id", board.id).findList();
+                for(Person person : persons){
+
+                    if( becki_website.containsKey(person.id)) {
+                        NotificationController.board_connect(person, board);
+                    }
+
+                }
+
+                ActualizationController.hardware_connected(board);
 
 
             }else {
@@ -772,6 +781,13 @@ public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, 
                     logger.warn("Unregistered Hardware: " +  json.get("macAddress").asText() );
                     logger.warn("WARN! WARN! WARN! WARN!");
                     return;
+                }
+
+                List<Person> persons = Person.find.where().eq("owningProjects.boards.id", board.id).findList();
+                for(Person person : persons){
+                    if( becki_website.containsKey(person.id)) {
+                        NotificationController.board_disconnect(person, board);
+                    }
                 }
 
                 ActualizationController.hardware_disconnected(board);
@@ -984,11 +1000,8 @@ public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, 
                 ObjectNode result = Json.newObject();
                 result.put("messageType", "notification");
                 result.put("messageChannel", "becki");
-                result.put("notification_id", notification.id);
-                result.put("notification_type",    notification.type.name()  );
                 result.put("notification_level",   notification.level.name() );
                 result.set("notification_body",    notification.notification_body());
-                result.put("notification_confirmation_required", notification.confirmation_required );
 
                 for(String person_connection_token : becki.all_person_Connections.keySet()){
                     WS_Becki_Single_Connection single_connection =  (WS_Becki_Single_Connection) becki.all_person_Connections.get(person_connection_token);
@@ -1385,7 +1398,6 @@ public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, 
         homer.write_with_confirmation(result);
     }
 
-
     // Json Messages - Homer Odběr dat z Instaní blocka pro Becki
         public static JsonNode homer_subscribe_blocko_instance(WebSCType homer) throws TimeoutException, InterruptedException {
 
@@ -1404,7 +1416,6 @@ public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, 
 
             homer.write_without_confirmation(result);
         }
-
 
     public static JsonNode homer_update_Yoda_firmware(WebSCType homer, String code) throws TimeoutException, InterruptedException {
 

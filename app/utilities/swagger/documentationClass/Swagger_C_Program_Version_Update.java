@@ -62,6 +62,7 @@ public class Swagger_C_Program_Version_Update {
 // Pomocné metody na separování obsahu *********************************************************************************    
     
     public String comprimate_code() {
+        if(user_files != null )
         for (User_Files user_file : user_files) {
             code += "\n \n " + user_file.code;
         }

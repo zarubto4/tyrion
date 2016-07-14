@@ -145,6 +145,9 @@ public class ActualizationController extends Controller {
 // Private -------------------------------------------------------------------------------------------------------------
 
     public static void add_new_actualization_request(Project project, Board board, File file, String file_name){
+
+            NotificationController.new_actualization_request_with_file( SecurityController.getPerson(), board,  file_name );
+
             List<Board> boards = new ArrayList<>();
             boards.add(board);
             add_new_actualization_request(project, boards, file, file_name);
@@ -152,6 +155,7 @@ public class ActualizationController extends Controller {
 
     public static void add_new_actualization_request(Project project, List<Board> boards, File file, String file_name){
         try {
+
 
             logger.debug("Incoming new Actualization request with user bin file! ");
 
@@ -229,9 +233,13 @@ public class ActualizationController extends Controller {
     }
 
     public static void add_new_actualization_request(Project project, Board board, Version_Object c_program_version){
+
+        NotificationController.new_actualization_request_on_version( SecurityController.getPerson(), c_program_version);
+
         List<Board> boards = new ArrayList<>();
         boards.add(board);
         add_new_actualization_request(project, boards, c_program_version);
+
     }
 
     public static void add_new_actualization_request(Project project, List<Board> boards, Version_Object c_program_version){
@@ -307,6 +315,9 @@ public class ActualizationController extends Controller {
     public static void add_new_actualization_request(Project project, Homer_Instance program_cloud) {
 
         try {
+
+            NotificationController.new_actualization_request_homer_instance( SecurityController.getPerson(), program_cloud);
+
             logger.debug("Incoming new Actualization request under program_cloud!");
 
             logger.debug("Creating new actualization procedure");

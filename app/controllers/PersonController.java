@@ -345,7 +345,7 @@ public class PersonController extends Controller {
             @ApiResponse(code = 200, message = "Result if its possible to used that",  response = Swagger_Entity_Validation.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result valid_Person_mail(@ApiParam(value = "mail value for cloud_blocko_server side unique control", required = true) @PathParam("person_id") String mail){
+    public  Result valid_Person_mail(@ApiParam(value = "mail value for server side unique control", required = true) @PathParam("person_id") String mail){
         try{
 
             Swagger_Entity_Validation validation = new Swagger_Entity_Validation();
@@ -375,7 +375,7 @@ public class PersonController extends Controller {
             @ApiResponse(code = 200, message = "Its possible used that",  response = Result_ok.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result valid_Person_NickName(@ApiParam(value = "nick_name value for cloud_blocko_server side - it must be unique", required = true) @PathParam("nick_name")  String nick_name){
+    public  Result valid_Person_NickName(@ApiParam(value = "nick_name value for server side - it must be unique", required = true) @PathParam("nick_name")  String nick_name){
         try{
 
             if(Person.find.where().ieq("nick_name", nick_name).findUnique() == null ) return GlobalResult.result_ok();

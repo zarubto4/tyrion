@@ -44,11 +44,6 @@ GET             /login/github/*url                          @controllers.Securit
 ################################################################################################################################################################################
 
 GET             /notification/list/:page_number             @controllers.NotificationController.get_history_log_page(page_number: Integer)
-GET             /notification/connection/:identificator     @controllers.NotificationController.subscribe_notification(identificator)
-DELETE          /notification/:notification_id              @controllers.NotificationController.remove_notification(notification_id)
-PUT             /notification/confirm/:notification_id      @controllers.NotificationController.confirm_Notification(notification_id)
-PUT             /notification                               @controllers.NotificationController.sendSomething(level, message)
-
 
 ### PERSON ############ PERSON ############### PERSON ################ PERSON ################# PERSON ############ PERSON #####################################################
 ################################################################################################################################################################################
@@ -175,10 +170,6 @@ DELETE         /project/b_program/version/:version_id                           
 
 PUT            /project/b_program/uploadToHomer/:b_program_id/:version_id/:homer_id         @controllers.ProgramingPackageController.uploadProgramToHomer_Immediately(b_program_id, version_id,homer_id)
 PUT            /project/b_program/uploadToCloud/:version_id                                 @controllers.ProgramingPackageController.upload_b_Program_ToCloud(version_id)
-
-# Dočasně smazány - řeším trochu jinak
-#PUT            /project/b_program/board/connect/:version_id/:board_id                       @controllers.ProgramingPackageController.connect_b_Program_hardware(version_id, board_id)
-#PUT            /project/b_program/board/disconnect/:version_id/:board_id                    @controllers.ProgramingPackageController.disconnect_b_Program_hardware(version_id, board_id)
 
 GET            /project/listOfUploadedHomers/:id                                            @controllers.ProgramingPackageController.listOfUploadedHomers(id: String)
 GET            /project/listOfHomersWaitingForUpload/:id                                    @controllers.ProgramingPackageController.listOfHomersWaitingForUpload(id: String)

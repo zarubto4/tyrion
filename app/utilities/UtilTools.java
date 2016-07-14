@@ -159,11 +159,11 @@ public class UtilTools extends Controller {
 
     }
 
-    public static String get_encoded_binary_string_from_body(String binary_body) throws Exception {
+    public static String get_encoded_binary_string_from_body(byte[] bytes) throws Exception {
 
         String encodedBase64 = null;
 
-        encodedBase64 = new String(Base64.getEncoder().encode(binary_body.getBytes()));
+        encodedBase64 = new String(Base64.getEncoder().encode( bytes ));
 
         return encodedBase64;
 
