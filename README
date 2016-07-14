@@ -33,6 +33,27 @@ Vázáno na přechod Notifikací na WebScoket - Před implementací je prerekviz
 ChangeLog
  * uploadBinaryFileToBoard  [TYRION-301](http://youtrack.byzance.cz/youtrack/issue/TYRION-301) - Jednak opraveno ale taktéž při opravě bylo vyřazeno chybně vyžadované tělo s ID zařízení, PLAY neumí přijmout soubor i Json naráz. Vyžadován momentálně pouze soubor a v URL uvedené jedno ID souboru. (PS fungovat by to mělo jako před tím, jen ten vyžadující Json tam bylo chybnou dokumentací navíc) (Tato API je taktéž výlučná - čistě pro vývojáře individuálně - masivní nahrávání bin souboru bude provedeno jinou procedurou než tato API)
 
+Feature: Obnova hesla
+  Pokud uživatel zapomene heslo, na frontendu vyplní svůj email a klikne na tlačítko pro obnovení hesla. Pomocí metody: 
+	POST {{url_Tyriona}}/coreClient/mail_person_password_recovery 
+  si zažádá o zaslaní emailu s linkem na změnu hesla, metoda vyžaduje JSON s obsahem:
+	{"mail":"user@mail.com"} 
+  Metoda pokaždé vrací code = 200. Pokud je email uživatele nalezen v databázi, vygeneruje se password_recovery_token a přijde mu email s adresou na frontend ve tvaru: 
+	{{url_Becki}}/passwordRestart&token="password_recovery_token" 
+  Na této adrese si uživatel vytvoří nové heslo. Adresu je možné změnit, pokud bude potřeba, stačí říct, teď je vzatá z configu Tyriona. Z frontendu přijde request: 
+	PUT {{url_Tyriona}}/coreClient/person_password_recovery 
+  který bude obsahovat JSON s obsahem:
+	{"mail"				:	"user@mail.com",
+	 "password_recovery_token"	:	"c2cf05c0-75a8-4c7c-9100-1c1bc520f0d0"
+	 "password"			:	"new_password"}
+  Token je platný 24 hodin, když uživatel rozklikne link po 24h, vrátí se odpověď code = 400 a uživatel si musí zažádat o nový email s linkem.
+  Pokud je token platný, změna hesla proběhne a uživatel je všude, kde může být přihlášený, odhlášen. 
+  Dále pokud uživatel klikne na tlačítko pro zaslání emailu vícekrát, tzn. že password_recovery_token je již vytvořený, budou mu chodit emaily s tímto tokenem,
+  ale jen 15 minut od vytvoření tohoto tokenu. Jakmile je token starší a uživatel znovu zažádá o email, vygenerue se nový token a starý se smaže.
+
+	Lexa Tylš
+  
+
 
 ### Oprava Bugů ###
 
@@ -61,6 +82,8 @@ http://youtrack.byzance.cz/youtrack/issue/TYRION-271??
  * fixed [TYRION-276](http://youtrack.byzance.cz/youtrack/issue/TYRION-276)
  * fixed [TYRION-273](http://youtrack.byzance.cz/youtrack/issue/TYRION-273)
  * fixed [TYRION-220](http://youtrack.byzance.cz/youtrack/issue/TYRION-220)
+ * fixed [TYRION-217](http://youtrack.byzance.cz/youtrack/issue/TYRION-217)
+ * fixed [TYRION-300](http://youtrack.byzance.cz/youtrack/issue/TYRION-300)
 
 
 ### TODO ###
@@ -82,7 +105,6 @@ http://youtrack.byzance.cz/youtrack/issue/TYRION-271??
   * TODO 17 Link je také v kodu http://youtrack.byzance.cz/youtrack/issue/TYRION-263
   * Propojení uživatelských účtu s wordpressem
   * Připojit místo vykompilované verze vlastní binárku a umožnit plošné aktualizování vlastní binárkou
-  * Obnova hesla
   * Radek - ukoly: Možnost napsat plugin pro aktualizaci přes USB a plugin do Eclipsu / intellij pro možnost nahrávat na konkrétní zařízení
 
 

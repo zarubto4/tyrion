@@ -4,15 +4,9 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 
-
-@ApiModel(description = "Json Model for creating new Person",
-          value = "Person_New")
-public class Swagger_Person_New {
-
-    @Constraints.Required
-    @Constraints.MinLength(value = 8)
-    @ApiModelProperty(required = true, value = "The nick_name must have at least 8 characters")
-    public String nick_name;
+@ApiModel(description = "Json Model for recovering person password",
+        value = "Person_Password_New")
+public class Swagger_Person_Password_New {
 
     @Constraints.Email
     @Constraints.Required
@@ -23,4 +17,8 @@ public class Swagger_Person_New {
     @Constraints.MinLength(value = 8)
     @Constraints.Required
     public String password;
+
+    @Constraints.Required
+    @ApiModelProperty(required = true, value = "Required authToken")
+    public String password_recovery_token;
 }

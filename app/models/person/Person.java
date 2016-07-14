@@ -30,7 +30,9 @@ public class Person extends Model {
                                                                 public String last_title;
 
                                                 @JsonIgnore     public boolean mailValidated;
+
                                        @Column(length = 64)     private byte[] shaPassword;
+    @JsonIgnore  @OneToOne(mappedBy = "person")                 public PasswordRecoveryToken passwordRecoveryToken;
 
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<Project>              owningProjects            = new ArrayList<>();
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<Post>                 postLiker                 = new ArrayList<>();    // Propojení, které byly uživatelem hodnoceny (jak negativně, tak pozitivně)
@@ -42,6 +44,7 @@ public class Person extends Model {
     @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<Post>                 personPosts          = new ArrayList<>(); // Propojení, které uživatel napsal
     @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<LinkedPost>           linkedPosts          = new ArrayList<>(); // Propojení, které uživatel nalinkoval
     @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL)     public List<FloatingPersonToken>  floatingPersonTokens = new ArrayList<>(); // Propojení, které uživatel napsal
+    @JsonIgnore  @OneToMany(mappedBy="owner",  cascade = CascadeType.ALL)     public List<InvitationToken>      invitations          = new ArrayList<>(); // Pozvánky, které uživatel rozeslal
     @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL)     public List<Notification>         notifications        = new ArrayList<>();
 
 
@@ -61,7 +64,13 @@ public class Person extends Model {
 
     @JsonIgnore @Transient
     public void setSha(String value) {
-        this.shaPassword = getSha512(value);
+        setShaPassword( getSha512(value) );
+    }
+
+    // Z důvodu Cashování Play na SETTER a GETTER byla zvolena tato "zbytečná metoda" - slouží jen pro Definování HASH hesla ( New, Recovery)
+    @JsonIgnore
+    public void setShaPassword(byte[] shaPassword) {
+        this.shaPassword = shaPassword;
     }
 
     @JsonIgnore @Transient

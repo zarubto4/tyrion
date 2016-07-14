@@ -10,6 +10,7 @@ import models.blocko.TypeOfBlock;
 import models.compiler.Board;
 import models.compiler.TypeOfBoard;
 import models.compiler.Version_Object;
+import models.person.InvitationToken;
 import models.person.Person;
 import models.project.b_program.B_Pair;
 import models.project.b_program.B_Program;
@@ -17,14 +18,17 @@ import models.project.b_program.Homer_Instance;
 import models.project.b_program.servers.Cloud_Homer_Server;
 import models.project.b_program.servers.Private_Homer_Server;
 import models.project.global.Project;
+import play.api.libs.mailer.MailerClient;
 import play.data.Form;
 import play.libs.Json;
+import play.libs.mailer.Email;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.Server;
 import utilities.UtilTools;
+import utilities.emails.EmailTool;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
@@ -32,10 +36,10 @@ import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Filter_List.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Homer_List;
-import utilities.swagger.outboundClass.Filter_List.Swagger_LibraryGroup_List;
 import utilities.webSocket.WS_BlockoServer;
 import utilities.webSocket.WebSCType;
 
+import javax.inject.Inject;
 import javax.websocket.server.PathParam;
 import java.util.ArrayList;
 import java.util.Date;
@@ -45,6 +49,8 @@ import java.util.UUID;
 @Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Secured.class)
 public class ProgramingPackageController extends Controller {
+
+    @Inject MailerClient mailerClient;
 
 // Loger  ##############################################################################################################
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
@@ -331,19 +337,58 @@ public class ProgramingPackageController extends Controller {
             // Kontrola oprávnění
             if (!project.share_permission() )   return GlobalResult.forbidden_Permission();
 
-            // Získání seznamu
-            List<Person> list = Person.find.where().idIn(help.persons_id).findList();
+            // Získání seznamu uživatelů, kteří jsou registrovaní(listIn) a kteří ne(listOut)
+            List<Person> listIn = new ArrayList<>();
+            List<String> listOut = help.persons_mail;
 
-            for (Person person : list) {
-                if (!person.owningProjects.contains(project)) {
-
-                    // Úprava objektů
-                    project.ownersOfProject.add(person);
-                    person.owningProjects.add(project);
-
-                    // Uložení do DB
-                    person.update();
+            // Roztřídění seznamů
+            for (String mail : listOut){
+                Person person =  Person.find.where().eq("mail",mail).findUnique();
+                if(!(person == null)){
+                    listIn.add(person);
+                    listOut.remove(person.mail);
                 }
+            }
+
+            for (String mail : listOut){
+                InvitationToken invitationToken = InvitationToken.find.where().eq("mail", mail).findUnique();
+                if(invitationToken == null){
+                    invitationToken = new InvitationToken();
+                    invitationToken.setInvitationToken();
+                    invitationToken.mail = mail;
+                    invitationToken.time_of_creation = new Date();
+                    invitationToken.owner = SecurityController.getPerson();
+                    invitationToken.project = project;
+                    invitationToken.save();
+                    project.invitations.add(invitationToken);
+                }
+
+                String link = Server.becki_invitationToCollaborate + "&token=" + invitationToken.invitation_token + "&mail=" + mail;
+
+                try {
+                    Email email = new EmailTool().sendInvitationEmail(mail, link);
+                    mailerClient.send(email);
+
+                } catch (Exception e) {
+                    logger.error ("Sending mail -> critical error", e);
+                    e.printStackTrace();
+                }
+            }
+
+            for (Person person : listIn) {
+
+                InvitationToken invitationToken = InvitationToken.find.where().eq("mail", person.mail).findUnique();
+                if(invitationToken == null){
+                    invitationToken = new InvitationToken();
+                    invitationToken.setInvitationToken();
+                    invitationToken.mail = person.mail;
+                    invitationToken.time_of_creation = new Date();
+                    invitationToken.owner = SecurityController.getPerson();
+                    invitationToken.project = project;
+                    invitationToken.save();
+                    project.invitations.add(invitationToken);
+                }
+                // TODO tady bude notifikace
             }
 
             // Uložení do DB
@@ -353,6 +398,61 @@ public class ProgramingPackageController extends Controller {
             return GlobalResult.result_ok(Json.toJson(project));
 
         } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+
+    @ApiOperation(value = "add participant to a Project",
+            tags = {"Project", "Board"},
+            notes = "adds Person to a Project, every piece of information is held in InvitationToken",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Project.share_permission", value = "true")
+                    })
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",            response = Project.class),
+            @ApiResponse(code = 400, message = "Objects not found",    response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result addParticipantToProject(String token, boolean decision ){
+        try{
+
+            // Kontroly objektů
+            InvitationToken invitationToken = InvitationToken.find.where().eq("invitation_token",token).findUnique();
+            if(invitationToken == null) return GlobalResult.notFoundObject("Invitation no longer exists");
+
+            Person person = Person.find.where().eq("mail", invitationToken.mail).findUnique();
+            if(person == null) return GlobalResult.notFoundObject("Person does not exist");
+
+            Project project = invitationToken.project;
+            if(project == null) return GlobalResult.notFoundObject("Project no longer exists");
+
+            if ((!person.owningProjects.contains(project))&&(decision)) {
+
+                // Úprava objektů
+                project.ownersOfProject.add(person);
+                person.owningProjects.add(project);
+            }
+
+            // Smazání tokenu
+            invitationToken.delete();
+
+            if(!decision){
+                // TODO notifikace, že pozvání nebylo přijato
+            }
+
+            // Uložení do DB
+            person.update();
+            project.update();
+
+            return GlobalResult.result_ok();
+        }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
         }
     }
@@ -381,11 +481,11 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Project.class),
+            @ApiResponse(code = 200, message = "Ok Result",                                 response = Project.class),
             @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",                      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",                  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -405,7 +505,7 @@ public class ProgramingPackageController extends Controller {
             if (!project.unshare_permission() )   return GlobalResult.forbidden_Permission();
 
             // Získání seznamu
-            List<Person> list = Person.find.where().idIn(help.persons_id).findList();
+            List<Person> list = Person.find.where().eq("mail",help.persons_mail).findList();
 
             for (Person person : list) {
                 if (person.owningProjects.contains(project)) {
@@ -613,7 +713,7 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result",               response = Swagger_LibraryGroup_List.class),
+            @ApiResponse(code = 200, message = "Ok result",               response = Swagger_Homer_List.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -1520,7 +1620,7 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful created",      response = Cloud_Homer_Server.class),
+            @ApiResponse(code = 201, message = "Successfully created",    response = Cloud_Homer_Server.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1580,7 +1680,8 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Update successfully",      response = Cloud_Homer_Server.class),
+            @ApiResponse(code = 200, message = "Updated successfully",    response = Cloud_Homer_Server.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1664,7 +1765,8 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",      response = Result_ok.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
@@ -1719,7 +1821,8 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successfully created", response =  TypeOfBlock.class),
+            @ApiResponse(code = 201, message = "Successfully created",    response = TypeOfBlock.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1783,7 +1886,8 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response =  TypeOfBlock.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = TypeOfBlock.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1833,7 +1937,8 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  TypeOfBlock.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response =  TypeOfBlock.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1894,7 +1999,8 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Result_ok.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1928,7 +2034,7 @@ public class ProgramingPackageController extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  TypeOfBlock.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "Ok Result",               response =  TypeOfBlock.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1981,7 +2087,8 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successfully created", response =  BlockoBlock.class),
+            @ApiResponse(code = 201, message = "Successfully created",    response = BlockoBlock.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -2048,7 +2155,8 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  BlockoBlock.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = BlockoBlock.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -2109,7 +2217,8 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  BlockoBlockVersion.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = BlockoBlockVersion.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -2149,7 +2258,8 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  BlockoBlock.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = BlockoBlock.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -2185,7 +2295,8 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Result_ok.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -2224,7 +2335,8 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Result_ok.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -2278,7 +2390,8 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successfully created", response =  BlockoBlockVersion.class),
+            @ApiResponse(code = 201, message = "Successfully created",    response = BlockoBlockVersion.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -2292,8 +2405,9 @@ public class ProgramingPackageController extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_BlockoBlock_BlockoVersion_New help = form.get();
 
-            // Získání objektu
+            // Kontrola objektu
             BlockoBlock blockoBlock = BlockoBlock.find.byId(blocko_block_id);
+            if(blockoBlock == null) return GlobalResult.notFoundObject("blockoBlock not found");
 
             // Vytvoření objektu
             BlockoBlockVersion version = new BlockoBlockVersion();
@@ -2345,7 +2459,8 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  BlockoBlockVersion.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = BlockoBlockVersion.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -2359,8 +2474,9 @@ public class ProgramingPackageController extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_BlockoBlock_BlockoVersion_Edit help = form.get();
 
-            // Získání objektu
+            // Kontrola objektu
             BlockoBlockVersion version = BlockoBlockVersion.find.byId(blocko_block_version_id);
+            if(version == null) return GlobalResult.notFoundObject("blocko_block_version_id not found");
 
             // Úprava objektu
             version.version_name = help.version_name;
@@ -2405,7 +2521,8 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  BlockoBlockVersion.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "Ok Result",               response = BlockoBlockVersion.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")

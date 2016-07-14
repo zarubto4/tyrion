@@ -14,7 +14,6 @@ public class Swagger_ShareProject_Person {
 
     @Constraints.Required
     @ApiModelProperty(required = true)
-    public List<String> persons_id;
-
+    public List<String> persons_mail;
 
  }
