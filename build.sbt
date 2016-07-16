@@ -30,7 +30,8 @@ libraryDependencies ++= Seq(
   "org.pegdown" % "pegdown" % "1.6.0",
   "net.sf.ehcache" % "ehcache" % "2.10.2",
   "com.microsoft.azure" % "adal4j" % "1.1.3",
-
+  "com.google.guava" % "guava" % "19.0",
+  "commons-collections" % "commons-collections" % "3.2.1",
   javaJdbc,
   filters,
   cache,

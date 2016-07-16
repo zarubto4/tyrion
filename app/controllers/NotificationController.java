@@ -37,9 +37,8 @@ public class NotificationController extends Controller {
       success,
       warning,
       error,
+      question
     }
-
-
 
 
   private static void send_notification(Person person, Notification notification) {
@@ -95,7 +94,7 @@ public class NotificationController extends Controller {
     send_notification(person, notification);
   }
 
-  public static void uploud_of_Instance_start(Person person, Homer_Instance instance){
+  public static void uploud_Instance_start(Person person, Homer_Instance instance){
 
     Notification notification = new Notification( Notification_level.info, person)
                                   .setText("Server start creating new Blocko Instance on Blocko Version  <b>" + instance.version_object.b_program.name + "</b>")
@@ -106,7 +105,7 @@ public class NotificationController extends Controller {
     send_notification(person, notification);
   }
 
-  public static void upload_of_Instance_was_successful(Person person, Homer_Instance instance){
+  public static void upload_Instance_was_successful(Person person, Homer_Instance instance){
 
     Notification notification = new Notification(Notification_level.success, person)
                                     .setText("Server created successfully instance in cloud on Blocko Version")
@@ -117,7 +116,7 @@ public class NotificationController extends Controller {
     send_notification(person, notification);
   }
 
-  public static void unload_of_Instance_was_unsuccessfull(Person person, Homer_Instance instance, String reason){
+  public static void unload_Instance_was_unsuccessfull(Person person, Homer_Instance instance, String reason){
 
     Notification notification = new Notification( Notification_level.warning, person)
                                     .setText("Server not upload instance to cloud on Blocko Version <b>" + instance.version_object.version_name + "</b> from Blocko program <b>" + instance.version_object.b_program.name + "</b> for <b> reason:\"" +  reason + "\" </b> ")

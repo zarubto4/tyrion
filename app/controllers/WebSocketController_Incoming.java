@@ -2,6 +2,10 @@ package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import models.compiler.Board;
 import models.compiler.Cloud_Compilation_Server;
 import models.compiler.Version_Object;
@@ -14,17 +18,23 @@ import models.project.m_program.Grid_Terminal;
 import models.project.m_program.M_Project;
 import play.libs.Json;
 import play.mvc.Controller;
+import play.mvc.Result;
+import play.mvc.Security;
 import play.mvc.WebSocket;
 import utilities.loggy.Loggy;
+import utilities.loginEntities.Secured;
+import utilities.loginEntities.TokenCache;
+import utilities.response.GlobalResult;
+import utilities.response.response_objects.Result_Unauthorized;
+import utilities.swagger.outboundClass.Swagger_Login_Token;
 import utilities.webSocket.*;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
 
-
+@Api(value = "Not Documented API - InProgress or Stuck")
 public class WebSocketController_Incoming extends Controller {
-
 
 // Loger
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
@@ -52,10 +62,43 @@ public class WebSocketController_Incoming extends Controller {
     // Becki (frontend) spojení na synchronizaci blocka atd.. - Podporován režim multipřihlášení.
     public static Map<String, WebSCType> becki_website = new HashMap<>(); // (Person_id - Identificator, List of Websocket connections - Identificator je Token)
 
-// PUBLIC API -------------------------------------------------------------------------------------------------------------------
+    public static TokenCache tokenCache = new TokenCache( (long) 5, (long) 500, 500);
+
+    // PUBLIC API -------------------------------------------------------------------------------------------------------------------
+
+    @ApiOperation(value = "get Connection Token",
+            tags = {"Access", "WebSocket"},
+            notes = "for connection to websocket, you have to connect with temporary unique token. This Api return ",
+            produces = "application/json",
+            consumes = "text/plain",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successfully logged out",   response = Swagger_Login_Token.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured.class)
+    public Result get_Websocket_token() {
+        try {
+
+            String web_socket_token = UUID.randomUUID().toString();
+
+            tokenCache.put(web_socket_token, SecurityController.getPerson().id);
+
+            Swagger_Login_Token swagger_login_token = new Swagger_Login_Token();
+            swagger_login_token.authToken = web_socket_token;
+
+            return GlobalResult.result_ok(Json.toJson(swagger_login_token));
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
 
     // Připojení Homera (Cloud i Local)
-    public  WebSocket<String>  homer_connection(String homer_mac_address){
+    @ApiOperation(value = "Homer Connection", hidden = true) public  WebSocket<String>  homer_connection(String homer_mac_address){
 
         logger.debug("Homer Connection on mac_address: " + homer_mac_address);
 
@@ -161,6 +204,7 @@ public class WebSocketController_Incoming extends Controller {
         }
     }
 
+    @ApiOperation(value = "Terminal connection", tags = {"WebSocket"})
     public  WebSocket<String>  mobile_connection(String m_project_id, String terminal_id) {
         try {
 
@@ -331,6 +375,7 @@ public class WebSocketController_Incoming extends Controller {
             return WebSocket.reject(forbidden());
         }
     }
+    @ApiOperation(value = "Homer Server Connection", tags = {"WebSocket"})
     public  WebSocket<String>  blocko_cloud_server_connection(String server_name){
         try{
 
@@ -484,6 +529,7 @@ public class WebSocketController_Incoming extends Controller {
             return WebSocket.reject(forbidden());
         }
     }
+    @ApiOperation(value = "Compilation Server Conection", tags = {"WebSocket"})
     public  WebSocket<String>  compilator_server_connection (String server_name){
         try{
             logger.debug("Compilation cloud_blocko_server is connecting. Server: " + server_name);
@@ -509,15 +555,25 @@ public class WebSocketController_Incoming extends Controller {
             return WebSocket.reject(forbidden("Server side error"));
         }
     }
+    @ApiOperation(value = "FrontEnd Becki Connection", tags = {"WebSocket"})
     public  WebSocket<String>  becki_website_connection (String security_token){
         try{
 
             logger.debug("Becki: Incoming connection: " + security_token);
 
+            String person_id = tokenCache.get(security_token);
+            tokenCache.remove(security_token);
+
+            if(person_id == null ) {
+                logger.warn("Becki: Incoming token " + security_token + " is invalid! Probably to late for axcess");
+                return WebSocket.reject(forbidden());
+            }
+
+
             logger.debug("Becki: Controlling of incoming token " + security_token);
-            Person person = Person.findByAuthToken(security_token);
+            Person person = Person.find.byId(person_id);
             if(person == null){
-                logger.warn("Becki: Incoming token " + security_token + " is invalid!");
+                logger.warn("Person with this id not exist!");
                 return WebSocket.reject(forbidden());
             }
 
@@ -802,12 +858,14 @@ public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, 
 
 // PRIVATE Compiler-Server --------------------------------------------------------------------------------------------------------
 
-    public static void compiler_server_is_disconnect(WS_CompilerServer compilerServer)  {
-        logger.debug("Connection lost with compilation cloud_blocko_server!: " + compilerServer.identifikator);
-        compiler_cloud_servers.remove(compilerServer.identifikator);
+    public static void compilation_server_incoming_message(WS_CompilerServer server, ObjectNode json){
+        logger.warn("Speciálně  server2server přišla zpráva: " + json.asText() );
+        logger.warn("Zatím není implementovaná žádná reakce na příchozá zprávu z Compilačního serveru !!");
     }
 
-    public static JsonNode compiler_server_make_Compilation(Person compilator, ObjectNode jsonNodes) throws TimeoutException, InterruptedException {
+
+    // Vytvoř kompilaci
+        public static JsonNode compiler_server_make_Compilation(Person compilator, ObjectNode jsonNodes) throws TimeoutException, InterruptedException {
 
         List<String> keys      = new ArrayList<>(compiler_cloud_servers.keySet());
         WS_CompilerServer server = (WS_CompilerServer) compiler_cloud_servers.get( keys.get( new Random().nextInt(keys.size())) );
@@ -879,20 +937,20 @@ public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, 
         }
     }
 
-    public static void compiler_server_ping(WS_CompilerServer compilerServer) throws TimeoutException, InterruptedException {
-
+    // Ping
+        public static void compiler_server_ping(WS_CompilerServer compilerServer) throws TimeoutException, InterruptedException {
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "ping");
         result.put("messageChannel", "tyrion");
 
-
         compilerServer.write_without_confirmation(result);
     }
 
-    public static void compilation_server_incoming_message(WS_CompilerServer server, ObjectNode json){
-        logger.warn("Speciálně  server2server přišla zpráva: " + json.asText() );
-        logger.warn("Zatím není implementovaná žádná reakce na příchozá zprávu z Compilačního serveru !!");
+    // Reakce na odhlášení compilačního serveru
+        public static void compiler_server_is_disconnect(WS_CompilerServer compilerServer)  {
+        logger.debug("Connection lost with compilation cloud_blocko_server!: " + compilerServer.identifikator);
+        compiler_cloud_servers.remove(compilerServer.identifikator);
     }
 
 // PRIVATE Becki -----------------------------------------------------------------------------------------------------------------

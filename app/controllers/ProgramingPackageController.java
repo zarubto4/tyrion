@@ -1408,16 +1408,16 @@ public class ProgramingPackageController extends Controller {
 
 
                     if(!  WebSocketController_Incoming.homer_online_state(private_homer_server.id) ) {
-                       NotificationController.unload_of_Instance_was_unsuccessfull( SecurityController.getPerson() , program_homer , "One of the components of the server is not available");
+                       NotificationController.unload_Instance_was_unsuccessfull( SecurityController.getPerson() , program_homer , "One of the components of the server is not available");
                        this.interrupt();
                    }
 
                     JsonNode result = WebSocketController_Incoming.homer_upload_program(WebSocketController_Incoming.incomingConnections_homers.get(private_homer_server.id), version_object.id, version_object.files.get(0).get_fileRecord_from_Azure_inString());
 
                     if(result.get("status").asText().equals("success")){
-                       NotificationController.upload_of_Instance_was_successful( SecurityController.getPerson() , program_homer);
+                       NotificationController.upload_Instance_was_successful( SecurityController.getPerson() , program_homer);
                     } else {
-                       NotificationController.unload_of_Instance_was_unsuccessfull( SecurityController.getPerson() , program_homer , result.get("error").asText() );
+                       NotificationController.unload_Instance_was_unsuccessfull( SecurityController.getPerson() , program_homer , result.get("error").asText() );
                     }
 
                 } catch (Exception e) {

@@ -9,11 +9,11 @@
 ### Testovací ############ Testovací ############### Testovací ################ Testovací ###########################################################################
 ###################################################################################f#################################################################################
 
-POST             /test1                                      @controllers.SecurityController.wordpress_login()
+POST            /test1                                      @controllers.SecurityController.wordpress_login()
 GET             /test2                                      @controllers.WikyController.test2()
 GET             /test3                                      @controllers.WikyController.test3()
 
-### TERMINAL ############ TERMINAL ############### TERMINAL ################ TERMINAL #######################################################################################
+### WEBSOCKET ############ WEBSOCKET ############### WEBSOCKET ################ WEBSOCKET #######################################################################################
 ###################################################################################f#########################################################################################
 
 GET              /websocket/homer/:mac_adress                  @controllers.WebSocketController_Incoming.homer_connection(mac_adress)
@@ -21,6 +21,7 @@ GET              /websocket/mobile/:m_project_id/:mac_adress   @controllers.WebS
 GET              /websocket/blocko_server/:identificator       @controllers.WebSocketController_Incoming.blocko_cloud_server_connection(identificator)
 GET              /websocket/compilation_server/:identificator  @controllers.WebSocketController_Incoming.compilator_server_connection(identificator)
 GET              /websocket/becki/:secure_token                @controllers.WebSocketController_Incoming.becki_website_connection(secure_token)
+GET              /websocket/access_token                       @controllers.WebSocketController_Incoming.get_Websocket_token()
 
 
 #API - CoreClient ##############################################################################################################################################################
@@ -147,7 +148,7 @@ GET            /project/project                                                 
 DELETE         /project/project/:project_id                                                 @controllers.ProgramingPackageController.deleteProject(project_id)
 PUT            /project/project/shareProject/:project_id                                    @controllers.ProgramingPackageController.shareProjectWithUsers(project_id)
 PUT            /project/project/unshareProject/:project_id                                  @controllers.ProgramingPackageController.unshareProjectWithUsers(project_id)
-PUT            /project/project/addParticipant/:token/:decision                             @controllers.ProgramingPackageController.addParticipantToProject(token, decision: boolean)
+PUT            /project/project/addParticipant/:token/:decision                             @controllers.ProgramingPackageController.addParticipantToProject(token, decision: Boolean)
 
 #Homer
 POST           /project/homer                                                               @controllers.ProgramingPackageController.newHomer()

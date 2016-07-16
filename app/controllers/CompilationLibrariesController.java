@@ -2024,8 +2024,9 @@ public class CompilationLibrariesController extends Controller {
 
     @ApiOperation(value = "Upload file to SingleLibrary",
             tags = {"SingleLibrary"},
-            notes = "Upload file to SingleLibrary in txt format",
+            notes = "Upload file to SingleLibrary in file format",
             produces = "application/json",
+            consumes = "multipart/form-data",
             protocols = "https",
             code = 200,
             extensions = {
