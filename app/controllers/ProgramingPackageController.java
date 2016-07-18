@@ -350,7 +350,9 @@ public class ProgramingPackageController extends Controller {
                 }
             }
 
+            // Vytvoření pozvánky pro nezaregistrované uživatele
             for (String mail : listOut){
+
                 InvitationToken invitationToken = InvitationToken.find.where().eq("mail", mail).findUnique();
                 if(invitationToken == null){
                     invitationToken = new InvitationToken();
@@ -365,8 +367,9 @@ public class ProgramingPackageController extends Controller {
 
                 String link = Server.becki_invitationToCollaborate + "&token=" + invitationToken.invitation_token + "&mail=" + mail;
 
+                // Odeslání emailu s linkem pro registraci
                 try {
-                    Email email = new EmailTool().sendInvitationEmail(mail, link);
+                    Email email = new EmailTool().sendInvitationEmail(mail, "name", link, "text");
                     mailerClient.send(email);
 
                 } catch (Exception e) {
@@ -388,7 +391,8 @@ public class ProgramingPackageController extends Controller {
                     invitationToken.save();
                     project.invitations.add(invitationToken);
                 }
-                // TODO tady bude notifikace
+
+                NotificationController.project_invitation(SecurityController.getPerson(),person,project);
             }
 
             // Uložení do DB
@@ -443,8 +447,11 @@ public class ProgramingPackageController extends Controller {
             // Smazání tokenu
             invitationToken.delete();
 
+            // Odeslání notifikace podle rozhodnutí uživatele
             if(!decision){
-                // TODO notifikace, že pozvání nebylo přijato
+                NotificationController.project_rejected_by_invited_person(invitationToken.owner, person, project);
+            }else{
+                NotificationController.project_accepted_by_invited_person(invitationToken.owner, person, project);
             }
 
             // Uložení do DB

@@ -197,7 +197,7 @@ public class PersonController extends Controller {
                 link = Server.becki_passwordReset + "&token=" + previousToken.password_recovery_token;
             }
             try {
-                Email email = new EmailTool().sendPasswordRecoveryEmail(help.mail, link);
+                Email email = new EmailTool().sendPasswordRecoveryEmail(help.mail,"name", link, "text");
                 mailerClient.send(email);
 
             } catch (Exception e) {

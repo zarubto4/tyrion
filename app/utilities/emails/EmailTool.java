@@ -18,9 +18,9 @@ public class EmailTool{
                 .setBodyHtml(html);
     }
 
-    public Email sendPasswordRecoveryEmail(String userMail, String tokenLink){
+    public Email sendPasswordRecoveryEmail(String userMail, String linkName, String tokenLink, String textInput){
 
-        String html = utilities.emails.templates.html.PasswordRecovery.render(Configuration.root().getString("serverLink.Production"), tokenLink).body();
+        String html = utilities.emails.templates.html.EmailScheme.render(linkName, tokenLink, textInput).body();
 
         return new Email()
                 .setSubject("Password Recovery")
@@ -30,9 +30,9 @@ public class EmailTool{
                 .setBodyHtml(html);
     }
 
-    public Email sendInvitationEmail(String userMail, String tokenLink){
+    public Email sendInvitationEmail(String userMail, String linkName, String tokenLink, String textInput){
 
-        String html = utilities.emails.templates.html.InvitationEmail.render(Configuration.root().getString("serverLink.Production"), tokenLink).body();
+        String html = utilities.emails.templates.html.EmailScheme.render(linkName, tokenLink, textInput).body();
 
         return new Email()
                 .setSubject("Invitation to collaborate")

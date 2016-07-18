@@ -147,7 +147,7 @@ GET            /project/project                                                 
 DELETE         /project/project/:project_id                                                 @controllers.ProgramingPackageController.deleteProject(project_id)
 PUT            /project/project/shareProject/:project_id                                    @controllers.ProgramingPackageController.shareProjectWithUsers(project_id)
 PUT            /project/project/unshareProject/:project_id                                  @controllers.ProgramingPackageController.unshareProjectWithUsers(project_id)
-PUT            /project/project/addParticipant/:token/:decision                             @controllers.ProgramingPackageController.addParticipantToProject(token, decision: boolean)
+PUT            /project/project/addParticipant/:token/:decision                             @controllers.ProgramingPackageController.addParticipantToProject(token, decision: Boolean)
 
 #Homer
 POST           /project/homer                                                               @controllers.ProgramingPackageController.newHomer()
