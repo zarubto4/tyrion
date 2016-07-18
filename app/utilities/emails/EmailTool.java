@@ -1,53 +1,15 @@
 package utilities.emails;
 
-import play.Configuration;
 import play.libs.mailer.Email;
 
 public class EmailTool{
 
+    public Email sendEmail(String userMail, String subject, String content){
 
-    public Email sendEmailValidation(String name, String userMail, String tokenLink){
-
-        String html = utilities.emails.templates.html.ActivatedAccount.render(Configuration.root().getString("serverLink.Production"), tokenLink).body();
-
-        return new Email()
-                .setSubject("Validation of your account")
-                .setFrom("Byzance IoT Platform <cloud_blocko_server@byzance.cz>")
-                .addTo( name + "<"+ userMail +">")
-                .setBodyText("A text message")
-                .setBodyHtml(html);
-    }
-
-    public Email sendPasswordRecoveryEmail(String userMail, String linkName, String tokenLink, String textInput){
-
-        String html = utilities.emails.templates.html.EmailScheme.render("TOTO je LINK", tokenLink, "blablabla").body();
+        String html = utilities.emails.templates.html.EmailScheme.render(content).body();
 
         return new Email()
-                .setSubject("Password Recovery")
-                .setFrom("Byzance IoT Platform <cloud_blocko_server@byzance.cz>")
-                .addTo("<"+ userMail +">")
-                .setBodyText("A text message")
-                .setBodyHtml(html);
-    }
-
-    public Email sendPasswordRecoveryConfirmationEmail(String userMail, String linkName, String tokenLink, String textInput){
-
-        String html = utilities.emails.templates.html.PasswordRecovery.render(Configuration.root().getString("serverLink.Production"), tokenLink).body();
-
-        return new Email()
-                .setSubject("Password Recovery")
-                .setFrom("Byzance IoT Platform <cloud_blocko_server@byzance.cz>")
-                .addTo("<"+ userMail +">")
-                .setBodyText("A text message")
-                .setBodyHtml(html);
-    }
-
-    public Email sendInvitationEmail(String userMail, String linkName, String tokenLink, String textInput){
-
-        String html = utilities.emails.templates.html.InvitationEmail.render(Configuration.root().getString("serverLink.Production"), tokenLink).body();
-
-        return new Email()
-                .setSubject("Invitation to collaborate")
+                .setSubject(subject)
                 .setFrom("Byzance IoT Platform <cloud_blocko_server@byzance.cz>")
                 .addTo("<"+ userMail +">")
                 .setBodyText("A text message")
