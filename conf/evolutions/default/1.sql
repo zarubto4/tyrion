@@ -244,14 +244,14 @@ create table m_project (
 
 create table notification (
   id                        varchar(255) not null,
-  level                     varchar(7),
+  level                     varchar(8),
   content_string            TEXT,
   confirmation_required     boolean,
   confirmed                 boolean,
   read                      boolean,
   created                   timestamp,
   person_id                 varchar(255),
-  constraint ck_notification_level check (level in ('info','success','warning','error')),
+  constraint ck_notification_level check (level in ('info','success','warning','error','question')),
   constraint pk_notification primary key (id))
 ;
 

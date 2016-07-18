@@ -3,20 +3,25 @@
 -----
 
 ## 1. ##
-Cílem této verze bylo vyřešit všechny problémy, které trápí vývojáře Becki a nastavit po meetingu nové standardy vývoje. Jde především o zapisování změn, hotový a použitelný changelog a difftool přístupný mezi posledními dvěma verzemi. SLouží jak vývojářům Becki, Tyrionu, tak navázaných (GRID aplikací) 
+Cílem této verze bylo vyřešit všechny problémy, které trápí vývojáře Becki a nastavit po meetingu nové standardy vývoje. Jde především o zapisování změn, hotový a použitelný changelog a difftool přístupný mezi posledními dvěma verzemi. Slouží jak vývojářům Becki, Tyrionu, tak navázaných (GRID aplikací). Tomáš si podle něj také kontroluje co všechno se mohlo posrat.  
 
 ## 2. ##
-Podle tracku [TYRION-261](http://youtrack.byzance.cz/youtrack/issue/TYRION-261) bylo doimplementováno, jak odhlásit příjmanou instanci - což vede k tomu, že až teď jde oteoreticky odebírat více instancí najendou. Jedinným orzdílem příkazu odebírání "subscribe" je "unsubscribe"
+Podle tracku [TYRION-261](http://youtrack.byzance.cz/youtrack/issue/TYRION-261) bylo doimplementováno, jak odhlásit příjímaný stream z instanci Homer serveru. Což vede k tomu, že až teď jde teoreticky odebírat více instancí najendou. Jedinným rozdílem příkazu odebírání "subscribe" je "unsubscribe"
 		
-
 ## 3. ##	
 Doplnění Dokumentace a popisu k novým Api jež slouží k zobrazení aktualizací HW. 
 
-## 4. ##
-Vázáno na přechod Notifikací na WebScoket - Před implementací je prerekvizita funkčního notifikačního centra postaveného na WebSocketu). Tímto Backend uzavírá všechny předchozí bugy spojené s notifikačním centrem Přes SSE za zastaralé a dále nepodporované.
+## 4. ## 
+Byl vyřešen problém s možným bezpečnostním rizikem připojení na websocket prozrazením adresy. [TYRION-260](http://youtrack.byzance.cz/youtrack/issue/TYRION-260)
+Pro připojení je nutné nejdříve požádat s vaším authTokenem na zabezpečené API o token, jenž složí jako proméná do URL pro přihlášení. 
+Tento token je jednorázový a nelze se s ním připojit dvakrát. Má také životnost oscilující kolem 5 vteřin (je tam bráno v úvahu zatížení serveru)
+[SWAGGER API](http://swagger.byzance.cz/#!/Access/get_Websocket_token) 
 
-	1) Pro odběr notifikací je nutné se přihlásit k odběru Websocketu
-	2) Požádat Tyrion o zasílání notifikací - Z důvodu podpory více přihlášení jednoho uživatele se 	přihlášení provede jen na tom spojení uživatele, které si o to požádá! 
+## 5. [TYRION-303](http://youtrack.byzance.cz/youtrack/issue/TYRION-303)##
+Přechod Notifikací na WebScoket - (Před implementací je prerekvizita funkčního notifikačního centra postaveného na WebSocketu). Tímto Backend uzavírá všechny předchozí bugy spojené s notifikačním centrem Přes SSE za zastaralé a dále nepodporované. A nadále předpokládá využívání Websocketu)
+
+	1) Pro odběr notifikací je nutné se přihlásit k odběru Websocketu pomocí vyžádání si tokenu pro přihlášení (viz předchozí bod 4.)
+	2) Požádat Tyrion o zasílání notifikací - Z důvodu podpory více přihlášení jednoho uživatele se přihlášení provede jen na tom spojení přihlášeného uživatele, které si o to požádá! 
 		 {
 		 	"messageChannel" : "becki",
 			"messageType"    : "subscribe_notification",
@@ -28,10 +33,46 @@ Vázáno na přechod Notifikací na WebScoket - Před implementací je prerekviz
        			"messageType"    : "unsubscribe_notification",
        			"messageId"	 : " some random message nuber for response"		 
        		 }
-	4) Po té Becki začne dostávat 	 
+	4) Po té Becki začne dostávat stream notifkací. 
+		Ty josu postaveny na paternu skládání zpráv z jednotlivých objektů v JSON. 
+		
+	Dokumentace je na documentation.byzance.cz v sekci REST-API 	
+	
+	 
+## 6. Parametr OPTION ## 
+Každý objekt byl v Tyrionovi pečlivě definován a zmizel tak parametr Option, kde se vyskytuje je to bráno tak, že to tak má být. Doporučujeme do začátku rychlou zprávu přes Yammer (Dotaz jestli se vám něco nezdá, než hned to reportovat)
+ 
 
-ChangeLog
- * uploadBinaryFileToBoard  [TYRION-301](http://youtrack.byzance.cz/youtrack/issue/TYRION-301) - Jednak opraveno ale taktéž při opravě bylo vyřazeno chybně vyžadované tělo s ID zařízení, PLAY neumí přijmout soubor i Json naráz. Vyžadován momentálně pouze soubor a v URL uvedené jedno ID souboru. (PS fungovat by to mělo jako před tím, jen ten vyžadující Json tam bylo chybnou dokumentací navíc) (Tato API je taktéž výlučná - čistě pro vývojáře individuálně - masivní nahrávání bin souboru bude provedeno jinou procedurou než tato API)
+# ChangeLog # 
+
+-------
+
+ ## uploadBinaryFileToBoard  [TYRION-301](http://youtrack.byzance.cz/youtrack/issue/TYRION-301) ##
+Jednak opraveno ale taktéž při opravě bylo vyřazeno chybně vyžadované tělo s ID zařízení, PLAY neumí přijmout soubor i Json naráz. Vyžadován momentálně pouze soubor a v URL uvedené jedno ID souboru. (PS fungovat by to mělo jako před tím, jen ten vyžadující Json tam bylo chybnou dokumentací navíc) (Tato API je taktéž výlučná - čistě pro vývojáře individuálně - masivní nahrávání bin souboru bude provedeno jinou procedurou než tato API a přibude v budoucnu)
+ 
+
+## Uprava C_program version [TYRION-309](http://youtrack.byzance.cz/youtrack/issue/TYRION-309) ## 
+U C_programu při ukládání nové verze byla v Json položka  "code" : "něco.." dále user_files..  ale při GET Version to bylo zabalené v user_code což nedávalo smysl a komplikovalo vám to kod (nechápu že nebylo hlášeno jako bug! - opraveno tak aby jak PUT JSON i GET JSON aby obě hodnoty korespondovaly a byly jednotné!
+
+ value code byla přejmenována na main (Aby korespondovala se strukturou progrmaování v céčku)
+
+	 {
+	 ...
+	 ...
+
+	 "main" : ..
+	 "user_files" : ...
+	 "external_libraries" : ...
+	 }
+
+--------
+ 
+ TODO - NEní hotové!!!!  
+## Uprava zabezpečení protékajících zpráv na websocketu mezi Homer serverm a Becki (přes Tyriona) [TYRION-306](http://youtrack.byzance.cz/youtrack/issue/TYRION-306) ##
+   Je zdokumentováno na public docu nově [DOCU](http://documentation.byzance.cz) v záložce REST-API 
+   v sekci websocket, jaké zprávy můžete zasílat. Ostatní budou blokovány. 	
+   
+ 
 
 Feature: Obnova hesla
   Pokud uživatel zapomene heslo, na frontendu vyplní svůj email a klikne na tlačítko pro obnovení hesla. Pomocí metody: 
@@ -59,13 +100,10 @@ Feature: Obnova hesla
 
 * fixed [TYRION-185](http://youtrack.byzance.cz/youtrack/issue/TYRION-185)
 * fixed [TYRION-258](http://youtrack.byzance.cz/youtrack/issue/TYRION-258)
-* Uzavřeno uzavřeno [TYRION-70](http://youtrack.byzance.cz/youtrack/issue/TYRION-70)
+* Uzavřeno [TYRION-70](http://youtrack.byzance.cz/youtrack/issue/TYRION-70)
 * fixed [TYRION-257](http://youtrack.byzance.cz/youtrack/issue/TYRION-257)
 * fixed [TYRION-257](http://youtrack.byzance.cz/youtrack/issue/TYRION-280)
 * fixed [TYRION-299](http://youtrack.byzance.cz/youtrack/issue/TYRION-299)
-
-http://youtrack.byzance.cz/youtrack/issue/TYRION-271??
-
  * fixed [TYRION-278](http://youtrack.byzance.cz/youtrack/issue/TYRION-278)
  * fixed [TYRION-271](http://youtrack.byzance.cz/youtrack/issue/TYRION-271)
  * fixed [TYRION-277](http://youtrack.byzance.cz/youtrack/issue/TYRION-277)
@@ -88,7 +126,6 @@ http://youtrack.byzance.cz/youtrack/issue/TYRION-271??
 
 ### TODO ###
 
-  * TODO 3 Tomáš Z.: Zdokumentovat všechny Models pro Swagger
   * TODO 4 Tomáš Z.: Přidat cyklické odmazávání BLOB v Azure, na které už neexistuje databázová vazba (Nějaká fičura co se zapne každý den ve 3 ráno a provede sekvenci kam
       každý vývojář může přidávat metody které se provedou... (Mazání prošlých tokenů, mazání prošlých nedokončených ověření přes sociální sítě atd... Viz todo 5)
   * TODO 5 Tomáš Z.: Přidat cyklické odmazávání Vygenerovaných nezrealizovaných spojení na sociální sítě (Linkded Account)
@@ -106,7 +143,7 @@ http://youtrack.byzance.cz/youtrack/issue/TYRION-271??
   * Propojení uživatelských účtu s wordpressem
   * Připojit místo vykompilované verze vlastní binárku a umožnit plošné aktualizování vlastní binárkou
   * Radek - ukoly: Možnost napsat plugin pro aktualizaci přes USB a plugin do Eclipsu / intellij pro možnost nahrávat na konkrétní zařízení
-
+  * http://youtrack.byzance.cz/youtrack/issue/TYRION-271??
 
 
 

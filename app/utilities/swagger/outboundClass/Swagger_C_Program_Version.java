@@ -1,5 +1,6 @@
 package utilities.swagger.outboundClass;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.compiler.Version_Object;
@@ -29,7 +30,13 @@ public class Swagger_C_Program_Version {
     public boolean compilable;
 
     @ApiModelProperty(required = false, readOnly = true )
-    public String version_code;
+    public JsonNode main;
+
+   @ApiModelProperty(required = false, readOnly = true )
+    public JsonNode user_files;
+
+    @ApiModelProperty(required = false, readOnly = true )
+    public JsonNode external_libraries;
 
 
     @ApiModelProperty(required = true, readOnly = true, value = "Value can be empty, Server cannot guarantee that. External documentation: " + C_Compilation.virtual_input_output_docu)

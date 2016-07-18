@@ -3,6 +3,7 @@ package models.project.c_program;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -11,6 +12,7 @@ import models.compiler.TypeOfBoard;
 import models.compiler.Version_Object;
 import models.project.b_program.B_Pair;
 import models.project.global.Project;
+import play.libs.Json;
 import utilities.swagger.outboundClass.Swagger_C_Program_Version;
 
 import javax.persistence.*;
@@ -75,7 +77,15 @@ public class C_Program extends Model {
         c_program_versions.compilation_restored     = FileRecord.find.where().eq("c_compilations_binary_files.version_object.c_program.id", id).where().eq("file_name", "compilation.bin").findRowCount() > 0;
 
         FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "c-program.json").findUnique();
-        if(fileRecord != null) c_program_versions.version_code             = fileRecord.get_fileRecord_from_Azure_inString();
+
+        if(fileRecord != null) {
+
+            JsonNode json = Json.parse( fileRecord.get_fileRecord_from_Azure_inString() ) ;
+            c_program_versions.main = json.get("main");
+            c_program_versions.user_files = json.get("user_files");
+            c_program_versions.external_libraries = json.get("external_libraries");
+
+        }
 
         if(version_object.c_compilation != null ) {
             c_program_versions.virtual_input_output = version_object.c_compilation.virtual_input_output;

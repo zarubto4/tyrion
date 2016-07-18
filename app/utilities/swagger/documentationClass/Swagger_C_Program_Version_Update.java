@@ -24,7 +24,7 @@ public class Swagger_C_Program_Version_Update {
 
     @Constraints.Required
     @ApiModelProperty(required = true)
-    public String code;
+    public String main;
 
     @Valid
     public List<User_Files> user_files;
@@ -64,9 +64,9 @@ public class Swagger_C_Program_Version_Update {
     public String comprimate_code() {
         if(user_files != null )
         for (User_Files user_file : user_files) {
-            code += "\n \n " + user_file.code;
+            main += "\n \n " + user_file.code;
         }
-        return  code;
+        return  main;
     }
 
     

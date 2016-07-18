@@ -24,8 +24,8 @@ public class Swagger_C_Program_Version_New {
     public String version_description;
 
 
-    @ApiModelProperty(required = false)
-    public String code;
+    @ApiModelProperty(required = true)
+    public String main;
 
     @ApiModelProperty(required = false)
     @Valid public List<User_Files> user_files;

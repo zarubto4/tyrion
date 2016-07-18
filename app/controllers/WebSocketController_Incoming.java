@@ -26,7 +26,7 @@ import utilities.loginEntities.Secured;
 import utilities.loginEntities.TokenCache;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_Unauthorized;
-import utilities.swagger.outboundClass.Swagger_Login_Token;
+import utilities.swagger.outboundClass.Swagger_Websocket_Token;
 import utilities.webSocket.*;
 
 import java.io.IOException;
@@ -66,7 +66,7 @@ public class WebSocketController_Incoming extends Controller {
 
     // PUBLIC API -------------------------------------------------------------------------------------------------------------------
 
-    @ApiOperation(value = "get Connection Token",
+    @ApiOperation(value = "get temporary Connection Token",
             tags = {"Access", "WebSocket"},
             notes = "for connection to websocket, you have to connect with temporary unique token. This Api return ",
             produces = "application/json",
@@ -75,8 +75,8 @@ public class WebSocketController_Incoming extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully logged out",   response = Swagger_Login_Token.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 200, message = "Token succesfuly generated",   response = Swagger_Websocket_Token.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",         response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured.class)
@@ -87,10 +87,10 @@ public class WebSocketController_Incoming extends Controller {
 
             tokenCache.put(web_socket_token, SecurityController.getPerson().id);
 
-            Swagger_Login_Token swagger_login_token = new Swagger_Login_Token();
-            swagger_login_token.authToken = web_socket_token;
+            Swagger_Websocket_Token swagger_websocket_token = new Swagger_Websocket_Token();
+            swagger_websocket_token.websocket_token = web_socket_token;
 
-            return GlobalResult.result_ok(Json.toJson(swagger_login_token));
+            return GlobalResult.result_ok(Json.toJson(swagger_websocket_token));
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }

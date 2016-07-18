@@ -35,7 +35,7 @@ import java.util.*;
 
 /**
  * Controller se zabívá správou knihoven, procesorů, desek (hardware), typů desek a jejich výrobcem.
- * Dále obsluhe kompilaci C++ kodu (propojení s kontrolerem Swebsocket)
+ * Dále obsluhe kompilaci C++ kodu (propojení s kontrolerem Websocket)
  *
  */
 
@@ -346,7 +346,7 @@ public class CompilationLibrariesController extends Controller {
 
             // Nahraje do Azure a připojí do verze soubor
             ObjectNode  content = Json.newObject();
-                        content.put("code", help.code );
+                        content.put("main", help.main );
                         content.set("user_files", Json.toJson( help.user_files) );
                         content.set("external_libraries", Json.toJson( help.external_libraries) );
 

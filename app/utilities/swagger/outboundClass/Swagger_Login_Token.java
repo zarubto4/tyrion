@@ -7,7 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
         value = "Login_Token")
 public class Swagger_Login_Token {
 
-    @ApiModelProperty(value = "X-AUTH-TOKEN - used this token in HTML head for verifying the identities", readOnly = true)
+    @ApiModelProperty(value = "X-AUTH-TOKEN - used this token in HTML head for verifying the identities", readOnly = true, required = true)
     public String authToken;
 
 }
