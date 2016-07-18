@@ -8,7 +8,7 @@ import io.swagger.annotations.ApiModelProperty;
 import models.blocko.TypeOfBlock;
 import models.compiler.Board;
 import models.grid.Screen_Size_Type;
-import models.person.InvitationToken;
+import models.person.Invitation;
 import models.person.Person;
 import models.project.b_program.B_Program;
 import models.project.b_program.Homer_Instance;
@@ -40,7 +40,7 @@ public class Project extends Model {
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Board>                    boards            = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Actualization_procedure>  procedures        = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Homer_Instance>           instances         = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<InvitationToken>          invitations       = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Invitation>          invitations       = new ArrayList<>();
 
 
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "owningProjects")  @JoinTable(name = "connected_projects") public List<Person> ownersOfProject = new ArrayList<>();

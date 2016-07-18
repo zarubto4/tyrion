@@ -33,7 +33,7 @@ Vázáno na přechod Notifikací na WebScoket - Před implementací je prerekviz
 ChangeLog
  * uploadBinaryFileToBoard  [TYRION-301](http://youtrack.byzance.cz/youtrack/issue/TYRION-301) - Jednak opraveno ale taktéž při opravě bylo vyřazeno chybně vyžadované tělo s ID zařízení, PLAY neumí přijmout soubor i Json naráz. Vyžadován momentálně pouze soubor a v URL uvedené jedno ID souboru. (PS fungovat by to mělo jako před tím, jen ten vyžadující Json tam bylo chybnou dokumentací navíc) (Tato API je taktéž výlučná - čistě pro vývojáře individuálně - masivní nahrávání bin souboru bude provedeno jinou procedurou než tato API)
 
-Feature: Obnova hesla
+## Feature: Obnova hesla ##
   Pokud uživatel zapomene heslo, na frontendu vyplní svůj email a klikne na tlačítko pro obnovení hesla. Pomocí metody: 
 	POST {{url_Tyriona}}/coreClient/mail_person_password_recovery 
   si zažádá o zaslaní emailu s linkem na změnu hesla, metoda vyžaduje JSON s obsahem:
@@ -52,7 +52,35 @@ Feature: Obnova hesla
   ale jen 15 minut od vytvoření tohoto tokenu. Jakmile je token starší a uživatel znovu zažádá o email, vygenerue se nový token a starý se smaže.
 
 	Lexa Tylš
-  
+
+## Změna: Přidání uživatele do projektu ##
+  API:
+  	PUT  {{url_Tyriona}}/project/project/shareProject/:project_id
+  nyní vyžaduje v JSONu list emailů namísto id, JSON bude vypadat takto: { "persons_mail" : ["user@mail.com","example@mail.cz"]}.
+  Pokud email není zaregistrován, pošle se na něj email, ve kterém bude pozvánka do projektu a k registraci. Pokud se uživatel zaregistruje, bude automaticky přidán do projektu a nebude vyžadována autentifikace emailu.
+  Pokud uživatel je zaregistrovaný, nejprve mu přijde notifikace, že ho jiný určitý uživatel pozval do daného projektu a v notifikaci budou dvě možnosti, jestli chce uživatel vstoupit do projektu nebo ne, které budou obsahovat link na následující operace.
+  Když klikne na "Ano" zavolá se operace:
+	PUT  {{url_Tyriona}}/project/project/addParticipant/:ivitation_id/:decision
+  kde decision = true, pokud klikne "Ne", zavolá se ta samá operace, ale decision = false.
+
+## Změna: Input Validation ##
+  Zrušeny následující API: 
+	GET  {{url_Tyriona}}/coreClient/person/valid/nicknamewe/:nick_name     
+ 	GET  {{url_Tyriona}}/coreClient/person/valid/mail/:mail
+  namísto nich bude univerzální API:
+	POST {{url_Tyriona}}/coreClient/person/validate_entity
+  která vyžaduje JSON:
+	{
+		"key" : "mail_or_nick_name"
+		"value" : "example@mail.com"
+	}
+  key může prozatím být jen "mail" nebo "nick_name".
+  Operace vrátí JSON:
+	{
+		"valid" : "true_or_false"
+		"message" : "for_example: Email is used"
+	}          
+
 
 
 ### Oprava Bugů ###

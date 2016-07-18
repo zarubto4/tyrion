@@ -4,8 +4,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 @ApiModel(description = "Json Model for Validation of *-some Entity",
-         value = "Entity_Validation")
-public class Swagger_Entity_Validation {
+         value = "Entity_Validation_Out")
+public class Swagger_Entity_Validation_Out {
 
     @ApiModelProperty(value = "Entity (Email, NickName.. etc) is valid if valid = true", required = true, readOnly = true)
     public boolean valid;

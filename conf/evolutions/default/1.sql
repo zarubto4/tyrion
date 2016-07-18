@@ -178,14 +178,13 @@ create table homer_instance (
   constraint pk_homer_instance primary key (id))
 ;
 
-create table invitation_token (
+create table invitation (
   id                        varchar(255) not null,
   owner_id                  varchar(255),
   project_id                varchar(255),
   mail                      varchar(255),
-  invitation_token          varchar(255),
   time_of_creation          timestamp,
-  constraint pk_invitation_token primary key (id))
+  constraint pk_invitation primary key (id))
 ;
 
 create table library_group (
@@ -515,7 +514,7 @@ create sequence floating_person_token_seq;
 
 create sequence homer_instance_seq;
 
-create sequence invitation_token_seq;
+create sequence invitation_seq;
 
 create sequence library_group_seq;
 
@@ -617,10 +616,10 @@ alter table homer_instance add constraint fk_homer_instance_version_obj_29 forei
 create index ix_homer_instance_version_obj_29 on homer_instance (vrs_obj_id);
 alter table homer_instance add constraint fk_homer_instance_project_30 foreign key (project_id) references project (id);
 create index ix_homer_instance_project_30 on homer_instance (project_id);
-alter table invitation_token add constraint fk_invitation_token_owner_31 foreign key (owner_id) references person (id);
-create index ix_invitation_token_owner_31 on invitation_token (owner_id);
-alter table invitation_token add constraint fk_invitation_token_project_32 foreign key (project_id) references project (id);
-create index ix_invitation_token_project_32 on invitation_token (project_id);
+alter table invitation add constraint fk_invitation_owner_31 foreign key (owner_id) references person (id);
+create index ix_invitation_owner_31 on invitation (owner_id);
+alter table invitation add constraint fk_invitation_project_32 foreign key (project_id) references project (id);
+create index ix_invitation_project_32 on invitation (project_id);
 alter table linked_post add constraint fk_linked_post_author_33 foreign key (author_id) references person (id);
 create index ix_linked_post_author_33 on linked_post (author_id);
 alter table linked_post add constraint fk_linked_post_answer_34 foreign key (answer_id) references post (id);
@@ -748,7 +747,7 @@ drop table if exists hash_tag_post cascade;
 
 drop table if exists homer_instance cascade;
 
-drop table if exists invitation_token cascade;
+drop table if exists invitation cascade;
 
 drop table if exists library_group cascade;
 
@@ -842,7 +841,7 @@ drop sequence if exists floating_person_token_seq;
 
 drop sequence if exists homer_instance_seq;
 
-drop sequence if exists invitation_token_seq;
+drop sequence if exists invitation_seq;
 
 drop sequence if exists library_group_seq;
 

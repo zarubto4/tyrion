@@ -5,6 +5,7 @@ import io.swagger.annotations.*;
 import models.compiler.Board;
 import models.compiler.Version_Object;
 import models.notification.Notification;
+import models.person.Invitation;
 import models.person.Person;
 import models.project.b_program.B_Program;
 import models.project.b_program.Homer_Instance;
@@ -16,6 +17,7 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import utilities.Server;
 import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_Unauthorized;
@@ -216,7 +218,7 @@ public class NotificationController extends Controller {
   }
 
 
-  public static void project_invitation(Person owner, Person receiver, Project project){
+  public static void project_invitation(Person owner, Person receiver, Project project, Invitation invitation){
 
     Notification notification = new Notification(Notification_level.info, receiver)
             .setText("User")
@@ -224,9 +226,9 @@ public class NotificationController extends Controller {
             .setText("wants to invite you into the project ")
             .setBoldText(project.project_name +".")
             .setText("Do you agree?")
-            .setLink_ToTyrion("Yes", "url dressa")
+            .setLink_ToTyrion("Yes", Server.tyrion_serverAddress + "/project/project/addParticipant/" + invitation.id + "/true")
             .setText(" / ")
-            .setLink_ToTyrion("No", "url adresa")
+            .setLink_ToTyrion("No", Server.tyrion_serverAddress + "/project/project/addParticipant/" + invitation.id + "/false")
             .setText(".")
             .save_object();
 
