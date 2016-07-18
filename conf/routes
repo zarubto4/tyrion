@@ -55,8 +55,7 @@ PUT            /coreClient/person/person/:person_id             @controllers.Per
 GET            /coreClient/person/person/all                    @controllers.PersonController.get_Person_all()
 GET            /coreClient/person/person/:person_id             @controllers.PersonController.get_Person(person_id)
 
-GET            /coreClient/person/valid/nicknamewe/:nick_name     @controllers.PersonController.valid_Person_NickName(nick_name)
-GET            /coreClient/person/valid/mail/:mail              @controllers.PersonController.valid_Person_mail(mail)
+POST           /coreClient/person/validate_entity               @controllers.PersonController.validate_Entity()
 
 
 GET             /coreClient/connections                          @controllers.PersonController.get_Person_Connections()
@@ -148,7 +147,7 @@ GET            /project/project                                                 
 DELETE         /project/project/:project_id                                                 @controllers.ProgramingPackageController.deleteProject(project_id)
 PUT            /project/project/shareProject/:project_id                                    @controllers.ProgramingPackageController.shareProjectWithUsers(project_id)
 PUT            /project/project/unshareProject/:project_id                                  @controllers.ProgramingPackageController.unshareProjectWithUsers(project_id)
-PUT            /project/project/addParticipant/:token/:decision                             @controllers.ProgramingPackageController.addParticipantToProject(token, decision: Boolean)
+PUT            /project/project/addParticipant/:ivitation_id/:decision                      @controllers.ProgramingPackageController.addParticipantToProject(ivitation_id, decision: Boolean)
 
 #Homer
 POST           /project/homer                                                               @controllers.ProgramingPackageController.newHomer()

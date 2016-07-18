@@ -1,7 +1,5 @@
 package controllers;
 
-import com.avaje.ebean.Ebean;
-import com.avaje.ebean.Query;
 import io.swagger.annotations.*;
 import models.person.*;
 import play.api.libs.mailer.MailerClient;
@@ -16,14 +14,10 @@ import utilities.Server;
 import utilities.emails.EmailTool;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured;
-import utilities.response.CoreResponse;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
-import utilities.swagger.documentationClass.Swagger_Person_New;
-import utilities.swagger.documentationClass.Swagger_Person_Password_New;
-import utilities.swagger.documentationClass.Swagger_Person_Password_RecoveryEmail;
-import utilities.swagger.documentationClass.Swagger_Person_Update;
-import utilities.swagger.outboundClass.Swagger_Entity_Validation;
+import utilities.swagger.documentationClass.*;
+import utilities.swagger.outboundClass.Swagger_Entity_Validation_Out;
 
 import javax.inject.Inject;
 import javax.websocket.server.PathParam;
@@ -86,9 +80,9 @@ public class PersonController extends Controller {
             person.setSha(help.password);
             person.save();
 
-            InvitationToken invitationToken = InvitationToken.find.where().eq("mail", person.mail).findUnique();
+            Invitation invitation = Invitation.find.where().eq("mail", person.mail).findUnique();
 
-            if(invitationToken == null) {
+            if(invitation == null) {
 
                 ValidationToken validationToken = new ValidationToken().setValidation(person.mail);
 
@@ -107,7 +101,7 @@ public class PersonController extends Controller {
                 person.update();
 
                 try {
-                    programingPackageController.addParticipantToProject(invitationToken.invitation_token, true);
+                    programingPackageController.addParticipantToProject(invitation.id, true);
                 }catch(Exception e){
                     return Loggy.result_internalServerError(e, request());
                 }
@@ -197,7 +191,7 @@ public class PersonController extends Controller {
                 link = Server.becki_passwordReset + "&token=" + previousToken.password_recovery_token;
             }
             try {
-                Email email = new EmailTool().sendPasswordRecoveryEmail(help.mail, link);
+                Email email = new EmailTool().sendPasswordRecoveryEmail(help.mail,"Click here to reset your password", link, "textasdasdasdad");
                 mailerClient.send(email);
 
             } catch (Exception e) {
@@ -265,6 +259,17 @@ public class PersonController extends Controller {
             person.update();
 
             passwordRecoveryToken.delete();
+
+            String link = "bla";
+
+            try {
+                Email email = new EmailTool().sendPasswordRecoveryConfirmationEmail(help.mail, link,"name", "text");
+                mailerClient.send(email);
+
+            } catch (Exception e) {
+                logger.error ("Sending mail -> critical error", e);
+                e.printStackTrace();
+            }
 
             return GlobalResult.result_ok("Password was changed successfully");
         } catch (Exception e) {
@@ -486,28 +491,65 @@ public class PersonController extends Controller {
         }
     }
 
-    @ApiOperation(value = "valid email during registration",
+    @ApiOperation(value = "validate some Entity",
             tags = {"Person"},
-            notes = "for cyclical validation during registration",
+            notes = "for cyclical validation during registration, key contains 'mail' or 'nick_name'",
             produces = "application/json",
             protocols = "https",
             code = 200
     )
+    @ApiImplicitParams(
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.documentationClass.Swagger_Entity_Validation_In",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Result if its possible to used that",  response = Swagger_Entity_Validation.class),
+            @ApiResponse(code = 200, message = "Result if its possible to used that",   response = Swagger_Entity_Validation_Out.class),
+            @ApiResponse(code = 400, message = "Something is wrong",                    response = Result_BadRequest.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result valid_Person_mail(@ApiParam(value = "mail value for server side unique control", required = true) @PathParam("person_id") String mail){
+    public  Result validate_Entity(){
         try{
 
-            Swagger_Entity_Validation validation = new Swagger_Entity_Validation();
-            if(Person.find.where().ieq("mail", mail).findUnique() == null ) {
-                validation.valid = true;
-                return GlobalResult.result_ok(Json.toJson(validation));
-            }
+            final Form<Swagger_Entity_Validation_In> form = Form.form(Swagger_Entity_Validation_In.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Entity_Validation_In help = form.get();
 
-            validation.valid = false;
-            validation.message = "email is used";
+            Swagger_Entity_Validation_Out validation = new Swagger_Entity_Validation_Out();
+
+            switch (help.key){
+                case "mail":{
+                    if(Person.find.where().ieq("mail", help.value).findUnique() == null ){
+
+                        validation.valid = true;
+                        return GlobalResult.result_ok(Json.toJson(validation));
+                    }
+
+                    validation.valid = false;
+                    validation.message = "email is used";
+
+                    break;
+                }
+
+                case "nick_name":{
+                    if(Person.find.where().ieq("nick_name", help.value).findUnique() == null ){
+
+                        validation.valid = true;
+                        return GlobalResult.result_ok(Json.toJson(validation));
+                    }
+
+                    validation.valid = false;
+                    validation.message = "nick_name is used";
+
+                    break;
+                }
+
+                default:return GlobalResult.badRequest("Key does not exist");
+            }
 
             return GlobalResult.result_ok(Json.toJson(validation));
 
@@ -515,35 +557,4 @@ public class PersonController extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
     }
-
-    @ApiOperation(value = "valid nick_name during registration",
-            tags = {"Person"},
-            notes = "for cyclical validation during registration",
-            produces = "application/json",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Its possible used that",  response = Swagger_Entity_Validation.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public  Result valid_Person_NickName(@ApiParam(value = "nick_name value for server side - it must be unique", required = true) @PathParam("nick_name")  String nick_name){
-        try{
-
-            Swagger_Entity_Validation validation = new Swagger_Entity_Validation();
-            if(Person.find.where().ieq("nick_name", nick_name).findUnique() == null ){
-                validation.valid = true;
-                return GlobalResult.result_ok(Json.toJson(validation));
-            }
-
-            validation.valid = false;
-            validation.message = "nick_name is used";
-
-            return ok(Json.toJson(validation));
-
-        }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
 }

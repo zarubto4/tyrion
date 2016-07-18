@@ -5,6 +5,7 @@ import io.swagger.annotations.*;
 import models.compiler.Board;
 import models.compiler.Version_Object;
 import models.notification.Notification;
+import models.person.Invitation;
 import models.person.Person;
 import models.project.b_program.B_Program;
 import models.project.b_program.Homer_Instance;
@@ -16,6 +17,7 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import utilities.Server;
 import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_Unauthorized;
@@ -123,7 +125,7 @@ public class NotificationController extends Controller {
                                     .setObject(Swagger_B_Program_Version.class, instance.version_object.id, instance.version_object.version_name )
                                     .setText("from Blocko program")
                                     .setObject(B_Program.class, instance.version_object.b_program.id, instance.version_object.b_program.name )
-                                    .setText("Server try do that as soon as possible.")
+                                    .setText("Server will try to do that as soon as possible.")
                                     .save_object();
 
     send_notification(person, notification);
@@ -215,36 +217,53 @@ public class NotificationController extends Controller {
   }
 
 
-  public static void project_invitation(Person owner, Person receiver, Project project){
+  public static void project_invitation(Person owner, Person receiver, Project project, Invitation invitation){
 
     Notification notification = new Notification(Notification_level.info, receiver)
             .setText("User")
             .setObject(Person.class, owner.id, owner.full_name)
-            .setText("wants to invite into the project ")
+            .setText("wants to invite you into the project ")
             .setBoldText(project.project_name +".")
             .setText("Do you agree?")
-            .setLink_ToTyrion("Yes", "url dressa")
+            .setLink_ToTyrion("Yes", Server.tyrion_serverAddress + "/project/project/addParticipant/" + invitation.id + "/true")
             .setText(" / ")
-            .setLink_ToTyrion("No", "url adresa")
-            .setText(".");
+            .setLink_ToTyrion("No", Server.tyrion_serverAddress + "/project/project/addParticipant/" + invitation.id + "/false")
+            .setText(".")
+            .save_object();
 
-      // Odeslání pozvánky do přijetí do projektu
+    send_notification(receiver, notification);
       // Tato notifikace by se měla uložit  - je tam parametr "přečtena"
 
   }
 
 
-  public static void project_accepted_by_invited_person(Person person, Project project){
+  public static void project_accepted_by_invited_person(Person owner, Person person, Project project){
 
       // Pokud dotyčný přijal pozvání, tato zpráva se pošle tomu, kdo pozvání pozval
       // Tato notifikace by se měla uložit - je tam parametr "přečtena"
+    Notification notification = new Notification(Notification_level.info, owner)
+            .setText("User ")
+            .setObject(Person.class, person.id, person.full_name)
+            .setText("did not accept your invitation to the project ")
+            .setBoldText(project.project_name +".")
+            .save_object();
+
+    send_notification(owner,notification);
 
   }
 
-  public static void project_rejected_by_invited_person(Person person, Project project){
+  public static void project_rejected_by_invited_person(Person owner, Person person, Project project){
 
       // Pokud dotyčný nepřijal pozvání, tato zpráva se pošle tomu, kdo pozvání pozval
       // Tato notifikace by se měla uložit  - je tam parametr "přečtena"
+    Notification notification = new Notification(Notification_level.info, owner)
+            .setText("User ")
+            .setObject(Person.class, person.id, person.full_name)
+            .setText("accepted your invitation to the project ")
+            .setBoldText(project.project_name +".")
+            .save_object();
+
+    send_notification(owner,notification);
 
   }
 
