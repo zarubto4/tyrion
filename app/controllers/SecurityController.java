@@ -112,35 +112,6 @@ public class SecurityController extends Controller {
         }
     }
 
-
-    static String nonce = null;
-    public Result wordpress_login() {
-        try {
-
-            final Form<Login_IncomingLogin> form = Form.form(Login_IncomingLogin.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-            Login_IncomingLogin help = form.get();
-
-
-            if(nonce == null) {
-                JsonNode jsonRequest_nonce = ws.url("https://www.byzance.cz/api/get_nonce/?controller=auth&method=generate_auth_cookie").get().get(5000).asJson();
-
-                if (!jsonRequest_nonce.has("nonce")) return GlobalResult.result_BadRequest("Authentication server error!");
-                nonce = jsonRequest_nonce.get("nonce").asText();
-            }
-
-            JsonNode jsonRequest = ws.url("https://www.byzance.cz/api/auth/generate_auth_cookie/?nonce=" + nonce  + "&username=" + help.mail + "&password=" + help.password).get().get(5000).asJson();
-            System.out.println(jsonRequest.toString());
-
-            return GlobalResult.result_ok(jsonRequest);
-
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-
-
     @ApiOperation(value = "get Person by token (after Oauth2 Login -> Facebook, GitHub, Twitter)",
             tags = {"Access", "Person", "Social-GitHub", "Social-Facebook"},
             notes = "If you want login to system with social networks - you can used facebook, github or twitter api " +

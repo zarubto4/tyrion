@@ -1,96 +1,143 @@
 ﻿# Verze 1.06.6.3 #
-
+####  18.6.2016 ####
 -----
 
-## 1. ##
+1.
 Cílem této verze bylo vyřešit všechny problémy, které trápí vývojáře Becki a nastavit po meetingu nové standardy vývoje. Jde především o zapisování změn, hotový a použitelný changelog a difftool přístupný mezi posledními dvěma verzemi. Slouží jak vývojářům Becki, Tyrionu, tak navázaných (GRID aplikací). Tomáš si podle něj také kontroluje co všechno se mohlo posrat.  
 
-## 2. ##
+2.
 Podle tracku [TYRION-261](http://youtrack.byzance.cz/youtrack/issue/TYRION-261) bylo doimplementováno, jak odhlásit příjímaný stream z instanci Homer serveru. Což vede k tomu, že až teď jde teoreticky odebírat více instancí najendou. Jedinným rozdílem příkazu odebírání "subscribe" je "unsubscribe"
 		
-## 3. ##	
+3.
 Doplnění Dokumentace a popisu k novým Api jež slouží k zobrazení aktualizací HW. 
 
-## 4. ## 
+4.
 Byl vyřešen problém s možným bezpečnostním rizikem připojení na websocket prozrazením adresy. [TYRION-260](http://youtrack.byzance.cz/youtrack/issue/TYRION-260)
 Pro připojení je nutné nejdříve požádat s vaším authTokenem na zabezpečené API o token, jenž složí jako proméná do URL pro přihlášení. 
 Tento token je jednorázový a nelze se s ním připojit dvakrát. Má také životnost oscilující kolem 5 vteřin (je tam bráno v úvahu zatížení serveru)
 [SWAGGER API](http://swagger.byzance.cz/#!/Access/get_Websocket_token) 
 
-## 5. [TYRION-303](http://youtrack.byzance.cz/youtrack/issue/TYRION-303)##
+5.
+[TYRION-303](http://youtrack.byzance.cz/youtrack/issue/TYRION-303)
 Přechod Notifikací na WebScoket - (Před implementací je prerekvizita funkčního notifikačního centra postaveného na WebSocketu). Tímto Backend uzavírá všechny předchozí bugy spojené s notifikačním centrem Přes SSE za zastaralé a dále nepodporované. A nadále předpokládá využívání Websocketu)
 
-	1) Pro odběr notifikací je nutné se přihlásit k odběru Websocketu pomocí vyžádání si tokenu pro přihlášení (viz předchozí bod 4.)
-	2) Požádat Tyrion o zasílání notifikací - Z důvodu podpory více přihlášení jednoho uživatele se přihlášení provede jen na tom spojení přihlášeného uživatele, které si o to požádá! 
+
+6.
+Notifikace
+
+ * Pro odběr notifikací je nutné se přihlásit k odběru Websocketu pomocí vyžádání si tokenu pro přihlášení (viz předchozí bod 4.)
+
+ * Požádat Tyrion o zasílání notifikací - Z důvodu podpory více přihlášení jednoho uživatele se přihlášení provede jen na tom spojení přihlášeného uživatele, které si o to požádá!
+
 		 {
 		 	"messageChannel" : "becki",
 			"messageType"    : "subscribe_notification",
-			"messageId"	 : " some random message nuber for response"		 
+			"messageId"      : " some random message nuber for response"
 		 }
-	3) Odhlášení probíhá obdobně 
-       		 {
-       		 	"messageChannel" : "becki",
-       			"messageType"    : "unsubscribe_notification",
-       			"messageId"	 : " some random message nuber for response"		 
-       		 }
-	4) Po té Becki začne dostávat stream notifkací. 
-		Ty josu postaveny na paternu skládání zpráv z jednotlivých objektů v JSON. 
-		
-	Dokumentace je na documentation.byzance.cz v sekci REST-API 	
-	
-	 
-## 6. Parametr OPTION ## 
+
+
+ * Odhlášení probíhá obdobně
+
+
+		{
+			"messageChannel" : "becki",
+			"messageType"    : "unsubscribe_notification",
+			"messageId"      : " some random message nuber for response"
+		}
+
+
+ * Po té Becki začne dostávat stream notifkací. Ty josu postaveny na paternu skládání zpráv z jednotlivých objektů v JSON. Dokumentace je na http://documentation.byzance.cz v sekci REST-API -  v případě dotazů bude dokumentace doplněna
+
+
+7.
+Parametr OPTION
 Každý objekt byl v Tyrionovi pečlivě definován a zmizel tak parametr Option, kde se vyskytuje je to bráno tak, že to tak má být. Doporučujeme do začátku rychlou zprávu přes Yammer (Dotaz jestli se vám něco nezdá, než hned to reportovat)
  
+
+8.
+Doplnění podpory aktualizačních Tasků
+Pokud uživatel  updatuje (dá příkaz k nahrátí blocka s Hardwarem a na něm spárovaná verze C_Programu), nebo nahraje sám C_program verzi na hardware, nebo pošle svojí vlastní binárků. Vytvoří se takzvaná *Aktualizační procedura* -> Actualization_procedure.
+
+Ta  obsahuje mimo jiné
+
+   * "id" - zatím nesloužící k ničemu
+
+   * "state": (Mezi něž patří následujících 5  možností successful_complete až in_progress)
+
+	* 'successful_complete'  -> State where all inner procedures was absolutely successful
+	* 'complete' -> State where all inner procedures was successfully OR overwritten with newer version
+	* 'complete_with_error' -> State like \"complete\" but some update plans had Error
+	* 'canceled' -> State where user canceled procedure, but remember that some update plans might be already made (had some state)
+	* 'in_progress -> State where procedure is in progress
+
+   * "date_of_create"  -> datum zahájení procedury
+   * "date_of_finish"  -> datum ukončení procedury - pozor, pokud procedura nebyla ukončena - je obsah null!!!!
+
+
+   * "b_program_actualization" : je objekt umožnující propojení pod jakou Instancí Blocka (Verze B_Programu a samotného B_programu) - Frontend má k dispozici jména verze i programu a jejich id (To aby jste mohli uživatelovi zprostředkovat link na stránku verze nebo programu)
+
+   * "updates" : Je pole jednotlivých tasků aktualizační procedury - na každý jeden kus křemíku je jeden objekt definující co je to za HW (Jeho ID) a co se na něj nahrává. Buď Binární soubor, kteýr nahrál sám uživatel, nebo zkompilovaná verze C_Programu (Resepktive verze) Je tedy nutné uživatelovi ukázat buď "jméno souboru" (není asi nutný odkaz, protože soubor je bin a tedy naprosto nečitelný) Nebo objekt "c_program_detail" - Jež obsahuje název C_programu a název verze a jejich ID aby frontend mohl vytvořit linky!
+
 
 # ChangeLog # 
 
 -------
 
- ## uploadBinaryFileToBoard  [TYRION-301](http://youtrack.byzance.cz/youtrack/issue/TYRION-301) ##
+ * uploadBinaryFileToBoard)  [TYRION-301](http://youtrack.byzance.cz/youtrack/issue/TYRION-301
 Jednak opraveno ale taktéž při opravě bylo vyřazeno chybně vyžadované tělo s ID zařízení, PLAY neumí přijmout soubor i Json naráz. Vyžadován momentálně pouze soubor a v URL uvedené jedno ID souboru. (PS fungovat by to mělo jako před tím, jen ten vyžadující Json tam bylo chybnou dokumentací navíc) (Tato API je taktéž výlučná - čistě pro vývojáře individuálně - masivní nahrávání bin souboru bude provedeno jinou procedurou než tato API a přibude v budoucnu)
  
 
-## Uprava C_program version [TYRION-309](http://youtrack.byzance.cz/youtrack/issue/TYRION-309) ## 
+ * Uprava C_program version [TYRION-309](http://youtrack.byzance.cz/youtrack/issue/TYRION-309)
 U C_programu při ukládání nové verze byla v Json položka  "code" : "něco.." dále user_files..  ale při GET Version to bylo zabalené v user_code což nedávalo smysl a komplikovalo vám to kod (nechápu že nebylo hlášeno jako bug! - opraveno tak aby jak PUT JSON i GET JSON aby obě hodnoty korespondovaly a byly jednotné!
+Value code byla přejmenována na main (Aby korespondovala se strukturou progrmaování v céčku)
 
- value code byla přejmenována na main (Aby korespondovala se strukturou progrmaování v céčku)
+		{
+		 ...
+		 ...
+		 "main" : ..
+		 "user_files" : ...
+		 "external_libraries" : ...
+		 }
 
-	 {
-	 ...
-	 ...
-
-	 "main" : ..
-	 "user_files" : ...
-	 "external_libraries" : ...
-	 }
-
---------
  
- TODO - NEní hotové!!!!  
-## Uprava zabezpečení protékajících zpráv na websocketu mezi Homer serverm a Becki (přes Tyriona) [TYRION-306](http://youtrack.byzance.cz/youtrack/issue/TYRION-306) ##
-   Je zdokumentováno na public docu nově [DOCU](http://documentation.byzance.cz) v záložce REST-API 
-   v sekci websocket, jaké zprávy můžete zasílat. Ostatní budou blokovány. 	
+ *TODO - Není hotové!!!!  - Čeká na dokumentaci ze strany homer serveru
+Uprava zabezpečení protékajících zpráv na websocketu mezi Homer serverm a Becki (přes Tyriona) [TYRION-306](http://youtrack.byzance.cz/youtrack/issue/TYRION-306)  Je zdokumentováno na public docu nově [DOCU](http://documentation.byzance.cz) v záložce REST-API v sekci websocket, jaké zprávy můžete zasílat. Ostatní budou blokovány.
    
- 
 
 ## Feature: Obnova hesla ##
-  Pokud uživatel zapomene heslo, na frontendu vyplní svůj email a klikne na tlačítko pro obnovení hesla. Pomocí metody: 
-	POST {{url_Tyriona}}/coreClient/mail_person_password_recovery 
-  si zažádá o zaslaní emailu s linkem na změnu hesla, metoda vyžaduje JSON s obsahem:
-	{"mail":"user@mail.com"} 
-  Metoda pokaždé vrací code = 200. Pokud je email uživatele nalezen v databázi, vygeneruje se password_recovery_token a přijde mu email s adresou na frontend ve tvaru: 
-	{{url_Becki}}/passwordRestart&token="password_recovery_token" 
-  Na této adrese si uživatel vytvoří nové heslo. Adresu je možné změnit, pokud bude potřeba, stačí říct, teď je vzatá z configu Tyriona. Z frontendu přijde request: 
-	PUT {{url_Tyriona}}/coreClient/person_password_recovery 
-  který bude obsahovat JSON s obsahem:
-	{"mail"				:	"user@mail.com",
-	 "password_recovery_token"	:	"c2cf05c0-75a8-4c7c-9100-1c1bc520f0d0"
-	 "password"			:	"new_password"}
-  Token je platný 24 hodin, když uživatel rozklikne link po 24h, vrátí se odpověď code = 400 a uživatel si musí zažádat o nový email s linkem.
+
+* Pokud uživatel zapomene heslo, na frontendu bude sekce pro obnovu hesla, vyplní svůj email a klikne na tlačítko pro obnovení hesla. Pomocí metody:
+
+		POST {{url_Tyriona}}/coreClient/mail_person_password_recovery
+
+* si zažádá o zaslaní emailu s linkem na změnu hesla, metoda vyžaduje JSON s obsahem:
+
+		{"mail":"user@mail.com"}
+
+ * Metoda pokaždé vrací code = 200. Pokud je email uživatele nalezen v databázi, vygeneruje se password_recovery_token a přijde mu email s adresou na frontend ve tvaru:
+
+		{{url_Becki}}/passwordRestart&token="password_recovery_token"
+
+ * Na této adrese si uživatel vytvoří nové heslo. Adresu je možné změnit, pokud bude potřeba, stačí říct, teď je vzatá z configu Tyriona. Z frontendu přijde request:
+
+		PUT {{url_Tyriona}}/coreClient/person_password_recovery
+
+ * který bude obsahovat JSON s obsahem:
+
+		{
+			"mail"				:	"user@mail.com",
+			"password_recovery_token"	:	"c2cf05c0-75a8-4c7c-9100-1c1bc520f0d0",
+			"password"			:	"new_password"
+		}
+
+
+ * Token je platný 24 hodin, když uživatel rozklikne link po 24h, vrátí se odpověď code = 400 a uživatel si musí zažádat o nový email s linkem.
   Pokud je token platný, změna hesla proběhne a uživatel je všude, kde může být přihlášený, odhlášen. 
   Dále pokud uživatel klikne na tlačítko pro zaslání emailu vícekrát, tzn. že password_recovery_token je již vytvořený, budou mu chodit emaily s tímto tokenem,
   ale jen 15 minut od vytvoření tohoto tokenu. Jakmile je token starší a uživatel znovu zažádá o email, vygenerue se nový token a starý se smaže.
+
+ * Uživatel poté dostane email, kde je mu zděleno, že obnova hesla byla úspěšná.  (Autor Lexa Tylš)
+  
 
 	Lexa Tylš
 
@@ -105,8 +152,8 @@ U C_programu při ukládání nové verze byla v Json položka  "code" : "něco.
   kde decision = true, pokud klikne "Ne", zavolá se ta samá operace, ale decision = false.
 
 ## Změna: Input Validation ##
-  Zrušeny následující API: 
-	GET  {{url_Tyriona}}/coreClient/person/valid/nicknamewe/:nick_name     
+  Zrušeny následující API:
+	GET  {{url_Tyriona}}/coreClient/person/valid/nicknamewe/:nick_name
  	GET  {{url_Tyriona}}/coreClient/person/valid/mail/:mail
   namísto nich bude univerzální API:
 	POST {{url_Tyriona}}/coreClient/person/validate_entity
@@ -120,18 +167,18 @@ U C_programu při ukládání nové verze byla v Json položka  "code" : "něco.
 	{
 		"valid" : "true_or_false"
 		"message" : "for_example: Email is used"
-	}          
+	}
 
 
 
 ### Oprava Bugů ###
 
-* fixed [TYRION-185](http://youtrack.byzance.cz/youtrack/issue/TYRION-185)
-* fixed [TYRION-258](http://youtrack.byzance.cz/youtrack/issue/TYRION-258)
-* Uzavřeno [TYRION-70](http://youtrack.byzance.cz/youtrack/issue/TYRION-70)
-* fixed [TYRION-257](http://youtrack.byzance.cz/youtrack/issue/TYRION-257)
-* fixed [TYRION-257](http://youtrack.byzance.cz/youtrack/issue/TYRION-280)
-* fixed [TYRION-299](http://youtrack.byzance.cz/youtrack/issue/TYRION-299)
+ * fixed [TYRION-185](http://youtrack.byzance.cz/youtrack/issue/TYRION-185)
+ * fixed [TYRION-258](http://youtrack.byzance.cz/youtrack/issue/TYRION-258)
+ * Uzavřeno [TYRION-70](http://youtrack.byzance.cz/youtrack/issue/TYRION-70)
+ * fixed [TYRION-257](http://youtrack.byzance.cz/youtrack/issue/TYRION-257)
+ * fixed [TYRION-257](http://youtrack.byzance.cz/youtrack/issue/TYRION-280)
+ * fixed [TYRION-299](http://youtrack.byzance.cz/youtrack/issue/TYRION-299)
  * fixed [TYRION-278](http://youtrack.byzance.cz/youtrack/issue/TYRION-278)
  * fixed [TYRION-271](http://youtrack.byzance.cz/youtrack/issue/TYRION-271)
  * fixed [TYRION-277](http://youtrack.byzance.cz/youtrack/issue/TYRION-277)
@@ -162,9 +209,6 @@ U C_programu při ukládání nové verze byla v Json položka  "code" : "něco.
       PS: Vyžaduje to tak půl dne (+ ideálně přepsat třídu s přihlášení přes facebook a odzkoušet github..
   * TODO 8 ALL-Tyrion: Bude potřeba dodělat řešení pro prodlužování platnosti tokenu (Buď nějak magicky na Tyrionovi nebo ze strany frontendu) Asi to dodělá Tomáš.
   * TODO 9 Přidat a vykreslit všechny objekty na dashboard Tyriona
-  * TODO 13 Důležité je dodělat ORM dokumentaci ve SWAGGERU pro kompilaci!
-  * TODO 14 AzureStorageLink a azurePackageLink přesunout pod Version_object!!! Už je to neudržitelný!!!
-  * TODO 16 Mazání souborů na Azure
   * TODO 15 Verzování nasadit i na M_Program!
   * TODO Swagger Dokumentace na objektu B_Program_State a B_Program!!!!!!!!!!!!
   * TODO 17 Link je také v kodu http://youtrack.byzance.cz/youtrack/issue/TYRION-263
@@ -174,6 +218,7 @@ U C_programu při ukládání nové verze byla v Json položka  "code" : "něco.
   * http://youtrack.byzance.cz/youtrack/issue/TYRION-271??
 
 
+-----
 
 
 # Verze 1.06.6 #

@@ -98,7 +98,8 @@ public class WebSocketController_Incoming extends Controller {
 
 
     // Připojení Homera (Cloud i Local)
-    @ApiOperation(value = "Homer Connection", hidden = true) public  WebSocket<String>  homer_connection(String homer_mac_address){
+    @ApiOperation(value = "Homer websocket Connection", hidden = true)
+    public  WebSocket<String>  homer_connection(String homer_mac_address){
 
         logger.debug("Homer Connection on mac_address: " + homer_mac_address);
 

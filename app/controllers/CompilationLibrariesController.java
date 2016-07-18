@@ -671,15 +671,17 @@ public class CompilationLibrariesController extends Controller {
 
                    byte[] body = responsePromise.get(2500).asByteArray();
 
-                   logger.debug("Compilatin server respond successfuly");
+                   logger.debug("Compilatin server respond successfuly WITH File");
                    if( body != null) {
                         // Daný soubor potřebuji dostat na Azure a Propojit s verzí
 
                           String binary_file_in_string = UtilTools.get_encoded_binary_string_from_body(body);
-                         c_compilation.bin_compilation_file =  UtilTools.create_Binary_file( binary_file_in_string, "compilation.bin");
-
+                          c_compilation.bin_compilation_file =  UtilTools.create_Binary_file( binary_file_in_string, "compilation.bin");
+                          logger.debug("File succesfuly restored in Azure!");
                    }
-               }catch (Exception e){}
+               }catch (Exception e){
+                   logger.warn("Došlo k chybě při stahování souboru", e);
+               }
 
                c_compilation.save();
 

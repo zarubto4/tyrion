@@ -100,12 +100,13 @@ public class ActualizationController extends Controller {
     }
 
 
-    @ApiOperation(value = "cancel Procedure",
+    @ApiOperation(value = "cancel actualization Procedure",
             tags = {"Actualization"},
             notes = "cancel (terminate) procedure",
             produces = "application/json",
             protocols = "https",
             code = 200,
+            hidden = false,
             extensions = {
                     @Extension( name = "permission_description", properties = {
                             @ExtensionProperty(name = "Actualization_Procedure.read_permission", value = Actualization_procedure.read_permission_docs ),
