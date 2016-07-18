@@ -55,8 +55,8 @@ public class Swagger_diff_Controller extends Controller {
 
             logger.debug("Creating api_diff.html content");
 
-            String file_name_old = "1.06.06";
-            String file_name_new = "1.06.06.1";
+            String file_name_old = "1.06.06.1";
+            String file_name_new = "1.06.06.3";
 
             JsonNode old_api = read_local_File_for_Swagger(file_name_old );
             JsonNode new_api = read_local_File_for_Swagger(file_name_new );
