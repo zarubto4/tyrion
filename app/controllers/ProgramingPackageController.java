@@ -28,7 +28,6 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utilities.Server;
 import utilities.UtilTools;
-import utilities.emails.EmailContent;
 import utilities.emails.EmailTool;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured;
@@ -369,14 +368,14 @@ public class ProgramingPackageController extends Controller {
 
                 // Odeslání emailu s linkem pro registraci
                 try {
-                    EmailContent emailContent = new EmailContent()
+                    EmailTool emailTool = new EmailTool()
                             .addEmptyLineSpace()
                             .startParagraph("13")
                             .addText("User ")
                             .addBoldText(SecurityController.getPerson().full_name)
                             .addText(" invites you to collaborate on the project ")
                             .addBoldText(project.project_name + ". ")
-                            .addText("If you would like to participate in it, please click on the link below and register yourself")
+                            .addText("If you would like to participate in it, please click on the link below and register yourself. ")
                             .endParagraph()
                             .addEmptyLineSpace()
                             .addLine()
@@ -384,7 +383,7 @@ public class ProgramingPackageController extends Controller {
                             .addLink(link,"Click here to collaborate","18")
                             .addEmptyLineSpace();
 
-                    Email email = new EmailTool().sendEmail(mail, "Invitation to Collaborate", emailContent.getEmailContent());
+                    Email email = emailTool.sendEmail(mail, "Invitation to Collaborate", emailTool.getEmailContent());
                     mailerClient.send(email);
 
                 } catch (Exception e) {

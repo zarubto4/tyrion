@@ -55,31 +55,47 @@ ChangeLog
 
 ## Změna: Přidání uživatele do projektu ##
   API:
-  	PUT  {{url_Tyriona}}/project/project/shareProject/:project_id
-  nyní vyžaduje v JSONu list emailů namísto id, JSON bude vypadat takto: { "persons_mail" : ["user@mail.com","example@mail.cz"]}.
+
+		PUT  {{url_Tyriona}}/project/project/shareProject/:project_id
+
+  nyní vyžaduje v JSONu list emailů namísto id, JSON bude vypadat takto: 
+
+		{
+			"persons_mail" : ["user@mail.com","example@mail.cz"]
+		}
+
   Pokud email není zaregistrován, pošle se na něj email, ve kterém bude pozvánka do projektu a k registraci. Pokud se uživatel zaregistruje, bude automaticky přidán do projektu a nebude vyžadována autentifikace emailu.
   Pokud uživatel je zaregistrovaný, nejprve mu přijde notifikace, že ho jiný určitý uživatel pozval do daného projektu a v notifikaci budou dvě možnosti, jestli chce uživatel vstoupit do projektu nebo ne, které budou obsahovat link na následující operace.
   Když klikne na "Ano" zavolá se operace:
-	PUT  {{url_Tyriona}}/project/project/addParticipant/:ivitation_id/:decision
+
+		PUT  {{url_Tyriona}}/project/project/addParticipant/:ivitation_id/:decision
+
   kde decision = true, pokud klikne "Ne", zavolá se ta samá operace, ale decision = false.
 
 ## Změna: Input Validation ##
   Zrušeny následující API: 
-	GET  {{url_Tyriona}}/coreClient/person/valid/nicknamewe/:nick_name     
- 	GET  {{url_Tyriona}}/coreClient/person/valid/mail/:mail
+
+		GET  {{url_Tyriona}}/coreClient/person/valid/nicknamewe/:nick_name
+		GET  {{url_Tyriona}}/coreClient/person/valid/mail/:mail
+
   namísto nich bude univerzální API:
-	POST {{url_Tyriona}}/coreClient/person/validate_entity
+
+		POST {{url_Tyriona}}/coreClient/person/validate_entity
+
   která vyžaduje JSON:
-	{
-		"key" : "mail_or_nick_name"
-		"value" : "example@mail.com"
-	}
+
+		{
+			"key" : "mail_or_nick_name"
+			"value" : "example@mail.com"
+		}
+
   key může prozatím být jen "mail" nebo "nick_name".
   Operace vrátí JSON:
-	{
-		"valid" : "true_or_false"
-		"message" : "for_example: Email is used"
-	}          
+	
+		{
+			"valid" : "true_or_false"
+			"message" : "for_example: Email is used"
+		}          
 
 
 

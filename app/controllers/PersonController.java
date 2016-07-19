@@ -11,7 +11,6 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.Server;
-import utilities.emails.EmailContent;
 import utilities.emails.EmailTool;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured;
@@ -90,10 +89,10 @@ public class PersonController extends Controller {
                 String link = Server.tyrion_serverAddress + "/mail_person_authentication" + "?mail=" + person.mail + "&token=" + validationToken.authToken;
 
                 try {
-                    EmailContent emailContent = new EmailContent()
+                    EmailTool emailTool = new EmailTool()
                             .addEmptyLineSpace()
                             .startParagraph("13")
-                            .addText("Email verification is needed to complete your registration")
+                            .addText("Email verification is needed to complete your registration.")
                             .endParagraph()
                             .addEmptyLineSpace()
                             .addLine()
@@ -101,7 +100,7 @@ public class PersonController extends Controller {
                             .addLink(link,"Click here to verify","18")
                             .addEmptyLineSpace();
 
-                    Email email = new EmailTool().sendEmail(help.mail, "Email Verification", emailContent.getEmailContent());
+                    Email email = emailTool.sendEmail(help.mail, "Email Verification", emailTool.getEmailContent());
                     mailerClient.send(email);
 
                 } catch (Exception e) {
@@ -203,10 +202,10 @@ public class PersonController extends Controller {
                 link = Server.becki_passwordReset + "&token=" + previousToken.password_recovery_token;
             }
             try {
-                EmailContent emailContent = new EmailContent()
+                EmailTool emailTool = new EmailTool()
                         .addEmptyLineSpace()
                         .startParagraph("13")
-                        .addText("Password reset was requested for this email")
+                        .addText("Password reset was requested for this email.")
                         .endParagraph()
                         .addEmptyLineSpace()
                         .addLine()
@@ -214,7 +213,7 @@ public class PersonController extends Controller {
                         .addLink(link,"Click here to reset your password","18")
                         .addEmptyLineSpace();
 
-                Email email = new EmailTool().sendEmail(help.mail, "Password Reset", emailContent.getEmailContent());
+                Email email = emailTool.sendEmail(help.mail, "Password Reset", emailTool.getEmailContent());
                 mailerClient.send(email);
 
             } catch (Exception e) {
@@ -284,14 +283,14 @@ public class PersonController extends Controller {
             passwordRecoveryToken.delete();
 
             try {
-                EmailContent emailContent = new EmailContent()
+                EmailTool emailTool = new EmailTool()
                         .addEmptyLineSpace()
                         .startParagraph("13")
-                        .addText("Password was changed")
+                        .addText("Password was changed.")
                         .endParagraph()
                         .addEmptyLineSpace();
 
-                Email email = new EmailTool().sendEmail(help.mail, "Password Reset", emailContent.getEmailContent());
+                Email email = emailTool.sendEmail(help.mail, "Password Reset", emailTool.getEmailContent());
                 mailerClient.send(email);
 
             } catch (Exception e) {
