@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@ApiModel(value = "Person permission static key object with description")
+@ApiModel(value = "PersonPermission")
 public class PersonPermission extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/

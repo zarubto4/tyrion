@@ -17,15 +17,17 @@
   "tags" : [ {
     "name" : "Not Documented API - InProgress or Stuck"
   }, {
-    "name" : "Access"
+    "name" : "Notifications"
   }, {
     "name" : "Person"
   }, {
+    "name" : "Access"
+  }, {
+    "name" : "M_Program"
+  }, {
     "name" : "APP-Api"
   }, {
-    "name" : "Social-Facebook"
-  }, {
-    "name" : "Social-GitHub"
+    "name" : "Screen_Size_Type"
   }, {
     "name" : "File"
   }, {
@@ -51,11 +53,23 @@
   }, {
     "name" : "External Server"
   }, {
+    "name" : "Project"
+  }, {
+    "name" : "Type of Block"
+  }, {
+    "name" : "Blocko-Block"
+  }, {
+    "name" : "Homer"
+  }, {
+    "name" : "Permission"
+  }, {
+    "name" : "Role"
+  }, {
     "name" : "WebSocket"
   }, {
-    "name" : "M_Program"
+    "name" : "Social-Facebook"
   }, {
-    "name" : "Screen_Size_Type"
+    "name" : "Social-GitHub"
   }, {
     "name" : "Blocko-OverFlow"
   }, {
@@ -64,20 +78,6 @@
     "name" : "Type-Of-Post"
   }, {
     "name" : "Type-Of-Confirms"
-  }, {
-    "name" : "Notifications"
-  }, {
-    "name" : "Permission"
-  }, {
-    "name" : "Role"
-  }, {
-    "name" : "Project"
-  }, {
-    "name" : "Type of Block"
-  }, {
-    "name" : "Blocko-Block"
-  }, {
-    "name" : "Homer"
   } ],
   "paths" : {
     "/compilation/board" : {
@@ -125,7 +125,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -174,7 +174,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -227,7 +227,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -284,7 +284,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -333,7 +333,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -380,7 +380,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -437,7 +437,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -492,7 +492,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -542,7 +542,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -601,7 +601,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -649,7 +649,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -707,7 +707,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -762,7 +762,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -812,7 +812,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -873,7 +873,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -931,7 +931,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -989,7 +989,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -1040,7 +1040,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -1091,7 +1091,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -1143,7 +1143,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -1195,7 +1195,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -1246,7 +1246,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -1304,7 +1304,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -1354,7 +1354,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -1409,7 +1409,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -1457,7 +1457,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -1509,7 +1509,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -1594,7 +1594,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -1651,7 +1651,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -1737,7 +1737,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -1792,7 +1792,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -1839,7 +1839,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -1916,7 +1916,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -2008,7 +2008,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -2055,7 +2055,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -2106,7 +2106,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -2152,7 +2152,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -2200,7 +2200,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -2254,7 +2254,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -2301,7 +2301,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -2376,7 +2376,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -2427,7 +2427,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -2474,7 +2474,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -2525,7 +2525,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -2571,7 +2571,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -2619,7 +2619,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -2673,7 +2673,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -2720,13 +2720,130 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
         "x-permission_required" : {
           "TypeOfBoard.delete_permission" : "true",
           "Static Permission key" : "TypeOfBoard_delete"
+        }
+      }
+    },
+    "/coreClient/connection/{connection_id}" : {
+      "delete" : {
+        "tags" : [ "Person" ],
+        "summary" : "terminate logging",
+        "description" : "You know where the user is logged in. And you can log out this connection. (Terminate token)",
+        "operationId" : "remove_Person_Connection",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "connection_id",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Its possible used that",
+            "schema" : {
+              "$ref" : "#/definitions/Result ok"
+            }
+          },
+          "400" : {
+            "description" : "Not Found object",
+            "schema" : {
+              "$ref" : "#/definitions/Object not found"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          }
+        },
+        "x-permission_required" : {
+          "FloatingPersonToken.delete_permission" : "true"
+        }
+      }
+    },
+    "/coreClient/connections" : {
+      "get" : {
+        "tags" : [ "Person" ],
+        "summary" : "get logged connections",
+        "description" : "get all connections, where user is logged",
+        "operationId" : "get_Person_Connections",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "Its possible used that",
+            "schema" : {
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/FloatingPersonToken"
+              }
+            }
+          },
+          "400" : {
+            "description" : "Not Found object",
+            "schema" : {
+              "$ref" : "#/definitions/Object not found"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/PermissionRequired"
+            }
+          }
+        },
+        "x-permission_description" : {
+          "FloatingPersonToken.read_permission" : "Only user can get own connections - its not possible get that from another account!"
+        }
+      }
+    },
+    "/coreClient/mail_person_password_recovery" : {
+      "post" : {
+        "tags" : [ "Access" ],
+        "summary" : "send password recovery email",
+        "description" : "sends email with link for changing forgotten password",
+        "operationId" : "sendPasswordRecoveryEmail",
+        "schemes" : [ "https" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "body",
+          "description" : "Contains Json with values",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Person_Password_RecoveryEmail"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "schema" : {
+              "$ref" : "#/definitions/Result ok"
+            }
+          },
+          "400" : {
+            "description" : "Some Json value Missing",
+            "schema" : {
+              "$ref" : "#/definitions/Json_Value_Missing_Result"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          }
         }
       }
     },
@@ -2806,6 +2923,311 @@
         }
       }
     },
+    "/coreClient/person/person" : {
+      "post" : {
+        "tags" : [ "Person" ],
+        "summary" : "register new Person",
+        "description" : "create new Person with unique email and nick_name, for standard registration leave invitationToken empty, it's used only if someone is invited via email",
+        "operationId" : "registred_Person",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "body",
+          "description" : "Contains Json with values",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Person_New"
+          }
+        } ],
+        "responses" : {
+          "201" : {
+            "description" : "Successful created",
+            "schema" : {
+              "$ref" : "#/definitions/Person"
+            }
+          },
+          "400" : {
+            "description" : "Some Json value Missing",
+            "schema" : {
+              "$ref" : "#/definitions/Json_Value_Missing_Result"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/PermissionRequired"
+            }
+          }
+        }
+      }
+    },
+    "/coreClient/person/person/all" : {
+      "get" : {
+        "tags" : [ "Person" ],
+        "summary" : "get all Person",
+        "description" : "get all Persons",
+        "operationId" : "get_Person_all",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/Person"
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/PermissionRequired"
+            }
+          }
+        }
+      }
+    },
+    "/coreClient/person/person/{id}" : {
+      "delete" : {
+        "tags" : [ "Person" ],
+        "summary" : "delete Person",
+        "description" : "delete Person by id",
+        "operationId" : "deletePerson",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "person_id String query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "$ref" : "#/definitions/Result ok"
+            }
+          },
+          "400" : {
+            "description" : "Object not found",
+            "schema" : {
+              "$ref" : "#/definitions/Object not found"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/PermissionRequired"
+            }
+          }
+        },
+        "x-permission_required" : {
+          "Person.delete_permission" : "true"
+        }
+      }
+    },
+    "/coreClient/person/person/{person_id}" : {
+      "get" : {
+        "tags" : [ "Person" ],
+        "summary" : "get Person",
+        "description" : "get Person by id",
+        "operationId" : "get_Person",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "person_id",
+          "in" : "path",
+          "description" : "person_id String query",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "$ref" : "#/definitions/Person"
+            }
+          },
+          "400" : {
+            "description" : "Object not found",
+            "schema" : {
+              "$ref" : "#/definitions/Object not found"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/PermissionRequired"
+            }
+          }
+        }
+      },
+      "put" : {
+        "tags" : [ "Person" ],
+        "summary" : "register new Person",
+        "description" : "create new Person with unique email and nick_name",
+        "operationId" : "edit_Person_Information",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "person_id",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "in" : "body",
+          "name" : "body",
+          "description" : "Contains Json with values",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Person_Update"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Successful updated",
+            "schema" : {
+              "$ref" : "#/definitions/Person"
+            }
+          },
+          "400" : {
+            "description" : "Object not found",
+            "schema" : {
+              "$ref" : "#/definitions/Object not found"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          },
+          "403" : {
+            "description" : "Need required permission",
+            "schema" : {
+              "$ref" : "#/definitions/PermissionRequired"
+            }
+          }
+        },
+        "x-permission_required" : {
+          "Person.edit_permission" : "true"
+        }
+      }
+    },
+    "/coreClient/person/validate_entity" : {
+      "post" : {
+        "tags" : [ "Person" ],
+        "summary" : "validate some Entity",
+        "description" : "for cyclical validation during registration, key contains 'mail' or 'nick_name'",
+        "operationId" : "validate_Entity",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "body",
+          "description" : "Contains Json with values",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Entity_Validation_In"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Result if its possible to used that",
+            "schema" : {
+              "$ref" : "#/definitions/Entity_Validation_Out"
+            }
+          },
+          "400" : {
+            "description" : "Something is wrong",
+            "schema" : {
+              "$ref" : "#/definitions/Bad Request"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          }
+        }
+      }
+    },
+    "/coreClient/person_password_recovery" : {
+      "put" : {
+        "tags" : [ "Access" ],
+        "summary" : "change person password",
+        "description" : "changes password if password_recovery_token is not older than 24 hours, deletes all FloatingPersonTokens",
+        "operationId" : "personPasswordRecovery",
+        "schemes" : [ "https" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "body",
+          "description" : "Contains Json with values",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Person_Password_New"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "schema" : {
+              "$ref" : "#/definitions/Result ok"
+            }
+          },
+          "400" : {
+            "description" : "Something is wrong",
+            "schema" : {
+              "$ref" : "#/definitions/Bad Request"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          }
+        }
+      }
+    },
     "/file/fileRecord/{file_record_id}" : {
       "get" : {
         "tags" : [ "File" ],
@@ -2846,7 +3268,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         }
@@ -2891,7 +3313,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -2931,7 +3353,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         }
@@ -2977,7 +3399,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -3031,7 +3453,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -3091,7 +3513,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -3138,7 +3560,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -3195,7 +3617,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -3260,7 +3682,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -3310,7 +3732,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -3351,7 +3773,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -3405,7 +3827,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -3465,7 +3887,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -3512,7 +3934,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -3568,7 +3990,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -3626,7 +4048,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -3667,7 +4089,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -3720,7 +4142,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -3779,7 +4201,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -3826,7 +4248,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -4081,7 +4503,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -4224,7 +4646,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -4278,7 +4700,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -4322,7 +4744,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         }
@@ -4362,7 +4784,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         }
@@ -4401,7 +4823,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -4581,7 +5003,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -4628,7 +5050,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -4679,7 +5101,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -4720,7 +5142,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         }
@@ -4772,7 +5194,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -4820,7 +5242,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -4870,7 +5292,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         }
@@ -4922,7 +5344,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -4978,7 +5400,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -5030,7 +5452,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -5160,7 +5582,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -5208,7 +5630,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -5257,7 +5679,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -5318,7 +5740,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -5367,7 +5789,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -5428,7 +5850,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -5477,7 +5899,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -5524,7 +5946,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -5573,7 +5995,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -5628,7 +6050,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -5675,7 +6097,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -5731,7 +6153,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -5762,7 +6184,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -5809,7 +6231,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -5864,7 +6286,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -5906,7 +6328,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -5958,7 +6380,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -6021,7 +6443,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -6082,7 +6504,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -6134,7 +6556,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -6184,7 +6606,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -6234,7 +6656,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -6293,7 +6715,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -6341,7 +6763,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -6390,7 +6812,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -6442,7 +6864,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -6535,7 +6957,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -6586,7 +7008,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -6641,7 +7063,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -6698,7 +7120,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -6790,7 +7212,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         }
@@ -6836,7 +7258,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         }
@@ -6928,7 +7350,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -6985,7 +7407,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -7034,7 +7456,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -7094,7 +7516,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -7141,7 +7563,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -7181,7 +7603,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         }
@@ -7227,7 +7649,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -7279,7 +7701,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -7339,7 +7761,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -7387,7 +7809,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -7412,7 +7834,7 @@
             "schema" : {
               "type" : "array",
               "items" : {
-                "$ref" : "#/definitions/Person permission static key object with description"
+                "$ref" : "#/definitions/PersonPermission"
               }
             }
           },
@@ -7428,7 +7850,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -7481,7 +7903,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -7532,7 +7954,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -7580,7 +8002,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -7628,7 +8050,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -7668,7 +8090,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -7721,7 +8143,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -7772,7 +8194,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -7825,7 +8247,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -7876,7 +8298,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -7924,7 +8346,7 @@
           "403" : {
             "description" : "Need required permission",
             "schema" : {
-              "$ref" : "#/definitions/Permission Required"
+              "$ref" : "#/definitions/PermissionRequired"
             }
           }
         },
@@ -8246,20 +8668,6 @@
       },
       "description" : "When is something wrong"
     },
-    "LibraryGroup_Version" : {
-      "type" : "object",
-      "required" : [ "version_name" ],
-      "properties" : {
-        "version_name" : {
-          "type" : "string",
-          "description" : "MinLength >= 2"
-        },
-        "version_description" : {
-          "type" : "string"
-        }
-      },
-      "description" : "Json Model for new Version for LibraryGroup"
-    },
     "ScreeSizeType_New" : {
       "type" : "object",
       "required" : [ "height_lock", "landscape_height", "landscape_max_screens", "landscape_min_screens", "landscape_square_height", "landscape_square_width", "landscape_width", "name", "portrait_height", "portrait_max_screens", "portrait_min_screens", "portrait_square_height", "portrait_square_width", "portrait_width", "touch_screen", "width_lock" ],
@@ -8334,6 +8742,20 @@
         }
       },
       "description" : "Json Model for new Scree Size Type "
+    },
+    "LibraryGroup_Version" : {
+      "type" : "object",
+      "required" : [ "version_name" ],
+      "properties" : {
+        "version_name" : {
+          "type" : "string",
+          "description" : "MinLength >= 2"
+        },
+        "version_description" : {
+          "type" : "string"
+        }
+      },
+      "description" : "Json Model for new Version for LibraryGroup"
     },
     "JsonNode" : {
       "type" : "object",
@@ -8471,7 +8893,7 @@
         "permissions" : {
           "type" : "array",
           "items" : {
-            "$ref" : "#/definitions/Person permission static key object with description"
+            "$ref" : "#/definitions/PersonPermission"
           }
         }
       }
@@ -8709,6 +9131,25 @@
       },
       "description" : "Json Model for new Homer"
     },
+    "Person_Password_New" : {
+      "type" : "object",
+      "required" : [ "mail", "password", "password_recovery_token" ],
+      "properties" : {
+        "mail" : {
+          "type" : "string",
+          "description" : "Required valid mail "
+        },
+        "password" : {
+          "type" : "string",
+          "description" : "The password must have at least 8 characters"
+        },
+        "password_recovery_token" : {
+          "type" : "string",
+          "description" : "Required authToken"
+        }
+      },
+      "description" : "Json Model for recovering person password"
+    },
     "Board_Filter" : {
       "type" : "object",
       "properties" : {
@@ -8814,6 +9255,32 @@
         }
       },
       "description" : "Json Model for new Basic Login"
+    },
+    "PersonPermission" : {
+      "type" : "object",
+      "required" : [ "description", "value" ],
+      "properties" : {
+        "value" : {
+          "type" : "string",
+          "description" : "Permission key - \"(static key)\"",
+          "readOnly" : true
+        },
+        "description" : {
+          "type" : "string",
+          "description" : "Description for \"(static key)\"",
+          "readOnly" : true
+        },
+        "edit_person_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        }
+      }
     },
     "Project" : {
       "type" : "object",
@@ -8983,6 +9450,62 @@
         }
       }
     },
+    "FloatingPersonToken" : {
+      "type" : "object",
+      "required" : [ "access_age", "created" ],
+      "properties" : {
+        "connection_id" : {
+          "type" : "string"
+        },
+        "created" : {
+          "type" : "integer",
+          "format" : "int32",
+          "example" : "1466163478925",
+          "description" : "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
+          "readOnly" : true
+        },
+        "access_age" : {
+          "type" : "integer",
+          "format" : "int32",
+          "example" : "1466163478925",
+          "description" : "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
+          "readOnly" : true
+        },
+        "user_agent" : {
+          "type" : "string"
+        },
+        "providerUserId" : {
+          "type" : "string"
+        },
+        "providerKey" : {
+          "type" : "string"
+        },
+        "typeOfConnection" : {
+          "type" : "string"
+        },
+        "returnUrl" : {
+          "type" : "string"
+        },
+        "social_tokenVerified" : {
+          "type" : "boolean",
+          "default" : false
+        },
+        "notification_subscriber" : {
+          "type" : "boolean",
+          "default" : false
+        },
+        "read_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "delete_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        }
+      }
+    },
     "Social_Login" : {
       "type" : "object",
       "properties" : {
@@ -9034,6 +9557,20 @@
         }
       }
     },
+    "Swagger_Grid_Terminal_Identf" : {
+      "type" : "object",
+      "required" : [ "device_name", "device_type" ],
+      "properties" : {
+        "device_type" : {
+          "type" : "string",
+          "example" : "Mobile, WebBrowser"
+        },
+        "device_name" : {
+          "type" : "string",
+          "example" : "Iphone 5S, Chrome 4"
+        }
+      }
+    },
     "Processor_New" : {
       "type" : "object",
       "required" : [ "description", "processor_code", "processor_name", "speed" ],
@@ -9057,19 +9594,16 @@
       },
       "description" : "Json Model for new Processor"
     },
-    "Swagger_Grid_Terminal_Identf" : {
+    "Person_Password_RecoveryEmail" : {
       "type" : "object",
-      "required" : [ "device_name", "device_type" ],
+      "required" : [ "mail" ],
       "properties" : {
-        "device_type" : {
+        "mail" : {
           "type" : "string",
-          "example" : "Mobile, WebBrowser"
-        },
-        "device_name" : {
-          "type" : "string",
-          "example" : "Iphone 5S, Chrome 4"
+          "description" : "Required valid mail "
         }
-      }
+      },
+      "description" : "Json Model for sending password recovery email"
     },
     "Board_New" : {
       "type" : "object",
@@ -9177,31 +9711,6 @@
           "type" : "string"
         }
       }
-    },
-    "Permission Required" : {
-      "type" : "object",
-      "required" : [ "code", "state" ],
-      "properties" : {
-        "state" : {
-          "type" : "string",
-          "description" : "state",
-          "readOnly" : true,
-          "enum" : [ "Permission required" ]
-        },
-        "code" : {
-          "type" : "integer",
-          "format" : "int32",
-          "description" : "code",
-          "readOnly" : true,
-          "enum" : [ 403 ]
-        },
-        "message" : {
-          "type" : "string",
-          "description" : "Can be null! If not, you can show that to User",
-          "readOnly" : true
-        }
-      },
-      "description" : "Some Json value missing - don't show that to users.. SERVER IS LOGGING THIS FRONTEND ISSUE"
     },
     "C_Program_Version_Edit" : {
       "type" : "object",
@@ -9318,6 +9827,30 @@
         }
       }
     },
+    "Notification" : {
+      "type" : "object",
+      "properties" : {
+        "id" : {
+          "type" : "string"
+        },
+        "level" : {
+          "type" : "string",
+          "enum" : [ "info", "success", "warning", "error", "question" ]
+        },
+        "confirmation_required" : {
+          "type" : "boolean",
+          "default" : false
+        },
+        "read" : {
+          "type" : "boolean",
+          "default" : false
+        },
+        "Its not possible document that throw swagger. Please visit documentation.byzance.cz" : {
+          "readOnly" : true,
+          "$ref" : "#/definitions/JsonNode"
+        }
+      }
+    },
     "Actualization_procedure" : {
       "type" : "object",
       "required" : [ "b_program_actualization", "date_of_create", "date_of_finish", "state", "updates" ],
@@ -9351,30 +9884,6 @@
         "b_program_actualization" : {
           "readOnly" : true,
           "$ref" : "#/definitions/Program_Actualization"
-        }
-      }
-    },
-    "Notification" : {
-      "type" : "object",
-      "properties" : {
-        "id" : {
-          "type" : "string"
-        },
-        "level" : {
-          "type" : "string",
-          "enum" : [ "info", "success", "warning", "error", "question" ]
-        },
-        "confirmation_required" : {
-          "type" : "boolean",
-          "default" : false
-        },
-        "read" : {
-          "type" : "boolean",
-          "default" : false
-        },
-        "Its not possible document that throw swagger. Please visit documentation.byzance.cz" : {
-          "readOnly" : true,
-          "$ref" : "#/definitions/JsonNode"
         }
       }
     },
@@ -9679,6 +10188,25 @@
       },
       "description" : "Json Model for new Post"
     },
+    "Entity_Validation_Out" : {
+      "type" : "object",
+      "required" : [ "valid" ],
+      "properties" : {
+        "valid" : {
+          "type" : "boolean",
+          "description" : "Entity (Email, NickName.. etc) is valid if valid = true",
+          "readOnly" : true,
+          "default" : false
+        },
+        "message" : {
+          "type" : "string",
+          "example" : "Email is used",
+          "description" : "If valid = false, Json probably contains message for user",
+          "readOnly" : true
+        }
+      },
+      "description" : "Json Model for Validation of *-some Entity"
+    },
     "Post_Answer" : {
       "type" : "object",
       "required" : [ "text_of_post" ],
@@ -9860,58 +10388,6 @@
         }
       }
     },
-    "Person permission static key object with description" : {
-      "type" : "object",
-      "required" : [ "description", "value" ],
-      "properties" : {
-        "value" : {
-          "type" : "string",
-          "description" : "Permission key - \"(static key)\"",
-          "readOnly" : true
-        },
-        "description" : {
-          "type" : "string",
-          "description" : "Description for \"(static key)\"",
-          "readOnly" : true
-        },
-        "edit_person_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "edit_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        }
-      }
-    },
-    "Login_Result" : {
-      "type" : "object",
-      "properties" : {
-        "person" : {
-          "readOnly" : true,
-          "$ref" : "#/definitions/Person"
-        },
-        "roles" : {
-          "type" : "array",
-          "description" : "List of roles, that",
-          "readOnly" : true,
-          "items" : {
-            "$ref" : "#/definitions/SecurityRole"
-          }
-        },
-        "permissions" : {
-          "type" : "array",
-          "description" : "List of all person permission (private and all collections from Person Roles (\"SecurityRole\") ",
-          "readOnly" : true,
-          "items" : {
-            "type" : "string"
-          }
-        }
-      },
-      "description" : "Json Model that you will get, if login was successful"
-    },
     "Swagger_SingleLibrary_Filter" : {
       "type" : "object",
       "properties" : {
@@ -9968,6 +10444,32 @@
           "default" : false
         }
       }
+    },
+    "Login_Result" : {
+      "type" : "object",
+      "properties" : {
+        "person" : {
+          "readOnly" : true,
+          "$ref" : "#/definitions/Person"
+        },
+        "roles" : {
+          "type" : "array",
+          "description" : "List of roles, that",
+          "readOnly" : true,
+          "items" : {
+            "$ref" : "#/definitions/SecurityRole"
+          }
+        },
+        "permissions" : {
+          "type" : "array",
+          "description" : "List of all person permission (private and all collections from Person Roles (\"SecurityRole\") ",
+          "readOnly" : true,
+          "items" : {
+            "type" : "string"
+          }
+        }
+      },
+      "description" : "Json Model that you will get, if login was successful"
     },
     "B_Program" : {
       "type" : "object",
@@ -10143,6 +10645,33 @@
         }
       }
     },
+    "B_Program_Version_New" : {
+      "type" : "object",
+      "required" : [ "main_board", "program", "version_name" ],
+      "properties" : {
+        "version_name" : {
+          "type" : "string"
+        },
+        "version_description" : {
+          "type" : "string"
+        },
+        "program" : {
+          "type" : "string"
+        },
+        "main_board" : {
+          "description" : "This board must be connectible_to_internet = true! (Its out Yoda)",
+          "$ref" : "#/definitions/Main_Board"
+        },
+        "boards" : {
+          "type" : "array",
+          "description" : "Connected boards (padavans)",
+          "items" : {
+            "$ref" : "#/definitions/Connected_Board"
+          }
+        }
+      },
+      "description" : "Json Model for new Version of B_Program"
+    },
     "Swagger_Post_List" : {
       "type" : "object",
       "required" : [ "content", "from", "pages", "to", "total" ],
@@ -10182,33 +10711,6 @@
           }
         }
       }
-    },
-    "B_Program_Version_New" : {
-      "type" : "object",
-      "required" : [ "main_board", "program", "version_name" ],
-      "properties" : {
-        "version_name" : {
-          "type" : "string"
-        },
-        "version_description" : {
-          "type" : "string"
-        },
-        "program" : {
-          "type" : "string"
-        },
-        "main_board" : {
-          "description" : "This board must be connectible_to_internet = true! (Its out Yoda)",
-          "$ref" : "#/definitions/Main_Board"
-        },
-        "boards" : {
-          "type" : "array",
-          "description" : "Connected boards (padavans)",
-          "items" : {
-            "$ref" : "#/definitions/Connected_Board"
-          }
-        }
-      },
-      "description" : "Json Model for new Version of B_Program"
     },
     "LinkedPost" : {
       "type" : "object",
@@ -10373,6 +10875,31 @@
         }
       },
       "description" : "Json Model for crating new version and also content of BlockoBlock Model"
+    },
+    "PermissionRequired" : {
+      "type" : "object",
+      "required" : [ "code", "state" ],
+      "properties" : {
+        "state" : {
+          "type" : "string",
+          "description" : "state",
+          "readOnly" : true,
+          "enum" : [ "Permission required" ]
+        },
+        "code" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "code",
+          "readOnly" : true,
+          "enum" : [ 403 ]
+        },
+        "message" : {
+          "type" : "string",
+          "description" : "Can be null! If not, you can show that to User",
+          "readOnly" : true
+        }
+      },
+      "description" : "Some Json value missing - don't show that to users.. SERVER IS LOGGING THIS FRONTEND ISSUE"
     },
     "C_Program_Version_New" : {
       "type" : "object",
@@ -10584,6 +11111,39 @@
         }
       }
     },
+    "M_Program_New" : {
+      "type" : "object",
+      "required" : [ "height_lock", "m_code", "program_name", "screen_type_id", "width_lock" ],
+      "properties" : {
+        "screen_type_id" : {
+          "type" : "string",
+          "description" : "Required valid screen_type_id"
+        },
+        "program_description" : {
+          "type" : "string",
+          "description" : "Can be null"
+        },
+        "program_name" : {
+          "type" : "string",
+          "description" : "The description must have at least 8 characters"
+        },
+        "m_code" : {
+          "type" : "string",
+          "description" : "Code in converted to String"
+        },
+        "height_lock" : {
+          "type" : "boolean",
+          "description" : "If true - its possible turn on that on height",
+          "default" : false
+        },
+        "width_lock" : {
+          "type" : "boolean",
+          "description" : "If true - its possible turn on that on width",
+          "default" : false
+        }
+      },
+      "description" : "Json Model for new M_Program"
+    },
     "SingleLibrary" : {
       "type" : "object",
       "properties" : {
@@ -10619,39 +11179,6 @@
           "default" : false
         }
       }
-    },
-    "M_Program_New" : {
-      "type" : "object",
-      "required" : [ "height_lock", "m_code", "program_name", "screen_type_id", "width_lock" ],
-      "properties" : {
-        "screen_type_id" : {
-          "type" : "string",
-          "description" : "Required valid screen_type_id"
-        },
-        "program_description" : {
-          "type" : "string",
-          "description" : "Can be null"
-        },
-        "program_name" : {
-          "type" : "string",
-          "description" : "The description must have at least 8 characters"
-        },
-        "m_code" : {
-          "type" : "string",
-          "description" : "Code in converted to String"
-        },
-        "height_lock" : {
-          "type" : "boolean",
-          "description" : "If true - its possible turn on that on height",
-          "default" : false
-        },
-        "width_lock" : {
-          "type" : "boolean",
-          "description" : "If true - its possible turn on that on width",
-          "default" : false
-        }
-      },
-      "description" : "Json Model for new M_Program"
     },
     "Private_Homer_Server" : {
       "type" : "object",
@@ -10693,6 +11220,25 @@
           "default" : false
         }
       }
+    },
+    "Person_Update" : {
+      "type" : "object",
+      "required" : [ "full_name", "nick_name" ],
+      "properties" : {
+        "nick_name" : {
+          "type" : "string"
+        },
+        "full_name" : {
+          "type" : "string"
+        },
+        "first_title" : {
+          "type" : "string"
+        },
+        "last_title" : {
+          "type" : "string"
+        }
+      },
+      "description" : "Json Model for update Person. (For password or email, you have to used separate API)"
     },
     "Compilation_Build_Error" : {
       "type" : "object",
@@ -11052,6 +11598,21 @@
         }
       }
     },
+    "Entity_Validation_In" : {
+      "type" : "object",
+      "required" : [ "key", "value" ],
+      "properties" : {
+        "key" : {
+          "type" : "string",
+          "description" : "This field is required"
+        },
+        "value" : {
+          "type" : "string",
+          "description" : "This field is required"
+        }
+      },
+      "description" : "Json Model for Validation of *-some Entity"
+    },
     "TypeOfBoard" : {
       "type" : "object",
       "properties" : {
@@ -11234,6 +11795,25 @@
         }
       },
       "description" : "Json Model for new B_Program"
+    },
+    "Person_New" : {
+      "type" : "object",
+      "required" : [ "mail", "nick_name", "password" ],
+      "properties" : {
+        "nick_name" : {
+          "type" : "string",
+          "description" : "The nick_name must have at least 8 characters"
+        },
+        "mail" : {
+          "type" : "string",
+          "description" : "Required valid mail "
+        },
+        "password" : {
+          "type" : "string",
+          "description" : "The password must have at least 8 characters"
+        }
+      },
+      "description" : "Json Model for creating new Person"
     },
     "Board_status" : {
       "type" : "object",

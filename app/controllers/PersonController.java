@@ -24,7 +24,7 @@ import javax.websocket.server.PathParam;
 import java.util.Date;
 import java.util.List;
 
-@Api(value = "Not Documented API - InProgress or Stuck", hidden = true) // Překrývá nezdokumentované API do jednotné serverové kategorie ve Swaggeru.
+@Api(value = "Not Documented API - InProgress or Stuck") // Překrývá nezdokumentované API do jednotné serverové kategorie ve Swaggeru.
 public class PersonController extends Controller {
 
     @Inject MailerClient mailerClient;
