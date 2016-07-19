@@ -98,7 +98,7 @@ public class PersonController extends Controller {
                             .addEmptyLineSpace()
                             .addLine()
                             .addEmptyLineSpace()
-                            .addLink(link,"Click here to verify","20")
+                            .addLink(link,"Click here to verify","18")
                             .addEmptyLineSpace();
 
                     Email email = new EmailTool().sendEmail(help.mail, "Email Verification", emailContent.getEmailContent());
@@ -211,7 +211,7 @@ public class PersonController extends Controller {
                         .addEmptyLineSpace()
                         .addLine()
                         .addEmptyLineSpace()
-                        .addLink(link,"Click here to reset your password","20")
+                        .addLink(link,"Click here to reset your password","18")
                         .addEmptyLineSpace();
 
                 Email email = new EmailTool().sendEmail(help.mail, "Password Reset", emailContent.getEmailContent());

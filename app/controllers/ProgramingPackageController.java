@@ -381,7 +381,7 @@ public class ProgramingPackageController extends Controller {
                             .addEmptyLineSpace()
                             .addLine()
                             .addEmptyLineSpace()
-                            .addLink(link,"Click here to collaborate","20")
+                            .addLink(link,"Click here to collaborate","18")
                             .addEmptyLineSpace();
 
                     Email email = new EmailTool().sendEmail(mail, "Invitation to Collaborate", emailContent.getEmailContent());
