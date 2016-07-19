@@ -61,6 +61,7 @@ public class PersonController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result registred_Person() {
         try {
+
            final Form<Swagger_Person_New> form = Form.form(Swagger_Person_New.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Person_New help = form.get();

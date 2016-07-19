@@ -3,7 +3,7 @@ package utilities.response.response_objects;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-@ApiModel(value="Permission Required", description="Some Json value missing - don't show that to users.. " +
+@ApiModel(value="PermissionRequired", description="Some Json value missing - don't show that to users.. " +
           "SERVER IS LOGGING THIS FRONTEND ISSUE")
 public class Result_PermissionRequired {
 

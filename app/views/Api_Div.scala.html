@@ -128,45 +128,8 @@
                           </div> <!-- /.box -->
 
                   </div> <!-- /.box -->
-
-
-
-
-
+              
               <!-- PATHS ---------------------------------------------------------------------------------------------->
-
-
-
-              <h1 class="page-header" align="center">Změny nad Api </h1>
-
-              @for((x, index) <- diff.paths_diffs.zipWithIndex) {
-                  <h2 class="page-header"></h2>
-                  <div class="row">
-                      <div class="col-md-12" id="api-changes-@index">
-                      </div>
-                      <script>
-                      {
-                            var oldText = difflib.stringAsLines("@Html(x.old_json.replace("\\", "\\\\").replace("\n", "\\n").replace("\"", "\\\""))");
-                            var newText = difflib.stringAsLines("@Html(x.new_json.replace("\\", "\\\\").replace("\n", "\\n").replace("\"", "\\\""))");
-
-                            var sm = new difflib.SequenceMatcher(oldText, newText);
-
-                            var opcodes = sm.get_opcodes();
-                            document.getElementById("api-changes-"+@index).appendChild(diffview.buildView({
-                              baseTextLines: oldText,
-                              newTextLines: newText,
-                              opcodes: opcodes,
-
-                              // set the display titles for each resource
-                              baseTextName: "@Html(x.name)",
-                              newTextName: "@Html(x.name)",
-                              viewType: 0
-                            }));
-                      }
-                      </script>
-                  </div>
-              }
-
 
               <h1 class="page-header" align="center"> Odebrané nebo přidané  API </h1>
               <div class="row">
@@ -204,6 +167,42 @@
                   </div> <!-- /.box -->
 
               </div> <!-- /.box -->
+
+
+
+
+              <h1 class="page-header" align="center">Změny nad Api </h1>
+
+              @for((x, index) <- diff.paths_diffs.zipWithIndex) {
+                  <h2 class="page-header"></h2>
+                  <div class="row">
+                      <div class="col-md-12" id="api-changes-@index">
+                      </div>
+                      <script>
+                      {
+                            var oldText = difflib.stringAsLines("@Html(x.old_json.replace("\\", "\\\\").replace("\n", "\\n").replace("\"", "\\\""))");
+                            var newText = difflib.stringAsLines("@Html(x.new_json.replace("\\", "\\\\").replace("\n", "\\n").replace("\"", "\\\""))");
+
+                            var sm = new difflib.SequenceMatcher(oldText, newText);
+
+                            var opcodes = sm.get_opcodes();
+                            document.getElementById("api-changes-"+@index).appendChild(diffview.buildView({
+                              baseTextLines: oldText,
+                              newTextLines: newText,
+                              opcodes: opcodes,
+
+                              // set the display titles for each resource
+                              baseTextName: "@Html(x.name)",
+                              newTextName: "@Html(x.name)",
+                              viewType: 0
+                            }));
+                      }
+                      </script>
+                  </div>
+              }
+
+
+
 
 
 

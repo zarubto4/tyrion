@@ -31,7 +31,7 @@ public class Person extends Model {
 
                                                 @JsonIgnore     public boolean mailValidated;
 
-                                       @Column(length = 64)     private byte[] shaPassword;
+    @JsonIgnore   @Column(length = 64)                          private byte[] shaPassword;
     @JsonIgnore  @OneToOne(mappedBy = "person")                 public PasswordRecoveryToken passwordRecoveryToken;
 
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<Project>              owningProjects            = new ArrayList<>();
@@ -44,7 +44,7 @@ public class Person extends Model {
     @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<Post>                 personPosts          = new ArrayList<>(); // Propojení, které uživatel napsal
     @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<LinkedPost>           linkedPosts          = new ArrayList<>(); // Propojení, které uživatel nalinkoval
     @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL)     public List<FloatingPersonToken>  floatingPersonTokens = new ArrayList<>(); // Propojení, které uživatel napsal
-    @JsonIgnore  @OneToMany(mappedBy="owner",  cascade = CascadeType.ALL)     public List<Invitation>      invitations          = new ArrayList<>(); // Pozvánky, které uživatel rozeslal
+    @JsonIgnore  @OneToMany(mappedBy="owner",  cascade = CascadeType.ALL)     public List<Invitation>           invitations          = new ArrayList<>(); // Pozvánky, které uživatel rozeslal
     @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL)     public List<Notification>         notifications        = new ArrayList<>();
 
 
@@ -68,7 +68,7 @@ public class Person extends Model {
     }
 
     // Z důvodu Cashování Play na SETTER a GETTER byla zvolena tato "zbytečná metoda" - slouží jen pro Definování HASH hesla ( New, Recovery)
-    @JsonIgnore
+    @JsonIgnore @Transient
     public void setShaPassword(byte[] shaPassword) {
         this.shaPassword = shaPassword;
     }
@@ -92,16 +92,8 @@ public class Person extends Model {
 
     @JsonIgnore   @Transient public Boolean create_permission(){  return true;  }
     @JsonIgnore   @Transient public Boolean read_permission()  {  return true;  }
-    @JsonProperty @Transient  public Boolean edit_permission() {
-        if (SecurityController.getPerson() != null) return (M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Person_edit");
-        return false;
-    }
-    @JsonProperty @Transient
-    public Boolean delete_permission(){
-
-        if(SecurityController.getPerson() != null) return (M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Person_delete");
-            return false;
-    }
+    @JsonProperty @Transient public Boolean edit_permission() {   return SecurityController.getPerson() != null && ((M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Person_edit"));}
+    @JsonProperty @Transient public Boolean delete_permission() {return SecurityController.getPerson() != null && ((M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Person_delete"));}
 
     public enum permissions{ Person_edit, Person_delete }
 

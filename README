@@ -83,6 +83,23 @@ Ta  obsahuje mimo jiné
 
 -------
 
+## Změny nad Api ##
+V rámci dobrých vztahů mezi FrontEndem a Beckendem jsme si dovolili vás upozornit k jakým změnám došlo v API (Ostatní je pouze dokumentace!)
+
+1. POST /grid/m_program/{m_project_id}
+    "M_Project.create_permission":"true"  ---->  "M_Project.update_permission":"true",
+
+2. PUT  /project/homer/filter/{page_number}
+    Odpověď z chybného objektu Swagger_LibraryGroup_List na Homer_List
+
+3. POST /compilation/library/upload/{version_id}
+    Definování pro swagger, že příjmaný tělo http je "multipart/form-data"
+
+4. PUT  /project/b_program/update/{b_program_id}
+    Oprava špatně pojmenovaného souboru (Backend se snaží překrávat dlouhé dokumentační názvy tříd / objektů)
+    Odpověď z chybného objektu Swagger_B_Program_Version ---> B_Program_Version
+
+
  * uploadBinaryFileToBoard)  [TYRION-301](http://youtrack.byzance.cz/youtrack/issue/TYRION-301
 Jednak opraveno ale taktéž při opravě bylo vyřazeno chybně vyžadované tělo s ID zařízení, PLAY neumí přijmout soubor i Json naráz. Vyžadován momentálně pouze soubor a v URL uvedené jedno ID souboru. (PS fungovat by to mělo jako před tím, jen ten vyžadující Json tam bylo chybnou dokumentací navíc) (Tato API je taktéž výlučná - čistě pro vývojáře individuálně - masivní nahrávání bin souboru bude provedeno jinou procedurou než tato API a přibude v budoucnu)
  
@@ -99,10 +116,6 @@ Value code byla přejmenována na main (Aby korespondovala se strukturou progrma
 		 "external_libraries" : ...
 		 }
 
- 
- *TODO - Není hotové!!!!  - Čeká na dokumentaci ze strany homer serveru
-Uprava zabezpečení protékajících zpráv na websocketu mezi Homer serverm a Becki (přes Tyriona) [TYRION-306](http://youtrack.byzance.cz/youtrack/issue/TYRION-306)  Je zdokumentováno na public docu nově [DOCU](http://documentation.byzance.cz) v záložce REST-API v sekci websocket, jaké zprávy můžete zasílat. Ostatní budou blokovány.
-   
 
 ## Feature: Obnova hesla ##
 
