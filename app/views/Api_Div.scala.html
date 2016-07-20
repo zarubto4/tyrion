@@ -2,7 +2,7 @@
 @import utilities.swagger.swagger_diff_tools.servise_class.Diffs
 @import utilities.swagger.swagger_diff_tools.servise_class.News
 @import utilities.swagger.swagger_diff_tools.servise_class.Remws
-@(diff: Swagger_Diff, link_api_swagger : String)
+@(diff: Swagger_Diff, link_api_swagger : String, versionList: List[String])
 
 
 <section class="content-header">
@@ -21,27 +21,25 @@
         <div class="box-body no-padding">
           <div class="mailbox-read-message">
               <div>
+                  <form method="GET" action="@routes.DashboardController.show_diff_on_Api()">
                     <div style="width: 30%; float: left; margin-left: 10%; margin-right: 5%;" class="form-group">
                         <label>Old Version</label>
-                            <select class="form-control">
-                            <option>1.06.04</option>
-                            <option>1.06.05</option>
-                            <option>1.06.06</option>
-                            <option>1.06.06.1</option>
-                            <option>1.06.06.3</option>
+                        <select name="old_api" class="form-control">
+                        @for(version <- versionList){
+                            <option value="@version">@version</option>
+                        }
                         </select>
                     </div>
                     <div style="width: 30%; float: left; margin-right: 5%;" class="form-group">
                         <label>New Version</label>
-                        <select class="form-control">
-                            <option>1.06.04</option>
-                            <option>1.06.05</option>
-                            <option>1.06.06</option>
-                            <option>1.06.06.1</option>
-                            <option>1.06.06.3</option>
+                        <select name="new_api" class="form-control">
+                        @for(version <- versionList){
+                            <option value="@version">@version</option>
+                        }
                         </select>
                     </div>
-                  <button style="width: 10%; float: left; margin-top: 25px;" type="submit" class="btn btn-primary">Show diff</button>
+                    <button style="width: 10%; float: left; margin-top: 25px;" type="submit" class="btn btn-primary">Show diff</button>
+                  </form>
                   <div style="clear: both"></div>
               </div>
               <H1 align="center">Differencing on version
