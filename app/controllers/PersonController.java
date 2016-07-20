@@ -90,7 +90,18 @@ public class PersonController extends Controller {
                 String link = Server.tyrion_serverAddress + "/mail_person_authentication" + "?mail=" + person.mail + "&token=" + validationToken.authToken;
 
                 try {
-                    Email email = new EmailTool().sendEmailValidation(help.nick_name, person.mail, link);
+                    EmailTool emailTool = new EmailTool()
+                            .addEmptyLineSpace()
+                            .startParagraph("13")
+                            .addText("Email verification is needed to complete your registration.")
+                            .endParagraph()
+                            .addEmptyLineSpace()
+                            .addLine()
+                            .addEmptyLineSpace()
+                            .addLink(link,"Click here to verify","18")
+                            .addEmptyLineSpace();
+
+                    Email email = emailTool.sendEmail(help.mail, "Email Verification", emailTool.getEmailContent());
                     mailerClient.send(email);
 
                 } catch (Exception e) {
@@ -192,7 +203,18 @@ public class PersonController extends Controller {
                 link = Server.becki_passwordReset + "&token=" + previousToken.password_recovery_token;
             }
             try {
-                Email email = new EmailTool().sendPasswordRecoveryEmail(help.mail,"Click here to reset your password", link, "textasdasdasdad");
+                EmailTool emailTool = new EmailTool()
+                        .addEmptyLineSpace()
+                        .startParagraph("13")
+                        .addText("Password reset was requested for this email.")
+                        .endParagraph()
+                        .addEmptyLineSpace()
+                        .addLine()
+                        .addEmptyLineSpace()
+                        .addLink(link,"Click here to reset your password","18")
+                        .addEmptyLineSpace();
+
+                Email email = emailTool.sendEmail(help.mail, "Password Reset", emailTool.getEmailContent());
                 mailerClient.send(email);
 
             } catch (Exception e) {
@@ -261,10 +283,15 @@ public class PersonController extends Controller {
 
             passwordRecoveryToken.delete();
 
-            String link = "bla";
-
             try {
-                Email email = new EmailTool().sendPasswordRecoveryConfirmationEmail(help.mail, link,"name", "text");
+                EmailTool emailTool = new EmailTool()
+                        .addEmptyLineSpace()
+                        .startParagraph("13")
+                        .addText("Password was changed.")
+                        .endParagraph()
+                        .addEmptyLineSpace();
+
+                Email email = emailTool.sendEmail(help.mail, "Password Reset", emailTool.getEmailContent());
                 mailerClient.send(email);
 
             } catch (Exception e) {

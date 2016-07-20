@@ -3,7 +3,7 @@
 -----
 
 1.
-Cílem této verze bylo vyřešit všechny problémy, které trápí vývojáře Becki a nastavit po meetingu nové standardy vývoje. Jde především o zapisování změn, hotový a použitelný changelog a difftool přístupný mezi posledními dvěma verzemi. Slouží jak vývojářům Becki, Tyrionu, tak navázaných (GRID aplikací). Tomáš si podle něj také kontroluje co všechno se mohlo posrat.  
+Cílem této verze bylo vyřešit všechny problémy, které trápí vývojáře Becki a nastavit po meetingu nové standardy vývoje. Jde především o zapisování změn, hotový a použitelný changelog a difftool přístupný mezi posledními dvěma verzemi. Slouží jak vývojářům Becki, Tyrionu, tak navázaných (GRID aplikací). Tomáš si podle něj také kontroluje co všechno se mohlo posrat.
 
 2.
 Podle tracku [TYRION-261](http://youtrack.byzance.cz/youtrack/issue/TYRION-261) bylo doimplementováno, jak odhlásit příjímaný stream z instanci Homer serveru. Což vede k tomu, že až teď jde teoreticky odebírat více instancí najendou. Jedinným rozdílem příkazu odebírání "subscribe" je "unsubscribe"
@@ -13,9 +13,9 @@ Doplnění Dokumentace a popisu k novým Api jež slouží k zobrazení aktualiz
 
 4.
 Byl vyřešen problém s možným bezpečnostním rizikem připojení na websocket prozrazením adresy. [TYRION-260](http://youtrack.byzance.cz/youtrack/issue/TYRION-260)
-Pro připojení je nutné nejdříve požádat s vaším authTokenem na zabezpečené API o token, jenž složí jako proméná do URL pro přihlášení. 
+Pro připojení je nutné nejdříve požádat s vaším authTokenem na zabezpečené API o token, jenž složí jako proméná do URL pro přihlášení.
 Tento token je jednorázový a nelze se s ním připojit dvakrát. Má také životnost oscilující kolem 5 vteřin (je tam bráno v úvahu zatížení serveru)
-[SWAGGER API](http://swagger.byzance.cz/#!/Access/get_Websocket_token) 
+[SWAGGER API](http://swagger.byzance.cz/#!/Access/get_Websocket_token)
 
 5.
 [TYRION-303](http://youtrack.byzance.cz/youtrack/issue/TYRION-303)
@@ -52,7 +52,7 @@ Notifikace
 7.
 Parametr OPTION
 Každý objekt byl v Tyrionovi pečlivě definován a zmizel tak parametr Option, kde se vyskytuje je to bráno tak, že to tak má být. Doporučujeme do začátku rychlou zprávu přes Yammer (Dotaz jestli se vám něco nezdá, než hned to reportovat)
- 
+
 
 8.
 Doplnění podpory aktualizačních Tasků
@@ -79,7 +79,7 @@ Ta  obsahuje mimo jiné
    * "updates" : Je pole jednotlivých tasků aktualizační procedury - na každý jeden kus křemíku je jeden objekt definující co je to za HW (Jeho ID) a co se na něj nahrává. Buď Binární soubor, kteýr nahrál sám uživatel, nebo zkompilovaná verze C_Programu (Resepktive verze) Je tedy nutné uživatelovi ukázat buď "jméno souboru" (není asi nutný odkaz, protože soubor je bin a tedy naprosto nečitelný) Nebo objekt "c_program_detail" - Jež obsahuje název C_programu a název verze a jejich ID aby frontend mohl vytvořit linky!
 
 
-# ChangeLog # 
+# ChangeLog #
 
 -------
 
@@ -104,7 +104,7 @@ V rámci dobrých vztahů mezi FrontEndem a Beckendem jsme si dovolili vás upoz
 
  * uploadBinaryFileToBoard)  [TYRION-301](http://youtrack.byzance.cz/youtrack/issue/TYRION-301
 Jednak opraveno ale taktéž při opravě bylo vyřazeno chybně vyžadované tělo s ID zařízení, PLAY neumí přijmout soubor i Json naráz. Vyžadován momentálně pouze soubor a v URL uvedené jedno ID souboru. (PS fungovat by to mělo jako před tím, jen ten vyžadující Json tam bylo chybnou dokumentací navíc) (Tato API je taktéž výlučná - čistě pro vývojáře individuálně - masivní nahrávání bin souboru bude provedeno jinou procedurou než tato API a přibude v budoucnu)
- 
+
 
  * Uprava C_program version [TYRION-309](http://youtrack.byzance.cz/youtrack/issue/TYRION-309)
 U C_programu při ukládání nové verze byla v Json položka  "code" : "něco.." dále user_files..  ale při GET Version to bylo zabalené v user_code což nedávalo smysl a komplikovalo vám to kod (nechápu že nebylo hlášeno jako bug! - opraveno tak aby jak PUT JSON i GET JSON aby obě hodnoty korespondovaly a byly jednotné!
@@ -162,7 +162,12 @@ Value code byla přejmenována na main (Aby korespondovala se strukturou progrma
 
 		PUT  {{url_Tyriona}}/project/project/shareProject/:project_id
 
-  nyní vyžaduje v JSONu list emailů namísto id, JSON bude vypadat takto: { "persons_mail" : ["user@mail.com","example@mail.cz"]}.
+  nyní vyžaduje v JSONu list emailů namísto id, JSON bude vypadat takto:
+
+		{
+			"persons_mail" : ["user@mail.com","example@mail.cz"]
+		}
+
   Pokud email není zaregistrován, pošle se na něj email, ve kterém bude pozvánka do projektu a k registraci. Pokud se uživatel zaregistruje, bude automaticky přidán do projektu a nebude vyžadována autentifikace emailu.
   Pokud uživatel je zaregistrovaný, nejprve mu přijde notifikace, že ho jiný určitý uživatel pozval do daného projektu a v notifikaci budou dvě možnosti, jestli chce uživatel vstoupit do projektu nebo ne, které budou obsahovat link na následující operace.
   Když klikne na "Ano" zavolá se operace:
@@ -172,23 +177,29 @@ Value code byla přejmenována na main (Aby korespondovala se strukturou progrma
   kde decision = true, pokud klikne "Ne", zavolá se ta samá operace, ale decision = false.
 
 ## Změna: Input Validation ##
+  Zrušeny následující API: 
 
-  Zrušeny následující API:
-	GET  {{url_Tyriona}}/coreClient/person/valid/nicknamewe/:nick_name
- 	GET  {{url_Tyriona}}/coreClient/person/valid/mail/:mail
+		GET  {{url_Tyriona}}/coreClient/person/valid/nicknamewe/:nick_name
+		GET  {{url_Tyriona}}/coreClient/person/valid/mail/:mail
+
   namísto nich bude univerzální API:
-	POST {{url_Tyriona}}/coreClient/person/validate_entity
+
+		POST {{url_Tyriona}}/coreClient/person/validate_entity
+
   která vyžaduje JSON:
-	{
-		"key" : "mail_or_nick_name"
-		"value" : "example@mail.com"
-	}
+
+		{
+			"key" : "mail_or_nick_name"
+			"value" : "example@mail.com"
+		}
+
   key může prozatím být jen "mail" nebo "nick_name".
   Operace vrátí JSON:
-	{
-		"valid" : "true_or_false"
-		"message" : "for_example: Email is used"
-	}
+
+		{
+			"valid" : "true_or_false"
+			"message" : "for_example: Email is used"
+		}
 
 
 
@@ -222,6 +233,7 @@ Value code byla přejmenována na main (Aby korespondovala se strukturou progrma
 
 ### TODO ###
 
+  * TODO 3 Tomáš Z.: Zdokumentovat všechny Models pro Swagger
   * TODO 4 Tomáš Z.: Přidat cyklické odmazávání BLOB v Azure, na které už neexistuje databázová vazba (Nějaká fičura co se zapne každý den ve 3 ráno a provede sekvenci kam
       každý vývojář může přidávat metody které se provedou... (Mazání prošlých tokenů, mazání prošlých nedokončených ověření přes sociální sítě atd... Viz todo 5)
   * TODO 5 Tomáš Z.: Přidat cyklické odmazávání Vygenerovaných nezrealizovaných spojení na sociální sítě (Linkded Account)

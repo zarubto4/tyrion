@@ -368,7 +368,22 @@ public class ProgramingPackageController extends Controller {
 
                 // Odeslání emailu s linkem pro registraci
                 try {
-                    Email email = new EmailTool().sendInvitationEmail(mail, "name", link, "text");
+                    EmailTool emailTool = new EmailTool()
+                            .addEmptyLineSpace()
+                            .startParagraph("13")
+                            .addText("User ")
+                            .addBoldText(SecurityController.getPerson().full_name)
+                            .addText(" invites you to collaborate on the project ")
+                            .addBoldText(project.project_name + ". ")
+                            .addText("If you would like to participate in it, please click on the link below and register yourself. ")
+                            .endParagraph()
+                            .addEmptyLineSpace()
+                            .addLine()
+                            .addEmptyLineSpace()
+                            .addLink(link,"Click here to collaborate","18")
+                            .addEmptyLineSpace();
+
+                    Email email = emailTool.sendEmail(mail, "Invitation to Collaborate", emailTool.getEmailContent());
                     mailerClient.send(email);
 
                 } catch (Exception e) {

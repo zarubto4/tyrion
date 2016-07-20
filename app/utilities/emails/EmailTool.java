@@ -1,61 +1,64 @@
 package utilities.emails;
 
-import play.Configuration;
 import play.libs.mailer.Email;
 
-public class EmailTool{
+public class EmailTool {
 
+    String emailContent = "";
 
-    public Email sendEmailValidation(String name, String userMail, String tokenLink){
-
-        String html = utilities.emails.templates.html.ActivatedAccount.render(Configuration.root().getString("serverLink.Production"), tokenLink).body();
-
-        return new Email()
-                .setSubject("Validation of your account")
-                .setFrom("Byzance IoT Platform <cloud_blocko_server@byzance.cz>")
-                .addTo( name + "<"+ userMail +">")
-                .setBodyText("A text message")
-                .setBodyHtml(html);
+    public EmailTool startParagraph(String textSize){
+        emailContent += ("<p style='font-size:" + textSize + "pt; color: #969696; padding: 10px;'>");
+        return this;
     }
 
-    public Email sendPasswordRecoveryEmail(String userMail, String linkName, String tokenLink, String textInput){
+    public EmailTool endParagraph(){
+        emailContent += ("</p>");
+        return this;
+    }
 
-        String html = utilities.emails.templates.html.EmailScheme.render("TOTO je LINK", tokenLink, "blablabla").body();
+    public EmailTool addText(String text){
+        emailContent += (text);
+        return this;
+    }
+
+    public EmailTool addBoldText(String text){
+        emailContent += ("<strong>" + text + "</strong>");
+        return this;
+    }
+
+    public EmailTool addLinkIntoText(String link, String linkName){
+        emailContent += ("<a href='" + link + "'>" + linkName + "</a>");
+        return this;
+    }
+
+    public EmailTool addEmptyLineSpace(){
+        emailContent += ("<div style='height: 20px; width: 100%; clear: both;'></div>");
+        return this;
+    }
+
+    public EmailTool addLine(){
+        emailContent += ("<div style='clear: both; height: 0px; width: 100%; border-top: 1px solid #eee'></div>");
+        return this;
+    }
+
+    public EmailTool addLink(String link, String linkName, String textSize){
+        emailContent += ("<a href='" + link + "' style='padding: 10px; width: 100% !important; color: #00a0dd !important; text-decoration: none !important; text-align: center !important; float: left; font-size:" + textSize + "pt;'>" + linkName + "</a>");
+        return this;
+    }
+
+    public String getEmailContent(){
+        return emailContent;
+    }
+
+    public Email sendEmail(String userMail, String subject, String content){
+
+        String html = utilities.emails.templates.html.EmailScheme.render(content).body();
 
         return new Email()
-                .setSubject("Password Recovery")
+                .setSubject(subject)
                 .setFrom("Byzance IoT Platform <cloud_blocko_server@byzance.cz>")
                 .addTo("<"+ userMail +">")
                 .setBodyText("A text message")
                 .setBodyHtml(html);
     }
-
-    public Email sendPasswordRecoveryConfirmationEmail(String userMail, String linkName, String tokenLink, String textInput){
-
-        String html = utilities.emails.templates.html.PasswordRecovery.render(Configuration.root().getString("serverLink.Production"), tokenLink).body();
-
-        return new Email()
-                .setSubject("Password Recovery")
-                .setFrom("Byzance IoT Platform <cloud_blocko_server@byzance.cz>")
-                .addTo("<"+ userMail +">")
-                .setBodyText("A text message")
-                .setBodyHtml(html);
-    }
-
-    public Email sendInvitationEmail(String userMail, String linkName, String tokenLink, String textInput){
-
-        String html = utilities.emails.templates.html.InvitationEmail.render(Configuration.root().getString("serverLink.Production"), tokenLink).body();
-
-        return new Email()
-                .setSubject("Invitation to collaborate")
-                .setFrom("Byzance IoT Platform <cloud_blocko_server@byzance.cz>")
-                .addTo("<"+ userMail +">")
-                .setBodyText("A text message")
-                .setBodyHtml(html);
-    }
-
-
-
-
 }
-
