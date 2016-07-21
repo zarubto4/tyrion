@@ -30,19 +30,19 @@ public class Board extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @Id                                                          public String id; // Vlastní id je přidělováno
-                         @Column(columnDefinition = "TEXT")      public String personal_description;
-                                    @JsonIgnore  @ManyToOne      public TypeOfBoard type_of_board;  // Typ desky
-                                                                 public boolean isActive;
-                                               @JsonIgnore       public Date date_of_create;
+    @Id                                @ApiModelProperty(required = true)   public String id; // Vlastní id je přidělováno
+    @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)   public String personal_description;
+                                       @JsonIgnore  @ManyToOne              public TypeOfBoard type_of_board;  // Typ desky
+                                       @ApiModelProperty(required = true)   public boolean isActive;
+                                               @JsonIgnore  public Date date_of_create;
 
-                                    @JsonIgnore @ManyToOne       public Project project;
+                                    @JsonIgnore @ManyToOne  public Project project;
 
-                                    @JsonIgnore @ManyToOne       public Version_Object actual_c_program_version;
-                                    @JsonIgnore                  public String alternative_program_name;
+                                    @JsonIgnore @ManyToOne  public Version_Object actual_c_program_version;
+                                    @JsonIgnore             public String alternative_program_name;
 
-                                  @JsonIgnore @ManyToOne()       public Cloud_Homer_Server latest_know_server;  // Pouze pokud je připojen přímo na blocko cloud_blocko_server!
-                                  @JsonIgnore @ManyToOne()       public Private_Homer_Server private_homer_servers;
+                                  @JsonIgnore @ManyToOne()  public Cloud_Homer_Server latest_know_server;  // Pouze pokud je připojen přímo na blocko cloud_blocko_server!
+                                  @JsonIgnore @ManyToOne()  public Private_Homer_Server private_homer_servers;
 
     @JsonIgnore  @OneToMany(mappedBy="board",cascade=CascadeType.ALL, fetch = FetchType.EAGER)            public List<B_Pair> b_pair = new ArrayList<>();
     @JsonIgnore  @OneToMany(mappedBy="board", cascade=CascadeType.ALL, fetch = FetchType.EAGER) public List<C_Program_Update_Plan> c_program_update_plans;
@@ -52,11 +52,11 @@ public class Board extends Model {
 
 /* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty  @Transient public String type_of_board_id()   { return type_of_board == null ? null : type_of_board.id; }
-    @JsonProperty  @Transient public String project_id()         { return       project == null ? null : project.id; }
+    @JsonProperty  @Transient @ApiModelProperty(required = true) public String type_of_board_id()   { return type_of_board == null ? null : type_of_board.id; }
+    @JsonProperty  @Transient @ApiModelProperty(required = true) public String project_id()         { return       project == null ? null : project.id; }
 
 
-    @JsonProperty  @Transient public Swagger_Board_status status()       {
+    @JsonProperty  @Transient @ApiModelProperty(required = true) public Swagger_Board_status status()       {
 
         // Složený SQL dotaz pro nalezení funkční běžící instance (B_Pair)
         B_Pair b_pair_main = B_Pair.find.where().disjunction()
@@ -116,7 +116,7 @@ public class Board extends Model {
 
 
 
-    @JsonProperty  @Transient public boolean up_to_date(){return (c_program_update_plans == null);}
+    @JsonProperty  @Transient @ApiModelProperty(required = true) public boolean up_to_date(){return (c_program_update_plans == null);}
 
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/

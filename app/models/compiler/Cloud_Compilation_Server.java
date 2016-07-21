@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
 import controllers.WebSocketController_Incoming;
+import io.swagger.annotations.ApiModelProperty;
 
 import javax.persistence.*;
 import java.util.UUID;
@@ -15,15 +16,16 @@ public class Cloud_Compilation_Server extends Model {
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)     public String id;
-                                                            public String server_name;
-                                                            public String hash_certificate;
-                                                            public String destination_address;
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @ApiModelProperty(required = true)                          public String id;
+    @ApiModelProperty(required = true)                          public String server_name;
+    @ApiModelProperty(required = true)                          public String hash_certificate;
+    @ApiModelProperty(required = true)                          public String destination_address;
 
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty  public boolean server_is_online(){
+    @JsonProperty @ApiModelProperty(required = true) public boolean server_is_online(){
         return WebSocketController_Incoming.compiler_cloud_servers.containsKey(this.server_name);
     }
 
@@ -41,10 +43,10 @@ public class Cloud_Compilation_Server extends Model {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
 
-    @JsonIgnore   @Transient public Boolean create_permission(){  return SecurityController.getPerson().has_permission("Cloud_Compilation_Server_create"); }
-    @JsonIgnore   @Transient public Boolean read_permission()  {  return true; }
-    @JsonProperty @Transient public Boolean edit_permission()  {  return SecurityController.getPerson().has_permission("Cloud_Compilation_Server_edit");   }
-    @JsonProperty @Transient public Boolean delete_permission(){  return SecurityController.getPerson().has_permission("Cloud_Compilation_Server_delete"); }
+    @JsonIgnore   @Transient                                    public Boolean create_permission(){  return SecurityController.getPerson().has_permission("Cloud_Compilation_Server_create"); }
+    @JsonIgnore   @Transient                                    public Boolean read_permission()  {  return true; }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean edit_permission()  {  return SecurityController.getPerson().has_permission("Cloud_Compilation_Server_edit");   }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean delete_permission(){  return SecurityController.getPerson().has_permission("Cloud_Compilation_Server_delete"); }
 
     public enum permissions{Cloud_Compilation_Server_create, Cloud_Compilation_Server_edit, Cloud_Compilation_Server_delete}
 

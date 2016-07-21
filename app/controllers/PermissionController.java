@@ -18,7 +18,7 @@ import utilities.response.response_objects.Result_PermissionRequired;
 import utilities.response.response_objects.Result_Unauthorized;
 import utilities.response.response_objects.Result_ok;
 import utilities.swagger.documentationClass.Swagger_SecurityRole_New;
-import utilities.swagger.documentationClass.Swagger_System_Access;
+import utilities.swagger.outboundClass.Swagger_System_Access;
 
 import javax.websocket.server.PathParam;
 import java.util.List;

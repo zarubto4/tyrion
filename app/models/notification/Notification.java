@@ -20,15 +20,16 @@ public class Notification extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) public String id;
+    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)
+                                       @ApiModelProperty(required = true) public String id;
 
 
-    @Enumerated(EnumType.STRING)    public NotificationController.Notification_level level;     // Důležitost (podbarvení zprávy)
+    @Enumerated(EnumType.STRING)       @ApiModelProperty(required = true) public NotificationController.Notification_level level;     // Důležitost (podbarvení zprávy)
 
-    @Column(columnDefinition = "TEXT")  private String content_string;                           // Obsah v podobě Json.toString().
-                                        public boolean confirmation_required;
-                         @JsonIgnore    public boolean confirmed;
-                                        public boolean read;
+    @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true) private String content_string;                           // Obsah v podobě Json.toString().
+                                       @ApiModelProperty(required = true) public boolean confirmation_required;
+                                                           @JsonIgnore    public boolean confirmed;
+                                       @ApiModelProperty(required = true) public boolean read;
 
 
     @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1458315085") private Date created;
@@ -132,6 +133,7 @@ public class Notification extends Model {
  /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty(value = "Its not possible document that throw swagger. Please visit documentation.byzance.cz")
+    @ApiModelProperty(required = true)
     public JsonNode notification_body(){
         if(array.size() < 1) return Json.parse(content_string);
         else return array;

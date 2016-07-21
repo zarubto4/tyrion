@@ -46,7 +46,7 @@
                             <a href="#"><i class="fa fa-circle-o"></i> Historical Version <i class="fa fa-angle-left pull-right"></i></a>
                             <ul class="treeview-menu">
                             @for(version <- api_versions) {
-                                <li><a href='@link_api_swagger + "/" + @version' ><i class="fa fa-circle-o"></i>@version</a></li>
+                                <li><a href='@link_api_swagger/@version' ><i class="fa fa-circle-o"></i>@version</a></li>
                             }
                             </ul>
                         </li>

@@ -1,12 +1,15 @@
 package utilities.swagger.outboundClass.Filter_List;
 
 import com.avaje.ebean.Query;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.compiler.LibraryGroup;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@ApiModel(description = "Individual Library Group List",
+        value = "LibraryGroup_List")
 public class Swagger_LibraryGroup_List {
 
 

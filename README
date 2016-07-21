@@ -101,6 +101,7 @@ ChangeLog
 
 ### Oprava Bugů ###
 
+* fixed [TYRION-105](http://youtrack.byzance.cz/youtrack/issue/TYRION-105)
 * fixed [TYRION-185](http://youtrack.byzance.cz/youtrack/issue/TYRION-185)
 * fixed [TYRION-258](http://youtrack.byzance.cz/youtrack/issue/TYRION-258)
 * Uzavřeno uzavřeno [TYRION-70](http://youtrack.byzance.cz/youtrack/issue/TYRION-70)

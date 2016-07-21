@@ -9,7 +9,7 @@ import models.compiler.TypeOfBoard;
 import java.util.ArrayList;
 import java.util.List;
 
-@ApiModel(description = "Individual Notification List",
+@ApiModel(description = "Individual TypeOfBoard List",
           value = "TypeOfBoard_List")
 public class Swagger_Swagger_Board_List {
 

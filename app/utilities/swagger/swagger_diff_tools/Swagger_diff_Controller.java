@@ -58,10 +58,6 @@ public class Swagger_diff_Controller extends Controller {
             JsonNode old_api = read_local_File_for_Swagger(file_name_old );
             JsonNode new_api = read_local_File_for_Swagger(file_name_new );
 
-            logger.debug("old: " + old_api);
-            logger.debug("new: " + new_api);
-
-
             Swagger_Diff swagger_Dif = new Swagger_Diff();
             swagger_Dif.new_Version = file_name_new.replace("_", ".");
             swagger_Dif.old_Version = file_name_old.replace("_", ".");

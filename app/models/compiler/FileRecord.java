@@ -4,6 +4,7 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.annotations.ApiModelProperty;
 import models.project.c_program.C_Compilation;
 import models.project.c_program.actualization.C_Program_Update_Plan;
 import utilities.UtilTools;
@@ -23,8 +24,9 @@ public class FileRecord extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)     public String id;
-                                                                public String file_name;
+    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @ApiModelProperty(required = true)                          public String id;
+    @ApiModelProperty(required = true)                          public String file_name;
                                                  @JsonIgnore    public String file_path;
 
                                    @JsonIgnore @ManyToOne()     public Version_Object version_object;

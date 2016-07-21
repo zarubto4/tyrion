@@ -99,7 +99,9 @@ public class B_Program extends Model {
                        List<Board> boardList = Board.find.where().idIn(help.deviceList).findList();
                         state.online_boards.addAll(boardList);
                     }
-                }catch (Exception e){}
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
 
             }
 

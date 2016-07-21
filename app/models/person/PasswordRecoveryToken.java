@@ -18,8 +18,7 @@ public class PasswordRecoveryToken extends Model{
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
-    @Transient
+    @JsonIgnore @Transient
     public void  setPasswordRecoveryToken(){
         while(true){ // I need Unique Value
             this.password_recovery_token = UUID.randomUUID().toString();

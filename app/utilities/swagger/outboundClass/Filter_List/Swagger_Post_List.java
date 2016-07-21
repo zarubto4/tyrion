@@ -1,12 +1,15 @@
 package utilities.swagger.outboundClass.Filter_List;
 
 import com.avaje.ebean.Query;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.overflow.Post;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@ApiModel(description = "Individual Post List",
+        value = "Post_List")
 public class Swagger_Post_List {
 
 
