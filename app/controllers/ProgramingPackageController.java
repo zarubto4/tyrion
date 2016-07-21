@@ -339,19 +339,23 @@ public class ProgramingPackageController extends Controller {
 
             // Získání seznamu uživatelů, kteří jsou registrovaní(listIn) a kteří ne(listOut)
             List<Person> listIn = new ArrayList<>();
-            List<String> listOut = help.persons_mail;
+            List<String> toRemove = new ArrayList<>();
 
             // Roztřídění seznamů
-            for (String mail : listOut){
+            for (String mail : help.persons_mail){
                 Person person =  Person.find.where().eq("mail",mail).findUnique();
                 if(!(person == null)){
                     listIn.add(person);
-                    listOut.remove(person.mail);
+                    toRemove.add(person.mail);
                 }
             }
 
+            for (String mail : toRemove){
+                help.persons_mail.remove(mail);
+            }
+
             // Vytvoření pozvánky pro nezaregistrované uživatele
-            for (String mail : listOut){
+            for (String mail :  help.persons_mail){
 
                 Invitation invitation = Invitation.find.where().eq("mail", mail).findUnique();
                 if(invitation == null){
