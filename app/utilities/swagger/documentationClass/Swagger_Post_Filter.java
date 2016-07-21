@@ -1,11 +1,14 @@
 package utilities.swagger.documentationClass;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 
 import java.util.Date;
 import java.util.List;
 
+@ApiModel(description = "Json Model for getting Post by Filter",
+        value = "Post_Filter")
 public class Swagger_Post_Filter {
 
     @ApiModelProperty(value = "List of hashTags", required = false)

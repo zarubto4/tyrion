@@ -1,4 +1,4 @@
-@(bugs: Integer, homer_local  : Integer, becki_terminal: Integer, grid_terminal: Integer, homer_server : Integer, compiler_server: Integer, link_api_swagger : String)
+@(bugs: Integer, homer_local  : Integer, becki_terminal: Integer, grid_terminal: Integer, homer_server : Integer, compiler_server: Integer, link_api_swagger : String, api_versions: List[String])
 
     <aside class="main-sidebar">
     <!-- sidebar: style can be found in sidebar.less -->
@@ -45,8 +45,9 @@
                         <li>
                             <a href="#"><i class="fa fa-circle-o"></i> Historical Version <i class="fa fa-angle-left pull-right"></i></a>
                             <ul class="treeview-menu">
-                               <li><a  href='@(link_api_swagger + "/1.06.04")' ><i class="fa fa-circle-o"></i> 1.06.04 </a></li>
-                               <li><a  href='@(link_api_swagger + "/1.06.05")' ><i class="fa fa-circle-o"></i> 1.06.05 </a></li>
+                            @for(version <- api_versions) {
+                                <li><a href='@link_api_swagger/@version' ><i class="fa fa-circle-o"></i>@version</a></li>
+                            }
                             </ul>
                         </li>
                         <li><a href='@routes.DashboardController.show_diff_on_Api()' ><i class="fa fa-circle-o"></i> Diff Tools </a></li>

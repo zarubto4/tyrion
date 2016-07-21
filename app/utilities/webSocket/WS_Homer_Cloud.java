@@ -76,7 +76,5 @@ public class WS_Homer_Cloud extends WebSCType{
         json.put("version_id", version_id);
         json.remove("instanceId");
         WebSocketController_Incoming.homer_incoming_message(this, json);
-
-
     }
 }

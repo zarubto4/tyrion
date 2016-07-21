@@ -9,7 +9,7 @@ import models.project.b_program.servers.Private_Homer_Server;
 import java.util.ArrayList;
 import java.util.List;
 
-@ApiModel(description = "Individual Notification List",
+@ApiModel(description = "Individual Homer List",
           value = "Homer_List")
 public class Swagger_Homer_List {
 

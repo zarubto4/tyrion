@@ -4,6 +4,7 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
+import io.swagger.annotations.ApiModelProperty;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -15,9 +16,9 @@ public class Producer extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public String id;
-                                                             public String name;
-                     @Column(columnDefinition = "TEXT")      public String description;
+    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true)  public String id;
+                                                            @ApiModelProperty(required = true)  public String name;
+                     @Column(columnDefinition = "TEXT")     @ApiModelProperty(required = true)  public String description;
 
     @JsonIgnore @OneToMany(mappedBy="producer", cascade = CascadeType.ALL) public List<TypeOfBoard> type_of_boards = new ArrayList<>();
 
@@ -25,15 +26,15 @@ public class Producer extends Model {
 
 /* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient public List<String>  type_of_boards_id() { List<String> l = new ArrayList<>();  for( TypeOfBoard m : type_of_boards)  l.add(m.id); return l;  }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<String>  type_of_boards_id() { List<String> l = new ArrayList<>();  for( TypeOfBoard m : type_of_boards)  l.add(m.id); return l;  }
 
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient public Boolean create_permission(){  return SecurityController.getPerson().has_permission("Producer_create"); }
-    @JsonIgnore   @Transient public Boolean read_permission()  {  return true; }
-    @JsonProperty @Transient public Boolean edit_permission()  {  return SecurityController.getPerson().has_permission("Producer_edit");   }
-    @JsonProperty @Transient public Boolean delete_permission(){  return SecurityController.getPerson().has_permission("Producer_delete"); }
+    @JsonIgnore   @Transient                                    public Boolean create_permission(){  return SecurityController.getPerson().has_permission("Producer_create"); }
+    @JsonIgnore   @Transient                                    public Boolean read_permission()  {  return true; }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean edit_permission()  {  return SecurityController.getPerson().has_permission("Producer_edit");   }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean delete_permission(){  return SecurityController.getPerson().has_permission("Producer_delete"); }
 
     public enum permissions{Producer_create, Producer_edit, Producer_delete}
 

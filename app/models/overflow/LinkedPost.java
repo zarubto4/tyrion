@@ -4,6 +4,7 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
+import io.swagger.annotations.ApiModelProperty;
 import models.person.Person;
 
 import javax.persistence.*;
@@ -13,11 +14,12 @@ public class LinkedPost extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public String linkId;
+    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @ApiModelProperty(required = true)                          public String linkId;
 
-    @JsonIgnore  @ManyToOne public Person author;
-                 @ManyToOne public Post answer;  // Objekt který je odpovědí
-    @JsonIgnore  @ManyToOne public Post question; // Objekt na který je navěšuje již odpovězená (podobná) otázka
+    @JsonIgnore  @ManyToOne                                     public Person author;
+                 @ManyToOne @ApiModelProperty(required = true)  public Post answer;  // Objekt který je odpovědí
+    @JsonIgnore  @ManyToOne                                     public Post question; // Objekt na který je navěšuje již odpovězená (podobná) otázka
 
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
@@ -25,7 +27,7 @@ public class LinkedPost extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient  public Boolean delete_permission(){  return ( LinkedPost.find.where().eq("author.id", SecurityController.getPerson().id).where().eq("id", linkId).findRowCount() > 0) || SecurityController.getPerson().has_permission("Post_delete"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean delete_permission(){  return ( LinkedPost.find.where().eq("author.id", SecurityController.getPerson().id).where().eq("id", linkId).findRowCount() > 0) || SecurityController.getPerson().has_permission("Post_delete"); }
 
     public enum permissions{}
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

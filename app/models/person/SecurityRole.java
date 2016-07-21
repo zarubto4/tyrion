@@ -5,6 +5,7 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
+import io.swagger.annotations.ApiModelProperty;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -15,9 +16,9 @@ import java.util.List;
 public class SecurityRole extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
-    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) public String id;
-                                                            public String name;
-                                                            public String description;
+    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true) public String id;
+                                                            @ApiModelProperty(required = true) public String name;
+                                                            @ApiModelProperty(required = true) public String description;
 
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "roles")  @JoinTable(name = "person_roles") public List<Person> persons = new ArrayList<>();
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL) public List<PersonPermission> person_permissions = new ArrayList<>();
@@ -26,15 +27,15 @@ public class SecurityRole extends Model {
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient public List<String> persons_id()           {  List<String> l = new ArrayList<>();  for( Person m  : persons)   l.add(m.id); return l;  }
-    @JsonProperty @Transient public List<String> person_permissions_id(){  List<String> l = new ArrayList<>();  for( PersonPermission m   : person_permissions)   l.add(m.value); return l;  }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> persons_id()           {  List<String> l = new ArrayList<>();  for( Person m  : persons)   l.add(m.id); return l;  }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> person_permissions_id(){  List<String> l = new ArrayList<>();  for( PersonPermission m   : person_permissions)   l.add(m.value); return l;  }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient public Boolean create_permission(){  return  SecurityController.getPerson().has_permission("SecurityRole_create"); }
-    @JsonIgnore   @Transient public Boolean read_permission()  {  return  SecurityController.getPerson().has_permission("SecurityRole_read"); }
-    @JsonProperty @Transient public Boolean update_permission(){  return  SecurityController.getPerson().has_permission("SecurityRole_update"); }
-    @JsonProperty @Transient  public Boolean delete_permission(){  return  SecurityController.getPerson().has_permission("SecurityRole_delete");}
+    @JsonIgnore   @Transient                                    public Boolean create_permission(){  return  SecurityController.getPerson().has_permission("SecurityRole_create"); }
+    @JsonIgnore   @Transient                                    public Boolean read_permission()  {  return  SecurityController.getPerson().has_permission("SecurityRole_read"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean update_permission(){  return  SecurityController.getPerson().has_permission("SecurityRole_update"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean delete_permission(){  return  SecurityController.getPerson().has_permission("SecurityRole_delete");}
 
     public enum permissions{SecurityRole_create, SecurityRole_read, SecurityRole_update , SecurityRole_delete}
 

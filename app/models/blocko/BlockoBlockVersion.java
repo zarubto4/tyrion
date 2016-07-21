@@ -14,15 +14,16 @@ public class BlockoBlockVersion extends Model {
 
  /* DATABASE VALUE  ----------------------------------------------------------------------------------------------------*/
 
-    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)     public String id;
-                                                                public String version_name;
-                                                                public String version_description;
+    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true)    public String id;
+                                                            @ApiModelProperty(required = true)    public String version_name;
+                                                            @ApiModelProperty(required = true)    public String version_description;
 
-    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1461918607") public Date date_of_create;
+    @ApiModelProperty(required = true, dataType = "integer", readOnly = true,
+            value = "UNIX time stamp", example = "1461918607")                                    public Date date_of_create;
 
-                         @Column(columnDefinition = "TEXT")     public String design_json;
-                         @Column(columnDefinition = "TEXT")     public String logic_json;
-                                     @JsonIgnore @ManyToOne     public BlockoBlock blocko_block;
+                         @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)    public String design_json;
+                         @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)    public String logic_json;
+                                     @JsonIgnore @ManyToOne                                       public BlockoBlock blocko_block;
 
 
 
@@ -32,10 +33,10 @@ public class BlockoBlockVersion extends Model {
     @JsonIgnore @Transient public static final String create_permission_docs = "create: If user have BlockoBlock.update_permission = true, you can create new version of BlockoBlocks on this BlockoBlock - Or you need static/dynamic permission key if user want create version of BlockoBlock in public BlockoBlock in public TypeOfBlock";
 
 
-    @JsonProperty @Transient public Boolean create_permission()  {  return  blocko_block.update_permission() ||  SecurityController.getPerson().has_permission("BlockoBlock_create"); }
-    @JsonProperty @Transient public Boolean read_permission()    {  return  blocko_block.read_permission()   ||  SecurityController.getPerson().has_permission("BlockoBlock_read");   }
-    @JsonProperty @Transient public Boolean edit_permission()    {  return  blocko_block.update_permission() || SecurityController.getPerson().has_permission("BlockoBlock_edit");   }
-    @JsonProperty @Transient public Boolean delete_permission()  {  return  blocko_block.update_permission() ||  SecurityController.getPerson().has_permission("BlockoBlock_delete"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean create_permission()  {  return  blocko_block.update_permission() ||  SecurityController.getPerson().has_permission("BlockoBlock_create"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean read_permission()    {  return  blocko_block.read_permission()   ||  SecurityController.getPerson().has_permission("BlockoBlock_read");   }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean edit_permission()    {  return  blocko_block.update_permission() || SecurityController.getPerson().has_permission("BlockoBlock_edit");   }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean delete_permission()  {  return  blocko_block.update_permission() ||  SecurityController.getPerson().has_permission("BlockoBlock_delete"); }
 
     public enum permissions{BlockoBlock_create, BlockoBlock_read, BlockoBlock_edit, BlockoBlock_delete}
 

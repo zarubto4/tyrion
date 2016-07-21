@@ -4,6 +4,7 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
+import io.swagger.annotations.ApiModelProperty;
 import models.blocko.BlockoBlock;
 import models.notification.Notification;
 import models.overflow.LinkedPost;
@@ -22,12 +23,13 @@ public class Person extends Model {
 
     /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)     public String id;
+    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @ApiModelProperty(required = true)                          public String id;
 
-                                       @Column(unique=true)     public String mail;
-                                       @Column(unique=true)     public String nick_name;
-                                                                public String full_name;
-                                                                public String last_title;
+    @ApiModelProperty(required = true) @Column(unique=true)     public String mail;
+    @ApiModelProperty(required = true) @Column(unique=true)     public String nick_name;
+    @ApiModelProperty(required = true)                          public String full_name;
+    @ApiModelProperty(required = true)                          public String last_title;
 
                                                 @JsonIgnore     public boolean mailValidated;
 
@@ -92,6 +94,17 @@ public class Person extends Model {
 
     @JsonIgnore   @Transient public Boolean create_permission(){  return true;  }
     @JsonIgnore   @Transient public Boolean read_permission()  {  return true;  }
+    @JsonProperty @Transient @ApiModelProperty(required = true)
+    public Boolean edit_permission() {
+        if (SecurityController.getPerson() != null) return (M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Person_edit");
+        return false;
+    }
+    @JsonProperty @Transient @ApiModelProperty(required = true)
+    public Boolean delete_permission(){
+
+        if(SecurityController.getPerson() != null) return (M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Person_delete");
+            return false;
+    }
     @JsonProperty @Transient public Boolean edit_permission() {   return SecurityController.getPerson() != null && ((M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Person_edit"));}
     @JsonProperty @Transient public Boolean delete_permission() {return SecurityController.getPerson() != null && ((M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Person_delete"));}
 

@@ -50,24 +50,17 @@ public class Swagger_diff_Controller extends Controller {
     }
 
     // Zde budu porovnávat změny příchozích souboru API
-    public static Swagger_Diff set_API_Changes() {
+    public static Swagger_Diff set_API_Changes(String file_name_old, String file_name_new) {
         try {
 
             logger.debug("Creating api_diff.html content");
 
-            String file_name_old = "1.06.06.1";
-            String file_name_new = "1.06.06.3";
-
             JsonNode old_api = read_local_File_for_Swagger(file_name_old );
             JsonNode new_api = read_local_File_for_Swagger(file_name_new );
 
-            logger.debug("old: " + old_api);
-            logger.debug("new: " + new_api);
-
-
             Swagger_Diff swagger_Dif = new Swagger_Diff();
-            swagger_Dif.new_Version = file_name_new;
-            swagger_Dif.old_Version = file_name_old;
+            swagger_Dif.new_Version = file_name_new.replace("_", ".");
+            swagger_Dif.old_Version = file_name_old.replace("_", ".");
 
             final Form<Swagger_Api> form_old = Form.form(Swagger_Api.class).bind(old_api);
             Swagger_Api api_old = form_old.get();

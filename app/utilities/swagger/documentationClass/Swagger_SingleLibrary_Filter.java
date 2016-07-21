@@ -1,9 +1,12 @@
 package utilities.swagger.documentationClass;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.util.List;
 
+@ApiModel(description = "Json Model for getting Single Library by Filter",
+        value = "SingleLibrary_Filter")
 public class Swagger_SingleLibrary_Filter {
 
     @ApiModelProperty(value = "List of processor.id", required = false)

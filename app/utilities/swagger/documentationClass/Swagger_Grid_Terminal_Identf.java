@@ -1,8 +1,11 @@
 package utilities.swagger.documentationClass;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 
+@ApiModel(description = "Json Model for Identificator",
+        value = "Grid_Terminal_Identf")
 public class Swagger_Grid_Terminal_Identf {
 
     @Constraints.Required

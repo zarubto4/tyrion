@@ -17,14 +17,15 @@ public class TypeOfBlock extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) public String id;
-                                                            public String name;
-                         @Column(columnDefinition = "TEXT") public String general_description;
+    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true) public String id;
+                                                            @ApiModelProperty(required = true) public String name;
+                         @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true) public String general_description;
 
 
                                     @JsonIgnore @ManyToOne  public Project project;
 
-    @OneToMany(mappedBy="type_of_block", cascade = CascadeType.ALL) public List<BlockoBlock> blockoBlocks = new ArrayList<>();
+    @OneToMany(mappedBy="type_of_block", cascade = CascadeType.ALL)
+    @ApiModelProperty(required = true)                                                         public List<BlockoBlock> blockoBlocks = new ArrayList<>();
 
 
     @ApiModelProperty(value = "This value will be in Json only if TypeOfBlock is private!",readOnly =true, required = false)
@@ -42,11 +43,11 @@ public class TypeOfBlock extends Model {
 
 
 
-    @JsonIgnore @Transient public Boolean create_permission()  {return (project != null ? project.update_permission() : false ) || SecurityController.getPerson().has_permission("TypeOfBlock_create");}
-    @JsonIgnore @Transient public Boolean read_permission()    {return (project != null ? project.read_permission()   : false ) || SecurityController.getPerson().has_permission("TypeOfBlock_read");}
-    @JsonProperty @Transient  public Boolean update_permission() {return (project != null ? project.update_permission() : false ) || SecurityController.getPerson().has_permission("TypeOfBlock_update");}
-    @JsonProperty @Transient  public Boolean edit_permission() {return (project != null ? project.edit_permission()   : false ) || SecurityController.getPerson().has_permission("TypeOfBlock_edit");}
-    @JsonProperty @Transient public Boolean delete_permission(){return (project != null ? project.update_permission() : false ) || SecurityController.getPerson().has_permission("TypeOfBlock_delete");}
+    @JsonIgnore @Transient                                      public Boolean create_permission()  {return (project != null ? project.update_permission() : false ) || SecurityController.getPerson().has_permission("TypeOfBlock_create");}
+    @JsonIgnore @Transient                                      public Boolean read_permission()    {return (project != null ? project.read_permission()   : false ) || SecurityController.getPerson().has_permission("TypeOfBlock_read");}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean update_permission()  {return (project != null ? project.update_permission() : false ) || SecurityController.getPerson().has_permission("TypeOfBlock_update");}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean edit_permission()    {return (project != null ? project.edit_permission()   : false ) || SecurityController.getPerson().has_permission("TypeOfBlock_edit");}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean delete_permission()  {return (project != null ? project.update_permission() : false ) || SecurityController.getPerson().has_permission("TypeOfBlock_delete");}
 
     public enum permissions{TypeOfBlock_create, TypeOfBlock_read, TypeOfBlock_edit , TypeOfBlock_delete, TypeOfBlock_update}
 

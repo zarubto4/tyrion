@@ -9,7 +9,8 @@ import play.data.validation.Constraints;
           value = "TypeOfConfirms_New")
 public class Swagger_TypeOfConfirms_New {
 
-    @Constraints.Required @Constraints.MinLength(value = 8)
+    @Constraints.Required
+    @Constraints.MinLength(value = 8)
     @ApiModelProperty(required = true, value = "MinLength >= 8")
     public String type;
 
@@ -17,7 +18,8 @@ public class Swagger_TypeOfConfirms_New {
     @ApiModelProperty(required = true)
     public String color;
 
-    @Constraints.Required @Constraints.Min(value = 0)
+    @Constraints.Required
+    @Constraints.Min(value = 0)
     @ApiModelProperty(required = true, value = "must be positive")
     public Integer size;
 }

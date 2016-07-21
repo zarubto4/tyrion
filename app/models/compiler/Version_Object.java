@@ -21,12 +21,12 @@ import java.util.List;
 public class Version_Object extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
-    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public String  id;
-                                                             public String version_name;
-                     @Column(columnDefinition = "TEXT")      public String version_description;
+    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true)  public String  id;
+                                                            @ApiModelProperty(required = true)  public String version_name;
+                     @Column(columnDefinition = "TEXT")     @ApiModelProperty(required = true)  public String version_description;
 
 
-    @JsonIgnore    public String azureLinkVersion;
+                                                                                @JsonIgnore     public String azureLinkVersion;
 
     @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1461918607") public Date date_of_create;
 

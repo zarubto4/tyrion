@@ -216,7 +216,7 @@ public class WebSocketController_Incoming extends Controller {
                 return WebSocket.reject(forbidden());
             }
             if (Grid_Terminal.find.where().eq("terminal_id", terminal_id).findUnique() == null) {
-                logger.debug("Terminal: Incoming connection on terminal: " + terminal_id + " is not registred in database");
+                logger.debug("Terminal: Incoming connection on terminal: " + terminal_id + " is not registered in database");
                 return WebSocket.reject(forbidden());
             }
 
@@ -227,7 +227,7 @@ public class WebSocketController_Incoming extends Controller {
                 return WebSocket.reject(forbidden());
             }
             if (m_project.b_program_version == null) {
-                logger.debug("Terminal: Incoming connection on terminal: " + terminal_id + " where "+ m_project_id +" where M_Project is not connected with B_progrm");
+                logger.debug("Terminal: Incoming connection on terminal: " + terminal_id + " where "+ m_project_id +" where M_Project is not connected with B_program");
                 return WebSocket.reject(forbidden());
             }
 
@@ -602,8 +602,8 @@ public class WebSocketController_Incoming extends Controller {
 
     }
 
-// PRIVATE Blocko-Server ---------------------------------------------------------------------------------------------------------
-public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, ObjectNode json){
+// PRIVATE Homer-Server ---------------------------------------------------------------------------------------------------------
+    public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, ObjectNode json){
 
     logger.debug("BlockoServer: "+ blockoServer.identifikator + " Incoming message: " + json.toString());
 
@@ -640,11 +640,6 @@ public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, 
         logger.error("ERROR");
     }
 }
-
-    public static void blocko_server_is_disconnect(WS_BlockoServer blockoServer){
-        logger.debug("Tyrion lost connection with blocko cloud_blocko_server: " + blockoServer.identifikator);
-        blocko_servers.remove(blockoServer.identifikator);
-    }
 
     public static JsonNode blocko_server_listOfInstance(WS_BlockoServer blockoServer)  throws TimeoutException, InterruptedException{
 
@@ -855,6 +850,11 @@ public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, 
         }catch (Exception e){
             logger.error("Blocko Server - Yoda Connected ERROR", e);
         }
+    }
+
+    public static void blocko_server_is_disconnect(WS_BlockoServer blockoServer){
+        logger.debug("Tyrion lost connection with blocko cloud_blocko_server: " + blockoServer.identifikator);
+        blocko_servers.remove(blockoServer.identifikator);
     }
 
 // PRIVATE Compiler-Server --------------------------------------------------------------------------------------------------------

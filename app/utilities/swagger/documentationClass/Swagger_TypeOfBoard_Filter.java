@@ -1,7 +1,10 @@
 package utilities.swagger.documentationClass;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+@ApiModel(description = "Json Model for getting TypeOfBoard by Filter",
+        value = "TypeOfBoard_Filter")
 public class Swagger_TypeOfBoard_Filter {
 
 

@@ -17,7 +17,8 @@ public class FloatingPersonToken extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) public String connection_id;
+    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @ApiModelProperty(required = true)                      public String connection_id;
                                      @JsonIgnore            public String authToken;
        @JsonIgnore @ManyToOne(cascade = CascadeType.MERGE)  public Person person;
 
@@ -30,17 +31,18 @@ public class FloatingPersonToken extends Model {
     dataType = "integer", readOnly = true,
     value = "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
     example = "1466163478925")                              public Date   access_age;
-                                                            public String user_agent;
+    @ApiModelProperty(required = true)                      public String user_agent;
 
 
-                                                            public String providerUserId;          // user_id ze sociální služby (facebook, git atd)
-                       @Column(columnDefinition = "TEXT")   public String providerKey;             // provider key - slouží k identifikaci pro oauth2
-                                                            public String typeOfConnection;        // Typ Spojení
-                                                            public String returnUrl;               // Url pna které užáivatele přesměruji
+    @ApiModelProperty(required = true)                      public String providerUserId;          // user_id ze sociální služby (facebook, git atd)
+    @Column(columnDefinition = "TEXT")
+    @ApiModelProperty(required = true)                      public String providerKey;             // provider key - slouží k identifikaci pro oauth2
+    @ApiModelProperty(required = true)                      public String typeOfConnection;        // Typ Spojení
+    @ApiModelProperty(required = true)                      public String returnUrl;               // Url pna které užáivatele přesměruji
 
-                                                            public boolean social_tokenVerified;  // Pro ověření, že token byl sociální sítí ověřen
+    @ApiModelProperty(required = true)                      public boolean social_tokenVerified;  // Pro ověření, že token byl sociální sítí ověřen
 
-                                                            public boolean notification_subscriber;  // Pokud se s tímto tokenem frontend přihlásí k odebírání notifikací nastaví se mu hodnota true
+    @ApiModelProperty(required = true)                      public boolean notification_subscriber;  // Pokud se s tímto tokenem frontend přihlásí k odebírání notifikací nastaví se mu hodnota true
                                                                                                      // a to z důvodů rychlého filtrování, protože uživatel může být přihlášen na 50 zařízeních a na 15 odebírá notifikace
                                                                                                      // v případě uzavření notifikačního kanálu se musí token přenastavit na false!
 
@@ -116,8 +118,8 @@ public class FloatingPersonToken extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient public Boolean read_permission()  {  return ( person.id.equals( SecurityController.getPerson().id) ) || SecurityController.getPerson().has_permission("FloatingPersonToken_read");   }
-    @JsonProperty @Transient public Boolean delete_permission(){  return ( person.id.equals( SecurityController.getPerson().id) ) || SecurityController.getPerson().has_permission("FloatingPersonToken_delete"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean read_permission()  {  return ( person.id.equals( SecurityController.getPerson().id) ) || SecurityController.getPerson().has_permission("FloatingPersonToken_read");   }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean delete_permission(){  return ( person.id.equals( SecurityController.getPerson().id) ) || SecurityController.getPerson().has_permission("FloatingPersonToken_delete"); }
 
     public enum permissions{ FloatingPersonToken_read, FloatingPersonToken_delete }
 

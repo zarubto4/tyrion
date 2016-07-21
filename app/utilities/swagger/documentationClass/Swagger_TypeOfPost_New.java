@@ -8,7 +8,8 @@ import play.data.validation.Constraints;
         value = "TypeOfPost_New")
 public class Swagger_TypeOfPost_New {
 
-    @Constraints.Required @Constraints.MinLength(value = 3)
+    @Constraints.Required
+    @Constraints.MinLength(value = 3)
     @ApiModelProperty(required = true, value = "MinLength >= 3")
     public String type;
 }

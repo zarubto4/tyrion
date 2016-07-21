@@ -3,6 +3,7 @@ package controllers;
 import models.compiler.Cloud_Compilation_Server;
 import models.project.b_program.servers.Cloud_Homer_Server;
 import org.pegdown.PegDownProcessor;
+import play.Application;
 import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -20,14 +21,13 @@ import views.html.menu;
 import views.html.websocket;
 import views.html.Api_Div;
 
+import javax.inject.Inject;
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -35,6 +35,8 @@ import java.util.concurrent.TimeoutException;
  * ovládání websocketu a čtení readme. Dále podpora pro porovnávání změn nad dokumentací ze Swaggeru.
  * */
 public class DashboardController extends Controller {
+
+    @Inject Application application;
 
     // Logger pro zaznamenávání chyb
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
@@ -55,7 +57,14 @@ public class DashboardController extends Controller {
     // Úvodní zobrazení Dashboard
     public Result index() {
 
-        Html menu_html = menu.render(reported_bugs, connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers, connectedCompile_servers, link_api_swagger);
+        List<String> fileNames = new ArrayList<>();
+        File[] files = new File(application.path() + "/conf/swagger_history").listFiles();
+
+        for (File file : files) {
+            fileNames.add((file.getName().substring(0, file.getName().lastIndexOf('.'))).replace("_", "."));
+        }
+
+        Html menu_html = menu.render(reported_bugs, connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers, connectedCompile_servers, link_api_swagger, fileNames);
 
         Map<String, WS_BlockoServer> blockoServerMap = new HashMap<>();
 
@@ -83,10 +92,17 @@ public class DashboardController extends Controller {
 
         logger.debug("Creating show_readme.html content");
 
+        List<String> fileNames = new ArrayList<>();
+        File[] files = new File(application.path() + "/conf/swagger_history").listFiles();
+
+        for (File file : files) {
+            fileNames.add((file.getName().substring(0, file.getName().lastIndexOf('.'))).replace("_", "."));
+        }
+
         String text = "";
         for(String line : Files.readAllLines(Paths.get("README"), StandardCharsets.UTF_8) ) text += line + "\n";
 
-        Html menu_html   = menu.render(reported_bugs,connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers,connectedCompile_servers, link_api_swagger);
+        Html menu_html   = menu.render(reported_bugs,connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers,connectedCompile_servers, link_api_swagger, fileNames);
         Html readme_html = readme.render( new Html( new PegDownProcessor().markdownToHtml(text) ));
 
         logger.debug("Return show_readme.html content");
@@ -100,16 +116,27 @@ public class DashboardController extends Controller {
 // API DIFF ###############################################################################################################
 
     // Zobrazení readme podle MarkDown
-    public Result show_diff_on_Api() throws IOException, NullPointerException {
+    public Result show_diff_on_Api(String file_name_old, String file_name_new) throws IOException, NullPointerException {
         try {
+
             logger.debug("show_diff_on_Api diff_html content");
+
+            List<String> fileNames = new ArrayList<>();
+            File[] files = new File(application.path() + "/conf/swagger_history").listFiles();
+
+            for (File file : files) {
+                fileNames.add((file.getName().substring(0, file.getName().lastIndexOf('.'))).replace("_", "."));
+            }
+
+            if(file_name_old.equals("")) file_name_old = fileNames.get(fileNames.size()-2);
+            if(file_name_new.equals("")) file_name_new = fileNames.get(fileNames.size()-1);
 
             String text = "";
             for (String line : Files.readAllLines(Paths.get("README"), StandardCharsets.UTF_8)) text += line + "\n";
 
-            Html menu_html = menu.render(reported_bugs, connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers, connectedCompile_servers, link_api_swagger);
-            Swagger_Diff swagger_diff = Swagger_diff_Controller.set_API_Changes();
-            Html content = Api_Div.render(swagger_diff, link_api_swagger);
+            Html menu_html = menu.render(reported_bugs, connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers, connectedCompile_servers, link_api_swagger, fileNames);
+            Swagger_Diff swagger_diff = Swagger_diff_Controller.set_API_Changes(file_name_old, file_name_new);
+            Html content = Api_Div.render(swagger_diff, link_api_swagger, fileNames);
             logger.debug("Return show_readme.html content");
 
             return ok(main.render(menu_html,
@@ -129,7 +156,14 @@ public class DashboardController extends Controller {
 
         logger.debug("Return show_web_socket_stats.html content");
 
-        Html menu_html = menu.render(reported_bugs,connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers, connectedCompile_servers, link_api_swagger);
+        List<String> fileNames = new ArrayList<>();
+        File[] files = new File(application.path() + "/conf/swagger_history").listFiles();
+
+        for (File file : files) {
+            fileNames.add((file.getName().substring(0, file.getName().lastIndexOf('.'))).replace("_", "."));
+        }
+
+        Html menu_html = menu.render(reported_bugs,connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers, connectedCompile_servers, link_api_swagger, fileNames);
 
 
         List<WebSCType> homers = new ArrayList<>(WebSocketController_Incoming.incomingConnections_homers.values());
@@ -250,7 +284,14 @@ public class DashboardController extends Controller {
 
         logger.debug("Trying to render loggy.html content");
 
-        Html menu_html = menu.render(reported_bugs,connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers, connectedCompile_servers, link_api_swagger);
+        List<String> fileNames = new ArrayList<>();
+        File[] files = new File(application.path() + "/conf/swagger_history").listFiles();
+
+        for (File file : files) {
+            fileNames.add((file.getName().substring(0, file.getName().lastIndexOf('.'))).replace("_", "."));
+        }
+
+        Html menu_html = menu.render(reported_bugs,connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers, connectedCompile_servers, link_api_swagger, fileNames);
 
         return ok( main.render(menu_html,
                 loggy.render( Loggy.getErrors() ),
