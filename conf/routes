@@ -45,6 +45,8 @@ GET             /login/github/*url                          @controllers.Securit
 
 GET             /notification/list/:page_number             @controllers.NotificationController.get_history_log_page(page_number: Integer)
 
+PUT             /notification/confirm/:notification_id      @controllers.NotificationController.notification_confirm(notification_id)
+
 ### PERSON ############ PERSON ############### PERSON ################ PERSON ################# PERSON ############ PERSON ###########################################
 ######################################################################################################################################################################
 
@@ -63,7 +65,7 @@ DELETE          /coreClient/connection/:connection_id            @controllers.Pe
 
 DELETE         /coreClient/person/person/:id                    @controllers.PersonController.deletePerson(id: String)
 
-GET            /mail_person_authentication                      @controllers.PersonController.email_Person_authentitaction(mail,token)
+GET            /mail_person_authentication/:mail/:token         @controllers.PersonController.email_Person_authentitaction(mail,token)
 
 #Password recovery
 POST            /coreClient/mail_person_password_recovery       @controllers.PersonController.sendPasswordRecoveryEmail()

@@ -87,7 +87,7 @@ public class PersonController extends Controller {
 
                 ValidationToken validationToken = new ValidationToken().setValidation(person.mail);
 
-                String link = Server.tyrion_serverAddress + "/mail_person_authentication" + "?mail=" + person.mail + "&token=" + validationToken.authToken;
+                String link = Server.tyrion_serverAddress + "/mail_person_authentication" + "/" + person.mail + "/" + validationToken.authToken;
 
                 try {
                     EmailTool emailTool = new EmailTool()
@@ -198,9 +198,9 @@ public class PersonController extends Controller {
                 passwordRecoveryToken.time_of_creation = new Date();
                 passwordRecoveryToken.save();
 
-                link = Server.becki_passwordReset + "&token=" + passwordRecoveryToken.password_recovery_token;
+                link = Server.becki_passwordReset + "/" + passwordRecoveryToken.password_recovery_token;
             }else {
-                link = Server.becki_passwordReset + "&token=" + previousToken.password_recovery_token;
+                link = Server.becki_passwordReset + "/" + previousToken.password_recovery_token;
             }
             try {
                 EmailTool emailTool = new EmailTool()
@@ -396,9 +396,9 @@ public class PersonController extends Controller {
         }
     }
 
-    @ApiOperation(value = "register new Person",
+    @ApiOperation(value = "edit Person information",
             tags = {"Person"},
-            notes = "create new Person with unique email and nick_name",
+            notes = "edit Person info (nick_name, full_name, last_title",
             produces = "application/json",
             protocols = "https",
             code = 200,
@@ -420,7 +420,7 @@ public class PersonController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successful updated",      response = Person.class),
+            @ApiResponse(code = 200, message = "Successfully updated",    response = Person.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),

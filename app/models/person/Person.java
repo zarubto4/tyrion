@@ -105,8 +105,8 @@ public class Person extends Model {
         if(SecurityController.getPerson() != null) return (M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Person_delete");
             return false;
     }
-    @JsonProperty @Transient public Boolean edit_permission() {   return SecurityController.getPerson() != null && ((M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Person_edit"));}
-    @JsonProperty @Transient public Boolean delete_permission() {return SecurityController.getPerson() != null && ((M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Person_delete"));}
+    //@JsonProperty @Transient public Boolean edit_permission() {   return SecurityController.getPerson() != null && ((M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Person_edit"));}
+    //@JsonProperty @Transient public Boolean delete_permission() {return SecurityController.getPerson() != null && ((M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Person_delete"));}
 
     public enum permissions{ Person_edit, Person_delete }
 

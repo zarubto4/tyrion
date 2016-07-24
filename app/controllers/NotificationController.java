@@ -96,7 +96,7 @@ public class NotificationController extends Controller {
     send_notification(person, notification);
   }
 
-  public static void uploud_Instance_start(Person person, Homer_Instance instance){
+  public static void upload_Instance_start(Person person, Homer_Instance instance){
 
     Notification notification = new Notification( Notification_level.info, person)
                                   .setText("Server start creating new Blocko Instance on Blocko Version  <b>" + instance.version_object.b_program.name + "</b>")
@@ -181,11 +181,11 @@ public class NotificationController extends Controller {
 
   }
 
-  public static void uploud_firmare_was_succesfull(Person person, C_Program_Update_Plan plan){
+  public static void upload_firmware_was_successful(Person person, C_Program_Update_Plan plan){
 
   }
 
-  public static void uploud_firmare_was_Unsuccesfull(Person person, C_Program_Update_Plan plan){
+  public static void uplood_firmware_was_Unsuccessful(Person person, C_Program_Update_Plan plan){
 
   }
 
@@ -232,15 +232,12 @@ public class NotificationController extends Controller {
             .save_object();
 
     send_notification(receiver, notification);
-      // Tato notifikace by se měla uložit  - je tam parametr "přečtena"
 
   }
 
 
   public static void project_accepted_by_invited_person(Person owner, Person person, Project project){
 
-      // Pokud dotyčný přijal pozvání, tato zpráva se pošle tomu, kdo pozvání pozval
-      // Tato notifikace by se měla uložit - je tam parametr "přečtena"
     Notification notification = new Notification(Notification_level.info, owner)
             .setText("User ")
             .setObject(Person.class, person.id, person.full_name)
@@ -254,8 +251,6 @@ public class NotificationController extends Controller {
 
   public static void project_rejected_by_invited_person(Person owner, Person person, Project project){
 
-      // Pokud dotyčný nepřijal pozvání, tato zpráva se pošle tomu, kdo pozvání pozval
-      // Tato notifikace by se měla uložit  - je tam parametr "přečtena"
     Notification notification = new Notification(Notification_level.info, owner)
             .setText("User ")
             .setObject(Person.class, person.id, person.full_name)
@@ -264,6 +259,24 @@ public class NotificationController extends Controller {
             .save_object();
 
     send_notification(owner,notification);
+
+  }
+
+  public Result notification_confirm(String notification_id){
+
+    try{
+      Notification notification = Notification.find.byId(notification_id);
+      if(notification == null) return GlobalResult.notFoundObject("");
+
+      notification.confirmed = true;
+      notification.update();
+
+      return GlobalResult.result_ok();
+
+    }catch (Exception e){
+      return GlobalResult.internalServerError();
+    }
+
 
   }
 

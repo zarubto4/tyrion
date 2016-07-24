@@ -368,7 +368,7 @@ public class ProgramingPackageController extends Controller {
                     project.invitations.add(invitation);
                 }
 
-                String link = Server.becki_invitationToCollaborate + "&mail=" + mail;
+                String link = Server.becki_invitationToCollaborate + "/" + mail;
 
                 // Odeslání emailu s linkem pro registraci
                 try {
