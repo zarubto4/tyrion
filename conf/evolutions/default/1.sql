@@ -247,7 +247,6 @@ create table notification (
   content_string            TEXT,
   confirmation_required     boolean,
   confirmed                 boolean,
-  read                      boolean,
   created                   timestamp,
   person_id                 varchar(255),
   constraint ck_notification_level check (level in ('info','success','warning','error','question')),

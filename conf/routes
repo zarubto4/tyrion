@@ -44,6 +44,7 @@ GET             /login/github/*url                          @controllers.Securit
 ######################################################################################################################################################################
 
 GET             /notification/list/:page_number             @controllers.NotificationController.get_history_log_page(page_number: Integer)
+GET             /notification/unconfirmed                   @controllers.NotificationController.get_unconfirmed_notifications()
 
 PUT             /notification/confirm/:notification_id      @controllers.NotificationController.notification_confirm(notification_id)
 

@@ -21,12 +21,14 @@ import utilities.Server;
 import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_Unauthorized;
+import utilities.response.response_objects.Result_ok;
 import utilities.swagger.outboundClass.Filter_List.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Notification_List;
 import utilities.swagger.outboundClass.Swagger_C_Program_Version;
 import utilities.webSocket.WS_Becki_Website;
 
 import javax.websocket.server.PathParam;
+import java.util.List;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class NotificationController extends Controller {
@@ -91,6 +93,7 @@ public class NotificationController extends Controller {
                                       .setObject(Swagger_B_Program_Version.class, version_object.id, version_object.version_name )
                                       .setText("with critical Error:")
                                       .setBoldText(result)
+                                      .setPerson(person)
                                       .save_object();
 
     send_notification(person, notification);
@@ -126,6 +129,7 @@ public class NotificationController extends Controller {
                                     .setText("from Blocko program")
                                     .setObject(B_Program.class, instance.version_object.b_program.id, instance.version_object.b_program.name )
                                     .setText("Server will try to do that as soon as possible.")
+                                    .setPerson(person)
                                     .save_object();
 
     send_notification(person, notification);
@@ -140,6 +144,7 @@ public class NotificationController extends Controller {
                                     .setText("from Blocko program")
                                     .setObject(B_Program.class, version_object.b_program.id, version_object.b_program.name )
                                     .setText("with Critical unknown Error, Probably some bug.")
+                                    .setPerson(person)
                                     .save_object();
 
     send_notification(person, notification);
@@ -217,9 +222,9 @@ public class NotificationController extends Controller {
   }
 
 
-  public static void project_invitation(Person owner, Person receiver, Project project, Invitation invitation){
+  public static void project_invitation(Person owner, Person person, Project project, Invitation invitation){
 
-    Notification notification = new Notification(Notification_level.info, receiver)
+    Notification notification = new Notification(Notification_level.info, person)
             .setText("User")
             .setObject(Person.class, owner.id, owner.full_name)
             .setText("wants to invite you into the project ")
@@ -229,9 +234,10 @@ public class NotificationController extends Controller {
             .setText(" / ")
             .setLink_ToTyrion("No", Server.tyrion_serverAddress + "/project/project/addParticipant/" + invitation.id + "/false")
             .setText(".")
+            .setPerson(person)
             .save_object();
 
-    send_notification(receiver, notification);
+    send_notification(person, notification);
 
   }
 
@@ -243,6 +249,7 @@ public class NotificationController extends Controller {
             .setObject(Person.class, person.id, person.full_name)
             .setText("did not accept your invitation to the project ")
             .setBoldText(project.project_name +".")
+            .setPerson(owner)
             .save_object();
 
     send_notification(owner,notification);
@@ -256,6 +263,7 @@ public class NotificationController extends Controller {
             .setObject(Person.class, person.id, person.full_name)
             .setText("accepted your invitation to the project ")
             .setBoldText(project.project_name +".")
+            .setPerson(owner)
             .save_object();
 
     send_notification(owner,notification);
@@ -266,7 +274,6 @@ public class NotificationController extends Controller {
 
     try{
       Notification notification = Notification.find.byId(notification_id);
-      if(notification == null) return GlobalResult.notFoundObject("");
 
       notification.confirmed = true;
       notification.update();
@@ -313,6 +320,32 @@ public class NotificationController extends Controller {
      }
   }
 
+  @ApiOperation(value = "get unconfirmed notifications",
+          tags = {"Notifications"},
+          notes = "This API should by called right after user logs in. Sends notifications which require confirmation",
+          produces = "application/json",
+          protocols = "https",
+          code = 200
+  )
+  @ApiResponses(value = {
+          @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+          @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+          @ApiResponse(code = 500, message = "Server side Error")
+  })
+  @Security.Authenticated(Secured.class)
+  public Result get_unconfirmed_notifications(){
+    try{
+      List<Notification> notifications = Notification.find.where().eq("person", SecurityController.getPerson()).eq("confirmation_required", true).eq("confirmed", false).findList();
+      if(notifications.isEmpty()) return GlobalResult.result_ok("No new notifications");
 
+      for (Notification notification : notifications){
+          NotificationController.send_notification(SecurityController.getPerson(), notification);
+      }
 
+      return GlobalResult.result_ok("Notifications were sent again");
+
+    }catch (Exception e){
+      return GlobalResult.internalServerError();
+    }
+  }
 }

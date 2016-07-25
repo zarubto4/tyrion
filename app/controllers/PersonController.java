@@ -287,7 +287,7 @@ public class PersonController extends Controller {
                 EmailTool emailTool = new EmailTool()
                         .addEmptyLineSpace()
                         .startParagraph("13")
-                        .addText("Password was changed.")
+                        .addText("Password was changed for your account.")
                         .endParagraph()
                         .addEmptyLineSpace();
 

@@ -30,8 +30,6 @@ public class Notification extends Model {
     @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true) private String content_string;                           // Obsah v podobě Json.toString().
                                        @ApiModelProperty(required = true) public boolean confirmation_required;
                                                            @JsonIgnore    public boolean confirmed;
-                                       @ApiModelProperty(required = true) public boolean read;
-
 
     @ApiModelProperty(required = true,
             dataType = "integer", readOnly = true,
@@ -146,11 +144,10 @@ public class Notification extends Model {
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
-    public void set_read(){
-            read = true;
-            this.update();
+    public Notification setPerson(Person person){
+        this.person = person;
+        return this;
     }
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
 

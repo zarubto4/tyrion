@@ -1,4 +1,27 @@
-﻿# Verze 1.06.6.3 #
+﻿
+# Verze 1.06.6.4 #
+
+## Notifikace vyžadující potvrzení ##
+ * Kvůli notifikacím vyžadující potvrzení je nutné po přihlášení uživatele zavolat API:
+
+		GET  {{url_Tyriona}}/notification/unconfirmed
+
+ * Metoda vrátí code 200 a pokud jsou notifikace, které by měl uživatel potvrdit, znovu je odešle.
+ * Tyto notifikace obsahují link do Tyriona, kterým se notifikace potvrdí.		
+
+## Link na Becki [TYRION-325](http://youtrack.byzance.cz/youtrack/issue/TYRION-325) ##
+ * Všechny linky, které vytvoří Tyrion a odkazují na Becki, budou používat lomítka namísto path values. Takže např. link:
+
+		{{url_Becki}}/passwordRestart&token="password_recovery_token"
+
+ * se změní na: 
+
+		{{url_Becki}}/passwordRestart/{password_recovery_token}
+
+### Oprava Bugů ###
+ * fixed [TYRION-326](http://youtrack.byzance.cz/youtrack/issue/TYRION-326)
+
+# Verze 1.06.6.3 #
 ####  18.6.2016 ####
 -----
 
@@ -131,7 +154,7 @@ Value code byla přejmenována na main (Aby korespondovala se strukturou progrma
 
  * Metoda pokaždé vrací code = 200. Pokud je email uživatele nalezen v databázi, vygeneruje se password_recovery_token a přijde mu email s adresou na frontend ve tvaru:
 
-		{{url_Becki}}/passwordRestart&token="password_recovery_token"
+		{{url_Becki}}/passwordRestart/{password_recovery_token}
 
  * Na této adrese si uživatel vytvoří nové heslo. Adresu je možné změnit, pokud bude potřeba, stačí říct, teď je vzatá z configu Tyriona. Z frontendu přijde request:
 
@@ -151,10 +174,8 @@ Value code byla přejmenována na main (Aby korespondovala se strukturou progrma
   Dále pokud uživatel klikne na tlačítko pro zaslání emailu vícekrát, tzn. že password_recovery_token je již vytvořený, budou mu chodit emaily s tímto tokenem,
   ale jen 15 minut od vytvoření tohoto tokenu. Jakmile je token starší a uživatel znovu zažádá o email, vygenerue se nový token a starý se smaže.
 
- * Uživatel poté dostane email, kde je mu zděleno, že obnova hesla byla úspěšná.  (Autor Lexa Tylš)
+ * Uživatel poté dostane email, kde je mu sděleno, že obnova hesla byla úspěšná.  (Autor Lexa Tylš)
 
-
-	Lexa Tylš
 
 ## Změna: Přidání uživatele do projektu ##
 
@@ -174,7 +195,7 @@ Value code byla přejmenována na main (Aby korespondovala se strukturou progrma
 
 		PUT  {{url_Tyriona}}/project/project/addParticipant/:ivitation_id/:decision
 
-  kde decision = true, pokud klikne "Ne", zavolá se ta samá operace, ale decision = false.
+  kde decision = true, pokud klikne "Ne", zavolá se ta samá operace, ale decision = false. Dále vlastníkovi projektu přijde notifikace, že daný uživatel pozvání přijal nebo ne.
 
 ## Změna: Input Validation ##
   Zrušeny následující API: 
@@ -200,7 +221,6 @@ Value code byla přejmenována na main (Aby korespondovala se strukturou progrma
 			"valid" : "true_or_false"
 			"message" : "for_example: Email is used"
 		}
-
 
 
 ### Oprava Bugů ###
@@ -229,6 +249,7 @@ Value code byla přejmenována na main (Aby korespondovala se strukturou progrma
  * fixed [TYRION-220](http://youtrack.byzance.cz/youtrack/issue/TYRION-220)
  * fixed [TYRION-217](http://youtrack.byzance.cz/youtrack/issue/TYRION-217)
  * fixed [TYRION-300](http://youtrack.byzance.cz/youtrack/issue/TYRION-300)
+ * fixed [TYRION-105](http://youtrack.byzance.cz/youtrack/issue/TYRION-105)
 
 
 ### TODO ###
