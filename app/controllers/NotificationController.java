@@ -93,7 +93,6 @@ public class NotificationController extends Controller {
                                       .setObject(Swagger_B_Program_Version.class, version_object.id, version_object.version_name )
                                       .setText("with critical Error:")
                                       .setBoldText(result)
-                                      .setPerson(person)
                                       .save_object();
 
     send_notification(person, notification);
@@ -129,7 +128,6 @@ public class NotificationController extends Controller {
                                     .setText("from Blocko program")
                                     .setObject(B_Program.class, instance.version_object.b_program.id, instance.version_object.b_program.name )
                                     .setText("Server will try to do that as soon as possible.")
-                                    .setPerson(person)
                                     .save_object();
 
     send_notification(person, notification);
@@ -144,7 +142,6 @@ public class NotificationController extends Controller {
                                     .setText("from Blocko program")
                                     .setObject(B_Program.class, version_object.b_program.id, version_object.b_program.name )
                                     .setText("with Critical unknown Error, Probably some bug.")
-                                    .setPerson(person)
                                     .save_object();
 
     send_notification(person, notification);
@@ -234,7 +231,6 @@ public class NotificationController extends Controller {
             .setText(" / ")
             .setLink_ToTyrion("No", Server.tyrion_serverAddress + "/project/project/addParticipant/" + invitation.id + "/false")
             .setText(".")
-            .setPerson(person)
             .save_object();
 
     send_notification(person, notification);
@@ -249,7 +245,6 @@ public class NotificationController extends Controller {
             .setObject(Person.class, person.id, person.full_name)
             .setText("did not accept your invitation to the project ")
             .setBoldText(project.project_name +".")
-            .setPerson(owner)
             .save_object();
 
     send_notification(owner,notification);
@@ -263,7 +258,6 @@ public class NotificationController extends Controller {
             .setObject(Person.class, person.id, person.full_name)
             .setText("accepted your invitation to the project ")
             .setBoldText(project.project_name +".")
-            .setPerson(owner)
             .save_object();
 
     send_notification(owner,notification);
@@ -283,8 +277,17 @@ public class NotificationController extends Controller {
     }catch (Exception e){
       return GlobalResult.internalServerError();
     }
+  }
 
+  public static void test_notification(Person person){
 
+    Notification notification = new Notification(Notification_level.info, person)
+            .setText("Test object: ")
+            .setObject(Person.class, person.id, person.full_name)
+            .setText("test bold text: ")
+            .setBoldText("bold text");
+
+    send_notification(person,notification);
   }
 
 

@@ -143,11 +143,6 @@ public class Notification extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient
-    public Notification setPerson(Person person){
-        this.person = person;
-        return this;
-    }
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
 
