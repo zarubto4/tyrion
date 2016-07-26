@@ -38,9 +38,9 @@ public class Grid_Terminal extends Model {
 
 
     // lokální nedořešené oprávnění
-    @ApiModelProperty(required = true)  public Boolean ws_permission;
-    @ApiModelProperty(required = true)  public Boolean m_program_access;
-    @ApiModelProperty(required = true)  public Boolean up_to_date;
+    @ApiModelProperty(required = true)  public boolean ws_permission;
+    @ApiModelProperty(required = true)  public boolean m_program_access;
+    @ApiModelProperty(required = true)  public boolean up_to_date;
 
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/

@@ -70,6 +70,33 @@ public class GlobalResult extends Controller {
         CoreResponse.cors();
         return Controller.badRequest(Json.toJson(o));
 
+
+    }
+
+//**********************************************************************************************************************
+    public static Result result_buildErrors(JsonNode o){
+
+         CoreResponse.cors();
+         return Controller.status(422, Json.toJson(o));
+
+    }
+
+
+//**********************************************************************************************************************
+
+    public static Result result_external_server_is_offline(String o){
+
+        CoreResponse.cors();
+        return Controller.status(477, Json.toJson(o));
+
+    }
+
+
+    public static Result result_external_server_error(JsonNode o){
+
+        CoreResponse.cors();
+        return Controller.status(478, o);
+
     }
 
 //**********************************************************************************************************************

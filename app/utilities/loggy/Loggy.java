@@ -278,7 +278,7 @@ public class Loggy{
             JsonNode content = response.asJson();
             token = content.get("access_token").asText();
             tokenExpire = System.currentTimeMillis() + content.get("expires_in").asLong()*1000;
-            return Results.ok("login successful");
+            return GlobalResult.result_ok("login successful");
         }
 
         return Results.status(response.getStatus(), response.getBody());
@@ -289,7 +289,7 @@ public class Loggy{
             error.setYoutrack_url(response.getHeader("Location").replace("/rest", "")); // uložím url z odpovědi
             error.save();
             logger.debug(error.youtrack_url+"---"+LoggyError.find.byId(error.id).youtrack_url);
-            return Results.ok("upload successful");
+            return GlobalResult.result_ok("upload successful");
         }
 
         return Results.status(response.getStatus(), response.getBody());

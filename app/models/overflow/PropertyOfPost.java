@@ -25,10 +25,10 @@ public class PropertyOfPost extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public Boolean create_permission(){  return  SecurityController.getPerson().has_permission("PropertyOfPost_create");}
-    @JsonIgnore @Transient public Boolean read_permission()  {  return  true; }
-    @JsonIgnore @Transient public Boolean edit_permission()  {  return  SecurityController.getPerson().has_permission("PropertyOfPost_edit");  }
-    @JsonIgnore @Transient public Boolean delete_permission(){  return  SecurityController.getPerson().has_permission("PropertyOfPost_delete");}
+    @JsonIgnore @Transient public boolean create_permission(){  return  SecurityController.getPerson().has_permission("PropertyOfPost_create");}
+    @JsonIgnore @Transient public boolean read_permission()  {  return  true; }
+    @JsonIgnore @Transient public boolean edit_permission()  {  return  SecurityController.getPerson().has_permission("PropertyOfPost_edit");  }
+    @JsonIgnore @Transient public boolean delete_permission(){  return  SecurityController.getPerson().has_permission("PropertyOfPost_delete");}
 
     public enum permissions{  PropertyOfPost_create, PropertyOfPost_edit,  PropertyOfPost_delete;}
 

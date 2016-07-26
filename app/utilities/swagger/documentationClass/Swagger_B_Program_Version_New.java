@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
 
 @ApiModel(description = "Json Model for new Version of B_Program",
@@ -27,8 +28,8 @@ public class Swagger_B_Program_Version_New {
 
 // ---------------------------------------------------------------------------------------------------------------------
 
-    @Constraints.Required
-    @ApiModelProperty(value = "This board must be connectible_to_internet = true! (Its out Yoda)", required = true)
+
+    @ApiModelProperty(value = "This board must be connectible_to_internet = true! User can create new version without Main Board, but its not possible to upload that to cloud like new Instance", required = false)
     @Valid
     public Main_Board main_board;
 
@@ -46,7 +47,7 @@ public class Swagger_B_Program_Version_New {
 
     @Valid
     @ApiModelProperty(value = "Connected boards (padavans)", required = false)
-    public List<Connected_Board> boards;
+    public List<Connected_Board> boards = new ArrayList<Connected_Board>();
 
     public static class Connected_Board {
         public Connected_Board(){}

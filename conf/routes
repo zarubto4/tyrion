@@ -133,11 +133,15 @@ PUT           /overflow/hashTag/:post_id/:hashTag                               
 DELETE        /overflow/hashTag/:post_id/:hashTag                                           @controllers.OverFlowController.remove_HashTag_from_Post(post_id,hashTag)
 
 
-
-
-
 ### PROJECT ############ PROJECT ############### PROJECT ################ PROJECT ################# PROJECT ####################################################################
 ################################################################################################################################################################################
+
+#Tarrifs
+GET            /product/tarifs/for_registration                                             @controllers.ProgramingPackageController.get_poducts_tariffs()
+GET            /product/tarifs/user_applicable                                              @controllers.ProgramingPackageController.get_applicable_products_for_creating_new_project()
+POST           /product/tarif                                                               @controllers.ProgramingPackageController.set_tariff_with_account()
+
+
 #Project
 POST           /project/project                                                             @controllers.ProgramingPackageController.postNewProject()
 PUT            /project/project/:project_id                                                 @controllers.ProgramingPackageController.edit_Project(project_id)
@@ -284,6 +288,7 @@ GET             /compilation/libraryGroup/:libraryGroup_id                      
 DELETE          /compilation/libraryGroup/:libraryGroup_id                                  @controllers.CompilationLibrariesController.delete_LibraryGroup(libraryGroup_id)
 PUT             /compilation/libraryGroup/:libraryGroup_id                                  @controllers.CompilationLibrariesController.editLibraryGroup(libraryGroup_id)
 
+GET             /file/listOfFiles/:version_id                                               @controllers.CompilationLibrariesController.get_LibraryGroup_Version_Libraries(version_id)
 #Single Library
 POST            /compilation/library                                                        @controllers.CompilationLibrariesController.new_SingleLibrary()
 PUT             /compilation/library/filter/:page_number                                    @controllers.CompilationLibrariesController.get_SingleLibrary_Filter(page_number: Integer)
@@ -294,8 +299,7 @@ PUT             /compilation/library/:library_id                                
 DELETE          /compilation/library/:library_id                                            @controllers.CompilationLibrariesController.delete_SingleLibrary(library_id)
 POST            /compilation/library/upload/:version_id                                     @controllers.CompilationLibrariesController.upload_SingleLibrary_Version(version_id)
 
-#File
-GET             /file/listOfFiles/:version_id                                               @controllers.CompilationLibrariesController.get_LibraryGroup_Version_Libraries(version_id)
+#File // Skryto ve swaggeru
 GET             /file/fileRecord/:file_record_id                                            @controllers.CompilationLibrariesController.fileRecord(file_record_id)
 
 #Compilation Server

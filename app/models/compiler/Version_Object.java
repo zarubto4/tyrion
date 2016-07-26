@@ -25,36 +25,37 @@ public class Version_Object extends Model {
                                                             @ApiModelProperty(required = true)  public String version_name;
                      @Column(columnDefinition = "TEXT")     @ApiModelProperty(required = true)  public String version_description;
 
-
                                                                                 @JsonIgnore     public String azureLinkVersion;
 
-    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1461918607") public Date date_of_create;
-
-
+    @ApiModelProperty(required = true,
+            dataType = "integer",
+            readOnly = true,
+            value = "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
+            example = "1466163478925")
+    public Date date_of_create;
 
     @JsonIgnore @OneToMany(mappedBy="version_object", cascade=CascadeType.ALL, fetch = FetchType.EAGER ) public List<FileRecord> files = new ArrayList<>();
 
-                                                                   @JsonIgnore  @ManyToOne      public LibraryGroup library_group;
-                                                                   @JsonIgnore  @ManyToOne      public SingleLibrary single_library;
-
-                                                                   @JsonIgnore  @ManyToOne      public C_Program      c_program;
-              @JsonIgnore  @OneToOne(mappedBy="version_object", cascade = CascadeType.ALL)      public C_Compilation  c_compilation;
-                                                                               @JsonIgnore      public boolean compilation_in_progress; // Používáme jako flag pro mezičas kdy se verze kompiluje a uživatel vyvolá get Version
-                                                                               @JsonIgnore      public boolean compilable;
-    @JsonIgnore @OneToMany(mappedBy="actual_c_program_version",  cascade = CascadeType.ALL)     public List<Board>  c_program_version_boards  = new ArrayList<>(); // Používám pro zachycení, která verze C_programu na desce běží
+                                     @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST)     public LibraryGroup library_group;
+                                     @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST)     public SingleLibrary single_library;
+                                     @JsonIgnore  @ManyToOne(cascade = CascadeType.ALL)         public C_Program      c_program;
+               @JsonIgnore  @OneToOne(mappedBy="version_object", cascade = CascadeType.ALL)     public C_Compilation  c_compilation;
+                                                                                @JsonIgnore     public boolean compilation_in_progress; // Používáme jako flag pro mezičas kdy se verze kompiluje a uživatel vyvolá get Version
+                                                                                @JsonIgnore     public boolean compilable;
+                                @JsonIgnore @OneToMany(mappedBy="actual_c_program_version")     public List<Board>  c_program_version_boards  = new ArrayList<>(); // Používám pro zachycení, která verze C_programu na desce běží
     @JsonIgnore @OneToMany(mappedBy="c_program_version_for_update",cascade=CascadeType.ALL)     public List<C_Program_Update_Plan> c_program_update_plans = new ArrayList<>();
 
-                                                        @JsonIgnore @ManyToOne()    public B_Program      b_program;
-    @JsonIgnore   @OneToOne(mappedBy="version_object",cascade=CascadeType.ALL)      public Homer_Instance homer_instance;
+                                       @JsonIgnore @ManyToOne(cascade = CascadeType.PERSIST)    public B_Program      b_program;
+           @JsonIgnore   @OneToOne(mappedBy="version_object", cascade = CascadeType.PERSIST)    public Homer_Instance homer_instance;
 
 
-    @JsonIgnore  @OneToMany(mappedBy="c_program_version",cascade=CascadeType.ALL)  public List<B_Pair> b_pairs_c_program = new ArrayList<>();
+    @JsonIgnore  @OneToMany(mappedBy="c_program_version", cascade=CascadeType.ALL)  public List<B_Pair> b_pairs_c_program = new ArrayList<>();
     @JsonIgnore  @OneToMany(mappedBy="padavan_board_pair",cascade=CascadeType.ALL)  public List<B_Pair> padavan_board_pairs = new ArrayList<>();
 
     @JsonIgnore  @OneToOne(mappedBy="yoda_board_pair",cascade=CascadeType.ALL) public B_Pair yoda_board_pair;
 
     // M_Project -------------------------
-    @JsonIgnore  @OneToOne(mappedBy="b_program_version", fetch = FetchType.LAZY)   public M_Project m_project;
+    @JsonIgnore  @OneToOne(mappedBy="b_program_version", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)   public M_Project m_project;
 
 
     // Actual Procedure -------------------------

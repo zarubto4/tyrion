@@ -42,11 +42,11 @@ public class LibraryGroup extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient                                    public Boolean create_permission(){  return SecurityController.getPerson().has_permission("LibraryGroup_create"); }
-    @JsonIgnore   @Transient                                    public Boolean read_permission()  {  return true; }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean edit_permission()  {  return SecurityController.getPerson().has_permission("LibraryGroup_edit");   }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean delete_permission(){  return SecurityController.getPerson().has_permission("LibraryGroup_delete"); }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean update_permission(){  return SecurityController.getPerson().has_permission("LibraryGroup_update"); }
+    @JsonIgnore   @Transient                                    public boolean create_permission(){  return SecurityController.getPerson().has_permission("LibraryGroup_create"); }
+    @JsonIgnore   @Transient                                    public boolean read_permission()  {  return true; }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()  {  return SecurityController.getPerson().has_permission("LibraryGroup_edit");   }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return SecurityController.getPerson().has_permission("LibraryGroup_delete"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission(){  return SecurityController.getPerson().has_permission("LibraryGroup_update"); }
 
 
     public enum permissions{LibraryGroup_create, LibraryGroup_edit, LibraryGroup_delete, LibraryGroup_update}

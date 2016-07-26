@@ -32,10 +32,10 @@ public class SecurityRole extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient                                    public Boolean create_permission(){  return  SecurityController.getPerson().has_permission("SecurityRole_create"); }
-    @JsonIgnore   @Transient                                    public Boolean read_permission()  {  return  SecurityController.getPerson().has_permission("SecurityRole_read"); }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean update_permission(){  return  SecurityController.getPerson().has_permission("SecurityRole_update"); }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean delete_permission(){  return  SecurityController.getPerson().has_permission("SecurityRole_delete");}
+    @JsonIgnore   @Transient                                    public boolean create_permission(){  return  SecurityController.getPerson().has_permission("SecurityRole_create"); }
+    @JsonIgnore   @Transient                                    public boolean read_permission()  {  return  SecurityController.getPerson().has_permission("SecurityRole_read"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission(){  return  SecurityController.getPerson().has_permission("SecurityRole_update"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return  SecurityController.getPerson().has_permission("SecurityRole_delete");}
 
     public enum permissions{SecurityRole_create, SecurityRole_read, SecurityRole_update , SecurityRole_delete}
 

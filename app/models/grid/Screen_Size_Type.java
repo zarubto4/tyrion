@@ -53,11 +53,11 @@ public class Screen_Size_Type extends Model {
     @JsonIgnore @Transient public static final String create_permission_docs = "create: User can create Screen_Size_Type only on own Project (Project.update_permission = true) - Its private object shared in Project - Or user can create public object for everyone but static/dynamic permission key is required - \"Screen_Size_Type_create\" ";
 
 
-    @JsonIgnore   @Transient                                    public Boolean create_permission(){  return  project != null ? Project.find.where().where().eq("ownersOfProject.id", SecurityController.getPerson().id ).findUnique().create_permission() : SecurityController.getPerson().has_permission("Screen_Size_Type_create"); }
-    @JsonIgnore   @Transient                                    public Boolean read_permission()  {  return  ( project == null ? true : Project.find.where().where().eq("ownersOfProject.id", SecurityController.getPerson().id ).findUnique().read_permission() ) || SecurityController.getPerson().has_permission("Screen_Size_Type_read"); }
+    @JsonIgnore   @Transient                                    public boolean create_permission(){  return  project != null ? Project.find.where().where().eq("ownersOfProject.id", SecurityController.getPerson().id ).findUnique().create_permission() : SecurityController.getPerson().has_permission("Screen_Size_Type_create"); }
+    @JsonIgnore   @Transient                                    public boolean read_permission()  {  return  ( project == null ? true : Project.find.where().where().eq("ownersOfProject.id", SecurityController.getPerson().id ).findUnique().read_permission() ) || SecurityController.getPerson().has_permission("Screen_Size_Type_read"); }
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean edit_permission()  {  return  project != null ? Project.find.where().where().eq("ownersOfProject.id", SecurityController.getPerson().id ).findUnique().read_permission()   : SecurityController.getPerson().has_permission("Screen_Size_Type_edit"); }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean delete_permission(){  return  project != null ? Project.find.where().where().eq("ownersOfProject.id", SecurityController.getPerson().id ).findUnique().read_permission()   : SecurityController.getPerson().has_permission("Screen_Size_Type_delete"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()  {  return  project != null ? Project.find.where().where().eq("ownersOfProject.id", SecurityController.getPerson().id ).findUnique().read_permission()   : SecurityController.getPerson().has_permission("Screen_Size_Type_edit"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return  project != null ? Project.find.where().where().eq("ownersOfProject.id", SecurityController.getPerson().id ).findUnique().read_permission()   : SecurityController.getPerson().has_permission("Screen_Size_Type_delete"); }
 
     public enum permissions{ Screen_Size_Type_create, Screen_Size_Type_read, Screen_Size_Type_edit, Screen_Size_Type_delete }
 

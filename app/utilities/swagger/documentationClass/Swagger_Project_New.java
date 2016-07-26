@@ -19,4 +19,7 @@ public class Swagger_Project_New {
     @ApiModelProperty(required = false, value = "The description must have at least 24 characters")
     public String project_description;
 
+    @Constraints.Required
+    @ApiModelProperty(required = true, value = "Id of Product (Tariff) where the project will be registered")
+    public String product_id;
 }

@@ -221,7 +221,7 @@ public class NotificationController extends Controller {
 
     Notification notification = new Notification(Notification_level.info, receiver)
             .setText("User")
-            .setObject(Person.class, owner.id, owner.full_name)
+            .setObject(Person.class, owner.id.toString(), owner.full_name)
             .setText("wants to invite you into the project ")
             .setBoldText(project.project_name +".")
             .setText("Do you agree?")
@@ -243,7 +243,7 @@ public class NotificationController extends Controller {
       // Tato notifikace by se měla uložit - je tam parametr "přečtena"
     Notification notification = new Notification(Notification_level.info, owner)
             .setText("User ")
-            .setObject(Person.class, person.id, person.full_name)
+            .setObject(Person.class, person.id.toString(), person.full_name)
             .setText("did not accept your invitation to the project ")
             .setBoldText(project.project_name +".")
             .save_object();
@@ -258,7 +258,7 @@ public class NotificationController extends Controller {
       // Tato notifikace by se měla uložit  - je tam parametr "přečtena"
     Notification notification = new Notification(Notification_level.info, owner)
             .setText("User ")
-            .setObject(Person.class, person.id, person.full_name)
+            .setObject(Person.class, person.id.toString(), person.full_name)
             .setText("accepted your invitation to the project ")
             .setBoldText(project.project_name +".")
             .save_object();

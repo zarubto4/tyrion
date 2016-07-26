@@ -17,12 +17,12 @@ public class C_Compilation extends Model {
               @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)      public String id;
                                                           @JsonIgnore      public Date dateOfCreate;
 
-    @JsonIgnore @OneToOne   @JoinColumn(name="c_compilation_version")      public Version_Object version_object;
+    @JsonIgnore @OneToOne(cascade = CascadeType.ALL)   @JoinColumn(name="c_compilation_version")      public Version_Object version_object;
 
 
     @ApiModelProperty(required = true, value = virtual_input_output_docu) @Column(columnDefinition = "TEXT")       public String virtual_input_output;
                                                             @JsonIgnore   @Column(columnDefinition = "TEXT")       public String c_comp_build_url;
-                                                            @JsonIgnore   @ManyToOne                               public FileRecord bin_compilation_file;
+                                                            @JsonIgnore   @ManyToOne(cascade = CascadeType.ALL)    public FileRecord bin_compilation_file;
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 

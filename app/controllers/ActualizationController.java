@@ -73,7 +73,7 @@ public class ActualizationController extends Controller {
             if (! procedure.read_permission()) return GlobalResult.forbidden_Permission();
 
             // Vrácení objektu
-            return GlobalResult.ok(Json.toJson(procedure));
+            return GlobalResult.result_ok(Json.toJson(procedure));
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());

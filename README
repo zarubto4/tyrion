@@ -86,8 +86,6 @@ Ta  obsahuje mimo jiné
 ## Změny nad Api ##
 V rámci dobrých vztahů mezi FrontEndem a Beckendem jsme si dovolili vás upozornit k jakým změnám došlo v API (Ostatní je pouze dokumentace!)
 
-1. Došlo k opravě gramatiky na mnoha místech a opravě souborů, které nemění v žádném případě funkčnost kodu. Ty co mění jsou dále sepsány.
-
 1. POST /grid/m_program/{m_project_id}
     "M_Project.create_permission":"true"  ---->  "M_Project.update_permission":"true",
 
@@ -152,13 +150,13 @@ Value code byla přejmenována na main (Aby korespondovala se strukturou progrma
   ale jen 15 minut od vytvoření tohoto tokenu. Jakmile je token starší a uživatel znovu zažádá o email, vygenerue se nový token a starý se smaže.
 
  * Uživatel poté dostane email, kde je mu zděleno, že obnova hesla byla úspěšná.  (Autor Lexa Tylš)
-
+  
 
 	Lexa Tylš
 
 ## Změna: Přidání uživatele do projektu ##
-
   API:
+<<<<<<< HEAD
 
 		PUT  {{url_Tyriona}}/project/project/shareProject/:project_id
 
@@ -168,20 +166,28 @@ Value code byla přejmenována na main (Aby korespondovala se strukturou progrma
 			"persons_mail" : ["user@mail.com","example@mail.cz"]
 		}
 
+=======
+  	PUT  {{url_Tyriona}}/project/project/shareProject/:project_id
+  nyní vyžaduje v JSONu list emailů namísto id, JSON bude vypadat takto: { "persons_mail" : ["user@mail.com","example@mail.cz"]}.
+>>>>>>> parent of 9337ac2... 1.06.6.3
   Pokud email není zaregistrován, pošle se na něj email, ve kterém bude pozvánka do projektu a k registraci. Pokud se uživatel zaregistruje, bude automaticky přidán do projektu a nebude vyžadována autentifikace emailu.
   Pokud uživatel je zaregistrovaný, nejprve mu přijde notifikace, že ho jiný určitý uživatel pozval do daného projektu a v notifikaci budou dvě možnosti, jestli chce uživatel vstoupit do projektu nebo ne, které budou obsahovat link na následující operace.
   Když klikne na "Ano" zavolá se operace:
-
-		PUT  {{url_Tyriona}}/project/project/addParticipant/:ivitation_id/:decision
-
+	PUT  {{url_Tyriona}}/project/project/addParticipant/:ivitation_id/:decision
   kde decision = true, pokud klikne "Ne", zavolá se ta samá operace, ale decision = false.
 
 ## Změna: Input Validation ##
+<<<<<<< HEAD
   Zrušeny následující API: 
 
 		GET  {{url_Tyriona}}/coreClient/person/valid/nicknamewe/:nick_name
 		GET  {{url_Tyriona}}/coreClient/person/valid/mail/:mail
 
+=======
+  Zrušeny následující API:
+	GET  {{url_Tyriona}}/coreClient/person/valid/nicknamewe/:nick_name
+ 	GET  {{url_Tyriona}}/coreClient/person/valid/mail/:mail
+>>>>>>> parent of 9337ac2... 1.06.6.3
   namísto nich bude univerzální API:
 
 		POST {{url_Tyriona}}/coreClient/person/validate_entity

@@ -21,7 +21,7 @@ public class TypeOfBoard extends Model {
                        @Column(columnDefinition = "TEXT")    @ApiModelProperty(required = true) public String description;
                                                                         @JsonIgnore  @ManyToOne public Producer producer;
                                                                         @JsonIgnore  @ManyToOne public Processor processor;
-                                                             @ApiModelProperty(required = true) public Boolean connectible_to_internet;
+                                                             @ApiModelProperty(required = true) public boolean connectible_to_internet;
 
     @JsonIgnore @OneToMany(mappedBy="type_of_board", cascade = CascadeType.ALL) public List<Board> boards = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="type_of_board", cascade = CascadeType.ALL) public List<C_Program> c_programs = new ArrayList<>();
@@ -39,11 +39,11 @@ public class TypeOfBoard extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient                                    public Boolean create_permission(){  return SecurityController.getPerson().has_permission("TypeOfBoard_create"); }
-    @JsonIgnore   @Transient                                    public Boolean read_permission()  {  return true; }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean edit_permission()  {  return SecurityController.getPerson().has_permission("TypeOfBoard_edit");   }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean delete_permission(){  return SecurityController.getPerson().has_permission("TypeOfBoard_delete"); }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean register_new_device_permission(){ return SecurityController.getPerson().has_permission("TypeOfBoard_register_new_device"); }
+    @JsonIgnore   @Transient                                    public boolean create_permission(){  return SecurityController.getPerson().has_permission("TypeOfBoard_create"); }
+    @JsonIgnore   @Transient                                    public boolean read_permission()  {  return true; }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()  {  return SecurityController.getPerson().has_permission("TypeOfBoard_edit");   }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return SecurityController.getPerson().has_permission("TypeOfBoard_delete"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean register_new_device_permission(){ return SecurityController.getPerson().has_permission("TypeOfBoard_register_new_device"); }
 
     public enum permissions{TypeOfBoard_create, TypeOfBoard_edit, TypeOfBoard_delete, TypeOfBoard_register_new_device}
 

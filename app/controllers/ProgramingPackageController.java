@@ -3,6 +3,8 @@ package controllers;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.Query;
 import com.fasterxml.jackson.databind.JsonNode;
+import cz.gopay.api.v3.model.common.Currency;
+import cz.gopay.api.v3.model.payment.Payment;
 import io.swagger.annotations.*;
 import models.blocko.BlockoBlock;
 import models.blocko.BlockoBlockVersion;
@@ -17,7 +19,13 @@ import models.project.b_program.B_Program;
 import models.project.b_program.Homer_Instance;
 import models.project.b_program.servers.Cloud_Homer_Server;
 import models.project.b_program.servers.Private_Homer_Server;
+import models.project.c_program.C_Program;
+import models.project.global.Product;
 import models.project.global.Project;
+import models.project.global.financial.Invoice;
+import models.project.global.financial.Invoice_item;
+import models.project.global.financial.Payment_Details;
+import play.Configuration;
 import play.api.libs.mailer.MailerClient;
 import play.data.Form;
 import play.libs.Json;
@@ -29,6 +37,7 @@ import play.mvc.Security;
 import utilities.Server;
 import utilities.UtilTools;
 import utilities.emails.EmailTool;
+import utilities.gopay.GoPay_Controller;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
@@ -36,6 +45,7 @@ import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Filter_List.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Homer_List;
+import utilities.swagger.outboundClass.Swagger_Tariff;
 import utilities.webSocket.WS_BlockoServer;
 import utilities.webSocket.WebSCType;
 
@@ -54,6 +64,261 @@ public class ProgramingPackageController extends Controller {
 
 // Loger  ##############################################################################################################
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
+    static List<Swagger_Tariff> list_of_tariffs = new ArrayList<>();
+
+
+
+// GENERAL PRODUCT_TARIF #####################################################################################################
+
+    @ApiOperation(value = "get all Tariffs",
+            tags = {"Price & Invoice & Tariffs"},
+            notes = "get all Tariffs - required for creating new project.  Project is created under the tariff",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+      @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Ok Result", response =  Swagger_Tariff.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result get_poducts_tariffs(){
+        try{
+
+            if(list_of_tariffs.size() > 0) return GlobalResult.result_ok(Json.toJson(list_of_tariffs));
+
+            // Vytvořím seznam tarifu
+            List<String> product_tariffs = new ArrayList<>();
+
+            // Do kterého vložím jednotlivé enum hodnoty tarifů
+            product_tariffs.add( String.valueOf(Product.Product_Type.alpha) );
+            product_tariffs.add( String.valueOf(Product.Product_Type.free) );
+            product_tariffs.add( String.valueOf(Product.Product_Type.tier1) );
+
+            // Tyto hodnoty pak beru a načítám z konfiguračního souboru application.conf
+            for(String tariff : product_tariffs){
+                try {
+
+                    // Vytvářím do listu jednotlivý tarig podle klíčového slova z enum (načítám z konfiguračního souboru
+                    Swagger_Tariff swagger_tariff = new Swagger_Tariff();
+                        swagger_tariff.tariff_name = tariff;
+                        swagger_tariff.maximum_project =  Configuration.root().getInt("Byzance.tariff." + tariff + ".maximum_project");
+                        swagger_tariff.maximum_version_history = Configuration.root().getInt("Byzance.tariff." + tariff + ".maximum_version_history") ;
+                        swagger_tariff.maximum_message_per_day_device = Configuration.root().getInt("Byzance.tariff." + tariff + ".maximum_message_per_day_per_device");
+                        swagger_tariff.company_details_required = Configuration.root().getBoolean("Byzance.tariff." + tariff + ".company_details_required");
+
+                    list_of_tariffs.add(swagger_tariff);
+
+                }catch (Exception e){
+                    logger.error("Tyrion try to get Tarifs from Configuration file. But probably enum value in Product.Product_Type.(\"enums\") \"" + tariff + "\" do not correspond or missing some value in configuration");
+                    e.printStackTrace();
+                }
+            }
+
+            // Vrácení objektu
+            return GlobalResult.result_ok(Json.toJson(list_of_tariffs));
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "create Tariffs",
+            tags = {"Price & Invoice & Tariffs"},
+            notes = "get all Tariffs - required for creating new project.  Project is created under the tariff",
+            produces = "application/json",
+            protocols = "https",
+            code = 201
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Tariff_Register",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Created succesfully - payment not required",    response =  Product.class),
+            @ApiResponse(code = 200, message = "Created succesfully - but payment is required", response =  Payment.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result set_tariff_with_account(){
+        try{
+
+            // Zpracování Json
+            final Form<Swagger_Tariff_Register> form = Form.form(Swagger_Tariff_Register.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Tariff_Register help = form.get();
+
+            Product product = new Product();
+
+
+                 if(help.currency_type.equals( Currency.EUR.name())) product.currency_type = Currency.EUR;
+            else if(help.currency_type.equals( Currency.CZK.name())) product.currency_type = Currency.CZK;
+            else { return GlobalResult.result_BadRequest("currency_type is invalid. Use only (EUR, CZK)");}
+
+            if     (help.payment_mode.equals( Product.Payment_mode.free.name()))        product.payment_mode = Product.Payment_mode.free;
+            else if(help.payment_mode.equals( Product.Payment_mode.monthly.name()))     product.payment_mode = Product.Payment_mode.monthly;
+            else if(help.payment_mode.equals( Product.Payment_mode.annual.name()))      product.payment_mode = Product.Payment_mode.annual;
+            else if(help.payment_mode.equals( Product.Payment_mode.per_credit.name()))  product.payment_mode = Product.Payment_mode.per_credit;
+            else { return GlobalResult.result_BadRequest("payment_mode is invalid. Use only (free, monthly, annual, per_credit)");}
+
+
+            if(help.tariff_name.equals( Product.Product_Type.alpha.name() )){
+                product.type =  Product.Product_Type.alpha;
+                product.active = true;
+
+                Payment_Details payment_details = new Payment_Details();
+                payment_details.person = SecurityController.getPerson();
+                payment_details.company_account = false;
+
+                payment_details.street = help.street;
+                payment_details.street_number = help.street_number;
+                payment_details.city = help.city;
+                payment_details.zip_code = help.zip_code;
+                payment_details.country = help.country;
+
+                payment_details.save();
+
+                product.payment_details = payment_details;
+                product.save();
+
+                return GlobalResult.created( Json.toJson(product));
+            }
+
+            if(help.tariff_name.equals( Product.Product_Type.free.name() )){
+                product.type =  Product.Product_Type.free;
+                product.active = true;
+
+                Payment_Details payment_details = new Payment_Details();
+                payment_details.person = SecurityController.getPerson();
+                payment_details.company_account = false;
+
+                payment_details.street = help.street;
+                payment_details.street_number = help.street_number;
+                payment_details.city = help.city;
+                payment_details.zip_code = help.zip_code;
+                payment_details.country = help.country;
+
+                payment_details.save();
+
+                product.payment_details = payment_details;
+                product.save();
+
+                return GlobalResult.created( Json.toJson(product));
+            }
+
+
+            if(help.tariff_name.equals( Product.Product_Type.tier1.name() )){
+                product.active = false;
+
+                product.type =  Product.Product_Type.tier1;
+
+                Payment_Details payment_details = new Payment_Details();
+                payment_details.person = SecurityController.getPerson();
+                payment_details.company_account = true;
+
+                payment_details.street        = help.street;
+                payment_details.street_number = help.street_number;
+                payment_details.city          = help.city;
+                payment_details.zip_code      = help.zip_code;
+                payment_details.country       = help.country;
+
+                payment_details.registration_no          = help.registration_no;
+                payment_details.VAT_number               = help.VAT_number;
+                payment_details.company_name             = help.company_name;
+                payment_details.company_authorized_email = help.company_authorized_email;
+                payment_details.company_authorized_phone = help.company_authorized_phone;
+                payment_details.company_web              = help.company_web;
+                payment_details.company_invoice_email    = help.company_invoice_email;
+
+                payment_details.save();
+
+                product.payment_details = payment_details;
+                product.save();
+
+                Invoice invoice = new Invoice();
+                invoice.set_basic_data();
+
+                Invoice_item invoice_item_1 = new Invoice_item();
+                    invoice_item_1.name = "Tier 1 " +  product.payment_mode.name();
+                    invoice_item_1.unit_price = product.get_price_general_fee();
+                    invoice_item_1.quantity = (long) 1;
+                    invoice_item_1.unit_name = "Service";
+                invoice.invoice_items.add(invoice_item_1);
+
+                Invoice_item invoice_item_2 = new Invoice_item();
+                        invoice_item_1.name = "Service fees for 100 devices";
+                        invoice_item_1.unit_price = product.get_price_month_device_connection();
+                        invoice_item_1.quantity = (long) 100;
+                        invoice_item_1.unit_name = "Per Device";
+                invoice.invoice_items.add(invoice_item_2);
+
+                Invoice_item invoice_item_3 = new Invoice_item();
+                invoice_item_1.name = "Gift for beggining";
+                invoice_item_1.unit_price = -100 * product.get_price_month_device_connection();
+                invoice_item_1.quantity = (long) 1;
+                invoice_item_1.unit_name = "";
+                invoice.invoice_items.add(invoice_item_3);
+
+                invoice.product = product;
+                invoice.save();
+
+                Payment payment = GoPay_Controller.provide_payment(product.currency_type,  "First Paiment",invoice);
+
+                return GlobalResult.created( Json.toJson(payment));
+
+            }
+
+            // Vrácení objektu
+            return GlobalResult.result_BadRequest("Tariff_name {" + help.tariff_name  + "} not found or not supported now! Use only (alpha,free,tier1)");
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "get all the products that the user can use",
+            tags = {"Price & Invoice & Tariffs"},
+            notes = "get all the products that the user can use when creating new projects",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  Product.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    // Slouží k získání možností pod jaký produkt lze vytvořit nějaký projekt
+    public Result get_applicable_products_for_creating_new_project(){
+        try{
+
+
+           List<Product> list = Product.find.where().eq("payment_details.person.id",SecurityController.getPerson().id).findList();
+           return GlobalResult.result_ok( Json.toJson(list));
+
+        }catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+
+    public Result get_Invoice(){
+        return ok();
+    }
+
 
 // GENERAL PROJECT #####################################################################################################
 
@@ -90,6 +355,9 @@ public class ProgramingPackageController extends Controller {
             final Form<Swagger_Project_New> form = Form.form(Swagger_Project_New.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Project_New help = form.get();
+
+            Product product = Product.find.byId(help.product_id);
+            if(!product.create_new_project()) return GlobalResult.result_BadRequest(product.create_new_project_if_not());
 
             // Vytvoření objektu
             Project project  = new Project();
@@ -215,6 +483,10 @@ public class ProgramingPackageController extends Controller {
 
             // Kontrola oprávnění
             if (!project.delete_permission())   return GlobalResult.forbidden_Permission();
+
+           // Kvuli bezpečnosti abych nesmazal něco co nechceme
+           for(C_Program c : project.c_programs){ c.delete();}
+
 
             // Smazání objektu
             project.delete();
@@ -1138,32 +1410,40 @@ public class ProgramingPackageController extends Controller {
             version_object.date_of_create          = new Date();
             version_object.b_program               = b_program;
 
+            Board board_main = null;
+
             // Definování main Board
-            B_Pair b_pair_main = new B_Pair();
-                Board board_main = Board.find.byId(help.main_board.board_id);
+            if( help.main_board != null && help.main_board.board_id != null) {
+                B_Pair b_pair_main = new B_Pair();
+                board_main = Board.find.byId(help.main_board.board_id);
 
                 if (board_main == null) return GlobalResult.notFoundObject("Board board_id not found");
                 logger.debug("main board is: " + board_main.id + " Type: " + board_main.type_of_board.name);
-                if (!board_main.type_of_board.connectible_to_internet) return GlobalResult.result_BadRequest("Main Board must be internet connectible!");
+                if (!board_main.type_of_board.connectible_to_internet)
+                    return GlobalResult.result_BadRequest("Main Board must be internet connectible!");
 
                 Version_Object c_program_version_main = Version_Object.find.byId(help.main_board.c_program_version_id);
-                if (c_program_version_main == null) return GlobalResult.notFoundObject("C_Program Version_Object c_program_version_id not found");
-                if( c_program_version_main.c_program == null ) return GlobalResult.result_BadRequest("Version is not from C_Program");
-                if(! c_program_version_main.c_program.read_permission()) return GlobalResult.result_BadRequest("You cannot used Main board in children Array!");
+                if (c_program_version_main == null)
+                    return GlobalResult.notFoundObject("C_Program Version_Object c_program_version_id not found");
+                if (c_program_version_main.c_program == null)
+                    return GlobalResult.result_BadRequest("Version is not from C_Program");
+                if (!c_program_version_main.c_program.read_permission())
+                    return GlobalResult.result_BadRequest("You cannot used Main board in children Array!");
 
                 b_pair_main.board = board_main;
                 b_pair_main.c_program_version = c_program_version_main;
                 b_pair_main.yoda_board_pair = version_object;
 
+                // Synchronizce
+                version_object.yoda_board_pair = b_pair_main;
+                b_pair_main.save();
+            }
 
 
-            // Synchronizce
-            version_object.yoda_board_pair = b_pair_main;
+
 
             // Uložení objektu
             version_object.save();
-
-
 
 
             // List do kterého vložím všechny objekty, které vytvořím a uložím je až všechny projdu - protože je musím kontrolovat!
@@ -1171,7 +1451,7 @@ public class ProgramingPackageController extends Controller {
 
             for(Swagger_B_Program_Version_New.Connected_Board h_board : help.boards){
 
-                if(h_board.board_id.equals(board_main.id)) return GlobalResult.result_BadRequest("You cannot used Main board in children Array!");
+                if( board_main != null && h_board.board_id.equals(board_main.id)) return GlobalResult.result_BadRequest("You cannot used Main board in children Array!");
                 // Kontrola objektu
                 Board board = Board.find.byId(h_board.board_id);
                 if (board == null) return GlobalResult.notFoundObject("Board board_id not found");
@@ -1191,7 +1471,6 @@ public class ProgramingPackageController extends Controller {
 
              //   if( board.type_of_board.id .equals( c_program_version.c_program.type_of_board.id ) )
 
-
                 // Vytvoření objektu
                 B_Pair b_pair = new B_Pair();
                 b_pair.board = board;
@@ -1200,11 +1479,8 @@ public class ProgramingPackageController extends Controller {
 
                 // Uložení objektu
                 b_pairs.add(b_pair);
-
             }
 
-            // Uložím vše
-            b_pair_main.save();
             for(B_Pair p : b_pairs) p.save();
 
             // Úprava objektu
@@ -1345,9 +1621,6 @@ public class ProgramingPackageController extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
     }
-
-
-
 
     @ApiOperation(value = "upload B_Program (version) to Homer",
             tags = {"B_Program", "Homer"},
@@ -1574,7 +1847,7 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-
+    //TODO
     public Result create_list_of_instances(){
         try{
 
@@ -1589,8 +1862,6 @@ public class ProgramingPackageController extends Controller {
           return Loggy.result_internalServerError(e, request());
         }
     }
-
-
 
     //TODO
     public Result listOfUploadedHomers(String id) {
@@ -2553,7 +2824,7 @@ public class ProgramingPackageController extends Controller {
             if (! blockoBlock.read_permission()) return GlobalResult.forbidden_Permission();
 
             // Vrácení objektu
-            return GlobalResult.ok(Json.toJson(blockoBlock.blocko_versions));
+            return GlobalResult.result_ok(Json.toJson(blockoBlock.blocko_versions));
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());

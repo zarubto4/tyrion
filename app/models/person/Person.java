@@ -10,6 +10,7 @@ import models.notification.Notification;
 import models.overflow.LinkedPost;
 import models.overflow.Post;
 import models.project.global.Project;
+import models.project.global.financial.Payment_Details;
 import models.project.m_program.M_Project;
 import utilities.permission.Permission;
 
@@ -33,8 +34,11 @@ public class Person extends Model {
 
                                                 @JsonIgnore     public boolean mailValidated;
 
-    @JsonIgnore   @Column(length = 64)                          private byte[] shaPassword;
+    @JsonIgnore   @Column(length = 64)                          public byte[] shaPassword;
     @JsonIgnore  @OneToOne(mappedBy = "person")                 public PasswordRecoveryToken passwordRecoveryToken;
+
+    @JsonIgnore  @OneToOne(mappedBy = "person")         public Payment_Details company_account;
+
 
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<Project>              owningProjects            = new ArrayList<>();
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<Post>                 postLiker                 = new ArrayList<>();    // Propojení, které byly uživatelem hodnoceny (jak negativně, tak pozitivně)
@@ -48,6 +52,9 @@ public class Person extends Model {
     @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL)     public List<FloatingPersonToken>  floatingPersonTokens = new ArrayList<>(); // Propojení, které uživatel napsal
     @JsonIgnore  @OneToMany(mappedBy="owner",  cascade = CascadeType.ALL)     public List<Invitation>           invitations          = new ArrayList<>(); // Pozvánky, které uživatel rozeslal
     @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL)     public List<Notification>         notifications        = new ArrayList<>();
+
+
+   // @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL) public List<Product> products  = new ArrayList<>();
 
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
@@ -64,13 +71,13 @@ public class Person extends Model {
         catch (Exception e) { throw new RuntimeException(e);}
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public void setSha(String value) {
         setShaPassword( getSha512(value) );
     }
 
     // Z důvodu Cashování Play na SETTER a GETTER byla zvolena tato "zbytečná metoda" - slouží jen pro Definování HASH hesla ( New, Recovery)
-    @JsonIgnore @Transient
+    @JsonIgnore
     public void setShaPassword(byte[] shaPassword) {
         this.shaPassword = shaPassword;
     }
@@ -92,21 +99,10 @@ public class Person extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient public Boolean create_permission(){  return true;  }
-    @JsonIgnore   @Transient public Boolean read_permission()  {  return true;  }
-    @JsonProperty @Transient @ApiModelProperty(required = true)
-    public Boolean edit_permission() {
-        if (SecurityController.getPerson() != null) return (M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Person_edit");
-        return false;
-    }
-    @JsonProperty @Transient @ApiModelProperty(required = true)
-    public Boolean delete_permission(){
-
-        if(SecurityController.getPerson() != null) return (M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Person_delete");
-            return false;
-    }
-    @JsonProperty @Transient public Boolean edit_permission() {   return SecurityController.getPerson() != null && ((M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Person_edit"));}
-    @JsonProperty @Transient public Boolean delete_permission() {return SecurityController.getPerson() != null && ((M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Person_delete"));}
+    @JsonIgnore   @Transient public boolean create_permission(){  return true;  }
+    @JsonIgnore   @Transient public boolean read_permission()  {  return true;  }
+    @JsonProperty @Transient public boolean edit_permission()  {   return SecurityController.getPerson() != null && ((M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Person_edit"));}
+    @JsonProperty @Transient public boolean delete_permission(){return SecurityController.getPerson() != null && ((M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Person_delete"));}
 
     public enum permissions{ Person_edit, Person_delete }
 

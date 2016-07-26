@@ -73,13 +73,13 @@ public class Post extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient                                    public Boolean create_permission(){  return true;    }
-    @JsonIgnore   @Transient                                    public Boolean read_permission()  {  return true;    }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean edit_permission()  {  return SecurityController.getPerson() != null && ( author.id.equals( SecurityController.getPerson().id )  || SecurityController.getPerson().has_permission("Post_edit") ); }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean answer_permission(){  return ( this.postParentComment == null && this.postParentAnswer  == null );}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean comment_permission(){ return ( name != null || postParentAnswer != null );}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean edit_confirms_permission() { return SecurityController.getPerson() != null && SecurityController.getPerson().has_permission("Post_edit"); }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean delete_permission(){  return SecurityController.getPerson() != null && ( ( author.id.equals( SecurityController.getPerson().id ) ) || SecurityController.getPerson().has_permission("Post_delete") ); }
+    @JsonIgnore   @Transient                                    public boolean create_permission(){  return true;    }
+    @JsonIgnore   @Transient                                    public boolean read_permission()  {  return true;    }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()  {  return SecurityController.getPerson() != null && ( author.id.equals( SecurityController.getPerson().id )  || SecurityController.getPerson().has_permission("Post_edit") ); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean answer_permission(){  return ( this.postParentComment == null && this.postParentAnswer  == null );}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean comment_permission(){ return ( name != null || postParentAnswer != null );}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_confirms_permission() { return SecurityController.getPerson() != null && SecurityController.getPerson().has_permission("Post_edit"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return SecurityController.getPerson() != null && ( ( author.id.equals( SecurityController.getPerson().id ) ) || SecurityController.getPerson().has_permission("Post_delete") ); }
 
     public enum permissions{ Post_edit, Post_delete}
 

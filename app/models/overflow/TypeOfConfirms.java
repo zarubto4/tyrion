@@ -25,10 +25,10 @@ public class TypeOfConfirms extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient                                    public Boolean create_permission(){  return  SecurityController.getPerson().has_permission("TypeOfConfirms_create"); }
-    @JsonIgnore   @Transient                                    public Boolean read_permission()  {  return  true;                                                                   }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean edit_permission()  {  return  SecurityController.getPerson().has_permission("TypeOfConfirms_edit");   }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean delete_permission(){  return  SecurityController.getPerson().has_permission("TypeOfConfirms_delete"); }
+    @JsonIgnore   @Transient                                    public boolean create_permission(){  return  SecurityController.getPerson().has_permission("TypeOfConfirms_create"); }
+    @JsonIgnore   @Transient                                    public boolean read_permission()  {  return  true;                                                                   }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()  {  return  SecurityController.getPerson().has_permission("TypeOfConfirms_edit");   }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return  SecurityController.getPerson().has_permission("TypeOfConfirms_delete"); }
 
     public enum permissions{  PropertyOfPost_create, PropertyOfPost_read,  PropertyOfPost_edit, PropertyOfPost_delete; }
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

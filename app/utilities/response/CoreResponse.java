@@ -60,5 +60,4 @@ public class CoreResponse extends Controller {
 
     }
 
-
 }

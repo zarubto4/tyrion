@@ -60,25 +60,21 @@ public class Swagger_C_Program_Version_Update {
 
 
 // Pomocné metody na separování obsahu *********************************************************************************    
-    
-    public String comprimate_code() {
-        if(user_files != null )
-        for (User_Files user_file : user_files) {
-            main += "\n \n " + user_file.code;
-        }
-        return  main;
-    }
 
-    
     public ObjectNode includes(){
 
         ObjectNode includes = Json.newObject();
-        if(external_libraries == null ) return  null;
 
+        if(external_libraries != null)
         for(External_Libraries external_library : external_libraries){
             for(External_Libraries.File_Lib file_lib : external_library.files){
                 includes.put(file_lib.file_name , file_lib.content);
             }
+        }
+
+        if(user_files != null)
+        for(User_Files user_file : user_files){
+             includes.put(user_file.file_name , user_file.code);
         }
         
         return  includes;

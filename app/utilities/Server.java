@@ -25,6 +25,7 @@ import models.project.m_program.M_Project;
 import org.slf4j.LoggerFactory;
 import play.Configuration;
 import play.Play;
+import utilities.gopay.GoPay_Controller;
 import utilities.hardware_updater.Master_Updater;
 
 import java.io.File;
@@ -61,9 +62,23 @@ public class Server {
     public static String WordPress_url;
     public static String WordPress_apiKey;
 
+    public static String Fakturoid_apiKey;
+    public static String Fakturoid_url;
+    public static String Fakturoid_user_agent;
+    public static String Fakturoid_secret_combo;
 
     public static Boolean server_mode;
     public static String server_version;
+
+    public static String GoPay_client_id;
+    public static String GoPay_api_url;
+    public static String GoPay_client_credentials;
+    public static Long GoPay_go_id;
+
+    public static String GoPay_successfullUrl;
+    public static String GoPay_failedUrl;
+    public static String GoPay_returnUrl;
+    public static String GoPay_notificationUrl;
 
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
@@ -114,8 +129,22 @@ public class Server {
             WordPress_callBack                   = tyrion_serverAddress + Configuration.root().getString("WordPress.localhost.callBack");
             WordPress_clientSecret               = Configuration.root().getString("WordPress.localhost.clientSecret");
             WordPress_url                        = Configuration.root().getString("WordPress.localhost.url");
-            WordPress_apiKey                     = Configuration.root().getString("WordPress.localhost.apiKey  ");
+            WordPress_apiKey                     = Configuration.root().getString("WordPress.localhost.apiKey");
 
+            Fakturoid_apiKey                     = Configuration.root().getString("Fakturoid.apiKey");
+            Fakturoid_url                        = Configuration.root().getString("Fakturoid.url");
+            Fakturoid_user_agent                 = Configuration.root().getString("Fakturoid.userAgent");
+            Fakturoid_secret_combo               = Configuration.root().getString("Fakturoid.secret_combo");
+
+
+            GoPay_api_url                        = Configuration.root().getString("GOPay.localhost.api_url");
+            GoPay_client_credentials             = Configuration.root().getString("GOPay.localhost.client_id");
+            GoPay_client_id                      = Configuration.root().getString("GOPay.localhost.client_credentials");
+            GoPay_go_id                          = Configuration.root().getLong("GOPay.localhost.go_id");
+            GoPay_successfullUrl                 = Configuration.root().getString("GOPay.localhost.successfullUrl");
+            GoPay_failedUrl                      = Configuration.root().getString("GOPay.localhost.failedUrl");
+            GoPay_returnUrl                      = Configuration.root().getString("GOPay.localhost.returnUrl");
+            GoPay_notificationUrl                = Configuration.root().getString("GOPay.localhost.notificationUrl");
         }
         else   {
 
@@ -146,8 +175,21 @@ public class Server {
             WordPress_callBack                   = tyrion_serverAddress + Configuration.root().getString("WordPress.production.callBack");
             WordPress_clientSecret               = Configuration.root().getString("WordPress.production.clientSecret");
             WordPress_url                        = Configuration.root().getString("WordPress.production.url");
-            WordPress_apiKey                     = Configuration.root().getString("WordPress.production.apiKey  ");
+            WordPress_apiKey                     = Configuration.root().getString("WordPress.production.apiKey");
 
+            Fakturoid_apiKey                     = Configuration.root().getString("Fakturoid.apiKey");
+            Fakturoid_url                        = Configuration.root().getString("Fakturoid.url");
+            Fakturoid_user_agent                 = Configuration.root().getString("Fakturoid.userAgent");
+            Fakturoid_secret_combo               = Configuration.root().getString("Fakturoid.secret_combo");
+
+            GoPay_api_url                        = Configuration.root().getString("GOPay.production.api_url");
+            GoPay_client_credentials             = Configuration.root().getString("GOPay.production.client_id");
+            GoPay_client_id                      = Configuration.root().getString("GOPay.production.client_credentials");
+            GoPay_go_id                          = Configuration.root().getLong("GOPay.production.go_id");
+            GoPay_successfullUrl                 = Configuration.root().getString("GOPay.production.successfullUrl");
+            GoPay_failedUrl                      = Configuration.root().getString("GOPay.production.failedUrl");
+            GoPay_returnUrl                      = Configuration.root().getString("GOPay.production.returnUrl");
+            GoPay_notificationUrl                = Configuration.root().getString("GOPay.production.notificationUrl");
         }
 
         /**
@@ -260,7 +302,8 @@ public class Server {
         //1. Nastartovat aktualizační vlákna
         Master_Updater.start_thread_box();
 
-        //2. ?
+        //2. Nastartovat GoPay vlákno
+        GoPay_Controller.set_token_thread();
 
     }
 }

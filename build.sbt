@@ -4,6 +4,8 @@ version := "1.0-SNAPSHOT"
 
 lazy val root = (project in file(".")).enablePlugins(PlayJava, PlayEbean)
 
+
+
 scalaVersion := "2.11.6"
 
 libraryDependencies ++= Seq(
@@ -32,6 +34,12 @@ libraryDependencies ++= Seq(
   "com.microsoft.azure" % "adal4j" % "1.1.3",
   "com.google.guava" % "guava" % "19.0",
   "commons-collections" % "commons-collections" % "3.2.1",
+  "mysql" % "mysql-connector-java" % "5.1.34",
+  "cz.gopay" % "gp-java-api-v3-common" % "3.3.1",
+  "cz.gopay" % "gp-java-api-v3-resteasy" % "3.3.1",
+  "cz.gopay" % "gp-java-api-v3-parent" % "3.3.1",
+  "cz.gopay" % "gp-java-api-v3-apache-http-client" % "3.3.1",
+
   javaJdbc,
   filters,
   cache,

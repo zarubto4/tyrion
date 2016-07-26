@@ -32,21 +32,23 @@ public class C_Program extends Model {
 
 
     @ApiModelProperty(required = true, value = "minimal length is 8 characters")                        public String program_name;
-    @ApiModelProperty(required = false, value = "can be emtpy")  @Column(columnDefinition = "TEXT")     public String program_description;
-                                                                           @JsonIgnore @ManyToOne()     public Project project;
+    @ApiModelProperty(required = false, value = "can be empty")  @Column(columnDefinition = "TEXT")     public String program_description;
+                                              @JsonIgnore @ManyToOne(cascade = CascadeType.PERSIST)     public Project project;
 
 
-                                               @JsonIgnore      public String azurePackageLink;
-                                               @JsonIgnore      public String azureStorageLink;
-           @JsonIgnore  @ManyToOne(fetch = FetchType.EAGER)     public TypeOfBoard type_of_board;  // Typ desky
+                                                                     @JsonIgnore            public String azurePackageLink;
+                                                                     @JsonIgnore            public String azureStorageLink;
+                                @JsonIgnore  @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)            public TypeOfBoard type_of_board;  // Typ desky
 
 
-    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1461854312") public Date dateOfCreate;
-    @JsonIgnore @OneToMany(mappedBy="c_program", cascade = CascadeType.ALL, fetch = FetchType.EAGER) @OrderBy("azureLinkVersion DESC") public List<Version_Object> version_objects = new ArrayList<>();
+    @ApiModelProperty(required = true, dataType = "integer", readOnly = true,
+            value = "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
+            example = "1466163478925")                                                       public Date dateOfCreate;
+
+    @JsonIgnore @OneToMany(mappedBy="c_program", cascade = {CascadeType.ALL}) @OrderBy("azureLinkVersion DESC") public List<Version_Object> version_objects = new ArrayList<>();
 
 
-
-/* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
+    /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
     @JsonProperty  @Transient public String project_id(){ return project.id; }
     @JsonProperty  @Transient public String type_of_board_id()   { return type_of_board == null ? null : type_of_board.id;}
 
@@ -120,11 +122,11 @@ public class C_Program extends Model {
     @JsonIgnore @Transient public static final String read_permission_docs   = "read: If user have Project.read_permission = true, you can read C_program on this Project - Or you need static/dynamic permission key";
     @JsonIgnore @Transient public static final String create_permission_docs = "create: If user have Project.update_permission = true, you can create C_program on this Project - Or you need static/dynamic permission key";
 
-    @JsonIgnore   @Transient  @ApiModelProperty(required = true) public Boolean create_permission(){  return ( project.update_permission() ) || SecurityController.getPerson().has_permission("C_program_create");      }
-    @JsonProperty @Transient  @ApiModelProperty(required = true) public Boolean update_permission(){  return ( C_Program.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("C_program_update"); }
-    @JsonIgnore   @Transient  @ApiModelProperty(required = true) public Boolean read_permission()  {  return ( C_Program.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("C_program_read"); }
-    @JsonProperty @Transient  @ApiModelProperty(required = true) public Boolean edit_permission()  {  return ( C_Program.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("C_program_edit"); }
-    @JsonProperty @Transient  @ApiModelProperty(required = true) public Boolean delete_permission(){  return ( C_Program.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("C_program_delete"); }
+    @JsonIgnore   @Transient  @ApiModelProperty(required = true) public boolean create_permission(){  return ( project.update_permission() ) || SecurityController.getPerson().has_permission("C_program_create");      }
+    @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean update_permission(){  return ( C_Program.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("C_program_update"); }
+    @JsonIgnore   @Transient  @ApiModelProperty(required = true) public boolean read_permission()  {  return ( C_Program.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("C_program_read"); }
+    @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean edit_permission()  {  return ( C_Program.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("C_program_edit"); }
+    @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean delete_permission(){  return ( C_Program.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("C_program_delete"); }
 
     public enum permissions{  C_program_create,  C_program_update, C_program_read ,  C_program_edit, C_program_delete; }
 

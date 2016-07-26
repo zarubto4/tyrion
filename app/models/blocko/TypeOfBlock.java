@@ -43,11 +43,11 @@ public class TypeOfBlock extends Model {
 
 
 
-    @JsonIgnore @Transient                                      public Boolean create_permission()  {return (project != null ? project.update_permission() : false ) || SecurityController.getPerson().has_permission("TypeOfBlock_create");}
-    @JsonIgnore @Transient                                      public Boolean read_permission()    {return (project != null ? project.read_permission()   : false ) || SecurityController.getPerson().has_permission("TypeOfBlock_read");}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean update_permission()  {return (project != null ? project.update_permission() : false ) || SecurityController.getPerson().has_permission("TypeOfBlock_update");}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean edit_permission()    {return (project != null ? project.edit_permission()   : false ) || SecurityController.getPerson().has_permission("TypeOfBlock_edit");}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean delete_permission()  {return (project != null ? project.update_permission() : false ) || SecurityController.getPerson().has_permission("TypeOfBlock_delete");}
+    @JsonIgnore @Transient                                      public boolean create_permission()  {return (project != null && project.update_permission()) || SecurityController.getPerson().has_permission("TypeOfBlock_create");}
+    @JsonIgnore @Transient                                      public boolean read_permission()    {return (project != null && project.read_permission())   || SecurityController.getPerson().has_permission("TypeOfBlock_read");}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission()  {return (project != null && project.update_permission()) || SecurityController.getPerson().has_permission("TypeOfBlock_update");}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()    {return (project != null && project.edit_permission())   || SecurityController.getPerson().has_permission("TypeOfBlock_edit");}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission()  {return (project != null && project.update_permission()) || SecurityController.getPerson().has_permission("TypeOfBlock_delete");}
 
     public enum permissions{TypeOfBlock_create, TypeOfBlock_read, TypeOfBlock_edit , TypeOfBlock_delete, TypeOfBlock_update}
 

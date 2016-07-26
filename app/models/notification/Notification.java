@@ -20,16 +20,14 @@ public class Notification extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)
-                                       @ApiModelProperty(required = true) public String id;
-
+    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true) public String id;
 
     @Enumerated(EnumType.STRING)       @ApiModelProperty(required = true) public NotificationController.Notification_level level;     // Důležitost (podbarvení zprávy)
 
     @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true) private String content_string;                           // Obsah v podobě Json.toString().
                                        @ApiModelProperty(required = true) public boolean confirmation_required;
                                                            @JsonIgnore    public boolean confirmed;
-                                       @ApiModelProperty(required = true) public boolean read;
+                                       @ApiModelProperty(required = true) public boolean was_read;
 
 
     @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1458315085") private Date created;
@@ -143,7 +141,7 @@ public class Notification extends Model {
 
     @JsonIgnore @Transient
     public void set_read(){
-            read = true;
+            was_read = true;
             this.update();
     }
 

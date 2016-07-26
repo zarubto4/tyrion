@@ -34,10 +34,10 @@ public class Processor extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient                                    public Boolean create_permission(){  return SecurityController.getPerson().has_permission("Processor_create"); }
-    @JsonIgnore   @Transient                                    public Boolean read_permission()  {  return true; }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean edit_permission()  {  return SecurityController.getPerson().has_permission("Processor_edit");   }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean delete_permission(){  return SecurityController.getPerson().has_permission("Processor_delete"); }
+    @JsonIgnore   @Transient                                    public boolean create_permission(){  return SecurityController.getPerson().has_permission("Processor_create"); }
+    @JsonIgnore   @Transient                                    public boolean read_permission()  {  return true; }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()  {  return SecurityController.getPerson().has_permission("Processor_edit");   }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return SecurityController.getPerson().has_permission("Processor_delete"); }
 
     public enum permissions{Processor_create, Processor_edit, Processor_delete}
 

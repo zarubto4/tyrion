@@ -4,7 +4,12 @@ import play.libs.mailer.Email;
 
 public class EmailTool {
 
-    String emailContent = "";
+    private String emailContent = "";
+
+    // Příloha k Emailu
+    private byte[] attachment;
+    private String attachment_name;
+
 
     public EmailTool startParagraph(String textSize){
         emailContent += ("<p style='font-size:" + textSize + "pt; color: #969696; padding: 10px;'>");
@@ -46,6 +51,13 @@ public class EmailTool {
         return this;
     }
 
+    public EmailTool addAttachment(String attachment_name, byte[] file){
+        attachment = file;
+        this.attachment_name = attachment_name;
+        return this;
+    }
+
+
     public String getEmailContent(){
         return emailContent;
     }
@@ -54,11 +66,14 @@ public class EmailTool {
 
         String html = utilities.emails.templates.html.EmailScheme.render(content).body();
 
-        return new Email()
-                .setSubject(subject)
-                .setFrom("Byzance IoT Platform <cloud_blocko_server@byzance.cz>")
-                .addTo("<"+ userMail +">")
-                .setBodyText("A text message")
-                .setBodyHtml(html);
+        Email email = new Email()
+                        .setSubject(subject)
+                        .setFrom("Byzance IoT Platform <cloud_blocko_server@byzance.cz>")
+                        .addTo("<"+ userMail +">")
+                        .setBodyText("A text message")
+                        .setBodyHtml(html);
+
+        if(attachment != null) email.addAttachment(attachment_name, attachment, "multipart/form-data");
+        return email;
     }
 }

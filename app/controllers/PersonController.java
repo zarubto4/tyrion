@@ -273,12 +273,16 @@ public class PersonController extends Controller {
                 return GlobalResult.result_BadRequest("You must recover your password in 24 hours.");
             }
 
+            System.out.println("Mažu tokeny!");
             for ( FloatingPersonToken floatingPersonToken : person.floatingPersonTokens  ) {
                 floatingPersonToken.delete();
             }
 
-            person.setSha(help.password);
+            person.shaPassword = null;
+            person.update();
 
+            person.refresh();
+            person.setSha(help.password);
             person.update();
 
             passwordRecoveryToken.delete();

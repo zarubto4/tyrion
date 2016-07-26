@@ -150,7 +150,7 @@ public class Actualization_procedure extends Model {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient   public static final String read_permission_docs   = "User can read Actualization_procedure if they have ID of Actualization_procedure";
-    @JsonIgnore @Transient   public Boolean read_permission()      {  return project.read_permission() || SecurityController.getPerson().has_permission("Actualization_procedure_read"); }
+    @JsonIgnore @Transient   public boolean read_permission()      {  return project.read_permission() || SecurityController.getPerson().has_permission("Actualization_procedure_read"); }
 
     public enum permissions{Actualization_procedure_read}
 

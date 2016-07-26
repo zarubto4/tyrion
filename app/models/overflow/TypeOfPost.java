@@ -25,10 +25,10 @@ public class TypeOfPost extends Model {
 
     @JsonIgnore @Transient public static final String create_permission_docs = "create: User have to own static key \"TypeOfPost_create\" ";
 
-    @JsonIgnore   @Transient                                    public Boolean create_permission(){  return  SecurityController.getPerson().has_permission("TypeOfPost_create");}
-    @JsonIgnore   @Transient                                    public Boolean read_permission()  {  return true; }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean edit_permission()  { return  SecurityController.getPerson().has_permission("TypeOfPost_edit");}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean delete_permission(){ return  SecurityController.getPerson().has_permission("TypeOfPost_delete");}
+    @JsonIgnore   @Transient                                    public boolean create_permission(){  return  SecurityController.getPerson().has_permission("TypeOfPost_create");}
+    @JsonIgnore   @Transient                                    public boolean read_permission()  {  return true; }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()  { return  SecurityController.getPerson().has_permission("TypeOfPost_edit");}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){ return  SecurityController.getPerson().has_permission("TypeOfPost_delete");}
 
     public enum permissions{  TypeOfPost_create, TypeOfPost_edit, TypeOfPost_delete}
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

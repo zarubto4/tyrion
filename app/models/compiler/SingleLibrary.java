@@ -42,11 +42,11 @@ public class SingleLibrary  extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient                                    public Boolean create_permission(){  return SecurityController.getPerson().has_permission("SingleLibrary_create"); }
-    @JsonIgnore   @Transient                                    public Boolean read_permission()  {  return true; }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean edit_permission()  {  return SecurityController.getPerson().has_permission("SingleLibrary_edit");   }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean delete_permission(){  return SecurityController.getPerson().has_permission("SingleLibrary_delete"); }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean update_permission(){  return SecurityController.getPerson().has_permission("SingleLibrary_update"); }
+    @JsonIgnore   @Transient                                    public boolean create_permission(){  return SecurityController.getPerson().has_permission("SingleLibrary_create"); }
+    @JsonIgnore   @Transient                                    public boolean read_permission()  {  return true; }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()  {  return SecurityController.getPerson().has_permission("SingleLibrary_edit");   }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return SecurityController.getPerson().has_permission("SingleLibrary_delete"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission(){  return SecurityController.getPerson().has_permission("SingleLibrary_update"); }
 
 
     public enum permissions{SingleLibrary_create, SingleLibrary_edit, SingleLibrary_update, SingleLibrary_delete}

@@ -437,6 +437,8 @@ public class CompilationLibrariesController extends Controller {
             // Smažu obsah konkrétní verze
             UtilTools.azureDelete(Server.blobClient.getContainerReference("c-program"), version_object.c_program.azurePackageLink + "/" + version_object.c_program.azureStorageLink + "/" + version_object.azureLinkVersion);
 
+            version_object.c_program = null;
+
             // Smažu zástupný objekt
             version_object.delete();
 
@@ -544,6 +546,10 @@ public class CompilationLibrariesController extends Controller {
             // Smazání z Azure
             UtilTools.azureDelete(Server.blobClient.getContainerReference("c-program"), c_program.azurePackageLink + "/" + c_program.azureStorageLink);
 
+            System.out.println("budu mazat");
+
+         //   for(c_program.version_objects)
+
             // Smazání objektu
             c_program.delete();
 
@@ -576,10 +582,11 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Compilation successful",    response = Swagger_Compilation_Ok.class),
-            @ApiResponse(code = 400, message = "Compilation unsuccessful",  response = Swagger_Compilation_Build_Error.class, responseContainer = "List"),
+            @ApiResponse(code = 477, message = "External server is offline",response = Result_BadRequest.class),
+            @ApiResponse(code = 422, message = "Compilation unsuccessful",  response = Swagger_Compilation_Build_Error.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 478, message = "External server side Error",response = Result_BadRequest.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
@@ -623,12 +630,14 @@ public class CompilationLibrariesController extends Controller {
                        result.put("target", typeOfBoard.name);
                        result.put("libVersion", "v0");
                        result.put("versionId", version_id);
-                       result.put("code", help.comprimate_code());
+                       result.put("code", help.main);
                        result.set("includes", help.includes() == null ? Json.newObject() : help.includes() );
 
             logger.debug("Server checks compilation cloud_compilation_server");
             // Kontroluji zda je nějaký kompilační cloud_compilation_server připojený
-            if(WebSocketController_Incoming.compiler_cloud_servers.isEmpty()) return GlobalResult.result_BadRequest("Compilation cloud_compilation_server is offline!", "server_offline");
+            if(WebSocketController_Incoming.compiler_cloud_servers.isEmpty()) {
+                return GlobalResult.result_external_server_is_offline("Compilation cloud_compilation_server is offline!");
+            }
 
             logger.debug("Server send c++ program for compilation");
             // Odesílám na compilační cloud_compilation_server
@@ -700,7 +709,7 @@ public class CompilationLibrariesController extends Controller {
                Swagger_Compilation_Build_Error swagger_compilation_build_error = form_compilation.get();
 
 
-               return GlobalResult.result_BadRequest(Json.toJson( swagger_compilation_build_error ));
+               return GlobalResult.result_buildErrors(Json.toJson( swagger_compilation_build_error ));
 
             // Nebylo úspěšné ani odeslání reqestu - Chyba v konfiguraci a tak vracím defaulní chybz
            }else if(compilation_result.has("error") ){
@@ -711,7 +720,7 @@ public class CompilationLibrariesController extends Controller {
                version_object.compilable = false;
                version_object.update();
 
-               return GlobalResult.result_BadRequest("system_error");
+               return GlobalResult.result_external_server_error(Json.toJson(compilation_result.get("error")));
            }
 
             logger.error("Build wasn't successful - unknown error!!");
@@ -752,10 +761,12 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Compilation successful",    response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Compilation unsuccessful",  response = Swagger_Compilation_Build_Error.class, responseContainer = "List"),
+            @ApiResponse(code = 477, message = "External server is offline",response = Result_BadRequest.class),
+            @ApiResponse(code = 422, message = "Compilation unsuccessful",  response = Swagger_Compilation_Build_Error.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 478, message = "External server side Error",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result compile_C_Program_code(){
@@ -778,10 +789,13 @@ public class CompilationLibrariesController extends Controller {
                        result.put("messageType", "build");
                        result.put("target", typeOfBoard.name);
                        result.put("libVersion", "v0");
-                       result.put("code", help.comprimate_code());
+                       result.put("code", help.main);
                        result.set("includes", help.includes() == null ? Json.newObject() : help.includes() );
 
-            if(WebSocketController_Incoming.compiler_cloud_servers.isEmpty()) return GlobalResult.result_BadRequest("Compilation cloud_compilation_server is offline!");
+            if(WebSocketController_Incoming.compiler_cloud_servers.isEmpty()){
+
+                return GlobalResult.result_external_server_is_offline("Compilation cloud_compilation_server is offline!");
+            }
 
             // Odesílám na compilační cloud_compilation_server
             JsonNode compilation_result = WebSocketController_Incoming.compiler_server_make_Compilation(SecurityController.getPerson(), result);
@@ -793,12 +807,13 @@ public class CompilationLibrariesController extends Controller {
 
             // Kompilace nebyla úspěšná a tak vracím obsah neuspěšné kompilace
             else if(compilation_result.has("buildErrors")){
-                return GlobalResult.result_BadRequest(Json.toJson(compilation_result.get("buildErrors")));
+
+                return GlobalResult.result_buildErrors(Json.toJson(compilation_result.get("buildErrors")));
             }
 
             // Nebylo úspěšné ani odeslání reqestu - Chyba v konfiguraci a tak vracím defaulní chybz
             else if(compilation_result.has("error") ){
-                return GlobalResult.result_BadRequest(Json.toJson(compilation_result.get("error")));
+                return GlobalResult.result_external_server_error(Json.toJson(compilation_result.get("error")));
             }
 
             // Neznámá chyba se kterou nebylo počítání
@@ -826,7 +841,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_ok.class),
-            @ApiResponse(code = 400, message = "External Cloud_Homer_server where is hardware is offline", response = Result_serverIsOffline.class),
+            @ApiResponse(code = 477, message = "External Cloud_Homer_server where is hardware is offline", response = Result_serverIsOffline.class),
             @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
@@ -1866,8 +1881,8 @@ public class CompilationLibrariesController extends Controller {
             notes = "if you want create new SingleLibrary for C_program compilation",
             produces = "application/json",
             protocols = "https",
-            code = 200
-            // TODO oprávnění
+            code = 200,
+            hidden = true
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_File_Content.class),
@@ -3146,7 +3161,7 @@ public class CompilationLibrariesController extends Controller {
             if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
             // Kontrola oprávnění
-            if(board.first_connect_permission() == null ) return GlobalResult.result_BadRequest("Board is already registered");
+            if(!board.first_connect_permission()) return GlobalResult.result_BadRequest("Board is already registered");
 
             // Kontrola oprávnění
             if(!project.update_permission()) return GlobalResult.forbidden_Permission();
@@ -3253,7 +3268,7 @@ public class CompilationLibrariesController extends Controller {
             boards_for_blocko.c_programs = project.c_programs;
 
             // Vrácení objektu
-            return GlobalResult.ok(Json.toJson(boards_for_blocko));
+            return GlobalResult.result_ok(Json.toJson(boards_for_blocko));
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());

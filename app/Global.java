@@ -38,6 +38,8 @@ public class Global extends GlobalSettings {
            Server.startThreads();
 
 
+
+
     //****************************************************************************************************************************
             UtilTools.set_Developer_objects(); // TODO bude smazáno - slouží jen k vytvoření prvního uživatele
             UtilTools.set_Homer_Server();

@@ -27,7 +27,7 @@ public class LinkedPost extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean delete_permission(){  return ( LinkedPost.find.where().eq("author.id", SecurityController.getPerson().id).where().eq("id", linkId).findRowCount() > 0) || SecurityController.getPerson().has_permission("Post_delete"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return ( LinkedPost.find.where().eq("author.id", SecurityController.getPerson().id).where().eq("id", linkId).findRowCount() > 0) || SecurityController.getPerson().has_permission("Post_delete"); }
 
     public enum permissions{}
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

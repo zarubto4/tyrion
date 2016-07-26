@@ -38,11 +38,11 @@ public class BlockoBlock extends Model {
     @JsonIgnore @Transient public static final String read_permission_docs   = "read: If user can read TypeOfBlock, than can read all BlockoBlocks from list of TypeOfBlock ( You get ids of list of BlockoBlocks in object \"BlockoBlocks\" in json)  - Or you need static/dynamic permission key";
     @JsonIgnore @Transient public static final String create_permission_docs = "create: If user have TypeOfBlock.update_permission = true, you can create new BlockoBlocks on this TypeOfBlock - Or you need static/dynamic permission key if user want create BlockoBlock in public TypeOfBlock";
 
-    @JsonIgnore  @Transient                                     public Boolean create_permission() {return  type_of_block.update_permission();}
-    @JsonIgnore  @Transient                                     public Boolean read_permission()   {return  type_of_block.read_permission();}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean edit_permission()   {return  type_of_block.update_permission();}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean update_permission() {return  type_of_block.update_permission();}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Boolean delete_permission() {return  type_of_block.delete_permission();}
+    @JsonIgnore  @Transient                                     public boolean create_permission() {return  type_of_block.update_permission();}
+    @JsonIgnore  @Transient                                     public boolean read_permission()   {return  type_of_block.read_permission();}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()   {return  type_of_block.update_permission();}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission() {return  type_of_block.update_permission();}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission() {return  type_of_block.delete_permission();}
 
 
 
