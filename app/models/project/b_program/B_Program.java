@@ -34,8 +34,14 @@ public class B_Program extends Model {
                                                              public String name;
                         @Column(columnDefinition = "TEXT")   public String program_description;
 
-    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1461854312") public Date lastUpdate;
-    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1461854312") public Date dateOfCreate;
+    @ApiModelProperty(required = true,
+                     dataType = "integer", readOnly = true,
+                     value = "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
+                     example = "1466163478925")              public Date lastUpdate;
+    @ApiModelProperty(required = true,
+            dataType = "integer", readOnly = true,
+            value = "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
+            example = "1466163478925")                       public Date dateOfCreate;
                                     @JsonIgnore @ManyToOne   public Project project;
                                                 @JsonIgnore  public String azurePackageLink;
                                                 @JsonIgnore  public String azureStorageLink;

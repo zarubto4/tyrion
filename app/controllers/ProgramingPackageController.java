@@ -35,6 +35,7 @@ import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Filter_List.Swagger_B_Program_Version;
+import utilities.swagger.outboundClass.Filter_List.Swagger_Blocko_Object_List;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Homer_List;
 import utilities.webSocket.WS_BlockoServer;
 import utilities.webSocket.WebSCType;
@@ -422,7 +423,6 @@ public class ProgramingPackageController extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
     }
-
 
     @ApiOperation(value = "add participant to a Project",
             tags = {"Project", "Board"},
@@ -2564,6 +2564,19 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
+// BLOCKO GLOBAL #######################################################################################################
+
+    public Result get_Blocko_objects(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) @PathParam("page_number") Integer page_number){
+        try {
+
+            Swagger_Blocko_Object_List result = new Swagger_Blocko_Object_List();
+
+            return GlobalResult.result_ok(Json.toJson(result));
+
+        }catch (Exception e){
+            return GlobalResult.internalServerError();
+        }
+    }
 
 // BOARD ###################################################################################################################*/
 

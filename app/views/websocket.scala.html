@@ -3,6 +3,7 @@
 
 @import utilities.webSocket.{WS_Grid_Terminal, WebSCType, WS_BlockoServer, WS_CompilerServer, WS_Becki_Website}
 @import controllers.DashboardController
+@import controllers.WikyController
 @(homers: List[WebSCType], grids: List[WS_Grid_Terminal], becki_Terminal: List[WS_Becki_Website], cloud_blocko_server: List[WS_BlockoServer], compilation_server: List[WS_CompilerServer])
 
 
@@ -172,6 +173,10 @@
                     <h3 class="box-title">Connected Becki-Terminals</h3>
                     <div class="pull-right">
                         <div class="btn-group">
+
+
+                        </div>
+                        <div class="btn-group">
                             <button type="button" class="btn btn-danger btn-sm">    Disconnect All   </button>
                             <button type="button" class="btn btn-info    btn-sm ">  Send Ping to all </button>
                         </div><!-- /.btn-group -->
@@ -200,6 +205,9 @@
                                         <a href=' @routes.DashboardController.ping_becki( x.identifikator )' >
                                             <button class="btn btn-block btn-info btn-xs">Ping All</button>
                                         </a>
+                                        <form style="margin-top: 10px;" method="get" action="@routes.WikyController.test_notifications()">
+                                            <button name="mail" value="@(Person.find.byId( x.identifikator ).mail )" class="btn btn-block btn-primary btn-xs">Send test notification</button>
+                                        </form>
                                     </th>
                                 </tr>
 

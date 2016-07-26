@@ -10,7 +10,7 @@
 ###################################################################################f#################################################################################
 
 #GET             /test2                                      @controllers.WikyController.test2()
-GET              /test_not                                     @controllers.WikyController.test_notifications()
+GET              /test_not                                     @controllers.WikyController.test_notifications(mail: String?="")
 
 ### WEBSOCKET ############ WEBSOCKET ############### WEBSOCKET ################ WEBSOCKET ###########################################################################
 ###################################################################################f#################################################################################
@@ -149,7 +149,7 @@ GET            /project/project                                                 
 DELETE         /project/project/:project_id                                                 @controllers.ProgramingPackageController.deleteProject(project_id)
 PUT            /project/project/shareProject/:project_id                                    @controllers.ProgramingPackageController.shareProjectWithUsers(project_id)
 PUT            /project/project/unshareProject/:project_id                                  @controllers.ProgramingPackageController.unshareProjectWithUsers(project_id)
-PUT            /project/project/addParticipant/:ivitation_id/:decision                      @controllers.ProgramingPackageController.addParticipantToProject(ivitation_id, decision: Boolean)
+PUT            /project/project/addParticipant/:invitation_id/:decision                     @controllers.ProgramingPackageController.addParticipantToProject(invitation_id, decision: Boolean)
 
 #Homer
 POST           /project/homer                                                               @controllers.ProgramingPackageController.newHomer()
@@ -205,6 +205,8 @@ PUT             /project/blocko/server/:server_id                               
 GET             /project/blocko/server                                                      @controllers.ProgramingPackageController.get_All_Blocko_Server()
 DELETE          /project/blocko/server/:server_id                                           @controllers.ProgramingPackageController.delete_Blocko_Server(server_id)
 
+#Blocko Global
+GET             /project/blocko_objects/list/:page_number                                   @controllers.ProgramingPackageController.get_Blocko_objects(page_number: Integer)
 
 ### ACTUALIZATION PROCEDURE ############ ACTUALIZATION PROCEDURE ############### ACTUALIZATION PROCEDURE ################ ACTUALIZATION PROCEDURE ##############################
 ################################################################################################################################################################################
@@ -222,6 +224,8 @@ GET             /project/actualization_procedure/:actualization_procedure_id    
 #C_Program
 POST            /compilation/c_program/c_program/:project_id                                @controllers.CompilationLibrariesController.create_C_Program(project_id)
 GET             /compilation/c_program/c_program/:c_program_id                              @controllers.CompilationLibrariesController.get_C_Program(c_program_id)
+GET             /compilation/c_program/list/:page_number                                    @controllers.CompilationLibrariesController.get_C_Program_List(page_number: Integer)
+GET             /compilation/c_program/c_program/list/:project_id/:page_number              @controllers.CompilationLibrariesController.get_C_Program_List_by_Project(project_id, page_number: Integer)
 
 PUT             /compilation/c_program/c_program/:c_program_id                              @controllers.CompilationLibrariesController.edit_C_Program_Description(c_program_id)
 DELETE          /compilation/c_program/c_program/:c_program_id                              @controllers.CompilationLibrariesController.delete_C_Program(c_program_id)
