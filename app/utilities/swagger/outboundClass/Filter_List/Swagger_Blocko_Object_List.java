@@ -45,15 +45,45 @@ public class Swagger_Blocko_Object_List {
 
 /* Set -----------------------------------------------------------------------------------------------------------------*/
 
-    public Swagger_C_Program_List(Query<B_Program> query_b_program , Query<TypeOfBlock> query_type_of_block , Query<BlockoBlock> query_blocko_block , int page_number){
+    public Swagger_Blocko_Object_List(Query<B_Program> query_b_program , Query<TypeOfBlock> query_type_of_block , Query<BlockoBlock> query_blocko_block , int page_number){
 
         if(page_number < 1) page_number = 1;
-        List<B_Program> list =  query_b_program.setFirstRow((page_number - 1) * 25).setMaxRows(25).findList();
 
-        for(B_Program c_program : list){
+        List<B_Program> b_programs =  query_b_program.setFirstRow((page_number - 1) * 25).setMaxRows(25).findList();
+        for(B_Program b_program : b_programs){
 
+            Swagger_B_Program_Light help = new Swagger_B_Program_Light();
+
+            help.b_program_id = b_program.id;
+            help.b_program_name = b_program.name;
+            help.b_program_version_id = b_program.version_objects.get(0).id;
+            help.b_program_version_name = b_program.version_objects.get(0).version_name;
 
             this.content_b_program.add(help);
+        }
+
+        List<TypeOfBlock> typeOfBlocks =  query_type_of_block.setFirstRow((page_number - 1) * 25).setMaxRows(25).findList();
+        for(TypeOfBlock typeOfBlock : typeOfBlocks){
+
+            Swagger_Type_Of_Block_Light help = new Swagger_Type_Of_Block_Light();
+
+            help.type_of_block_id = typeOfBlock.id;
+            help.type_of_block_name = typeOfBlock.name;
+
+            this.content_type_of_block.add(help);
+        }
+
+        List<BlockoBlock> blockoBlocks =  query_blocko_block.setFirstRow((page_number - 1) * 25).setMaxRows(25).findList();
+        for(BlockoBlock blockoBlock : blockoBlocks){
+
+            Swagger_Blocko_Block_Light help = new Swagger_Blocko_Block_Light();
+
+            help.blocko_block_id = blockoBlock.id;
+            help.blocko_block_name = blockoBlock.name;
+            help.blocko_block_version_id = blockoBlock.blocko_versions.get(0).id;
+            help.blocko_block_version_name = blockoBlock.blocko_versions.get(0).version_name;
+
+            this.content_blocko_block.add(help);
         }
 
         this.total   = query.findRowCount();

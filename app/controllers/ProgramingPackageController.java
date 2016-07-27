@@ -2566,10 +2566,40 @@ public class ProgramingPackageController extends Controller {
 
 // BLOCKO GLOBAL #######################################################################################################
 
-    public Result get_Blocko_objects(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) @PathParam("page_number") Integer page_number){
+    public Result get_Blocko_objects(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) Integer page_number){
         try {
 
-            Swagger_Blocko_Object_List result = new Swagger_Blocko_Object_List();
+            Query<B_Program> query_b_program = Ebean.find(B_Program.class);
+            query_b_program.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id);
+
+            Query<TypeOfBlock> query_type_of_block = Ebean.find(TypeOfBlock.class);
+            query_type_of_block.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id);
+
+            Query<BlockoBlock> query_blocko_block = Ebean.find(BlockoBlock.class);
+            query_blocko_block.where().eq("author.id", SecurityController.getPerson().id);
+
+            Swagger_Blocko_Object_List result = new Swagger_Blocko_Object_List(query_b_program, query_type_of_block, query_blocko_block, page_number);
+
+            return GlobalResult.result_ok(Json.toJson(result));
+
+        }catch (Exception e){
+            return GlobalResult.internalServerError();
+        }
+    }
+
+    public Result get_Blocko_objects_by_Project(@ApiParam(value = "blocko_block_id String path",   required = true)String project_id, @ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) Integer page_number){
+        try {
+
+            Query<B_Program> query_b_program = Ebean.find(B_Program.class);
+            query_b_program.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).eq("project.id", project_id);
+
+            Query<TypeOfBlock> query_type_of_block = Ebean.find(TypeOfBlock.class);
+            query_type_of_block.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).eq("project.id", project_id);;
+
+            Query<BlockoBlock> query_blocko_block = Ebean.find(BlockoBlock.class);
+            query_blocko_block.where().eq("author.id", SecurityController.getPerson().id).eq("type_of block.project.id", project_id);;
+
+            Swagger_Blocko_Object_List result = new Swagger_Blocko_Object_List(query_b_program, query_type_of_block, query_blocko_block, page_number);
 
             return GlobalResult.result_ok(Json.toJson(result));
 

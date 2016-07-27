@@ -207,6 +207,8 @@ DELETE          /project/blocko/server/:server_id                               
 
 #Blocko Global
 GET             /project/blocko_objects/list/:page_number                                   @controllers.ProgramingPackageController.get_Blocko_objects(page_number: Integer)
+GET             /project/blocko_objects/list/:project_id/:page_number                       @controllers.ProgramingPackageController.get_Blocko_objects_by_Project(project_id, page_number: Integer)
+
 
 ### ACTUALIZATION PROCEDURE ############ ACTUALIZATION PROCEDURE ############### ACTUALIZATION PROCEDURE ################ ACTUALIZATION PROCEDURE ##############################
 ################################################################################################################################################################################
