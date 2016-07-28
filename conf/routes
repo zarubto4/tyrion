@@ -167,6 +167,7 @@ POST           /project/b_program/:project_id                                   
 GET            /project/b_program/:b_program_id                                             @controllers.ProgramingPackageController.get_b_Program(b_program_id)
 PUT            /project/b_program/:b_program_id                                             @controllers.ProgramingPackageController.edit_b_Program(b_program_id)
 DELETE         /project/b_program/:b_program_id                                             @controllers.ProgramingPackageController.remove_b_Program(b_program_id)
+PUT            /project/b_program/list/:page_number                                         @controllers.ProgramingPackageController.get_b_Program_by_Filter(page_number: Integer)
 
 PUT            /project/b_program/update/:b_program_id                                      @controllers.ProgramingPackageController.update_b_program(b_program_id)
 GET            /project/b_program/version/:version_id                                       @controllers.ProgramingPackageController.get_b_Program_version(version_id)
@@ -184,6 +185,7 @@ POST           /project/blockoBlock                                             
 PUT            /project/blockoBlock/:blocko_block_id                                        @controllers.ProgramingPackageController.edit_Block(blocko_block_id)
 GET            /project/blockoBlock/:blocko_block_id                                        @controllers.ProgramingPackageController.getBlockoBlock(blocko_block_id)
 DELETE         /project/blockoBlock/:blocko_block_id                                        @controllers.ProgramingPackageController.deleteBlock(blocko_block_id)
+PUT            /project/blockoBlock/list/:page_number                                       @controllers.ProgramingPackageController.get_BlockoBlock_by_Filter(page_number: Integer)
 
 POST           /project/blockoBlock/version/:blocko_block_id                                @controllers.ProgramingPackageController.new_BlockoBlock_Version(blocko_block_id)
 GET            /project/blockoBlock/version/all/:blocko_block_id                            @controllers.ProgramingPackageController.get_BlockoBlock_all_versions(blocko_block_id)
@@ -197,6 +199,7 @@ GET            /project/typeOfBlock                                             
 GET            /project/typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.get_TypeOfBlock(type_of_block_id)
 PUT            /project/typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.editTypeOfBlock(type_of_block_id)
 DELETE         /project/typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.deleteTypeOfBlock(type_of_block_id)
+PUT            /project/typeOfBlock/list/:page_number                                       @controllers.ProgramingPackageController.get_TypeOfBlock_by_Filter(page_number: Integer)
 
 
 #BLocko Server
@@ -204,10 +207,6 @@ POST            /project/blocko/server                                          
 PUT             /project/blocko/server/:server_id                                           @controllers.ProgramingPackageController.edit_Blocko_Server(server_id)
 GET             /project/blocko/server                                                      @controllers.ProgramingPackageController.get_All_Blocko_Server()
 DELETE          /project/blocko/server/:server_id                                           @controllers.ProgramingPackageController.delete_Blocko_Server(server_id)
-
-#Blocko Global
-GET             /project/blocko_objects/list/:page_number                                   @controllers.ProgramingPackageController.get_Blocko_objects(page_number: Integer)
-GET             /project/blocko_objects/list/:project_id/:page_number                       @controllers.ProgramingPackageController.get_Blocko_objects_by_Project(project_id, page_number: Integer)
 
 
 ### ACTUALIZATION PROCEDURE ############ ACTUALIZATION PROCEDURE ############### ACTUALIZATION PROCEDURE ################ ACTUALIZATION PROCEDURE ##############################
@@ -226,8 +225,7 @@ GET             /project/actualization_procedure/:actualization_procedure_id    
 #C_Program
 POST            /compilation/c_program/c_program/:project_id                                @controllers.CompilationLibrariesController.create_C_Program(project_id)
 GET             /compilation/c_program/c_program/:c_program_id                              @controllers.CompilationLibrariesController.get_C_Program(c_program_id)
-GET             /compilation/c_program/list/:page_number                                    @controllers.CompilationLibrariesController.get_C_Program_List(page_number: Integer)
-GET             /compilation/c_program/c_program/list/:project_id/:page_number              @controllers.CompilationLibrariesController.get_C_Program_List_by_Project(project_id, page_number: Integer)
+PUT             /compilation/c_program/list/:page_number                                    @controllers.CompilationLibrariesController.get_C_Program_by_Filter(page_number: Integer)
 
 PUT             /compilation/c_program/c_program/:c_program_id                              @controllers.CompilationLibrariesController.edit_C_Program_Description(c_program_id)
 DELETE          /compilation/c_program/c_program/:c_program_id                              @controllers.CompilationLibrariesController.delete_C_Program(c_program_id)

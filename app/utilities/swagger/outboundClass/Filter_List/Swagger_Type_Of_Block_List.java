@@ -3,21 +3,26 @@ package utilities.swagger.outboundClass.Filter_List;
 import com.avaje.ebean.Query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.project.b_program.servers.Private_Homer_Server;
-import models.project.c_program.C_Program;
-import utilities.swagger.outboundClass.Swagger_C_Program_Light;
+import models.blocko.BlockoBlock;
+import models.blocko.TypeOfBlock;
+import models.project.b_program.B_Program;
+import utilities.swagger.outboundClass.Swagger_B_Program_Light;
+import utilities.swagger.outboundClass.Swagger_Blocko_Block_Light;
+import utilities.swagger.outboundClass.Swagger_Type_Of_Block_Light;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@ApiModel(description = "Individual C_Program List",
-        value = "C_Program_List")
-public class Swagger_C_Program_List {
+@ApiModel(description = "Individual Type_Of_Block List",
+        value = "Type_Of_Block_List")
+public class Swagger_Type_Of_Block_List {
+
 
 /* Content--------------------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true, readOnly = true)
-    public List<Swagger_C_Program_Light> content = new ArrayList<>();
+    public List<Swagger_Type_Of_Block_Light> content = new ArrayList<>();
+
 
 /* Basic Filter Value --------------------------------------------------------------------------------------------------*/
 
@@ -35,26 +40,23 @@ public class Swagger_C_Program_List {
 
 /* Set -----------------------------------------------------------------------------------------------------------------*/
 
-    public Swagger_C_Program_List(Query<C_Program> query , int page_number){
+    public Swagger_Type_Of_Block_List(Query<TypeOfBlock> query , int page_number){
 
         if(page_number < 1) page_number = 1;
-        List<C_Program> list =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findList();
+        List<TypeOfBlock> typeOfBlocks =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findList();
 
-        for(C_Program c_program : list){
+        for(TypeOfBlock typeOfBlock : typeOfBlocks){
 
-            Swagger_C_Program_Light help = new Swagger_C_Program_Light();
+            Swagger_Type_Of_Block_Light help = new Swagger_Type_Of_Block_Light();
 
-            help.c_program_id = c_program.id;
-            help.c_program_name = c_program.program_name;
-            help.c_program_version_id = c_program.version_objects.get(0).id;
-            help.c_program_version_name = c_program.version_objects.get(0).version_name;
-            help.type_of_board_id = c_program.type_of_board.id;
-            help.type_of_board_name = c_program.type_of_board.name;
+            help.type_of_block_id = typeOfBlock.id;
+            help.type_of_block_name = typeOfBlock.name;
+            help.type_of_block_description = typeOfBlock.general_description;
 
             this.content.add(help);
         }
 
-        this.total   = query.findRowCount();
+        this.total = query.findRowCount();
         this.from   = (page_number - 1) * 25;
         this.to     = (page_number - 1) * 25 + content.size();
         for (int i = 1; i < (total / 25) + 2; i++) pages.add(i);

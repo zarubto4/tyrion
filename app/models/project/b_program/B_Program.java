@@ -15,7 +15,7 @@ import models.project.m_program.M_Project;
 import play.data.Form;
 import utilities.swagger.documentationClass.Swagger_Homer_DeviceList_Result;
 import utilities.swagger.outboundClass.B_Program_State;
-import utilities.swagger.outboundClass.Filter_List.Swagger_B_Program_Version;
+import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 import utilities.webSocket.WS_Homer_Cloud;
 
 import javax.persistence.*;

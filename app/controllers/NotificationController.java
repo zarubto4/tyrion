@@ -22,7 +22,7 @@ import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_Unauthorized;
 import utilities.response.response_objects.Result_ok;
-import utilities.swagger.outboundClass.Filter_List.Swagger_B_Program_Version;
+import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Notification_List;
 import utilities.swagger.outboundClass.Swagger_C_Program_Version;
 import utilities.webSocket.WS_Becki_Website;

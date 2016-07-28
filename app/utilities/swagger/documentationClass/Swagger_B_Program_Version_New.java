@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
 
 @ApiModel(description = "Json Model for new Version of B_Program",
@@ -46,9 +47,9 @@ public class Swagger_B_Program_Version_New {
 
     @Valid
     @ApiModelProperty(value = "Connected boards (padavans)", required = false)
-    public List<Connected_Board> boards;
+    public List<Connected_Board> boards = new ArrayList<>();
 
-    public static class Connected_Board {
+    public class Connected_Board {
         public Connected_Board(){}
         @Constraints.Required @ApiModelProperty(required = true) public String board_id;
         @Constraints.Required @ApiModelProperty(required = true) public String c_program_version_id;

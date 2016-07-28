@@ -34,9 +34,8 @@ import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
-import utilities.swagger.outboundClass.Filter_List.Swagger_B_Program_Version;
-import utilities.swagger.outboundClass.Filter_List.Swagger_Blocko_Object_List;
-import utilities.swagger.outboundClass.Filter_List.Swagger_Homer_List;
+import utilities.swagger.outboundClass.Filter_List.*;
+import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 import utilities.webSocket.WS_BlockoServer;
 import utilities.webSocket.WebSCType;
 
@@ -1350,6 +1349,62 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
+    @ApiOperation(value = "get B_Program by Filter",
+            tags = {"B_Program"},
+            notes = "get B_Program List",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "B_Program_read_permission", value = "No need to check permission, because Tyrion returns only those results which user owns"),
+                    }),
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_B_Program_Filter",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_B_Program_List.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result get_b_Program_by_Filter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) Integer page_number){
+        try {
+
+            // Získání JSON
+            final Form<Swagger_B_Program_Filter> form = Form.form(Swagger_B_Program_Filter.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_B_Program_Filter help = form.get();
+
+            // Získání všech objektů a následné filtrování podle vlastníka
+            Query<B_Program> query = Ebean.find(B_Program.class);
+            query.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id);
+
+            // Pokud JSON obsahuje project_id filtruji podle projektu
+            if(help.project_id != null){
+
+                query.where().eq("project.id", help.project_id);
+            }
+
+            // Vytvoření odchozího JSON
+            Swagger_B_Program_List result = new Swagger_B_Program_List(query, page_number);
+
+            // Vrácení výsledku
+            return GlobalResult.result_ok(Json.toJson(result));
+
+        }catch (Exception e){
+            return GlobalResult.internalServerError();
+        }
+    }
 
 
 
@@ -2076,6 +2131,69 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
+    @ApiOperation(value = "get TypeOfBlock by Filter",
+            tags = {"Type of Block"},
+            notes = "get TypeOfBlock List",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "TypeOfBlock_read_permission", value = "No need to check permission, because Tyrion returns only those results which user owns"),
+                    }),
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Type_Of_Block_Filter",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Type_Of_Block_List.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result get_TypeOfBlock_by_Filter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) Integer page_number){
+        try {
+
+            // Získání JSON
+            final Form<Swagger_Type_Of_Block_Filter> form = Form.form(Swagger_Type_Of_Block_Filter.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Type_Of_Block_Filter help = form.get();
+
+            // Získání všech objektů a následné odfiltrování soukormých TypeOfBlock
+            Query<TypeOfBlock> query = Ebean.find(TypeOfBlock.class);
+
+            if(help.private_type){
+                query.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id);
+            }else{
+                query.where().eq("project", null);
+            }
+
+            // Pokud JSON obsahuje project_id filtruji podle projektu
+            if(help.project_id != null){
+
+                query.where().eq("project.id", help.project_id);
+            }
+
+            // Vytvoření odchozího JSON
+            Swagger_Type_Of_Block_List result = new Swagger_Type_Of_Block_List(query, page_number);
+
+            // Vrácení výsledku
+            return GlobalResult.result_ok(Json.toJson(result));
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return GlobalResult.internalServerError();
+        }
+    }
+
 // BLOCK ###############################################################################################################
 
     @ApiOperation(value = "create new Block",
@@ -2299,6 +2417,64 @@ public class ProgramingPackageController extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
 
+    }
+
+    @ApiOperation(value = "get BlockoBlock by Filter",
+            tags = {"Blocko-Block"},
+            notes = "get BlockoBlock List",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "BlockoBlock_read_permission", value = "No need to check permission, because Tyrion returns only those results which user owns"),
+                    }),
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Blocko_Block_Filter",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Blocko_Block_List.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result get_BlockoBlock_by_Filter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) Integer page_number){
+        try {
+
+            // Získání JSON
+            final Form<Swagger_Blocko_Block_Filter> form = Form.form(Swagger_Blocko_Block_Filter.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Blocko_Block_Filter help = form.get();
+
+            // Získání všech objektů a následné filtrování podle vlastníka
+            Query<BlockoBlock> query = Ebean.find(BlockoBlock.class);
+            query.where().eq("author.id", SecurityController.getPerson().id);
+
+            // Pokud JSON obsahuje project_id filtruji podle projektu
+            if(help.project_id != null){
+
+                query.where().eq("type_of_block.project.id", help.project_id);
+            }
+
+            // Vytvoření odchozího JSON
+            Swagger_Blocko_Block_List result = new Swagger_Blocko_Block_List(query, page_number);
+
+            // Vrácení výsledku
+            return GlobalResult.result_ok(Json.toJson(result));
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return GlobalResult.internalServerError();
+        }
     }
 
     @ApiOperation(value = "delete BlockoBlock",
@@ -2564,54 +2740,9 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-// BLOCKO GLOBAL #######################################################################################################
-
-    public Result get_Blocko_objects(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) Integer page_number){
-        try {
-
-            Query<B_Program> query_b_program = Ebean.find(B_Program.class);
-            query_b_program.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id);
-
-            Query<TypeOfBlock> query_type_of_block = Ebean.find(TypeOfBlock.class);
-            query_type_of_block.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id);
-
-            Query<BlockoBlock> query_blocko_block = Ebean.find(BlockoBlock.class);
-            query_blocko_block.where().eq("author.id", SecurityController.getPerson().id);
-
-            Swagger_Blocko_Object_List result = new Swagger_Blocko_Object_List(query_b_program, query_type_of_block, query_blocko_block, page_number);
-
-            return GlobalResult.result_ok(Json.toJson(result));
-
-        }catch (Exception e){
-            return GlobalResult.internalServerError();
-        }
-    }
-
-    public Result get_Blocko_objects_by_Project(@ApiParam(value = "blocko_block_id String path",   required = true)String project_id, @ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) Integer page_number){
-        try {
-
-            Query<B_Program> query_b_program = Ebean.find(B_Program.class);
-            query_b_program.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).eq("project.id", project_id);
-
-            Query<TypeOfBlock> query_type_of_block = Ebean.find(TypeOfBlock.class);
-            query_type_of_block.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).eq("project.id", project_id);;
-
-            Query<BlockoBlock> query_blocko_block = Ebean.find(BlockoBlock.class);
-            query_blocko_block.where().eq("author.id", SecurityController.getPerson().id).eq("type_of block.project.id", project_id);;
-
-            Swagger_Blocko_Object_List result = new Swagger_Blocko_Object_List(query_b_program, query_type_of_block, query_blocko_block, page_number);
-
-            return GlobalResult.result_ok(Json.toJson(result));
-
-        }catch (Exception e){
-            return GlobalResult.internalServerError();
-        }
-    }
-
 // BOARD ###################################################################################################################*/
 
 
 // ACTUALIZATION PROCEDUES ###################################################################################################################*/
-
 
 }

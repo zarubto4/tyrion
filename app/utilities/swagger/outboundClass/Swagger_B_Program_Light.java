@@ -14,8 +14,14 @@ public class Swagger_B_Program_Light {
     public String b_program_name;
 
     @ApiModelProperty(required = true, readOnly = true)
+    public String b_program_description;
+
+    @ApiModelProperty(required = true, readOnly = true)
     public String b_program_version_id;
 
     @ApiModelProperty(required = true, readOnly = true)
     public String b_program_version_name;
+
+    @ApiModelProperty(required = true, readOnly = true)
+    public String b_program_version_description;
 }

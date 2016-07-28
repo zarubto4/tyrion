@@ -182,20 +182,46 @@ public class CompilationLibrariesController extends Controller {
                     }),
             }
     )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_C_Program_Filter",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_C_Program_List.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_C_Program_List(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) @PathParam("page_number") Integer page_number){
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result get_C_Program_by_Filter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) @PathParam("page_number") Integer page_number){
 
         try {
 
+            // Získání JSON
+            final Form<Swagger_C_Program_Filter> form = Form.form(Swagger_C_Program_Filter.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_C_Program_Filter help = form.get();
+
+            // Získání všech objektů a následné filtrování podle vlastníka
             Query<C_Program> query = Ebean.find(C_Program.class);
             query.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id);
 
+            // Pokud JSON obsahuje project_id filtruji podle projektu
+            if(help.project_id != null){
+
+                query.where().eq("project.id", help.project_id);
+            }
+
+            // Vyvoření odchozího JSON
             Swagger_C_Program_List result = new Swagger_C_Program_List(query,page_number);
 
+            // Vrácení výsledku
             return GlobalResult.result_ok(Json.toJson(result));
 
         }catch (Exception e){
