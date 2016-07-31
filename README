@@ -1,6 +1,31 @@
 ﻿
 # Verze 1.06.6.4 #
 
+## Nové API: ##
+ * Pro získání objektů c_program, b_program, typeOfBlock a blockoBlock pomocí filtru byly vytvořeny následující API:
+
+		PUT  {{url_Tyriona}}/compilation/c_program/list/{page_number}
+		PUT  {{url_Tyriona}}/project/b_program/list/{page_number}
+		PUT  {{url_Tyriona}}/project/blockoBlock/list/{page_number}
+		PUT  {{url_Tyriona}}/project/typeOfBlock/list/{page_number}
+
+ * Metody vyžadují JSON, který je buď prázdný (vyjma typeOfBlock), chceme-li získat nefiltrované objekty nebo obsahuje "project_id", chceme-li filtrovat podle daného projektu. Žádná další kritéria zatím nejsou implementována. Všechny API vrací pouze list max. 25 objektů, po stránkách page_number. Vrací také pouze ty výsledky, které se týkají přihlášeného uživatele, proto není třeba kontrolovat oprávnění. Jediná výjimka je u objektu typeOfBlock, kde JSON v request obsahuje položku: 
+
+		"private_type":"true_or_false"
+
+ * kde vrací buď veřejné typy bločků, když "false" nebo soukromé, když "true".
+ * API vrací JSON v takovém tvaru:
+
+		{	
+			"content": [{}],
+			"from": 0,
+			"to": 0,
+			"total": 0,
+			"pages": [0]
+		}
+
+ * Pokud není nic nalezeno vrátí prázdný list content. Obdobně jako u jiných filtrů. Podrobnější dokumentace ve swaggeru.
+
 ## Notifikace vyžadující potvrzení ##
  * Kvůli notifikacím vyžadující potvrzení je nutné po přihlášení uživatele zavolat API:
 
