@@ -1,9 +1,10 @@
 @import utilities.swagger.documentationClass.Swagger_TypeOfBoard_New
-@(form: Form[Swagger_TypeOfBoard_New])
+@import models.compiler.TypeOfBoard
+@(form: Form[Swagger_TypeOfBoard_New], typeOfBoards: List[TypeOfBoard])
 <section class="content-header">
   <h1> Admin Page </h1>
   <ol class="breadcrumb">
-    <li><a href="#"><i class="fa fa-graduation-cap"></i> Admin Page </a></li>
+    <li><a href="#"><i class="fa fa-wrench"></i> Admin Page </a></li>
     <li class="active">Dashboard</li>
   </ol>
 </section>
@@ -17,26 +18,45 @@
         <div class="box-body">
 
           <script>
-            function sendForm(){
-          model_data = $("#frm").serializeObject();
+            function newTypeOfBoard(){
+          model_data = $(".frm").serializeObject();
           $.ajax({
           url: '@routes.CompilationLibrariesController.new_TypeOfBoard()',
           type: 'POST',
           contentType: 'application/json',
           headers: {
-              "X-AUTH-TOKEN":"f0504499-a00c-4105-ae54-bdd19883482f",
+              "X-AUTH-TOKEN":"84251cc2-32f8-4295-8363-ef3e1b780cab",
               "Content-Type":"application/json"
             },
           data: JSON.stringify(model_data),
           dataType: 'json',
-          success:function(e){}
-                     // Asi refresh
-          })};
+          success:function(e){
+            location.reload();
+          }
+            })};
+
+            function editTypeOfBoard(){
+              model_data = $(".frm").serializeObject();
+
+              $.ajax({
+                url: '@routes.CompilationLibrariesController.edit_TypeOfBoard()',
+                type: 'POST',
+                contentType: 'application/json',
+                headers: {
+                  "X-AUTH-TOKEN":"84251cc2-32f8-4295-8363-ef3e1b780cab",
+                  "Content-Type":"application/json"
+                },
+                data: JSON.stringify(model_data),
+                dataType: 'json',
+                success:function(e){
+                  location.reload();
+                }
+              })};
 
           </script>
 
 
-          <form id="frm")>
+          <form class="frm")>
             <label>Name</label>
             <input type="text" name="name" >
             <label>Description</label>
@@ -47,8 +67,37 @@
             <input type="text" name="processor_id" >
             <label>Connectible to internet</label>
             <input type="checkbox" name="connectible_to_internet" >
-            <button type="button" onclick="sendForm()">New type of board</button>
+            <button type="button" onclick="newTypeOfBoard()">New type of board</button>
           </form>
+        </div>
+        <div class="box-body">
+          <table class="table table-bordered">
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Producer</th>
+              <th>Processor</th>
+              <th>Connectible to Internet</th>
+              <th>Edit permission</th>
+              <th>Delete Permission</th>
+              <th>Reg. new device perm.</th>
+            </tr>
+
+            @for(typeOfBoard <- typeOfBoards){
+              <tr>
+                <td>@typeOfBoard.id</td>
+                <td>@typeOfBoard.name</td>
+                <td>@typeOfBoard.description</td>
+                <td>@typeOfBoard.producer_id()</td>
+                <td>@typeOfBoard.processor_id()</td>
+                <td>@typeOfBoard.connectible_to_internet</td>
+                <td>null</td>
+                <td>null</td>
+                <td>null</td>
+              </tr>
+            }
+          </table>
         </div>
         <div class="box-footer">
 

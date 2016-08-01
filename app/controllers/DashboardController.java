@@ -1,6 +1,7 @@
 package controllers;
 
 import models.compiler.Cloud_Compilation_Server;
+import models.compiler.TypeOfBoard;
 import models.project.b_program.servers.Cloud_Homer_Server;
 import org.pegdown.PegDownProcessor;
 import play.Application;
@@ -336,15 +337,17 @@ public class DashboardController extends Controller {
                 fileNames.add((file.getName().substring(0, file.getName().lastIndexOf('.'))).replace("_", "."));
             }
 
+            List<TypeOfBoard> typeOfBoards = TypeOfBoard.find.all();
+
             Html menu_html = menu.render(reported_bugs, connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers, connectedCompile_servers, link_api_swagger, fileNames);
-            Html content = Admin_Page.render(form(Swagger_TypeOfBoard_New.class));
-            logger.debug("Return show_readme.html content");
+            Html content = Admin_Page.render(form(Swagger_TypeOfBoard_New.class), typeOfBoards);
 
             return ok(main.render(menu_html,
                     content,
                     server_mode,
                     server_version));
         }catch (Exception e){
+            e.printStackTrace();
             return ok("Došlo k chybě");
         }
     }
