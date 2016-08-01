@@ -4,22 +4,18 @@ import models.compiler.Cloud_Compilation_Server;
 import models.project.b_program.servers.Cloud_Homer_Server;
 import org.pegdown.PegDownProcessor;
 import play.Application;
+import play.Routes;
 import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.twirl.api.Html;
 import utilities.Server;
 import utilities.loggy.Loggy;
+import utilities.swagger.documentationClass.Swagger_TypeOfBoard_New;
 import utilities.swagger.swagger_diff_tools.Swagger_diff_Controller;
 import utilities.swagger.swagger_diff_tools.servise_class.Swagger_Diff;
 import utilities.webSocket.*;
-import views.html.dashboard;
-import views.html.loggy;
-import views.html.main;
-import views.html.readme;
-import views.html.menu;
-import views.html.websocket;
-import views.html.Api_Div;
+import views.html.*;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -29,6 +25,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.TimeoutException;
+
+import static play.data.Form.form;
 
 /**
  * CONTROLLER je určen pro jednoduchý frontend, který slouží pro zobrazení stavu backendu, základních informací,
@@ -323,4 +321,44 @@ public class DashboardController extends Controller {
         return redirect("/public/bugs");
     }
 
+// ADMIN ###############################################################################################################
+
+    public Result admin_page(){
+
+        try {
+
+            logger.debug("Trying to get admin page");
+
+            List<String> fileNames = new ArrayList<>();
+            File[] files = new File(application.path() + "/conf/swagger_history").listFiles();
+
+            for (File file : files) {
+                fileNames.add((file.getName().substring(0, file.getName().lastIndexOf('.'))).replace("_", "."));
+            }
+
+            Html menu_html = menu.render(reported_bugs, connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers, connectedCompile_servers, link_api_swagger, fileNames);
+            Html content = Admin_Page.render(form(Swagger_TypeOfBoard_New.class));
+            logger.debug("Return show_readme.html content");
+
+            return ok(main.render(menu_html,
+                    content,
+                    server_mode,
+                    server_version));
+        }catch (Exception e){
+            return ok("Došlo k chybě");
+        }
+    }
+
+    public Result javascriptRoutes() {
+        response().setContentType("text/javascript");
+        return ok(
+                Routes.javascriptRouter("jsRoutes",
+                        controllers.routes.javascript.CompilationLibrariesController.new_TypeOfBoard(),
+                        controllers.routes.javascript.CompilationLibrariesController.get_TypeOfBoard(),
+                        controllers.routes.javascript.CompilationLibrariesController.edit_TypeOfBoard(),
+                        controllers.routes.javascript.CompilationLibrariesController.delete_TypeOfBoard()
+
+                )
+        );
+    }
 }

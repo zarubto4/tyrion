@@ -2670,10 +2670,14 @@ public class CompilationLibrariesController extends Controller {
     public Result new_TypeOfBoard() {
         try {
 
+            System.out.println("jsem zde");
+
             // Zpracování Json
             final Form<Swagger_TypeOfBoard_New> form = Form.form(Swagger_TypeOfBoard_New.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_TypeOfBoard_New help = form.get();
+
+            System.out.println("jsem zde2");
 
             // Kontrola objektu
             Producer producer = Producer.find.byId(help.producer_id);

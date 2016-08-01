@@ -28,7 +28,10 @@ public class Version_Object extends Model {
 
                                                                                 @JsonIgnore     public String azureLinkVersion;
 
-    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1461918607") public Date date_of_create;
+    @ApiModelProperty(required = true,
+            dataType = "integer", readOnly = true,
+            value = "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
+            example = "1466163478925")                                                          public Date date_of_create;
 
 
 

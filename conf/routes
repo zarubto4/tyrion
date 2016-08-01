@@ -371,6 +371,9 @@ GET             /public/bugs                                @controllers.Dashboa
 GET             /public/websocket                           @controllers.DashboardController.show_web_socket_stats()
 GET             /public/show_readme                         @controllers.DashboardController.show_readme()
 GET             /public/show_diff_on_Api/                   @controllers.DashboardController.show_diff_on_Api(old_api: String?="",new_api: String?="")
+GET             /public/admin_page                          @controllers.DashboardController.admin_page()
+
+GET             /javascriptRoutes                           @controllers.DashboardController.javascriptRoutes()
 
 # BUGS SERVISE PAGE
 

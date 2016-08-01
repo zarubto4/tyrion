@@ -41,7 +41,10 @@ public class C_Program extends Model {
            @JsonIgnore  @ManyToOne(fetch = FetchType.EAGER)     public TypeOfBoard type_of_board;  // Typ desky
 
 
-    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1461854312") public Date dateOfCreate;
+    @ApiModelProperty(required = true,
+            dataType = "integer", readOnly = true,
+            value = "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
+            example = "1466163478925")                                                                  public Date dateOfCreate;
     @JsonIgnore @OneToMany(mappedBy="c_program", cascade = CascadeType.ALL, fetch = FetchType.EAGER) @OrderBy("azureLinkVersion DESC") public List<Version_Object> version_objects = new ArrayList<>();
 
 
