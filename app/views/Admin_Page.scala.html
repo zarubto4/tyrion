@@ -1,6 +1,40 @@
-@import utilities.swagger.documentationClass.Swagger_TypeOfBoard_New
 @import models.compiler.TypeOfBoard
-@(form: Form[Swagger_TypeOfBoard_New], typeOfBoards: List[TypeOfBoard])
+@(serverAddress: String)
+<script>
+        function getCookie(name)
+        {
+          var re = new RegExp(name + "=([^;]+)");
+          var value = re.exec(document.cookie);
+          return (value != null) ? unescape(value[1]) : null;
+        }
+
+        if(getCookie("authToken") == null){
+          $(window).load(function() {
+            $("#login").css("display","block");
+          });
+        }
+</script>
+<script>
+  function login() {
+    model_data = $("#login_form").serializeObject();
+    $.ajax({
+      url: @routes.SecurityController.login(),
+      type: 'POST',
+      contentType: 'application/json',
+      headers: {
+        "Content-Type":"application/json"
+      },
+      data: JSON.stringify(model_data),
+      dataType: 'json',
+      success:function(e){
+        alert("success");
+      },
+      error:function(e) {
+        alert("Unsuccessful. Check if all properties are correct");
+      }
+    })
+  }
+</script>
 <section class="content-header">
   <h1> Admin Page </h1>
   <ol class="breadcrumb">
@@ -9,6 +43,28 @@
   </ol>
 </section>
 <section class="content">
+  <div id="login" class="modal" >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">Login</h4>
+        </div>
+        <div class="modal-body">
+          <form id="login_form">
+            <label>Mail</label>
+            <input type="text" name="mail">
+            <label>Password</label>
+            <input type="text" name="password">
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button id="login_button" class="btn btn-primary" type="button">Login</button>
+        </div>
+      </div>
+        <!-- /.modal-content -->
+    </div>
+      <!-- /.modal-dialog -->
+  </div>
   <div class="row">
     <div class="col-md-12">
       <div class="box">
@@ -18,45 +74,97 @@
         <div class="box-body">
 
           <script>
-            function newTypeOfBoard(){
-          model_data = $(".frm").serializeObject();
+             $("#login_button").click(function login(){
+             model_data = $("#login_form").serializeObject();
+             $.ajax({
+               url: '@routes.SecurityController.login()',
+               type: 'POST',
+               contentType: 'application/json',
+               headers: {
+                 "Content-Type":"application/json"
+               },
+               data: JSON.stringify(model_data),
+               dataType: 'json',
+               success:function(data){
+                 document.cookie = "authToken=" + data.authToken;
+                 $("#login").css("display","none");
+                 alert(getCookie("authToken"));
+               },
+               error:function(e) {
+                 alert("Unsuccessful. Wrong email or password.");
+               }
+             })
+           });
+
+
+
+
+             function newTypeOfBoard(){
+          model_data = $("#newTypeOfBoard").serializeObject();
           $.ajax({
           url: '@routes.CompilationLibrariesController.new_TypeOfBoard()',
           type: 'POST',
           contentType: 'application/json',
           headers: {
-              "X-AUTH-TOKEN":"84251cc2-32f8-4295-8363-ef3e1b780cab",
+              "X-AUTH-TOKEN":getCookie("authToken"),
               "Content-Type":"application/json"
             },
           data: JSON.stringify(model_data),
           dataType: 'json',
           success:function(e){
             location.reload();
-          }
+          },
+            error:function(e) {
+              alert("Unsuccessful. Check if all properties are correct");
+            }
             })};
 
             function editTypeOfBoard(){
-              model_data = $(".frm").serializeObject();
+              model_data = $("#editTypeOfBoard").serializeObject();
+
+              var id = $("#editTypeOfBoard").find("input[name='id']").val();
 
               $.ajax({
-                url: '@routes.CompilationLibrariesController.edit_TypeOfBoard()',
-                type: 'POST',
+                url: "@serverAddress" + "/compilation/typeOfBoard/" + id ,
+                type: 'PUT',
                 contentType: 'application/json',
                 headers: {
-                  "X-AUTH-TOKEN":"84251cc2-32f8-4295-8363-ef3e1b780cab",
+                  "X-AUTH-TOKEN":getCookie("authToken"),
                   "Content-Type":"application/json"
                 },
                 data: JSON.stringify(model_data),
                 dataType: 'json',
                 success:function(e){
                   location.reload();
+                },
+                error:function(e) {
+                  alert("Unsuccessful. Check if all properties are correct");
+                }
+              })};
+
+            function deleteTypeOfBoard(){
+
+              var id = $("#deleteTypeOfBoard").find("input[name='id']").val();
+
+              $.ajax({
+                url: "@serverAddress" + "/compilation/typeOfBoard/" + id ,
+                type: 'DELETE',
+                headers: {
+                  "X-AUTH-TOKEN":getCookie("authToken"),
+                },
+                success:function(e){
+                  location.reload();
+                },
+                error:function(e) {
+                  alert("Unsuccessful. Maybe it cannot be deleted, because there are some boards of this type.");
                 }
               })};
 
           </script>
 
 
-          <form class="frm")>
+          <label style="font-size: 13pt;">New Type of Board</label>
+          <form id="newTypeOfBoard")>
             <label>Name</label>
             <input type="text" name="name" >
             <label>Description</label>
@@ -71,6 +179,7 @@
           </form>
         </div>
         <div class="box-body">
+          <label style="font-size: 13pt;">All Types of Boards</label>
           <table class="table table-bordered">
             <tr>
               <th>ID</th>
@@ -83,24 +192,45 @@
               <th>Delete Permission</th>
               <th>Reg. new device perm.</th>
             </tr>
-
-            @for(typeOfBoard <- typeOfBoards){
-              <tr>
-                <td>@typeOfBoard.id</td>
-                <td>@typeOfBoard.name</td>
-                <td>@typeOfBoard.description</td>
-                <td>@typeOfBoard.producer_id()</td>
-                <td>@typeOfBoard.processor_id()</td>
-                <td>@typeOfBoard.connectible_to_internet</td>
-                <td>null</td>
-                <td>null</td>
-                <td>null</td>
-              </tr>
-            }
+              @for(typeOfBoard <- TypeOfBoard.find.all()) {
+                <tr>
+                  <td>@typeOfBoard.id</td>
+                  <td>@typeOfBoard.name</td>
+                  <td>@typeOfBoard.description</td>
+                  <td>@typeOfBoard.producer_id()</td>
+                  <td>@typeOfBoard.processor_id()</td>
+                  <td>@typeOfBoard.connectible_to_internet</td>
+                  <td>null</td>
+                  <td>null</td>
+                  <td>null</td>
+                </tr>
+              }
           </table>
         </div>
+        <div class="box-body">
+          <label style="font-size: 13pt;">Edit Type of Board</label>
+          <form id="editTypeOfBoard")>
+            <label>ID</label>
+            <input type="text" name="id" >
+            <label>Name</label>
+            <input type="text" name="name" >
+            <label>Description</label>
+            <input type="text" name="description" >
+            <label>Producer id</label>
+            <input type="text" name="producer_id" >
+            <label>Processor id</label>
+            <input type="text" name="processor_id" >
+            <label>Connectible to internet</label>
+            <input type="checkbox" name="connectible_to_internet" >
+            <button type="button" onclick="editTypeOfBoard()">Edit type of board</button>
+          </form>
+        </div>
         <div class="box-footer">
-
+          <form id="deleteTypeOfBoard")>
+            <label>ID</label>
+            <input type="text" name="id" >
+            <button type="button" onclick="deleteTypeOfBoard()">Delete type of board</button>
+          </form>
         </div>
       </div>
     </div>
