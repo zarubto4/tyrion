@@ -4,7 +4,6 @@ import com.microsoft.azure.storage.blob.CloudBlob;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import com.microsoft.azure.storage.blob.ListBlobItem;
-import models.project.b_program.servers.Cloud_Homer_Server;
 import models.compiler.Cloud_Compilation_Server;
 import models.compiler.FileRecord;
 import models.compiler.TypeOfBoard;
@@ -15,6 +14,7 @@ import models.overflow.Post;
 import models.person.Person;
 import models.person.PersonPermission;
 import models.person.SecurityRole;
+import models.project.b_program.servers.Cloud_Homer_Server;
 import play.Logger;
 import play.mvc.Controller;
 
@@ -46,6 +46,45 @@ public class UtilTools extends Controller {
         }
     }
 
+
+    public static boolean controll_vat_number(String vat_number){
+
+            // Jestli je přítomné VAT number - musí dojít ke kontrole validity Vat number!
+            switch (vat_number.substring(0,2)){
+
+                case "BE" : { return true; }
+                case "BG" : { return true;  }
+                case "CZ" : {return true;  }
+                case "DK" : {return true; }
+                case "EE" : {return true; }
+                case "FI" : {return true;  }
+                case "FR" : {return true;  }
+                case "IE" : {return true; }
+                case "IT" : {return true;  }
+                case "CY" : {return true;  }
+                case "LT" : {return true;  }
+                case "LV" : {return true;  }
+                case "LU" : {return true; }
+                case "HU" : {return true;  }
+                case "MT" : {return true;  }
+                case "DE" : {return true;  }
+                case "NL" : {return true;  }
+                case "PT" : {return true;  }
+                case "AT" : {return true; }
+                case "RO" : {return true;  }
+                case "EL" : {return true;  }
+                case "SK" : {return true;  }
+                case "SI" : {return true;  }
+                case "GB" : {return true;  }
+                case "ES" : {return true;  }
+                case "SE" : {return true;  }
+                default: {
+                 return false;
+                }
+            }
+
+    }
+
     /**
      *  MEtoda slouží k rekurzivnímu procháázení úrovně adresáře v Azure data storage a mazání jeho obsahu.
      *  Azure data storage je totiž jednoúrovňové datové skladiště! KJde není možné vytvářet složky, v nich složky
@@ -68,11 +107,17 @@ public class UtilTools extends Controller {
         }
     }
 
-    public static FileRecord uploadAzure_Version(String container_name, String file_content, String file_name, String azureStorageLink, String azurePackageLink, Version_Object version_object) throws Exception{
-        logger.debug("Azure load: "+ container_name +"/"+ azureStorageLink +"/" + azurePackageLink  +"/" + version_object.azureLinkVersion  +"/" + file_name );
+    public static FileRecord uploadAzure_Version(String file_content, String file_name, String file_path, Version_Object version_object) throws Exception{
 
-        CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
-        CloudBlockBlob blob = container.getBlockBlobReference(azureStorageLink +"/" + azurePackageLink  +"/" + version_object.azureLinkVersion  +"/" + file_name);
+        logger.debug("Azure load: "+ file_path + version_object.get_path() + "/" + file_name );
+
+
+        int slash = file_path.indexOf("/");
+        String container_name = file_path.substring(0,slash);
+        String real_file_path = file_path.substring(slash+1);
+        CloudBlobContainer container = Server.blobClient.getContainerReference(container_name );
+
+        CloudBlockBlob blob = container.getBlockBlobReference( real_file_path + version_object.get_path() + "/" + file_name);
 
         InputStream is = new ByteArrayInputStream(file_content.getBytes());
         blob.upload(is, -1);
@@ -80,7 +125,7 @@ public class UtilTools extends Controller {
         FileRecord fileRecord = new FileRecord();
         fileRecord.file_name = file_name;
         fileRecord.version_object = version_object;
-        fileRecord.file_path = container_name +"/"+ azureStorageLink +"/" + azurePackageLink  +"/" + version_object.azureLinkVersion  +"/" + file_name;
+        fileRecord.file_path =  file_path   + version_object.get_path() + "/" + file_name;
         fileRecord.save();
 
         version_object.files.add(fileRecord);
@@ -90,16 +135,17 @@ public class UtilTools extends Controller {
     }
 
 
-    public static FileRecord uploadAzure_Version(String container_name, File file, String file_name, String azureStorageLink, String azurePackageLink, Version_Object version_object) throws Exception{
+    public static FileRecord uploadAzure_Version( File file, String file_name, String file_path, Version_Object version_object) throws Exception{
 
-        if(azureStorageLink == null) throw new Exception("azureStorageLink == null");
-        if(azurePackageLink == null) throw new Exception("azurePackageLink == null");
-        if(version_object == null)   throw new Exception("version_object == null");
+        logger.debug("Azure load: "+ file_path + version_object.get_path() + "/" + file_name);
 
-        logger.debug("Azure load: "+ container_name +"/"+ azureStorageLink +"/" + azurePackageLink  +"/" + version_object.azureLinkVersion  +"/" + file_name );
 
-        CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
-        CloudBlockBlob blob = container.getBlockBlobReference(azureStorageLink +"/" + azurePackageLink  +"/" + version_object.azureLinkVersion  +"/" + file_name);
+        int slash = file_path.indexOf("/");
+        String container_name = file_path.substring(0,slash);
+        String real_file_path = file_path.substring(slash+1);
+        CloudBlobContainer container = Server.blobClient.getContainerReference(container_name );
+
+        CloudBlockBlob blob = container.getBlockBlobReference( real_file_path + version_object.get_path() + "/" + file_name);
 
         InputStream is = new FileInputStream(file);
         blob.upload(is, -1);
@@ -107,7 +153,7 @@ public class UtilTools extends Controller {
         FileRecord fileRecord = new FileRecord();
         fileRecord.file_name = file_name;
         fileRecord.version_object = version_object;
-        fileRecord.file_path = container_name +"/"+ azureStorageLink +"/" + azurePackageLink  +"/" + version_object.azureLinkVersion  +"/" + file_name;
+        fileRecord.file_path =   file_path + version_object.get_path()+ "/" + file_name;
         fileRecord.save();
 
         version_object.files.add(fileRecord);
@@ -122,6 +168,8 @@ public class UtilTools extends Controller {
     }
 
     public static File file_get_File_from_Azure(String file_path)throws Exception{
+
+        logger.debug("FileRecord: get_fileRecord_from_Azure_inString");
 
         int slash = file_path.indexOf("/");
         String container_name = file_path.substring(0,slash);
@@ -193,23 +241,9 @@ public class UtilTools extends Controller {
     public static void remove_file_from_Azure(FileRecord file){
         try{
 
-            String container_name = "c-program";
-            String azureStorageLink;
-            String azurePackageLink;
-            String azureLinkVersion;
-            String filename;
 
-            Version_Object version = file.version_object;
-
-            azureLinkVersion = version.azureLinkVersion;
-            azurePackageLink = version.c_program.azurePackageLink;
-            azureStorageLink = version.c_program.azureStorageLink;
-            filename = file.file_name;
-
-
-
-            CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
-            CloudBlob blob = container.getBlockBlobReference( azureStorageLink +"/"+  azurePackageLink+"/"+ azureLinkVersion  +"/"+ filename);
+            CloudBlobContainer container = Server.blobClient.getContainerReference( "product");
+            CloudBlob blob = container.getBlockBlobReference( file.get_path() );
             blob.delete();
 
         }catch (Exception e){

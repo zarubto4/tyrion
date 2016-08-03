@@ -35,9 +35,6 @@ public class C_Program extends Model {
     @ApiModelProperty(required = false, value = "can be empty")  @Column(columnDefinition = "TEXT")     public String program_description;
                                               @JsonIgnore @ManyToOne(cascade = CascadeType.PERSIST)     public Project project;
 
-
-                                                                     @JsonIgnore            public String azurePackageLink;
-                                                                     @JsonIgnore            public String azureStorageLink;
                                 @JsonIgnore  @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)            public TypeOfBoard type_of_board;  // Typ desky
 
 
@@ -48,16 +45,14 @@ public class C_Program extends Model {
     @JsonIgnore @OneToMany(mappedBy="c_program", cascade = {CascadeType.ALL}) @OrderBy("azureLinkVersion DESC") public List<Version_Object> version_objects = new ArrayList<>();
 
 
-    /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
+/* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
+
     @JsonProperty  @Transient public String project_id(){ return project.id; }
     @JsonProperty  @Transient public String type_of_board_id()   { return type_of_board == null ? null : type_of_board.id;}
-
     @JsonProperty @Transient public List<Swagger_C_Program_Version> program_versions() {
-        List<Swagger_C_Program_Version> versions = new ArrayList<>();
 
-        for(Version_Object v : version_objects){
-            versions.add(program_version(v));
-        }
+        List<Swagger_C_Program_Version> versions = new ArrayList<>();
+        for(Version_Object v : version_objects) versions.add(program_version(v));
 
         return versions;
     }
@@ -78,7 +73,7 @@ public class C_Program extends Model {
         c_program_versions.successfully_compiled    = version_object.c_compilation != null;
         c_program_versions.compilation_restored     = FileRecord.find.where().eq("c_compilations_binary_files.version_object.c_program.id", id).where().eq("file_name", "compilation.bin").findRowCount() > 0;
 
-        FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "c-program.json").findUnique();
+        FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "code.json").findUnique();
 
         if(fileRecord != null) {
 
@@ -108,13 +103,27 @@ public class C_Program extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
-    public void setUniqueAzureStorageLink() {
+
+
+
+/* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore            private String azure_c_program_link;
+
+    @JsonIgnore @Override public void save() {
         while(true){ // I need Unique Value
-            this.azureStorageLink = UUID.randomUUID().toString();
-            if (C_Program.find.where().eq("azureStorageLink", azureStorageLink ).findUnique() == null) break;
+            this.azure_c_program_link = project.get_path()  + "/c-programs/"  + UUID.randomUUID().toString();
+            if (C_Program.find.where().eq("azure_c_program_link", azure_c_program_link ).findUnique() == null) break;
         }
+        super.save();
     }
+
+    @JsonIgnore @Transient
+    public String get_path(){
+        return  azure_c_program_link;
+    }
+
+
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 

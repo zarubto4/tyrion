@@ -7,7 +7,6 @@ import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import models.blocko.BlockoBlock;
 import models.blocko.BlockoBlockVersion;
-import models.project.b_program.servers.Cloud_Homer_Server;
 import models.blocko.TypeOfBlock;
 import models.compiler.*;
 import models.grid.Screen_Size_Type;
@@ -17,20 +16,30 @@ import models.person.Person;
 import models.person.PersonPermission;
 import models.person.SecurityRole;
 import models.project.b_program.B_Program;
+import models.project.b_program.servers.Cloud_Homer_Server;
 import models.project.b_program.servers.Private_Homer_Server;
 import models.project.c_program.C_Program;
 import models.project.global.Project;
 import models.project.m_program.M_Program;
 import models.project.m_program.M_Project;
+import org.quartz.*;
+import org.quartz.impl.StdSchedulerFactory;
 import org.slf4j.LoggerFactory;
 import play.Configuration;
 import play.Play;
-import utilities.gopay.GoPay_Controller;
 import utilities.hardware_updater.Master_Updater;
+import utilities.schedules_activities.Removing_Unused_Tokens;
+import utilities.schedules_activities.Sending_Invoices;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.quartz.CronScheduleBuilder.dailyAtHourAndMinute;
+import static org.quartz.DateBuilder.tomorrowAt;
+import static org.quartz.JobBuilder.newJob;
+import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
+import static org.quartz.TriggerBuilder.newTrigger;
 
 public class Server {
 
@@ -62,25 +71,31 @@ public class Server {
     public static String WordPress_url;
     public static String WordPress_apiKey;
 
+    //-------------------------------------------------------------------
+
+    public static Boolean server_mode;
+    public static String server_version;
+
+    //-------------------------------------------------------------------
+
     public static String Fakturoid_apiKey;
     public static String Fakturoid_url;
     public static String Fakturoid_user_agent;
     public static String Fakturoid_secret_combo;
 
-    public static Boolean server_mode;
-    public static String server_version;
+    //-------------------------------------------------------------------
 
-    public static String GoPay_client_id;
     public static String GoPay_api_url;
-    public static String GoPay_client_credentials;
-    public static Long GoPay_go_id;
+    public static String GoPay_client_id;
 
-    public static String GoPay_successfullUrl;
-    public static String GoPay_failedUrl;
-    public static String GoPay_returnUrl;
-    public static String GoPay_notificationUrl;
+    public static String GoPay_client_secret;
+    public static Long   GoPay_go_id;
+    public static String GoPay_return_url;
+    public static String GoPay_notification_url;
 
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+    public static Scheduler scheduler;
+
+    static play.Logger.ALogger logger = play.Logger.of("Start-Procedures");
 
     public static void set_Server_address() throws Exception{
 
@@ -138,13 +153,13 @@ public class Server {
 
 
             GoPay_api_url                        = Configuration.root().getString("GOPay.localhost.api_url");
-            GoPay_client_credentials             = Configuration.root().getString("GOPay.localhost.client_id");
-            GoPay_client_id                      = Configuration.root().getString("GOPay.localhost.client_credentials");
+            GoPay_client_id                      = Configuration.root().getString("GOPay.localhost.client_id");
+            GoPay_client_secret                  = Configuration.root().getString("GOPay.localhost.client_secret");
             GoPay_go_id                          = Configuration.root().getLong("GOPay.localhost.go_id");
-            GoPay_successfullUrl                 = Configuration.root().getString("GOPay.localhost.successfullUrl");
-            GoPay_failedUrl                      = Configuration.root().getString("GOPay.localhost.failedUrl");
-            GoPay_returnUrl                      = Configuration.root().getString("GOPay.localhost.returnUrl");
-            GoPay_notificationUrl                = Configuration.root().getString("GOPay.localhost.notificationUrl");
+
+            GoPay_return_url                     = Configuration.root().getString("GOPay.localhost.return_url");
+            GoPay_notification_url               = Configuration.root().getString("GOPay.localhost.notification_url");
+
         }
         else   {
 
@@ -182,14 +197,15 @@ public class Server {
             Fakturoid_user_agent                 = Configuration.root().getString("Fakturoid.userAgent");
             Fakturoid_secret_combo               = Configuration.root().getString("Fakturoid.secret_combo");
 
+
             GoPay_api_url                        = Configuration.root().getString("GOPay.production.api_url");
-            GoPay_client_credentials             = Configuration.root().getString("GOPay.production.client_id");
-            GoPay_client_id                      = Configuration.root().getString("GOPay.production.client_credentials");
+            GoPay_client_id                      = Configuration.root().getString("GOPay.production.client_id");
+            GoPay_client_secret                  = Configuration.root().getString("GOPay.production.client_secret");
             GoPay_go_id                          = Configuration.root().getLong("GOPay.production.go_id");
-            GoPay_successfullUrl                 = Configuration.root().getString("GOPay.production.successfullUrl");
-            GoPay_failedUrl                      = Configuration.root().getString("GOPay.production.failedUrl");
-            GoPay_returnUrl                      = Configuration.root().getString("GOPay.production.returnUrl");
-            GoPay_notificationUrl                = Configuration.root().getString("GOPay.production.notificationUrl");
+
+            GoPay_return_url                     = Configuration.root().getString("GOPay.production.return_url");
+            GoPay_notification_url               = Configuration.root().getString("GOPay.production.notification_url");
+
         }
 
         /**
@@ -302,8 +318,77 @@ public class Server {
         //1. Nastartovat aktualizační vlákna
         Master_Updater.start_thread_box();
 
-        //2. Nastartovat GoPay vlákno
-        GoPay_Controller.set_token_thread();
+    }
+
+    public static void startScheduling_procedures() {
+        try {
+
+            // Nastavení schedulleru (Aktivity, která se pravidelně v časových úsecích vykonává)
+            scheduler = StdSchedulerFactory.getDefaultScheduler();
+
+
+
+            // Klíč / identifikátor Trrigru definující, kdy se konkrétní job zapne.
+            TriggerKey every_day_key = TriggerKey.triggerKey("every_day_02:10");
+            TriggerKey every_second_day_key = TriggerKey.triggerKey("every_second_day_2:30");
+
+            //-------------------------
+
+            // Mažu scheduler v operační paměti po předchozí instanci - není doporučeno mít aktivní
+            // slr pomáhá v případě problémů s operační pamětí - v režimu developer  je v metodě která ukončuje server třeba při buildu procedura, která vyčistí RAM
+            // scheduler.clear();
+
+
+            // Definované Trigry
+            if(!scheduler.checkExists(every_day_key)){
+
+                Trigger every_day = newTrigger()
+                        .withIdentity(every_day_key)
+                        .startNow()
+                        .withSchedule(dailyAtHourAndMinute(2,10))// Spuštění každý den v 02:10 AM
+                        .build();
+
+                // Přidání úkolů do scheduleru
+
+                // 1) Odstraňování nepřihlášených tokenů ze sociálních sítí, kteér mají živostnost jen 24h
+                scheduler.scheduleJob(  newJob(     Removing_Unused_Tokens.class    ).withIdentity( JobKey.jobKey("removing_unused_tokens") ).build(), every_day);
+
+                // 2) Kontrola a fakturace klientů na měsíční bázi
+                scheduler.scheduleJob(  newJob(     Sending_Invoices.class    ).withIdentity( JobKey.jobKey("sending_invoices") ).build(), every_day);
+
+                // 3) Přesouvání logů v DB do Blob Serveru a uvolňování místa v DB a na serveru
+
+
+
+            }else {
+                logger.warn("CRON (Every-Day) is in RAM yet. Be careful with that!");
+            }
+
+
+            if(!scheduler.checkExists(every_second_day_key)) {
+
+                Trigger every_second_day = newTrigger()
+                        .withIdentity(every_second_day_key)
+                        .startAt(tomorrowAt(15, 0, 0)) // První spuštění další den v 03:30
+                        .withSchedule(simpleSchedule().withIntervalInHours(2 * 24).repeatForever()) // A opakovávání každé 2 dny || .withIntervalInDays(2)
+                        .build();
+
+
+                // Přidávání úkolů do Schedulleru
+
+            }else {
+                logger.warn("CRON (Every-SecondDay) is in RAM yet. Be careful with that!");
+            }
+
+
+
+
+            // Nastartování scheduleru
+            scheduler.start();
+
+        }catch (Exception e){
+            logger.error("Scheduller_Exception", e);
+        }
 
     }
 }

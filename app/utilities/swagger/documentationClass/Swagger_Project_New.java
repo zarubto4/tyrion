@@ -21,5 +21,5 @@ public class Swagger_Project_New {
 
     @Constraints.Required
     @ApiModelProperty(required = true, value = "Id of Product (Tariff) where the project will be registered")
-    public String product_id;
+    public Long product_id;
 }

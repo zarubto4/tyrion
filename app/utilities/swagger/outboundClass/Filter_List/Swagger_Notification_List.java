@@ -2,6 +2,7 @@ package utilities.swagger.outboundClass.Filter_List;
 
 
 import com.avaje.ebean.Query;
+import controllers.SecurityController;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.notification.Notification;
@@ -31,6 +32,10 @@ public class Swagger_Notification_List {
 
     @ApiModelProperty(required = true, readOnly = true, value = "Numbers of pages, which you can call")
     public List<Integer> pages = new ArrayList<>();
+
+
+    @ApiModelProperty(required = true, readOnly = true, value = "Total unread subjects")
+    public int unread_total = Notification.find.where().eq("was_read", false).eq("person.id", SecurityController.getPerson().id).findRowCount();
 
 /* Set -----------------------------------------------------------------------------------------------------------------*/
 

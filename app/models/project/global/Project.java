@@ -20,6 +20,7 @@ import models.project.m_program.M_Project;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 
 @Entity
@@ -47,20 +48,46 @@ public class Project extends Model {
 
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "owningProjects")  @JoinTable(name = "connected_projects") public List<Person> ownersOfProject = new ArrayList<>();
 
+/* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> homers_id()           { List<String> l = new ArrayList<>();  for( Private_Homer_Server m    : privateHomerServerList)   l.add(m.id); return l;  }
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> boards_id()           { List<String> l = new ArrayList<>();  for( Board m                   : boards)                   l.add(m.id); return l;  }
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> b_programs_id()       { List<String> l = new ArrayList<>();  for( B_Program m               : b_programs)               l.add(m.id); return l;  }
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> c_programs_id()       { List<String> l = new ArrayList<>();  for( C_Program m               : c_programs)               l.add(m.id); return l;  }
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> m_projects_id()       { List<String> l = new ArrayList<>();  for( M_Project m               : m_projects)               l.add(m.id); return l;  }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> owners_id()           { List<String> l = new ArrayList<>();  for( Person m                     : ownersOfProject)          l.add(m.id); return l;  }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> owners_id()           { List<String> l = new ArrayList<>();  for( Person m                  : ownersOfProject)          l.add(m.id); return l;  }
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> type_of_blocks_id()   { List<String> l = new ArrayList<>();  for( TypeOfBlock m             : type_of_blocks)           l.add(m.id); return l;  }
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> screen_size_types_id(){ List<String> l = new ArrayList<>();  for( Screen_Size_Type m        : screen_size_types)        l.add(m.id); return l;  }
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> actual_procedures_id(){ List<String> l = new ArrayList<>();  for( Actualization_procedure m : procedures)               l.add(m.id); return l;  }
 
 
+
+    @JsonProperty @Transient @ApiModelProperty(required = true) public String product_individual_name() { return product.product_individual_name;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public Long product_id() { return product.id;}
+
+
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
+
+
+
+/* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/
+
+
+    @JsonIgnore            private String blob_project_link;
+
+    @JsonIgnore @Override public void save() {
+        while(true){ // I need Unique Value
+            this.blob_project_link = product.get_path() + "/projects/" + UUID.randomUUID().toString();
+            if (Project.find.where().eq("blob_project_link", blob_project_link ).findUnique() == null) break;
+        }
+        super.save();
+    }
+
+    @JsonIgnore @Transient
+    public String get_path(){
+        return  blob_project_link;
+    }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 

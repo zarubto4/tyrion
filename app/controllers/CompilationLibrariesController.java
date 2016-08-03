@@ -10,6 +10,7 @@ import io.swagger.annotations.*;
 import models.compiler.*;
 import models.project.c_program.C_Compilation;
 import models.project.c_program.C_Program;
+import models.project.global.Product;
 import models.project.global.Project;
 import play.data.Form;
 import play.libs.F;
@@ -29,7 +30,6 @@ import utilities.swagger.outboundClass.Filter_List.Swagger_LibraryGroup_List;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Single_Library_List;
 import utilities.swagger.outboundClass.*;
 
-import javax.websocket.server.PathParam;
 import java.io.File;
 import java.util.*;
 
@@ -89,7 +89,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result create_C_Program(@ApiParam(value = "project_id String query", required = true) @PathParam("project_id") String project_id) {
+    public Result create_C_Program(@ApiParam(value = "project_id String query", required = true) String project_id) {
         try {
 
             // Zpracování Json
@@ -109,11 +109,10 @@ public class CompilationLibrariesController extends Controller {
             C_Program c_program             = new C_Program();
             c_program.program_name          = help.program_name;
             c_program.program_description   = help.program_description;
-            c_program.azurePackageLink      = "personal-program";
             c_program.project               = project;
             c_program.dateOfCreate          = new Date();
             c_program.type_of_board         = typeOfBoard;
-            c_program.setUniqueAzureStorageLink();
+
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
             if(! c_program.create_permission())  return GlobalResult.forbidden_Permission();
@@ -132,6 +131,7 @@ public class CompilationLibrariesController extends Controller {
             tags = {"C_Program"},
             notes = "get C_program by query = c_program_id",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -151,7 +151,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_C_Program(@ApiParam(value = "c_program_id String query", required = true) @PathParam("c_program_id") String c_program_id) {
+    public Result get_C_Program(@ApiParam(value = "c_program_id String query", required = true) String c_program_id) {
         try {
 
             // Vyhledám Objekt
@@ -173,6 +173,7 @@ public class CompilationLibrariesController extends Controller {
             tags = {"C_Program"},
             notes = "get Version of C_program by query = verison_id",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -193,7 +194,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result  get_C_Program_Version (@ApiParam(value = "version_id String query", required = true) @PathParam("version_id") String version_id) {
+    public Result  get_C_Program_Version (@ApiParam(value = "version_id String query", required = true)  String version_id) {
         try {
 
             // Vyhledám Objekt
@@ -247,7 +248,7 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_C_Program_Description(@ApiParam(value = "c_program_id String query", required = true) @PathParam("c_program_id") String c_program_id) {
+    public Result edit_C_Program_Description(@ApiParam(value = "c_program_id String query", required = true)  String c_program_id) {
         try {
 
             // Zpracování Json
@@ -316,7 +317,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result new_C_Program_Version(@ApiParam(value = "version_id String query", required = true) @PathParam("c_program_id") String c_program_id){
+    public Result new_C_Program_Version(@ApiParam(value = "version_id String query", required = true)  String c_program_id){
         try{
 
             // Zpracování Json
@@ -336,7 +337,6 @@ public class CompilationLibrariesController extends Controller {
             version_object.version_name        = help.version_name;
             version_object.version_description = help.version_description;
             version_object.date_of_create = new Date();
-            version_object.azureLinkVersion = UUID.randomUUID().toString();
             version_object.c_program = c_program;
 
             // Zkontroluji oprávnění
@@ -351,7 +351,8 @@ public class CompilationLibrariesController extends Controller {
                         content.set("external_libraries", Json.toJson( help.external_libraries) );
 
             // Content se nahraje na Azure
-            UtilTools.uploadAzure_Version("c-program", content.toString() , "c-program.json", version_object.c_program.azureStorageLink, version_object.c_program.azurePackageLink, version_object);
+
+            UtilTools.uploadAzure_Version(content.toString(), "code.json" , c_program.get_path() ,  version_object);
 
 
             String token = request().getHeader("X-AUTH-TOKEN");
@@ -405,6 +406,7 @@ public class CompilationLibrariesController extends Controller {
             tags = {"C_Program"},
             notes = "delete Version.id = version_id in C_program by query = c_program_id, query = version_id",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -421,7 +423,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result delete_C_Program_Version(@ApiParam(value = "version_id String query",   required = true) @PathParam("version_id")   String version_id){
+    public Result delete_C_Program_Version(@ApiParam(value = "version_id String query",   required = true)    String version_id){
         try{
 
             // Ověření objektu
@@ -435,7 +437,9 @@ public class CompilationLibrariesController extends Controller {
             if(!version_object.c_program.delete_permission()) return GlobalResult.forbidden_Permission();
 
             // Smažu obsah konkrétní verze
-            UtilTools.azureDelete(Server.blobClient.getContainerReference("c-program"), version_object.c_program.azurePackageLink + "/" + version_object.c_program.azureStorageLink + "/" + version_object.azureLinkVersion);
+            Product product = Product.find.where().eq("projects.c_programs.version_objects.id", version_id).findUnique();
+
+            UtilTools.azureDelete( product.get_Container(), version_object.blob_version_link);
 
             version_object.c_program = null;
 
@@ -483,7 +487,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_C_Program_version( @ApiParam(value = "version_id String query",   required = true) @PathParam("version_id") String version_id){
+    public Result edit_C_Program_version( @ApiParam(value = "version_id String query",   required = true)  String version_id){
         try{
 
             // Zpracování Json
@@ -517,6 +521,7 @@ public class CompilationLibrariesController extends Controller {
             tags = {"C_Program"},
             notes = "delete C_program by query = c_program_id, query = version_id",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -533,7 +538,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result delete_C_Program(@ApiParam(value = "c_program_id String query", required = true) @PathParam("c_program_id") String c_program_id){
+    public Result delete_C_Program(@ApiParam(value = "c_program_id String query", required = true)  String c_program_id){
         try{
 
             // Ověření objektu
@@ -543,12 +548,13 @@ public class CompilationLibrariesController extends Controller {
             // Kontrola oprávnění
             if(!c_program.delete_permission()) return GlobalResult.forbidden_Permission();
 
+            // Vyhledání PRoduct pro získání kontejneru
+            Product product = Product.find.where().eq("projects.c_programs.id", c_program_id).findUnique();
+
             // Smazání z Azure
-            UtilTools.azureDelete(Server.blobClient.getContainerReference("c-program"), c_program.azurePackageLink + "/" + c_program.azureStorageLink);
+            UtilTools.azureDelete(product.get_Container(), c_program.get_path());
 
             System.out.println("budu mazat");
-
-         //   for(c_program.version_objects)
 
             // Smazání objektu
             c_program.delete();
@@ -567,8 +573,8 @@ public class CompilationLibrariesController extends Controller {
             tags = {"C_Program"},
             notes = "Compile specific version of C_program - before compilation - you have to update (save) version code",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
-            consumes ="text/html",
             code = 200,
             extensions = {
                     @Extension(name = "permission_description", properties = {
@@ -590,7 +596,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result compile_C_Program_version( @ApiParam(value = "version_id String query", required = true) @PathParam("version_id") String version_id ){
+    public Result compile_C_Program_version( @ApiParam(value = "version_id String query", required = true) String version_id ){
         try{
 
             logger.debug("Starting compilation on version_id = " + version_id);
@@ -600,7 +606,7 @@ public class CompilationLibrariesController extends Controller {
             if(version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
 
-            FileRecord file = FileRecord.find.where().eq("file_name", "c-program.json").eq("version_object.id", version_id).findUnique();
+            FileRecord file = FileRecord.find.where().eq("file_name", "code.json").eq("version_object.id", version_id).findUnique();
             if(file == null) return GlobalResult.notFoundObject("Server has no contenct from version");
 
             // Smažu předchozí kompilaci
@@ -792,10 +798,11 @@ public class CompilationLibrariesController extends Controller {
                        result.put("code", help.main);
                        result.set("includes", help.includes() == null ? Json.newObject() : help.includes() );
 
-            if(WebSocketController_Incoming.compiler_cloud_servers.isEmpty()){
 
+            if(WebSocketController_Incoming.compiler_cloud_servers.isEmpty()){
                 return GlobalResult.result_external_server_is_offline("Compilation cloud_compilation_server is offline!");
             }
+
 
             // Odesílám na compilační cloud_compilation_server
             JsonNode compilation_result = WebSocketController_Incoming.compiler_server_make_Compilation(SecurityController.getPerson(), result);
@@ -847,7 +854,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result uploadBinaryFileToBoard(@ApiParam(value = "version_id ", required = true) @PathParam("version_id") String board_id ) {
+    public Result uploadBinaryFileToBoard(@ApiParam(value = "version_id ", required = true) String board_id ) {
         try{
 
             // Vyhledání objektů
@@ -918,7 +925,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result uploadCompilationToBoard( @ApiParam(value = "version_id ", required = true) @PathParam("version_id") String version_id) {
+    public Result uploadCompilationToBoard( @ApiParam(value = "version_id ", required = true) String version_id) {
         try {
 
             // Zpracování Json
@@ -1068,7 +1075,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_Compilation_Server( @ApiParam(value = "server_id ", required = true) @PathParam("server_id") String server_id ){
+    public Result edit_Compilation_Server( @ApiParam(value = "server_id ", required = true) String server_id ){
         try{
 
             // Zpracování Json
@@ -1101,6 +1108,7 @@ public class CompilationLibrariesController extends Controller {
             tags = {"External Server"},
             notes = "get Compilation Servers",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -1131,6 +1139,7 @@ public class CompilationLibrariesController extends Controller {
             tags = {"External Server"},
             notes = "remove Compilation Servers",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -1146,7 +1155,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result delete_Compilation_Server( @ApiParam(value = "server_id ", required = true) @PathParam("server_id") String server_id ){
+    public Result delete_Compilation_Server( @ApiParam(value = "server_id ", required = true) String server_id ){
         try{
 
             //Zkontroluji validitu
@@ -1246,7 +1255,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 400, message = "Objects not found",     response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_Processor(@ApiParam(value = "processor_id String query", required = true) @PathParam("processor_id") String processor_id) {
+    public Result get_Processor(@ApiParam(value = "processor_id String query", required = true) String processor_id) {
         try {
 
             //Zkontroluji validitu
@@ -1323,7 +1332,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result update_Processor(@ApiParam(value = "processor_id String query", required = true) @PathParam("processor_id") String processor_id) {
+    public Result update_Processor(@ApiParam(value = "processor_id String query", required = true) String processor_id) {
         try {
 
             // Zpracování Json
@@ -1359,6 +1368,7 @@ public class CompilationLibrariesController extends Controller {
             tags = {"Processor"},
             notes = "If you want delete Processor by query processor_id.",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -1374,7 +1384,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result delete_Processor(@ApiParam(value = "processor_id String query", required = true) @PathParam("processor_id")String processor_id) {
+    public Result delete_Processor(@ApiParam(value = "processor_id String query", required = true) String processor_id) {
         try {
 
             // Kontroluji validitu
@@ -1440,8 +1450,6 @@ public class CompilationLibrariesController extends Controller {
             LibraryGroup library_Group = new LibraryGroup();
             library_Group.description = help.description;
             library_Group.group_name = help.group_name;
-            library_Group.azureStorageLink = "library_group";
-            library_Group.setUniqueAzurePackageLink();
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
             if(! library_Group.create_permission())  return GlobalResult.forbidden_Permission();
@@ -1489,7 +1497,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result new_LibraryGroup_Version(@ApiParam(value = "libraryGroup_id String query", required = true) @PathParam("libraryGroup_id") String libraryGroup_id){
+    public Result new_LibraryGroup_Version(@ApiParam(value = "libraryGroup_id String query", required = true) String libraryGroup_id){
         try {
 
             // Zpracování Json
@@ -1506,7 +1514,6 @@ public class CompilationLibrariesController extends Controller {
 
             // Tvorba Verze
             Version_Object version_object      = new Version_Object();
-            version_object.azureLinkVersion    = UUID.randomUUID().toString();
             version_object.date_of_create      = new Date();
             version_object.version_name        = help.version_name;
             version_object.version_description = help.version_description;
@@ -1534,6 +1541,7 @@ public class CompilationLibrariesController extends Controller {
             notes = "Its not possible now describe uploud file in Swagger. But file name must be longer than 5 chars." +
                     "in body of html content is \"files\"",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -1550,7 +1558,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result upload_Library_To_LibraryGroup(@ApiParam(required = true) @PathParam("version_id") String version_id) {
+    public Result upload_Library_To_LibraryGroup(@ApiParam(required = true)  String version_id) {
         try {
 
             // Přijmu soubor
@@ -1581,7 +1589,8 @@ public class CompilationLibrariesController extends Controller {
                 // Mám soubor
                 File libraryFile = file.getFile();
 
-                UtilTools.uploadAzure_Version("libraries", libraryFile, "library.txt", library_group.azureStorageLink, library_group.azurePackageLink, version_object);
+
+                UtilTools.uploadAzure_Version(libraryFile, "library.txt", library_group.get_path(), version_object);
 
             }
 
@@ -1597,6 +1606,7 @@ public class CompilationLibrariesController extends Controller {
             tags = {"LibraryGroup"},
             notes = "If you want get LibraryGroup by query = libraryGroup_id",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -1612,7 +1622,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_LibraryGroup(@ApiParam(value = "libraryGroup_id String query", required = true) @PathParam("libraryGroup_id") String libraryGroup_id) {
+    public Result get_LibraryGroup(@ApiParam(value = "libraryGroup_id String query", required = true)  String libraryGroup_id) {
         try {
 
             // Vyhledání knihovny
@@ -1631,6 +1641,7 @@ public class CompilationLibrariesController extends Controller {
             tags = {"LibraryGroup"},
             notes = "If you want delete LibraryGroup by query = libraryGroup_id",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -1646,7 +1657,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result delete_LibraryGroup(@ApiParam(value = "libraryGroup_id String query", required = true) @PathParam("libraryGroup_id") String libraryGroup_id) {
+    public Result delete_LibraryGroup(@ApiParam(value = "libraryGroup_id String query", required = true) String libraryGroup_id) {
         try {
 
             // Kontrola validity
@@ -1657,7 +1668,7 @@ public class CompilationLibrariesController extends Controller {
             if(! library_group.delete_permission())  return GlobalResult.forbidden_Permission();
 
             // Smazání z Azure
-            UtilTools.azureDelete(Server.blobClient.getContainerReference("libraries"), library_group.azurePackageLink+"/"+library_group.azureStorageLink);
+            UtilTools.azureDelete(library_group.get_Container(),library_group.get_path());
 
             // Smazání objektu z DB
             library_group.delete();
@@ -1702,7 +1713,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result editLibraryGroup(@ApiParam(value = "libraryGroup_id String query", required = true) @PathParam("libraryGroup_id") String libraryGroup_id) {
+    public Result editLibraryGroup(@ApiParam(value = "libraryGroup_id String query", required = true)  String libraryGroup_id) {
         try {
 
             // Zpracování Json
@@ -1736,6 +1747,7 @@ public class CompilationLibrariesController extends Controller {
             tags = {"LibraryGroup"},
             notes = "If you want get Libraries from LibraryGroup.Version by query = version_id",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -1752,7 +1764,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_LibraryGroup_Version_Libraries(@ApiParam(required = true) @PathParam("version_id") String version_id){
+    public Result get_LibraryGroup_Version_Libraries(@ApiParam(required = true)  String version_id){
         try {
 
             // Kontrola validity
@@ -1799,7 +1811,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result get_LibraryGroup_Filter( @ApiParam(value = "page_number is Integer. 1,2,3...n For first call, use 1 (first page of list) ",required = true) @PathParam("page_number") Integer page_number)  {
+    public Result get_LibraryGroup_Filter( @ApiParam(value = "page_number is Integer. 1,2,3...n For first call, use 1 (first page of list) ",required = true)Integer page_number)  {
         try {
 
             // Zpracování Json
@@ -1846,6 +1858,7 @@ public class CompilationLibrariesController extends Controller {
             tags = {"LibraryGroup"},
             notes = "get version from LibraryGroup",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -1859,7 +1872,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_LibraryGroup_Version(@ApiParam(value = "version_id String query", required = true) @PathParam("version_id") String version_id){
+    public Result get_LibraryGroup_Version(@ApiParam(value = "version_id String query", required = true) String version_id){
         try {
 
             // Kontroluji validitu
@@ -1880,6 +1893,7 @@ public class CompilationLibrariesController extends Controller {
             tags = {"File"},
             notes = "if you want create new SingleLibrary for C_program compilation",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             hidden = true
@@ -1891,7 +1905,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result fileRecord(@ApiParam(value = "file_record_id String query", required = true) @PathParam("file_record_id")  String file_record_id){
+    public Result fileRecord(@ApiParam(value = "file_record_id String query", required = true)  String file_record_id){
         try {
 
             // Kontrola validity objektu
@@ -1954,8 +1968,6 @@ public class CompilationLibrariesController extends Controller {
             SingleLibrary singleLibrary = new SingleLibrary();
             singleLibrary.library_name = help.library_name;
             singleLibrary.description = help.description;
-            singleLibrary.azureStorageLink = "singleLibraries";
-            singleLibrary.setUniqueAzurePackageLink();
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
             if(! singleLibrary.create_permission())  return GlobalResult.forbidden_Permission();
@@ -2004,7 +2016,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result new_SingleLibrary_Version(@ApiParam(value = "library_id String query", required = true) @PathParam("library_id")  String library_id){
+    public Result new_SingleLibrary_Version(@ApiParam(value = "library_id String query", required = true)  String library_id){
         try {
 
             // Zpracování Json
@@ -2021,7 +2033,6 @@ public class CompilationLibrariesController extends Controller {
 
             // Vytvářím novou verzi
             Version_Object version_object = new Version_Object();
-            version_object.azureLinkVersion  = UUID.randomUUID().toString();;
             version_object.date_of_create = new Date();
             version_object.version_name = help.version_name;
             version_object.version_description = help.version_description;
@@ -2071,7 +2082,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.MultipartFormData.class)
-    public Result upload_SingleLibrary_Version( @ApiParam(required = true) @PathParam("version_id") String version_id){
+    public Result upload_SingleLibrary_Version( @ApiParam(required = true)  String version_id){
         try{
 
             Http.MultipartFormData body = request().body().asMultipartFormData();
@@ -2098,7 +2109,8 @@ public class CompilationLibrariesController extends Controller {
             File libraryFile = file.getFile();
 
             // Nahraji soubor na Azure
-            UtilTools.uploadAzure_Version("libraries", libraryFile, "library.txt", version_object.single_library .azureStorageLink, version_object.single_library.azurePackageLink, version_object);
+
+            UtilTools.uploadAzure_Version(libraryFile, "library.txt",  version_object.single_library.get_path() ,version_object);
 
             // Vrácení verze
             return GlobalResult.result_ok(Json.toJson(version_object));
@@ -2112,6 +2124,7 @@ public class CompilationLibrariesController extends Controller {
             tags = {"SingleLibrary"},
             notes = "if you want get SingleLibrary by query = library_id",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -2127,7 +2140,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_SingleLibrary(@ApiParam(value = "library_id String query", required = true) @PathParam("library_id")  String library_id) {
+    public Result get_SingleLibrary(@ApiParam(value = "library_id String query", required = true)  String library_id) {
         try {
 
             // Kontrola objektu
@@ -2177,7 +2190,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result get_SingleLibrary_Filter( @ApiParam(value = "page_number is Integer. 1,2,3...n For first call, use 1",required = true) @PathParam("page_number") Integer page_number) {
+    public Result get_SingleLibrary_Filter( @ApiParam(value = "page_number is Integer. 1,2,3...n For first call, use 1",required = true) Integer page_number) {
         try {
 
             // Zpracování Json
@@ -2250,7 +2263,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_SingleLibrary(@ApiParam(value = "library_id String query", required = true) @PathParam("library_id") String library_id) {
+    public Result edit_SingleLibrary(@ApiParam(value = "library_id String query", required = true)  String library_id) {
         try {
 
             // Zpracování Json
@@ -2285,6 +2298,7 @@ public class CompilationLibrariesController extends Controller {
             tags = {"SingleLibrary"},
             notes = "If you want delete SingleLibrary by query = library_id",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -2301,7 +2315,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result delete_SingleLibrary(@ApiParam(value = "library_id String query", required = true) @PathParam("library_id") String library_id) {
+    public Result delete_SingleLibrary(@ApiParam(value = "library_id String query", required = true)  String library_id) {
         try {
 
             // Vyhledám Objekt
@@ -2312,7 +2326,7 @@ public class CompilationLibrariesController extends Controller {
             if(! singleLibrary.delete_permission())  return GlobalResult.forbidden_Permission();
 
             // Smažu z Azure
-            UtilTools.azureDelete(Server.blobClient.getContainerReference("libraries"), singleLibrary.azurePackageLink+"/"+singleLibrary.azureStorageLink);
+            UtilTools.azureDelete(singleLibrary.get_Container(), singleLibrary.get_path());
 
             // Smažu z databáze
             singleLibrary.delete();
@@ -2418,7 +2432,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_Producer(@ApiParam(required = true) @PathParam("producer_id") String producer_id) {
+    public Result edit_Producer(@ApiParam(required = true) String producer_id) {
         try {
 
             // Zpracování Json
@@ -2452,6 +2466,7 @@ public class CompilationLibrariesController extends Controller {
             tags = {"Producer"},
             notes = "if you want get list of Producers. Its list of companies owned physical boards and we used that for filtering",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -2485,6 +2500,7 @@ public class CompilationLibrariesController extends Controller {
             tags = {"Producer"},
             notes = "if you want get Producer. Its company owned physical boards and we used that for filtering",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -2500,7 +2516,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_Producer(@ApiParam(required = true) @PathParam("producer_id") String producer_id) {
+    public Result get_Producer(@ApiParam(required = true)  String producer_id) {
         try {
 
             // Kontrola objektu
@@ -2519,6 +2535,7 @@ public class CompilationLibrariesController extends Controller {
             tags = {"Producer"},
             notes = "if you want delete Producer",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -2535,7 +2552,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result delete_Producer(@ApiParam(required = true) @PathParam("producer_id") String producer_id) {
+    public Result delete_Producer(@ApiParam(required = true) String producer_id) {
         try {
 
             // Kontrola objektu
@@ -2661,7 +2678,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_TypeOfBoard(@ApiParam(required = true) @PathParam("type_of_board_id") String type_of_board_id) {
+    public Result edit_TypeOfBoard(@ApiParam(required = true)  String type_of_board_id) {
         try {
 
             // Zpracování Json
@@ -2706,6 +2723,7 @@ public class CompilationLibrariesController extends Controller {
             tags = { "Type-Of-Board"},
             notes = "if you want delete TypeOfBoard object by query = type_of_board_id",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -2722,7 +2740,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result delete_TypeOfBoard(@ApiParam(required = true) @PathParam("type_of_board_id") String type_of_board_id) {
+    public Result delete_TypeOfBoard(@ApiParam(required = true)  String type_of_board_id) {
         try {
 
             // Kontrola objektu
@@ -2747,6 +2765,7 @@ public class CompilationLibrariesController extends Controller {
             tags = { "Type-Of-Board"},
             notes = "if you want get all TypeOfBoard objects",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -2780,6 +2799,7 @@ public class CompilationLibrariesController extends Controller {
             tags = { "Type-Of-Board"},
             notes = "if you want get TypeOfBoard object by query = type_of_board_id",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -2795,7 +2815,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_TypeOfBoard(@ApiParam(required = true) @PathParam("type_of_board_id") String type_of_board_id) {
+    public Result get_TypeOfBoard(@ApiParam(required = true)  String type_of_board_id) {
         try {
 
             // Kontrola validity objektu
@@ -2934,7 +2954,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_Board_User_Description(@ApiParam(required = true) @PathParam("board_id") String board_id){
+    public Result edit_Board_User_Description(@ApiParam(required = true)  String board_id){
         try {
 
             // Zpracování Json
@@ -2995,7 +3015,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result get_Board_Filter(@ApiParam(value = "page_number is Integer. Contain  1,2...n. For first call, use 1", required = false) @PathParam("page_number") Integer page_number) {
+    public Result get_Board_Filter(@ApiParam(value = "page_number is Integer. Contain  1,2...n. For first call, use 1", required = false)  Integer page_number) {
         try {
 
             // Zpracování Json
@@ -3061,7 +3081,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result deactivate_Board(@ApiParam(required = true) @PathParam("board_id")  String board_id) {
+    public Result deactivate_Board(@ApiParam(required = true)  String board_id) {
         try {
 
             // Kotrola objektu
@@ -3091,6 +3111,7 @@ public class CompilationLibrariesController extends Controller {
             notes = "if you want get Board object by query = board_id. User can get only boards from project, whitch " +
                     "user owning or user need Permission key \"Board_rea\".",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -3107,7 +3128,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_Board(@ApiParam(required = true) @PathParam("board_id")  String board_id) {
+    public Result get_Board(@ApiParam(required = true) String board_id) {
         try {
 
             // Kotrola objektu
@@ -3129,6 +3150,7 @@ public class CompilationLibrariesController extends Controller {
             tags = { "Board"},
             notes = "This Api is used by Users for connection of Board with their Project",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -3149,7 +3171,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result connect_Board_with_Project(@ApiParam(required = true) @PathParam("board_id")  String board_id, @ApiParam(required = true) @PathParam("project_id")  String project_id){
+    public Result connect_Board_with_Project(@ApiParam(required = true)   String board_id, @ApiParam(required = true) String project_id){
         try {
 
             // Kotrola objektu
@@ -3187,6 +3209,7 @@ public class CompilationLibrariesController extends Controller {
             notes = "This Api is used by Users for disconnection of Board from their Project, its not meaning that Board is removed from system, only disconnect " +
                     "and another user can registred that (connect that with different account/project etc..)",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -3206,7 +3229,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result disconnect_Board_from_Project(@ApiParam(required = true) @PathParam("board_id")  String board_id){
+    public Result disconnect_Board_from_Project(@ApiParam(required = true)   String board_id){
         try {
 
             // Kontrola objektu
@@ -3235,6 +3258,7 @@ public class CompilationLibrariesController extends Controller {
             tags = {"Blocko", "B_Program"},
             notes = "get all boards that user can integrate to Blocko program",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -3251,7 +3275,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result board_all_details_for_blocko(@ApiParam(required = true) @PathParam("project_id")   String project_id){
+    public Result board_all_details_for_blocko(@ApiParam(required = true)   String project_id){
         try {
 
             // Kontrola objektu

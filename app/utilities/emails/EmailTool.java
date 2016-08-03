@@ -1,15 +1,20 @@
 package utilities.emails;
 
+import org.apache.commons.mail.EmailAttachment;
+import play.api.Play;
+import play.api.libs.mailer.MailerClient;
 import play.libs.mailer.Email;
 
 public class EmailTool {
 
+
+    private Email email;
+
+    public EmailTool(){
+        email = new Email();
+    }
+
     private String emailContent = "";
-
-    // Příloha k Emailu
-    private byte[] attachment;
-    private String attachment_name;
-
 
     public EmailTool startParagraph(String textSize){
         emailContent += ("<p style='font-size:" + textSize + "pt; color: #969696; padding: 10px;'>");
@@ -51,29 +56,22 @@ public class EmailTool {
         return this;
     }
 
-    public EmailTool addAttachment(String attachment_name, byte[] file){
-        attachment = file;
-        this.attachment_name = attachment_name;
+    public EmailTool addAttachment_PDF(String attachment_name, byte[] file){
+        email .addAttachment( attachment_name , file, "application/pdf", "Simple data", EmailAttachment.ATTACHMENT);
         return this;
     }
 
+    public void sendEmail(String userMail, String subject){
 
-    public String getEmailContent(){
-        return emailContent;
-    }
 
-    public Email sendEmail(String userMail, String subject, String content){
+        String html = utilities.emails.templates.html.EmailScheme.render(emailContent).body();
 
-        String html = utilities.emails.templates.html.EmailScheme.render(content).body();
-
-        Email email = new Email()
-                        .setSubject(subject)
+                 email  .setSubject(subject)
                         .setFrom("Byzance IoT Platform <cloud_blocko_server@byzance.cz>")
                         .addTo("<"+ userMail +">")
-                        .setBodyText("A text message")
                         .setBodyHtml(html);
 
-        if(attachment != null) email.addAttachment(attachment_name, attachment, "multipart/form-data");
-        return email;
+        MailerClient mailerClient =  Play.current().injector().instanceOf(MailerClient.class);
+        mailerClient.send(email);
     }
 }

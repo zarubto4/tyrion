@@ -1,4 +1,5 @@
 import controllers.WebSocketController_Incoming;
+import org.quartz.SchedulerException;
 import play.Application;
 import play.GlobalSettings;
 import play.mvc.Action;
@@ -37,9 +38,8 @@ public class Global extends GlobalSettings {
            logger.warn("Starting actualization threads");
            Server.startThreads();
 
-
-
-
+           logger.warn("Starting all scheduler threads");
+           Server.startScheduling_procedures();
     //****************************************************************************************************************************
             UtilTools.set_Developer_objects(); // TODO bude smazáno - slouží jen k vytvoření prvního uživatele
             UtilTools.set_Homer_Server();
@@ -53,6 +53,11 @@ public class Global extends GlobalSettings {
 
     }
 
+    //
+    public void byScheduling(){
+
+
+    }
 
     @Override
     public void onStop(Application app){
@@ -70,8 +75,42 @@ public class Global extends GlobalSettings {
 
         logger.warn("Disconnection all Compilation Servers");
         WebSocketController_Incoming.disconnect_all_Compilation_Servers();
-    }
 
+
+
+        if(Server.server_mode){
+            try {
+
+                logger.warn("You have developer version - System remove CRON task from your RAM");
+                Server.scheduler.clear();
+
+            } catch (SchedulerException e) {
+                e.printStackTrace();
+            }
+        }
+
+
+
+        System.err.println(" ");
+        System.err.println(" ");
+        System.err.println("  __________    __                                             ___                   __        ________                                                              ");
+        System.err.println("  YMMMM9MMMMMMM MM                                             `MM                  69MM      `MMMMMMMb.                                                             ");
+        System.err.println("        MM      MM                                              MM                 6M' `       MM    `Mb                                                             ");
+        System.err.println("        MM      MM  __     ____           ____  ___  __     ____MM         _____  _MM__        MM     MM ___  __   _____     __     ___  __    ___   ___  __    __   ");
+        System.err.println("        MM      MM 6MMb   6MMMMb         6MMMMb `MM 6MMb   6MMMMMM        6MMMMMb MMMMM        MM     MM `MM 6MM  6MMMMMb   6MMbMMM `MM 6MM  6MMMMb  `MM 6MMb  6MMb  ");
+        System.err.println("        MM      MMM9 `Mb 6M'  `Mb       6M'  `Mb MMM9 `Mb 6M'  `MM       6M'   `Mb MM          MM    .M9  MM69 I 6M'   `Mb 6M'`Mb    MM69 I 8M'  `Mb  MM69 `MM69 `Mb ");
+        System.err.println("        MM      MM'   MM MM    MM       MM    MM MM'   MM MM    MM       MM     MM MM          MMMMMMM9'  MM'    MM     MM MM  MM    MM'        ,oMM  MM'   MM'   MM ");
+        System.err.println("        MM      MM    MM MMMMMMMM       MMMMMMMM MM    MM MM    MM       MM     MM MM          MM         MM     MM     MM YM.,M9    MM     ,6MM9'MM  MM    MM    MM ");
+        System.err.println("        MM      MM    MM MM             MM       MM    MM MM    MM       MM     MM MM          MM         MM     MM     MM  YMM9     MM     MM'   MM  MM    MM    MM ");
+        System.err.println("        MM      MM    MM YM    d9       YM    d9 MM    MM YM.  ,MM       YM.   ,M9 MM          MM         MM     YM.   ,M9 (M        MM     MM.  ,MM  MM    MM    MM ");
+        System.err.println("       _MM_     _MM_  _MM_MMYMMMM9       YMMMM9 _MM_  _MM_ YMMMMMM_      YMMMMM9  _MM_        _MM_       _MM_     YMMMMM9   YMMMMb. _MM_    `YMMM9'Yb_MM_  _MM_  _MM_");
+        System.err.println("                                                                                                                           6M    Yb                                  ");
+        System.err.println("                                                                                                                           YM.   d9                                  ");
+        System.err.println("                                                                                                                            YMMMM9                                   ");
+        System.err.println("");
+
+
+    }
 
     @Override
     public Action onRequest(Http.Request request, Method actionMethod) {

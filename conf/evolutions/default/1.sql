@@ -31,8 +31,7 @@ create table b_program (
   last_update               timestamp,
   date_of_create            timestamp,
   project_id                varchar(255),
-  azure_package_link        varchar(255),
-  azure_storage_link        varchar(255),
+  azure_b_program_link      varchar(255),
   constraint pk_b_program primary key (id))
 ;
 
@@ -88,10 +87,9 @@ create table c_program (
   program_name              varchar(255),
   program_description       TEXT,
   project_id                varchar(255),
-  azure_package_link        varchar(255),
-  azure_storage_link        varchar(255),
   type_of_board_id          varchar(255),
   date_of_create            timestamp,
+  azure_c_program_link      varchar(255),
   constraint pk_c_program primary key (id))
 ;
 
@@ -119,23 +117,8 @@ create table cloud_homer_server (
   server_name               varchar(255),
   hash_certificate          varchar(255),
   destination_address       varchar(255),
+  is_private                boolean,
   constraint pk_cloud_homer_server primary key (id))
-;
-
-create table credit_card (
-  id                        bigint not null,
-  credit_card_number        varchar(255),
-  credit_card_type          varchar(11),
-  cvc                       integer,
-  expiry_month              integer,
-  expiry_year               integer,
-  card_owner_name           varchar(255),
-  product_id                bigint,
-  person_id                 varchar(255),
-  constraint ck_credit_card_credit_card_type check (credit_card_type in ('master_card','visa')),
-  constraint uq_credit_card_product_id unique (product_id),
-  constraint uq_credit_card_person_id unique (person_id),
-  constraint pk_credit_card primary key (id))
 ;
 
 create table file_record (
@@ -206,13 +189,17 @@ create table invitation (
 create table invoice (
   id                        bigint not null,
   facturoid_invoice_id      bigint,
+  facturoid_pdf_url         varchar(255),
   invoice_number            varchar(255),
+  gopay_id                  bigint,
+  gopay_order_number        varchar(255),
+  proforma                  boolean,
   date_of_create            timestamp,
-  status                    varchar(9),
   product_id                bigint,
-  payment_method            varchar(11),
-  constraint ck_invoice_status check (status in ('paid','open','sent','overdue','cancelled')),
-  constraint ck_invoice_payment_method check (payment_method in ('bank','credit_card')),
+  status                    varchar(14),
+  method                    varchar(11),
+  constraint ck_invoice_status check (status in ('paid','sent','created_waited','cancelled')),
+  constraint ck_invoice_method check (method in ('bank','credit_card')),
   constraint pk_invoice primary key (id))
 ;
 
@@ -222,7 +209,7 @@ create table invoice_item (
   name                      varchar(255),
   quantity                  bigint,
   unit_name                 varchar(255),
-  unit_price                bigint,
+  unit_price                float,
   constraint pk_invoice_item primary key (id))
 ;
 
@@ -230,8 +217,8 @@ create table library_group (
   id                        varchar(255) not null,
   group_name                varchar(255),
   description               TEXT,
-  azure_package_link        varchar(255),
-  azure_storage_link        varchar(255),
+  product_id                bigint,
+  azure_library_group_link  varchar(255),
   constraint pk_library_group primary key (id))
 ;
 
@@ -305,7 +292,7 @@ create table password_recovery_token (
 create table payment_details (
   id                        bigint not null,
   person_id                 varchar(255),
-  product_id                bigint,
+  productidpaymentdetails   bigint,
   company_account           boolean,
   company_name              varchar(255),
   company_authorized_email  varchar(255),
@@ -319,8 +306,7 @@ create table payment_details (
   city                      varchar(255),
   zip_code                  varchar(255),
   country                   varchar(255),
-  constraint uq_payment_details_person_id unique (person_id),
-  constraint uq_payment_details_product_id unique (product_id),
+  constraint uq_payment_details_productidpaym unique (productidpaymentdetails),
   constraint pk_payment_details primary key (id))
 ;
 
@@ -329,7 +315,6 @@ create table person (
   mail                      varchar(255),
   nick_name                 varchar(255),
   full_name                 varchar(255),
-  last_title                varchar(255),
   mail_validated            boolean,
   sha_password              bytea,
   constraint uq_person_mail unique (mail),
@@ -388,18 +373,24 @@ create table producer (
 
 create table product (
   id                        bigint not null,
-  type                      varchar(9),
-  payment_mode              varchar(10),
-  subject_id                varchar(255),
+  product_individual_name   varchar(255),
+  type                      varchar(8),
+  mode                      varchar(10),
+  method                    varchar(11),
+  fakturoid_subject_id      varchar(255),
+  gopay_id                  bigint,
   active                    boolean,
+  monthly_day_period        integer,
+  monthly_year_period       integer,
+  paid_until_the_day        timestamp,
+  on_demand_active          boolean,
   remaining_credit          float,
-  currency_type             varchar(3),
-  trial_end                 timestamp,
-  monthly_day_period        timestamp,
-  time_of_end_period        timestamp,
-  constraint ck_product_type check (type in ('alpha','trial','community','free','tier1','tier2','tier3','tier4','tier5')),
-  constraint ck_product_payment_mode check (payment_mode in ('free','monthly','annual','per_credit')),
-  constraint ck_product_currency_type check (currency_type in ('CZK','EUR')),
+  currency                  varchar(3),
+  azure_product_link        varchar(255),
+  constraint ck_product_type check (type in ('alpha','free','business')),
+  constraint ck_product_mode check (mode in ('free','monthly','annual','per_credit')),
+  constraint ck_product_method check (method in ('bank','credit_card')),
+  constraint ck_product_currency check (currency in ('CZK','EUR')),
   constraint pk_product primary key (id))
 ;
 
@@ -408,6 +399,7 @@ create table project (
   project_name              varchar(255),
   project_description       varchar(255),
   product_id                bigint,
+  blob_project_link         varchar(255),
   constraint pk_project primary key (id))
 ;
 
@@ -449,8 +441,8 @@ create table single_library (
   id                        varchar(255) not null,
   description               TEXT,
   library_name              varchar(255),
-  azure_storage_link        varchar(255),
-  azure_package_link        varchar(255),
+  product_id                bigint,
+  azure_single_library_link varchar(255),
   constraint pk_single_library primary key (id))
 ;
 
@@ -496,7 +488,6 @@ create table version_object (
   id                        varchar(255) not null,
   version_name              varchar(255),
   version_description       TEXT,
-  azure_link_version        varchar(255),
   date_of_create            timestamp,
   library_group_id          varchar(255),
   single_library_id         varchar(255),
@@ -504,6 +495,7 @@ create table version_object (
   compilation_in_progress   boolean,
   compilable                boolean,
   b_program_id              varchar(255),
+  blob_version_link         varchar(255),
   constraint pk_version_object primary key (id))
 ;
 
@@ -586,8 +578,6 @@ create sequence c_program_update_plan_seq;
 create sequence cloud_compilation_server_seq;
 
 create sequence cloud_homer_server_seq;
-
-create sequence credit_card_seq;
 
 create sequence file_record_seq;
 
@@ -693,70 +683,70 @@ alter table c_program_update_plan add constraint fk_c_program_update_plan_c_pr_2
 create index ix_c_program_update_plan_c_pr_23 on c_program_update_plan (c_program_version_for_update_id);
 alter table c_program_update_plan add constraint fk_c_program_update_plan_bina_24 foreign key (binary_file_id) references file_record (id);
 create index ix_c_program_update_plan_bina_24 on c_program_update_plan (binary_file_id);
-alter table credit_card add constraint fk_credit_card_product_25 foreign key (product_id) references product (id);
-create index ix_credit_card_product_25 on credit_card (product_id);
-alter table credit_card add constraint fk_credit_card_credit_card_ow_26 foreign key (person_id) references person (id);
-create index ix_credit_card_credit_card_ow_26 on credit_card (person_id);
-alter table file_record add constraint fk_file_record_version_object_27 foreign key (version_object_id) references version_object (id);
-create index ix_file_record_version_object_27 on file_record (version_object_id);
-alter table floating_person_token add constraint fk_floating_person_token_pers_28 foreign key (person_id) references person (id);
-create index ix_floating_person_token_pers_28 on floating_person_token (person_id);
-alter table homer_instance add constraint fk_homer_instance_cloud_homer_29 foreign key (cloud_homer_server_id) references cloud_homer_server (id);
-create index ix_homer_instance_cloud_homer_29 on homer_instance (cloud_homer_server_id);
-alter table homer_instance add constraint fk_homer_instance_private_ser_30 foreign key (private_server_id) references private_homer_server (id);
-create index ix_homer_instance_private_ser_30 on homer_instance (private_server_id);
-alter table homer_instance add constraint fk_homer_instance_version_obj_31 foreign key (vrs_obj_id) references version_object (id);
-create index ix_homer_instance_version_obj_31 on homer_instance (vrs_obj_id);
-alter table homer_instance add constraint fk_homer_instance_project_32 foreign key (project_id) references project (id);
-create index ix_homer_instance_project_32 on homer_instance (project_id);
-alter table invitation add constraint fk_invitation_owner_33 foreign key (owner_id) references person (id);
-create index ix_invitation_owner_33 on invitation (owner_id);
-alter table invitation add constraint fk_invitation_project_34 foreign key (project_id) references project (id);
-create index ix_invitation_project_34 on invitation (project_id);
-alter table invoice add constraint fk_invoice_product_35 foreign key (product_id) references product (id);
-create index ix_invoice_product_35 on invoice (product_id);
-alter table invoice_item add constraint fk_invoice_item_invoice_36 foreign key (invoice_id) references invoice (id);
-create index ix_invoice_item_invoice_36 on invoice_item (invoice_id);
-alter table linked_post add constraint fk_linked_post_author_37 foreign key (author_id) references person (id);
-create index ix_linked_post_author_37 on linked_post (author_id);
-alter table linked_post add constraint fk_linked_post_answer_38 foreign key (answer_id) references post (id);
-create index ix_linked_post_answer_38 on linked_post (answer_id);
-alter table linked_post add constraint fk_linked_post_question_39 foreign key (question_id) references post (id);
-create index ix_linked_post_question_39 on linked_post (question_id);
-alter table m_program add constraint fk_m_program_m_project_40 foreign key (m_project_id) references m_project (id);
-create index ix_m_program_m_project_40 on m_program (m_project_id);
-alter table m_program add constraint fk_m_program_screen_size_type_41 foreign key (screen_size_type_id) references screen_size_type (id);
-create index ix_m_program_screen_size_type_41 on m_program (screen_size_type_id);
-alter table m_project add constraint fk_m_project_project_42 foreign key (project_id) references project (id);
-create index ix_m_project_project_42 on m_project (project_id);
-alter table m_project add constraint fk_m_project_b_program_43 foreign key (b_program_id) references b_program (id);
-create index ix_m_project_b_program_43 on m_project (b_program_id);
-alter table m_project add constraint fk_m_project_b_program_versio_44 foreign key (vrs_obj_id) references version_object (id);
-create index ix_m_project_b_program_versio_44 on m_project (vrs_obj_id);
-alter table notification add constraint fk_notification_person_45 foreign key (person_id) references person (id);
-create index ix_notification_person_45 on notification (person_id);
-alter table password_recovery_token add constraint fk_password_recovery_token_pe_46 foreign key (person_id) references person (id);
-create index ix_password_recovery_token_pe_46 on password_recovery_token (person_id);
-alter table payment_details add constraint fk_payment_details_person_47 foreign key (person_id) references person (id);
-create index ix_payment_details_person_47 on payment_details (person_id);
-alter table payment_details add constraint fk_payment_details_product_48 foreign key (product_id) references product (id);
-create index ix_payment_details_product_48 on payment_details (product_id);
-alter table post add constraint fk_post_postParentComment_49 foreign key (post_parent_comment_id) references post (id);
-create index ix_post_postParentComment_49 on post (post_parent_comment_id);
-alter table post add constraint fk_post_postParentAnswer_50 foreign key (post_parent_answer_id) references post (id);
-create index ix_post_postParentAnswer_50 on post (post_parent_answer_id);
-alter table post add constraint fk_post_type_51 foreign key (type_id) references type_of_post (id);
-create index ix_post_type_51 on post (type_id);
-alter table post add constraint fk_post_author_52 foreign key (author_id) references person (id);
-create index ix_post_author_52 on post (author_id);
-alter table private_homer_server add constraint fk_private_homer_server_proje_53 foreign key (project_id) references project (id);
-create index ix_private_homer_server_proje_53 on private_homer_server (project_id);
-alter table private_homer_server add constraint fk_private_homer_server_b_pro_54 foreign key (private_server_id) references homer_instance (id);
-create index ix_private_homer_server_b_pro_54 on private_homer_server (private_server_id);
-alter table project add constraint fk_project_product_55 foreign key (product_id) references product (id);
-create index ix_project_product_55 on project (product_id);
-alter table screen_size_type add constraint fk_screen_size_type_project_56 foreign key (project_id) references project (id);
-create index ix_screen_size_type_project_56 on screen_size_type (project_id);
+alter table file_record add constraint fk_file_record_version_object_25 foreign key (version_object_id) references version_object (id);
+create index ix_file_record_version_object_25 on file_record (version_object_id);
+alter table floating_person_token add constraint fk_floating_person_token_pers_26 foreign key (person_id) references person (id);
+create index ix_floating_person_token_pers_26 on floating_person_token (person_id);
+alter table homer_instance add constraint fk_homer_instance_cloud_homer_27 foreign key (cloud_homer_server_id) references cloud_homer_server (id);
+create index ix_homer_instance_cloud_homer_27 on homer_instance (cloud_homer_server_id);
+alter table homer_instance add constraint fk_homer_instance_private_ser_28 foreign key (private_server_id) references private_homer_server (id);
+create index ix_homer_instance_private_ser_28 on homer_instance (private_server_id);
+alter table homer_instance add constraint fk_homer_instance_version_obj_29 foreign key (vrs_obj_id) references version_object (id);
+create index ix_homer_instance_version_obj_29 on homer_instance (vrs_obj_id);
+alter table homer_instance add constraint fk_homer_instance_project_30 foreign key (project_id) references project (id);
+create index ix_homer_instance_project_30 on homer_instance (project_id);
+alter table invitation add constraint fk_invitation_owner_31 foreign key (owner_id) references person (id);
+create index ix_invitation_owner_31 on invitation (owner_id);
+alter table invitation add constraint fk_invitation_project_32 foreign key (project_id) references project (id);
+create index ix_invitation_project_32 on invitation (project_id);
+alter table invoice add constraint fk_invoice_product_33 foreign key (product_id) references product (id);
+create index ix_invoice_product_33 on invoice (product_id);
+alter table invoice_item add constraint fk_invoice_item_invoice_34 foreign key (invoice_id) references invoice (id);
+create index ix_invoice_item_invoice_34 on invoice_item (invoice_id);
+alter table library_group add constraint fk_library_group_product_35 foreign key (product_id) references product (id);
+create index ix_library_group_product_35 on library_group (product_id);
+alter table linked_post add constraint fk_linked_post_author_36 foreign key (author_id) references person (id);
+create index ix_linked_post_author_36 on linked_post (author_id);
+alter table linked_post add constraint fk_linked_post_answer_37 foreign key (answer_id) references post (id);
+create index ix_linked_post_answer_37 on linked_post (answer_id);
+alter table linked_post add constraint fk_linked_post_question_38 foreign key (question_id) references post (id);
+create index ix_linked_post_question_38 on linked_post (question_id);
+alter table m_program add constraint fk_m_program_m_project_39 foreign key (m_project_id) references m_project (id);
+create index ix_m_program_m_project_39 on m_program (m_project_id);
+alter table m_program add constraint fk_m_program_screen_size_type_40 foreign key (screen_size_type_id) references screen_size_type (id);
+create index ix_m_program_screen_size_type_40 on m_program (screen_size_type_id);
+alter table m_project add constraint fk_m_project_project_41 foreign key (project_id) references project (id);
+create index ix_m_project_project_41 on m_project (project_id);
+alter table m_project add constraint fk_m_project_b_program_42 foreign key (b_program_id) references b_program (id);
+create index ix_m_project_b_program_42 on m_project (b_program_id);
+alter table m_project add constraint fk_m_project_b_program_versio_43 foreign key (vrs_obj_id) references version_object (id);
+create index ix_m_project_b_program_versio_43 on m_project (vrs_obj_id);
+alter table notification add constraint fk_notification_person_44 foreign key (person_id) references person (id);
+create index ix_notification_person_44 on notification (person_id);
+alter table password_recovery_token add constraint fk_password_recovery_token_pe_45 foreign key (person_id) references person (id);
+create index ix_password_recovery_token_pe_45 on password_recovery_token (person_id);
+alter table payment_details add constraint fk_payment_details_person_46 foreign key (person_id) references person (id);
+create index ix_payment_details_person_46 on payment_details (person_id);
+alter table payment_details add constraint fk_payment_details_product_47 foreign key (productidpaymentdetails) references product (id);
+create index ix_payment_details_product_47 on payment_details (productidpaymentdetails);
+alter table post add constraint fk_post_postParentComment_48 foreign key (post_parent_comment_id) references post (id);
+create index ix_post_postParentComment_48 on post (post_parent_comment_id);
+alter table post add constraint fk_post_postParentAnswer_49 foreign key (post_parent_answer_id) references post (id);
+create index ix_post_postParentAnswer_49 on post (post_parent_answer_id);
+alter table post add constraint fk_post_type_50 foreign key (type_id) references type_of_post (id);
+create index ix_post_type_50 on post (type_id);
+alter table post add constraint fk_post_author_51 foreign key (author_id) references person (id);
+create index ix_post_author_51 on post (author_id);
+alter table private_homer_server add constraint fk_private_homer_server_proje_52 foreign key (project_id) references project (id);
+create index ix_private_homer_server_proje_52 on private_homer_server (project_id);
+alter table private_homer_server add constraint fk_private_homer_server_b_pro_53 foreign key (private_server_id) references homer_instance (id);
+create index ix_private_homer_server_b_pro_53 on private_homer_server (private_server_id);
+alter table project add constraint fk_project_product_54 foreign key (product_id) references product (id);
+create index ix_project_product_54 on project (product_id);
+alter table screen_size_type add constraint fk_screen_size_type_project_55 foreign key (project_id) references project (id);
+create index ix_screen_size_type_project_55 on screen_size_type (project_id);
+alter table single_library add constraint fk_single_library_product_56 foreign key (product_id) references product (id);
+create index ix_single_library_product_56 on single_library (product_id);
 alter table type_of_block add constraint fk_type_of_block_project_57 foreign key (project_id) references project (id);
 create index ix_type_of_block_project_57 on type_of_block (project_id);
 alter table type_of_board add constraint fk_type_of_board_producer_58 foreign key (producer_id) references producer (id);
@@ -837,8 +827,6 @@ drop table if exists c_program_update_plan cascade;
 drop table if exists cloud_compilation_server cascade;
 
 drop table if exists cloud_homer_server cascade;
-
-drop table if exists credit_card cascade;
 
 drop table if exists file_record cascade;
 
@@ -947,8 +935,6 @@ drop sequence if exists c_program_update_plan_seq;
 drop sequence if exists cloud_compilation_server_seq;
 
 drop sequence if exists cloud_homer_server_seq;
-
-drop sequence if exists credit_card_seq;
 
 drop sequence if exists file_record_seq;
 

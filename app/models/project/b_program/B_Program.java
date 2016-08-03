@@ -37,12 +37,10 @@ public class B_Program extends Model {
     @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1461854312") public Date lastUpdate;
     @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1461854312") public Date dateOfCreate;
                                     @JsonIgnore @ManyToOne   public Project project;
-                                                @JsonIgnore  public String azurePackageLink;
-                                                @JsonIgnore  public String azureStorageLink;
 
     @JsonIgnore   @OneToOne(mappedBy="b_program",cascade=CascadeType.ALL) public M_Project m_project;
 
-    @JsonIgnore   @OneToMany(mappedBy="b_program", cascade=CascadeType.ALL) @OrderBy("azureLinkVersion DESC") public List<Version_Object> version_objects = new ArrayList<>();
+    @JsonIgnore   @OneToMany(mappedBy="b_program", cascade=CascadeType.ALL) @OrderBy("id DESC") public List<Version_Object> version_objects = new ArrayList<>();
                                                                     @JsonProperty @Transient     public String   project_id() {  return project.id; }
 
 
@@ -143,13 +141,6 @@ public class B_Program extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore public void setUniqueAzureStorageLink() {
-        while(true){ // I need Unique Value
-            this.azureStorageLink = UUID.randomUUID().toString();
-            if (B_Program.find.where().eq("azureStorageLink", azureStorageLink ).findUnique() == null) break;
-        }
-    }
-
     @JsonIgnore @Transient  public Version_Object where_program_run(){
         Version_Object version_object = Version_Object.find
                     .where()
@@ -159,6 +150,24 @@ public class B_Program extends Model {
         return  version_object;
     }
 
+
+/* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore            private String azure_b_program_link;
+
+
+    @JsonIgnore @Override public void save() {
+        while(true){ // I need Unique Value
+            this.azure_b_program_link = project.get_path() + "/b-programs/"  + UUID.randomUUID().toString();
+            if (B_Program.find.where().eq("azure_b_program_link", azure_b_program_link ).findUnique() == null) break;
+        }
+        super.save();
+    }
+
+    @JsonIgnore @Transient
+    public String get_path(){
+        return azure_b_program_link;
+    }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 

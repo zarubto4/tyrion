@@ -1,21 +1,18 @@
 package utilities.swagger.swagger;
+
 import com.fasterxml.jackson.databind.JavaType;
 import io.swagger.annotations.*;
 import io.swagger.annotations.Info;
 import io.swagger.converter.ModelConverters;
-import io.swagger.models.*;
 import io.swagger.models.Contact;
 import io.swagger.models.ExternalDocs;
+import io.swagger.models.*;
 import io.swagger.models.Tag;
 import io.swagger.models.parameters.*;
 import io.swagger.models.parameters.Parameter;
 import io.swagger.models.properties.*;
-import io.swagger.util.BaseReaderUtils;
-import io.swagger.util.Json;
-import io.swagger.util.ParameterProcessor;
-import io.swagger.util.PrimitiveType;
-import io.swagger.util.ReflectionUtils;
-import org.apache.commons.lang3.StringUtils;
+import io.swagger.util.*;
+import org.apache.commons.lang.StringUtils;
 import play.Logger;
 import play.modules.swagger.util.CrossUtil;
 import play.routes.compiler.*;
@@ -550,8 +547,7 @@ public class PlayReader {
 
         static Type resolveOptionType (String innerType, Class<?> cls) {
             try {
-                return Json.mapper().getTypeFactory().constructType(
-                        OptionTypeResolver.class.getDeclaredField("optionType" + innerType).getGenericType(), cls);
+                return Json.mapper().getTypeFactory().constructType(  OptionTypeResolver.class.getDeclaredField("optionType" + innerType).getGenericType() ,  cls);
             } catch (NoSuchFieldException e) {
                 return null;
             }

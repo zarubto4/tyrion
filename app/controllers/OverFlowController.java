@@ -21,7 +21,6 @@ import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Post_List;
 
-import javax.websocket.server.PathParam;
 import java.util.Date;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
@@ -42,7 +41,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_Post(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id){
+    public Result get_Post(@ApiParam(value = "post_id String path", required = true) String post_id){
         try{
 
             Post post = Post.find.byId(post_id);
@@ -82,7 +81,7 @@ public class OverFlowController  extends Controller {
     })
 
     @BodyParser.Of(BodyParser.Json.class)
-    public Result get_Post_ByFilter(@ApiParam(value = "page_number is Integer. Contain  1,2...n. For first call, use 1", required = false) @PathParam("page_number") Integer page_number){
+    public Result get_Post_ByFilter(@ApiParam(value = "page_number is Integer. Contain  1,2...n. For first call, use 1", required = false)  Integer page_number){
         try {
 
             final Form<Swagger_Post_Filter> form = Form.form(Swagger_Post_Filter.class).bindFromRequest();
@@ -246,7 +245,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured.class)
-    public  Result delete_Post(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id){
+    public  Result delete_Post(@ApiParam(value = "post_id String path", required = true)String post_id){
         try {
 
             Post post = Post.find.byId(post_id);
@@ -296,7 +295,7 @@ public class OverFlowController  extends Controller {
     })
     @Security.Authenticated(Secured.class)
     @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_Post(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id){
+    public Result edit_Post(@ApiParam(value = "post_id String path", required = true)  String post_id){
         try {
             final Form<Swagger_Post_New> form = Form.form(Swagger_Post_New.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
@@ -365,7 +364,7 @@ public class OverFlowController  extends Controller {
     })
     @Security.Authenticated(Secured.class)
     @BodyParser.Of(BodyParser.Json.class)
-    public Result addComment(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id){
+    public Result addComment(@ApiParam(value = "post_id String path", required = true)  String post_id){
        try {
 
            final Form<Swagger_Post_Comment> form = Form.form(Swagger_Post_Comment.class).bindFromRequest();
@@ -431,7 +430,7 @@ public class OverFlowController  extends Controller {
     })
     @Security.Authenticated(Secured.class)
     @BodyParser.Of(BodyParser.Json.class)
-    public Result addAnswer(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id){
+    public Result addAnswer(@ApiParam(value = "post_id String path", required = true)  String post_id){
         try {
             final Form<Swagger_Post_Answer> form = Form.form(Swagger_Post_Answer.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
@@ -498,7 +497,7 @@ public class OverFlowController  extends Controller {
     })
     @Security.Authenticated(Secured.class)
     @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_Comment_or_Answer(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id){
+    public Result edit_Comment_or_Answer(@ApiParam(value = "post_id String path", required = true)  String post_id){
         try {
 
             final Form<Swagger_Post_Comment> form = Form.form(Swagger_Post_Comment.class).bindFromRequest();
@@ -541,7 +540,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured.class)
-    public Result linkWithPreviousAnswer(@ApiParam(value = "question_post_id String path", required = true) @PathParam("question_post_id") String question_post_id, @ApiParam(value = "This is Answer Id (main post)", required = true) @PathParam("post_id") String answer_post_id){
+    public Result linkWithPreviousAnswer(@ApiParam(value = "question_post_id String path", required = true) String question_post_id, @ApiParam(value = "This is Answer Id (main post)", required = true)  String answer_post_id){
         try {
 
             Post question = Post.find.byId(question_post_id);
@@ -707,7 +706,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured.class)
-    public Result get_TypeOfPost(@ApiParam(value = "type_of_post_id String path", required = true) @PathParam("type_of_post_id") String type_of_post_id){
+    public Result get_TypeOfPost(@ApiParam(value = "type_of_post_id String path", required = true)  String type_of_post_id){
         try{
 
             TypeOfPost typeOfPost = TypeOfPost.find.byId(type_of_post_id);
@@ -757,7 +756,7 @@ public class OverFlowController  extends Controller {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Secured.class)
-    public Result edit_TypeOfPost(@ApiParam(value = "type_of_post_id String path", required = true) @PathParam("type_of_post_id") String type_of_post_id){
+    public Result edit_TypeOfPost(@ApiParam(value = "type_of_post_id String path", required = true)  String type_of_post_id){
         try{
 
             final Form<Swagger_TypeOfPost_New> form = Form.form(Swagger_TypeOfPost_New.class).bindFromRequest();
@@ -808,7 +807,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured.class)
-    public Result delete_TypeOfPost(@ApiParam(value = "type_of_post_id String path", required = true) @PathParam("type_of_post_id") String type_of_post_id){
+    public Result delete_TypeOfPost(@ApiParam(value = "type_of_post_id String path", required = true)String type_of_post_id){
         try{
 
             TypeOfPost typeOfPost = TypeOfPost.find.byId(type_of_post_id);
@@ -918,7 +917,7 @@ public class OverFlowController  extends Controller {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Secured.class)
-    public Result edit_TypeOfConfirms(@ApiParam(value = "type_of_confirm_id String path", required = true) @PathParam("type_of_confirm_id") String  type_of_confirm_id){
+    public Result edit_TypeOfConfirms(@ApiParam(value = "type_of_confirm_id String path", required = true) String  type_of_confirm_id){
         try{
 
             final Form<Swagger_TypeOfConfirms_New> form = Form.form(Swagger_TypeOfConfirms_New.class).bindFromRequest();
@@ -976,7 +975,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured.class)
-    public Result delete_TypeOfConfirms(@ApiParam(value = "type_of_confirm_id String path", required = true) @PathParam("type_of_confirm_id") String  type_of_confirm_id){
+    public Result delete_TypeOfConfirms(@ApiParam(value = "type_of_confirm_id String path", required = true)  String  type_of_confirm_id){
         try{
 
             TypeOfConfirms typeOfConfirms = TypeOfConfirms.find.byId(type_of_confirm_id);
@@ -1008,7 +1007,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured.class)
-    public Result get_TypeOfConfirms(@ApiParam(value = "type_of_confirm_id String path", required = true) @PathParam("type_of_confirm_id") String  type_of_confirm_id){
+    public Result get_TypeOfConfirms(@ApiParam(value = "type_of_confirm_id String path", required = true)  String  type_of_confirm_id){
         try{
 
             TypeOfConfirms typeOfConfirms = TypeOfConfirms.find.byId(type_of_confirm_id);
@@ -1063,7 +1062,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured.class)
-    public Result set_TypeOfConfirm_to_Post(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id, @ApiParam(value = "type_of_confirm_id String path", required = true) @PathParam("type_of_confirm_id") String  type_of_confirm_id){
+    public Result set_TypeOfConfirm_to_Post(@ApiParam(value = "post_id String path", required = true)  String post_id, @ApiParam(value = "type_of_confirm_id String path", required = true) String  type_of_confirm_id){
         try{
             TypeOfConfirms typeOfConfirms = TypeOfConfirms.find.byId(type_of_confirm_id);
             if(typeOfConfirms == null) return GlobalResult.notFoundObject("TypeOfConfirms type_of_confirm_id not found");
@@ -1103,7 +1102,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured.class)
-    public Result remove_TypeOfConfirm_to_Post(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id,@ApiParam(value = "type_of_confirm_id String path", required = true) @PathParam("type_of_confirm_id") String  type_of_confirm_id){
+    public Result remove_TypeOfConfirm_to_Post(@ApiParam(value = "post_id String path", required = true)  String post_id,@ApiParam(value = "type_of_confirm_id String path", required = true)  String  type_of_confirm_id){
         try{
 
             TypeOfConfirms typeOfConfirms = TypeOfConfirms.find.byId(type_of_confirm_id);
@@ -1148,7 +1147,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured.class)
-    public Result add_HashTag_to_Post(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id, @ApiParam(value = "hash_tag String path", required = true) @PathParam("hash_tag")String hash_tag){
+    public Result add_HashTag_to_Post(@ApiParam(value = "post_id String path", required = true) String post_id, @ApiParam(value = "hash_tag String path", required = true) String hash_tag){
         try{
 
             Post post = Post.find.byId(post_id);
@@ -1196,7 +1195,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured.class)
-    public Result remove_HashTag_from_Post(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id, @ApiParam(value = "hash_tag String path", required = true) @PathParam("hash_tag")String hash_tag){
+    public Result remove_HashTag_from_Post(@ApiParam(value = "post_id String path", required = true) String post_id, @ApiParam(value = "hash_tag String path", required = true) String hash_tag){
         try{
 
             Post post = Post.find.byId(post_id);
@@ -1232,7 +1231,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured.class)
-    public Result likePlus(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id){
+    public Result likePlus(@ApiParam(value = "post_id String path", required = true) String post_id){
         try {
             Post post = Post.find.where().eq("id", post_id).findUnique();
 
@@ -1264,7 +1263,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured.class)
-    public Result likeMinus(@ApiParam(value = "post_id String path", required = true) @PathParam("post_id") String post_id){
+    public Result likeMinus(@ApiParam(value = "post_id String path", required = true) String post_id){
         try {
             Post post = Post.find.where().eq("id", post_id).findUnique();
 

@@ -2,6 +2,7 @@ package utilities.swagger.swagger_diff_tools;
 
 
 import com.cedarsoftware.util.io.JsonWriter;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.io.IOUtils;
 import play.Play;
@@ -41,10 +42,14 @@ public class Swagger_diff_Controller extends Controller {
             logger.debug("File name is " + file_name);
 
             logger.debug("Return Json of Swagger Documentation");
-            return Json.parse( IOUtils.toString(Play.application().resourceAsStream("/swagger_history/" +  file_name +  ".json")) );
+            return Json.parse(IOUtils.toString(Play.application().resourceAsStream("/swagger_history/" + file_name + ".json")));
+
+        }catch (JsonMappingException a){
+            logger.error("file with Json Documentation is empty or damaged!");
+            return Json.newObject();
 
         } catch (NullPointerException e) {
-            logger.debug("file with Json Documentation not found!");
+            logger.error("file with Json Documentation not found!");
             return null;
         }
     }

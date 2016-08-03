@@ -31,7 +31,6 @@ import utilities.swagger.outboundClass.Login_Social_Network;
 import utilities.swagger.outboundClass.Swagger_Login_Token;
 import utilities.swagger.outboundClass.Swagger_Person_All_Details;
 
-import javax.websocket.server.PathParam;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -366,7 +365,7 @@ public class SecurityController extends Controller {
             @ApiResponse(code = 401, message = "Wrong Email or Password", response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result GitHub( @ApiParam(value = "this is return url address in format  /link/link", required = true) @PathParam("return_link")  String return_link){
+    public Result GitHub( @ApiParam(value = "this is return url address in format  /link/link", required = true)  String return_link){
         try {
 
             FloatingPersonToken floatingPersonToken = FloatingPersonToken.setProviderKey("GitHub");
@@ -409,7 +408,7 @@ public class SecurityController extends Controller {
             @ApiResponse(code = 401, message = "Wrong Email or Password", response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result Facebook(@ApiParam(value = "this is return url address in format  ?return_link=/link/link", required = true) @PathParam("return_link") String return_link){
+    public Result Facebook(@ApiParam(value = "this is return url address in format  ?return_link=/link/link", required = true)  String return_link){
         try {
             FloatingPersonToken floatingPersonToken = FloatingPersonToken.setProviderKey("Facebook");
 
@@ -487,18 +486,13 @@ public class SecurityController extends Controller {
 
     @ApiOperation( value = "optionLink", hidden = true)
     public Result optionLink(String url){
+
+        System.out.print("Opetion!!! " + request().toString() );
         CoreResponse.cors(url);
-
-        System.out.println("Response");
-
-        for( String s : response().getHeaders().keySet()){
-            System.out.println(s);
-        }
-
-
-
         return ok();
 
     }
 }
 
+// curl -X PUT --header 'Content-Type: application/json' --header 'Accept: application/json' 'http://127.0.0.1:9000/project/b_program/uploadToCloud/1'
+// curl -X PUT -H "http://localhost:9000/project/b_program/uploadToCloud/21"

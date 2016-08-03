@@ -23,6 +23,8 @@ public class Cloud_Homer_Server extends Model{
                                                                 public String hash_certificate;
                                                                 public String destination_address;
 
+                                                                public boolean is_private = false;  // Todo navázat na produkt
+
     @JsonIgnore @OneToMany(mappedBy="cloud_homer_server", cascade = CascadeType.ALL) public List<Homer_Instance> cloud_instances  = new ArrayList<>();
 
     @JsonIgnore @OneToMany(mappedBy="latest_know_server") public List<Board>  boards  = new ArrayList<>();

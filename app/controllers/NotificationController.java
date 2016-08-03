@@ -13,6 +13,7 @@ import models.project.c_program.C_Program;
 import models.project.c_program.actualization.Actualization_procedure;
 import models.project.c_program.actualization.C_Program_Update_Plan;
 import models.project.global.Project;
+import play.data.Form;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -21,12 +22,14 @@ import utilities.Server;
 import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_Unauthorized;
+import utilities.response.response_objects.Result_ok;
+import utilities.swagger.documentationClass.Swagger_Notification_Read;
 import utilities.swagger.outboundClass.Filter_List.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Notification_List;
 import utilities.swagger.outboundClass.Swagger_C_Program_Version;
 import utilities.webSocket.WS_Becki_Website;
 
-import javax.websocket.server.PathParam;
+import java.util.List;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class NotificationController extends Controller {
@@ -268,6 +271,14 @@ public class NotificationController extends Controller {
   }
 
 
+
+
+
+
+
+
+
+
     // Public REST-API (Zdokumentované ve SWAGGER)  #######################################################################
 
   @ApiOperation(value = "get latest notification",
@@ -285,7 +296,7 @@ public class NotificationController extends Controller {
           @ApiResponse(code = 500, message = "Server side Error")
   })
   @Security.Authenticated(Secured.class)
-  public Result get_history_log_page(@ApiParam(value = "page_number is Integer. Contain  1,2... " + " For first call, use 1", required = false) @PathParam("page_number") Integer page_number){
+  public Result get_notification_page(@ApiParam(value = "page_number is Integer. Contain  1,2... " + " For first call, use 1", required = false) Integer page_number){
      try {
 
         Query<Notification> query =  Notification.find.where().eq("person.id", SecurityController.getPerson().id).order().desc("created");
@@ -295,10 +306,87 @@ public class NotificationController extends Controller {
         return GlobalResult.result_ok(Json.toJson(result));
 
      } catch (Exception e) {
-      e.printStackTrace();
       return GlobalResult.internalServerError();
      }
   }
+
+
+
+  @ApiOperation(value = "delete notification",
+          tags = {"Notifications"},
+          notes = "remove notification by id",
+          produces = "application/json",
+          consumes = "text/html",
+          protocols = "https",
+          code = 200
+  )
+  @ApiResponses(value = {
+          @ApiResponse(code = 200, message = "Delete Successful",        response = Result_ok.class),
+          @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+          @ApiResponse(code = 500, message = "Server side Error")
+  })
+  @Security.Authenticated(Secured.class)
+  public Result delete_notification(String notification_id){
+    try {
+
+      Notification notification =  Notification.find.byId(notification_id);
+      if( !notification.delete_permission()) return GlobalResult.forbidden_Permission();
+
+      notification.delete();
+      return GlobalResult.result_ok();
+
+    } catch (Exception e) {
+      return GlobalResult.internalServerError();
+    }
+  }
+
+  @ApiOperation(value = "mark notifications as read",
+          tags = {"Notifications"},
+          notes = "Mark notifications as read. Send list with ids",
+          produces = "application/json",
+          protocols = "https",
+          code = 200
+  )
+  @ApiImplicitParams(
+          {
+                  @ApiImplicitParam(
+                          name = "body",
+                          dataType = "utilities.swagger.documentationClass.Swagger_Notification_Read",
+                          required = true,
+                          paramType = "body",
+                          value = "Contains Json with values"
+                  )
+          }
+  )
+  @ApiResponses(value = {
+          @ApiResponse(code = 200, message = "Delete Successful",        response = Result_ok.class),
+          @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+          @ApiResponse(code = 500, message = "Server side Error")
+  })
+  @Security.Authenticated(Secured.class)
+  public Result mark_as_read_notification(){
+    try {
+
+
+      final Form<Swagger_Notification_Read> form = Form.form(Swagger_Notification_Read.class).bindFromRequest();
+      if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+      Swagger_Notification_Read help = form.get();
+
+     List<Notification> notifications = Notification.find.where().idIn(help.notification_id).findList();
+
+      for(Notification notification : notifications) {
+
+        if (!notification.delete_permission()) return GlobalResult.forbidden_Permission();
+        notification.delete();
+
+      }
+      return GlobalResult.result_ok();
+
+    } catch (Exception e) {
+      return GlobalResult.internalServerError();
+    }
+  }
+
 
 
 

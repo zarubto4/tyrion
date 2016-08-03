@@ -30,15 +30,14 @@ public class Person extends Model {
     @ApiModelProperty(required = true) @Column(unique=true)     public String mail;
     @ApiModelProperty(required = true) @Column(unique=true)     public String nick_name;
     @ApiModelProperty(required = true)                          public String full_name;
-    @ApiModelProperty(required = true)                          public String last_title;
+
 
                                                 @JsonIgnore     public boolean mailValidated;
 
-    @JsonIgnore   @Column(length = 64)                          public byte[] shaPassword;
+    @JsonIgnore  @Column(length = 64)                           public byte[] shaPassword;
     @JsonIgnore  @OneToOne(mappedBy = "person")                 public PasswordRecoveryToken passwordRecoveryToken;
 
-    @JsonIgnore  @OneToOne(mappedBy = "person")         public Payment_Details company_account;
-
+    @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL) public List<Payment_Details>     payment_details = new ArrayList<>();
 
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<Project>              owningProjects            = new ArrayList<>();
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<Post>                 postLiker                 = new ArrayList<>();    // Propojení, které byly uživatelem hodnoceny (jak negativně, tak pozitivně)

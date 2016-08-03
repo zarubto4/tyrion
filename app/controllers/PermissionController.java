@@ -20,7 +20,6 @@ import utilities.response.response_objects.Result_ok;
 import utilities.swagger.documentationClass.Swagger_SecurityRole_New;
 import utilities.swagger.outboundClass.Swagger_System_Access;
 
-import javax.websocket.server.PathParam;
 import java.util.List;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
@@ -32,7 +31,7 @@ public class PermissionController extends Controller {
             tags = {"Permission"},
             notes = "If you want add permission to Person. You need permission for that or have right system Roles",
             produces = "application/json",
-            response =  Result_ok.class,
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -48,7 +47,7 @@ public class PermissionController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result add_Permission_Person(@ApiParam(required = true) @PathParam("person_id") String person_id, @ApiParam(required = true) @PathParam("permission_id") String permission_id) {
+    public Result add_Permission_Person(@ApiParam(required = true)  String person_id, @ApiParam(required = true) String permission_id) {
         try {
 
             Person person = Person.find.byId(person_id);
@@ -77,7 +76,7 @@ public class PermissionController extends Controller {
             tags = {"Permission"},
             notes = "If you want remove permission from Person. You need permission for that or have right system Roles",
             produces = "application/json",
-            response =  Result_ok.class,
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -93,7 +92,7 @@ public class PermissionController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result remove_Permission_Person(@ApiParam(required = true) @PathParam("person_id") String person_id, @ApiParam(required = true) @PathParam("permission_id")String permission_id) {
+    public Result remove_Permission_Person(@ApiParam(required = true)  String person_id, @ApiParam(required = true) String permission_id) {
         try {
 
             Person person = Person.find.byId(person_id);
@@ -168,7 +167,7 @@ public class PermissionController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result add_Permission_to_Role(@ApiParam(required = true) @PathParam("permission_id") String permission_id, @ApiParam(required = true) @PathParam("role_id") String role_id){
+    public Result add_Permission_to_Role(@ApiParam(required = true) String permission_id, @ApiParam(required = true)  String role_id){
         try {
 
             PersonPermission personPermission = PersonPermission.find.byId(permission_id);
@@ -198,7 +197,7 @@ public class PermissionController extends Controller {
             notes = "If you want remove system person_permissions from Role. You need permission for that or have right system Roles",
             produces = "application/json",
             protocols = "https",
-            response = Result_ok.class,
+            consumes = "text/html",
             code = 200,
             extensions = {
                     @Extension( name = "permission_required", properties = {
@@ -213,7 +212,7 @@ public class PermissionController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result remove_Permission_from_Role(@ApiParam(required = true) @PathParam("permission_id") String permission_id, @ApiParam(required = true) @PathParam("role_id")String role_id){
+    public Result remove_Permission_from_Role(@ApiParam(required = true)  String permission_id, @ApiParam(required = true) String role_id){
         try {
 
             PersonPermission personPermission = PersonPermission.find.byId(permission_id);
@@ -294,7 +293,7 @@ public class PermissionController extends Controller {
             tags = {"Role"},
             notes = "If you want delete  Role from system. You need permission for that or have right system Roles",
             produces = "application/json",
-            response =  Result_ok.class,
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -310,7 +309,7 @@ public class PermissionController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result delete_Role(@ApiParam(required = true) @PathParam("role_id")String role_id){
+    public Result delete_Role(@ApiParam(required = true)String role_id){
         try {
 
             SecurityRole securityRole = SecurityRole.find.byId(role_id);
@@ -347,7 +346,7 @@ public class PermissionController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result add_Role_Person( @ApiParam(required = true) @PathParam("person_id") String person_id , @ApiParam(required = true) @PathParam("role_id") String role_id) {
+    public Result add_Role_Person( @ApiParam(required = true)  String person_id , @ApiParam(required = true)  String role_id) {
         try {
 
             Person person = Person.find.byId(person_id);
@@ -372,7 +371,7 @@ public class PermissionController extends Controller {
             tags = {"Role", "Person"},
             notes = "If you set Role to Person. You need permission for that or have right system Roles",
             produces = "application/json",
-            response =  Result_ok.class,
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -388,7 +387,7 @@ public class PermissionController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result remove_Role_Person(@ApiParam(required = true) @PathParam("person_id") String person_id, @ApiParam(required = true) @PathParam("role_id")String role_id) {
+    public Result remove_Role_Person(@ApiParam(required = true)  String person_id, @ApiParam(required = true) String role_id) {
         try {
 
             Person person = Person.find.byId(person_id);
@@ -466,7 +465,7 @@ public class PermissionController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_System_Acces(@ApiParam(required = true) @PathParam("person_id") String person_id){
+    public Result get_System_Acces(@ApiParam(required = true) String person_id){
         try {
 
             Person person = Person.find.byId(person_id);

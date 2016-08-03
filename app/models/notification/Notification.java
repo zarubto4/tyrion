@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.NotificationController;
+import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
 import models.person.Person;
 import play.libs.Json;
@@ -146,6 +147,8 @@ public class Notification extends Model {
     }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+
+   @JsonIgnore @Transient public boolean delete_permission(){  return person.id.equals(SecurityController.getPerson().id);}
 
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

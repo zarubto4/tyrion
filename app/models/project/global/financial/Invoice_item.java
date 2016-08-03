@@ -2,6 +2,7 @@ package models.project.global.financial;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 
@@ -19,6 +20,18 @@ public class Invoice_item extends Model {
 
     public String unit_name; // Piece,
 
-    public Long   unit_price; // Cena
+    public Double unit_price; // Cena
+
+
+
+    @Transient public Double vat = 21.0;
+
+    @JsonProperty @Transient public String vat_rate(){return this.vat.toString();}
+
+    @JsonProperty @Transient public Double unit_price_without_vat(){ return  unit_price  - (unit_price * (vat / (100 + vat)) );}
+
+    @JsonProperty @Transient public Double unit_price_with_vat(){return unit_price;}
+
+
 
 }

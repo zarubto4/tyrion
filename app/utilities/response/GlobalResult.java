@@ -34,6 +34,19 @@ public class GlobalResult extends Controller {
 
     }
 
+
+//**********************************************************************************************************************
+
+    public static Result result_pdf_file(byte[] byte_array){
+
+        CoreResponse.cors_pdf_file();
+
+        return ok(byte_array);
+    }
+
+
+//**********************************************************************************************************************
+
     // Vracím při vytvoření objekt, jedinná změna je, že code = 201!
     public static Status created(JsonNode o){
         CoreResponse.cors();
@@ -84,10 +97,12 @@ public class GlobalResult extends Controller {
 
 //**********************************************************************************************************************
 
-    public static Result result_external_server_is_offline(String o){
+    public static Result result_external_server_is_offline(String message){
 
         CoreResponse.cors();
-        return Controller.status(477, Json.toJson(o));
+        Result_NotFound result = new Result_NotFound();
+        result.message = message;
+        return Controller.status(477, Json.toJson(result));
 
     }
 
@@ -104,6 +119,7 @@ public class GlobalResult extends Controller {
     // Různé varianty, když se něco nepovede
     public static Result notFoundObject(String message){
         CoreResponse.cors();
+
         Result_NotFound result = new Result_NotFound();
         result.message = message;
 

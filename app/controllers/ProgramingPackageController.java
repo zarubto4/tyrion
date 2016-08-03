@@ -3,8 +3,6 @@ package controllers;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.Query;
 import com.fasterxml.jackson.databind.JsonNode;
-import cz.gopay.api.v3.model.common.Currency;
-import cz.gopay.api.v3.model.payment.Payment;
 import io.swagger.annotations.*;
 import models.blocko.BlockoBlock;
 import models.blocko.BlockoBlockVersion;
@@ -22,14 +20,9 @@ import models.project.b_program.servers.Private_Homer_Server;
 import models.project.c_program.C_Program;
 import models.project.global.Product;
 import models.project.global.Project;
-import models.project.global.financial.Invoice;
-import models.project.global.financial.Invoice_item;
-import models.project.global.financial.Payment_Details;
-import play.Configuration;
 import play.api.libs.mailer.MailerClient;
 import play.data.Form;
 import play.libs.Json;
-import play.libs.mailer.Email;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -37,7 +30,6 @@ import play.mvc.Security;
 import utilities.Server;
 import utilities.UtilTools;
 import utilities.emails.EmailTool;
-import utilities.gopay.GoPay_Controller;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
@@ -45,16 +37,13 @@ import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Filter_List.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Homer_List;
-import utilities.swagger.outboundClass.Swagger_Tariff;
 import utilities.webSocket.WS_BlockoServer;
 import utilities.webSocket.WebSCType;
 
 import javax.inject.Inject;
-import javax.websocket.server.PathParam;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Secured.class)
@@ -64,260 +53,6 @@ public class ProgramingPackageController extends Controller {
 
 // Loger  ##############################################################################################################
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
-    static List<Swagger_Tariff> list_of_tariffs = new ArrayList<>();
-
-
-
-// GENERAL PRODUCT_TARIF #####################################################################################################
-
-    @ApiOperation(value = "get all Tariffs",
-            tags = {"Price & Invoice & Tariffs"},
-            notes = "get all Tariffs - required for creating new project.  Project is created under the tariff",
-            produces = "application/json",
-            protocols = "https",
-            code = 200
-    )
-      @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Ok Result", response =  Swagger_Tariff.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public Result get_poducts_tariffs(){
-        try{
-
-            if(list_of_tariffs.size() > 0) return GlobalResult.result_ok(Json.toJson(list_of_tariffs));
-
-            // Vytvořím seznam tarifu
-            List<String> product_tariffs = new ArrayList<>();
-
-            // Do kterého vložím jednotlivé enum hodnoty tarifů
-            product_tariffs.add( String.valueOf(Product.Product_Type.alpha) );
-            product_tariffs.add( String.valueOf(Product.Product_Type.free) );
-            product_tariffs.add( String.valueOf(Product.Product_Type.tier1) );
-
-            // Tyto hodnoty pak beru a načítám z konfiguračního souboru application.conf
-            for(String tariff : product_tariffs){
-                try {
-
-                    // Vytvářím do listu jednotlivý tarig podle klíčového slova z enum (načítám z konfiguračního souboru
-                    Swagger_Tariff swagger_tariff = new Swagger_Tariff();
-                        swagger_tariff.tariff_name = tariff;
-                        swagger_tariff.maximum_project =  Configuration.root().getInt("Byzance.tariff." + tariff + ".maximum_project");
-                        swagger_tariff.maximum_version_history = Configuration.root().getInt("Byzance.tariff." + tariff + ".maximum_version_history") ;
-                        swagger_tariff.maximum_message_per_day_device = Configuration.root().getInt("Byzance.tariff." + tariff + ".maximum_message_per_day_per_device");
-                        swagger_tariff.company_details_required = Configuration.root().getBoolean("Byzance.tariff." + tariff + ".company_details_required");
-
-                    list_of_tariffs.add(swagger_tariff);
-
-                }catch (Exception e){
-                    logger.error("Tyrion try to get Tarifs from Configuration file. But probably enum value in Product.Product_Type.(\"enums\") \"" + tariff + "\" do not correspond or missing some value in configuration");
-                    e.printStackTrace();
-                }
-            }
-
-            // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(list_of_tariffs));
-
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "create Tariffs",
-            tags = {"Price & Invoice & Tariffs"},
-            notes = "get all Tariffs - required for creating new project.  Project is created under the tariff",
-            produces = "application/json",
-            protocols = "https",
-            code = 201
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Tariff_Register",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Created succesfully - payment not required",    response =  Product.class),
-            @ApiResponse(code = 200, message = "Created succesfully - but payment is required", response =  Payment.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public Result set_tariff_with_account(){
-        try{
-
-            // Zpracování Json
-            final Form<Swagger_Tariff_Register> form = Form.form(Swagger_Tariff_Register.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-            Swagger_Tariff_Register help = form.get();
-
-            Product product = new Product();
-
-
-                 if(help.currency_type.equals( Currency.EUR.name())) product.currency_type = Currency.EUR;
-            else if(help.currency_type.equals( Currency.CZK.name())) product.currency_type = Currency.CZK;
-            else { return GlobalResult.result_BadRequest("currency_type is invalid. Use only (EUR, CZK)");}
-
-            if     (help.payment_mode.equals( Product.Payment_mode.free.name()))        product.payment_mode = Product.Payment_mode.free;
-            else if(help.payment_mode.equals( Product.Payment_mode.monthly.name()))     product.payment_mode = Product.Payment_mode.monthly;
-            else if(help.payment_mode.equals( Product.Payment_mode.annual.name()))      product.payment_mode = Product.Payment_mode.annual;
-            else if(help.payment_mode.equals( Product.Payment_mode.per_credit.name()))  product.payment_mode = Product.Payment_mode.per_credit;
-            else { return GlobalResult.result_BadRequest("payment_mode is invalid. Use only (free, monthly, annual, per_credit)");}
-
-
-            if(help.tariff_name.equals( Product.Product_Type.alpha.name() )){
-                product.type =  Product.Product_Type.alpha;
-                product.active = true;
-
-                Payment_Details payment_details = new Payment_Details();
-                payment_details.person = SecurityController.getPerson();
-                payment_details.company_account = false;
-
-                payment_details.street = help.street;
-                payment_details.street_number = help.street_number;
-                payment_details.city = help.city;
-                payment_details.zip_code = help.zip_code;
-                payment_details.country = help.country;
-
-                payment_details.save();
-
-                product.payment_details = payment_details;
-                product.save();
-
-                return GlobalResult.created( Json.toJson(product));
-            }
-
-            if(help.tariff_name.equals( Product.Product_Type.free.name() )){
-                product.type =  Product.Product_Type.free;
-                product.active = true;
-
-                Payment_Details payment_details = new Payment_Details();
-                payment_details.person = SecurityController.getPerson();
-                payment_details.company_account = false;
-
-                payment_details.street = help.street;
-                payment_details.street_number = help.street_number;
-                payment_details.city = help.city;
-                payment_details.zip_code = help.zip_code;
-                payment_details.country = help.country;
-
-                payment_details.save();
-
-                product.payment_details = payment_details;
-                product.save();
-
-                return GlobalResult.created( Json.toJson(product));
-            }
-
-
-            if(help.tariff_name.equals( Product.Product_Type.tier1.name() )){
-                product.active = false;
-
-                product.type =  Product.Product_Type.tier1;
-
-                Payment_Details payment_details = new Payment_Details();
-                payment_details.person = SecurityController.getPerson();
-                payment_details.company_account = true;
-
-                payment_details.street        = help.street;
-                payment_details.street_number = help.street_number;
-                payment_details.city          = help.city;
-                payment_details.zip_code      = help.zip_code;
-                payment_details.country       = help.country;
-
-                payment_details.registration_no          = help.registration_no;
-                payment_details.VAT_number               = help.VAT_number;
-                payment_details.company_name             = help.company_name;
-                payment_details.company_authorized_email = help.company_authorized_email;
-                payment_details.company_authorized_phone = help.company_authorized_phone;
-                payment_details.company_web              = help.company_web;
-                payment_details.company_invoice_email    = help.company_invoice_email;
-
-                payment_details.save();
-
-                product.payment_details = payment_details;
-                product.save();
-
-                Invoice invoice = new Invoice();
-                invoice.set_basic_data();
-
-                Invoice_item invoice_item_1 = new Invoice_item();
-                    invoice_item_1.name = "Tier 1 " +  product.payment_mode.name();
-                    invoice_item_1.unit_price = product.get_price_general_fee();
-                    invoice_item_1.quantity = (long) 1;
-                    invoice_item_1.unit_name = "Service";
-                invoice.invoice_items.add(invoice_item_1);
-
-                Invoice_item invoice_item_2 = new Invoice_item();
-                        invoice_item_1.name = "Service fees for 100 devices";
-                        invoice_item_1.unit_price = product.get_price_month_device_connection();
-                        invoice_item_1.quantity = (long) 100;
-                        invoice_item_1.unit_name = "Per Device";
-                invoice.invoice_items.add(invoice_item_2);
-
-                Invoice_item invoice_item_3 = new Invoice_item();
-                invoice_item_1.name = "Gift for beggining";
-                invoice_item_1.unit_price = -100 * product.get_price_month_device_connection();
-                invoice_item_1.quantity = (long) 1;
-                invoice_item_1.unit_name = "";
-                invoice.invoice_items.add(invoice_item_3);
-
-                invoice.product = product;
-                invoice.save();
-
-                Payment payment = GoPay_Controller.provide_payment(product.currency_type,  "First Paiment",invoice);
-
-                return GlobalResult.created( Json.toJson(payment));
-
-            }
-
-            // Vrácení objektu
-            return GlobalResult.result_BadRequest("Tariff_name {" + help.tariff_name  + "} not found or not supported now! Use only (alpha,free,tier1)");
-
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "get all the products that the user can use",
-            tags = {"Price & Invoice & Tariffs"},
-            notes = "get all the products that the user can use when creating new projects",
-            produces = "application/json",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Product.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    // Slouží k získání možností pod jaký produkt lze vytvořit nějaký projekt
-    public Result get_applicable_products_for_creating_new_project(){
-        try{
-
-
-           List<Product> list = Product.find.where().eq("payment_details.person.id",SecurityController.getPerson().id).findList();
-           return GlobalResult.result_ok( Json.toJson(list));
-
-        }catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-
-    public Result get_Invoice(){
-        return ok();
-    }
 
 
 // GENERAL PROJECT #####################################################################################################
@@ -363,6 +98,7 @@ public class ProgramingPackageController extends Controller {
             Project project  = new Project();
             project.project_name = help.project_name;
             project.project_description = help.project_description;
+            project.product = product;
 
             project.ownersOfProject.add( SecurityController.getPerson() );
 
@@ -436,7 +172,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result getProject(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
+    public  Result getProject(@ApiParam(value = "project_id String path", required = true)  String project_id){
         try {
 
             // Kontrola objektu
@@ -458,6 +194,7 @@ public class ProgramingPackageController extends Controller {
             tags = {"Project"},
             notes = "delete Projects by project_id",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -474,7 +211,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result deleteProject(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
+    public  Result deleteProject(@ApiParam(value = "project_id String path", required = true) String project_id){
         try {
 
             // Kontrola objektu
@@ -531,7 +268,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public  Result edit_Project(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
+    public  Result edit_Project(@ApiParam(value = "project_id String path", required = true)  String project_id){
         try {
 
             // Zpracování Json
@@ -594,7 +331,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result shareProjectWithUsers(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
+    public Result shareProjectWithUsers(@ApiParam(value = "project_id String path", required = true)  String project_id){
         try {
 
             // Zpracování Json
@@ -640,7 +377,7 @@ public class ProgramingPackageController extends Controller {
 
                 // Odeslání emailu s linkem pro registraci
                 try {
-                    EmailTool emailTool = new EmailTool()
+                             new EmailTool()
                             .addEmptyLineSpace()
                             .startParagraph("13")
                             .addText("User ")
@@ -653,10 +390,9 @@ public class ProgramingPackageController extends Controller {
                             .addLine()
                             .addEmptyLineSpace()
                             .addLink(link,"Click here to collaborate","18")
-                            .addEmptyLineSpace();
+                            .addEmptyLineSpace()
+                            .sendEmail(mail, "Invitation to Collaborate" );
 
-                    Email email = emailTool.sendEmail(mail, "Invitation to Collaborate", emailTool.getEmailContent());
-                    mailerClient.send(email);
 
                 } catch (Exception e) {
                     logger.error ("Sending mail -> critical error", e);
@@ -776,7 +512,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result unshareProjectWithUsers(@ApiParam(value = "project_id String path", required = true) @PathParam("project_id") String project_id){
+    public Result unshareProjectWithUsers(@ApiParam(value = "project_id String path", required = true) String project_id){
         try {
 
             // Zpracování Json
@@ -911,7 +647,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result removeHomer(@ApiParam(value = "b_program_id String path",   required = true) @PathParam("id") String homer_id){
+    public  Result removeHomer(@ApiParam(value = "b_program_id String path",   required = true) String homer_id){
         try{
 
            // Kontrola objektu
@@ -956,7 +692,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result getHomer(@ApiParam(value = "b_program_id String path",   required = true) @PathParam("id")String homer_id){
+    public  Result getHomer(@ApiParam(value = "b_program_id String path",   required = true) String homer_id){
         try {
 
             // Kontrola objektu
@@ -1004,7 +740,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public  Result get_Homers_by_Filter( @ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) @PathParam("page_number") Integer page_number){
+    public  Result get_Homers_by_Filter( @ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) Integer page_number){
         try {
 
             // Zpracování Json
@@ -1037,6 +773,7 @@ public class ProgramingPackageController extends Controller {
             tags = {"Homer", "Project"},
             notes = "remove Homer",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -1058,7 +795,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result connectHomerWithProject(@ApiParam(value = "project_id String path",   required = true) @PathParam("project_id") String project_id, @ApiParam(value = "id String path",   required = true) @PathParam("id") String homer_id){
+    public  Result connectHomerWithProject(@ApiParam(value = "project_id String path",   required = true) String project_id, @ApiParam(value = "id String path",   required = true) String homer_id){
         try{
 
             // Získání objektů
@@ -1091,6 +828,7 @@ public class ProgramingPackageController extends Controller {
             tags = {"Homer", "Project"},
             notes = "remove Homer",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -1112,7 +850,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result disconnectHomerWithProject(@ApiParam(value = "project_id String path",   required = true) @PathParam("project_id") String project_id, @ApiParam(value = "id String path",   required = true) @PathParam("id") String homer_id){
+    public  Result disconnectHomerWithProject(@ApiParam(value = "project_id String path",   required = true) String project_id, @ApiParam(value = "id String path",   required = true) String homer_id){
         try{
 
             // Získání objektů
@@ -1195,12 +933,10 @@ public class ProgramingPackageController extends Controller {
 
             // Tvorba programu
             B_Program b_program             = new B_Program();
-            b_program.azurePackageLink      = "personal-program";
             b_program.dateOfCreate          = new Date();
             b_program.program_description   = help.program_description;
             b_program.name                  = help.name;
             b_program.project               = project;
-            b_program.setUniqueAzureStorageLink();
 
             // Kontrola oprávnění těsně před uložením
             if (!b_program.create_permission() ) return GlobalResult.forbidden_Permission();
@@ -1236,7 +972,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result get_b_Program(@ApiParam(value = "b_program_id String path", required = true) @PathParam("b_program_id") String b_program_id){
+    public  Result get_b_Program(@ApiParam(value = "b_program_id String path", required = true)  String b_program_id){
         try{
 
             // Kontrola objektu
@@ -1274,7 +1010,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result get_b_Program_version(@ApiParam(value = "version_id String path", required = true) @PathParam("version_id") String version_id){
+    public  Result get_b_Program_version(@ApiParam(value = "version_id String path", required = true)  String version_id){
         try{
 
             // Kontrola objektu
@@ -1324,7 +1060,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public  Result edit_b_Program(@ApiParam(value = "b_program_id String path", required = true) @PathParam("b_program_id") String b_program_id){
+    public  Result edit_b_Program(@ApiParam(value = "b_program_id String path", required = true)  String b_program_id){
         try{
 
             // Zpracování Json
@@ -1384,7 +1120,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public  Result update_b_program(@ApiParam(value = "b_program_id String path", required = true) @PathParam("b_program_id") String b_program_id){
+    public  Result update_b_program(@ApiParam(value = "b_program_id String path", required = true)  String b_program_id){
         try{
 
             // Zpracování Json
@@ -1406,7 +1142,6 @@ public class ProgramingPackageController extends Controller {
             Version_Object version_object          = new Version_Object();
             version_object.version_name            = help.version_name;
             version_object.version_description     = help.version_description;
-            version_object.azureLinkVersion        = UUID.randomUUID().toString();;
             version_object.date_of_create          = new Date();
             version_object.b_program               = b_program;
 
@@ -1493,7 +1228,7 @@ public class ProgramingPackageController extends Controller {
             version_object.refresh();
 
             // Nahrání na Azure
-             UtilTools.uploadAzure_Version("b-program", file_content, "program.js", b_program.azureStorageLink, b_program.azurePackageLink, version_object);
+             UtilTools.uploadAzure_Version(file_content, "program.js", b_program.get_path() , version_object);
 
             // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson( version_object.b_program.program_version(version_object) ));
@@ -1508,6 +1243,7 @@ public class ProgramingPackageController extends Controller {
             tags = {"B_Program"},
             notes = "remove B_Program object",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -1524,7 +1260,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result remove_b_Program(@ApiParam(value = "b_program_id String path", required = true) @PathParam("b_program_id") String b_program_id){
+    public  Result remove_b_Program(@ApiParam(value = "b_program_id String path", required = true)  String b_program_id){
         try{
 
             // Kontrola objektu
@@ -1563,7 +1299,7 @@ public class ProgramingPackageController extends Controller {
             tags = {"B_Program"},
             notes = "remove B_Program version object",
             produces = "application/json",
-            consumes = "",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -1580,7 +1316,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result remove_b_Program_version(@ApiParam(value = "version_id String path", required = true) @PathParam("version_id") String version_id){
+    public  Result remove_b_Program_version(@ApiParam(value = "version_id String path", required = true) String version_id){
         try{
 
             // Získání objektu
@@ -1627,6 +1363,7 @@ public class ProgramingPackageController extends Controller {
             notes = "If you want upload program (!Immediately!) to Homer -> Homer must be online and connect to Cloud Server, " +
                     "you are uploading B_program version. And if connected M_Project is set to \"Auto_update\", it will automatically update all Grid Terminals.",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -1643,9 +1380,9 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",                  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result uploadProgramToHomer_Immediately(@ApiParam(value = "b_program_id", required = true) @PathParam("b_program_id") String b_program_id,
-                                                    @ApiParam(value = "version_id", required = true)   @PathParam("version_id") String version_id,
-                                                    @ApiParam(value = "homer_id", required = true)     @PathParam("homer_id") String homer_id){
+    public  Result uploadProgramToHomer_Immediately(@ApiParam(value = "b_program_id", required = true) String b_program_id,
+                                                    @ApiParam(value = "version_id", required = true)    String version_id,
+                                                    @ApiParam(value = "homer_id", required = true)     String homer_id){
         try {
 
 
@@ -1728,6 +1465,7 @@ public class ProgramingPackageController extends Controller {
             tags = {"B_Program"},
             notes = "upload version of B Program to cloud. Its possible have only one version from B program in cloud. If you uploud new one - old one will be replaced",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -1744,7 +1482,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",                  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result upload_b_Program_ToCloud(@ApiParam(value = "version_id String path", required = true) @PathParam("version_id") String version_id){
+    public  Result upload_b_Program_ToCloud(@ApiParam(value = "version_id String path", required = true) String version_id){
         try {
 
             // Kontrola objektu: Verze B programu kterou budu nahrávat do cloudu
@@ -1771,7 +1509,8 @@ public class ProgramingPackageController extends Controller {
             }
 
 
-            Homer_Instance temporary_yoda_instance = Homer_Instance.find.where().eq("private_instance_board.board.id", version_object.yoda_board_pair.board.id).findUnique();
+            Homer_Instance temporary_yoda_instance = Homer_Instance.find.where().eq("private_instance_board.id", version_object.yoda_board_pair.board.id).findUnique();
+
             if(temporary_yoda_instance != null){
                 System.out.println("Yoda měl už vlastní historickou instanci! Proto jí musím transformovat na klasickou blocko instanci");
 
@@ -1973,7 +1712,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_Blocko_Server( @ApiParam(value = "server_id ", required = true) @PathParam("server_id") String server_id ){
+    public Result edit_Blocko_Server( @ApiParam(value = "server_id ", required = true) String server_id ){
         try{
 
             // Zpracování Json
@@ -2006,6 +1745,7 @@ public class ProgramingPackageController extends Controller {
             tags = {"External Server"},
             notes = "get all Blocko Servers",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -2056,7 +1796,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result delete_Blocko_Server( @ApiParam(value = "server_id ", required = true) @PathParam("server_id") String server_id ){
+    public Result delete_Blocko_Server( @ApiParam(value = "server_id ", required = true)  String server_id ){
         try{
 
             // Kontrola objektu
@@ -2158,6 +1898,7 @@ public class ProgramingPackageController extends Controller {
             tags = {"Blocko-Block"},
             notes = "get BlockoBlock ",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -2230,7 +1971,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result editTypeOfBlock(@ApiParam(value = "type_of_block_id String path",   required = true) @PathParam("type_of_block_id") String type_of_block_id){
+    public Result editTypeOfBlock(@ApiParam(value = "type_of_block_id String path",   required = true)  String type_of_block_id){
         try{
 
             // Zpracování Json
@@ -2275,6 +2016,7 @@ public class ProgramingPackageController extends Controller {
             tags = {"Type of Block"},
             notes = "delete group for BlockoBlocks -> Type of block",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -2291,7 +2033,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result deleteTypeOfBlock(@ApiParam(value = "type_of_block_id String path",   required = true) @PathParam("type_of_block_id") String type_of_block_id){
+    public Result deleteTypeOfBlock(@ApiParam(value = "type_of_block_id String path",   required = true)  String type_of_block_id){
         try{
 
             // Kontrola objektu
@@ -2316,6 +2058,7 @@ public class ProgramingPackageController extends Controller {
             tags = {"Type of Block"},
             notes = "delete group for BlockoBlocks -> Type of block",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200
     )
@@ -2448,7 +2191,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_Block(@ApiParam(value = "blocko_block_id String path",   required = true) @PathParam("blocko_block_id") String blocko_block_id){
+    public Result edit_Block(@ApiParam(value = "blocko_block_id String path",   required = true)  String blocko_block_id){
         try {
 
                 // Zpracování Json
@@ -2490,6 +2233,7 @@ public class ProgramingPackageController extends Controller {
             tags = {"Blocko-Block"},
             notes = "get version (content) from independent BlockoBlock",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -2550,7 +2294,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result getBlockoBlock(@ApiParam(value = "blocko_block_id String path",   required = true) @PathParam("blocko_block_id") String blocko_block_id){
+    public Result getBlockoBlock(@ApiParam(value = "blocko_block_id String path",   required = true) String blocko_block_id){
         try {
             // Kontrola objektu
             BlockoBlock blockoBlock = BlockoBlock.find.byId(blocko_block_id);
@@ -2572,6 +2316,7 @@ public class ProgramingPackageController extends Controller {
             tags = {"Blocko-Block"},
             notes = "delete BlockoBlock",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             extensions = {
                     @Extension( name = "permission_required", properties = {
@@ -2587,7 +2332,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result deleteBlock(@ApiParam(value = "blocko_block_id String path",   required = true) @PathParam("blocko_block_id") String blocko_block_id){
+    public Result deleteBlock(@ApiParam(value = "blocko_block_id String path",   required = true)  String blocko_block_id){
         try {
 
             // Kontrola objektu
@@ -2612,6 +2357,7 @@ public class ProgramingPackageController extends Controller {
             tags = {"Blocko-Block"},
             notes = "delete BlockoBlock version",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             extensions = {
                     @Extension( name = "permission_required", properties = {
@@ -2683,7 +2429,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result new_BlockoBlock_Version(@ApiParam(value = "blocko_block_id String path",   required = true) @PathParam("blocko_block_id") String blocko_block_id){
+    public Result new_BlockoBlock_Version(@ApiParam(value = "blocko_block_id String path",   required = true) String blocko_block_id){
         try {
 
             // Zpracování Json

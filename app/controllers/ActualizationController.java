@@ -25,7 +25,6 @@ import utilities.response.response_objects.Result_NotFound;
 import utilities.response.response_objects.Result_PermissionRequired;
 import utilities.response.response_objects.Result_Unauthorized;
 
-import javax.websocket.server.PathParam;
 import java.io.File;
 import java.util.*;
 
@@ -62,7 +61,7 @@ public class ActualizationController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_Actualization_Procedure(@ApiParam(required = true) @PathParam("actualization_procedure_id")  String actualization_procedure_id){
+    public Result get_Actualization_Procedure(@ApiParam(required = true) String actualization_procedure_id){
         try {
 
             // Kontrola objektu
@@ -81,7 +80,7 @@ public class ActualizationController extends Controller {
     }
 
 
-    public Result get_Actualization_progress(@ApiParam(required = true) @PathParam("board_id")  String project_id) {
+    public Result get_Actualization_progress(@ApiParam(required = true)   String project_id) {
         try {
 
             return GlobalResult.result_ok();
@@ -90,7 +89,7 @@ public class ActualizationController extends Controller {
         }
     }
 
-    public Result set_actualization_sheduling(@ApiParam(required = true) @PathParam("board_id")  String project_id) {
+    public Result set_actualization_sheduling(@ApiParam(required = true)  String project_id) {
         try {
 
             return GlobalResult.result_ok();
@@ -124,7 +123,7 @@ public class ActualizationController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result canceled_procedure(@ApiParam(required = true) @PathParam("actualization_procedure_id")  String actualization_procedure_id) {
+    public Result canceled_procedure(@ApiParam(required = true) String actualization_procedure_id) {
         try {
 
             // Kontrola objektu

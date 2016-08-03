@@ -9,8 +9,8 @@
 ### Testovací ############ Testovací ############### Testovací ################ Testovací ###########################################################################
 ###################################################################################f#################################################################################
 
-#GET             /test2                                      @controllers.WikyController.test2()
-#GET             /test3                                      @controllers.WikyController.test3()
+GET              /test1                                      @controllers.WikyController.test1()
+GET             /test2                                       @controllers.WikyController.test2()
 
 ### WEBSOCKET ############ WEBSOCKET ############### WEBSOCKET ################ WEBSOCKET ###########################################################################
 ###################################################################################f#################################################################################
@@ -21,6 +21,9 @@ GET              /websocket/blocko_server/:identificator       @controllers.WebS
 GET              /websocket/compilation_server/:identificator  @controllers.WebSocketController_Incoming.compilator_server_connection(identificator)
 GET              /websocket/becki/:secure_token                @controllers.WebSocketController_Incoming.becki_website_connection(secure_token)
 GET              /websocket/access_token                       @controllers.WebSocketController_Incoming.get_Websocket_token()
+
+
+
 
 
 #API - CoreClient ####################################################################################################################################################
@@ -43,7 +46,11 @@ GET             /login/github/*url                          @controllers.Securit
 ### NOTIFICATION ############ NOTIFICATION ############### NOTIFICATION ################ NOTIFICATION ################################################################
 ######################################################################################################################################################################
 
-GET             /notification/list/:page_number             @controllers.NotificationController.get_history_log_page(page_number: Integer)
+GET             /notification/list/:page_number             @controllers.NotificationController.get_notification_page(page_number: Integer)
+DELETE          /notification/:notification_id              @controllers.NotificationController.delete_notification(notification_id)
+
+PUT             /notification/read                          @controllers.NotificationController.mark_as_read_notification()
+
 
 ### PERSON ############ PERSON ############### PERSON ################ PERSON ################# PERSON ############ PERSON ###########################################
 ######################################################################################################################################################################
@@ -129,17 +136,36 @@ POST           /overflow/link/:question_post_id/:answer_post_id                 
 DELETE         /overflow/link/:linked_post_id                                               @controllers.OverFlowController.unlinkWithPreviousAnswer(linked_post_id)
 
 
-PUT           /overflow/hashTag/:post_id/:hashTag                                           @controllers.OverFlowController.add_HashTag_to_Post(post_id,hashTag)
-DELETE        /overflow/hashTag/:post_id/:hashTag                                           @controllers.OverFlowController.remove_HashTag_from_Post(post_id,hashTag)
+PUT            /overflow/hashTag/:post_id/:hashTag                                           @controllers.OverFlowController.add_HashTag_to_Post(post_id,hashTag)
+DELETE         /overflow/hashTag/:post_id/:hashTag                                           @controllers.OverFlowController.remove_HashTag_from_Post(post_id,hashTag)
 
 
 ### PROJECT ############ PROJECT ############### PROJECT ################ PROJECT ################# PROJECT ####################################################################
 ################################################################################################################################################################################
 
 #Tarrifs
-GET            /product/tarifs/for_registration                                             @controllers.ProgramingPackageController.get_poducts_tariffs()
-GET            /product/tarifs/user_applicable                                              @controllers.ProgramingPackageController.get_applicable_products_for_creating_new_project()
-POST           /product/tarif                                                               @controllers.ProgramingPackageController.set_tariff_with_account()
+GET            /product/tarifs/for_registration                                             @controllers.Finance_Controller.get_poducts_tariffs()
+GET            /product/tarifs/user_applicable                                              @controllers.Finance_Controller.get_applicable_products_for_creating_new_project()
+
+#CRUD Tarrifs
+POST           /product/tarif                                                               @controllers.Finance_Controller.set_tariff_with_account()
+PUT            /product/tarif/details/:payment_details_id                                   @controllers.Finance_Controller.edit_payment_details(payment_details_id: Long)
+PUT            /product/tarif/general/:product_id                                           @controllers.Finance_Controller.edit_general_product_details(product_id: Long)
+
+GET            /product/finance/summary                                                     @controllers.Finance_Controller.get_financial_summary()
+
+#GoPay
+GET            /go_pay/notification_url                                                     @utilities.goPay.GoPay_Controller.call_back_Notification(id: Long)
+GET            /go_pay/return_url                                                           @utilities.goPay.GoPay_Controller.call_back_Return_Url(id: Long)
+
+
+#Fakturoid
+GET             /product/invoice/all                                                        @controllers.Finance_Controller.get_invoice_for_Byzance_Employes()
+GET             /product/invoice/pay/:invoice_id                                            @controllers.Finance_Controller.pay_send_invoice(invoice_id: Long)
+
+GET             /product/invoice/pdf/:invoice_id                                            @utilities.fakturoid.Fakturoid_Controller.get_PDF_Invoice(invoice_id: Long)
+
+
 
 
 #Project
@@ -152,11 +178,13 @@ PUT            /project/project/shareProject/:project_id                        
 PUT            /project/project/unshareProject/:project_id                                  @controllers.ProgramingPackageController.unshareProjectWithUsers(project_id)
 PUT            /project/project/addParticipant/:ivitation_id/:decision                      @controllers.ProgramingPackageController.addParticipantToProject(ivitation_id, decision: Boolean)
 
+
 #Homer
 POST           /project/homer                                                               @controllers.ProgramingPackageController.newHomer()
 PUT            /project/homer/filter/:page_number                                           @controllers.ProgramingPackageController.get_Homers_by_Filter(page_number: Integer)
 DELETE         /project/homer/:homer_id                                                     @controllers.ProgramingPackageController.removeHomer(homer_id)
 GET            /project/homer/:homer_id                                                     @controllers.ProgramingPackageController.getHomer(homer_id)
+
 
 #Project - connection
 PUT            /project/homer/:project_id/:homer_id                                         @controllers.ProgramingPackageController.connectHomerWithProject(project_id, homer_id)
@@ -190,6 +218,7 @@ POST           /project/blockoBlock/version/:blocko_block_id                    
 GET            /project/blockoBlock/version/all/:blocko_block_id                            @controllers.ProgramingPackageController.get_BlockoBlock_all_versions(blocko_block_id)
 GET            /project/blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.get_BlockoBlock_Version(blocko_block_version_id)
 DELETE         /project/blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.delete_BlockoBlock_Version(blocko_block_version_id)
+
 
 
 #TypeOfBlocko
@@ -347,7 +376,6 @@ PUT             /websocket/terminal/identificator/:terminal_id                  
 #SWAGGER API
 GET            /api-docs                                    @utilities.swagger.ApiHelpController.getResources
 GET            /api-docs/:version                           @utilities.swagger.swagger_diff_tools.Swagger_diff_Controller.getResources_version(version)
-
 
 #CORS
 OPTIONS        /*all                                        @controllers.SecurityController.optionLink(all)

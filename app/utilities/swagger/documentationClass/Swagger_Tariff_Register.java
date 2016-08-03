@@ -11,14 +11,25 @@ public class Swagger_Tariff_Register {
 
 
     @Constraints.Required
-    public String tariff_name;
+    public String tariff_type;
+
+    @Constraints.Required
+    @Constraints.MinLength(value = 5, message = "The tariff_individual_name must have at least 4 characters")
+    @ApiModelProperty(required = true, value =  "Required: always." +
+                                                "The street must have at least 4 characters")
+    public String product_individual_name;
 
     @Constraints.Required
     @Constraints.MinLength(value = 3)
-    @Constraints.MaxLength(value = 3) public String currency_type;
+    @Constraints.MaxLength(value = 3)
+    public String currency_type;
 
-    @Constraints.Required
+
+    @ApiModelProperty(required = true, value =  "Required: only in if required_payment_mode is true")
     public String payment_mode;
+
+    @ApiModelProperty(required = true, value =  "Required: only in if required_payment_mode is true")
+    public String payment_method;
 
 
     @Constraints.Required
@@ -57,9 +68,10 @@ public class Swagger_Tariff_Register {
                                                  "The registration_no must have at least 4 characters")
     public String registration_no;
 
-    @ApiModelProperty(required = false, value =  "Required: only if account is business" +
+
+    @ApiModelProperty(required = false, value =  "Required: only if account is business & from EU!!! CZ28496639 " +
                                                  "The VAT_number must have at least 4 characters")
-    public String VAT_number;
+    public String vat_number;
 
     @ApiModelProperty(required = false, value =  "Required: only if account is business" +
                                                  "The company_name must have at least 4 characters")

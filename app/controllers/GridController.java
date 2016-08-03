@@ -21,7 +21,6 @@ import utilities.swagger.documentationClass.Swagger_M_Project_New;
 import utilities.swagger.documentationClass.Swagger_ScreeSizeType_New;
 import utilities.swagger.outboundClass.Swagger_Screen_Size_Type_Combination;
 
-import javax.websocket.server.PathParam;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -71,6 +70,7 @@ public class GridController extends Controller {
     @Security.Authenticated(Secured.class)
     public Result new_M_Project(String project_id) {
         try{
+
             final Form<Swagger_M_Project_New> form = Form.form(Swagger_M_Project_New.class).bindFromRequest();
             if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_M_Project_New help = form.get();
@@ -119,7 +119,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured.class)
-    public Result get_M_Project(@ApiParam(value = "m_project_id String query", required = true) @PathParam("m_project_id") String m_project_id){
+    public Result get_M_Project(@ApiParam(value = "m_project_id String query", required = true) String m_project_id){
         try {
 
             M_Project m_project = M_Project.find.byId(m_project_id);
@@ -165,7 +165,7 @@ public class GridController extends Controller {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Secured.class)
-    public Result edit_M_Project(@ApiParam(value = "m_project_id String query", required = true) @PathParam("m_project_id") String m_project_id){
+    public Result edit_M_Project(@ApiParam(value = "m_project_id String query", required = true) String m_project_id){
         try{
 
             final Form<Swagger_M_Project_New> form = Form.form(Swagger_M_Project_New.class).bindFromRequest();
@@ -209,7 +209,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured.class)
-    public Result remove_M_Project(@ApiParam(value = "m_project_id String query", required = true) @PathParam("m_project_id") String m_project_id){
+    public Result remove_M_Project(@ApiParam(value = "m_project_id String query", required = true)  String m_project_id){
         try{
 
             M_Project m_project = M_Project.find.byId(m_project_id);
@@ -285,9 +285,9 @@ public class GridController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured.class)
-    public Result connect_M_Program_with_B_Program(@ApiParam(value = "m_project_id String", required = true) @PathParam("m_project_id") String m_project_id,
-                                                   @ApiParam(value = "version_id String", required = true) @PathParam("version_id")     String version_id,
-                                                   @ApiParam(value = "auto_incrementing Boolean value", required = true) @PathParam("auto_incrementing")   Boolean auto_incrementing ){
+    public Result connect_M_Program_with_B_Program(@ApiParam(value = "m_project_id String", required = true)String m_project_id,
+                                                   @ApiParam(value = "version_id String", required = true)    String version_id,
+                                                   @ApiParam(value = "auto_incrementing Boolean value", required = true)  Boolean auto_incrementing ){
         try {
 
             M_Project m_project = M_Project.find.byId(m_project_id);
@@ -334,7 +334,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured.class)
-    public Result disconnect_M_Program_from_B_Program(@ApiParam(value = "m_project_id String", required = true) @PathParam("m_project_id") String m_project_id){
+    public Result disconnect_M_Program_from_B_Program(@ApiParam(value = "m_project_id String", required = true)  String m_project_id){
         try {
 
             M_Project m_project = M_Project.find.byId(m_project_id);
@@ -393,7 +393,7 @@ public class GridController extends Controller {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Secured.class)
-    public Result new_M_Program( @ApiParam(value = "m_project_id", required = true) @PathParam("m_project_id") String m_project_id ) {
+    public Result new_M_Program( @ApiParam(value = "m_project_id", required = true) String m_project_id ) {
         try {
             final Form<Swagger_M_Program_New> form = Form.form(Swagger_M_Program_New.class).bindFromRequest();
             if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
@@ -452,7 +452,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_M_Program_byQR_Token_forMobile(@ApiParam(value = "qr_token String query", required = true) @PathParam("qr_token") String qr_token){
+    public Result get_M_Program_byQR_Token_forMobile(@ApiParam(value = "qr_token String query", required = true) String qr_token){
        try{
 
            M_Program m_program = M_Program.find.where().eq("qr_token", qr_token).findUnique();
@@ -519,7 +519,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured.class)
-    public Result  get_M_Program(@ApiParam(value = "m_program_id String query", required = true) @PathParam("m_program_id") String m_program_id) {
+    public Result  get_M_Program(@ApiParam(value = "m_program_id String query", required = true)  String m_program_id) {
         try {
             M_Program m_program = M_Program.find.byId(m_program_id);
             if (m_program == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
@@ -567,7 +567,7 @@ public class GridController extends Controller {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Secured.class)
-    public Result edit_M_Program(@ApiParam(value = "m_program_id String query", required = true) @PathParam("m_program_id") String m_program_id){
+    public Result edit_M_Program(@ApiParam(value = "m_program_id String query", required = true)  String m_program_id){
         try {
 
             final Form<Swagger_M_Program_New> form = Form.form(Swagger_M_Program_New.class).bindFromRequest();
@@ -622,7 +622,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured.class)
-    public Result remove_M_Program(@ApiParam(value = "m_program_id String query", required = true) @PathParam("m_program_id") String m_program_id){
+    public Result remove_M_Program(@ApiParam(value = "m_program_id String query", required = true) String m_program_id){
         try {
 
             M_Program m_program = M_Program.find.byId(m_program_id);
@@ -751,7 +751,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured.class)
-    public Result get_Screen_Size_Type(@ApiParam(value = "screen_size_type_id String query", required = true) @PathParam("screen_size_type_id") String screen_size_type_id){
+    public Result get_Screen_Size_Type(@ApiParam(value = "screen_size_type_id String query", required = true) String screen_size_type_id){
         try {
             Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId(screen_size_type_id);
             if (screen_size_type == null) return GlobalResult.notFoundObject("Screen_Size_Type screen_type_id not found");
@@ -841,7 +841,7 @@ public class GridController extends Controller {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Secured.class)
-    public Result edit_Screen_Size_Type(@ApiParam(value = "screen_size_type_id String query", required = true) @PathParam("screen_size_type_id") String screen_size_type_id){
+    public Result edit_Screen_Size_Type(@ApiParam(value = "screen_size_type_id String query", required = true) String screen_size_type_id){
         try {
 
             final Form<Swagger_ScreeSizeType_New> form = Form.form(Swagger_ScreeSizeType_New.class).bindFromRequest();
@@ -911,7 +911,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured.class)
-    public Result remove_Screen_Size_Type(@ApiParam(value = "screen_size_type_id String query", required = true) @PathParam("screen_size_type_id") String screen_size_type_id){
+    public Result remove_Screen_Size_Type(@ApiParam(value = "screen_size_type_id String query", required = true)  String screen_size_type_id){
         try {
             Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId(screen_size_type_id);
             if(screen_size_type == null) return GlobalResult.notFoundObject("Screen_Size_Type screen_type_id not found");

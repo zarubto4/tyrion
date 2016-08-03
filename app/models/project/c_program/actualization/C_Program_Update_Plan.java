@@ -1,5 +1,6 @@
 package models.project.c_program.actualization;
 
+import com.avaje.ebean.Expr;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -8,6 +9,7 @@ import io.swagger.annotations.ApiModelProperty;
 import models.compiler.Board;
 import models.compiler.FileRecord;
 import models.compiler.Version_Object;
+import models.project.b_program.Homer_Instance;
 import utilities.hardware_updater.States.C_ProgramUpdater_State;
 
 import javax.persistence.*;
@@ -38,7 +40,6 @@ public class C_Program_Update_Plan extends Model {
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @ApiModelProperty(required = true)  @Transient public String board_id()             { return board.id;  }
 
 
     @ApiModelProperty(required = false, value = "Is visible only if user send compilation under C_program in system  ( OR state for binary_file)") @Transient
@@ -55,6 +56,39 @@ public class C_Program_Update_Plan extends Model {
 
             return c_program_detail;
 
+    }
+
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true)
+    public Server_detail server_detail(){
+
+        Server_detail server_detail = new Server_detail();
+
+        Homer_Instance homer_instance = Homer_Instance.find.where()
+                .disjunction()
+                    .add(Expr.eq("version_object.yoda_board_pair.board.id", board.id))
+                    .add(Expr.eq("version_object.padavan_board_pairs.board.id", board.id))
+                    .add(Expr.eq("private_instance_board.id", board.id))
+                .findUnique();
+
+        server_detail.server_id   =  homer_instance.cloud_homer_server.id;
+        server_detail.server_name =  homer_instance.cloud_homer_server.server_name;
+        server_detail.is_private  =  homer_instance.cloud_homer_server.is_private;
+        server_detail.instnace_id =  homer_instance.id;
+
+        return  server_detail;
+
+    }
+
+        @JsonProperty @ApiModelProperty(required = true, readOnly = true)
+    public Board_detail board_detail(){
+
+        Board_detail board_detail = new Board_detail();
+        board_detail.board_id = board.id;
+        board_detail.personal_description = board.personal_description;
+        board_detail.type_of_board_id = board.type_of_board.id;
+        board_detail.type_of_board_name = board.type_of_board.name;
+
+        return board_detail;
     }
 
     @ApiModelProperty(required = false, value = "Is visible only if user send own binary file ( OR state for c_program_detail)") @Transient
@@ -75,13 +109,26 @@ public class C_Program_Update_Plan extends Model {
 /* POMOCNÉ TŘÍDY -------------------------------------------------------------------------------------------------------*/
 
     class C_Program_Update_program{
-        @ApiModelProperty(required = true, value = "Can be empty") public String c_program_id;
-        @ApiModelProperty(required = true, value = "Can be empty") public String c_program_version_id;
-        @ApiModelProperty(required = true, value = "Can be empty") public String c_program_program_name;
-        @ApiModelProperty(required = true, value = "Can be empty") public String c_program_version_name;
+        @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String c_program_id;
+        @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String c_program_version_id;
+        @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String c_program_program_name;
+        @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String c_program_version_name;
+    }
+
+    class Server_detail{
+        @ApiModelProperty(required = true, readOnly = true) public String  server_id;
+        @ApiModelProperty(required = true, readOnly = true) public boolean is_private;
+        @ApiModelProperty(required = true, readOnly = true) public String  server_name;
+        @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String instnace_id;
     }
 
 
+    class Board_detail{
+        @ApiModelProperty(required = true, readOnly = true) public String board_id;
+        @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String personal_description;
+        @ApiModelProperty(required = true, readOnly = true) public String type_of_board_id;
+        @ApiModelProperty(required = true, readOnly = true) public String type_of_board_name;
+    }
 }
 
 

@@ -8,11 +8,14 @@ import play.data.validation.Constraints;
         value = "Person_Update")
 public class Swagger_Person_Update {
 
-    @ApiModelProperty(value = "", required = true)
+
+    @ApiModelProperty(value = "min length = 4", required = true)
+    @Constraints.MinLength(value = 4)
     @Constraints.Required
     public String nick_name;
 
-    @ApiModelProperty(value = "", required = true)
+    @ApiModelProperty(value = "min length = 4", required = true)
+    @Constraints.MinLength(value = 8)
     @Constraints.Required
     public String full_name;
 

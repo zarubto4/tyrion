@@ -5,7 +5,6 @@ import models.person.*;
 import play.api.libs.mailer.MailerClient;
 import play.data.Form;
 import play.libs.Json;
-import play.libs.mailer.Email;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -20,7 +19,6 @@ import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Swagger_Entity_Validation_Out;
 
 import javax.inject.Inject;
-import javax.websocket.server.PathParam;
 import java.util.Date;
 import java.util.List;
 
@@ -90,7 +88,7 @@ public class PersonController extends Controller {
                 String link = Server.tyrion_serverAddress + "/mail_person_authentication" + "?mail=" + person.mail + "&token=" + validationToken.authToken;
 
                 try {
-                    EmailTool emailTool = new EmailTool()
+                            new EmailTool()
                             .addEmptyLineSpace()
                             .startParagraph("13")
                             .addText("Email verification is needed to complete your registration.")
@@ -99,10 +97,8 @@ public class PersonController extends Controller {
                             .addLine()
                             .addEmptyLineSpace()
                             .addLink(link,"Click here to verify","18")
-                            .addEmptyLineSpace();
-
-                    Email email = emailTool.sendEmail(help.mail, "Email Verification", emailTool.getEmailContent());
-                    mailerClient.send(email);
+                            .addEmptyLineSpace()
+                            .sendEmail(help.mail, "Email Verification");
 
                 } catch (Exception e) {
                     logger.error("Sending mail -> critical error", e);
@@ -203,7 +199,7 @@ public class PersonController extends Controller {
                 link = Server.becki_passwordReset + "&token=" + previousToken.password_recovery_token;
             }
             try {
-                EmailTool emailTool = new EmailTool()
+                        new EmailTool()
                         .addEmptyLineSpace()
                         .startParagraph("13")
                         .addText("Password reset was requested for this email.")
@@ -212,10 +208,10 @@ public class PersonController extends Controller {
                         .addLine()
                         .addEmptyLineSpace()
                         .addLink(link,"Click here to reset your password","18")
-                        .addEmptyLineSpace();
+                        .addEmptyLineSpace()
+                        .sendEmail(help.mail,"Password Reset" );
 
-                Email email = emailTool.sendEmail(help.mail, "Password Reset", emailTool.getEmailContent());
-                mailerClient.send(email);
+
 
             } catch (Exception e) {
                 logger.error ("Sending mail -> critical error", e);
@@ -288,15 +284,13 @@ public class PersonController extends Controller {
             passwordRecoveryToken.delete();
 
             try {
-                EmailTool emailTool = new EmailTool()
+                        new EmailTool()
                         .addEmptyLineSpace()
                         .startParagraph("13")
                         .addText("Password was changed.")
                         .endParagraph()
-                        .addEmptyLineSpace();
-
-                Email email = emailTool.sendEmail(help.mail, "Password Reset", emailTool.getEmailContent());
-                mailerClient.send(email);
+                        .addEmptyLineSpace()
+                        .sendEmail(help.mail, "Password Reset");
 
             } catch (Exception e) {
                 logger.error ("Sending mail -> critical error", e);
@@ -324,7 +318,7 @@ public class PersonController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured.class)
-    public  Result get_Person(@ApiParam(value = "person_id String query", required = true) @PathParam("person_id")  String person_id){
+    public  Result get_Person(@ApiParam(value = "person_id String query", required = true)  String person_id){
         try{
 
             Person person = Person.find.byId(person_id);
@@ -365,6 +359,7 @@ public class PersonController extends Controller {
             tags = {"Person"},
             notes = "delete Person by id",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
@@ -383,7 +378,7 @@ public class PersonController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured.class)
-    public  Result deletePerson(@ApiParam(value = "person_id String query", required = true) @PathParam("person_id") String person_id){
+    public  Result deletePerson(@ApiParam(value = "person_id String query", required = true) String person_id){
         try{
 
             Person person = Person.find.byId(person_id);
@@ -400,9 +395,9 @@ public class PersonController extends Controller {
         }
     }
 
-    @ApiOperation(value = "register new Person",
+    @ApiOperation(value = "edit Person basic information",
             tags = {"Person"},
-            notes = "create new Person with unique email and nick_name",
+            notes = "Edit person basic information",
             produces = "application/json",
             protocols = "https",
             code = 200,
@@ -412,6 +407,7 @@ public class PersonController extends Controller {
                     })
             }
     )
+
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(
@@ -445,9 +441,7 @@ public class PersonController extends Controller {
             if (!person.edit_permission())  return GlobalResult.forbidden_Permission();
 
             person.nick_name    = help.nick_name;
-            person.full_name   = help.full_name;
-
-            person.last_title   = help.last_title;
+            person.full_name    = help.full_name;
 
             person.update();
 
@@ -457,6 +451,7 @@ public class PersonController extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
     }
+
 
     @ApiOperation(value = "get logged connections",
             tags = {"Person"},
@@ -493,6 +488,7 @@ public class PersonController extends Controller {
             tags = {"Person"},
             notes = "You know where the user is logged in. And you can log out this connection. (Terminate token)",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {

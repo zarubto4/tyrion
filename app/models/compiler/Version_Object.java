@@ -6,9 +6,9 @@ import io.swagger.annotations.ApiModelProperty;
 import models.project.b_program.B_Pair;
 import models.project.b_program.B_Program;
 import models.project.b_program.Homer_Instance;
-import models.project.c_program.actualization.Actualization_procedure;
 import models.project.c_program.C_Compilation;
 import models.project.c_program.C_Program;
+import models.project.c_program.actualization.Actualization_procedure;
 import models.project.c_program.actualization.C_Program_Update_Plan;
 import models.project.m_program.M_Project;
 
@@ -16,6 +16,7 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 public class Version_Object extends Model {
@@ -25,7 +26,7 @@ public class Version_Object extends Model {
                                                             @ApiModelProperty(required = true)  public String version_name;
                      @Column(columnDefinition = "TEXT")     @ApiModelProperty(required = true)  public String version_description;
 
-                                                                                @JsonIgnore     public String azureLinkVersion;
+
 
     @ApiModelProperty(required = true,
             dataType = "integer",
@@ -64,6 +65,31 @@ public class Version_Object extends Model {
 
 /* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/
 
+
+
+
+
+/* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/
+
+
+    @JsonIgnore public String blob_version_link;
+
+
+    @JsonIgnore @Override public void save() {
+
+        while(true){ // I need Unique Value
+            this.blob_version_link = "/versions/" + UUID.randomUUID().toString();
+            if (Version_Object.find.where().eq("blob_version_link", blob_version_link ).findUnique() == null) break;
+        }
+
+        super.save();
+    }
+
+
+    @JsonIgnore @Transient
+    public String get_path(){
+        return  blob_version_link;
+    }
 
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/

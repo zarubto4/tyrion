@@ -3,10 +3,15 @@ package models.compiler;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.microsoft.azure.storage.StorageException;
+import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
+import models.project.global.Product;
+import utilities.Server;
 
 import javax.persistence.*;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -19,8 +24,8 @@ public class SingleLibrary  extends Model {
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true) public String id;
                          @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true) public String description;
                                                             @ApiModelProperty(required = true) public String library_name;
-                                                                                   @JsonIgnore public String azureStorageLink;
-                                                                                   @JsonIgnore public String azurePackageLink;
+
+                                                                       @JsonIgnore @ManyToOne  public Product product;
 
     @JsonIgnore @OneToMany(mappedBy="single_library", cascade=CascadeType.ALL) @OrderBy("azureLinkVersion DESC") public List<Version_Object> version_objects = new ArrayList<>();
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL)   public List<Processor> processors = new ArrayList<>();
@@ -31,14 +36,31 @@ public class SingleLibrary  extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient
-    public void setUniqueAzurePackageLink() {
+
+    @JsonIgnore  public String azure_single_library_link;
+
+    @JsonIgnore @Override public void save() {
         while(true){ // I need Unique Value
-            this.azurePackageLink = UUID.randomUUID().toString();
-            if (SingleLibrary.find.where().eq("azurePackageLink", azurePackageLink ).findUnique() == null) break;
+
+            if( product != null ) this.azure_single_library_link = product.get_path() + "/libraries/"  + UUID.randomUUID().toString();
+            else  this.azure_single_library_link = "/libraries/"  + UUID.randomUUID().toString();
+
+            if (SingleLibrary.find.where().eq("azure_single_library_link", azure_single_library_link ).findUnique() == null) break;
         }
+        super.save();
     }
 
+    @JsonIgnore @Transient
+    public CloudBlobContainer get_Container() throws URISyntaxException, StorageException {
+        if(product == null) return Server.blobClient.getContainerReference("libraries");
+        else return product.get_Container();
+    }
+
+
+    @JsonIgnore @Transient
+    public String get_path(){
+        return  azure_single_library_link;
+    }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
