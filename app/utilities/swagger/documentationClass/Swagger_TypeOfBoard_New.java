@@ -28,6 +28,6 @@ public class Swagger_TypeOfBoard_New {
 
     @Constraints.Required
     @ApiModelProperty(value = "If device can connect to internet", required = true)
-    public Boolean connectible_to_internet;
+    public boolean connectible_to_internet;
 
 }

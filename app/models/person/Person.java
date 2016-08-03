@@ -53,9 +53,6 @@ public class Person extends Model {
     @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL)     public List<Notification>         notifications        = new ArrayList<>();
 
 
-   // @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL) public List<Product> products  = new ArrayList<>();
-
-
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
 

@@ -1,4 +1,52 @@
-﻿# Verze 1.06.6.3 #
+﻿
+# Verze 1.06.6.4 #
+
+## Nové API: ##
+ * Pro získání objektů c_program, b_program, typeOfBlock a blockoBlock pomocí filtru byly vytvořeny následující API:
+
+		PUT  {{url_Tyriona}}/compilation/c_program/list/{page_number}
+		PUT  {{url_Tyriona}}/project/b_program/list/{page_number}
+		PUT  {{url_Tyriona}}/project/blockoBlock/list/{page_number}
+		PUT  {{url_Tyriona}}/project/typeOfBlock/list/{page_number}
+
+ * Metody vyžadují JSON, který je buď prázdný (vyjma typeOfBlock), chceme-li získat nefiltrované objekty nebo obsahuje "project_id", chceme-li filtrovat podle daného projektu. Žádná další kritéria zatím nejsou implementována. Všechny API vrací pouze list max. 25 objektů, po stránkách page_number. Vrací také pouze ty výsledky, které se týkají přihlášeného uživatele, proto není třeba kontrolovat oprávnění. Jediná výjimka je u objektu typeOfBlock, kde JSON v request obsahuje položku:
+
+		"private_type":"true_or_false"
+
+ * kde vrací buď veřejné typy bločků, když "false" nebo soukromé, když "true".
+ * API vrací JSON v takovém tvaru:
+
+		{
+			"content": [{}],
+			"from": 0,
+			"to": 0,
+			"total": 0,
+			"pages": [0]
+		}
+
+ * Pokud není nic nalezeno vrátí prázdný list content. Obdobně jako u jiných filtrů. Podrobnější dokumentace ve swaggeru.
+
+## Notifikace vyžadující potvrzení ##
+ * Kvůli notifikacím vyžadující potvrzení je nutné po přihlášení uživatele zavolat API:
+
+		GET  {{url_Tyriona}}/notification/unconfirmed
+
+ * Metoda vrátí code 200 a pokud jsou notifikace, které by měl uživatel potvrdit, znovu je odešle.
+ * Tyto notifikace obsahují link do Tyriona, kterým se notifikace potvrdí.
+
+## Link na Becki [TYRION-325](http://youtrack.byzance.cz/youtrack/issue/TYRION-325) ##
+ * Všechny linky, které vytvoří Tyrion a odkazují na Becki, budou používat lomítka namísto path values. Takže např. link:
+
+		{{url_Becki}}/passwordRestart&token="password_recovery_token"
+
+ * se změní na:
+
+		{{url_Becki}}/passwordRestart/{password_recovery_token}
+
+### Oprava Bugů ###
+ * fixed [TYRION-326](http://youtrack.byzance.cz/youtrack/issue/TYRION-326)
+
+# Verze 1.06.6.3 #
 ####  18.6.2016 ####
 -----
 
@@ -86,6 +134,8 @@ Ta  obsahuje mimo jiné
 ## Změny nad Api ##
 V rámci dobrých vztahů mezi FrontEndem a Beckendem jsme si dovolili vás upozornit k jakým změnám došlo v API (Ostatní je pouze dokumentace!)
 
+1. Došlo k opravě gramatiky na mnoha místech a opravě souborů, které nemění v žádném případě funkčnost kodu. Ty co mění jsou dále sepsány.
+
 1. POST /grid/m_program/{m_project_id}
     "M_Project.create_permission":"true"  ---->  "M_Project.update_permission":"true",
 
@@ -129,7 +179,7 @@ Value code byla přejmenována na main (Aby korespondovala se strukturou progrma
 
  * Metoda pokaždé vrací code = 200. Pokud je email uživatele nalezen v databázi, vygeneruje se password_recovery_token a přijde mu email s adresou na frontend ve tvaru:
 
-		{{url_Becki}}/passwordRestart&token="password_recovery_token"
+		{{url_Becki}}/passwordRestart/{password_recovery_token}
 
  * Na této adrese si uživatel vytvoří nové heslo. Adresu je možné změnit, pokud bude potřeba, stačí říct, teď je vzatá z configu Tyriona. Z frontendu přijde request:
 
@@ -150,13 +200,13 @@ Value code byla přejmenována na main (Aby korespondovala se strukturou progrma
   ale jen 15 minut od vytvoření tohoto tokenu. Jakmile je token starší a uživatel znovu zažádá o email, vygenerue se nový token a starý se smaže.
 
  * Uživatel poté dostane email, kde je mu zděleno, že obnova hesla byla úspěšná.  (Autor Lexa Tylš)
-  
+
 
 	Lexa Tylš
 
 ## Změna: Přidání uživatele do projektu ##
+
   API:
-<<<<<<< HEAD
 
 		PUT  {{url_Tyriona}}/project/project/shareProject/:project_id
 
@@ -166,28 +216,20 @@ Value code byla přejmenována na main (Aby korespondovala se strukturou progrma
 			"persons_mail" : ["user@mail.com","example@mail.cz"]
 		}
 
-=======
-  	PUT  {{url_Tyriona}}/project/project/shareProject/:project_id
-  nyní vyžaduje v JSONu list emailů namísto id, JSON bude vypadat takto: { "persons_mail" : ["user@mail.com","example@mail.cz"]}.
->>>>>>> parent of 9337ac2... 1.06.6.3
   Pokud email není zaregistrován, pošle se na něj email, ve kterém bude pozvánka do projektu a k registraci. Pokud se uživatel zaregistruje, bude automaticky přidán do projektu a nebude vyžadována autentifikace emailu.
   Pokud uživatel je zaregistrovaný, nejprve mu přijde notifikace, že ho jiný určitý uživatel pozval do daného projektu a v notifikaci budou dvě možnosti, jestli chce uživatel vstoupit do projektu nebo ne, které budou obsahovat link na následující operace.
   Když klikne na "Ano" zavolá se operace:
-	PUT  {{url_Tyriona}}/project/project/addParticipant/:ivitation_id/:decision
+
+		PUT  {{url_Tyriona}}/project/project/addParticipant/:ivitation_id/:decision
+
   kde decision = true, pokud klikne "Ne", zavolá se ta samá operace, ale decision = false.
 
 ## Změna: Input Validation ##
-<<<<<<< HEAD
   Zrušeny následující API: 
 
 		GET  {{url_Tyriona}}/coreClient/person/valid/nicknamewe/:nick_name
 		GET  {{url_Tyriona}}/coreClient/person/valid/mail/:mail
 
-=======
-  Zrušeny následující API:
-	GET  {{url_Tyriona}}/coreClient/person/valid/nicknamewe/:nick_name
- 	GET  {{url_Tyriona}}/coreClient/person/valid/mail/:mail
->>>>>>> parent of 9337ac2... 1.06.6.3
   namísto nich bude univerzální API:
 
 		POST {{url_Tyriona}}/coreClient/person/validate_entity
@@ -235,6 +277,7 @@ Value code byla přejmenována na main (Aby korespondovala se strukturou progrma
  * fixed [TYRION-220](http://youtrack.byzance.cz/youtrack/issue/TYRION-220)
  * fixed [TYRION-217](http://youtrack.byzance.cz/youtrack/issue/TYRION-217)
  * fixed [TYRION-300](http://youtrack.byzance.cz/youtrack/issue/TYRION-300)
+ * fixed [TYRION-105](http://youtrack.byzance.cz/youtrack/issue/TYRION-105)
 
 
 ### TODO ###

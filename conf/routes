@@ -9,8 +9,8 @@
 ### Testovací ############ Testovací ############### Testovací ################ Testovací ###########################################################################
 ###################################################################################f#################################################################################
 
-GET              /test1                                      @controllers.WikyController.test1()
-GET             /test2                                       @controllers.WikyController.test2()
+#GET             /test2                                      @controllers.WikyController.test2()
+GET              /test_not                                     @controllers.WikyController.test_notifications(mail: String?="")
 
 ### WEBSOCKET ############ WEBSOCKET ############### WEBSOCKET ################ WEBSOCKET ###########################################################################
 ###################################################################################f#################################################################################
@@ -49,6 +49,9 @@ GET             /login/github/*url                          @controllers.Securit
 GET             /notification/list/:page_number             @controllers.NotificationController.get_notification_page(page_number: Integer)
 DELETE          /notification/:notification_id              @controllers.NotificationController.delete_notification(notification_id)
 
+GET             /notification/unconfirmed                   @controllers.NotificationController.get_unconfirmed_notifications()
+PUT             /notification/confirm/:notification_id      @controllers.NotificationController.notification_confirm(notification_id)
+
 PUT             /notification/read                          @controllers.NotificationController.mark_as_read_notification()
 
 
@@ -70,7 +73,7 @@ DELETE          /coreClient/connection/:connection_id            @controllers.Pe
 
 DELETE         /coreClient/person/person/:id                    @controllers.PersonController.deletePerson(id: String)
 
-GET            /mail_person_authentication                      @controllers.PersonController.email_Person_authentitaction(mail,token)
+GET            /mail_person_authentication/:mail/:token         @controllers.PersonController.email_Person_authentitaction(mail,token)
 
 #Password recovery
 POST            /coreClient/mail_person_password_recovery       @controllers.PersonController.sendPasswordRecoveryEmail()
@@ -176,15 +179,13 @@ GET            /project/project                                                 
 DELETE         /project/project/:project_id                                                 @controllers.ProgramingPackageController.deleteProject(project_id)
 PUT            /project/project/shareProject/:project_id                                    @controllers.ProgramingPackageController.shareProjectWithUsers(project_id)
 PUT            /project/project/unshareProject/:project_id                                  @controllers.ProgramingPackageController.unshareProjectWithUsers(project_id)
-PUT            /project/project/addParticipant/:ivitation_id/:decision                      @controllers.ProgramingPackageController.addParticipantToProject(ivitation_id, decision: Boolean)
-
+PUT            /project/project/addParticipant/:invitation_id/:decision                     @controllers.ProgramingPackageController.addParticipantToProject(invitation_id, decision: Boolean)
 
 #Homer
 POST           /project/homer                                                               @controllers.ProgramingPackageController.newHomer()
 PUT            /project/homer/filter/:page_number                                           @controllers.ProgramingPackageController.get_Homers_by_Filter(page_number: Integer)
 DELETE         /project/homer/:homer_id                                                     @controllers.ProgramingPackageController.removeHomer(homer_id)
 GET            /project/homer/:homer_id                                                     @controllers.ProgramingPackageController.getHomer(homer_id)
-
 
 #Project - connection
 PUT            /project/homer/:project_id/:homer_id                                         @controllers.ProgramingPackageController.connectHomerWithProject(project_id, homer_id)
@@ -196,6 +197,7 @@ POST           /project/b_program/:project_id                                   
 GET            /project/b_program/:b_program_id                                             @controllers.ProgramingPackageController.get_b_Program(b_program_id)
 PUT            /project/b_program/:b_program_id                                             @controllers.ProgramingPackageController.edit_b_Program(b_program_id)
 DELETE         /project/b_program/:b_program_id                                             @controllers.ProgramingPackageController.remove_b_Program(b_program_id)
+PUT            /project/b_program/list/:page_number                                         @controllers.ProgramingPackageController.get_b_Program_by_Filter(page_number: Integer)
 
 PUT            /project/b_program/update/:b_program_id                                      @controllers.ProgramingPackageController.update_b_program(b_program_id)
 GET            /project/b_program/version/:version_id                                       @controllers.ProgramingPackageController.get_b_Program_version(version_id)
@@ -213,12 +215,12 @@ POST           /project/blockoBlock                                             
 PUT            /project/blockoBlock/:blocko_block_id                                        @controllers.ProgramingPackageController.edit_Block(blocko_block_id)
 GET            /project/blockoBlock/:blocko_block_id                                        @controllers.ProgramingPackageController.getBlockoBlock(blocko_block_id)
 DELETE         /project/blockoBlock/:blocko_block_id                                        @controllers.ProgramingPackageController.deleteBlock(blocko_block_id)
+PUT            /project/blockoBlock/list/:page_number                                       @controllers.ProgramingPackageController.get_BlockoBlock_by_Filter(page_number: Integer)
 
 POST           /project/blockoBlock/version/:blocko_block_id                                @controllers.ProgramingPackageController.new_BlockoBlock_Version(blocko_block_id)
 GET            /project/blockoBlock/version/all/:blocko_block_id                            @controllers.ProgramingPackageController.get_BlockoBlock_all_versions(blocko_block_id)
 GET            /project/blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.get_BlockoBlock_Version(blocko_block_version_id)
 DELETE         /project/blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.delete_BlockoBlock_Version(blocko_block_version_id)
-
 
 
 #TypeOfBlocko
@@ -227,6 +229,7 @@ GET            /project/typeOfBlock                                             
 GET            /project/typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.get_TypeOfBlock(type_of_block_id)
 PUT            /project/typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.editTypeOfBlock(type_of_block_id)
 DELETE         /project/typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.deleteTypeOfBlock(type_of_block_id)
+PUT            /project/typeOfBlock/list/:page_number                                       @controllers.ProgramingPackageController.get_TypeOfBlock_by_Filter(page_number: Integer)
 
 
 #BLocko Server
@@ -252,6 +255,7 @@ GET             /project/actualization_procedure/:actualization_procedure_id    
 #C_Program
 POST            /compilation/c_program/c_program/:project_id                                @controllers.CompilationLibrariesController.create_C_Program(project_id)
 GET             /compilation/c_program/c_program/:c_program_id                              @controllers.CompilationLibrariesController.get_C_Program(c_program_id)
+PUT             /compilation/c_program/list/:page_number                                    @controllers.CompilationLibrariesController.get_C_Program_by_Filter(page_number: Integer)
 
 PUT             /compilation/c_program/c_program/:c_program_id                              @controllers.CompilationLibrariesController.edit_C_Program_Description(c_program_id)
 DELETE          /compilation/c_program/c_program/:c_program_id                              @controllers.CompilationLibrariesController.delete_C_Program(c_program_id)
@@ -377,6 +381,7 @@ PUT             /websocket/terminal/identificator/:terminal_id                  
 GET            /api-docs                                    @utilities.swagger.ApiHelpController.getResources
 GET            /api-docs/:version                           @utilities.swagger.swagger_diff_tools.Swagger_diff_Controller.getResources_version(version)
 
+
 #CORS
 OPTIONS        /*all                                        @controllers.SecurityController.optionLink(all)
 
@@ -396,6 +401,9 @@ GET             /public/bugs                                @controllers.Dashboa
 GET             /public/websocket                           @controllers.DashboardController.show_web_socket_stats()
 GET             /public/show_readme                         @controllers.DashboardController.show_readme()
 GET             /public/show_diff_on_Api/                   @controllers.DashboardController.show_diff_on_Api(old_api: String?="",new_api: String?="")
+GET             /public/admin_page                          @controllers.DashboardController.admin_page()
+
+GET             /javascriptRoutes                           @controllers.DashboardController.javascriptRoutes()
 
 # BUGS SERVISE PAGE
 

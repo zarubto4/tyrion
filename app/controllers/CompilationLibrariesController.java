@@ -26,6 +26,7 @@ import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Board_List;
+import utilities.swagger.outboundClass.Filter_List.Swagger_C_Program_List;
 import utilities.swagger.outboundClass.Filter_List.Swagger_LibraryGroup_List;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Single_Library_List;
 import utilities.swagger.outboundClass.*;
@@ -166,6 +167,98 @@ public class CompilationLibrariesController extends Controller {
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "get C_program List",
+            tags = {"C_Program"},
+            notes = "get all C_Programs that belong to logged person",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension(name = "permission_description", properties = {
+                            @ExtensionProperty(name = "C_program.read_permission", value = "Tyrion only returns C_Programs which person owns, there is no need to check permissions"),
+                    }),
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_C_Program_Filter",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_C_Program_List.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result get_C_Program_by_Filter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) @PathParam("page_number") Integer page_number){
+
+        try {
+
+            // Získání JSON
+            final Form<Swagger_C_Program_Filter> form = Form.form(Swagger_C_Program_Filter.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_C_Program_Filter help = form.get();
+
+            // Získání všech objektů a následné filtrování podle vlastníka
+            Query<C_Program> query = Ebean.find(C_Program.class);
+            query.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id);
+
+            // Pokud JSON obsahuje project_id filtruji podle projektu
+            if(help.project_id != null){
+
+                query.where().eq("project.id", help.project_id);
+            }
+
+            // Vyvoření odchozího JSON
+            Swagger_C_Program_List result = new Swagger_C_Program_List(query,page_number);
+
+            // Vrácení výsledku
+            return GlobalResult.result_ok(Json.toJson(result));
+
+        }catch (Exception e){
+            return GlobalResult.internalServerError();
+        }
+    }
+
+    @ApiOperation(value = "get C_program List by Project",
+            tags = {"C_Program"},
+            notes = "get all C_Programs that belong to logged person and given project",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension(name = "permission_description", properties = {
+                            @ExtensionProperty(name = "C_program.read_permission", value = "Tyrion only returns C_Programs which person owns, there is no need to check permissions"),
+                    }),
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_C_Program_List.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result get_C_Program_List_by_Project(@ApiParam(value = "project_id String query", required = true) @PathParam("project_id") String project_id, @ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) @PathParam("page_number") Integer page_number){
+
+        try {
+
+            Query<C_Program> query = Ebean.find(C_Program.class);
+            query.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).eq("project.id",project_id);
+
+            Swagger_C_Program_List result = new Swagger_C_Program_List(query,page_number);
+
+            return GlobalResult.result_ok(Json.toJson(result));
+
+        }catch (Exception e){
+            return GlobalResult.internalServerError();
         }
     }
 
@@ -399,8 +492,6 @@ public class CompilationLibrariesController extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
     }
-
-
 
     @ApiOperation(value = "delete Version in C_program",
             tags = {"C_Program"},

@@ -85,7 +85,7 @@ public class PersonController extends Controller {
 
                 ValidationToken validationToken = new ValidationToken().setValidation(person.mail);
 
-                String link = Server.tyrion_serverAddress + "/mail_person_authentication" + "?mail=" + person.mail + "&token=" + validationToken.authToken;
+                String link = Server.tyrion_serverAddress + "/mail_person_authentication" + "/" + person.mail + "/" + validationToken.authToken;
 
                 try {
                             new EmailTool()
@@ -194,9 +194,9 @@ public class PersonController extends Controller {
                 passwordRecoveryToken.time_of_creation = new Date();
                 passwordRecoveryToken.save();
 
-                link = Server.becki_passwordReset + "&token=" + passwordRecoveryToken.password_recovery_token;
+                link = Server.becki_passwordReset + "/" + passwordRecoveryToken.password_recovery_token;
             }else {
-                link = Server.becki_passwordReset + "&token=" + previousToken.password_recovery_token;
+                link = Server.becki_passwordReset + "/" + previousToken.password_recovery_token;
             }
             try {
                         new EmailTool()
@@ -287,7 +287,7 @@ public class PersonController extends Controller {
                         new EmailTool()
                         .addEmptyLineSpace()
                         .startParagraph("13")
-                        .addText("Password was changed.")
+                        .addText("Password was changed for your account.")
                         .endParagraph()
                         .addEmptyLineSpace()
                         .sendEmail(help.mail, "Password Reset");
@@ -407,7 +407,6 @@ public class PersonController extends Controller {
                     })
             }
     )
-
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(
@@ -451,7 +450,6 @@ public class PersonController extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
     }
-
 
     @ApiOperation(value = "get logged connections",
             tags = {"Person"},

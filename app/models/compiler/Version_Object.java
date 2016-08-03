@@ -29,11 +29,11 @@ public class Version_Object extends Model {
 
 
     @ApiModelProperty(required = true,
-            dataType = "integer",
-            readOnly = true,
+            dataType = "integer", readOnly = true,
             value = "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
-            example = "1466163478925")
-    public Date date_of_create;
+            example = "1466163478925")                                                          public Date date_of_create;
+
+
 
     @JsonIgnore @OneToMany(mappedBy="version_object", cascade=CascadeType.ALL, fetch = FetchType.EAGER ) public List<FileRecord> files = new ArrayList<>();
 

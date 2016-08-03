@@ -42,7 +42,9 @@ public class C_Program extends Model {
             value = "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
             example = "1466163478925")                                                       public Date dateOfCreate;
 
-    @JsonIgnore @OneToMany(mappedBy="c_program", cascade = {CascadeType.ALL}) @OrderBy("azureLinkVersion DESC") public List<Version_Object> version_objects = new ArrayList<>();
+    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1461854312") public Date dateOfCreate;
+    @JsonIgnore @OneToMany(mappedBy="c_program", cascade = CascadeType.ALL, fetch = FetchType.EAGER) @OrderBy("id DESC") public List<Version_Object> version_objects = new ArrayList<>();
+
 
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
@@ -50,7 +52,6 @@ public class C_Program extends Model {
     @JsonProperty  @Transient public String project_id(){ return project.id; }
     @JsonProperty  @Transient public String type_of_board_id()   { return type_of_board == null ? null : type_of_board.id;}
     @JsonProperty @Transient public List<Swagger_C_Program_Version> program_versions() {
-
         List<Swagger_C_Program_Version> versions = new ArrayList<>();
         for(Version_Object v : version_objects) versions.add(program_version(v));
 
@@ -143,5 +144,3 @@ public class C_Program extends Model {
     public static Finder<String,C_Program> find = new Finder<>(C_Program.class);
 }
 
-//c-program/e06d45e1-702d-4190-96d0-9d0106c0ed63/personal-program/78127ef7-4eb6-4828-8aa9-efa8068bf3ce/c-program
-//c-program/e06d45e1-702d-4190-96d0-9d0106c0ed63/personal-program/78127ef7-4eb6-4828-8aa9-efa8068bf3ce/c-program

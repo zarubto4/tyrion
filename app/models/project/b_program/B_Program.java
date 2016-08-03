@@ -15,7 +15,7 @@ import models.project.m_program.M_Project;
 import play.data.Form;
 import utilities.swagger.documentationClass.Swagger_Homer_DeviceList_Result;
 import utilities.swagger.outboundClass.B_Program_State;
-import utilities.swagger.outboundClass.Filter_List.Swagger_B_Program_Version;
+import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 import utilities.webSocket.WS_Homer_Cloud;
 
 import javax.persistence.*;
@@ -34,8 +34,14 @@ public class B_Program extends Model {
                                                              public String name;
                         @Column(columnDefinition = "TEXT")   public String program_description;
 
-    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1461854312") public Date lastUpdate;
-    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1461854312") public Date dateOfCreate;
+    @ApiModelProperty(required = true,
+                     dataType = "integer", readOnly = true,
+                     value = "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
+                     example = "1466163478925")              public Date lastUpdate;
+    @ApiModelProperty(required = true,
+            dataType = "integer", readOnly = true,
+            value = "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
+            example = "1466163478925")                       public Date dateOfCreate;
                                     @JsonIgnore @ManyToOne   public Project project;
 
     @JsonIgnore   @OneToOne(mappedBy="b_program",cascade=CascadeType.ALL) public M_Project m_project;

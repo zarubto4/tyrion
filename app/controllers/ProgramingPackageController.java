@@ -35,8 +35,8 @@ import utilities.loginEntities.Secured;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
-import utilities.swagger.outboundClass.Filter_List.Swagger_B_Program_Version;
-import utilities.swagger.outboundClass.Filter_List.Swagger_Homer_List;
+import utilities.swagger.outboundClass.Filter_List.*;
+import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 import utilities.webSocket.WS_BlockoServer;
 import utilities.webSocket.WebSCType;
 
@@ -348,19 +348,23 @@ public class ProgramingPackageController extends Controller {
 
             // Získání seznamu uživatelů, kteří jsou registrovaní(listIn) a kteří ne(listOut)
             List<Person> listIn = new ArrayList<>();
-            List<String> listOut = help.persons_mail;
+            List<String> toRemove = new ArrayList<>();
 
             // Roztřídění seznamů
-            for (String mail : listOut){
+            for (String mail : help.persons_mail){
                 Person person =  Person.find.where().eq("mail",mail).findUnique();
                 if(!(person == null)){
                     listIn.add(person);
-                    listOut.remove(person.mail);
+                    toRemove.add(person.mail);
                 }
             }
 
+            for (String mail : toRemove){
+                help.persons_mail.remove(mail);
+            }
+
             // Vytvoření pozvánky pro nezaregistrované uživatele
-            for (String mail : listOut){
+            for (String mail :  help.persons_mail){
 
                 Invitation invitation = Invitation.find.where().eq("mail", mail).findUnique();
                 if(invitation == null){
@@ -373,7 +377,7 @@ public class ProgramingPackageController extends Controller {
                     project.invitations.add(invitation);
                 }
 
-                String link = Server.becki_invitationToCollaborate + "&mail=" + mail;
+                String link = Server.becki_invitationToCollaborate + "/" + mail;
 
                 // Odeslání emailu s linkem pro registraci
                 try {
@@ -1358,6 +1362,65 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
+    @ApiOperation(value = "get B_Program by Filter",
+            tags = {"B_Program"},
+            notes = "get B_Program List",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "B_Program_read_permission", value = "No need to check permission, because Tyrion returns only those results which user owns"),
+                    }),
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_B_Program_Filter",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_B_Program_List.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result get_b_Program_by_Filter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) Integer page_number){
+        try {
+
+            // Získání JSON
+            final Form<Swagger_B_Program_Filter> form = Form.form(Swagger_B_Program_Filter.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_B_Program_Filter help = form.get();
+
+            // Získání všech objektů a následné filtrování podle vlastníka
+            Query<B_Program> query = Ebean.find(B_Program.class);
+            query.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id);
+
+            // Pokud JSON obsahuje project_id filtruji podle projektu
+            if(help.project_id != null){
+
+                query.where().eq("project.id", help.project_id);
+            }
+
+            // Vytvoření odchozího JSON
+            Swagger_B_Program_List result = new Swagger_B_Program_List(query, page_number);
+
+            // Vrácení výsledku
+            return GlobalResult.result_ok(Json.toJson(result));
+
+        }catch (Exception e){
+            return GlobalResult.internalServerError();
+        }
+    }
+
+
+
     @ApiOperation(value = "upload B_Program (version) to Homer",
             tags = {"B_Program", "Homer"},
             notes = "If you want upload program (!Immediately!) to Homer -> Homer must be online and connect to Cloud Server, " +
@@ -2086,6 +2149,69 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
+    @ApiOperation(value = "get TypeOfBlock by Filter",
+            tags = {"Type of Block"},
+            notes = "get TypeOfBlock List",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "TypeOfBlock_read_permission", value = "No need to check permission, because Tyrion returns only those results which user owns"),
+                    }),
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Type_Of_Block_Filter",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Type_Of_Block_List.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result get_TypeOfBlock_by_Filter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) Integer page_number){
+        try {
+
+            // Získání JSON
+            final Form<Swagger_Type_Of_Block_Filter> form = Form.form(Swagger_Type_Of_Block_Filter.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Type_Of_Block_Filter help = form.get();
+
+            // Získání všech objektů a následné odfiltrování soukormých TypeOfBlock
+            Query<TypeOfBlock> query = Ebean.find(TypeOfBlock.class);
+
+            if(help.private_type){
+                query.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id);
+            }else{
+                query.where().eq("project", null);
+            }
+
+            // Pokud JSON obsahuje project_id filtruji podle projektu
+            if(help.project_id != null){
+
+                query.where().eq("project.id", help.project_id);
+            }
+
+            // Vytvoření odchozího JSON
+            Swagger_Type_Of_Block_List result = new Swagger_Type_Of_Block_List(query, page_number);
+
+            // Vrácení výsledku
+            return GlobalResult.result_ok(Json.toJson(result));
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return GlobalResult.internalServerError();
+        }
+    }
+
 // BLOCK ###############################################################################################################
 
     @ApiOperation(value = "create new Block",
@@ -2310,6 +2436,64 @@ public class ProgramingPackageController extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
 
+    }
+
+    @ApiOperation(value = "get BlockoBlock by Filter",
+            tags = {"Blocko-Block"},
+            notes = "get BlockoBlock List",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "BlockoBlock_read_permission", value = "No need to check permission, because Tyrion returns only those results which user owns"),
+                    }),
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Blocko_Block_Filter",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Blocko_Block_List.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result get_BlockoBlock_by_Filter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) Integer page_number){
+        try {
+
+            // Získání JSON
+            final Form<Swagger_Blocko_Block_Filter> form = Form.form(Swagger_Blocko_Block_Filter.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Blocko_Block_Filter help = form.get();
+
+            // Získání všech objektů a následné filtrování podle vlastníka
+            Query<BlockoBlock> query = Ebean.find(BlockoBlock.class);
+            query.where().eq("author.id", SecurityController.getPerson().id);
+
+            // Pokud JSON obsahuje project_id filtruji podle projektu
+            if(help.project_id != null){
+
+                query.where().eq("type_of_block.project.id", help.project_id);
+            }
+
+            // Vytvoření odchozího JSON
+            Swagger_Blocko_Block_List result = new Swagger_Blocko_Block_List(query, page_number);
+
+            // Vrácení výsledku
+            return GlobalResult.result_ok(Json.toJson(result));
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return GlobalResult.internalServerError();
+        }
     }
 
     @ApiOperation(value = "delete BlockoBlock",

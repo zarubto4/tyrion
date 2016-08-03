@@ -99,7 +99,7 @@ public class NotificationController extends Controller {
     send_notification(person, notification);
   }
 
-  public static void uploud_Instance_start(Person person, Homer_Instance instance){
+  public static void upload_Instance_start(Person person, Homer_Instance instance){
 
     Notification notification = new Notification( Notification_level.info, person)
                                   .setText("Server start creating new Blocko Instance on Blocko Version  <b>" + instance.version_object.b_program.name + "</b>")
@@ -184,11 +184,11 @@ public class NotificationController extends Controller {
 
   }
 
-  public static void uploud_firmare_was_succesfull(Person person, C_Program_Update_Plan plan){
+  public static void upload_firmware_was_successful(Person person, C_Program_Update_Plan plan){
 
   }
 
-  public static void uploud_firmare_was_Unsuccesfull(Person person, C_Program_Update_Plan plan){
+  public static void uplood_firmware_was_Unsuccessful(Person person, C_Program_Update_Plan plan){
 
   }
 
@@ -224,7 +224,7 @@ public class NotificationController extends Controller {
 
     Notification notification = new Notification(Notification_level.info, receiver)
             .setText("User")
-            .setObject(Person.class, owner.id.toString(), owner.full_name)
+            .setObject(Person.class, owner.id, owner.full_name)
             .setText("wants to invite you into the project ")
             .setBoldText(project.project_name +".")
             .setText("Do you agree?")
@@ -234,19 +234,16 @@ public class NotificationController extends Controller {
             .setText(".")
             .save_object();
 
-    send_notification(receiver, notification);
-      // Tato notifikace by se měla uložit  - je tam parametr "přečtena"
+    send_notification(person, notification);
 
   }
 
 
   public static void project_accepted_by_invited_person(Person owner, Person person, Project project){
 
-      // Pokud dotyčný přijal pozvání, tato zpráva se pošle tomu, kdo pozvání pozval
-      // Tato notifikace by se měla uložit - je tam parametr "přečtena"
     Notification notification = new Notification(Notification_level.info, owner)
             .setText("User ")
-            .setObject(Person.class, person.id.toString(), person.full_name)
+            .setObject(Person.class, person.id, person.full_name)
             .setText("did not accept your invitation to the project ")
             .setBoldText(project.project_name +".")
             .save_object();
@@ -257,17 +254,41 @@ public class NotificationController extends Controller {
 
   public static void project_rejected_by_invited_person(Person owner, Person person, Project project){
 
-      // Pokud dotyčný nepřijal pozvání, tato zpráva se pošle tomu, kdo pozvání pozval
-      // Tato notifikace by se měla uložit  - je tam parametr "přečtena"
     Notification notification = new Notification(Notification_level.info, owner)
             .setText("User ")
-            .setObject(Person.class, person.id.toString(), person.full_name)
+            .setObject(Person.class, person.id, person.full_name)
             .setText("accepted your invitation to the project ")
             .setBoldText(project.project_name +".")
             .save_object();
 
     send_notification(owner,notification);
 
+  }
+
+  public Result notification_confirm(String notification_id){
+
+    try{
+      Notification notification = Notification.find.byId(notification_id);
+
+      notification.confirmed = true;
+      notification.update();
+
+      return GlobalResult.result_ok();
+
+    }catch (Exception e){
+      return GlobalResult.internalServerError();
+    }
+  }
+
+  public static void test_notification(Person person){
+
+    Notification notification = new Notification(Notification_level.info, person)
+            .setText("Test object: ")
+            .setObject(Person.class, person.id, person.full_name)
+            .setText("test bold text: ")
+            .setBoldText("bold text");
+
+    send_notification(person,notification);
   }
 
 
@@ -387,7 +408,32 @@ public class NotificationController extends Controller {
     }
   }
 
+  @ApiOperation(value = "get unconfirmed notifications",
+          tags = {"Notifications"},
+          notes = "This API should by called right after user logs in. Sends notifications which require confirmation",
+          produces = "application/json",
+          protocols = "https",
+          code = 200
+  )
+  @ApiResponses(value = {
+          @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+          @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+          @ApiResponse(code = 500, message = "Server side Error")
+  })
+  @Security.Authenticated(Secured.class)
+  public Result get_unconfirmed_notifications(){
+    try{
+      List<Notification> notifications = Notification.find.where().eq("person", SecurityController.getPerson()).eq("confirmation_required", true).eq("confirmed", false).findList();
+      if(notifications.isEmpty()) return GlobalResult.result_ok("No new notifications");
 
+      for (Notification notification : notifications){
+          NotificationController.send_notification(SecurityController.getPerson(), notification);
+      }
 
+      return GlobalResult.result_ok("Notifications were sent again");
 
+    }catch (Exception e){
+      return GlobalResult.internalServerError();
+    }
+  }
 }
