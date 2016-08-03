@@ -19,13 +19,14 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.Server;
-import utilities.loginEntities.Secured;
+import utilities.loginEntities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_Unauthorized;
 import utilities.response.response_objects.Result_ok;
+import utilities.swagger.documentationClass.Swagger_B_Program_Version_New;
 import utilities.swagger.documentationClass.Swagger_Notification_Read;
-import utilities.swagger.outboundClass.Filter_List.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Notification_List;
+import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Swagger_C_Program_Version;
 import utilities.webSocket.WS_Becki_Website;
 
@@ -139,7 +140,7 @@ public class NotificationController extends Controller {
 
     Notification notification = new Notification(Notification_level.error, person)
                                     .setText("Server not upload instance to cloud on Blocko Version")
-                                    .setObject(Swagger_B_Program_Version.class, version_object.id, version_object.version_name )
+                                    .setObject(Swagger_B_Program_Version_New.class, version_object.id, version_object.version_name )
                                     .setText("from Blocko program")
                                     .setObject(B_Program.class, version_object.b_program.id, version_object.b_program.name )
                                     .setText("with Critical unknown Error, Probably some bug.")
@@ -177,7 +178,7 @@ public class NotificationController extends Controller {
 
     Notification notification = new Notification(Notification_level.info, person)
             .setText("New actualization task was added to Task Queue on ")
-            .setObject(Swagger_B_Program_Version.class, homer_instance.version_object.id, "Version " + homer_instance.version_object.version_name );
+            .setObject(Swagger_B_Program_Version_New.class, homer_instance.version_object.id, "Version " + homer_instance.version_object.version_name );
 
 
     send_notification(person, notification);
@@ -234,7 +235,7 @@ public class NotificationController extends Controller {
             .setText(".")
             .save_object();
 
-    send_notification(person, notification);
+    send_notification(receiver, notification);
 
   }
 
@@ -316,7 +317,7 @@ public class NotificationController extends Controller {
           @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
           @ApiResponse(code = 500, message = "Server side Error")
   })
-  @Security.Authenticated(Secured.class)
+  @Security.Authenticated(Secured_API.class)
   public Result get_notification_page(@ApiParam(value = "page_number is Integer. Contain  1,2... " + " For first call, use 1", required = false) Integer page_number){
      try {
 
@@ -346,7 +347,7 @@ public class NotificationController extends Controller {
           @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
           @ApiResponse(code = 500, message = "Server side Error")
   })
-  @Security.Authenticated(Secured.class)
+  @Security.Authenticated(Secured_API.class)
   public Result delete_notification(String notification_id){
     try {
 
@@ -384,7 +385,7 @@ public class NotificationController extends Controller {
           @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
           @ApiResponse(code = 500, message = "Server side Error")
   })
-  @Security.Authenticated(Secured.class)
+  @Security.Authenticated(Secured_API.class)
   public Result mark_as_read_notification(){
     try {
 
@@ -393,7 +394,7 @@ public class NotificationController extends Controller {
       if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
       Swagger_Notification_Read help = form.get();
 
-     List<Notification> notifications = Notification.find.where().idIn(help.notification_id).findList();
+      List<Notification> notifications = Notification.find.where().idIn(help.notification_id).findList();
 
       for(Notification notification : notifications) {
 
@@ -401,6 +402,7 @@ public class NotificationController extends Controller {
         notification.delete();
 
       }
+
       return GlobalResult.result_ok();
 
     } catch (Exception e) {
@@ -412,6 +414,7 @@ public class NotificationController extends Controller {
           tags = {"Notifications"},
           notes = "This API should by called right after user logs in. Sends notifications which require confirmation",
           produces = "application/json",
+          consumes = "text/html",
           protocols = "https",
           code = 200
   )
@@ -420,7 +423,7 @@ public class NotificationController extends Controller {
           @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
           @ApiResponse(code = 500, message = "Server side Error")
   })
-  @Security.Authenticated(Secured.class)
+  @Security.Authenticated(Secured_API.class)
   public Result get_unconfirmed_notifications(){
     try{
       List<Notification> notifications = Notification.find.where().eq("person", SecurityController.getPerson()).eq("confirmation_required", true).eq("confirmed", false).findList();
@@ -436,4 +439,34 @@ public class NotificationController extends Controller {
       return GlobalResult.internalServerError();
     }
   }
+
+
+  @ApiOperation(value = "try notifications",
+          tags = {"Notifications"},
+          notes = "This API you can use for testing our notification",
+          produces = "application/json",
+          consumes = "text/html",
+          protocols = "https",
+          code = 200
+  )
+  @ApiResponses(value = {
+          @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+          @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+          @ApiResponse(code = 500, message = "Server side Error")
+  })
+  public Result test_notifications(String mail){
+    try {
+
+      Person person = Person.find.where().eq("mail", mail).findUnique();
+
+      if(person != null) NotificationController.test_notification(person);
+      return GlobalResult.result_ok("");
+
+    }catch (Exception e){
+      return GlobalResult.internalServerError();
+    }
+  }
+
+
+
 }

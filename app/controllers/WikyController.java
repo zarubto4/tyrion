@@ -22,13 +22,5 @@ public class WikyController extends Controller {
 
 
 
-    public Result test_notifications(String mail){
-        try {
-            Person person = Person.find.where().eq("mail", mail).findUnique();
-            NotificationController.test_notification(person);
-            return redirect("/public/websocket");
-        }catch (Exception e){
-            return GlobalResult.internalServerError();
-        }
-    }
+
 }

@@ -19,7 +19,7 @@ import utilities.hardware_updater.Master_Updater;
 import utilities.hardware_updater.States.Actual_procedure_State;
 import utilities.hardware_updater.States.C_ProgramUpdater_State;
 import utilities.loggy.Loggy;
-import utilities.loginEntities.Secured;
+import utilities.loginEntities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_NotFound;
 import utilities.response.response_objects.Result_PermissionRequired;
@@ -29,7 +29,7 @@ import java.io.File;
 import java.util.*;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
-@Security.Authenticated(Secured.class)
+@Security.Authenticated(Secured_API.class)
 public class ActualizationController extends Controller {
 
     // Loger

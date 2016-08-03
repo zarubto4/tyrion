@@ -12,7 +12,7 @@ import play.data.Form;
 import play.libs.Json;
 import play.mvc.*;
 import utilities.loggy.Loggy;
-import utilities.loginEntities.Secured;
+import utilities.loginEntities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.Swagger_Grid_Terminal_Identf;
@@ -67,7 +67,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result new_M_Project(String project_id) {
         try{
 
@@ -118,7 +118,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result get_M_Project(@ApiParam(value = "m_project_id String query", required = true) String m_project_id){
         try {
 
@@ -164,7 +164,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result edit_M_Project(@ApiParam(value = "m_project_id String query", required = true) String m_project_id){
         try{
 
@@ -208,7 +208,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result remove_M_Project(@ApiParam(value = "m_project_id String query", required = true)  String m_project_id){
         try{
 
@@ -248,7 +248,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result get_M_Projects_ByLoggedPerson(){
         try{
 
@@ -284,7 +284,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result connect_M_Program_with_B_Program(@ApiParam(value = "m_project_id String", required = true)String m_project_id,
                                                    @ApiParam(value = "version_id String", required = true)    String version_id,
                                                    @ApiParam(value = "auto_incrementing Boolean value", required = true)  Boolean auto_incrementing ){
@@ -333,7 +333,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result disconnect_M_Program_from_B_Program(@ApiParam(value = "m_project_id String", required = true)  String m_project_id){
         try {
 
@@ -392,7 +392,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result new_M_Program( @ApiParam(value = "m_project_id", required = true) String m_project_id ) {
         try {
             final Form<Swagger_M_Program_New> form = Form.form(Swagger_M_Program_New.class).bindFromRequest();
@@ -480,7 +480,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result get_M_Program_all_forMobile(){
         try{
 
@@ -518,7 +518,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result  get_M_Program(@ApiParam(value = "m_program_id String query", required = true)  String m_program_id) {
         try {
             M_Program m_program = M_Program.find.byId(m_program_id);
@@ -566,7 +566,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result edit_M_Program(@ApiParam(value = "m_program_id String query", required = true)  String m_program_id){
         try {
 
@@ -621,7 +621,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result remove_M_Program(@ApiParam(value = "m_program_id String query", required = true) String m_program_id){
         try {
 
@@ -680,7 +680,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result new_Screen_Size_Type(){
         try {
 
@@ -750,7 +750,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result get_Screen_Size_Type(@ApiParam(value = "screen_size_type_id String query", required = true) String screen_size_type_id){
         try {
             Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId(screen_size_type_id);
@@ -786,7 +786,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result get_Screen_Size_Type_Combination(){
         try {
 
@@ -840,7 +840,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result edit_Screen_Size_Type(@ApiParam(value = "screen_size_type_id String query", required = true) String screen_size_type_id){
         try {
 
@@ -910,7 +910,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result remove_Screen_Size_Type(@ApiParam(value = "screen_size_type_id String query", required = true)  String screen_size_type_id){
         try {
             Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId(screen_size_type_id);

@@ -21,7 +21,7 @@ import play.mvc.*;
 import utilities.Server;
 import utilities.UtilTools;
 import utilities.loggy.Loggy;
-import utilities.loginEntities.Secured;
+import utilities.loginEntities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
@@ -42,7 +42,7 @@ import java.util.*;
 
 
 @Api(value = "Not Documented API - InProgress or Stuck")  // Záměrně takto zapsané - Aby ve swaggru nezdokumentované API byly v jedné sekci
-@Security.Authenticated(Secured.class)
+@Security.Authenticated(Secured_API.class)
 public class CompilationLibrariesController extends Controller {
 
     // Rest Api call client
@@ -199,7 +199,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result get_C_Program_by_Filter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) @PathParam("page_number") Integer page_number){
+    public Result get_C_Program_by_Filter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true)  Integer page_number){
 
         try {
 
@@ -246,7 +246,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_C_Program_List_by_Project(@ApiParam(value = "project_id String query", required = true) @PathParam("project_id") String project_id, @ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) @PathParam("page_number") Integer page_number){
+    public Result get_C_Program_List_by_Project(@ApiParam(value = "project_id String query", required = true) String project_id, @ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) Integer page_number){
 
         try {
 

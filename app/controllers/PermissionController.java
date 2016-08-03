@@ -11,7 +11,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.loggy.Loggy;
-import utilities.loginEntities.Secured;
+import utilities.loginEntities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_NotFound;
 import utilities.response.response_objects.Result_PermissionRequired;
@@ -23,7 +23,7 @@ import utilities.swagger.outboundClass.Swagger_System_Access;
 import java.util.List;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
-@Security.Authenticated(Secured.class)
+@Security.Authenticated(Secured_API.class)
 public class PermissionController extends Controller {
 
 

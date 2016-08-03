@@ -121,9 +121,9 @@
                                 <td> @x.identifikator.substring(0,7) </td>
 
                                 <td > @if( x.subscribers_grid.isEmpty){
-                                    <b style="color: red">FALSE</b>
+                                    <b>FALSE</b>
                                 }else{
-                                    <b style="color: #70ff6e">TRUE</b>
+                                    <b>TRUE</b>
                                 }
                                 </td>
 
@@ -205,7 +205,7 @@
                                         <a href=' @routes.DashboardController.ping_becki( x.identifikator )' >
                                             <button class="btn btn-block btn-info btn-xs">Ping All</button>
                                         </a>
-                                        <form style="margin-top: 10px;" method="get" action="@routes.WikyController.test_notifications()">
+                                        <form style="margin-top: 10px;" method="get" action="@routes.NotificationController.test_notifications( Person.find.byId( x.identifikator ).mail )">
                                             <button name="mail" value="@(Person.find.byId( x.identifikator ).mail )" class="btn btn-block btn-primary btn-xs">Send test notification</button>
                                         </form>
                                     </th>

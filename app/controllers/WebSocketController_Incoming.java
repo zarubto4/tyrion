@@ -22,7 +22,7 @@ import play.mvc.Result;
 import play.mvc.Security;
 import play.mvc.WebSocket;
 import utilities.loggy.Loggy;
-import utilities.loginEntities.Secured;
+import utilities.loginEntities.Secured_API;
 import utilities.loginEntities.TokenCache;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_Unauthorized;
@@ -79,7 +79,7 @@ public class WebSocketController_Incoming extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",         response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result get_Websocket_token() {
         try {
 

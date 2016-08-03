@@ -19,7 +19,7 @@ import utilities.goPay.GoPay_Controller;
 import utilities.goPay.helps_objects.enums.Currency;
 import utilities.goPay.helps_objects.enums.Payment_method;
 import utilities.loggy.Loggy;
-import utilities.loginEntities.Secured;
+import utilities.loginEntities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_BadRequest;
 import utilities.response.response_objects.Result_PermissionRequired;
@@ -39,7 +39,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
-@Security.Authenticated(Secured.class)
+@Security.Authenticated(Secured_API.class)
 public class Finance_Controller extends Controller {
 
     // Loger

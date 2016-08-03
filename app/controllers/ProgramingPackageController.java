@@ -31,7 +31,7 @@ import utilities.Server;
 import utilities.UtilTools;
 import utilities.emails.EmailTool;
 import utilities.loggy.Loggy;
-import utilities.loginEntities.Secured;
+import utilities.loginEntities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
@@ -46,7 +46,7 @@ import java.util.Date;
 import java.util.List;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
-@Security.Authenticated(Secured.class)
+@Security.Authenticated(Secured_API.class)
 public class ProgramingPackageController extends Controller {
 
     @Inject MailerClient mailerClient;

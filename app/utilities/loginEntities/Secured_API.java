@@ -7,7 +7,7 @@ import play.mvc.Security;
 import utilities.response.GlobalResult;
 
 
-public class Secured extends Security.Authenticator {
+public class Secured_API extends Security.Authenticator {
 
 
     @Override

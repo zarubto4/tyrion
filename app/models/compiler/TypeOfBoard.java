@@ -48,7 +48,7 @@ public class TypeOfBoard extends Model {
     public enum permissions{TypeOfBoard_create, TypeOfBoard_edit, TypeOfBoard_delete, TypeOfBoard_register_new_device}
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Finder<String, TypeOfBoard> find = new Finder<>(TypeOfBoard.class);
+    public static Model.Finder<String, TypeOfBoard> find = new Finder<>(TypeOfBoard.class);
 
 
 }

@@ -10,7 +10,7 @@
 ###################################################################################f#################################################################################
 
 #GET             /test2                                      @controllers.WikyController.test2()
-GET              /test_not                                     @controllers.WikyController.test_notifications(mail: String?="")
+
 
 ### WEBSOCKET ############ WEBSOCKET ############### WEBSOCKET ################ WEBSOCKET ###########################################################################
 ###################################################################################f#################################################################################
@@ -54,6 +54,7 @@ PUT             /notification/confirm/:notification_id      @controllers.Notific
 
 PUT             /notification/read                          @controllers.NotificationController.mark_as_read_notification()
 
+GET             /notification/test/:email                   @controllers.NotificationController.test_notifications(email)
 
 ### PERSON ############ PERSON ############### PERSON ################ PERSON ################# PERSON ############ PERSON ###########################################
 ######################################################################################################################################################################

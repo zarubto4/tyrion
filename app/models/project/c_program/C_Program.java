@@ -42,7 +42,6 @@ public class C_Program extends Model {
             value = "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
             example = "1466163478925")                                                       public Date dateOfCreate;
 
-    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp", example = "1461854312") public Date dateOfCreate;
     @JsonIgnore @OneToMany(mappedBy="c_program", cascade = CascadeType.ALL, fetch = FetchType.EAGER) @OrderBy("id DESC") public List<Version_Object> version_objects = new ArrayList<>();
 
 

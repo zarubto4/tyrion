@@ -1,7 +1,6 @@
 package controllers;
 
 import models.compiler.Cloud_Compilation_Server;
-import models.compiler.TypeOfBoard;
 import models.project.b_program.servers.Cloud_Homer_Server;
 import org.pegdown.PegDownProcessor;
 import play.Application;
@@ -9,10 +8,11 @@ import play.Routes;
 import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
+import play.mvc.Security;
 import play.twirl.api.Html;
 import utilities.Server;
 import utilities.loggy.Loggy;
-import utilities.swagger.documentationClass.Swagger_TypeOfBoard_New;
+import utilities.loginEntities.Secured_Admin;
 import utilities.swagger.swagger_diff_tools.Swagger_diff_Controller;
 import utilities.swagger.swagger_diff_tools.servise_class.Swagger_Diff;
 import utilities.webSocket.*;
@@ -24,10 +24,11 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeoutException;
-
-import static play.data.Form.form;
 
 /**
  * CONTROLLER je určen pro jednoduchý frontend, který slouží pro zobrazení stavu backendu, základních informací,
@@ -324,6 +325,7 @@ public class DashboardController extends Controller {
 
 // ADMIN ###############################################################################################################
 
+    @Security.Authenticated( Secured_Admin.class)
     public Result admin_page(){
 
         try {

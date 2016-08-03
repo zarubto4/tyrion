@@ -15,7 +15,7 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utilities.UtilTools;
 import utilities.loggy.Loggy;
-import utilities.loginEntities.Secured;
+import utilities.loginEntities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
@@ -191,7 +191,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     @BodyParser.Of(BodyParser.Json.class)
     public Result new_Post(){
         try {
@@ -244,7 +244,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public  Result delete_Post(@ApiParam(value = "post_id String path", required = true)String post_id){
         try {
 
@@ -293,7 +293,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     @BodyParser.Of(BodyParser.Json.class)
     public Result edit_Post(@ApiParam(value = "post_id String path", required = true)  String post_id){
         try {
@@ -362,7 +362,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     @BodyParser.Of(BodyParser.Json.class)
     public Result addComment(@ApiParam(value = "post_id String path", required = true)  String post_id){
        try {
@@ -428,7 +428,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     @BodyParser.Of(BodyParser.Json.class)
     public Result addAnswer(@ApiParam(value = "post_id String path", required = true)  String post_id){
         try {
@@ -495,7 +495,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     @BodyParser.Of(BodyParser.Json.class)
     public Result edit_Comment_or_Answer(@ApiParam(value = "post_id String path", required = true)  String post_id){
         try {
@@ -539,7 +539,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result linkWithPreviousAnswer(@ApiParam(value = "question_post_id String path", required = true) String question_post_id, @ApiParam(value = "This is Answer Id (main post)", required = true)  String answer_post_id){
         try {
 
@@ -583,7 +583,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result unlinkWithPreviousAnswer(String linked_post_id){
         try {
             LinkedPost post = LinkedPost.find.byId(linked_post_id);
@@ -641,7 +641,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     @BodyParser.Of(BodyParser.Json.class)
     public Result new_TypeOfPost(){
         try{
@@ -680,7 +680,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result get_TypeOfPost_all(){
         try{
             return GlobalResult.result_ok(Json.toJson( TypeOfPost.find.all() ));
@@ -705,7 +705,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result get_TypeOfPost(@ApiParam(value = "type_of_post_id String path", required = true)  String type_of_post_id){
         try{
 
@@ -755,7 +755,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result edit_TypeOfPost(@ApiParam(value = "type_of_post_id String path", required = true)  String type_of_post_id){
         try{
 
@@ -806,7 +806,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result delete_TypeOfPost(@ApiParam(value = "type_of_post_id String path", required = true)String type_of_post_id){
         try{
 
@@ -860,7 +860,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     @BodyParser.Of(BodyParser.Json.class)
     public Result new_TypeOfConfirms(){
         try{
@@ -916,7 +916,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result edit_TypeOfConfirms(@ApiParam(value = "type_of_confirm_id String path", required = true) String  type_of_confirm_id){
         try{
 
@@ -974,7 +974,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result delete_TypeOfConfirms(@ApiParam(value = "type_of_confirm_id String path", required = true)  String  type_of_confirm_id){
         try{
 
@@ -1006,7 +1006,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result get_TypeOfConfirms(@ApiParam(value = "type_of_confirm_id String path", required = true)  String  type_of_confirm_id){
         try{
 
@@ -1032,7 +1032,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result get_TypeOfConfirms_all(){
         try{
             return GlobalResult.result_ok(Json.toJson( TypeOfConfirms.find.all() ));
@@ -1061,7 +1061,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result set_TypeOfConfirm_to_Post(@ApiParam(value = "post_id String path", required = true)  String post_id, @ApiParam(value = "type_of_confirm_id String path", required = true) String  type_of_confirm_id){
         try{
             TypeOfConfirms typeOfConfirms = TypeOfConfirms.find.byId(type_of_confirm_id);
@@ -1101,7 +1101,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result remove_TypeOfConfirm_to_Post(@ApiParam(value = "post_id String path", required = true)  String post_id,@ApiParam(value = "type_of_confirm_id String path", required = true)  String  type_of_confirm_id){
         try{
 
@@ -1146,7 +1146,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result add_HashTag_to_Post(@ApiParam(value = "post_id String path", required = true) String post_id, @ApiParam(value = "hash_tag String path", required = true) String hash_tag){
         try{
 
@@ -1194,7 +1194,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result remove_HashTag_from_Post(@ApiParam(value = "post_id String path", required = true) String post_id, @ApiParam(value = "hash_tag String path", required = true) String hash_tag){
         try{
 
@@ -1230,7 +1230,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result likePlus(@ApiParam(value = "post_id String path", required = true) String post_id){
         try {
             Post post = Post.find.where().eq("id", post_id).findUnique();
@@ -1262,7 +1262,7 @@ public class OverFlowController  extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public Result likeMinus(@ApiParam(value = "post_id String path", required = true) String post_id){
         try {
             Post post = Post.find.where().eq("id", post_id).findUnique();

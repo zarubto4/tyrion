@@ -12,7 +12,7 @@ import play.mvc.Security;
 import utilities.Server;
 import utilities.emails.EmailTool;
 import utilities.loggy.Loggy;
-import utilities.loginEntities.Secured;
+import utilities.loginEntities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
@@ -317,7 +317,7 @@ public class PersonController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public  Result get_Person(@ApiParam(value = "person_id String query", required = true)  String person_id){
         try{
 
@@ -343,7 +343,7 @@ public class PersonController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public  Result get_Person_all(){
         try{
 
@@ -377,7 +377,7 @@ public class PersonController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public  Result deletePerson(@ApiParam(value = "person_id String query", required = true) String person_id){
         try{
 
@@ -427,7 +427,7 @@ public class PersonController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public  Result edit_Person_Information(String person_id){
         try{
 
@@ -471,7 +471,7 @@ public class PersonController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public  Result get_Person_Connections(){
         try{
 
@@ -500,7 +500,7 @@ public class PersonController extends Controller {
             @ApiResponse(code = 400, message = "Not Found object",        response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public  Result remove_Person_Connection(String connection_id){
         try{
 

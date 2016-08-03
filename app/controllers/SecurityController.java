@@ -19,7 +19,7 @@ import play.mvc.*;
 import utilities.Server;
 import utilities.UtilTools;
 import utilities.loggy.Loggy;
-import utilities.loginEntities.Secured;
+import utilities.loginEntities.Secured_API;
 import utilities.loginEntities.Socials;
 import utilities.response.CoreResponse;
 import utilities.response.GlobalResult;
@@ -128,7 +128,7 @@ public class SecurityController extends Controller {
             @ApiResponse(code = 401, message = "Wrong Email or Password", response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured_API.class)
     public  Result getPersonByToken(){
         try{
 
