@@ -42,7 +42,7 @@ public class Processor extends Model {
     public enum permissions{Processor_create, Processor_edit, Processor_delete}
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Finder<String, Processor> find = new Finder<>(Processor.class);
+    public static Model.Finder<String, Processor> find = new Finder<>(Processor.class);
 
 
 }

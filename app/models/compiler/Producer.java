@@ -39,6 +39,6 @@ public class Producer extends Model {
     public enum permissions{Producer_create, Producer_edit, Producer_delete}
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Finder<String, Producer> find = new Model.Finder<>(Producer.class);
+    public static Model.Finder<String, Producer> find = new Model.Finder<>(Producer.class);
 
 }

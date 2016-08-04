@@ -1270,6 +1270,7 @@ public class CompilationLibrariesController extends Controller {
 ///###################################################################################################################*/
 
     @ApiOperation(value = "Create new Processor",
+            hidden = true,
             tags = {"Processor"},
             notes = "If you want create new Processor. Send required json values and server respond with new object",
             produces = "application/json",
@@ -1456,6 +1457,7 @@ public class CompilationLibrariesController extends Controller {
     }
 
     @ApiOperation(value = "delete Processor",
+            hidden = true,
             tags = {"Processor"},
             notes = "If you want delete Processor by query processor_id.",
             produces = "application/json",
@@ -2433,6 +2435,7 @@ public class CompilationLibrariesController extends Controller {
 ///###################################################################################################################*/
 
     @ApiOperation(value = "create new Producer",
+            hidden = true,
             tags = {"Producer"},
             notes = "if you want create new Producer. Its company owned physical boards and we used that for filtering",
             produces = "application/json",
@@ -2491,6 +2494,7 @@ public class CompilationLibrariesController extends Controller {
     }
 
     @ApiOperation(value = "edit Producer",
+            hidden = true,
             tags = {"Producer"},
             notes = "if you want edit information about Producer. Its company owned physical boards and we used that for filtering",
             produces = "application/json",
@@ -2623,6 +2627,7 @@ public class CompilationLibrariesController extends Controller {
     }
 
     @ApiOperation(value = "delete Producer",
+            hidden = true,
             tags = {"Producer"},
             notes = "if you want delete Producer",
             produces = "application/json",
@@ -3344,7 +3349,6 @@ public class CompilationLibrariesController extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
     }
-
 
     @ApiOperation(value = "get Boards details for integration to Blocko program",
             tags = {"Blocko", "B_Program"},

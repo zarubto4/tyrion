@@ -12,10 +12,8 @@ import play.mvc.Security;
 import play.twirl.api.Html;
 import utilities.Server;
 import utilities.loggy.Loggy;
-import utilities.loginEntities.Secured;
 import utilities.loginEntities.Secured_Admin;
 import utilities.response.GlobalResult;
-import utilities.swagger.documentationClass.Swagger_TypeOfBoard_New;
 import utilities.swagger.swagger_diff_tools.Swagger_diff_Controller;
 import utilities.swagger.swagger_diff_tools.servise_class.Swagger_Diff;
 import utilities.webSocket.*;
@@ -135,8 +133,15 @@ public class DashboardController extends Controller {
                 fileNames.add((file.getName().substring(0, file.getName().lastIndexOf('.'))).replace("_", "."));
             }
 
-            if(file_name_old.equals("")) file_name_old = fileNames.get(fileNames.size()-2);
-            if(file_name_new.equals("")) file_name_new = fileNames.get(fileNames.size()-1);
+            for(String file_name : fileNames){
+
+                System.out.println(file_name);
+
+            }
+
+            if(file_name_old.equals("")) file_name_old = fileNames.get( ( fileNames.size()-2) ) ;
+            if(file_name_new.equals("")) file_name_new = fileNames.get( ( fileNames.size()-1) ) ;
+
 
             String text = "";
             for (String line : Files.readAllLines(Paths.get("README"), StandardCharsets.UTF_8)) text += line + "\n";
@@ -371,8 +376,19 @@ public class DashboardController extends Controller {
                         controllers.routes.javascript.CompilationLibrariesController.new_TypeOfBoard(),
                         controllers.routes.javascript.CompilationLibrariesController.get_TypeOfBoard(),
                         controllers.routes.javascript.CompilationLibrariesController.edit_TypeOfBoard(),
-                        controllers.routes.javascript.CompilationLibrariesController.delete_TypeOfBoard()
+                        controllers.routes.javascript.CompilationLibrariesController.delete_TypeOfBoard(),
 
+                        controllers.routes.javascript.CompilationLibrariesController.new_Processor(),
+                        controllers.routes.javascript.CompilationLibrariesController.get_Processor(),
+                        controllers.routes.javascript.CompilationLibrariesController.get_Processor_All(),
+                        controllers.routes.javascript.CompilationLibrariesController.update_Processor(),
+                        controllers.routes.javascript.CompilationLibrariesController.delete_Processor(),
+
+                        controllers.routes.javascript.CompilationLibrariesController.new_Producer(),
+                        controllers.routes.javascript.CompilationLibrariesController.edit_Producer(),
+                        controllers.routes.javascript.CompilationLibrariesController.get_Producers(),
+                        controllers.routes.javascript.CompilationLibrariesController.get_Producer(),
+                        controllers.routes.javascript.CompilationLibrariesController.delete_Producer()
                 )
         );
     }

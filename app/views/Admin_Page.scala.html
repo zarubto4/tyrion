@@ -1,12 +1,17 @@
 @import models.compiler.TypeOfBoard
+@import models.compiler.Processor
 @(serverAddress: String)
+
+
 <section class="content-header">
-  <h1> Admin Page </h1>
+  <h1> Basic object settings </h1>
   <ol class="breadcrumb">
     <li><a href="#"><i class="fa fa-wrench"></i> Admin Page </a></li>
     <li class="active">Dashboard</li>
   </ol>
 </section>
+
+
 <section class="content">
   <div id="editTypeOfBoardModal" style="display: none;" class="modal">
     <div style="margin-top: 15%;" class="modal-dialog">
@@ -45,81 +50,6 @@
           <h3 class="box-title">Type Of Board</h3>
         </div>
         <div class="box-body">
-
-          <script>
-             function newTypeOfBoard(){
-          model_data = $("#newTypeOfBoard").serializeObject();
-          $.ajax({
-          url: '@routes.CompilationLibrariesController.new_TypeOfBoard()',
-          type: 'POST',
-          contentType: 'application/json',
-          headers: {
-              "X-AUTH-TOKEN":getCookie("authToken"),
-              "Content-Type":"application/json"
-            },
-          data: JSON.stringify(model_data),
-          dataType: 'json',
-          success:function(e){
-            $("#newTypeOfBoard input[type=text]").val("");
-            $('#allTypesOfBoards').load(document.URL +  ' #allTypesOfBoards');
-          },
-            error:function(e) {
-              alert("Unsuccessful. Check if all properties are correct");
-            }
-            })}
-
-            function editTypeOfBoard(id){
-              model_data = $("#editTypeOfBoard").serializeObject();
-
-              $.ajax({
-                url: "@serverAddress" + "/compilation/typeOfBoard/" + id ,
-                type: 'PUT',
-                contentType: 'application/json',
-                headers: {
-                  "X-AUTH-TOKEN":getCookie("authToken"),
-                  "Content-Type":"application/json"
-                },
-                data: JSON.stringify(model_data),
-                dataType: 'json',
-                success:function(e){
-                  $("#editTypeOfBoard input[type=text]").val("");
-                  $("#editTypeOfBoardModal").css("display","none");
-                  $('#allTypesOfBoards').load(document.URL +  ' #allTypesOfBoards');
-                },
-                error:function(e) {
-                  alert("Unsuccessful. Check if all properties are correct");
-                }
-              })}
-
-            function deleteTypeOfBoard(id){
-
-               $.ajax({
-                 url: "@serverAddress" + "/compilation/typeOfBoard/" + id ,
-                 type: 'DELETE',
-                 headers: {
-                   "X-AUTH-TOKEN":getCookie("authToken"),
-                 },
-                 success:function(e){
-                   $('#allTypesOfBoards').load(document.URL +  ' #allTypesOfBoards');
-                 },
-                 error:function(e) {
-                   alert("Unsuccessful. Maybe it cannot be deleted, because there are some boards of this type.");
-                 }
-               })}
-
-             function showEditForm(id, typeOfBoardName, description, producer_id, processor_id, checkBoxValue){
-               $("#editTypeOfBoardModal").css("display","block");
-               $('#editTypeOfBoardButton').val(id);
-               $('#typeOfBoardId').text("ID = " + id);
-               $("#editTypeOfBoard input[name=name]").val(typeOfBoardName);
-               $("#editTypeOfBoard input[name=description]").val(description);
-               $("#editTypeOfBoard input[name=producer_id]").val(producer_id);
-               $("#editTypeOfBoard input[name=processor_id]").val(processor_id);
-               $("#editTypeOfBoard input[name=connectible_to_internet]").prop( "checked", checkBoxValue );
-             }
-
-          </script>
-
 
           <label style="font-size: 13pt;">New Type of Board</label>
           <form id="newTypeOfBoard")>
@@ -181,7 +111,238 @@
         </div>
         <div class="box-footer">
         </div>
+
+
       </div>
     </div>
   </div>
 </section>
+
+
+
+<section class="content">
+  <div id="editProcessorModal" style="display: none;" class="modal">
+    <div style="margin-top: 15%;" class="modal-dialog">
+      <div class="modal-content">
+
+        <div class="modal-header">
+          <h4 class="modal-title">Edit Processor</h4>
+        </div>
+
+        <div class="modal-body">
+          <form id="editProcessor")>
+            <label id="processor_id" style="display: block">ID</label>
+            <label>Name</label><input style="display: block" type="text" name="processor_name" >
+            <label>Description</label><input style="display: block" type="text" name="description" >
+            <label>Processor code</label><input style="display: block" type="text" name="processor_code" >
+            <label>Speed</label><input style="display: block" type="text" name="speed" >
+          </form>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editProcessorModal').css('display','none')">Close</button>
+          <button id="editProcessorButton" value="" class="btn btn-primary" type="button" onclick="editProcessor(this.value)">Save changes</button>
+        </div>
+      </div>
+        <!-- /.modal-content -->
+    </div>
+      <!-- /.modal-dialog -->
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="box">
+        <div class="box-header with-border">
+          <h3 class="box-title">Processor</h3>
+        </div>
+        <div class="box-body">
+                    <label style="font-size: 13pt;">New Processor</label>
+          <form id="newProcessor")>
+            <div style="width: 16%; display: inline-block"><label>Name</label>        <input type="text" name="processor_name" ></div>
+            <div style="width: 16%; display: inline-block;"><label>Description</label><input type="text" name="description" ></div>
+            <div style="width: 16%; display: inline-block;"><label>Code</label>       <input type="text" name="processor_code" ></div>
+            <div style="width: 16%; display: inline-block;"><label>Speed</label>      <input type="text" name="speed" ></div>
+
+            <button style="width: 16%; display: inline-block;" class="btn btn-block btn-success" type="button" onclick="newProcessor()">New processor</button>
+          </form>
+        </div>
+        <div class="box-body">
+          <label style="font-size: 13pt;">All Processors</label>
+          <table id="allProcessors" class="table table-bordered">
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Processor code</th>
+              <th>Speed</th>
+              <th>EDIT</th>
+              <th>DELETE</th>
+            </tr>
+            @for(processor <- Processor.find.all()) {
+              <tr>
+                <td>@processor.id</td>
+                <td>@processor.processor_name</td>
+                <td>@processor.description</td>
+                <td>@processor.processor_code</td>
+                <td>@processor.speed</td>
+                <td><button class="btn btn-block btn-info"   type="button" onclick="showEditFormProcessor('@processor.id', '@processor.processor_name', '@processor.description', '@processor.processor_code', '@processor.speed')">Edit</button></td>
+                <td><button class="btn btn-block btn-danger" type="button" onclick="deleteProcessor(@processor.id)">Delete</button></td>
+              </tr>
+            }
+          </table>
+        </div>
+        <div class="box-footer">
+        </div>
+
+
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<script>
+
+        function newTypeOfBoard(){
+          model_data = $("#newTypeOfBoard").serializeObject();
+          $.ajax({
+            url: '@routes.CompilationLibrariesController.new_TypeOfBoard()',
+            type: 'POST',
+            contentType: 'application/json',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+            success:function(e){
+              $("#newTypeOfBoard input[type=text]").val("");
+              $('#allTypesOfBoards').load(document.URL +  ' #allTypesOfBoards');
+            },
+            error:function(e) {
+              alert("Unsuccessful. Check if all properties are correct");
+            }
+          })}
+
+        function editTypeOfBoard(id){
+          model_data = $("#editTypeOfBoard").serializeObject();
+
+          $.ajax({
+            url: "@serverAddress" + "/compilation/typeOfBoard/" + id ,
+            type: 'PUT',
+            contentType: 'application/json',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+            success:function(e){
+              $("#editTypeOfBoard input[type=text]").val("");
+              $("#editTypeOfBoardModal").css("display","none");
+              $('#allTypesOfBoards').load(document.URL +  ' #allTypesOfBoards');
+            },
+            error:function(e) {
+              alert("Unsuccessful. Check if all properties are correct");
+            }
+          })}
+
+        function deleteTypeOfBoard(id){
+
+          $.ajax({
+            url: "@serverAddress" + "/compilation/typeOfBoard/" + id ,
+            type: 'DELETE',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+            },
+            success:function(e){
+              $('#allTypesOfBoards').load(document.URL +  ' #allTypesOfBoards');
+            },
+            error:function(e) {
+              alert("Unsuccessful. Maybe it cannot be deleted, because there are some boards of this type.");
+            }
+          })}
+
+        function showEditForm(id, typeOfBoardName, description, producer_id, processor_id, checkBoxValue){
+          $("#editTypeOfBoardModal").css("display","block");
+          $('#editTypeOfBoardButton').val(id);
+          $('#typeOfBoardId').text("ID = " + id);
+          $("#editTypeOfBoard input[name=name]").val(typeOfBoardName);
+          $("#editTypeOfBoard input[name=description]").val(description);
+          $("#editTypeOfBoard input[name=producer_id]").val(producer_id);
+          $("#editTypeOfBoard input[name=processor_id]").val(processor_id);
+          $("#editTypeOfBoard input[name=connectible_to_internet]").prop( "checked", checkBoxValue );
+        }
+
+
+        function newProcessor(){
+          model_data = $("#newProcessor").serializeObject();
+          $.ajax({
+            url: '@routes.CompilationLibrariesController.new_Processor()',
+            type: 'POST',
+            contentType: 'application/json',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+            success:function(e){
+              $("#newProcessor input[type=text]").val("");
+              $('#allProcessors').load(document.URL +  ' #allProcessors');
+            },
+            error:function(e) {
+              alert("Unsuccessful. Check if all properties are correct");
+            }
+          })}
+
+        function editProcessor(id){
+          model_data = $("#editProcessor").serializeObject();
+
+          $.ajax({
+            url: "@serverAddress" + "/compilation/processor/" + id ,
+            type: 'PUT',
+            contentType: 'application/json',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+            success:function(e){
+              $("#editTProcessor input[type=text]").val("");
+              $("#editProcessorModal").css("display","none");
+              $('#allProcessors').load(document.URL +  ' #allProcessors');
+            },
+            error:function(e) {
+              alert("Unsuccessful. Check if all properties are correct");
+            }
+          })}
+
+        function deleteProcessor(id){
+
+          $.ajax({
+            url: "@serverAddress" + "/compilation/processor/" + id ,
+            type: 'DELETE',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+            },
+            success:function(e){
+              $('#allProcessors').load(document.URL +  ' #allProcessors');
+            },
+            error:function(e) {
+              alert("Unsuccessful. Maybe it cannot be deleted, because there are some boards connected on this processor");
+            }
+          })}
+
+        function showEditFormProcessor(id, processor_name, description, processor_code, speed){
+          $("#editProcessorModal").css("display","block");
+          $('#editProcessorButton').val(id);
+          $('#processor_id').text("ID = " + id);
+          $("#editProcessor input[name=processor_name]").val(processor_name);
+          $("#editProcessor input[name=description]").val(description);
+          $("#editProcessor input[name=processor_code]").val(processor_code);
+          $("#editProcessor input[name=speed]").val(speed);
+        }
+
+</script>
