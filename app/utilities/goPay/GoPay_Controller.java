@@ -170,6 +170,7 @@ public class GoPay_Controller  extends Controller {
 
             invoice.invoice_items.add(invoice_item_1);
             invoice.proforma = true;
+            invoice.status = Invoice.Payment_status.sent;
             invoice.date_of_create = new Date();
             invoice.method = product.method;
 
@@ -211,8 +212,27 @@ public class GoPay_Controller  extends Controller {
             logger.debug("Sending request for new payment!");
             WSResponse response = responsePromise.get(1000);
 
+            /**
+            350	Stržení platby selhalo
+            351	Stržení platby provedeno
+            352	Zrušení přeautorizace selhalo
+            353	Zrušení předautorizace provedeno
+            340	Provedení opakované platby selhalo
+            341	Provedení opakované platby není podporováno
+            342	Opakování platby zastaveno
+            343	Překročen časový limit počtu provedení opakované platby
+            330	Platbu nelze vrátit
+            331	Platbu nelze vrátit
+            332	Chybná částka
+            333	Nedostatek peněz na účtu
+            301	Platbu nelze vytvořit
+            302	Platbu nelze provést
+            303	Platba v chybném stavu
+            304	Platba nebyla nalezena
+            */
+
             // Platba byla úspěšná
-            if(response.getStatus() ==  200 ) {
+            if(response.getStatus() ==  500 ) {
 
                 JsonNode json_response =  response.asJson();
                 logger.debug("Request was successful");
@@ -236,7 +256,7 @@ public class GoPay_Controller  extends Controller {
                 new Fakturoid_Controller().send_Invoice_to_Email(invoice);
 
             }
-            else if(response.getStatus() == 333) {
+            else if(response.getStatus() == 200) {
 
                 logger.warn("Not enough money on Account");
                 logger.warn("Set a time limit protection for account");

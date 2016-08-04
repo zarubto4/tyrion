@@ -30,8 +30,8 @@ public class Payment_Details extends Model {
     @ApiModelProperty(required = false, value = "Only if Product is for business") @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty  public String company_invoice_email;
     @ApiModelProperty(required = false, value = "Only if Product is for business") @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty  public String company_web;
 
-    @ApiModelProperty(required = false, value = "Only if Product is for business") @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty  public String registration_no;
-    @ApiModelProperty(required = false, value = "Only if Product is for business") @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty  public String vat_number;
+    @ApiModelProperty(required = false, value = "Only if Product is for business") @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty  public String company_registration_no;
+    @ApiModelProperty(required = false, value = "Only if Product is for business") @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty  public String company_vat_number;
 
     @ApiModelProperty(required = true, value = "Used for billing and invoices") public String street;
     @ApiModelProperty(required = true, value = "Used for billing and invoices") public String street_number;
@@ -44,8 +44,6 @@ public class Payment_Details extends Model {
 
 
     @JsonProperty @Transient  public boolean edit_permission()  {  return true;  }
-
-
 
 
     /* FINDER --------------------------------------------------------------------------------------------------------------*/

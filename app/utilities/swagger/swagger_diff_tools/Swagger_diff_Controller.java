@@ -60,12 +60,16 @@ public class Swagger_diff_Controller extends Controller {
 
             logger.debug("Creating api_diff.html content");
 
+
+            System.err.println("Nahrávám Jsony");
             JsonNode old_api = read_local_File_for_Swagger(file_name_old );
             JsonNode new_api = read_local_File_for_Swagger(file_name_new );
 
+            System.err.println("Vytvářím DIFF objekt");
             Swagger_Diff swagger_Dif = new Swagger_Diff();
             swagger_Dif.new_Version = file_name_new.replace("_", ".");
             swagger_Dif.old_Version = file_name_old.replace("_", ".");
+
 
             final Form<Swagger_Api> form_old = Form.form(Swagger_Api.class).bind(old_api);
             Swagger_Api api_old = form_old.get();
@@ -73,6 +77,8 @@ public class Swagger_diff_Controller extends Controller {
             final Form<Swagger_Api> form_new = Form.form(Swagger_Api.class).bind(new_api);
             Swagger_Api api_new = form_new.get();
 
+            api_new.arrange_models(new_api.get("definitions"));
+            api_old.arrange_models(old_api.get("definitions"));
 
             // skupiny v API -------------------------------------------------------------------------------------------
             logger.debug("Checking API TAGS");
@@ -84,19 +90,23 @@ public class Swagger_diff_Controller extends Controller {
 
             // modely v API --------------------------------------------------------------------------------------------
             logger.debug("Checking Models");
-
+            System.err.println("Počet modelů" + api_new.models.size());
             for(String key : api_new.models.keySet()){
+                System.out.println("Kontroluji model klíč: " + key);
 
                 if(!api_old.models.containsKey(key)){
+                    System.err.println("Oběvil jsem Model který je nový");
                     swagger_Dif.object_new.add( new News(key, JsonWriter.formatJson(  api_new.models.get(key).toString() ) ));
                 }
                 else if(api_old.models.containsKey(key) &&  !api_old.models.get(key).equals(api_new.models.get(key) )) {
+                    System.err.println("Oběvil jsem Model který má změněné vlastnosti");
                     swagger_Dif.object_diffs.add( new Diffs( key,  JsonWriter.formatJson( api_old.models.get(key).toString()) ,  JsonWriter.formatJson( api_new.models.get(key).toString()) ));
                 }
             }
 
             for(String key : api_old.models.keySet()){
                 if(!api_new.models.containsKey(key)){
+                    System.out.println("Oběvil jsem Model který byl smazán");
                     swagger_Dif.object_removes.add( new Remws(key,  JsonWriter.formatJson( api_old.models.get(key).toString() ) ));
                 }
             }

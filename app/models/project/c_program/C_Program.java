@@ -50,10 +50,11 @@ public class C_Program extends Model {
 
     @JsonProperty  @Transient public String project_id(){ return project.id; }
     @JsonProperty  @Transient public String type_of_board_id()   { return type_of_board == null ? null : type_of_board.id;}
+    @JsonProperty  @Transient public String type_of_board_name()   { return type_of_board == null ? null : type_of_board.name;}
+
     @JsonProperty @Transient public List<Swagger_C_Program_Version> program_versions() {
         List<Swagger_C_Program_Version> versions = new ArrayList<>();
         for(Version_Object v : version_objects) versions.add(program_version(v));
-
         return versions;
     }
 

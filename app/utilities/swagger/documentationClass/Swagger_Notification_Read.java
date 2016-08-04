@@ -6,7 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.List;
 
 @ApiModel(description = "Json Model for List with ids of read notifications",
-             value = "M_Project_New")
+             value = "Notification_Read")
 public class Swagger_Notification_Read {
 
     @ApiModelProperty(value = "List of notification.id", required = true)

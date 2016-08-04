@@ -26,6 +26,8 @@
 
  * Pokud není nic nalezeno vrátí prázdný list content. Obdobně jako u jiných filtrů. Podrobnější dokumentace ve swaggeru.
 
+-----
+
 ## Notifikace vyžadující potvrzení ##
  * Kvůli notifikacím vyžadující potvrzení je nutné po přihlášení uživatele zavolat API:
 
@@ -33,6 +35,8 @@
 
  * Metoda vrátí code 200 a pokud jsou notifikace, které by měl uživatel potvrdit, znovu je odešle.
  * Tyto notifikace obsahují link do Tyriona, kterým se notifikace potvrdí.
+
+-----
 
 ## Link na Becki [TYRION-325](http://youtrack.byzance.cz/youtrack/issue/TYRION-325) ##
  * Všechny linky, které vytvoří Tyrion a odkazují na Becki, budou používat lomítka namísto path values. Takže např. link:
@@ -43,8 +47,313 @@
 
 		{{url_Becki}}/passwordRestart/{password_recovery_token}
 
+
+-----
+
+## Velké změny FLOW uživatele Becki ##
+V předchozích verzích byl nejvyšším objektem u uživatele **Project**, nyní se odsouvá pod objekt **Produkt**. Jde o to, že na začátku si uživatel vybrete jaký chce tarif - zda free, Alfu, nebo placený (různé balíčky). Po vybrání tarifu pokud je zdarma se okamžitě vrátí objekt *Product*, pokud tarif vyžaduje nějakou formu zaplacení vrátí se url_link  an GOPay bránu. (Další komentář k platbě v samostatném bodu této dokumetnace). Po zaplacení se uživatel z platební brány přesměruje opět na Becki (/payment/success nebo /payment/fail). Pak má uživatel možnost vytvářet objekty *Project* pod objektem *Product* (U tvorby Projektu je tedy vyžadováno nově product_id). To je v koste vše.
+
+Tyrion má už implementované samostatné strhávání pěnez z účtu každý měsíc podle toho kdy se uživatel registroval. Vytváří faktury a další (toto patří do nové sekce Finacial v Becki)
+
+
+   * ### Objekt *Product* ###
+	
+	* Pokud uživatel nemá žádný *Product* nebo **Project** (protože nemusí být vlastník produkt ale jen spolupracovník na projektu)
+	
+			(API -  GET: {{url}}/project/project  - vrátí všechny projekty uživatele do kterých má přístup  )
+	
+			(API -  GET: {{url}}/product/tarifs/user_applicable  - vrátí všechny tarify pod kterými může uživatel vytvářet nové projekty )
+	
+	
+		* a) Zobrazí se mu nabídka tarifů, které si může vybrat a zaregistrovat. 	
+		
+				API- GET: {{url}}/product/tarifs/for_registration - vrátí seznam všech Tarifů)
+			
+		* b) Zobrazí se mu jeho projekty (nebo jen tlačítko přidat první - viz náhled vc chodbě)
+		
+				(API -  GET: {{url}}/project/project  - vrátí všechny projekty uživatele do kterých má přístup  )
+	
+	* Může vytvářet další nové 
+	
+		* a) Personal  (na základě API  **GET {{url}}/product/tarifs/for_registration ** kde v Json "company_details_required" : false není potřeba uvádět company_xxxxx hodnoty)
+		
+			* Request
+			
+					{
+				
+					  "tariff_type" : "alpha",
+					  "product_individual_name" : "Pepkova Alfa",
+					  "payment_mode": "free",
+					  "currency_type" : "CZK",
+					  "city": "Prague",
+					  "country": "Czech Republic",
+					  "street_number" : "17",
+					  "street": "Karlovo Náměstí",
+					  "zip_code": "120 00"
+ 
+					}
+				
+			
+			* Result
+
+					{
+					  "id": 22,
+					  "product_individual_name": "Pepkova Alfa",
+					  "paid_until_the_day": 1485730800000,
+					  "remaining_credit": 0,
+					  "currency": "CZK",
+					  "invoices": [],
+					  "payment_details": {
+					    "id": 22,
+					    "company_account": false,
+					    "street": "Karlovo Náměstí",
+					    "street_number": "17",
+					    "city": "Prague",
+					    "zip_code": "120 00",
+					    "country": "Czech Republic",
+					    "edit_permission": true
+					  },
+					  "product_type": "Alpha - Temporal limitation",
+					  "payment_mode": "Free Account",
+					  "payment_method": "Not set yet"
+					}
+
+	
+		* b) Enterprise (Kde se mění pouze detaily a obsah v objektu **Payment_Details**) 
+			
+			* Request
+				
+					{
+
+					  "tariff_type" : "business",
+					  "product_individual_name" : "Můj Tier 1",
+					  "currency_type" : "CZK",
+  
+					  "city": "Prague",
+					  "country": "Czech Republic",
+					  "street_number" : "17",
+					  "street": "Karlovo Náměstí",
+					  "zip_code": "120 00",
+    
+					  "registration_no" : "4898956465465", 
+					  "vat_number" : "CZ12345678" ,
+					  "company_name" : "Seznam s.r.o" ,
+  
+					  "company_authorized_email" : "seznam@seznamsdfsdf.cz",
+					  "company_authorized_phone" : "78978979879899",
+					  "company_web" : "www.google.com",
+					  "company_invoice_email" : "seznam@seznamdsfsdf.com",
+    
+					  "payment_mode" : "monthly", 
+					   "payment_method" : "credit_card"    
+					}
+				
+			* Result
+				
+					{
+					  "gw_url": "https://gw.sandbox.gopay.com/gw/v3/36a8ae8711ad117115045d212004be7e"
+					}
+			
+			
+	
+	### Objekt Tariff ### 
+	
+	Pokud nemá uživatel **Product** ani **Project** zobrazí se na úvodní straně Tariff. Json obejkt obrasuje jednak tariffs a  zadruhé packages, Packages jsou dodatečné balíčky, které lze přikupovat k hlavním tarifům. (Ale momentálně je Tyrion nepodporuje v platební bráně - proto navhruji je zatím ignorovat  a tvářit se že tam nejsou.).
+	
+	Pole <Individuals_Tariff> tariffs je tvořen objekty, jež tvoří nabídku jendotlivých tarifů pro uživatele. Pro Becki tým jsme to udělali, tak, ževám může být úplně jedno co za pole tarifů přijde a co obsahují. Prostě je zobrazíte a do tlačítka pro uživatele (Vybírám si tento tarif) identifikátorem daného objektu pak tarif zaregistrujete. Může vám  být jedno jak vypadá, kolik toho obsahuje atd.. (Jednodušeji to už nejde :P ) Výhodou tohoto řešení je, že mužu vracet různé tarify s různými cenami podle toho z jaké země je uživatel :D :D Němci to budou mít hold dražší :D 
+	
+			API- GET:  {{url}}/product/tarifs/for_registration - Vrat tarify pro registraci 
+
+	Vypadají takto:
+
+			{
+			  "tariffs": [
+			    {
+			      "tariff_name": "ALPHA",			(Jméno tarifu pro uživaatele)
+			      "identificator": "alpha",			(Identifikátor tarifu který mi zašlete pro registraci)
+			      "company_details_required": false,	(pokud true tak je nutné v obejtku Payment_Details uvést values s prefixem comapny_ (jako je danové číslo atd...))
+			      "required_payment_mode": false,		(Slouží do budoucna - asi třeba ke zobrazení obrázku kreditní karty?)
+			      "price": {
+			        "CZK": 0,				(Můžete přepínat mezi CZK, EUR - přibudou další měny - jde o to že takhle sami řídíme zaokrouhlování  0.99€ 29Kč 1.49$ atd,,)
+			        "EUR": 0
+			      },
+			      "labels": [				(Podle obrázku na stěně vidíte co tarif obsahuje. Nemusíte tedy řešit co jen to for cyklem zobrazíte :D - Tyrion tam pak nacpe informace typu (Maximáně 10 IoT), (Neomezený IoT) at.... )
+			        {
+			          "label": "adsfsdfasdf",
+			          "description": "sdfasd lkjsadflkjhjklsdfsadf"
+			        },
+			        {
+			          "label": "label 2",
+			          "description": "sdfasd lkjsadflkjhjklsdfsadf"
+			        },
+			        {
+			          "label": "label 3",
+			          "description": "sdfasd lkjsadflkjhjklsdfsadf"
+			        }
+			      ]
+			    },.. (+++ další tarify).... 
+			
+			
+		
+
+   * ### Objekt *Invoice_item* ###
+ 	Je objekt popisující fakturu - Ta může nabívat několik stavů. To je vesměs zatím jedno jakých. (V budoucnu asi bibude nějaký MARK ze strany Tyriona na barevné zvýraznění )
+	
+	Json obsahuje dvě zajímavé hodnoty mimo ostatních co mají ve swaggru dokumentaci: 
+	
+	* pdf_link  - Je přítom jen jestli faktura existuje a lze jí stáhnout. Je to celá URL! A slouží ke stažení souboru uživatli do PC (JE to PDF btw). 
+	
+	* require_payment - boolean  - (true) tak to zančí že není zaplacená a vyžaduje zaplacení, jde o to že Tyrion sám strhává peníze. Pokud se mu to nepodaří pošle uživateli email s žádostí o zaplacení. (Tyrion si řeší důvody sám) Po kliku na link z Emailu se mu uživateli zobrazí stránka s finančním přehledem. (Fakturami - kde by nezaplacená faktura měla být vidět (asi je to chronologicky seřazené, takže je nahoře)) - Ještě mu pošu při přihlášení notifikaci aby to taky nepřehlédnul!!! :D 
+	* API pro zaplacení  se dá zavolat nad fakturou pokud **require_payment = true**.
+
+			API- GET:  {{url}}/product/invoice/pay/:invoice_id   -> vrátí GoPayURL k otevření goPay platební brány! 
+
+
 ### Oprava Bugů ###
+ * fixed [TYRION-332](http://youtrack.byzance.cz/youtrack/issue/TYRION-332)
+ * fixed [TYRION-105](http://youtrack.byzance.cz/youtrack/issue/TYRION-105)
+ * fixed [TYRION-307](http://youtrack.byzance.cz/youtrack/issue/TYRION-307)
+ * fixed [TYRION-105](http://youtrack.byzance.cz/youtrack/issue/TYRION-105)
  * fixed [TYRION-326](http://youtrack.byzance.cz/youtrack/issue/TYRION-326)
+ * fixed [TYRION-327](http://youtrack.byzance.cz/youtrack/issue/TYRION-327)
+ * fixed [TYRION-314](http://youtrack.byzance.cz/youtrack/issue/TYRION-314)
+ * fixed [TYRION-252](http://youtrack.byzance.cz/youtrack/issue/TYRION-252)
+ * fixed [TYRION-284](http://youtrack.byzance.cz/youtrack/issue/TYRION-284)
+ * fixed [TYRION-336](http://youtrack.byzance.cz/youtrack/issue/TYRION-336) 
+ * fixed [TYRION-337](http://youtrack.byzance.cz/youtrack/issue/TYRION-337)
+ * fixed [TYRION-338](http://youtrack.byzance.cz/youtrack/issue/TYRION-338) 
+ * fixed [TYRION-342](http://youtrack.byzance.cz/youtrack/issue/TYRION-342)
+ * fixed [TYRION-339](http://youtrack.byzance.cz/youtrack/issue/TYRION-339)
+ * fixed [TYRION-343](http://youtrack.byzance.cz/youtrack/issue/TYRION-343)
+ * fixed [TYRION-330](http://youtrack.byzance.cz/youtrack/issue/TYRION-330)
+ * fixed [TYRION-286](http://youtrack.byzance.cz/youtrack/issue/TYRION-286)
+
+
+### Změny nad Objekty ###
+	
+	Detaily lze dohledat v DIFF toolu. Zde je soupis toho co vám změní funkcionalitu - ostatní je doplňování, zpřesňování, nebo orpava gramatiky v dokumentaci 
+
+	* **Project** 
+	Díky tomu, že uživatelé teď přidávají další uživatele do projektu pomocí emailu a to né hned automaticky ale až po potvrzení druhou stranou (a to díky notifikacím) je upravený seznam participujících - tak aby bylo vidět jméno, email a id a stav (v Textové podobě -aby jste nad tím nemuseli dělat žádné operace)
+		
+		* odstraněno pole participans_id
+		* nahrazeno polem participants (List **[Project_participant]** )
+			"participans" : [
+						{
+						  "full_name" : "Pepa Novák,"
+						  "user_mail" : "novak@pepa.ck"
+						  "user_id"   : "122"
+						  "state"     : "Project Owner"	
+						},
+						{
+						  "full_name" : "Jonathan Kudlanka"
+						  "user_mail" : "novak@pepa.ck"
+						  "user_id"   : "122"
+						  "state"     : "Project Memeber"	
+						}
+						{
+						  "full_name" : ""
+						  "user_mail" : "karel@got.cz"
+						  "user_id"   : ""
+						  "state"     : "WPending approval"	
+						}		
+					]
+					
+			
+	* **Board**
+	Přidány parametry 
+		* up_to_date - zda je zařízení v nejposlednější verzi 
+		* status - úprava objektu 
+		
+	* **TypeOfBoard
+	Přidány parametry
+		* processor_name (aby se nemusel načítat celý objekt - ale sloužilo to jen k prokliku)
+		* producer_name (aby se nemusel načítat celý objekt - ale sloužilo to jen k prokliku)
+	
+	* **C_program
+	Přidány parametry
+	 	* producer_name (aby se nemusel načítat celý objekt - ale sloužilo to jen k prokliku)
+		
+	* **Project**
+	Přidány parametry
+	 	* product_id (aby se nemusel načítat celý objekt - ale sloužilo to jen k prokliku)
+		* product_individual_name ((aby se nemusel načítat celý objekt - ale sloužilo to jen k prokliku))     
+		 
+	* **Actualization_procedure** 
+	Přidány parametry
+		*  state_fraction - String = "13/78"
+		*  state_percentage - Integer 55 
+		
+	* **C_Program_Update_Plan**
+	Přidán parametr 
+		* Objekt Server_detail
+		* Objekt Board_detail 	
+		
+	* **Notification** 
+	Změněn název labelu 
+		* read -> was_read
+	
+	* **Cloud_Homer_Server**
+	Přidány parametry	
+		* is_private -> zda je privátní pouze daného zákazníka
+			
+	  	 
+### Změny nad API ###
+
+ * Odstraněna API  **GET:**  {url}/file/fileRecord/{file_record_id}  
+ * Přidání HTTP state u **PUT** {url}/compilation/c_program/version/compile/{version_id}
+ 	* 200 - Compilace úspěšná
+	* 422 - Compilace neúspěšná  - důvody v Json
+	* 478 - Alrernativa k 500 (ale že je chyba na serveru externí strany)
+	
+ * Odstraněna API (Zakryta pro přístup pro Becki a nyní povolena jen a pouez Frontendu Tyriona)
+ * Upravena API **POST** {{url}}/project/project - Vyžaduji o parametr navíc product_id (které vracím při získání dostupných produktů)
+ * Upravenen objekt který vracím -> Notification_List "unread_total" = 12 (celkem nepřečtených zpráv)
+ 
+
+## Strom Objektů pro přehled ### 
+
+		User
+			- Notifikace
+			- Detaily uživatele
+		Produkt
+			- Projekt
+				- C_Program (Firmware)
+					-Verze
+				- B_Program (Blocko)
+					-Verze
+					- Intance
+				- M_Project (Grid)
+					- Verze
+						- M_Program (App)
+							- Verze
+					- Type_of_Screen 
+				- Blocks (Skupiyn Bločků)
+					Block (Blok)
+						-Verze
+				
+				- Actualization Procedures (Aktualizační prcedury)
+					- Procedure
+						- Task (HW + Frimware a State)
+				Board
+			
+				Logs
+				
+				
+			-Knihovny
+				- Knihovna
+					- Verze 
+			-Finamce
+				- Faktury
+				- Firmení detaily
+				- Platební detaily
+				
+
+
+
+
+
+
 
 # Verze 1.06.6.3 #
 ####  18.6.2016 ####

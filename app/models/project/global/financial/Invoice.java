@@ -50,7 +50,9 @@ public class Invoice extends Model {
 
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @Transient @ApiModelProperty(required = false, value = "Visible only when the invoice is not paid")
-    public boolean require_payment()  { return status.name().equals(Payment_status.sent.name()); }
+    public boolean require_payment()  {
+        return status.name().equals(Payment_status.sent.name());
+    }
 
 
     @JsonProperty @Transient  @ApiModelProperty(required = true, readOnly = true)
@@ -63,6 +65,7 @@ public class Invoice extends Model {
             case cancelled: {return  "Invoice is canceled.";}
             default: return  "Undefined state";
         }
+
     }
 
     @JsonProperty @Transient  @ApiModelProperty(required = true, readOnly = true)
@@ -73,6 +76,7 @@ public class Invoice extends Model {
             case credit_card: {return  "Credit Card Payment."; }
             default: return   "Undefined state";
         }
+
     }
 
 

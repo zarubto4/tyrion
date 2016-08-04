@@ -65,7 +65,7 @@ public class Swagger_Tariff_Register {
 
 
     @ApiModelProperty(required = false, value =  "Required: only if account is business" +
-                                                 "The registration_no must have at least 4 characters")
+                                                 "The company_registration_no must have at least 4 characters")
     public String registration_no;
 
 

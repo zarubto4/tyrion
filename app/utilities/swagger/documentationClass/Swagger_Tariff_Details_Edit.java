@@ -34,7 +34,7 @@ public class Swagger_Tariff_Details_Edit {
     public boolean company_account;
 
 
-    @ApiModelProperty(required = false, value =  "Required: only if company_account = true" + "The registration_no must have at least 4 characters")
+    @ApiModelProperty(required = false, value =  "Required: only if company_account = true" + "The company_registration_no must have at least 4 characters")
     public String registration_no;
 
 

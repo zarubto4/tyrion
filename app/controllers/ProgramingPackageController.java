@@ -300,7 +300,7 @@ public class ProgramingPackageController extends Controller {
     }
 
     @ApiOperation(value = "share Project with Users",
-            tags = {"Project", "Board"},
+            tags = {"Project"},
             notes = "sends Invitation to all users in list: List<persons_mail>",
             produces = "application/json",
             protocols = "https",
@@ -433,7 +433,7 @@ public class ProgramingPackageController extends Controller {
 
 
     @ApiOperation(value = "add participant to a Project",
-            tags = {"Project", "Board"},
+            tags = {"Project"},
             notes = "adds Person to a Project, every piece of information is held in Invitation",
             produces = "application/json",
             protocols = "https",

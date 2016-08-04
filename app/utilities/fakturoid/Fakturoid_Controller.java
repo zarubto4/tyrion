@@ -210,7 +210,7 @@ public class Fakturoid_Controller extends Controller {
             request.put("zip", product.payment_details.zip_code);
             request.put("country", product.payment_details.country);
             request.put("zip", product.payment_details.city);
-            request.put("vat_no", product.payment_details.vat_number);
+            request.put("vat_no", product.payment_details.company_vat_number);
             request.put("email", product.payment_details.company_authorized_email);
             request.put("phone", product.payment_details.company_authorized_phone);
             request.put("web", product.payment_details.company_web);

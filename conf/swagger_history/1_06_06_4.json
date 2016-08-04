@@ -17,67 +17,67 @@
   "tags" : [ {
     "name" : "Not Documented API - InProgress or Stuck"
   }, {
-    "name" : "Project"
-  }, {
-    "name" : "Board"
-  }, {
-    "name" : "Homer"
-  }, {
-    "name" : "B_Program"
-  }, {
-    "name" : "Blocko-Block"
-  }, {
-    "name" : "Type of Block"
-  }, {
-    "name" : "External Server"
-  }, {
     "name" : "Person"
   }, {
     "name" : "Access"
   }, {
-    "name" : "Price & Invoice & Tariffs"
-  }, {
-    "name" : "Notifications"
-  }, {
-    "name" : "C_Program"
-  }, {
-    "name" : "Actualization"
-  }, {
-    "name" : "Processor"
-  }, {
-    "name" : "Blocko"
-  }, {
-    "name" : "Producer"
-  }, {
-    "name" : "Type-Of-Board"
-  }, {
-    "name" : "LibraryGroup"
-  }, {
-    "name" : "SingleLibrary"
-  }, {
-    "name" : "M_Program"
-  }, {
     "name" : "APP-Api"
-  }, {
-    "name" : "Screen_Size_Type"
-  }, {
-    "name" : "WebSocket"
   }, {
     "name" : "Social-Facebook"
   }, {
     "name" : "Social-GitHub"
   }, {
-    "name" : "Permission"
+    "name" : "Price & Invoice & Tariffs"
+  }, {
+    "name" : "Actualization"
   }, {
     "name" : "Role"
+  }, {
+    "name" : "Permission"
+  }, {
+    "name" : "Project"
+  }, {
+    "name" : "Homer"
+  }, {
+    "name" : "Board"
+  }, {
+    "name" : "B_Program"
+  }, {
+    "name" : "External Server"
+  }, {
+    "name" : "Type of Block"
+  }, {
+    "name" : "Blocko-Block"
   }, {
     "name" : "Blocko-OverFlow"
   }, {
     "name" : "Post"
   }, {
+    "name" : "Type-Of-Confirms"
+  }, {
     "name" : "Type-Of-Post"
   }, {
-    "name" : "Type-Of-Confirms"
+    "name" : "Processor"
+  }, {
+    "name" : "SingleLibrary"
+  }, {
+    "name" : "Type-Of-Board"
+  }, {
+    "name" : "LibraryGroup"
+  }, {
+    "name" : "C_Program"
+  }, {
+    "name" : "Producer"
+  }, {
+    "name" : "Blocko"
+  }, {
+    "name" : "M_Program"
+  }, {
+    "name" : "Screen_Size_Type"
+  }, {
+    "name" : "WebSocket"
+  }, {
+    "name" : "Notifications"
   } ],
   "paths" : {
     "/compilation/board" : {
@@ -301,6 +301,7 @@
         "description" : "if you want get Board object by query = board_id. User can get only boards from project, whitch user owning or user need Permission key \"Board_rea\".",
         "operationId" : "get_Board",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "board_id",
@@ -348,6 +349,7 @@
         "description" : "This Api is used by Users for disconnection of Board from their Project, its not meaning that Board is removed from system, only disconnect and another user can registred that (connect that with different account/project etc..)",
         "operationId" : "disconnect_Board_from_Project",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "board_id",
@@ -400,6 +402,7 @@
         "description" : "This Api is used by Users for connection of Board with their Project",
         "operationId" : "connect_Board_with_Project",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "board_id",
@@ -515,6 +518,7 @@
         "description" : "get C_program by query = c_program_id",
         "operationId" : "get_C_Program",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "c_program_id",
@@ -622,6 +626,7 @@
         "description" : "delete C_program by query = c_program_id, query = version_id",
         "operationId" : "delete_C_Program",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "c_program_id",
@@ -723,6 +728,52 @@
         "x-permission_required" : {
           "Project.update_permission" : "true",
           "Static Permission key" : "C_program_create"
+        }
+      }
+    },
+    "/compilation/c_program/list/{page_number}" : {
+      "put" : {
+        "tags" : [ "C_Program" ],
+        "summary" : "get C_program List",
+        "description" : "get all C_Programs that belong to logged person",
+        "operationId" : "get_C_Program_by_Filter",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "page_number",
+          "in" : "path",
+          "description" : "page_number is Integer. 1,2,3...nFor first call, use 1 (first page of list)",
+          "required" : true,
+          "type" : "integer",
+          "format" : "int32"
+        }, {
+          "in" : "body",
+          "name" : "body",
+          "description" : "Contains Json with values",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/C_Program_Filter"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "$ref" : "#/definitions/C_Program_List"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          }
+        },
+        "x-permission_description" : {
+          "C_program.read_permission" : "Tyrion only returns C_Programs which person owns, there is no need to check permissions"
         }
       }
     },
@@ -1055,6 +1106,7 @@
         "description" : "get Version of C_program by query = verison_id",
         "operationId" : "get_C_Program_Version",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "version_id",
@@ -1106,6 +1158,7 @@
         "description" : "delete Version.id = version_id in C_program by query = c_program_id, query = version_id",
         "operationId" : "delete_C_Program_Version",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "version_id",
@@ -1369,6 +1422,7 @@
         "description" : "if you want get SingleLibrary by query = library_id",
         "operationId" : "get_SingleLibrary",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "library_id",
@@ -1472,6 +1526,7 @@
         "description" : "If you want delete SingleLibrary by query = library_id",
         "operationId" : "delete_SingleLibrary",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "library_id",
@@ -1613,6 +1668,7 @@
         "description" : "Its not possible now describe uploud file in Swagger. But file name must be longer than 5 chars.in body of html content is \"files\"",
         "operationId" : "upload_Library_To_LibraryGroup",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "version_id",
@@ -1715,6 +1771,7 @@
         "description" : "get version from LibraryGroup",
         "operationId" : "get_LibraryGroup_Version",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "version_id",
@@ -1752,6 +1809,7 @@
         "description" : "If you want get LibraryGroup by query = libraryGroup_id",
         "operationId" : "get_LibraryGroup",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "libraryGroup_id",
@@ -1854,6 +1912,7 @@
         "description" : "If you want delete LibraryGroup by query = libraryGroup_id",
         "operationId" : "delete_LibraryGroup",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "libraryGroup_id",
@@ -2070,6 +2129,7 @@
         "description" : "If you want delete Processor by query processor_id.",
         "operationId" : "delete_Processor",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "processor_id",
@@ -2170,6 +2230,7 @@
         "description" : "if you want get list of Producers. Its list of companies owned physical boards and we used that for filtering",
         "operationId" : "get_Producers",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ ],
         "responses" : {
@@ -2216,6 +2277,7 @@
         "description" : "if you want get Producer. Its company owned physical boards and we used that for filtering",
         "operationId" : "get_Producer",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "producer_id",
@@ -2317,6 +2379,7 @@
         "description" : "if you want delete Producer",
         "operationId" : "delete_Producer",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "producer_id",
@@ -2366,6 +2429,7 @@
         "description" : "get Compilation Servers",
         "operationId" : "get_All_Compilation_Server",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ ],
         "responses" : {
@@ -2489,6 +2553,7 @@
         "description" : "remove Compilation Servers",
         "operationId" : "delete_Compilation_Server",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "server_id",
@@ -2589,6 +2654,7 @@
         "description" : "if you want get all TypeOfBoard objects",
         "operationId" : "get_TypeOfBoard_all",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ ],
         "responses" : {
@@ -2635,6 +2701,7 @@
         "description" : "if you want get TypeOfBoard object by query = type_of_board_id",
         "operationId" : "get_TypeOfBoard",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "type_of_board_id",
@@ -2736,6 +2803,7 @@
         "description" : "if you want delete TypeOfBoard object by query = type_of_board_id",
         "operationId" : "delete_TypeOfBoard",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "type_of_board_id",
@@ -2785,6 +2853,7 @@
         "description" : "You know where the user is logged in. And you can log out this connection. (Terminate token)",
         "operationId" : "remove_Person_Connection",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "connection_id",
@@ -3063,6 +3132,7 @@
         "description" : "delete Person by id",
         "operationId" : "deletePerson",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "id",
@@ -3152,8 +3222,8 @@
       },
       "put" : {
         "tags" : [ "Person" ],
-        "summary" : "register new Person",
-        "description" : "create new Person with unique email and nick_name",
+        "summary" : "edit Person basic information",
+        "description" : "Edit person basic information",
         "operationId" : "edit_Person_Information",
         "schemes" : [ "https" ],
         "produces" : [ "application/json" ],
@@ -3283,6 +3353,7 @@
         "description" : "If you want get Libraries from LibraryGroup.Version by query = version_id",
         "operationId" : "get_LibraryGroup_Version_Libraries",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "version_id",
@@ -4373,12 +4444,33 @@
         }
       }
     },
+    "/notification/confirm/{notification_id}" : {
+      "put" : {
+        "tags" : [ "Not Documented API - InProgress or Stuck" ],
+        "operationId" : "notification_confirm",
+        "parameters" : [ {
+          "name" : "notification_id",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/Result"
+            },
+            "headers" : { }
+          }
+        }
+      }
+    },
     "/notification/list/{page_number}" : {
       "get" : {
         "tags" : [ "Notifications" ],
         "summary" : "get latest notification",
         "description" : "Get list of latest user notifications. Server return maximum 25 latest objects. \n\n For get another page (next 25 notifications) call this api with \"page_number\" path parameter. \n\n May missing or you can insert Integer values from page[1,2...,n] in Json",
-        "operationId" : "get_history_log_page",
+        "operationId" : "get_notification_page",
         "schemes" : [ "https" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
@@ -4394,6 +4486,139 @@
             "description" : "Ok Result",
             "schema" : {
               "$ref" : "#/definitions/Notification_List"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          }
+        }
+      }
+    },
+    "/notification/read" : {
+      "put" : {
+        "tags" : [ "Notifications" ],
+        "summary" : "mark notifications as read",
+        "description" : "Mark notifications as read. Send list with ids",
+        "operationId" : "mark_as_read_notification",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "body",
+          "description" : "Contains Json with values",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/M_Project_New"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Delete Successful",
+            "schema" : {
+              "$ref" : "#/definitions/Result ok"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          }
+        }
+      }
+    },
+    "/notification/test/{email}" : {
+      "get" : {
+        "tags" : [ "Notifications" ],
+        "summary" : "try notifications",
+        "description" : "This API you can use for testing our notification",
+        "operationId" : "test_notifications",
+        "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "email",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "$ref" : "#/definitions/Result ok"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          }
+        }
+      }
+    },
+    "/notification/unconfirmed" : {
+      "get" : {
+        "tags" : [ "Notifications" ],
+        "summary" : "get unconfirmed notifications",
+        "description" : "This API should by called right after user logs in. Sends notifications which require confirmation",
+        "operationId" : "get_unconfirmed_notifications",
+        "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "$ref" : "#/definitions/Result ok"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          }
+        }
+      }
+    },
+    "/notification/{notification_id}" : {
+      "delete" : {
+        "tags" : [ "Notifications" ],
+        "summary" : "delete notification",
+        "description" : "remove notification by id",
+        "operationId" : "delete_notification",
+        "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "notification_id",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Delete Successful",
+            "schema" : {
+              "$ref" : "#/definitions/Result ok"
             }
           },
           "401" : {
@@ -6044,6 +6269,52 @@
         }
       }
     },
+    "/project/b_program/list/{page_number}" : {
+      "put" : {
+        "tags" : [ "B_Program" ],
+        "summary" : "get B_Program by Filter",
+        "description" : "get B_Program List",
+        "operationId" : "get_b_Program_by_Filter",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "page_number",
+          "in" : "path",
+          "description" : "page_number is Integer. 1,2,3...nFor first call, use 1 (first page of list)",
+          "required" : true,
+          "type" : "integer",
+          "format" : "int32"
+        }, {
+          "in" : "body",
+          "name" : "body",
+          "description" : "Contains Json with values",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/B_Program_Filter"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "$ref" : "#/definitions/B_Program_List"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          }
+        },
+        "x-permission_description" : {
+          "B_Program_read_permission" : "No need to check permission, because Tyrion returns only those results which user owns"
+        }
+      }
+    },
     "/project/b_program/update/{b_program_id}" : {
       "put" : {
         "tags" : [ "B_Program" ],
@@ -6108,6 +6379,7 @@
         "description" : "upload version of B Program to cloud. Its possible have only one version from B program in cloud. If you uploud new one - old one will be replaced",
         "operationId" : "upload_b_Program_ToCloud",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "version_id",
@@ -6157,6 +6429,7 @@
         "description" : "If you want upload program (!Immediately!) to Homer -> Homer must be online and connect to Cloud Server, you are uploading B_program version. And if connected M_Project is set to \"Auto_update\", it will automatically update all Grid Terminals.",
         "operationId" : "uploadProgramToHomer_Immediately",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "b_program_id",
@@ -6265,6 +6538,7 @@
         "description" : "remove B_Program version object",
         "operationId" : "remove_b_Program_version",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "version_id",
@@ -6416,6 +6690,7 @@
         "description" : "remove B_Program object",
         "operationId" : "remove_b_Program",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "b_program_id",
@@ -6521,6 +6796,7 @@
         "description" : "get all Blocko Servers",
         "operationId" : "get_All_Blocko_Server",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ ],
         "responses" : {
@@ -6745,6 +7021,52 @@
         }
       }
     },
+    "/project/blockoBlock/list/{page_number}" : {
+      "put" : {
+        "tags" : [ "Blocko-Block" ],
+        "summary" : "get BlockoBlock by Filter",
+        "description" : "get BlockoBlock List",
+        "operationId" : "get_BlockoBlock_by_Filter",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "page_number",
+          "in" : "path",
+          "description" : "page_number is Integer. 1,2,3...nFor first call, use 1 (first page of list)",
+          "required" : true,
+          "type" : "integer",
+          "format" : "int32"
+        }, {
+          "in" : "body",
+          "name" : "body",
+          "description" : "Contains Json with values",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Blocko_Block_Filter"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "$ref" : "#/definitions/Blocko_Block_List"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          }
+        },
+        "x-permission_description" : {
+          "BlockoBlock_read_permission" : "No need to check permission, because Tyrion returns only those results which user owns"
+        }
+      }
+    },
     "/project/blockoBlock/version/all/{blocko_block_id}" : {
       "get" : {
         "tags" : [ "Blocko-Block" ],
@@ -6876,6 +7198,7 @@
         "description" : "get version (content) from independent BlockoBlock",
         "operationId" : "get_BlockoBlock_Version",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "blocko_block_version_id",
@@ -6926,6 +7249,7 @@
         "description" : "delete BlockoBlock version",
         "operationId" : "delete_BlockoBlock_Version",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "blocko_block_version_id",
@@ -7082,6 +7406,7 @@
         "description" : "delete BlockoBlock",
         "operationId" : "deleteBlock",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "blocko_block_id",
@@ -7132,6 +7457,7 @@
         "description" : "get all boards that user can integrate to Blocko program",
         "operationId" : "board_all_details_for_blocko",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "project_id",
@@ -7376,6 +7702,7 @@
         "description" : "remove Homer",
         "operationId" : "connectHomerWithProject",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "project_id",
@@ -7433,6 +7760,7 @@
         "description" : "remove Homer",
         "operationId" : "disconnectHomerWithProject",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "project_id",
@@ -7616,7 +7944,7 @@
         }
       }
     },
-    "/project/project/addParticipant/{ivitation_id}/{decision}" : {
+    "/project/project/addParticipant/{invitation_id}/{decision}" : {
       "put" : {
         "tags" : [ "Project", "Board" ],
         "summary" : "add participant to a Project",
@@ -7625,7 +7953,7 @@
         "schemes" : [ "https" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
-          "name" : "ivitation_id",
+          "name" : "invitation_id",
           "in" : "path",
           "required" : true,
           "type" : "string"
@@ -7882,6 +8210,7 @@
         "description" : "delete Projects by project_id",
         "operationId" : "deleteProject",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "project_id",
@@ -7931,6 +8260,7 @@
         "description" : "delete group for BlockoBlocks -> Type of block",
         "operationId" : "getAllTypeOfBlocks",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ ],
         "responses" : {
@@ -8014,6 +8344,52 @@
         }
       }
     },
+    "/project/typeOfBlock/list/{page_number}" : {
+      "put" : {
+        "tags" : [ "Type of Block" ],
+        "summary" : "get TypeOfBlock by Filter",
+        "description" : "get TypeOfBlock List",
+        "operationId" : "get_TypeOfBlock_by_Filter",
+        "schemes" : [ "https" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "page_number",
+          "in" : "path",
+          "description" : "page_number is Integer. 1,2,3...nFor first call, use 1 (first page of list)",
+          "required" : true,
+          "type" : "integer",
+          "format" : "int32"
+        }, {
+          "in" : "body",
+          "name" : "body",
+          "description" : "Contains Json with values",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Type_Of_Block_Filter"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok Result",
+            "schema" : {
+              "$ref" : "#/definitions/Type_Of_Block_List"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized request",
+            "schema" : {
+              "$ref" : "#/definitions/Result_Unauthorized"
+            }
+          },
+          "500" : {
+            "description" : "Server side Error"
+          }
+        },
+        "x-permission_description" : {
+          "TypeOfBlock_read_permission" : "No need to check permission, because Tyrion returns only those results which user owns"
+        }
+      }
+    },
     "/project/typeOfBlock/{type_of_block_id}" : {
       "get" : {
         "tags" : [ "Blocko-Block" ],
@@ -8021,6 +8397,7 @@
         "description" : "get BlockoBlock ",
         "operationId" : "get_TypeOfBlock",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "type_of_block_id",
@@ -8128,6 +8505,7 @@
         "description" : "delete group for BlockoBlocks -> Type of block",
         "operationId" : "deleteTypeOfBlock",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "type_of_block_id",
@@ -8218,6 +8596,7 @@
         "description" : "If you want add permission to Person. You need permission for that or have right system Roles",
         "operationId" : "add_Permission_Person",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "person_id",
@@ -8269,6 +8648,7 @@
         "description" : "If you want remove permission from Person. You need permission for that or have right system Roles",
         "operationId" : "remove_Permission_Person",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "person_id",
@@ -8509,6 +8889,7 @@
         "description" : "If you want remove system person_permissions from Role. You need permission for that or have right system Roles",
         "operationId" : "remove_Permission_from_Role",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "permission_id",
@@ -8613,6 +8994,7 @@
         "description" : "If you set Role to Person. You need permission for that or have right system Roles",
         "operationId" : "remove_Role_Person",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "person_id",
@@ -8666,6 +9048,7 @@
         "description" : "If you want delete  Role from system. You need permission for that or have right system Roles",
         "operationId" : "delete_Role",
         "schemes" : [ "https" ],
+        "consumes" : [ "text/html" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "role_id",
@@ -8704,22 +9087,6 @@
         },
         "x-permission_required" : {
           "SecurityRole_delete" : "true"
-        }
-      }
-    },
-    "/test1" : {
-      "get" : {
-        "tags" : [ "Not Documented API - InProgress or Stuck" ],
-        "operationId" : "test1",
-        "parameters" : [ ],
-        "responses" : {
-          "200" : {
-            "description" : "successful operation",
-            "schema" : {
-              "$ref" : "#/definitions/Result"
-            },
-            "headers" : { }
-          }
         }
       }
     },
@@ -9006,20 +9373,20 @@
           "type" : "string",
           "format" : "date-time"
         },
-        "require_payment" : {
-          "type" : "boolean",
-          "description" : "Visible only when the invoice is not paid",
-          "readOnly" : true,
-          "default" : false
+        "pdf_link" : {
+          "type" : "string",
+          "description" : "Visible only when the invoice is available",
+          "readOnly" : true
         },
         "payment_method" : {
           "type" : "string",
           "readOnly" : true
         },
-        "pdf_link" : {
-          "type" : "string",
-          "description" : "Visible only when the invoice is available",
-          "readOnly" : true
+        "require_payment" : {
+          "type" : "boolean",
+          "description" : "Visible only when the invoice is not paid",
+          "readOnly" : true,
+          "default" : false
         },
         "payment_status" : {
           "type" : "string",
@@ -9165,11 +9532,11 @@
         "payment_details" : {
           "$ref" : "#/definitions/Payment_Details"
         },
-        "payment_mode" : {
+        "product_type" : {
           "type" : "string",
           "readOnly" : true
         },
-        "product_type" : {
+        "payment_mode" : {
           "type" : "string",
           "readOnly" : true
         },
@@ -9283,10 +9650,6 @@
           "type" : "boolean",
           "default" : false
         },
-        "nodeType" : {
-          "type" : "string",
-          "enum" : [ "ARRAY", "BINARY", "BOOLEAN", "MISSING", "NULL", "NUMBER", "OBJECT", "POJO", "STRING" ]
-        },
         "float" : {
           "type" : "boolean",
           "default" : false
@@ -9299,23 +9662,15 @@
           "type" : "boolean",
           "default" : false
         },
+        "short" : {
+          "type" : "boolean",
+          "default" : false
+        },
+        "double" : {
+          "type" : "boolean",
+          "default" : false
+        },
         "number" : {
-          "type" : "boolean",
-          "default" : false
-        },
-        "int" : {
-          "type" : "boolean",
-          "default" : false
-        },
-        "valueNode" : {
-          "type" : "boolean",
-          "default" : false
-        },
-        "containerNode" : {
-          "type" : "boolean",
-          "default" : false
-        },
-        "missingNode" : {
           "type" : "boolean",
           "default" : false
         },
@@ -9323,19 +9678,31 @@
           "type" : "boolean",
           "default" : false
         },
+        "containerNode" : {
+          "type" : "boolean",
+          "default" : false
+        },
+        "int" : {
+          "type" : "boolean",
+          "default" : false
+        },
+        "missingNode" : {
+          "type" : "boolean",
+          "default" : false
+        },
+        "valueNode" : {
+          "type" : "boolean",
+          "default" : false
+        },
+        "nodeType" : {
+          "type" : "string",
+          "enum" : [ "ARRAY", "BINARY", "BOOLEAN", "MISSING", "NULL", "NUMBER", "OBJECT", "POJO", "STRING" ]
+        },
         "integralNumber" : {
           "type" : "boolean",
           "default" : false
         },
         "floatingPointNumber" : {
-          "type" : "boolean",
-          "default" : false
-        },
-        "short" : {
-          "type" : "boolean",
-          "default" : false
-        },
-        "double" : {
           "type" : "boolean",
           "default" : false
         },
@@ -9410,21 +9777,12 @@
           "readOnly" : true,
           "$ref" : "#/definitions/Board_status"
         },
-        "type_of_board_id" : {
-          "type" : "string",
-          "readOnly" : true
-        },
-        "up_to_date" : {
+        "update_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
         },
-        "first_connect_permission" : {
-          "description" : "It will be visible in Json object, only if value is true. This is an extraordinary value",
-          "readOnly" : true,
-          "$ref" : "#/definitions/boolean"
-        },
-        "update_permission" : {
+        "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -9438,15 +9796,24 @@
           "readOnly" : true,
           "default" : false
         },
-        "edit_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
         "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
+        },
+        "up_to_date" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "first_connect_permission" : {
+          "description" : "It will be visible in Json object, only if value is true. This is an extraordinary value",
+          "readOnly" : true,
+          "$ref" : "#/definitions/boolean"
+        },
+        "type_of_board_id" : {
+          "type" : "string",
+          "readOnly" : true
         }
       }
     },
@@ -9493,6 +9860,18 @@
       },
       "description" : "Json Model for new TypeOfBoard"
     },
+    "Login_Token" : {
+      "type" : "object",
+      "required" : [ "authToken" ],
+      "properties" : {
+        "authToken" : {
+          "type" : "string",
+          "description" : "X-AUTH-TOKEN - used this token in HTML head for verifying the identities",
+          "readOnly" : true
+        }
+      },
+      "description" : "Json Model that you will get, if login was successful"
+    },
     "Single_Library_List" : {
       "type" : "object",
       "required" : [ "content", "from", "pages", "to", "total" ],
@@ -9533,18 +9912,6 @@
         }
       },
       "description" : "Individual SingleLibrary List"
-    },
-    "Login_Token" : {
-      "type" : "object",
-      "required" : [ "authToken" ],
-      "properties" : {
-        "authToken" : {
-          "type" : "string",
-          "description" : "X-AUTH-TOKEN - used this token in HTML head for verifying the identities",
-          "readOnly" : true
-        }
-      },
-      "description" : "Json Model that you will get, if login was successful"
     },
     "Post_List" : {
       "type" : "object",
@@ -9600,6 +9967,11 @@
         "general_description" : {
           "type" : "string"
         },
+        "update_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
         "versions" : {
           "type" : "array",
           "readOnly" : true,
@@ -9607,17 +9979,7 @@
             "type" : "string"
           }
         },
-        "update_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
         "edit_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -9625,6 +9987,11 @@
         "author_id" : {
           "type" : "string",
           "readOnly" : true
+        },
+        "delete_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
         },
         "type_of_block_id" : {
           "type" : "string",
@@ -9785,6 +10152,47 @@
       },
       "description" : "Json Model for Filtering Boards"
     },
+    "Type_Of_Block_List" : {
+      "type" : "object",
+      "required" : [ "content", "from", "pages", "to", "total" ],
+      "properties" : {
+        "content" : {
+          "type" : "array",
+          "readOnly" : true,
+          "items" : {
+            "$ref" : "#/definitions/Type_Of_Block_Light"
+          }
+        },
+        "from" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "First value position from all subjects. Minimum is 0.",
+          "readOnly" : true
+        },
+        "to" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "Minimum is \"from\" Maximum is \"total\"",
+          "readOnly" : true
+        },
+        "total" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "Total subjects",
+          "readOnly" : true
+        },
+        "pages" : {
+          "type" : "array",
+          "description" : "Numbers of pages, which you can call",
+          "readOnly" : true,
+          "items" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "description" : "Individual Type_Of_Block List"
+    },
     "C_Program" : {
       "type" : "object",
       "required" : [ "dateOfCreate", "delete_permission", "edit_permission", "program_name", "update_permission" ],
@@ -9807,7 +10215,17 @@
           "description" : "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
           "readOnly" : true
         },
-        "type_of_board_id" : {
+        "update_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "project_id" : {
           "type" : "string",
           "readOnly" : true
         },
@@ -9818,24 +10236,14 @@
             "$ref" : "#/definitions/C_Program_Version"
           }
         },
-        "update_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "project_id" : {
-          "type" : "string",
-          "readOnly" : true
-        },
-        "edit_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
         "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
+        },
+        "type_of_board_id" : {
+          "type" : "string",
+          "readOnly" : true
         }
       },
       "description" : "Object represented C_Program in database"
@@ -9867,12 +10275,12 @@
           "description" : "Description for \"(static key)\"",
           "readOnly" : true
         },
-        "edit_person_permission" : {
+        "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
         },
-        "edit_permission" : {
+        "edit_person_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -9881,7 +10289,7 @@
     },
     "Project" : {
       "type" : "object",
-      "required" : [ "actual_procedures_id", "b_programs_id", "boards_id", "c_programs_id", "delete_permission", "edit_permission", "homers_id", "m_projects_id", "owners_id", "screen_size_types_id", "share_permission", "type_of_blocks_id", "unshare_permission", "update_permission" ],
+      "required" : [ "actual_procedures_id", "b_programs_id", "boards_id", "c_programs_id", "delete_permission", "edit_permission", "homers_id", "m_projects_id", "owners_id", "product_id", "product_individual_name", "screen_size_types_id", "share_permission", "type_of_blocks_id", "unshare_permission", "update_permission" ],
       "properties" : {
         "id" : {
           "type" : "string"
@@ -9891,6 +10299,16 @@
         },
         "project_description" : {
           "type" : "string"
+        },
+        "update_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
         },
         "homers_id" : {
           "type" : "array",
@@ -9955,10 +10373,14 @@
             "type" : "string"
           }
         },
-        "update_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
+        "product_individual_name" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "product_id" : {
+          "type" : "integer",
+          "format" : "int64",
+          "readOnly" : true
         },
         "unshare_permission" : {
           "type" : "boolean",
@@ -9966,11 +10388,6 @@
           "default" : false
         },
         "share_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -9995,24 +10412,10 @@
         "description" : {
           "type" : "string"
         },
-        "versions_id" : {
-          "type" : "array",
-          "readOnly" : true,
-          "items" : {
-            "type" : "string"
-          }
-        },
         "update_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
-        },
-        "processors_id" : {
-          "type" : "array",
-          "readOnly" : true,
-          "items" : {
-            "type" : "string"
-          }
         },
         "edit_permission" : {
           "type" : "boolean",
@@ -10023,6 +10426,20 @@
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
+        },
+        "versions_id" : {
+          "type" : "array",
+          "readOnly" : true,
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "processors_id" : {
+          "type" : "array",
+          "readOnly" : true,
+          "items" : {
+            "type" : "string"
+          }
         }
       }
     },
@@ -10127,7 +10544,7 @@
     },
     "Person" : {
       "type" : "object",
-      "required" : [ "full_name", "id", "last_title", "mail", "nick_name" ],
+      "required" : [ "full_name", "id", "mail", "nick_name" ],
       "properties" : {
         "id" : {
           "type" : "string"
@@ -10139,9 +10556,6 @@
           "type" : "string"
         },
         "full_name" : {
-          "type" : "string"
-        },
-        "last_title" : {
           "type" : "string"
         },
         "edit_permission" : {
@@ -10179,17 +10593,6 @@
       },
       "description" : "Json Model for new Processor"
     },
-    "B_Program_state_cloud" : {
-      "type" : "object",
-      "properties" : {
-        "instance" : {
-          "$ref" : "#/definitions/Homer_Instance"
-        },
-        "server_name" : {
-          "type" : "string"
-        }
-      }
-    },
     "Person_Password_RecoveryEmail" : {
       "type" : "object",
       "required" : [ "mail" ],
@@ -10200,6 +10603,17 @@
         }
       },
       "description" : "Json Model for sending password recovery email"
+    },
+    "B_Program_state_cloud" : {
+      "type" : "object",
+      "properties" : {
+        "instance" : {
+          "$ref" : "#/definitions/Homer_Instance"
+        },
+        "server_name" : {
+          "type" : "string"
+        }
+      }
     },
     "Board_New" : {
       "type" : "object",
@@ -10375,15 +10789,15 @@
           "readOnly" : true,
           "default" : false
         },
-        "project_id" : {
-          "type" : "string",
-          "description" : "This value will be in Json only if TypeOfBlock is private!",
-          "readOnly" : true
-        },
         "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
+        },
+        "project_id" : {
+          "type" : "string",
+          "description" : "This value will be in Json only if TypeOfBlock is private!",
+          "readOnly" : true
         },
         "delete_permission" : {
           "type" : "boolean",
@@ -10455,34 +10869,9 @@
         }
       }
     },
-    "Notification" : {
-      "type" : "object",
-      "required" : [ "Its not possible document that throw swagger. Please visit documentation.byzance.cz", "confirmation_required", "id", "level", "was_read" ],
-      "properties" : {
-        "id" : {
-          "type" : "string"
-        },
-        "level" : {
-          "type" : "string",
-          "enum" : [ "info", "success", "warning", "error", "question" ]
-        },
-        "confirmation_required" : {
-          "type" : "boolean",
-          "default" : false
-        },
-        "was_read" : {
-          "type" : "boolean",
-          "default" : false
-        },
-        "Its not possible document that throw swagger. Please visit documentation.byzance.cz" : {
-          "readOnly" : true,
-          "$ref" : "#/definitions/JsonNode"
-        }
-      }
-    },
     "Actualization_procedure" : {
       "type" : "object",
-      "required" : [ "b_program_actualization", "date_of_create", "date_of_finish", "state", "updates" ],
+      "required" : [ "b_program_actualization", "date_of_create", "date_of_finish", "state", "state_fraction", "state_percentage", "updates" ],
       "properties" : {
         "id" : {
           "type" : "string"
@@ -10513,6 +10902,47 @@
         "b_program_actualization" : {
           "readOnly" : true,
           "$ref" : "#/definitions/Program_Actualization"
+        },
+        "state_percentage" : {
+          "type" : "integer",
+          "format" : "int32",
+          "readOnly" : true
+        },
+        "state_fraction" : {
+          "type" : "string",
+          "readOnly" : true
+        }
+      }
+    },
+    "Notification" : {
+      "type" : "object",
+      "required" : [ "Its not possible document that throw swagger. Please visit documentation.byzance.cz", "confirmation_required", "created", "id", "level", "was_read" ],
+      "properties" : {
+        "id" : {
+          "type" : "string"
+        },
+        "level" : {
+          "type" : "string",
+          "enum" : [ "info", "success", "warning", "error", "question" ]
+        },
+        "confirmation_required" : {
+          "type" : "boolean",
+          "default" : false
+        },
+        "was_read" : {
+          "type" : "boolean",
+          "default" : false
+        },
+        "created" : {
+          "type" : "integer",
+          "format" : "int32",
+          "example" : "1466163478925",
+          "description" : "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
+          "readOnly" : true
+        },
+        "Its not possible document that throw swagger. Please visit documentation.byzance.cz" : {
+          "readOnly" : true,
+          "$ref" : "#/definitions/JsonNode"
         }
       }
     },
@@ -10532,19 +10962,23 @@
       "properties" : {
         "c_program_id" : {
           "type" : "string",
-          "description" : "Can be empty"
+          "description" : "Can be empty",
+          "readOnly" : true
         },
         "c_program_version_id" : {
           "type" : "string",
-          "description" : "Can be empty"
+          "description" : "Can be empty",
+          "readOnly" : true
         },
         "c_program_program_name" : {
           "type" : "string",
-          "description" : "Can be empty"
+          "description" : "Can be empty",
+          "readOnly" : true
         },
         "c_program_version_name" : {
           "type" : "string",
-          "description" : "Can be empty"
+          "description" : "Can be empty",
+          "readOnly" : true
         }
       }
     },
@@ -10635,6 +11069,47 @@
       },
       "description" : "Json Model for new General Project"
     },
+    "Blocko_Block_List" : {
+      "type" : "object",
+      "required" : [ "content", "from", "pages", "to", "total" ],
+      "properties" : {
+        "content" : {
+          "type" : "array",
+          "readOnly" : true,
+          "items" : {
+            "$ref" : "#/definitions/Blocko_Block_Light"
+          }
+        },
+        "from" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "First value position from all subjects. Minimum is 0.",
+          "readOnly" : true
+        },
+        "to" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "Minimum is \"from\" Maximum is \"total\"",
+          "readOnly" : true
+        },
+        "total" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "Total subjects",
+          "readOnly" : true
+        },
+        "pages" : {
+          "type" : "array",
+          "description" : "Numbers of pages, which you can call",
+          "readOnly" : true,
+          "items" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "description" : "Individual Blocko Block List"
+    },
     "Swagger_Tariff_General_Edit" : {
       "type" : "object",
       "required" : [ "product_individual_name" ],
@@ -10704,6 +11179,16 @@
       },
       "description" : "Json Model for new TypeOfConfirms"
     },
+    "B_Program_Filter" : {
+      "type" : "object",
+      "properties" : {
+        "project_id" : {
+          "type" : "string",
+          "description" : "Include only if you want to get b_programs of given project"
+        }
+      },
+      "description" : "Json Model for getting B_Program Filter List"
+    },
     "Json_Value_Missing_Result" : {
       "type" : "object",
       "required" : [ "code", "exception", "message", "state" ],
@@ -10735,7 +11220,7 @@
     },
     "Notification_List" : {
       "type" : "object",
-      "required" : [ "content", "from", "pages", "to", "total" ],
+      "required" : [ "content", "from", "pages", "to", "total", "unread_total" ],
       "properties" : {
         "content" : {
           "type" : "array",
@@ -10770,6 +11255,12 @@
             "type" : "integer",
             "format" : "int32"
           }
+        },
+        "unread_total" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "Total unread subjects",
+          "readOnly" : true
         }
       },
       "description" : "Individual Notification List"
@@ -10846,6 +11337,47 @@
         }
       },
       "description" : "Individual Library Group List"
+    },
+    "C_Program_List" : {
+      "type" : "object",
+      "required" : [ "content", "from", "pages", "to", "total" ],
+      "properties" : {
+        "content" : {
+          "type" : "array",
+          "readOnly" : true,
+          "items" : {
+            "$ref" : "#/definitions/C_Program_Light"
+          }
+        },
+        "from" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "First value position from all subjects. Minimum is 0.",
+          "readOnly" : true
+        },
+        "to" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "Minimum is \"from\" Maximum is \"total\"",
+          "readOnly" : true
+        },
+        "total" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "Total subjects",
+          "readOnly" : true
+        },
+        "pages" : {
+          "type" : "array",
+          "description" : "Numbers of pages, which you can call",
+          "readOnly" : true,
+          "items" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "description" : "Individual C_Program List"
     },
     "TypeOfConfirms" : {
       "type" : "object",
@@ -10968,12 +11500,12 @@
           "readOnly" : true,
           "default" : false
         },
-        "read_permission" : {
+        "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
         },
-        "edit_permission" : {
+        "read_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -11026,6 +11558,37 @@
     "Result" : {
       "type" : "object"
     },
+    "C_Program_Light" : {
+      "type" : "object",
+      "required" : [ "c_program_id", "c_program_name", "c_program_version_id", "c_program_version_name", "type_of_board_id", "type_of_board_name" ],
+      "properties" : {
+        "c_program_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "c_program_name" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "c_program_version_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "c_program_version_name" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "type_of_board_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "type_of_board_name" : {
+          "type" : "string",
+          "readOnly" : true
+        }
+      },
+      "description" : "C_Program Light (only few properties)"
+    },
     "Grid_Terminal" : {
       "type" : "object",
       "required" : [ "device_name", "device_type", "m_program_access", "terminal_id", "up_to_date", "ws_permission" ],
@@ -11075,38 +11638,6 @@
       },
       "description" : "Json Model for details about Tariff - all financial details in one Json"
     },
-    "Cloud_Homer_Server" : {
-      "type" : "object",
-      "properties" : {
-        "id" : {
-          "type" : "string"
-        },
-        "server_name" : {
-          "type" : "string"
-        },
-        "hash_certificate" : {
-          "type" : "string"
-        },
-        "destination_address" : {
-          "type" : "string"
-        },
-        "server_is_online" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "edit_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "delete_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        }
-      }
-    },
     "Login_Result" : {
       "type" : "object",
       "properties" : {
@@ -11133,6 +11664,42 @@
       },
       "description" : "Json Model that you will get, if login was successful"
     },
+    "Cloud_Homer_Server" : {
+      "type" : "object",
+      "properties" : {
+        "id" : {
+          "type" : "string"
+        },
+        "server_name" : {
+          "type" : "string"
+        },
+        "hash_certificate" : {
+          "type" : "string"
+        },
+        "destination_address" : {
+          "type" : "string"
+        },
+        "is_private" : {
+          "type" : "boolean",
+          "default" : false
+        },
+        "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "delete_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "server_is_online" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        }
+      }
+    },
     "B_Program" : {
       "type" : "object",
       "required" : [ "dateOfCreate", "lastUpdate" ],
@@ -11149,15 +11716,29 @@
         "lastUpdate" : {
           "type" : "integer",
           "format" : "int32",
-          "example" : 1461854312,
-          "description" : "UNIX time stamp",
+          "example" : "1466163478925",
+          "description" : "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
           "readOnly" : true
         },
         "dateOfCreate" : {
           "type" : "integer",
           "format" : "int32",
-          "example" : 1461854312,
-          "description" : "UNIX time stamp",
+          "example" : "1466163478925",
+          "description" : "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
+          "readOnly" : true
+        },
+        "update_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "project_id" : {
+          "type" : "string",
           "readOnly" : true
         },
         "program_versions" : {
@@ -11170,20 +11751,6 @@
         "program_state" : {
           "readOnly" : true,
           "$ref" : "#/definitions/B_Program_State"
-        },
-        "update_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "project_id" : {
-          "type" : "string",
-          "readOnly" : true
-        },
-        "edit_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
         },
         "delete_permission" : {
           "type" : "boolean",
@@ -11234,9 +11801,10 @@
           "type" : "string",
           "description" : "Visible here only when the object IS specifically required. Inversion value for \"m_code_url\" THIS or THAT!"
         },
-        "m_project_id" : {
-          "type" : "string",
-          "readOnly" : true
+        "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
         },
         "screen_size_type_id" : {
           "type" : "string",
@@ -11257,15 +11825,14 @@
           "readOnly" : true,
           "default" : false
         },
-        "edit_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
         "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
+        },
+        "m_project_id" : {
+          "type" : "string",
+          "readOnly" : true
         }
       }
     },
@@ -11411,6 +11978,18 @@
       },
       "description" : "Json Model for specific Tariff and price plan"
     },
+    "FileRecord" : {
+      "type" : "object",
+      "required" : [ "file_name", "id" ],
+      "properties" : {
+        "id" : {
+          "type" : "string"
+        },
+        "file_name" : {
+          "type" : "string"
+        }
+      }
+    },
     "Version_Object" : {
       "type" : "object",
       "required" : [ "date_of_create", "id", "version_description", "version_name" ],
@@ -11447,18 +12026,6 @@
         }
       },
       "description" : "Json Model for new Single Library"
-    },
-    "FileRecord" : {
-      "type" : "object",
-      "required" : [ "file_name", "id" ],
-      "properties" : {
-        "id" : {
-          "type" : "string"
-        },
-        "file_name" : {
-          "type" : "string"
-        }
-      }
     },
     "SecurityRole_New" : {
       "type" : "object",
@@ -11512,13 +12079,6 @@
         "description" : {
           "type" : "string"
         },
-        "type_of_boards_id" : {
-          "type" : "array",
-          "readOnly" : true,
-          "items" : {
-            "type" : "string"
-          }
-        },
         "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
@@ -11528,6 +12088,13 @@
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
+        },
+        "type_of_boards_id" : {
+          "type" : "array",
+          "readOnly" : true,
+          "items" : {
+            "type" : "string"
+          }
         }
       }
     },
@@ -11639,6 +12206,16 @@
       },
       "description" : "Json Model for details about Tariff"
     },
+    "Blocko_Block_Filter" : {
+      "type" : "object",
+      "properties" : {
+        "project_id" : {
+          "type" : "string",
+          "description" : "Include only if you want to get Blocks of given project"
+        }
+      },
+      "description" : "Json Model for getting Blocko_Block Filter List"
+    },
     "C_Program_Version_Update" : {
       "type" : "object",
       "required" : [ "main" ],
@@ -11678,6 +12255,49 @@
           }
         }
       }
+    },
+    "Blocko_Block_Light" : {
+      "type" : "object",
+      "required" : [ "blocko_block_description", "blocko_block_id", "blocko_block_name", "blocko_block_type_of_block_description", "blocko_block_type_of_block_id", "blocko_block_type_of_block_name", "blocko_block_version_description", "blocko_block_version_id", "blocko_block_version_name" ],
+      "properties" : {
+        "blocko_block_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "blocko_block_name" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "blocko_block_description" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "blocko_block_version_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "blocko_block_version_name" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "blocko_block_version_description" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "blocko_block_type_of_block_name" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "blocko_block_type_of_block_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "blocko_block_type_of_block_description" : {
+          "type" : "string",
+          "readOnly" : true
+        }
+      },
+      "description" : "Blocko_Block Light (only few properties)"
     },
     "B_Program_State" : {
       "type" : "object",
@@ -11722,6 +12342,25 @@
         }
       },
       "description" : "Json Model for B_Program state"
+    },
+    "Type_Of_Block_Light" : {
+      "type" : "object",
+      "required" : [ "type_of_block_description", "type_of_block_id", "type_of_block_name" ],
+      "properties" : {
+        "type_of_block_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "type_of_block_name" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "type_of_block_description" : {
+          "type" : "string",
+          "readOnly" : true
+        }
+      },
+      "description" : "Type_Of_Block Light (only few properties)"
     },
     "Applicable_Product" : {
       "type" : "object",
@@ -11770,17 +12409,17 @@
         "destination_address" : {
           "type" : "string"
         },
-        "server_is_online" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
         "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
         },
         "delete_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "server_is_online" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -11825,7 +12464,7 @@
     },
     "C_Program_Update_Plan" : {
       "type" : "object",
-      "required" : [ "board_id", "id", "state" ],
+      "required" : [ "board_detail", "id", "server_detail", "state" ],
       "properties" : {
         "id" : {
           "type" : "string"
@@ -11835,14 +12474,18 @@
           "description" : "Find description on Model C_ProgramUpdater_State",
           "enum" : [ "complete", "canceled", "in_progress", "overwritten", "waiting_for_device", "instance_inaccessible", "homer_server_is_offline", "critical_error" ]
         },
-        "board_id" : {
-          "type" : "string",
-          "readOnly" : true
-        },
         "c_program_detail" : {
           "description" : "Is visible only if user send compilation under C_program in system  ( OR state for binary_file)",
           "readOnly" : true,
           "$ref" : "#/definitions/C_Program_Update_program"
+        },
+        "server_detail" : {
+          "readOnly" : true,
+          "$ref" : "#/definitions/Server_detail"
+        },
+        "board_detail" : {
+          "readOnly" : true,
+          "$ref" : "#/definitions/Board_detail"
         },
         "binary_file_detail" : {
           "description" : "Is visible only if user send own binary file ( OR state for c_program_detail)",
@@ -11876,14 +12519,14 @@
           "readOnly" : true,
           "default" : false
         },
-        "project_id" : {
-          "type" : "string",
-          "readOnly" : true
-        },
         "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
+        },
+        "project_id" : {
+          "type" : "string",
+          "readOnly" : true
         },
         "delete_permission" : {
           "type" : "boolean",
@@ -11905,13 +12548,6 @@
         "library_name" : {
           "type" : "string"
         },
-        "versions_id" : {
-          "type" : "array",
-          "readOnly" : true,
-          "items" : {
-            "type" : "string"
-          }
-        },
         "update_permission" : {
           "type" : "boolean",
           "readOnly" : true,
@@ -11926,6 +12562,13 @@
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
+        },
+        "versions_id" : {
+          "type" : "array",
+          "readOnly" : true,
+          "items" : {
+            "type" : "string"
+          }
         }
       }
     },
@@ -11962,15 +12605,41 @@
       },
       "description" : "Json Model for new M_Program"
     },
+    "Server_detail" : {
+      "type" : "object",
+      "required" : [ "instnace_id", "is_private", "server_id", "server_name" ],
+      "properties" : {
+        "server_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "is_private" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "server_name" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "instnace_id" : {
+          "type" : "string",
+          "description" : "Can be empty",
+          "readOnly" : true
+        }
+      }
+    },
     "Person_Update" : {
       "type" : "object",
       "required" : [ "full_name", "nick_name" ],
       "properties" : {
         "nick_name" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "min length = 4"
         },
         "full_name" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "min length = 4"
         },
         "first_title" : {
           "type" : "string"
@@ -12045,7 +12714,7 @@
           "type" : "string",
           "readOnly" : true
         },
-        "c_program_version_id" : {
+        "virtual_input_output" : {
           "type" : "string",
           "readOnly" : true
         },
@@ -12053,7 +12722,7 @@
           "type" : "string",
           "readOnly" : true
         },
-        "virtual_input_output" : {
+        "c_program_version_id" : {
           "type" : "string",
           "readOnly" : true
         }
@@ -12255,6 +12924,16 @@
       },
       "description" : "Json Model if user want create new Tariff for projects"
     },
+    "C_Program_Filter" : {
+      "type" : "object",
+      "properties" : {
+        "project_id" : {
+          "type" : "string",
+          "description" : "Include only if you want to get C_Programs of given project"
+        }
+      },
+      "description" : "Json Model for getting C_Program Filter List"
+    },
     "Post" : {
       "type" : "object",
       "required" : [ "answer_permission", "author", "comment_permission", "date_of_create", "delete_permission", "edit_confirms_permission", "edit_permission", "hashTags", "id", "likes", "text_of_post", "updated" ],
@@ -12310,6 +12989,18 @@
             "$ref" : "#/definitions/Post"
           }
         },
+        "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "hashTags" : {
+          "type" : "array",
+          "readOnly" : true,
+          "items" : {
+            "type" : "string"
+          }
+        },
         "type_of_confirms" : {
           "type" : "array",
           "description" : "Only if Post is Main",
@@ -12326,13 +13017,6 @@
             "$ref" : "#/definitions/LinkedPost"
           }
         },
-        "hashTags" : {
-          "type" : "array",
-          "readOnly" : true,
-          "items" : {
-            "type" : "string"
-          }
-        },
         "answer_permission" : {
           "type" : "boolean",
           "readOnly" : true,
@@ -12344,11 +13028,6 @@
           "default" : false
         },
         "edit_confirms_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -12430,12 +13109,12 @@
             "$ref" : "#/definitions/M_Program"
           }
         },
-        "b_program_id" : {
-          "type" : "string",
-          "description" : "can be empty",
-          "readOnly" : true
-        },
         "update_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -12444,22 +13123,69 @@
           "type" : "string",
           "readOnly" : true
         },
-        "b_progam_connected_version_id" : {
-          "type" : "string",
-          "description" : "can be empty",
-          "readOnly" : true
-        },
-        "edit_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
         "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
+        },
+        "b_program_id" : {
+          "type" : "string",
+          "description" : "can be empty",
+          "readOnly" : true
+        },
+        "b_progam_connected_version_id" : {
+          "type" : "string",
+          "description" : "can be empty",
+          "readOnly" : true
         }
       }
+    },
+    "B_Program_Light" : {
+      "type" : "object",
+      "required" : [ "b_program_description", "b_program_id", "b_program_name", "b_program_version_description", "b_program_version_id", "b_program_version_name" ],
+      "properties" : {
+        "b_program_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "b_program_name" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "b_program_description" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "b_program_version_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "b_program_version_name" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "b_program_version_description" : {
+          "type" : "string",
+          "readOnly" : true
+        }
+      },
+      "description" : "B_Program Light (only few properties)"
+    },
+    "Type_Of_Block_Filter" : {
+      "type" : "object",
+      "required" : [ "private_type" ],
+      "properties" : {
+        "project_id" : {
+          "type" : "string",
+          "description" : "Include only if you want to get Type_Of_Blocks of given project"
+        },
+        "private_type" : {
+          "type" : "boolean",
+          "description" : "Use 'true' for private Type_Of_Block or 'false' for non-private",
+          "default" : false
+        }
+      },
+      "description" : "Json Model for getting Type_Of_Block Filter List"
     },
     "Entity_Validation_In" : {
       "type" : "object",
@@ -12493,23 +13219,23 @@
           "type" : "boolean",
           "default" : false
         },
-        "processor_id" : {
-          "type" : "string",
-          "readOnly" : true
-        },
-        "producer_id" : {
-          "type" : "string",
-          "readOnly" : true
+        "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
         },
         "register_new_device_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
         },
-        "edit_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
+        "producer_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "processor_id" : {
+          "type" : "string",
+          "readOnly" : true
         },
         "delete_permission" : {
           "type" : "boolean",
@@ -12654,17 +13380,40 @@
     },
     "M_Project_New" : {
       "type" : "object",
-      "required" : [ "program_name" ],
+      "required" : [ "notification_id" ],
       "properties" : {
-        "program_description" : {
-          "type" : "string"
-        },
-        "program_name" : {
-          "type" : "string",
-          "description" : "MinLength >= 4"
+        "notification_id" : {
+          "type" : "array",
+          "description" : "List of notification.id",
+          "items" : {
+            "type" : "string"
+          }
         }
       },
-      "description" : "Json Model for update M_Project"
+      "description" : "Json Model for List with ids of read notifications"
+    },
+    "Board_detail" : {
+      "type" : "object",
+      "required" : [ "board_id", "personal_description", "type_of_board_id", "type_of_board_name" ],
+      "properties" : {
+        "board_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "personal_description" : {
+          "type" : "string",
+          "description" : "Can be empty",
+          "readOnly" : true
+        },
+        "type_of_board_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "type_of_board_name" : {
+          "type" : "string",
+          "readOnly" : true
+        }
+      }
     },
     "GoPay_Url" : {
       "type" : "object",
@@ -12695,6 +13444,47 @@
         }
       },
       "description" : "Json Model for creating new Person"
+    },
+    "B_Program_List" : {
+      "type" : "object",
+      "required" : [ "content", "from", "pages", "to", "total" ],
+      "properties" : {
+        "content" : {
+          "type" : "array",
+          "readOnly" : true,
+          "items" : {
+            "$ref" : "#/definitions/B_Program_Light"
+          }
+        },
+        "from" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "First value position from all subjects. Minimum is 0.",
+          "readOnly" : true
+        },
+        "to" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "Minimum is \"from\" Maximum is \"total\"",
+          "readOnly" : true
+        },
+        "total" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "Total subjects",
+          "readOnly" : true
+        },
+        "pages" : {
+          "type" : "array",
+          "description" : "Numbers of pages, which you can call",
+          "readOnly" : true,
+          "items" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "description" : "Individual B_Program List"
     },
     "Board_status" : {
       "type" : "object",

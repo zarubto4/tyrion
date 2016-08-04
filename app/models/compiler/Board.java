@@ -34,21 +34,23 @@ public class Board extends Model {
     @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)   public String personal_description;
                                        @JsonIgnore  @ManyToOne              public TypeOfBoard type_of_board;  // Typ desky
                                        @ApiModelProperty(required = true)   public boolean isActive;
-                                               @JsonIgnore  public Date date_of_create;
+                                                            @JsonIgnore     public Date date_of_create;
 
-                                    @JsonIgnore @ManyToOne  public Project project;
+                                                   @JsonIgnore @ManyToOne   public Project project;
 
-                                    @JsonIgnore @ManyToOne  public Version_Object actual_c_program_version;
-                                    @JsonIgnore             public String alternative_program_name;
+                                                   @JsonIgnore @ManyToOne   public Version_Object actual_c_program_version;
+                                                   @JsonIgnore              public String alternative_program_name;
 
-                                  @JsonIgnore @ManyToOne()  public Cloud_Homer_Server latest_know_server;  // Pouze pokud je připojen přímo na blocko cloud_blocko_server!
-                                  @JsonIgnore @ManyToOne()  public Private_Homer_Server private_homer_servers;
+                                                @JsonIgnore @ManyToOne()    public Cloud_Homer_Server latest_know_server;  // Pouze pokud je připojen přímo na blocko cloud_blocko_server!
+                                                @JsonIgnore @ManyToOne()    public Private_Homer_Server private_homer_servers;
 
-    @JsonIgnore  @OneToMany(mappedBy="board",cascade=CascadeType.ALL, fetch = FetchType.EAGER)            public List<B_Pair> b_pair = new ArrayList<>();
-    @JsonIgnore  @OneToMany(mappedBy="board", cascade=CascadeType.ALL, fetch = FetchType.EAGER) public List<C_Program_Update_Plan> c_program_update_plans;
 
-                                                                 // Vlastní instance pouze pro HW - V Případě že nebude aktivní instance s Blocko Programem.
-                 @JsonIgnore @OneToOne(fetch = FetchType.EAGER)  public Homer_Instance private_instance;
+
+    @JsonIgnore  @OneToMany(mappedBy="board", cascade=CascadeType.ALL, fetch = FetchType.EAGER)     public List<B_Pair> b_pair = new ArrayList<>();
+    @JsonIgnore  @OneToMany(mappedBy="board", cascade=CascadeType.ALL, fetch = FetchType.EAGER)     public List<C_Program_Update_Plan> c_program_update_plans;
+
+
+                 @JsonIgnore @OneToOne(fetch = FetchType.EAGER)  public Homer_Instance private_instance;      // Vlastní instance pouze pro HW - V Případě že nebude aktivní instance s Blocko Programem.
 
 /* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/
 
@@ -137,7 +139,7 @@ public class Board extends Model {
     @JsonProperty  @JsonInclude(JsonInclude.Include.NON_NULL) @Transient public Boolean first_connect_permission(){  return   project != null ? null : true;}
 
 
-    public enum permissions{Board_read, Board_Create, Board_edit, Board_delete, Board_update}
+    public enum permissions {Board_read, Board_Create, Board_edit, Board_delete, Board_update}
 
 
 /* ZVLÁŠTNÍ POMOCNÉ METODY ---------------------------------------------------------------------------------------------*/

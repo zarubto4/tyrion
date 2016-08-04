@@ -272,7 +272,7 @@ public class Finance_Controller extends Controller {
                 payment_details.zip_code      = help.zip_code;
                 payment_details.country       = help.country;
 
-                if(help.registration_no == null)            return GlobalResult.result_BadRequest("registration_no is required with this tariff");
+                if(help.registration_no == null)            return GlobalResult.result_BadRequest("company_registration_no is required with this tariff");
 
                 if(help.company_name == null)               return GlobalResult.result_BadRequest("company_name is required with this tariff");
                 if(help.company_authorized_email == null)   return GlobalResult.result_BadRequest("company_authorized_email is required with this tariff");
@@ -282,11 +282,11 @@ public class Finance_Controller extends Controller {
 
                 if(help.vat_number != null) {
                     if (!UtilTools.controll_vat_number(help.vat_number))return GlobalResult.badRequest("Prefix code in VatNumber is not valid");
-                     payment_details.vat_number = help.vat_number;
+                     payment_details.company_vat_number = help.vat_number;
                 }
 
 
-                payment_details.registration_no          = help.registration_no;
+                payment_details.company_registration_no = help.registration_no;
                 payment_details.company_name             = help.company_name;
                 payment_details.company_authorized_email = help.company_authorized_email;
                 payment_details.company_authorized_phone = help.company_authorized_phone;
@@ -571,7 +571,7 @@ public class Finance_Controller extends Controller {
 
             if (!help.company_account & payment_details.company_account){
                 payment_details.company_account          = false;
-                payment_details.registration_no          = null;
+                payment_details.company_registration_no = null;
                 payment_details.company_name             = null;
                 payment_details.company_authorized_email = null;
                 payment_details.company_authorized_phone = null;
@@ -582,7 +582,7 @@ public class Finance_Controller extends Controller {
             // Pokud je účet business - jsou vyžadovány následující informace
             if(payment_details.company_account) {
 
-                if (help.registration_no == null)           return GlobalResult.result_BadRequest("registration_no is required with this tariff");
+                if (help.registration_no == null)           return GlobalResult.result_BadRequest("company_registration_no is required with this tariff");
                 if (help.company_name == null)              return GlobalResult.result_BadRequest("company_name is required with this tariff");
                 if (help.company_authorized_email == null)  return GlobalResult.result_BadRequest("company_authorized_email is required with this tariff");
                 if (help.company_authorized_phone == null)  return GlobalResult.result_BadRequest("company_authorized_phone is required with this tariff");
@@ -592,10 +592,10 @@ public class Finance_Controller extends Controller {
                 if (help.vat_number != null) {
                     if (!UtilTools.controll_vat_number(help.vat_number))
                         return GlobalResult.badRequest("Prefix code in VatNumber is not valid");
-                    payment_details.vat_number = help.vat_number;
+                    payment_details.company_vat_number = help.vat_number;
                 }
 
-                payment_details.registration_no = help.registration_no;
+                payment_details.company_registration_no = help.registration_no;
                 payment_details.company_name = help.company_name;
                 payment_details.company_authorized_email = help.company_authorized_email;
                 payment_details.company_authorized_phone = help.company_authorized_phone;

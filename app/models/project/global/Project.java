@@ -55,7 +55,6 @@ public class Project extends Model {
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> b_programs_id()       { List<String> l = new ArrayList<>();  for( B_Program m               : b_programs)               l.add(m.id); return l;  }
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> c_programs_id()       { List<String> l = new ArrayList<>();  for( C_Program m               : c_programs)               l.add(m.id); return l;  }
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> m_projects_id()       { List<String> l = new ArrayList<>();  for( M_Project m               : m_projects)               l.add(m.id); return l;  }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> owners_id()           { List<String> l = new ArrayList<>();  for( Person m                  : ownersOfProject)          l.add(m.id); return l;  }
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> type_of_blocks_id()   { List<String> l = new ArrayList<>();  for( TypeOfBlock m             : type_of_blocks)           l.add(m.id); return l;  }
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> screen_size_types_id(){ List<String> l = new ArrayList<>();  for( Screen_Size_Type m        : screen_size_types)        l.add(m.id); return l;  }
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> actual_procedures_id(){ List<String> l = new ArrayList<>();  for( Actualization_procedure m : procedures)               l.add(m.id); return l;  }
@@ -63,10 +62,55 @@ public class Project extends Model {
 
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public String product_individual_name() { return product.product_individual_name;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Long product_id() { return product.id;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public Long   product_id() { return product.id;}
+
+    @JsonProperty @Transient @ApiModelProperty(required = true) public String tier_name() { return product.product_type();}
+
+
+    @JsonProperty @Transient @ApiModelProperty(required = true) public Integer errors() { return 0;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public Integer bugs() { return 0;}
+
+
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Project_participant> participants() {
+
+        List<Project_participant> project_participants = new ArrayList<>();
+
+        for(Person person : ownersOfProject){
+            Project_participant project_participant = new Project_participant();
+            project_participant.id = person.id;
+            project_participant.user_email = person.mail;
+            project_participant.full_name = person.full_name;
+            project_participant.state = "Project Member"; // TODO dá se tu vymyslet mnohem lepší a promakanější stavy
+            project_participants.add(project_participant);
+        }
+
+        for(Invitation invitation : invitations){
+            Project_participant project_participant = new Project_participant();
+            project_participant.user_email = invitation.mail;
+            project_participant.state      = "Waiting for decision"; // TODO dá se tu vymyslet mnohem lepší a promakanější stavy
+            project_participants.add(project_participant);
+        }
+
+        return  project_participants;
+
+    }
+
+
+    public class Project_participant {
+        @JsonProperty @Transient @ApiModelProperty(required = false, value = "Only if the user is already part of the project") public String full_name;
+        @JsonProperty @Transient @ApiModelProperty(required = true, value = "Its in object always") public String user_email;
+        @JsonProperty @Transient @ApiModelProperty(required = false, value = "Only if the user is already part of the project (for click operations)")  public String id;
+        @JsonProperty @Transient @ApiModelProperty(required = true, value = "Its in object always")  public String state;
+    }
+
+  //   @JsonProperty @Transient @ApiModelProperty(required = true) public Integer server_name() { return 0;}
+  //  @JsonProperty @Transient @ApiModelProperty(required = true) public Integer errors() { return 0;}
+  //  @JsonProperty @Transient @ApiModelProperty(required = true) public Integer bugs() { return 0;}
+
 
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
 
 
 
