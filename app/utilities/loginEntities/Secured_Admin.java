@@ -4,6 +4,9 @@ import models.person.Person;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Security;
+import utilities.response.GlobalResult;
+
+import static play.mvc.Controller.request;
 
 public class Secured_Admin extends Security.Authenticator {
 
@@ -11,26 +14,27 @@ public class Secured_Admin extends Security.Authenticator {
     @Override
     public String getUsername(Http.Context ctx) {
 
-        Person person = null;
+        try{
 
-        String[] authTokenHeaderValues = ctx.request().headers().get("X-AUTH-TOKEN");
-
-        if ((authTokenHeaderValues != null) && (authTokenHeaderValues.length == 1) && (authTokenHeaderValues[0] != null)) {
-
-            person = Person.findByAuthToken(authTokenHeaderValues[0]);
+            Person person = null;
+            String token =  request().cookies().get("authToken").value();
+            person = Person.findByAuthToken(token);
 
             if (person != null) {
                 ctx.args.put("person", person);
                 return person.id;
             }
+            return null;
+        }catch (NullPointerException e){
+            return null;
         }
-
-        return null;
     }
 
     @Override
-    public Result onUnauthorized(Http.Context ctx) {
-        return redirect("/login");
+    public Result onUnauthorized(Http.Context ctx)
+    {
+        System.out.println("Nepřihlášený uživatel!");
+        return redirect("/public/login");
     }
 
 }

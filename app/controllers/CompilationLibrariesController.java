@@ -2797,6 +2797,7 @@ public class CompilationLibrariesController extends Controller {
             typeOfBoard.description = help.description;
             typeOfBoard.processor = processor;
             typeOfBoard.producer = producer;
+            typeOfBoard.connectible_to_internet = help.connectible_to_internet;
 
             // Uložení do DB
             typeOfBoard.update();

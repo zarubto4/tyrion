@@ -21,7 +21,7 @@ public class TypeOfBoard extends Model {
                        @Column(columnDefinition = "TEXT")    @ApiModelProperty(required = true) public String description;
                                                                         @JsonIgnore  @ManyToOne public Producer producer;
                                                                         @JsonIgnore  @ManyToOne public Processor processor;
-                                                             @ApiModelProperty(required = true) public boolean connectible_to_internet;
+                                                             @ApiModelProperty(required = true) public Boolean connectible_to_internet;
 
     @JsonIgnore @OneToMany(mappedBy="type_of_board", cascade = CascadeType.ALL) public List<Board> boards = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="type_of_board", cascade = CascadeType.ALL) public List<C_Program> c_programs = new ArrayList<>();
@@ -48,7 +48,7 @@ public class TypeOfBoard extends Model {
     public enum permissions{TypeOfBoard_create, TypeOfBoard_edit, TypeOfBoard_delete, TypeOfBoard_register_new_device}
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Model.Finder<String, TypeOfBoard> find = new Finder<>(TypeOfBoard.class);
+    public static  Model.Finder<String, TypeOfBoard> find = new Finder<>(TypeOfBoard.class);
 
 
 }

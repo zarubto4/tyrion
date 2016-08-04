@@ -399,6 +399,7 @@ GET           /assets/*file                                 controllers.Assets.v
 
 # Basic Page Requests
 GET             /                                           @controllers.DashboardController.index()
+GET             /public/login                               @controllers.DashboardController.login()
 GET             /public/bugs                                @controllers.DashboardController.show_all_logs()
 GET             /public/websocket                           @controllers.DashboardController.show_web_socket_stats()
 GET             /public/show_readme                         @controllers.DashboardController.show_readme()

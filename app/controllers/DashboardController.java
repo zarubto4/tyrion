@@ -12,7 +12,10 @@ import play.mvc.Security;
 import play.twirl.api.Html;
 import utilities.Server;
 import utilities.loggy.Loggy;
+import utilities.loginEntities.Secured;
 import utilities.loginEntities.Secured_Admin;
+import utilities.response.GlobalResult;
+import utilities.swagger.documentationClass.Swagger_TypeOfBoard_New;
 import utilities.swagger.swagger_diff_tools.Swagger_diff_Controller;
 import utilities.swagger.swagger_diff_tools.servise_class.Swagger_Diff;
 import utilities.webSocket.*;
@@ -29,6 +32,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
+
+import static play.data.Form.form;
 
 /**
  * CONTROLLER je určen pro jednoduchý frontend, který slouží pro zobrazení stavu backendu, základních informací,
@@ -55,6 +60,8 @@ public class DashboardController extends Controller {
 // Index (úvod) ########################################################################################################
 
     // Úvodní zobrazení Dashboard
+
+    @Security.Authenticated(Secured_Admin.class)
     public Result index() {
 
         List<String> fileNames = new ArrayList<>();
@@ -152,6 +159,7 @@ public class DashboardController extends Controller {
 // WEBSOCKET STATS ######################################################################################################
 
 
+    @Security.Authenticated(Secured_Admin.class)
     public Result show_web_socket_stats() {
 
         logger.debug("Return show_web_socket_stats.html content");
@@ -325,10 +333,14 @@ public class DashboardController extends Controller {
 
 // ADMIN ###############################################################################################################
 
-    @Security.Authenticated( Secured_Admin.class)
+    @Security.Authenticated(Secured_Admin.class)
     public Result admin_page(){
-
         try {
+
+            System.out.println("asdfsdfsdfdfas fdjasfkjb ");
+
+            String ss = request().cookies().get("authToken").value();
+            logger.debug("cookie " + ss);
 
             logger.debug("Trying to get admin page");
 
@@ -364,4 +376,18 @@ public class DashboardController extends Controller {
                 )
         );
     }
+// LOGIN ###############################################################################################################
+
+    public Result login(){
+        try {
+
+            logger.debug("Trying to get login page");
+
+            return ok(login.render());
+
+        }catch (Exception e){
+            return GlobalResult.internalServerError();
+        }
+    }
+
 }
