@@ -71,6 +71,7 @@ public class GridController extends Controller {
     @Security.Authenticated(Secured.class)
     public Result new_M_Project(String project_id) {
         try{
+
             final Form<Swagger_M_Project_New> form = Form.form(Swagger_M_Project_New.class).bindFromRequest();
             if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_M_Project_New help = form.get();
