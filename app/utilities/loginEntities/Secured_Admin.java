@@ -4,7 +4,6 @@ import models.person.Person;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.response.GlobalResult;
 
 import static play.mvc.Controller.request;
 
@@ -33,8 +32,7 @@ public class Secured_Admin extends Security.Authenticator {
     @Override
     public Result onUnauthorized(Http.Context ctx)
     {
-        System.out.println("Nepřihlášený uživatel!");
-        return redirect("/public/login");
+        return redirect("/admin/login");
     }
 
 }

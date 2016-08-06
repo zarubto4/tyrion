@@ -107,6 +107,7 @@ create table c_program_update_plan (
 create table cloud_compilation_server (
   id                        varchar(255) not null,
   server_name               varchar(255),
+  unique_identificator      varchar(255),
   hash_certificate          varchar(255),
   destination_address       varchar(255),
   constraint pk_cloud_compilation_server primary key (id))
@@ -114,8 +115,9 @@ create table cloud_compilation_server (
 
 create table cloud_homer_server (
   id                        varchar(255) not null,
-  server_name               varchar(255),
+  unique_identificator      varchar(255),
   hash_certificate          varchar(255),
+  server_name               varchar(255),
   destination_address       varchar(255),
   is_private                boolean,
   constraint pk_cloud_homer_server primary key (id))

@@ -1,6 +1,8 @@
 @import models.compiler.TypeOfBoard
 @import models.compiler.Processor
-@(serverAddress: String)
+@import models.compiler.Producer
+@import utilities.Server
+
 
 
 <section class="content-header">
@@ -11,6 +13,7 @@
   </ol>
 </section>
 
+@*/*/*  TypeOfBoard ---------------------------------------------------------------------------------------------   */*/*@
 
 <section class="content">
   <div id="editTypeOfBoardModal" style="display: none;" class="modal">
@@ -86,8 +89,6 @@
               <th>Producer</th>
               <th>Processor</th>
               <th>Connectible to Internet</th>
-              <th>Edit permission</th>
-              <th>Delete permission</th>
               <th>Reg. new device perm.</th>
               <th>EDIT</th>
               <th>DELETE</th>
@@ -100,9 +101,7 @@
                   <td>@typeOfBoard.producer_id()</td>
                   <td>@typeOfBoard.processor_id()</td>
                   <td>@typeOfBoard.connectible_to_internet</td>
-                  <td>null</td>
-                  <td>null</td>
-                  <td>null</td>
+                  <td>@typeOfBoard.register_new_device_permission()</td>
                   <td><button class="btn btn-block btn-info" type="button" onclick="showEditForm('@typeOfBoard.id', '@typeOfBoard.name', '@typeOfBoard.description', '@typeOfBoard.producer_id()', '@typeOfBoard.processor_id()', '@typeOfBoard.connectible_to_internet')">Edit</button></td>
                   <td><button class="btn btn-block btn-danger" type="button" onclick="deleteTypeOfBoard(@typeOfBoard.id)">Delete</button></td>
                 </tr>
@@ -118,7 +117,7 @@
   </div>
 </section>
 
-
+@*/*/*  Procesor ---------------------------------------------------------------------------------------------   */*/*@
 
 <section class="content">
   <div id="editProcessorModal" style="display: none;" class="modal">
@@ -199,9 +198,91 @@
   </div>
 </section>
 
+@*/*/*  Producer ---------------------------------------------------------------------------------------------   */*/*@
+
+<section class="content">
+  <div id="editProducerModal" style="display: none;" class="modal">
+    <div style="margin-top: 15%;" class="modal-dialog">
+      <div class="modal-content">
+
+        <div class="modal-header">
+          <h4 class="modal-title">Edit Producer</h4>
+        </div>
+
+        <div class="modal-body">
+          <form id="editProducer")>
+            <label id="producer_id" style="display: block">ID</label>
+            <label>Name</label><input style="display: block" type="text" name="name" >
+            <label>Description</label><input style="display: block" type="text" name="description" >
+          </form>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editProducerModal').css('display','none')">Close</button>
+          <button id="editProducerButton" value="" class="btn btn-primary" type="button" onclick="editProducer(this.value)">Save changes</button>
+        </div>
+      </div>
+        <!-- /.modal-content -->
+    </div>
+      <!-- /.modal-dialog -->
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="box">
+        <div class="box-header with-border">
+          <h3 class="box-title">Producer</h3>
+        </div>
+        <div class="box-body">
+          <label style="font-size: 13pt;">New Producer</label>
+          <form id="newProducer")>
+            <div style="width: 16%; display: inline-block"><label>Name</label>       <input type="text" name="name" ></div>
+            <div style="width: 16%; display: inline-block;"><label>Description</label><input type="text" name="description" ></div>
+
+            <button style="width: 16%; display: inline-block;" class="btn btn-block btn-success" type="button" onclick="newProducer()">New producer</button>
+          </form>
+        </div>
+        <div class="box-body">
+          <label style="font-size: 13pt;">All Producer</label>
+          <table id="allProducers" class="table table-bordered">
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Description</th>
+              <th>EDIT</th>
+              <th>DELETE</th>
+            </tr>
+            @for(producer <- Producer.find.all()) {
+              <tr>a
+                <td>@producer.id</td>
+                <td>@producer.name</td>
+                <td>@producer.description</td>
+                <td><button class="btn btn-block btn-info"   type="button" onclick="showEditFormProducer('@producer.id', '@producer.name', '@producer.description')">Edit</button></td>
+                <td><button class="btn btn-block btn-danger" type="button" onclick="deleteProducer(@producer.id)">Delete</button></td>
+              </tr>
+            }
+          </table>
+        </div>
+        <div class="box-footer">
+        </div>
+
+
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+
+
+
+
+
 
 
 <script>
+
+@*/*/*  TypeOfBoard ---------------------------------------------------------------------------------------------   */*/*@
 
         function newTypeOfBoard(){
           model_data = $("#newTypeOfBoard").serializeObject();
@@ -228,7 +309,7 @@
           model_data = $("#editTypeOfBoard").serializeObject();
 
           $.ajax({
-            url: "@serverAddress" + "/compilation/typeOfBoard/" + id ,
+            url: "@Server.tyrion_serverAddress" + "/compilation/typeOfBoard/" + id ,
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -250,7 +331,7 @@
         function deleteTypeOfBoard(id){
 
           $.ajax({
-            url: "@serverAddress" + "/compilation/typeOfBoard/" + id ,
+            url: " @Server.tyrion_serverAddress" + "/compilation/typeOfBoard/" + id ,
             type: 'DELETE',
             headers: {
               "X-AUTH-TOKEN":getCookie("authToken"),
@@ -274,6 +355,7 @@
           $("#editTypeOfBoard input[name=connectible_to_internet]").prop( "checked", checkBoxValue );
         }
 
+ @*/*/*  Procesor ---------------------------------------------------------------------------------------------   */*/*@
 
         function newProcessor(){
           model_data = $("#newProcessor").serializeObject();
@@ -300,7 +382,7 @@
           model_data = $("#editProcessor").serializeObject();
 
           $.ajax({
-            url: "@serverAddress" + "/compilation/processor/" + id ,
+            url: " @Server.tyrion_serverAddress" + "/compilation/processor/" + id ,
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -322,7 +404,7 @@
         function deleteProcessor(id){
 
           $.ajax({
-            url: "@serverAddress" + "/compilation/processor/" + id ,
+            url: "@Server.tyrion_serverAddress" + "/compilation/processor/" + id ,
             type: 'DELETE',
             headers: {
               "X-AUTH-TOKEN":getCookie("authToken"),
@@ -345,4 +427,74 @@
           $("#editProcessor input[name=speed]").val(speed);
         }
 
+
+ @*/*/*  Producer ---------------------------------------------------------------------------------------------   */*/*@
+
+        function newProducer(){
+          model_data = $("#newProducer").serializeObject();
+          $.ajax({
+            url: '@routes.CompilationLibrariesController.new_Producer()',
+            type: 'POST',
+            contentType: 'application/json',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+            success:function(e){
+              $("#newProducer input[type=text]").val("");
+              $('#allProducers').load(document.URL +  ' #allProducers');
+            },
+            error:function(e) {
+              alert("Unsuccessful. Check if all properties are correct");
+            }
+          })}
+
+        function editProducer(id){
+          model_data = $("#editProducer").serializeObject();
+
+          $.ajax({
+            url: "@Server.tyrion_serverAddress" + "/compilation/producer/" + id ,
+            type: 'PUT',
+            contentType: 'application/json',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+            success:function(e){
+              $("#editProducer input[type=text]").val("");
+              $("#editProducerModal").css("display","none");
+              $('#allProducers').load(document.URL +  ' #allProducers');
+            },
+            error:function(e) {
+              alert("Unsuccessful. Check if all properties are correct");
+            }
+          })}
+
+        function deleteProducer(id){
+
+          $.ajax({
+            url: "@Server.tyrion_serverAddress" + "/compilation/producer/" + id ,
+            type: 'DELETE',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+            },
+            success:function(e){
+              $('#allProducers').load(document.URL +  ' #allProducers');
+            },
+            error:function(e) {
+              alert("Unsuccessful. Maybe it cannot be deleted, because there are some boards connected on this producer");
+            }
+          })}
+
+        function showEditFormProducer(id, name, description){
+          $("#editProducerModal").css("display","block");
+          $('#editProducerButton').val(id);
+          $('#producer_id').text("ID = " + id);
+          $("#editProducer input[name=name]").val(name);
+          $("#editProducer input[name=description]").val(description);
+        }
 </script>

@@ -332,6 +332,7 @@ public class UtilTools extends Controller {
             Person person = new Person();
             person.full_name = "Admin Byzance";
             person.mailValidated = true;
+            person.nick_name = "Syndibád";
             person.mail = "admin@byzance.cz";
             person.setSha("123456789");
             person.roles.add(SecurityRole.findByName("SuperAdmin"));

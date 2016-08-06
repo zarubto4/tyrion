@@ -1,0 +1,574 @@
+
+@import models.compiler.Board
+@import models.person.Person
+@import models.project.global.Product
+@import models.project.global.Project
+@import models.project.global.financial.Invoice
+@import models.project.global.financial.Invoice_item
+
+@(person: Person)
+
+<section class="content-header">
+    <h1> Personal Summary </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-wrench"></i> User Summary Dashboard </a></li>
+        <li class="active">User detail</li>
+    </ol>
+</section>
+
+
+<section class="content">
+
+
+    <div class="row">
+        <div class="col-md-3">
+
+                <!-- Profile Image -->
+            <div class="box box-primary">
+                <div class="box-body box-profile">
+
+                    <h3 class="profile-username text-center">@person.full_name</h3>
+
+                    <p class="text-muted text-center">@person.mail </p>
+
+                        @if(person.mailValidated){
+                            <p class="text-green text-center">  Validated </p>
+                        }else{
+                            <p class="text-red text-center">   Not Validate </p>
+                        }
+
+                    <ul class="list-group list-group-unbordered">
+                        <li class="list-group-item">
+                            <b>Nick name</b> <a class="pull-right">@person.nick_name</a>
+                        </li>
+                        <li class="list-group-item">
+                            <b>ID</b> <a class="pull-right">@person.id</a>
+                        </li>
+                    </ul>
+
+                    <a href="#" class="btn btn-primary btn-block"><b>Edit Information</b></a>
+                    <a href="#" class="btn btn-warning btn-block"><b>Remove Tokens</b></a>
+                    <a href="#" class="btn btn-warning btn-block"><b>Freeze Account</b></a>
+
+                </div>
+                    <!-- /.box-body -->
+            </div>
+                <!-- /.box -->
+        </div>
+
+        <div class="col-md-9">
+            <div class="box box-primary">
+                <div class="nav-tabs-custom">
+                    <ul class="nav nav-tabs">
+                        <li class="products"><a href="#products" data-toggle="tab">Products</a></li>
+                        <li><a href="#projects" data-toggle="tab">Projects</a></li>
+                        <li><a href="#permissions" data-toggle="tab">Permissions</a></li>
+                    </ul>
+
+                    <div class="tab-content">
+
+
+                        <div class="active tab-pane" id="products">
+
+                            <div class="tab-pane" id="product_pane">
+
+
+                                <div class="box  box-danger">
+                                   <div class="box-body">
+                                       <div class="nav-tabs-custom">
+
+                                           <ul class="nav nav-tabs">
+
+
+                                               @for( product <- Product.find.where().eq("payment_details.person.id", person.id).findList() ){
+
+                                                    <li><a href="#product_@product.id" data-toggle="tab">@product.product_individual_name</a></li>
+
+                                               }
+
+                                               <li><a href="#add_new" data-toggle="tab"> <p class="text-blue"><b>ADD NEW</b></p> </a></li>
+
+                                           </ul>
+
+
+                                            <div class="tab-content">
+                                                @for( product <- Product.find.where().eq("payment_details.person.id", person.id).findList() ) {
+
+                                                    <div class="tab-pane" id="product_@product.id">
+                                                        <div class="tab-pane" id="product_pane">
+
+                                                            <div class="row">
+                                                                <div class="col-md-6">
+                                                                    <div class="box-body">
+                                                                <table id="role_table" class="table table-bordered table-hover">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th colspan="2"><h4 align="center">Product information</h4></th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                            <tr>
+                                                                                <th>Product Id</th>
+                                                                                <td>@product.id</td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <th>Product name</th>
+                                                                                <td>@product.product_individual_name</td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <td>Product Type</td>
+                                                                                <td>@product.product_type()</td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <th>Payment Mode</th>
+                                                                                <td>@product.payment_mode()</td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <th>Currency</th>
+                                                                                <td>@product.currency</td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                             <td align="center" colspan="2" > @if(product.active){
+                                                                                                     <p class="text-green">Active</p>
+                                                                                                }else {
+                                                                                                   <p class="text-red"> Not Active </p>
+                                                                                                }</td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <th>GoPay Id</th>
+                                                                                <td>@product.gopay_id</td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <th>Fakturoid Subjet ID</th>
+                                                                                <td>@product.fakturoid_subject_id</td>
+                                                                            </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <div class="box-body">
+                                                                <table id="role_table" class="table table-bordered table-hover">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th colspan="2"><h4 align="center">Payment information</h4></th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        <tr>
+                                                                            <th>Street</th>
+                                                                            <td>@product.payment_details.street</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th>Street number</th>
+                                                                            <td>@product.payment_details.street_number</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th>City</th>
+                                                                            <td>@product.payment_details.city</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th>Zip Code</th>
+                                                                            <td>@product.payment_details.zip_code</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th>Country</th>
+                                                                            <td>@product.payment_details.country</td>
+                                                                        </tr>
+
+                                                                        @if(product.payment_details.company_account) {
+                                                                            <tr>
+                                                                                <th>Company Name</th>
+                                                                                <td>@product.payment_details.company_name</td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <th>Country</th>
+                                                                                <td>@product.payment_details.company_authorized_email</td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <th>Invoice Email</th>
+                                                                                <td>@product.payment_details.company_invoice_email</td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <th>Authorized Telephone</th>
+                                                                                <td>@product.payment_details.company_authorized_phone</td>
+                                                                            <tr>
+                                                                                <th>Web</th>
+                                                                                <td>@product.payment_details.company_web</td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <th>Reg. number</th>
+                                                                                <td>@product.payment_details.company_registration_no</td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <th>VAT Number</th>
+                                                                                <td>@product.payment_details.company_vat_number</td>
+                                                                            </tr>
+                                                                        }
+
+
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                                </div>
+                                                            </div>
+
+
+
+                                                            <div class="box-body">
+                                                                <ul class="timeline">
+
+                                                                        <li class="time-label">
+                                                                            <span class="bg-red">2016
+                                                                            </span>
+                                                                        </li>
+
+                                                                        @for( invoice <- product.invoices ) {
+
+                                                                            <li>
+                                                                            <i class="fa fa-envelope bg-blue"></i>
+
+                                                                                <div class="timeline-item">
+
+                                                                                    <span class="time"> <i class="fa fa-clock-o"></i> @invoice.date_of_create</span>
+
+                                                                                    <h3 class="timeline-header">@invoice.facturoid_invoice_id</h3>
+
+                                                                                    <p></p>
+
+                                                                                        <div class="btn-group">
+                                                                                            <a type="button" href="#" class="btn btn-danger  btn-xs"><b>Remove</b></a>
+                                                                                            <a type="button" href="#" class="btn btn-success btn-xs"><b>Set As Paid</b></a>
+                                                                                            <a type="button" href="#" class="btn btn-info    btn-xs"><b>Edit</b></a>
+                                                                                            <a type="button" href="#" class="btn btn-warning btn-xs"><b>Send Reminder</b></a>
+                                                                                        </div><!-- /.btn-group -->
+
+
+                                                                                    <table id="invoice_table" class="table table-bordered table-hover">
+                                                                                        <tbody>
+
+
+                                                                                            <tr>
+
+                                                                                                <th>Invoice ID</th>
+                                                                                                <td rowspan="@invoice.invoice_items.size()">@invoice.id</td>
+
+                                                                                                <th>Invoice number</th>
+                                                                                                <td rowspan="@invoice.invoice_items.size()">@invoice.invoice_number</td>
+
+                                                                                            </tr>
+
+                                                                                            <tr>
+
+                                                                                                <th>Payment Method</th>
+                                                                                                <td rowspan="@invoice.invoice_items.size()">@invoice.payment_method()</td>
+
+                                                                                                <th>Date of Create</th>
+                                                                                                <td rowspan="@invoice.invoice_items.size()">@invoice.date_of_create</td>
+
+                                                                                            </tr>
+
+                                                                                            <tr>
+                                                                                                <th>Status</th>
+                                                                                                <td rowspan="@invoice.invoice_items.size()">@invoice.payment_status()</td>
+
+                                                                                                <th>Go Pay Id</th>
+                                                                                                <td rowspan="@invoice.invoice_items.size()">@invoice.gopay_id</td>
+                                                                                            </tr>
+
+                                                                                            <tr>
+                                                                                                <th>Fakturoid Invoice id</th>
+                                                                                                <td rowspan="@invoice.invoice_items.size()">@invoice.facturoid_invoice_id</td>
+
+                                                                                                <th>PDF</th>
+                                                                                                <td>
+                                                                                                @if(invoice.facturoid_pdf_url != null){
+                                                                                                    <a href='@invoice.facturoid_pdf_url'>Download</a>
+                                                                                                }else {
+                                                                                                    <p class="text-red"> Not yet</p>
+                                                                                                }
+                                                                                                </td>
+                                                                                            </tr>
+
+                                                                                            <tr>
+                                                                                                <th>Go Pay Order Number</th>
+                                                                                                <td rowspan="@invoice.invoice_items.size()">@invoice.gopay_order_number</td>
+
+                                                                                               <th></th>
+                                                                                                <td></td>
+                                                                                            </tr>
+
+
+                                                                                        </tbody>
+                                                                                    </table>
+                                                                                    <p></p>
+                                                                                    <p></p>
+                                                                                    <table id="invoice_table" class="table table-bordered table-hover">
+                                                                                        <thead>
+                                                                                            <tr>
+                                                                                                <th>Invoice item</th>
+                                                                                                <th>Quantity</th>
+                                                                                                <th>Unit</th>
+                                                                                                <th>Price</th>
+                                                                                            </tr>
+                                                                                        </thead>
+                                                                                        <tbody>
+                                                                                        @for( invoice_item <-  invoice.invoice_items ){
+
+                                                                                            <tr>
+                                                                                                <td>@invoice_item.name  </td>
+                                                                                                <td>@invoice_item.quantity  </td>
+                                                                                                <td>@invoice_item.unit_name </td>
+                                                                                                <td>@invoice_item.unit_price  @product.currency</td>
+                                                                                            </tr>
+                                                                                        }
+                                                                                        </tbody>
+                                                                                    </table>
+                                                                                </div>
+                                                                        </li>
+
+
+                                                                    }
+                                                                </ul>
+                                                             </div>
+
+                                                         </div>
+                                                   </div>
+                                                }
+                                            </div>
+
+
+
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                        </div>
+
+                        </div>
+
+                        <div class="tab-pane" id="projects">
+
+                            <div class="box">
+                                <div class="box-header with-border">
+                                    <h3 class="box-title">Projects</h3>
+
+                                        <div class="pull-right">
+                                            <div class="btn-group">
+                                                <td><button class="btn btn-block btn-success" type="button" onclick="">Create new Project</button></td>
+                                            </div>
+                                        </div>
+                                </div>
+
+                                <div class="box-body">
+
+
+                                    @for( project <- person.owningProjects) {
+                                            <table id="role_table" class="table table-bordered table-hover">
+
+
+                                                <tbody>
+
+
+                                                        <tr>
+                                                            <td>Project ID</td>
+                                                            <td>@project.id</td>
+                                                            <td>Project name</td>
+                                                            <td>@project.project_name</td>
+                                                            <td rowspan="2">
+                                                               <button class="btn btn-block btn-info" type="button" onclick="">Project Details</button>
+                                                                <button class="btn btn-block btn-danger" type="button" onclick="">Remove</button>
+                                                            </td>
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td>Product ID</td>
+                                                            <td>@project.product.id</td>
+                                                            <td>Product name</td>
+                                                            <td>@project.product.product_individual_name</td>
+                                                        </tr>
+
+
+                                                </tbody>
+                                            </table>
+                                            <p></p>
+
+                                    }
+
+                                </div>
+
+                            </div>
+                        </div>
+
+
+                        <div class="tab-pane" id="permissions">
+
+                            <div class="box">
+                                <div class="box-header with-border">
+                                    <h3 class="box-title">Permission Group </h3>
+
+                                    <div class="pull-right">
+                                        <div class="btn-group">
+                                            <td><button class="btn btn-block btn-info" type="button" onclick="">Add Person to Group</button></td>
+                                        </div>
+                                    </div>
+
+                                    <div class="box-tools pull-right">
+                                        <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                                    </div>
+                                </div>
+
+                                <div class="box-body">
+                                    <table id="role_table" class="table table-bordered table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Group Name</th>
+                                                <th>Group Description</th>
+                                                <th>Remove from Group</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+
+                                        @for( role <- person.roles ) {
+                                            <tr>
+                                                <td>@role.id</td>
+                                                <td>@role.name</td>
+                                                <td>@role.description</td>
+                                                <td><a href="#" class="btn btn-danger btn-block"><b>Remove</b></a></td>
+                                            </tr>
+                                        }
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+
+                            <div class="box">
+                                <div class="box-header with-border">
+                                    <h3 class="box-title">Permissions </h3>
+
+                                    <div class="pull-right">
+                                        <div class="btn-group">
+                                            <td><button class="btn btn-block btn-info" type="button" onclick="">Add Permission</button></td>
+                                        </div>
+                                    </div>
+
+                                    <div class="box-tools pull-right">
+                                        <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                                    </div>
+                                </div>
+
+                                <div class="box-body">
+                                    <table id="permisison_table" class="table table-bordered table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Permission Key</th>
+                                                <th>Description</th>
+                                                <th>Remove Permission</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+
+                                        @for( permission <- person.person_permissions ) {
+                                            <tr>
+
+                                                <td>@permission.value</td>
+                                                <td>@permission.description</td>
+                                                <td><a href="#" class="btn btn-danger btn-block"><b>Remove</b></a></td>
+                                            </tr>
+                                        }
+
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <th>Permission Key</th>
+                                                <th>Description</th>
+                                                <th>Remove Permission</th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+           </div>             <!-- /.tab-content -->
+       </div>
+                    <!-- /.nav-tabs-custom -->
+    </div>
+
+
+    <div class="box box-default">
+        <div class="box-header with-border">
+
+            <h3 class="box-title">Boards</h3>
+
+            <div class="box-tools pull-right">
+                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+            </div>
+        </div>
+
+        <div class="box-body">
+            <table id="Allboards" class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Type Of Board Name</th>
+                        <th>Date of Create</th>
+                        <th>Under the project</th>
+                        <th>Latest know server</th>
+                        <th>Status</th>
+                        <th>Active</th>
+                        <th>Up to Date</th>
+                    </tr>
+                </thead>
+               <tbody>
+
+                   @for( board <- Board.find.where().eq("project.ownersOfProject.id", person.id ).findList() ) {
+
+                       <tr>
+                           <td>@board.id</td>
+                           <td>@board.type_of_board.name</td>
+                           <td>@board.date_of_create</td>
+                           <td>@board.project.project_name  <button id="show_project_detail" value="" class="btn btn-default.btn-xs" type="button" onclick="editHomerServer(@board.project.id)">Details</button> </td>
+
+                           <td> @if( board.latest_know_server != null) {
+                                    board.latest_know_server.server_name  <button id="show_project_detail" value="" class="btn btn-default.btn-xs" type="button" onclick="editHomerServer(@board.project.id)">Details</button>
+                                }else{
+                                     Not yet connected!
+                               }
+                           </td>
+                           <td>@board.status()</td>
+                           <td>@board.isActive</td>
+                           <td>@board.up_to_date()</td>
+                       </tr>
+
+                   }
+
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th>ID</th>
+                        <th>Type Of Board Name</th>
+                        <th>Date of Create</th>
+                        <th>Under the project</th>
+                        <th>Latest know server</th>
+                        <th>Status</th>
+                        <th>Active</th>
+                        <th>Up to Date</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+    </div>
+
+
+</section>

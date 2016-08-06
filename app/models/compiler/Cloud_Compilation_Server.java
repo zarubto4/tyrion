@@ -19,7 +19,8 @@ public class Cloud_Compilation_Server extends Model {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @ApiModelProperty(required = true)                          public String id;
     @ApiModelProperty(required = true)                          public String server_name;
-    @ApiModelProperty(required = true)                          public String hash_certificate;
+                            @JsonIgnore                         public String unique_identificator;
+                            @JsonIgnore                         public String hash_certificate;
     @ApiModelProperty(required = true)                          public String destination_address;
 
 
@@ -38,7 +39,13 @@ public class Cloud_Compilation_Server extends Model {
             hash_certificate = UUID.randomUUID().toString();
             if (Cloud_Compilation_Server.find.where().eq("hash_certificate",hash_certificate).findUnique() == null) break;
         }
+
+        while(true){ // I need Unique Value
+            unique_identificator = UUID. randomUUID().toString().substring(0,6);
+            if (Cloud_Compilation_Server.find.where().eq("unique_identificator",unique_identificator).findUnique() == null) break;
+        }
     }
+
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 

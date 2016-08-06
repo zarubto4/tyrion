@@ -18,6 +18,9 @@ import utilities.swagger.swagger_diff_tools.Swagger_diff_Controller;
 import utilities.swagger.swagger_diff_tools.servise_class.Swagger_Diff;
 import utilities.webSocket.*;
 import views.html.*;
+import views.html.general.login;
+import views.html.general.main;
+import views.html.general.menu;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -30,8 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
-
-import static play.data.Form.form;
+import java.util.stream.Collectors;
 
 /**
  * CONTROLLER je určen pro jednoduchý frontend, který slouží pro zobrazení stavu backendu, základních informací,
@@ -57,19 +59,52 @@ public class DashboardController extends Controller {
 
 // Index (úvod) ########################################################################################################
 
-    // Úvodní zobrazení Dashboard
+    public Result javascriptRoutes() {
+        response().setContentType("text/javascript");
+        return ok(
+                Routes.javascriptRouter("jsRoutes",
+                        controllers.routes.javascript.CompilationLibrariesController.new_TypeOfBoard(),
+                        controllers.routes.javascript.CompilationLibrariesController.get_TypeOfBoard(),
+                        controllers.routes.javascript.CompilationLibrariesController.edit_TypeOfBoard(),
+                        controllers.routes.javascript.CompilationLibrariesController.delete_TypeOfBoard(),
 
-    @Security.Authenticated(Secured_Admin.class)
-    public Result index() {
+                        controllers.routes.javascript.CompilationLibrariesController.new_Processor(),
+                        controllers.routes.javascript.CompilationLibrariesController.get_Processor(),
+                        controllers.routes.javascript.CompilationLibrariesController.get_Processor_All(),
+                        controllers.routes.javascript.CompilationLibrariesController.update_Processor(),
+                        controllers.routes.javascript.CompilationLibrariesController.delete_Processor(),
+
+                        controllers.routes.javascript.CompilationLibrariesController.new_Producer(),
+                        controllers.routes.javascript.CompilationLibrariesController.edit_Producer(),
+                        controllers.routes.javascript.CompilationLibrariesController.get_Producers(),
+                        controllers.routes.javascript.CompilationLibrariesController.get_Producer(),
+                        controllers.routes.javascript.CompilationLibrariesController.delete_Producer()
+                )
+        );
+    }
+
+    public Result return_page( Html content){
 
         List<String> fileNames = new ArrayList<>();
         File[] files = new File(application.path() + "/conf/swagger_history").listFiles();
 
-        for (File file : files) {
-            fileNames.add((file.getName().substring(0, file.getName().lastIndexOf('.'))).replace("_", "."));
-        }
+        for (File file : files) { fileNames.add((file.getName().substring(0, file.getName().lastIndexOf('.'))).replace("_", "."));}
 
         Html menu_html = menu.render(reported_bugs, connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers, connectedCompile_servers, link_api_swagger, fileNames);
+
+        return ok( main.render(menu_html,
+                content,
+                server_mode,
+                server_version)
+        );
+    }
+
+// Index (úvod) ########################################################################################################
+
+    // Úvodní zobrazení Dashboard
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result index() {
 
         Map<String, WS_BlockoServer> blockoServerMap = new HashMap<>();
 
@@ -87,7 +122,7 @@ public class DashboardController extends Controller {
                 Cloud_Compilation_Server.find.all()
         );
 
-        return ok( main.render(menu_html, content_html, server_mode, server_version));
+        return return_page(content_html);
     }
 
 // README ###############################################################################################################
@@ -97,25 +132,14 @@ public class DashboardController extends Controller {
 
         logger.debug("Creating show_readme.html content");
 
-        List<String> fileNames = new ArrayList<>();
-        File[] files = new File(application.path() + "/conf/swagger_history").listFiles();
-
-        for (File file : files) {
-            fileNames.add((file.getName().substring(0, file.getName().lastIndexOf('.'))).replace("_", "."));
-        }
-
         String text = "";
         for(String line : Files.readAllLines(Paths.get("README"), StandardCharsets.UTF_8) ) text += line + "\n";
 
-        Html menu_html   = menu.render(reported_bugs,connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers,connectedCompile_servers, link_api_swagger, fileNames);
         Html readme_html = readme.render( new Html( new PegDownProcessor().markdownToHtml(text) ));
 
         logger.debug("Return show_readme.html content");
 
-        return ok( main.render(menu_html,
-                readme_html ,
-                server_mode,
-                server_version));
+        return return_page(readme_html);
     }
 
 // API DIFF ###############################################################################################################
@@ -128,33 +152,18 @@ public class DashboardController extends Controller {
 
             List<String> fileNames = new ArrayList<>();
             File[] files = new File(application.path() + "/conf/swagger_history").listFiles();
-
-            for (File file : files) {
-                fileNames.add((file.getName().substring(0, file.getName().lastIndexOf('.'))).replace("_", "."));
-            }
-
-            for(String file_name : fileNames){
-
-                System.out.println(file_name);
-
-            }
+            for (File file : files) {fileNames.add((file.getName().substring(0, file.getName().lastIndexOf('.'))).replace("_", "."));}
 
             if(file_name_old.equals("")) file_name_old = fileNames.get( ( fileNames.size()-2) ) ;
             if(file_name_new.equals("")) file_name_new = fileNames.get( ( fileNames.size()-1) ) ;
 
 
-            String text = "";
-            for (String line : Files.readAllLines(Paths.get("README"), StandardCharsets.UTF_8)) text += line + "\n";
-
-            Html menu_html = menu.render(reported_bugs, connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers, connectedCompile_servers, link_api_swagger, fileNames);
             Swagger_Diff swagger_diff = Swagger_diff_Controller.set_API_Changes(file_name_old, file_name_new);
             Html content = Api_Div.render(swagger_diff, link_api_swagger, fileNames);
-            logger.debug("Return show_readme.html content");
 
-            return ok(main.render(menu_html,
-                    content,
-                    server_mode,
-                    server_version));
+            logger.debug("Return show_readme.html content");
+            return return_page(content);
+
         }catch (Exception e){
             return ok("Došlo k chybě");
         }
@@ -162,47 +171,6 @@ public class DashboardController extends Controller {
 
 
 // WEBSOCKET STATS ######################################################################################################
-
-
-    @Security.Authenticated(Secured_Admin.class)
-    public Result show_web_socket_stats() {
-
-        logger.debug("Return show_web_socket_stats.html content");
-
-        List<String> fileNames = new ArrayList<>();
-        File[] files = new File(application.path() + "/conf/swagger_history").listFiles();
-
-        for (File file : files) {
-            fileNames.add((file.getName().substring(0, file.getName().lastIndexOf('.'))).replace("_", "."));
-        }
-
-        Html menu_html = menu.render(reported_bugs,connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers, connectedCompile_servers, link_api_swagger, fileNames);
-
-
-        List<WebSCType> homers = new ArrayList<>(WebSocketController_Incoming.incomingConnections_homers.values());
-
-        List<WS_Grid_Terminal> grids = new ArrayList<>();
-        for(WebSCType o  : new ArrayList<>(WebSocketController_Incoming.incomingConnections_terminals.values()) ) grids.add((WS_Grid_Terminal) o);
-
-
-        List<WS_Becki_Website> becki_terminals = new ArrayList<>();
-        for(WebSCType o  : new ArrayList<>(WebSocketController_Incoming.becki_website.values()) ) becki_terminals.add((WS_Becki_Website) o);
-
-
-        List<WS_BlockoServer> blocko_cloud_servers = new ArrayList<>();
-        for(WebSCType o  : new ArrayList<>(WebSocketController_Incoming.blocko_servers.values()) ) blocko_cloud_servers.add( (WS_BlockoServer) o);
-
-
-        List<WS_CompilerServer> compilation_servers = new ArrayList<>();
-        for(WebSCType o  : new ArrayList<>(WebSocketController_Incoming.compiler_cloud_servers.values()) ) compilation_servers.add( (WS_CompilerServer) o);
-
-
-
-        return ok( main.render(menu_html,
-                websocket.render(homers, grids, becki_terminals, blocko_cloud_servers , compilation_servers),
-                server_mode,
-                server_version));
-    }
 
     public Result disconnect_homer_all(){
         logger.debug("Trying to disconnect all homers");
@@ -265,7 +233,6 @@ public class DashboardController extends Controller {
        return redirect("/public/websocket");
     }
 
-
     public Result ping_homer(String homer_id) throws TimeoutException, InterruptedException {
         if(WebSocketController_Incoming.incomingConnections_homers.containsKey(homer_id))
         WebSocketController_Incoming.homer_ping( homer_id);
@@ -297,19 +264,9 @@ public class DashboardController extends Controller {
 
         logger.debug("Trying to render loggy.html content");
 
-        List<String> fileNames = new ArrayList<>();
-        File[] files = new File(application.path() + "/conf/swagger_history").listFiles();
+        Html content =  loggy.render( Loggy.getErrors() );
+        return return_page(content);
 
-        for (File file : files) {
-            fileNames.add((file.getName().substring(0, file.getName().lastIndexOf('.'))).replace("_", "."));
-        }
-
-        Html menu_html = menu.render(reported_bugs,connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers, connectedCompile_servers, link_api_swagger, fileNames);
-
-        return ok( main.render(menu_html,
-                loggy.render( Loggy.getErrors() ),
-                server_mode,
-                server_version));
     }
 
     // Nahraje konkrétní bug na Youtrack
@@ -339,66 +296,68 @@ public class DashboardController extends Controller {
 // ADMIN ###############################################################################################################
 
     @Security.Authenticated(Secured_Admin.class)
-    public Result admin_page(){
+    public Result show_web_socket_stats() {
+
+        logger.debug("Return show_web_socket_stats.html content");
+
+        List<WebSCType> homers = new ArrayList<>(WebSocketController_Incoming.incomingConnections_homers.values());
+
+        List<WS_Grid_Terminal>  grids                   = new ArrayList<>(WebSocketController_Incoming.incomingConnections_terminals.values()).stream().map(o -> (WS_Grid_Terminal) o).collect(Collectors.toList());
+        List<WS_Becki_Website>  becki_terminals         = new ArrayList<>(WebSocketController_Incoming.becki_website.values()).stream().map(o -> (WS_Becki_Website) o).collect(Collectors.toList());
+        List<WS_BlockoServer>   blocko_cloud_servers    = new ArrayList<>(WebSocketController_Incoming.blocko_servers.values()).stream().map(o -> (WS_BlockoServer) o).collect(Collectors.toList());
+        List<WS_CompilerServer> compilation_servers     = new ArrayList<>(WebSocketController_Incoming.compiler_cloud_servers.values()).stream().map(o -> (WS_CompilerServer) o).collect(Collectors.toList());
+
+        Html content =   websocket.render(homers, grids, becki_terminals, blocko_cloud_servers , compilation_servers);
+        return return_page(content);
+    }
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result basic_object_management(){
         try {
 
-            System.out.println("asdfsdfsdfdfas fdjasfkjb ");
+            Html content = basic_objects.render();
+            return return_page ( content );
 
-            String ss = request().cookies().get("authToken").value();
-            logger.debug("cookie " + ss);
-
-            logger.debug("Trying to get admin page");
-
-            List<String> fileNames = new ArrayList<>();
-            File[] files = new File(application.path() + "/conf/swagger_history").listFiles();
-
-            for (File file : files) {
-                fileNames.add((file.getName().substring(0, file.getName().lastIndexOf('.'))).replace("_", "."));
-            }
-
-            Html menu_html = menu.render(reported_bugs, connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers, connectedCompile_servers, link_api_swagger, fileNames);
-            Html content = Admin_Page.render(Server.tyrion_serverAddress);
-
-            return ok(main.render(menu_html,
-                    content,
-                    server_mode,
-                    server_version));
         }catch (Exception e){
             e.printStackTrace();
             return ok("Došlo k chybě");
         }
     }
 
-    public Result javascriptRoutes() {
-        response().setContentType("text/javascript");
-        return ok(
-                Routes.javascriptRouter("jsRoutes",
-                        controllers.routes.javascript.CompilationLibrariesController.new_TypeOfBoard(),
-                        controllers.routes.javascript.CompilationLibrariesController.get_TypeOfBoard(),
-                        controllers.routes.javascript.CompilationLibrariesController.edit_TypeOfBoard(),
-                        controllers.routes.javascript.CompilationLibrariesController.delete_TypeOfBoard(),
+    @Security.Authenticated(Secured_Admin.class)
+    public Result external_servers(){
+        try {
 
-                        controllers.routes.javascript.CompilationLibrariesController.new_Processor(),
-                        controllers.routes.javascript.CompilationLibrariesController.get_Processor(),
-                        controllers.routes.javascript.CompilationLibrariesController.get_Processor_All(),
-                        controllers.routes.javascript.CompilationLibrariesController.update_Processor(),
-                        controllers.routes.javascript.CompilationLibrariesController.delete_Processor(),
+            Html external_servers_content = external_servers.render();
+            return return_page(external_servers_content);
 
-                        controllers.routes.javascript.CompilationLibrariesController.new_Producer(),
-                        controllers.routes.javascript.CompilationLibrariesController.edit_Producer(),
-                        controllers.routes.javascript.CompilationLibrariesController.get_Producers(),
-                        controllers.routes.javascript.CompilationLibrariesController.get_Producer(),
-                        controllers.routes.javascript.CompilationLibrariesController.delete_Producer()
-                )
-        );
+        }catch (Exception e){
+            e.printStackTrace();
+            return ok("Došlo k chybě");
+        }
     }
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result user_summary(String user_email){
+        try {
+
+
+            Html user_summary_content = user_summary.render(  SecurityController.getPerson() );
+            return return_page(user_summary_content);
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return ok("Došlo k chybě");
+        }
+    }
+
+
 // LOGIN ###############################################################################################################
 
     public Result login(){
         try {
 
             logger.debug("Trying to get login page");
-
             return ok(login.render());
 
         }catch (Exception e){
@@ -407,3 +366,4 @@ public class DashboardController extends Controller {
     }
 
 }
+

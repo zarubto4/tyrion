@@ -48,8 +48,9 @@ public class C_Program extends Model {
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty  @Transient public String project_id(){ return project.id; }
-    @JsonProperty  @Transient public String type_of_board_id()   { return type_of_board == null ? null : type_of_board.id;}
+    @JsonProperty  @Transient public String project_id()           { return project.id; }
+    @JsonProperty  @Transient public String project_name()         { return project.project_name; }
+    @JsonProperty  @Transient public String type_of_board_id()     { return type_of_board == null ? null : type_of_board.id;}
     @JsonProperty  @Transient public String type_of_board_name()   { return type_of_board == null ? null : type_of_board.name;}
 
     @JsonProperty @Transient public List<Swagger_C_Program_Version> program_versions() {

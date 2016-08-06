@@ -19,8 +19,11 @@ public class Cloud_Homer_Server extends Model{
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)     public String id;
+
+                                       @JsonIgnore              public String unique_identificator;
+                                       @JsonIgnore              public String hash_certificate;
+
                                                                 public String server_name;
-                                                                public String hash_certificate;
                                                                 public String destination_address;
 
                                                                 public boolean is_private = false;  // Todo navázat na produkt
@@ -45,6 +48,11 @@ public class Cloud_Homer_Server extends Model{
         while(true){ // I need Unique Value
             hash_certificate = UUID.randomUUID().toString();
             if (Cloud_Homer_Server.find.where().eq("hash_certificate",hash_certificate).findUnique() == null) break;
+        }
+
+        while(true){ // I need Unique Value
+            unique_identificator = UUID. randomUUID().toString().substring(0,6);
+            if (Cloud_Homer_Server.find.where().eq("unique_identificator",unique_identificator).findUnique() == null) break;
         }
     }
 

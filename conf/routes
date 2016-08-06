@@ -398,13 +398,15 @@ GET           /assets/*file                                 controllers.Assets.v
 ###################################################################################f#################################################################################
 
 # Basic Page Requests
-GET             /                                           @controllers.DashboardController.index()
-GET             /public/login                               @controllers.DashboardController.login()
-GET             /public/bugs                                @controllers.DashboardController.show_all_logs()
-GET             /public/websocket                           @controllers.DashboardController.show_web_socket_stats()
-GET             /public/show_readme                         @controllers.DashboardController.show_readme()
-GET             /public/show_diff_on_Api/                   @controllers.DashboardController.show_diff_on_Api(old_api: String?="",new_api: String?="")
-GET             /public/admin_page                          @controllers.DashboardController.admin_page()
+GET             /                                    @controllers.DashboardController.index()
+GET             /admin/login                         @controllers.DashboardController.login()
+GET             /admin/bugs                          @controllers.DashboardController.show_all_logs()
+GET             /admin/websocket                     @controllers.DashboardController.show_web_socket_stats()
+GET             /admin/show_readme                   @controllers.DashboardController.show_readme()
+GET             /admin/show_diff_on_Api/             @controllers.DashboardController.show_diff_on_Api(old_api: String?="",new_api: String?="")
+GET             /admin/admin_page                    @controllers.DashboardController.basic_object_management()
+GET             /admin/external_servers              @controllers.DashboardController.external_servers()
+GET             /admin/user_summary                  @controllers.DashboardController.user_summary(old_api: String?="")
 
 GET             /javascriptRoutes                           @controllers.DashboardController.javascriptRoutes()
 
@@ -436,5 +438,8 @@ GET             /public/becki/disconnect/:id/:token         @controllers.Dashboa
 
 GET             /public/terminal/log_out/:id                @controllers.DashboardController.log_out_Terminal_User(id)
 
-POST             /public/disconect_all_terminals            @controllers.DashboardController.disconnect_terminal_all()
-POST             /public/disconect_all_homers               @controllers.DashboardController.disconnect_homer_all()
+POST            /public/disconect_all_terminals            @controllers.DashboardController.disconnect_terminal_all()
+POST            /public/disconect_all_homers               @controllers.DashboardController.disconnect_homer_all()
+
+
+GET             /public/*file                              @controllers.Assets.versioned(path="/public", file: Asset)

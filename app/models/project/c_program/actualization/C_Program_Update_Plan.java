@@ -36,14 +36,14 @@ public class C_Program_Update_Plan extends Model {
                         /** OR **/  @JsonIgnore @ManyToOne()    public Version_Object c_program_version_for_update; // C_program k aktualizaci
                         /** OR **/  @JsonIgnore @ManyToOne()    public FileRecord binary_file;
 
-    @ApiModelProperty(required = true, value = "Find description on Model C_ProgramUpdater_State")  @Enumerated(EnumType.STRING)    public C_ProgramUpdater_State state;
+    @ApiModelProperty(required = true, value = "Description on Model C_ProgramUpdater_State")  @Enumerated(EnumType.STRING)    public C_ProgramUpdater_State state;
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
 
 
-    @ApiModelProperty(required = false, value = "Is visible only if user send compilation under C_program in system  ( OR state for binary_file)") @Transient
-    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty
+    @ApiModelProperty(required = false, value = "Is visible only if user send compilation under C_program in system  ( OR state for binary_file)")
+    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty @Transient
     public C_Program_Update_program c_program_detail(){
 
         if(c_program_version_for_update == null ) return null;
@@ -58,7 +58,7 @@ public class C_Program_Update_Plan extends Model {
 
     }
 
-    @JsonProperty @ApiModelProperty(required = true, readOnly = true)
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true) @Transient
     public Server_detail server_detail(){
 
         Server_detail server_detail = new Server_detail();
@@ -79,7 +79,7 @@ public class C_Program_Update_Plan extends Model {
 
     }
 
-        @JsonProperty @ApiModelProperty(required = true, readOnly = true)
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true) @Transient
     public Board_detail board_detail(){
 
         Board_detail board_detail = new Board_detail();
@@ -107,6 +107,7 @@ public class C_Program_Update_Plan extends Model {
 
 
 /* POMOCNÉ TŘÍDY -------------------------------------------------------------------------------------------------------*/
+
 
     class C_Program_Update_program{
         @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String c_program_id;

@@ -231,14 +231,15 @@ Tyrion má už implementované samostatné strhávání pěnez z účtu každý 
 
 ### Změny nad Objekty ###
 	
-	Detaily lze dohledat v DIFF toolu. Zde je soupis toho co vám změní funkcionalitu - ostatní je doplňování, zpřesňování, nebo orpava gramatiky v dokumentaci 
+ Detaily lze dohledat v DIFF toolu. Zde je soupis toho co vám změní funkcionalitu - ostatní je doplňování, zpřesňování, nebo orpava gramatiky v dokumentaci 
 
-	* **Project** 
-	Díky tomu, že uživatelé teď přidávají další uživatele do projektu pomocí emailu a to né hned automaticky ale až po potvrzení druhou stranou (a to díky notifikacím) je upravený seznam participujících - tak aby bylo vidět jméno, email a id a stav (v Textové podobě -aby jste nad tím nemuseli dělat žádné operace)
+ * **Project** 
+ Díky tomu, že uživatelé teď přidávají další uživatele do projektu pomocí emailu a to né hned automaticky ale až po potvrzení druhou stranou (a to díky notifikacím) je upravený seznam participujících - tak aby bylo vidět jméno, email a id a stav (v Textové podobě -aby jste nad tím nemuseli dělat žádné operace)
 		
-		* odstraněno pole participans_id
-		* nahrazeno polem participants (List **[Project_participant]** )
-			"participans" : [
+	* odstraněno pole participans_id
+	* nahrazeno polem participants (List **[Project_participant]** )
+			
+				"participans" : [
 						{
 						  "full_name" : "Pepa Novák,"
 						  "user_mail" : "novak@pepa.ck"
@@ -260,44 +261,54 @@ Tyrion má už implementované samostatné strhávání pěnez z účtu každý 
 					]
 					
 			
-	* **Board**
-	Přidány parametry 
-		* up_to_date - zda je zařízení v nejposlednější verzi 
-		* status - úprava objektu 
-		
-	* **TypeOfBoard
-	Přidány parametry
-		* processor_name (aby se nemusel načítat celý objekt - ale sloužilo to jen k prokliku)
-		* producer_name (aby se nemusel načítat celý objekt - ale sloužilo to jen k prokliku)
 	
-	* **C_program
-	Přidány parametry
-	 	* producer_name (aby se nemusel načítat celý objekt - ale sloužilo to jen k prokliku)
+* **Board**
+Přidány parametry 
+	* up_to_date - zda je zařízení v nejposlednější verzi 
+	* status - úprava objektu 
+
+* **TypeOfBoard
+Přidány parametry
+	* processor_name (aby se nemusel načítat celý objekt - ale sloužilo to jen k prokliku)
+	* producer_name (aby se nemusel načítat celý objekt - ale sloužilo to jen k prokliku)
+	
+* **C_program
+Přidány parametry
+	* producer_name (aby se nemusel načítat celý objekt - ale sloužilo to jen k prokliku)
 		
-	* **Project**
-	Přidány parametry
-	 	* product_id (aby se nemusel načítat celý objekt - ale sloužilo to jen k prokliku)
-		* product_individual_name ((aby se nemusel načítat celý objekt - ale sloužilo to jen k prokliku))     
+* **Project**
+Přidány parametry
+	* product_id (aby se nemusel načítat celý objekt - ale sloužilo to jen k prokliku)
+	* product_individual_name ((aby se nemusel načítat celý objekt - ale sloužilo to jen k prokliku))     
 		 
-	* **Actualization_procedure** 
-	Přidány parametry
-		*  state_fraction - String = "13/78"
-		*  state_percentage - Integer 55 
+* **Actualization_procedure** 
+Přidány parametry
+	*  state_fraction - String = "13/78"
+	*  state_percentage - Integer 55 
 		
-	* **C_Program_Update_Plan**
-	Přidán parametr 
-		* Objekt Server_detail
-		* Objekt Board_detail 	
+* **C_Program_Update_Plan**
+Přidán parametr 
+	* Objekt Server_detail
+	* Objekt Board_detail 	
 		
-	* **Notification** 
-	Změněn název labelu 
-		* read -> was_read
+		
+* **Notification** 
+Změněn název labelu 
+	* read -> was_read
 	
-	* **Cloud_Homer_Server**
-	Přidány parametry	
-		* is_private -> zda je privátní pouze daného zákazníka
+* **Cloud_Homer_Server**
+Přidány parametry	
+	* is_private -> zda je privátní pouze daného zákazníka
 			
-	  	 
+
+### Skupiny API jež byli přesunuty do Tyrion-Admin Frontendu ###	  	 
+
+	Skupina API - Vyřazené API budou ještě ve verzi 1.06.6.4 podporovány - avšak zmizí dokumentace. Budou funkční i pro uživatele s oprávněním - ale becki by je už neměla obsahovat a podporovat 
+	* Producer - vše kromě get Producer a get Producers 
+	* Procesor - vše kromě get Procesor 
+	* TypeOfBoard - vše kromě get TypeOfBoard  
+	
+
 ### Změny nad API ###
 
  * Odstraněna API  **GET:**  {url}/file/fileRecord/{file_record_id}  
