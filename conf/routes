@@ -170,13 +170,13 @@ GET            /go_pay/return_url                                               
 
 
 #Fakturoid
-GET             /product/invoice/all                                                        @controllers.Finance_Controller.get_invoice_for_Byzance_Employes()
 GET             /product/invoice/pay/:invoice_id                                            @controllers.Finance_Controller.pay_send_invoice(invoice_id: Long)
-
 GET             /product/invoice/pdf/:invoice_id                                            @utilities.fakturoid.Fakturoid_Controller.get_PDF_Invoice(invoice_id: Long)
 
-
-
+# Obsluha pouze pro Byzance zaměstnance
+PUT             /product/invoice/set_pay/:invoice_id                                        @controllers.Finance_Controller.set_invoice_as_Paid(invoice_id: Long)
+PUT             /product/invoice/send_remainder/:invoice_id                                 @controllers.Finance_Controller.send_remainder_to_custumer(invoice_id: Long)
+DELETE          /product/invoice/remove/:invoice_id                                         @controllers.Finance_Controller.remove_invoice(invoice_id: Long)
 
 #Project
 POST           /project/project                                                             @controllers.ProgramingPackageController.postNewProject()
@@ -411,7 +411,8 @@ GET             /admin/show_readme                      @controllers.DashboardCo
 GET             /admin/show_diff_on_Api/                @controllers.DashboardController.show_diff_on_Api(old_api: String?="",new_api: String?="")
 GET             /admin/admin_page                       @controllers.DashboardController.basic_object_management()
 GET             /admin/external_servers                 @controllers.DashboardController.external_servers()
-GET             /admin/user_summary                     @controllers.DashboardController.user_summary(old_api: String?="")
+GET             /admin/user_summary/                    @controllers.DashboardController.user_summary(email: String?="")
+GET             /admin/user_summary/:mail                @controllers.DashboardController.user_summary(mail)
 GET             /admin/permission/permission_summary    @controllers.DashboardController.permissions_summary()
 GET             /admin/permission/role/:role_id         @controllers.DashboardController.role(role_id)
 

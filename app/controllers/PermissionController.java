@@ -18,6 +18,7 @@ import utilities.response.response_objects.Result_PermissionRequired;
 import utilities.response.response_objects.Result_Unauthorized;
 import utilities.response.response_objects.Result_ok;
 import utilities.swagger.documentationClass.Swagger_Permission_Edit;
+import utilities.swagger.documentationClass.Swagger_Role_Edit;
 import utilities.swagger.documentationClass.Swagger_SecurityRole_New;
 import utilities.swagger.outboundClass.Swagger_System_Access;
 
@@ -404,7 +405,7 @@ public class PermissionController extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Permission_Edit",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Role_Edit",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -421,9 +422,9 @@ public class PermissionController extends Controller {
     public Result edit_Role(@ApiParam(required = true) String role_id){
         try {
 
-            final Form<Swagger_Permission_Edit> form = Form.form(Swagger_Permission_Edit.class).bindFromRequest();
+            final Form<Swagger_Role_Edit> form = Form.form(Swagger_Role_Edit.class).bindFromRequest();
             if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-            Swagger_Permission_Edit help = form.get();
+            Swagger_Role_Edit help = form.get();
 
             SecurityRole securityRole = SecurityRole.find.byId(role_id);
             if(securityRole == null ) return GlobalResult.notFoundObject("SecurityRole role_id not found");
@@ -555,7 +556,6 @@ public class PermissionController extends Controller {
         }
 
     }
-
 
 //######################################################################################################################
 

@@ -94,6 +94,7 @@ public class ProgramingPackageController extends Controller {
             Product product = Product.find.byId(help.product_id);
             if(!product.create_new_project()) return GlobalResult.result_BadRequest(product.create_new_project_if_not());
 
+
             // Vytvoření objektu
             Project project  = new Project();
             project.project_name = help.project_name;

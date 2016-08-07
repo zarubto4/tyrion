@@ -728,17 +728,24 @@ public class Finance_Controller extends Controller {
     }
 
 
+    public Result add_new_package(Long product_id){
+        return TODO;
+    }
 
     public Result change_tariff(Long product_id){
         return TODO;
     }
 
-    public Result add_new_package(Long product_id){
+
+    public Result send_remainder_to_custumer(Long product_id){
         return TODO;
     }
 
+    public Result remove_invoice(Long product_id){
+        return TODO;
+    }
 
-    public Result get_invoice_for_Byzance_Employes(){
+    public Result set_invoice_as_Paid(Long invoice_id){
         try{
 
             List<Invoice> invoices = Invoice.find.all();

@@ -147,12 +147,14 @@ public class Product extends Model {
 
 
     // Project
-    @JsonIgnore   @Transient @ApiModelProperty(required = true) public boolean create_new_project()             { return  true; }
+    @JsonIgnore   @Transient @ApiModelProperty(required = true) public boolean create_new_project()             {
+        return active;
+    }
     @JsonIgnore   @Transient @ApiModelProperty(required = true) public JsonNode create_new_project_if_not()     {
         ObjectNode result = Json.newObject();
         result.put("tariff", String.valueOf(type));
-        result.put("maximum", Configuration.root().getInt("Byzance.tariff." + type + ".maximum_project"));
-        result.put("message", "Sorry, but you have no free slots for creating another project");
+
+        if(! active) result.put("message", Configuration.root().getInt("Your Product is not Paid for this momen"));
         return  result;
     }
 
@@ -178,6 +180,8 @@ public class Product extends Model {
     @JsonIgnore @Transient public Double get_all_monthly_fees(){
         return  get_price_general_fee();
     }
+
+    @JsonIgnore @Transient public Long get_days_to_blocation(){ return Math.round(  (paid_until_the_day.getTime() - new Date().getTime() ) / (double) 86400000); }
 
     @JsonIgnore @Transient public Double get_price_general_fee()  {return (Configuration.root().getDouble("Byzance.tariff."+type.name()+".price_list."+  "general_fee.monthly"      +"." + currency.name() )) ;}
 

@@ -1,8 +1,10 @@
 package controllers;
 
 import models.compiler.Cloud_Compilation_Server;
+import models.person.Person;
 import models.person.SecurityRole;
 import models.project.b_program.servers.Cloud_Homer_Server;
+import org.bouncycastle.asn1.x509.sigi.PersonalData;
 import org.pegdown.PegDownProcessor;
 import play.Application;
 import play.Routes;
@@ -24,6 +26,7 @@ import views.html.general.main;
 import views.html.general.menu;
 import views.html.permission.permissions_summary;
 import views.html.permission.role;
+import views.html.user_summary.*;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -344,8 +347,19 @@ public class DashboardController extends Controller {
     public Result user_summary(String user_email){
         try {
 
+            Person person;
+            if(user_email != null && user_email.length() < 1 ){
 
-            Html user_summary_content = user_summary.render(  SecurityController.getPerson() );
+                person = Person.find.where().eq("mail", user_email).findUnique();
+                if(person == null) person = SecurityController.getPerson();
+
+            }else {
+                person = SecurityController.getPerson();
+            }
+
+
+
+            Html user_summary_content = user_summary.render( person );
             return return_page(user_summary_content);
 
         }catch (Exception e){

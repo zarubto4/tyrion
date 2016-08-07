@@ -24,52 +24,72 @@
     <div class="row">
         <div class="col-md-3">
 
-                <!-- Profile Image -->
-            <div class="box box-primary">
-                <div id="person_detail" class="box-body box-profile">
+                <div class="box box-warning">
+                    <div id="person_find" class="box-body box-profile">
 
-                    @for( edit_person <- Person.find.where().eq("id", person.id).findList ){
+                            <h3 class="profile-username text-center">Find Person</h3>
 
-                        <h3 class="profile-username text-center">@edit_person.full_name</h3>
+                            <form id="findPerson")>
+                                <label for="exampleInputEmail1">Email address</label>
+                                <input type="email" class="form-control" id="exampleInputEmail" placeholder="Enter email">
+                            </form>
+                            <p></p>
+                            <button id="findPersonButton" value="" class="btn btn-block" type="button" onclick="findPerson()">Find</button>
 
-                        <p class="text-muted text-center">@edit_person.mail </p>
-
-                        @if(edit_person.mailValidated){
-                            <p class="text-green text-center">  Validated </p>
-                        }else{
-                            <p class="text-red text-center">   Not Validate </p>
-                        }
-
-                        <ul class="list-group list-group-unbordered">
-                            <li class="list-group-item">
-                                <b>Nick name</b> <a class="pull-right">@edit_person.nick_name</a>
-                            </li>
-                            <li class="list-group-item">
-                                <b>ID</b> <a class="pull-right">@edit_person.id</a>
-                            </li>
-                        </ul>
-
-                        <a onclick="showEditFormPerson('@edit_person.id', '@edit_person.full_name', '@edit_person.nick_name', '@edit_person.mail')" class="btn btn-primary btn-block"> <b>Edit Information</b> </a>
-                        <a onclick="removeAllTokensPerson('@edit_person.id')" class="btn btn-warning btn-block"><b>Remove all Tokens</b></a>
-
-                        @if(!edit_person.freeze_accent){
-                            <a onclick="deactivatePerson('@edit_person.id')" class="btn btn-warning btn-block"><b>Freeze Account</b></a>
-                        }else{
-                            <a onclick="activatePerson('@edit_person.id')"  class="btn btn-success btn-block"><b>Unfreeze Account</b></a>
-                        }
-
-                        @if(!edit_person.mailValidated){
-                            <a onclick="validPerson('@edit_person.id')"  class="btn btn-success btn-block"><b>Valid Account</b></a>
-                        }
-                    }
-
-
+                            <script>
+                                function findPerson(){
+                                    var mail = document.getElementById("findPerson").elements.namedItem("exampleInputEmail").value;
+                                    window.location.replace("@Server.tyrion_serverAddress" + "/admin/user_summary/" + mail );
+                                }
+                            </script>
+                    </div>
                 </div>
-                    <!-- /.box-body -->
-            </div>
-                <!-- /.box -->
-        </div>
 
+
+                <div class="box box-primary">
+                        <div id="person_detail" class="box-body box-profile">
+
+                            @for( edit_person <- Person.find.where().eq("id", person.id).findList ){
+
+                                <h3 class="profile-username text-center">@edit_person.full_name</h3>
+
+                                <p class="text-muted text-center">@edit_person.mail </p>
+
+                                @if(edit_person.mailValidated){
+                                    <p class="text-green text-center">  Validated </p>
+                                }else{
+                                    <p class="text-red text-center">   Not Validate </p>
+                                }
+
+                                <ul class="list-group list-group-unbordered">
+                                    <li class="list-group-item">
+                                        <b>Nick name</b> <a class="pull-right">@edit_person.nick_name</a>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <b>ID</b> <a class="pull-right">@edit_person.id</a>
+                                    </li>
+                                </ul>
+
+                                <a onclick="showEditFormPerson('@edit_person.id', '@edit_person.full_name', '@edit_person.nick_name', '@edit_person.mail')" class="btn btn-primary btn-block"> <b>Edit Information</b> </a>
+                                <a onclick="removeAllTokensPerson('@edit_person.id')" class="btn btn-warning btn-block"><b>Remove all Tokens</b></a>
+
+                                @if(!edit_person.freeze_accent){
+                                    <a onclick="deactivatePerson('@edit_person.id')" class="btn btn-warning btn-block"><b>Freeze Account</b></a>
+                                }else{
+                                    <a onclick="activatePerson('@edit_person.id')"  class="btn btn-success btn-block"><b>Unfreeze Account</b></a>
+                                }
+
+                                @if(!edit_person.mailValidated){
+                                    <a onclick="validPerson('@edit_person.id')"  class="btn btn-success btn-block"><b>Valid Account</b></a>
+                                }
+                            }
+
+
+                        </div>
+                        <!-- /.box-body -->
+                 </div>
+
+            </div>
         <div class="col-md-9">
             <div class="box box-primary">
                 <div class="nav-tabs-custom">
@@ -145,9 +165,24 @@
                                                                              <td align="center" colspan="2" > @if(product.active){
                                                                                                      <p class="text-green">Active</p>
                                                                                                 }else {
-                                                                                                   <p class="text-red"> Not Active </p>
-                                                                                                }</td>
+                                                                                                     <p class="text-red"> Not Active </p>
+                                                                                                }
+                                                                                (Day in month: @product.monthly_day_period)
+                                                                             </td>
+
                                                                             </tr>
+                                                                        <tr>
+                                                                            <th>Active To:</th>
+                                                                            <td>@product.paid_until_the_day (Day to Blocation:  @product.get_days_to_blocation() )</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th>On Demand</th>
+                                                                            <td>@if( product.on_demand_active){
+                                                                                <p class="text-green">Active</p>
+                                                                            }else {
+                                                                                <p class="text-red"> Deactive</p>
+                                                                            }</td>
+                                                                        </tr>
                                                                             <tr>
                                                                                 <th>GoPay Id</th>
                                                                                 <td>@product.gopay_id</td>
@@ -237,6 +272,27 @@
                                                                             </span>
                                                                         </li>
 
+
+                                                                        @if(product.on_demand_active) {
+                                                                            <li>
+                                                                                <i class="fa fa-envelope bg-red-active"></i>
+
+                                                                                <div class="timeline-item">
+                                                                                    <h3 class="timeline-header">
+                                                                                        New invoice will be created in @product.paid_until_the_day</h3>
+                                                                                </div>
+                                                                            </li>
+                                                                        }else {
+
+                                                                            <li>
+                                                                                <i class="fa fa-envelope bg-red-green"></i>
+
+                                                                                <div class="timeline-item">
+                                                                                    <h3 class="timeline-header"> On Demand is blocked or Tariff didn't required monthly fees </h3>
+                                                                                </div>
+                                                                            </li>
+                                                                        }
+
                                                                         @for( invoice <- product.invoices ) {
 
                                                                             <li>
@@ -297,7 +353,7 @@
                                                                                                 <th>PDF</th>
                                                                                                 <td>
                                                                                                 @if(invoice.facturoid_pdf_url != null){
-                                                                                                    <a href='@invoice.facturoid_pdf_url'>Download</a>
+                                                                                                    <a target="_blank" href='@invoice.pdf_link()'>Download</a>
                                                                                                 }else {
                                                                                                     <p class="text-red"> Not yet</p>
                                                                                                 }
