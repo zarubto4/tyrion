@@ -284,6 +284,7 @@ public class Server {
                 for(Enum en : FloatingPersonToken.permissions.values())     permissions.add(en.name());
                 for(Enum en : Person.permissions.values())                  permissions.add(en.name());
                 for(Enum en : SecurityRole.permissions.values())            permissions.add(en.name());
+                for(Enum en : PersonPermission.permissions.values())        permissions.add(en.name());
 
             // project
                 // b_program

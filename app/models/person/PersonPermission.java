@@ -49,14 +49,14 @@ public class PersonPermission extends Model {
     @JsonIgnore @Transient public static final String create_permission_docs       = "create: If user have M_Project.update_permission = true, you can create M_Program on this M_Project - Or you need static/dynamic permission key";
     @JsonIgnore @Transient public static final String read_qrToken_permission_docs = "read: Private settings for M_Program";
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_person_permission() {  return  SecurityController.getPerson() == null ? false :  SecurityController.getPerson().has_permission("PersonPermission_edit_person_permission");  }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()        {  return  SecurityController.getPerson() == null ? false :  SecurityController.getPerson().has_permission("PersonPermission_edit"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_person_permission() {  return SecurityController.getPerson() != null && SecurityController.getPerson().has_permission("PersonPermission_edit_person_permission");  }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()        {  return SecurityController.getPerson() != null && SecurityController.getPerson().has_permission("PersonPermission_edit"); }
 
     public enum permissions{ PersonPermission_edit_person_permission, PersonPermission_edit }
 
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static final Finder<String, PersonPermission> find = new Finder<>( PersonPermission.class);
+    public static final Model.Finder<String, PersonPermission> find = new Finder<>( PersonPermission.class);
 
 }

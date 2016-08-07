@@ -1,0 +1,299 @@
+
+@import models.person.PersonPermission
+@import models.person.SecurityRole
+@import models.person.Person
+@import utilities.Server
+
+<section class="content-header">
+    <h1> External Servers </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-wrench"></i> Permission boards </a></li>
+        <li class="active">Dashboard</li>
+    </ol>
+</section>
+
+
+
+<section class="content">
+
+
+
+    <div id="newRoleModal" style="display: none;" class="modal">
+        <div style="margin-top: 15%;" class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Create new Role</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="newRole")>
+
+                        <label>Group role name</label> <input style="display: block" type="text" name="name" >
+                        <label>Description</label> <input style="display: block" type="text" name="name" >
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newRoleModal').css('display','none')">Close</button>
+                    <button id="newRoleButton" value="" class="btn btn-primary" type="button" onclick="newRole(this.value)">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        function newRole(){
+            model_data = $("#newRole").serializeObject();
+            $.ajax({
+                url: '@routes.PermissionController.new_Role()',
+                type: 'POST',
+                contentType: 'application/json',
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken"),
+                    "Content-Type":"application/json"
+                },
+                data: JSON.stringify(model_data),
+                dataType: 'json',
+                success:function(e){
+                    $("#newRole input[type=text]").val("");
+                    $("#createRoleModal").css("display","none");
+                    $('#allRoles').load(document.URL +  ' #allRoles');
+                },
+                error:function(e) {
+                    alert("Unsuccessful.");
+                }
+            })
+        }
+
+        function showCreateFormRole(){
+            $("#newRoleModal").css("display","block");
+            $('#newRoleButton').val();
+            $("#newRole input[name=name]").val();
+            $("#newtRole input[name=description]").val();
+        }
+
+    </script>
+
+
+
+    <div id="editRoleModal" style="display: none;" class="modal">
+        <div style="margin-top: 15%;" class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Edit Role</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="editRole")>
+
+                        <label  id="id" style="display: block">ID</label>
+                        <label> Name</label> <input style="display: block" type="text" name="name" >
+                        <label> Description</label> <input style="display: block" type="text" name="description" >
+                    </form>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editRoleModal').css('display','none')">Close</button>
+                    <button id="editRoleButton" value="" class="btn btn-primary" type="button" onclick="editRole(this.value)">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Permission Role Groups</h3>
+                    <div class="pull-right">
+                        <div class="btn-group">
+                           <button class="btn btn-block btn-info" type="button" onclick="showCreateRole()">Create New Role</button>
+                        </div><!-- /.btn-group -->
+                    </div><!-- /.pull-right -->
+                </div>
+                <div class="box-body">
+                    <table id="allRoles" class="table table-bordered">
+                        <tr>
+                            <th width="10px">ID</th>
+                            <th width="30px">Name</th>
+                            <th>Description</th>
+                            <th width="30px">Persons</th>
+                            <th width="30px">Edit</th>
+                            <th width="30px">Delete</th>
+                        </tr>
+
+                        @for(security_role <- SecurityRole.find.all()) {
+                        <tr>
+                            <td>@security_role.id</td>
+                            <td>@security_role.name</td>
+                            <td>@security_role.description</td>
+                            <td>
+                                <a  href='@routes.DashboardController.role(security_role.id)' >
+                                    <button class="btn btn-block btn-info" type="button">Members</button>
+                                </a>
+                            </td>
+
+                            <td><button class="btn btn-block btn-info" type="button" onclick="showEditFormRole('@security_role.id','@security_role.name','@security_role.description')">Edit</button></td>
+                            <td><button class="btn btn-block btn-danger" type="button" onclick="deleteRole(@security_role.id)">Delete</button></td>
+                        </tr>
+                        }
+
+                    </table>
+
+
+                    <script>
+                        function deleteRole(id){
+
+                            $.ajax({
+                                url: " @Server.tyrion_serverAddress" + "/compilation/server/" + id ,
+                                type: 'DELETE',
+                                headers: {
+                                    "X-AUTH-TOKEN":getCookie("authToken"),
+                                },
+                                success:function(e){
+                                    $('#allRoles').load(document.URL +  ' #allRoles');
+                                },
+                                error:function(e) {
+                                    alert("Unsuccessful.");
+                                }
+                            })}
+                    </script>
+
+                    <script>
+
+                        function editRole(id){
+                            //var role_id = document.getElementById("editRole").elements.namedItem("id").value;
+
+                            model_data = $("#editRole").serializeObject();
+
+                            $.ajax({
+                                url: "@Server.tyrion_serverAddress" + "/secure/role/" + id ,
+                                type: 'PUT',
+                                contentType: 'application/json',
+                                headers: {
+                                    "X-AUTH-TOKEN":getCookie("authToken"),
+                                    "Content-Type":"application/json"
+                                },
+                                data: JSON.stringify(model_data),
+                                dataType: 'json',
+                                success:function(e){
+                                    $("#editRole input[type=text]").val("");
+                                    $("#editRoleModal").css("display","none");
+                                    $('#allRoles').load(document.URL +  ' #allRoles');
+                                },
+                                error:function(e) {
+                                    alert("Unsuccessful.");
+                                }
+                            })
+                        }
+
+                        function showEditFormRole(id, name, description){
+                            $("#editRoleModal").css("display","block");
+                            $('#editRoleButton').val(id);
+                            $('#id').text("ID = " + id);
+                            $("#editRole input[name=name]").val(name);
+                            $("#editRole input[name=description]").val(description);
+                        }
+                    </script>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+
+@*/*/*  Permission ---------------------------------------------------------------------------------------------   */*/*@
+
+<section class="content">
+
+    <div id="editPermissionModal" style="display: none;" class="modal">
+        <div style="margin-top: 15%;" class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Edit Permission</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="editPermission")>
+
+                        <label id="value" style="display: block">Key</label>
+                        <label>Description </label> <input style="display: block" type="text" name="description" >
+
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editPermissionModal').css('display','none')">Close</button>
+                    <button id="editPermissionButton" value="" class="btn btn-primary" type="button" onclick="editPermission(this.value)">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Permissions</h3>
+                </div>
+                <div class="box-body">
+                    <table id="allPermissions" class="table table-bordered">
+                        <tr>
+                            <th style="width: 10px">KEY (Read Only)</th>
+                            <th>Description</th>
+                            <th style="width: 30px">EDIT</th>
+                        
+                        </tr>
+
+                        @for(permission <- PersonPermission.find.all()) {
+                            <tr>
+                                <td>@permission.value</td>
+                                <td>@permission.description</td>
+                                <td><button class="btn btn-block btn-info" type="button" onclick="showEditFormPermission('@permission.value', '@permission.description')">Edit</button></td>
+
+                            </tr>
+                        }
+
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<script>
+
+    function editPermission(id){
+        model_data = $("#editPermission").serializeObject();
+
+        $.ajax({
+            url: "@Server.tyrion_serverAddress" + "/secure/permission/" + id ,
+            type: 'PUT',
+            contentType: 'application/json',
+            headers: {
+                "X-AUTH-TOKEN":getCookie("authToken"),
+                "Content-Type":"application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+            success:function(e){
+                $("#editPermission input[type=text]").val("");
+                $("#editPermissionModal").css("display","none");
+                $('#allPermissions').load(document.URL +  ' #allPermissions');
+            },
+            error:function(e) {
+                alert("Unsuccessful.");
+            }
+        })}
+
+    function showEditFormPermission(key, description ){
+        $("#editPermissionModal").css("display","block");
+        $('#editPermissionButton').val(key);
+        $('#value').text("ID = " + key);
+        $("#editPermission input[name=description]").val(description);
+    }
+
+
+
+</script>

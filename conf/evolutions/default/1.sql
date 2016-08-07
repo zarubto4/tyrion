@@ -317,6 +317,7 @@ create table person (
   mail                      varchar(255),
   nick_name                 varchar(255),
   full_name                 varchar(255),
+  freeze_accent             boolean,
   mail_validated            boolean,
   sha_password              bytea,
   constraint uq_person_mail unique (mail),

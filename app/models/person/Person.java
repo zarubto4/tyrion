@@ -11,7 +11,6 @@ import models.overflow.LinkedPost;
 import models.overflow.Post;
 import models.project.global.Project;
 import models.project.global.financial.Payment_Details;
-import models.project.m_program.M_Project;
 import utilities.permission.Permission;
 
 import javax.persistence.*;
@@ -30,6 +29,8 @@ public class Person extends Model {
     @ApiModelProperty(required = true) @Column(unique=true)     public String mail;
     @ApiModelProperty(required = true) @Column(unique=true)     public String nick_name;
     @ApiModelProperty(required = true)                          public String full_name;
+
+                                                 @JsonIgnore    public boolean freeze_accent; // Zmražený účet - Účty totiž nechceme mazat!
 
 
                                                 @JsonIgnore     public boolean mailValidated;
@@ -97,10 +98,11 @@ public class Person extends Model {
 
     @JsonIgnore   @Transient public boolean create_permission(){  return true;  }
     @JsonIgnore   @Transient public boolean read_permission()  {  return true;  }
-    @JsonProperty @Transient public boolean edit_permission()  {   return SecurityController.getPerson() != null && ((M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Person_edit"));}
-    @JsonProperty @Transient public boolean delete_permission(){return SecurityController.getPerson() != null && ((M_Project.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Person_delete"));}
+    @JsonProperty @Transient public boolean edit_permission()  {  return SecurityController.getPerson() != null && SecurityController.getPerson().id.equals(this.id) || SecurityController.getPerson().has_permission("Person_edit");}
+    @JsonIgnore   @Transient public boolean activation_permission() {  return SecurityController.getPerson().has_permission("Person_activation");}
+    @JsonIgnore   @Transient public boolean delete_permission()     {  return SecurityController.getPerson().has_permission("Person_delete");}
 
-    public enum permissions{ Person_edit, Person_delete }
+    public enum permissions{ Person_edit, Person_delete, Person_activation }
 
 
 

@@ -20,8 +20,8 @@ public class SecurityRole extends Model {
                                                             @ApiModelProperty(required = true) public String name;
                                                             @ApiModelProperty(required = true) public String description;
 
-    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "roles")  @JoinTable(name = "person_roles") public List<Person> persons = new ArrayList<>();
-    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL) public List<PersonPermission> person_permissions = new ArrayList<>();
+    @JsonIgnore @ManyToMany(mappedBy = "roles")  @JoinTable(name = "person_roles") public List<Person> persons = new ArrayList<>();
+    @JsonIgnore @ManyToMany() public List<PersonPermission> person_permissions = new ArrayList<>();
 
 
 
@@ -43,5 +43,5 @@ public class SecurityRole extends Model {
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
     public static SecurityRole findByName(String name) {return find.where().eq("name", name).findUnique();}
-    public static final Finder<String, SecurityRole> find = new Finder<>(SecurityRole.class);
+    public static final Model.Finder<String, SecurityRole> find = new Finder<>(SecurityRole.class);
 }

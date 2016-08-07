@@ -1,6 +1,7 @@
 package controllers;
 
 import models.compiler.Cloud_Compilation_Server;
+import models.person.SecurityRole;
 import models.project.b_program.servers.Cloud_Homer_Server;
 import org.pegdown.PegDownProcessor;
 import play.Application;
@@ -21,6 +22,8 @@ import views.html.*;
 import views.html.general.login;
 import views.html.general.main;
 import views.html.general.menu;
+import views.html.permission.permissions_summary;
+import views.html.permission.role;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -320,7 +323,7 @@ public class DashboardController extends Controller {
 
         }catch (Exception e){
             e.printStackTrace();
-            return ok("Došlo k chybě");
+            return ok();
         }
     }
 
@@ -333,7 +336,7 @@ public class DashboardController extends Controller {
 
         }catch (Exception e){
             e.printStackTrace();
-            return ok("Došlo k chybě");
+            return ok();
         }
     }
 
@@ -347,7 +350,36 @@ public class DashboardController extends Controller {
 
         }catch (Exception e){
             e.printStackTrace();
-            return ok("Došlo k chybě");
+            return ok();
+        }
+    }
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result permissions_summary(){
+        try {
+
+            Html permissions_content = permissions_summary.render();
+            return return_page(permissions_content);
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return ok();
+        }
+    }
+
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result role(String role_id){
+        try {
+
+            SecurityRole role_object = SecurityRole.find.byId(role_id);
+
+            Html permissions_content = role.render(role_object);
+            return return_page(permissions_content);
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return ok();
         }
     }
 

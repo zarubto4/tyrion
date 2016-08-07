@@ -5,6 +5,7 @@
 @import models.project.global.Project
 @import models.project.global.financial.Invoice
 @import models.project.global.financial.Invoice_item
+@import utilities.Server
 
 @(person: Person)
 
@@ -25,30 +26,43 @@
 
                 <!-- Profile Image -->
             <div class="box box-primary">
-                <div class="box-body box-profile">
+                <div id="person_detail" class="box-body box-profile">
 
-                    <h3 class="profile-username text-center">@person.full_name</h3>
+                    @for( edit_person <- Person.find.where().eq("id", person.id).findList ){
 
-                    <p class="text-muted text-center">@person.mail </p>
+                        <h3 class="profile-username text-center">@edit_person.full_name</h3>
 
-                        @if(person.mailValidated){
+                        <p class="text-muted text-center">@edit_person.mail </p>
+
+                        @if(edit_person.mailValidated){
                             <p class="text-green text-center">  Validated </p>
                         }else{
                             <p class="text-red text-center">   Not Validate </p>
                         }
 
-                    <ul class="list-group list-group-unbordered">
-                        <li class="list-group-item">
-                            <b>Nick name</b> <a class="pull-right">@person.nick_name</a>
-                        </li>
-                        <li class="list-group-item">
-                            <b>ID</b> <a class="pull-right">@person.id</a>
-                        </li>
-                    </ul>
+                        <ul class="list-group list-group-unbordered">
+                            <li class="list-group-item">
+                                <b>Nick name</b> <a class="pull-right">@edit_person.nick_name</a>
+                            </li>
+                            <li class="list-group-item">
+                                <b>ID</b> <a class="pull-right">@edit_person.id</a>
+                            </li>
+                        </ul>
 
-                    <a href="#" class="btn btn-primary btn-block"><b>Edit Information</b></a>
-                    <a href="#" class="btn btn-warning btn-block"><b>Remove Tokens</b></a>
-                    <a href="#" class="btn btn-warning btn-block"><b>Freeze Account</b></a>
+                        <a onclick="showEditFormPerson('@edit_person.id', '@edit_person.full_name', '@edit_person.nick_name', '@edit_person.mail')" class="btn btn-primary btn-block"> <b>Edit Information</b> </a>
+                        <a onclick="removeAllTokensPerson('@edit_person.id')" class="btn btn-warning btn-block"><b>Remove all Tokens</b></a>
+
+                        @if(!edit_person.freeze_accent){
+                            <a onclick="deactivatePerson('@edit_person.id')" class="btn btn-warning btn-block"><b>Freeze Account</b></a>
+                        }else{
+                            <a onclick="activatePerson('@edit_person.id')"  class="btn btn-success btn-block"><b>Unfreeze Account</b></a>
+                        }
+
+                        @if(!edit_person.mailValidated){
+                            <a onclick="validPerson('@edit_person.id')"  class="btn btn-success btn-block"><b>Valid Account</b></a>
+                        }
+                    }
+
 
                 </div>
                     <!-- /.box-body -->
@@ -504,7 +518,6 @@
                     <!-- /.nav-tabs-custom -->
     </div>
 
-
     <div class="box box-default">
         <div class="box-header with-border">
 
@@ -570,5 +583,172 @@
 
     </div>
 
-
 </section>
+
+
+
+<div id="editPersonModal" style="display: none;" class="modal">
+    <div style="margin-top: 15%;" class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Create PERSONr</h4>
+            </div>
+
+            <div class="modal-body">
+                <form id="editPerson")>
+
+                    <label id="person_id" style="display: block">ID</label>
+                    <label>Full Name</label>   <input style="display: block" type="text" name="full_name" >
+                    <label>Nick Name</label>   <input style="display: block" type="text" name="nick_name" >
+                    <label>Email</label>       <input style="display: block" type="text" name="mail" >
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editPersonModal').css('display','none')">Close</button>
+                <button id="editPersonButton" value="" class="btn btn-primary" type="button" onclick="editPerson(this.value)">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="editCompilationServerModal" style="display: none;" class="modal">
+    <div style="margin-top: 15%;" class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Edit Type of Board</h4>
+            </div>
+            <div class="modal-body">
+                <form id="editCompilationServer")>
+
+                    <label id="typeOfBoardId" style="display: block">ID</label>
+                    <label>Server name</label> <input style="display: block" type="text" name="name" >
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editCompilationServerModal').css('display','none')">Close</button>
+                <button id="editCompilationServerButton" value="" class="btn btn-primary" type="button" onclick="editCompilationServer(this.value)">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+            function editPerson(id){
+                model_data = $("#editPerson").serializeObject();
+
+                $.ajax({
+                    url: "@Server.tyrion_serverAddress" + "/coreClient/person/person/" + id ,
+                    type: 'PUT',
+                    contentType: 'application/json',
+                    headers: {
+                        "X-AUTH-TOKEN":getCookie("authToken"),
+                        "Content-Type":"application/json"
+                    },
+                    data: JSON.stringify(model_data),
+                    dataType: 'json',
+                    success:function(e){
+                        $("#editPerson input[type=text]").val("");
+                        $("#editPersonModal").css("display","none");
+                        $('#person_detail').load(document.URL +  ' #person_detail');
+                    },
+                    error:function(e) {
+                        alert("Unsuccessful.");
+                    }
+                })}
+
+            function deletePerson(id){
+
+                $.ajax({
+                    url: " @Server.tyrion_serverAddress" + "/coreClient/person/person/remove/" + id ,
+                    type: 'DELETE',
+                    headers: {
+                        "X-AUTH-TOKEN":getCookie("authToken"),
+                    },
+                    success:function(e){
+                        $('#allCompilationServers').load(document.URL +  ' #allCompilationServers');
+                    },
+                    error:function(e) {
+                        alert("Unsuccessful.");
+                    }
+                })}
+
+            function deactivatePerson(id){
+
+                $.ajax({
+                    url: " @Server.tyrion_serverAddress" + "/coreClient/person/person/deactivate/" + id ,
+                    type: 'PUT',
+                    headers: {
+                        "X-AUTH-TOKEN":getCookie("authToken"),
+                    },
+                    success:function(e){
+                        $('#person_detail').load(document.URL +  ' #person_detail');
+                    },
+                    error:function(e) {
+                        alert("Unsuccessful.");
+                    }
+                })}
+
+            function activatePerson(id){
+
+                $.ajax({
+                    url: " @Server.tyrion_serverAddress" + "/coreClient/person/person/activate/" + id ,
+                    type: 'PUT',
+                    headers: {
+                        "X-AUTH-TOKEN":getCookie("authToken"),
+                    },
+                    success:function(e){
+                        $('#person_detail').load(document.URL +  ' #person_detail');
+                    },
+                    error:function(e) {
+                        alert("Unsuccessful.");
+                    }
+                })}
+
+
+            function validPerson(id){
+
+                $.ajax({
+                    url: " @Server.tyrion_serverAddress" + "/coreClient/person/person/valid_email/" + id ,
+                    type: 'PUT',
+                    headers: {
+                        "X-AUTH-TOKEN":getCookie("authToken"),
+                    },
+                    success:function(e){
+                        $('#person_detail').load(document.URL +  ' #person_detail');
+                    },
+                    error:function(e) {
+                        alert("Unsuccessful.");
+                    }
+                })}
+
+            function removeAllTokensPerson(id){
+
+                $.ajax({
+                    url: " @Server.tyrion_serverAddress" + "/coreClient/person/person/clean_all_tokens/" + id ,
+                    type: 'DELETE',
+                    headers: {
+                        "X-AUTH-TOKEN":getCookie("authToken"),
+                    },
+                    success:function(e){
+                        $('#person_detail').load(document.URL +  ' #person_detail');
+                    },
+                    error:function(e) {
+                        alert("Unsuccessful.");
+                    }
+                })}
+
+            function showEditFormPerson(id, full_name, nick_name, mail){
+                $("#editPersonModal").css("display","block");
+                $('#editPersonButton').val(id);
+                $('#person_id').text("ID = " + id);
+                $("#editPerson input[name=full_name]").val(full_name);
+                $("#editPerson input[name=nick_name]").val(nick_name);
+                $("#editPerson input[name=mail]").val(mail);
+            }
+
+</script>

@@ -50,7 +50,7 @@ public class PersonController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful created",      response = Person.class),
+            @ApiResponse(code = 201, message = "Successful created",      response = Result_ok.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
@@ -83,7 +83,9 @@ public class PersonController extends Controller {
 
             if(invitation == null) {
 
-                ValidationToken validationToken = new ValidationToken().setValidation(person.mail);
+                ValidationToken validationToken = ValidationToken.find.where().eq("personEmail",help.mail).findUnique();
+                if(validationToken!=null) validationToken.delete();
+                validationToken = new ValidationToken().setValidation(person.mail);
 
                 String link = Server.tyrion_serverAddress + "/mail_person_authentication" + "/" + person.mail + "/" + validationToken.authToken;
 
@@ -115,7 +117,7 @@ public class PersonController extends Controller {
                 }
             }
 
-            return GlobalResult.created(Json.toJson(person));
+            return GlobalResult.result_ok();
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }
@@ -356,6 +358,7 @@ public class PersonController extends Controller {
     }
 
     @ApiOperation(value = "delete Person",
+            hidden = true,
             tags = {"Person"},
             notes = "delete Person by id",
             produces = "application/json",
@@ -394,6 +397,177 @@ public class PersonController extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
     }
+
+    @ApiOperation(value = "remove all connection tokens",
+            hidden = true,
+            tags = {"Person"},
+            notes = "remove all connection tokens",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Person.activation_permission", value = "true"),
+                    })
+            }
+
+
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured_API.class)
+    public Result delete_all_tokens(@ApiParam(value = "person_id String query", required = true) String person_id){
+        try{
+
+            Person person = Person.find.byId(person_id);
+            if(person == null ) return GlobalResult.notFoundObject("Person person_id not found");
+
+            if (!person.edit_permission())  return GlobalResult.forbidden_Permission();
+
+            for(FloatingPersonToken token : person.floatingPersonTokens) token.delete();
+
+            return GlobalResult.result_ok();
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "activate Person",
+            hidden = true,
+            tags = {"Person"},
+            notes = "activate Person by id",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Person.activation_permission", value = "true"),
+                    })
+            }
+
+
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured_API.class)
+    public Result activatePerson(@ApiParam(value = "person_id String query", required = true) String person_id){
+        try{
+
+            Person person = Person.find.byId(person_id);
+            if(person == null ) return GlobalResult.notFoundObject("Person person_id not found");
+
+            if (!person.activation_permission())  return GlobalResult.forbidden_Permission();
+
+            person.freeze_accent = false;
+            person.update();
+
+            return GlobalResult.result_ok();
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "deactivate Person",
+            hidden = true,
+            tags = {"Person"},
+            notes = "deactivate Person by id",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Person.activation_permission", value = "true"),
+                    })
+            }
+
+
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured_API.class)
+    public Result deactivatePerson(@ApiParam(value = "person_id String query", required = true) String person_id){
+        try{
+
+            Person person = Person.find.byId(person_id);
+            if(person == null ) return GlobalResult.notFoundObject("Person person_id not found");
+
+            if (!person.activation_permission())  return GlobalResult.forbidden_Permission();
+
+            person.freeze_accent = true;
+
+            for(FloatingPersonToken token : person.floatingPersonTokens) token.delete();
+
+            person.update();
+
+            return GlobalResult.result_ok();
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "valid Person email - access to Becki",
+            hidden = true,
+            tags = {"Person"},
+            notes = "valid Person email by id",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Person.activation_permission", value = "true"),
+                    })
+            }
+
+
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured_API.class)
+    public Result valid_email_Person(@ApiParam(value = "person_id String query", required = true) String person_id){
+        try{
+
+            Person person = Person.find.byId(person_id);
+            if(person == null ) return GlobalResult.notFoundObject("Person person_id not found");
+
+            if (!person.activation_permission())  return GlobalResult.forbidden_Permission();
+
+            person.mailValidated = true;
+            person.update();
+
+            return GlobalResult.result_ok();
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
 
     @ApiOperation(value = "edit Person basic information",
             tags = {"Person"},
@@ -444,7 +618,7 @@ public class PersonController extends Controller {
 
             person.update();
 
-            return GlobalResult.result_ok();
+            return GlobalResult.result_ok(Json.toJson(person));
 
          } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());

@@ -1,0 +1,214 @@
+@import models.person.PersonPermission
+@import models.person.SecurityRole
+@import models.person.Person
+@import utilities.Server
+
+@(role: SecurityRole)
+
+<section class="content-header">
+
+    <div class="pull-left">
+        <div class="btn-group">
+            <a  href='@routes.DashboardController.permissions_summary()' >
+                <button class="btn btn-block btn-danger" type="button">Back</button>
+            </a>
+        </div><!-- /.btn-group -->
+    </div>
+    <div></div>
+    <h1> &nbsp;&nbsp;&nbsp; Permission Summary - @role.name </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-wrench"></i> User Summary Dashboard </a></li>
+        <li class="active">User detail</li>
+    </ol>
+</section>
+
+
+
+<section class="content">
+
+
+    <script>
+            function addPerson(){
+                var mail = document.getElementById("addPersonForm").elements.namedItem("mail").value;
+                $.ajax({
+                    url: " @Server.tyrion_serverAddress" + "/secure/role/person/"+ mail +"/"+ @role.id ,
+                    type: 'PUT',
+                    headers: {
+                        "X-AUTH-TOKEN":getCookie("authToken"),
+                    },
+                    success:function(e){
+                        $("#addPerson input[type=text]").val("");
+                        $("#addPersonModal").css("display","none");
+                        $('#allPersons').load(document.URL +  ' #allPersons');
+                    },
+                    error:function(e) {
+                        alert("Unsuccessful. " + e );
+                    }
+                })}
+    </script>
+
+    <div id="addPersonModal" style="display: none;" class="modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Edit Members in Role</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="addPersonForm")>
+                        <label>Person Email</label> <input  style="display: block" type="text" id="mail" name="mail" >
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#addPersonModal').css('display','none')">Close</button>
+                    <button id="addPersonButton" value="" class="btn btn-primary" type="button" onclick="addPerson(this.value)">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+            function removePerson(mail){
+
+                $.ajax({
+                    url: " @Server.tyrion_serverAddress" + "/secure/role/person/"+ mail +"/"+ @role.id  ,
+                    type: 'DELETE',
+                    headers: {
+                        "X-AUTH-TOKEN":getCookie("authToken"),
+                    },
+                    success:function(e){
+                        $('#allPersons').load(document.URL +  ' #allPersons');
+                    },
+                    error:function(e) {
+                        alert("Unsuccessful.");
+                    }
+                })}
+    </script>
+
+
+    <script>
+            function showAddPersonForm(){
+                $("#addPersonModal").css("display","block");
+                $('#addPersonButton').val();
+            }
+    </script>
+
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Members in role</h3>
+                    <div class="pull-right">
+                        <div class="btn-group">
+                            <button class="btn btn-block btn-info" type="button" onclick="showAddPersonForm()">Add new Member</button>
+                        </div><!-- /.btn-group -->
+                    </div><!-- /.pull-right -->
+                </div>
+                <div class="box-body">
+                    <table id="allPersons" class="table table-bordered">
+                        <tr>
+                            <th  width="10px">ID</th>
+                            <th  >Name</th>
+                            <th  >Email</th>
+                            <th  width="20px">Remove</th>
+                        </tr>
+
+                        @for(person <- role.persons) {
+                            <tr>
+                                <td>@person.id</td>
+                                <td>@person.full_name</td>
+                                <td>@person.mail</td>
+                                <td><button class="btn btn-block btn-warning" type="button" onclick="removePerson(@person.id)">Remove</button></td>
+                            </tr>
+                        }
+                    </table>
+                </div>
+                <div class="box-footer">
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+
+</section>
+
+<section class="content">
+
+
+    <script>
+            function addPermission(value){
+                $.ajax({
+                    url: " @Server.tyrion_serverAddress" + "/secure/role/permission/"+ value +"/"+ @role.id ,
+                    type: 'PUT',
+                    headers: {
+                        "X-AUTH-TOKEN":getCookie("authToken"),
+                    },
+                    success:function(e){
+                        $('#allPermissions').load(document.URL +  ' #allPermissions');
+                    },
+                    error:function(e) {
+                        alert("Unsuccessful. " + e );
+                    }
+                })}
+    </script>
+
+    <script>
+            function removePermission(value){
+                $.ajax({
+                    url: " @Server.tyrion_serverAddress" + "/secure/role/permission/"+ value +"/"+ @role.id ,
+                    type: 'DELETE',
+                    headers: {
+                        "X-AUTH-TOKEN":getCookie("authToken"),
+                    },
+                    success:function(e){
+                        $('#allPermissions').load(document.URL +  ' #allPermissions');
+                    },
+                    error:function(e) {
+                        alert("Unsuccessful.");
+                    }
+                })}
+    </script>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Members in role</h3>
+                </div>
+                <div class="box-body">
+                    <table id="allPermissions" class="table table-bordered">
+                        <tr>
+                            <th width="10px">Value</th>
+                            <th width="30px">Description</th>
+                            <th width="20px">Operation</th>
+                        </tr>
+
+                        @for(permission <- PersonPermission.find.all()) {
+                            <tr>
+                                <td>@permission.value</td>
+                                <td>@permission.description</td>
+
+                                @if( SecurityRole.find.where().eq("person_permissions.value", permission.value).eq("id", role.id).findUnique() == null) {
+                                    <td>
+                                        <button class="btn btn-block btn-info" type="button" onclick="addPermission('@permission.value')">Add</button>
+                                    </td>
+                                }else{
+                                    <td>
+                                        <button class="btn btn-block btn-warning" type="button" onclick="removePermission('@permission.value')">Remove</button>
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </table>
+                </div>
+                <div class="box-footer">
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+
+</section>

@@ -21,6 +21,8 @@ public class ValidationToken extends Model{
     @JsonIgnore @Transient
     public ValidationToken  setValidation(String mail){
 
+
+
         this.personEmail = mail;
 
         while(true){ // I need Unique Value

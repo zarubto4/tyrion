@@ -15,14 +15,9 @@ public class Swagger_Person_Update {
     public String nick_name;
 
     @ApiModelProperty(value = "min length = 4", required = true)
-    @Constraints.MinLength(value = 8)
+    @Constraints.MinLength(value = 4)
     @Constraints.Required
     public String full_name;
 
-    @ApiModelProperty(required = false)
-    public String first_title;
-
-    @ApiModelProperty(required = false)
-    public String last_title;
 
 }
