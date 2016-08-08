@@ -2,7 +2,7 @@
   "swagger" : "2.0",
   "info" : {
     "description" : "Description.............................. ......... .............",
-    "version" : "1.06.6.3",
+    "version" : "1.06.6.4",
     "title" : "Tyrion Api",
     "contact" : {
       "name" : "Tyrion-Ultra-Best-Mega-Lovely Team"
@@ -17,45 +17,33 @@
   "tags" : [ {
     "name" : "Not Documented API - InProgress or Stuck"
   }, {
-    "name" : "Person"
-  }, {
     "name" : "Access"
+  }, {
+    "name" : "Social-GitHub"
+  }, {
+    "name" : "Person"
   }, {
     "name" : "APP-Api"
   }, {
     "name" : "Social-Facebook"
   }, {
-    "name" : "Social-GitHub"
-  }, {
     "name" : "Price & Invoice & Tariffs"
   }, {
+    "name" : "M_Program"
+  }, {
+    "name" : "Screen_Size_Type"
+  }, {
+    "name" : "WebSocket"
+  }, {
     "name" : "Actualization"
+  }, {
+    "name" : "Notifications"
   }, {
     "name" : "Role"
   }, {
     "name" : "Permission"
   }, {
-    "name" : "Project"
-  }, {
-    "name" : "Homer"
-  }, {
-    "name" : "Board"
-  }, {
-    "name" : "B_Program"
-  }, {
     "name" : "External Server"
-  }, {
-    "name" : "Type of Block"
-  }, {
-    "name" : "Blocko-Block"
-  }, {
-    "name" : "Blocko-OverFlow"
-  }, {
-    "name" : "Post"
-  }, {
-    "name" : "Type-Of-Confirms"
-  }, {
-    "name" : "Type-Of-Post"
   }, {
     "name" : "Processor"
   }, {
@@ -65,19 +53,31 @@
   }, {
     "name" : "LibraryGroup"
   }, {
-    "name" : "C_Program"
+    "name" : "Board"
   }, {
-    "name" : "Producer"
+    "name" : "C_Program"
   }, {
     "name" : "Blocko"
   }, {
-    "name" : "M_Program"
+    "name" : "B_Program"
   }, {
-    "name" : "Screen_Size_Type"
+    "name" : "Producer"
   }, {
-    "name" : "WebSocket"
+    "name" : "Project"
   }, {
-    "name" : "Notifications"
+    "name" : "Homer"
+  }, {
+    "name" : "Blocko-Block"
+  }, {
+    "name" : "Type of Block"
+  }, {
+    "name" : "Blocko-OverFlow"
+  }, {
+    "name" : "Post"
+  }, {
+    "name" : "Type-Of-Confirms"
+  }, {
+    "name" : "Type-Of-Post"
   } ],
   "paths" : {
     "/compilation/board" : {
@@ -1981,55 +1981,6 @@
         "x-permission_description" : {
           "Permission: " : "Permission is not required!"
         }
-      },
-      "post" : {
-        "tags" : [ "Processor" ],
-        "summary" : "Create new Processor",
-        "description" : "If you want create new Processor. Send required json values and server respond with new object",
-        "operationId" : "new_Processor",
-        "schemes" : [ "https" ],
-        "produces" : [ "application/json" ],
-        "parameters" : [ {
-          "in" : "body",
-          "name" : "body",
-          "description" : "Contains Json with values",
-          "required" : true,
-          "schema" : {
-            "$ref" : "#/definitions/Processor_New"
-          }
-        } ],
-        "responses" : {
-          "201" : {
-            "description" : "Successful created",
-            "schema" : {
-              "$ref" : "#/definitions/Processor"
-            }
-          },
-          "400" : {
-            "description" : "Some Json value Missing",
-            "schema" : {
-              "$ref" : "#/definitions/Json_Value_Missing_Result"
-            }
-          },
-          "401" : {
-            "description" : "Unauthorized request",
-            "schema" : {
-              "$ref" : "#/definitions/Result_Unauthorized"
-            }
-          },
-          "500" : {
-            "description" : "Server side Error"
-          },
-          "403" : {
-            "description" : "Need required permission",
-            "schema" : {
-              "$ref" : "#/definitions/PermissionRequired"
-            }
-          }
-        },
-        "x-permission_required" : {
-          "Static Permission key" : "Processor_create"
-        }
       }
     },
     "/compilation/processor/{processor_id}" : {
@@ -2121,105 +2072,6 @@
         },
         "x-permission_required" : {
           "Static Permission key" : "Processor_edit"
-        }
-      },
-      "delete" : {
-        "tags" : [ "Processor" ],
-        "summary" : "delete Processor",
-        "description" : "If you want delete Processor by query processor_id.",
-        "operationId" : "delete_Processor",
-        "schemes" : [ "https" ],
-        "consumes" : [ "text/html" ],
-        "produces" : [ "application/json" ],
-        "parameters" : [ {
-          "name" : "processor_id",
-          "in" : "path",
-          "description" : "processor_id String query",
-          "required" : true,
-          "type" : "string"
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Ok Result",
-            "schema" : {
-              "$ref" : "#/definitions/Result ok"
-            }
-          },
-          "400" : {
-            "description" : "Object not found",
-            "schema" : {
-              "$ref" : "#/definitions/Object not found"
-            }
-          },
-          "401" : {
-            "description" : "Unauthorized request",
-            "schema" : {
-              "$ref" : "#/definitions/Result_Unauthorized"
-            }
-          },
-          "500" : {
-            "description" : "Server side Error"
-          },
-          "403" : {
-            "description" : "Need required permission",
-            "schema" : {
-              "$ref" : "#/definitions/PermissionRequired"
-            }
-          }
-        },
-        "x-permission_required" : {
-          "Static Permission key" : "Processor_delete"
-        }
-      }
-    },
-    "/compilation/producer" : {
-      "post" : {
-        "tags" : [ "Producer" ],
-        "summary" : "create new Producer",
-        "description" : "if you want create new Producer. Its company owned physical boards and we used that for filtering",
-        "operationId" : "new_Producer",
-        "schemes" : [ "https" ],
-        "produces" : [ "application/json" ],
-        "parameters" : [ {
-          "in" : "body",
-          "name" : "body",
-          "description" : "Contains Json with values",
-          "required" : true,
-          "schema" : {
-            "$ref" : "#/definitions/Producer_New"
-          }
-        } ],
-        "responses" : {
-          "201" : {
-            "description" : "Successfully created",
-            "schema" : {
-              "$ref" : "#/definitions/Producer"
-            }
-          },
-          "400" : {
-            "description" : "Some Json value Missing",
-            "schema" : {
-              "$ref" : "#/definitions/Json_Value_Missing_Result"
-            }
-          },
-          "401" : {
-            "description" : "Unauthorized request",
-            "schema" : {
-              "$ref" : "#/definitions/Result_Unauthorized"
-            }
-          },
-          "500" : {
-            "description" : "Server side Error"
-          },
-          "403" : {
-            "description" : "Need required permission",
-            "schema" : {
-              "$ref" : "#/definitions/PermissionRequired"
-            }
-          }
-        },
-        "x-permission_required" : {
-          "Static Permission key" : "Producer_create"
         }
       }
     },
@@ -2316,109 +2168,6 @@
         },
         "x-permission_description" : {
           "Permission: " : "Permission is not required!"
-        }
-      },
-      "put" : {
-        "tags" : [ "Producer" ],
-        "summary" : "edit Producer",
-        "description" : "if you want edit information about Producer. Its company owned physical boards and we used that for filtering",
-        "operationId" : "edit_Producer",
-        "schemes" : [ "https" ],
-        "produces" : [ "application/json" ],
-        "parameters" : [ {
-          "name" : "producer_id",
-          "in" : "path",
-          "required" : true,
-          "type" : "string"
-        }, {
-          "in" : "body",
-          "name" : "body",
-          "description" : "Contains Json with values",
-          "required" : true,
-          "schema" : {
-            "$ref" : "#/definitions/Producer_New"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Ok Result",
-            "schema" : {
-              "$ref" : "#/definitions/Producer"
-            }
-          },
-          "400" : {
-            "description" : "Some Json value Missing",
-            "schema" : {
-              "$ref" : "#/definitions/Json_Value_Missing_Result"
-            }
-          },
-          "401" : {
-            "description" : "Unauthorized request",
-            "schema" : {
-              "$ref" : "#/definitions/Result_Unauthorized"
-            }
-          },
-          "500" : {
-            "description" : "Server side Error"
-          },
-          "403" : {
-            "description" : "Need required permission",
-            "schema" : {
-              "$ref" : "#/definitions/PermissionRequired"
-            }
-          }
-        },
-        "x-permission_required" : {
-          "Producer.edit_permission" : "true",
-          "Static Permission key" : "Producer_edit"
-        }
-      },
-      "delete" : {
-        "tags" : [ "Producer" ],
-        "summary" : "delete Producer",
-        "description" : "if you want delete Producer",
-        "operationId" : "delete_Producer",
-        "schemes" : [ "https" ],
-        "consumes" : [ "text/html" ],
-        "produces" : [ "application/json" ],
-        "parameters" : [ {
-          "name" : "producer_id",
-          "in" : "path",
-          "required" : true,
-          "type" : "string"
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Ok Result",
-            "schema" : {
-              "$ref" : "#/definitions/Result ok"
-            }
-          },
-          "400" : {
-            "description" : "Objects not found - details in message",
-            "schema" : {
-              "$ref" : "#/definitions/Object not found"
-            }
-          },
-          "401" : {
-            "description" : "Unauthorized request",
-            "schema" : {
-              "$ref" : "#/definitions/Result_Unauthorized"
-            }
-          },
-          "500" : {
-            "description" : "Server side Error"
-          },
-          "403" : {
-            "description" : "Need required permission",
-            "schema" : {
-              "$ref" : "#/definitions/PermissionRequired"
-            }
-          }
-        },
-        "x-permission_required" : {
-          "Producer.delete_permission" : "true",
-          "Static Permission key" : "Producer_delete"
         }
       }
     },
@@ -3061,7 +2810,7 @@
           "201" : {
             "description" : "Successful created",
             "schema" : {
-              "$ref" : "#/definitions/Person"
+              "$ref" : "#/definitions/Result ok"
             }
           },
           "400" : {
@@ -3122,56 +2871,6 @@
               "$ref" : "#/definitions/PermissionRequired"
             }
           }
-        }
-      }
-    },
-    "/coreClient/person/person/{id}" : {
-      "delete" : {
-        "tags" : [ "Person" ],
-        "summary" : "delete Person",
-        "description" : "delete Person by id",
-        "operationId" : "deletePerson",
-        "schemes" : [ "https" ],
-        "consumes" : [ "text/html" ],
-        "produces" : [ "application/json" ],
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "description" : "person_id String query",
-          "required" : true,
-          "type" : "string"
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Ok Result",
-            "schema" : {
-              "$ref" : "#/definitions/Result ok"
-            }
-          },
-          "400" : {
-            "description" : "Object not found",
-            "schema" : {
-              "$ref" : "#/definitions/Object not found"
-            }
-          },
-          "401" : {
-            "description" : "Unauthorized request",
-            "schema" : {
-              "$ref" : "#/definitions/Result_Unauthorized"
-            }
-          },
-          "500" : {
-            "description" : "Server side Error"
-          },
-          "403" : {
-            "description" : "Need required permission",
-            "schema" : {
-              "$ref" : "#/definitions/PermissionRequired"
-            }
-          }
-        },
-        "x-permission_required" : {
-          "Person.delete_permission" : "true"
         }
       }
     },
@@ -4514,7 +4213,7 @@
           "description" : "Contains Json with values",
           "required" : true,
           "schema" : {
-            "$ref" : "#/definitions/M_Project_New"
+            "$ref" : "#/definitions/Notification_Read"
           }
         } ],
         "responses" : {
@@ -5907,22 +5606,6 @@
         }
       }
     },
-    "/product/invoice/all" : {
-      "get" : {
-        "tags" : [ "Not Documented API - InProgress or Stuck" ],
-        "operationId" : "get_invoice_for_Byzance_Employes",
-        "parameters" : [ ],
-        "responses" : {
-          "200" : {
-            "description" : "successful operation",
-            "schema" : {
-              "$ref" : "#/definitions/Result"
-            },
-            "headers" : { }
-          }
-        }
-      }
-    },
     "/product/invoice/pay/{invoice_id}" : {
       "get" : {
         "tags" : [ "Price & Invoice & Tariffs" ],
@@ -5965,6 +5648,72 @@
             "schema" : {
               "$ref" : "#/definitions/PermissionRequired"
             }
+          }
+        }
+      }
+    },
+    "/product/invoice/remove/{invoice_id}" : {
+      "delete" : {
+        "tags" : [ "Not Documented API - InProgress or Stuck" ],
+        "operationId" : "remove_invoice",
+        "parameters" : [ {
+          "name" : "invoice_id",
+          "in" : "path",
+          "required" : true,
+          "type" : "integer",
+          "format" : "int64"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/Result"
+            },
+            "headers" : { }
+          }
+        }
+      }
+    },
+    "/product/invoice/send_remainder/{invoice_id}" : {
+      "put" : {
+        "tags" : [ "Not Documented API - InProgress or Stuck" ],
+        "operationId" : "send_remainder_to_custumer",
+        "parameters" : [ {
+          "name" : "invoice_id",
+          "in" : "path",
+          "required" : true,
+          "type" : "integer",
+          "format" : "int64"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/Result"
+            },
+            "headers" : { }
+          }
+        }
+      }
+    },
+    "/product/invoice/set_pay/{invoice_id}" : {
+      "put" : {
+        "tags" : [ "Not Documented API - InProgress or Stuck" ],
+        "operationId" : "set_invoice_as_Paid",
+        "parameters" : [ {
+          "name" : "invoice_id",
+          "in" : "path",
+          "required" : true,
+          "type" : "integer",
+          "format" : "int64"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/Result"
+            },
+            "headers" : { }
           }
         }
       }
@@ -7946,7 +7695,7 @@
     },
     "/project/project/addParticipant/{invitation_id}/{decision}" : {
       "put" : {
-        "tags" : [ "Project", "Board" ],
+        "tags" : [ "Project" ],
         "summary" : "add participant to a Project",
         "description" : "adds Person to a Project, every piece of information is held in Invitation",
         "operationId" : "addParticipantToProject",
@@ -7984,7 +7733,7 @@
     },
     "/project/project/shareProject/{project_id}" : {
       "put" : {
-        "tags" : [ "Project", "Board" ],
+        "tags" : [ "Project" ],
         "summary" : "share Project with Users",
         "description" : "sends Invitation to all users in list: List<persons_mail>",
         "operationId" : "shareProjectWithUsers",
@@ -8549,7 +8298,7 @@
         }
       }
     },
-    "/secure/permission" : {
+    "/secure/permission/all" : {
       "get" : {
         "tags" : [ "Permission" ],
         "summary" : "get all system Permissions",
@@ -8586,112 +8335,6 @@
         },
         "x-permission_description" : {
           "Public" : "Without Permission"
-        }
-      }
-    },
-    "/secure/permission/person/{person_id}/{permission_id}" : {
-      "put" : {
-        "tags" : [ "Permission" ],
-        "summary" : "add Permission to the Person",
-        "description" : "If you want add permission to Person. You need permission for that or have right system Roles",
-        "operationId" : "add_Permission_Person",
-        "schemes" : [ "https" ],
-        "consumes" : [ "text/html" ],
-        "produces" : [ "application/json" ],
-        "parameters" : [ {
-          "name" : "person_id",
-          "in" : "path",
-          "required" : true,
-          "type" : "string"
-        }, {
-          "name" : "permission_id",
-          "in" : "path",
-          "required" : true,
-          "type" : "string"
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Ok Result",
-            "schema" : {
-              "$ref" : "#/definitions/Result ok"
-            }
-          },
-          "400" : {
-            "description" : "Object not found",
-            "schema" : {
-              "$ref" : "#/definitions/Object not found"
-            }
-          },
-          "401" : {
-            "description" : "Unauthorized request",
-            "schema" : {
-              "$ref" : "#/definitions/Result_Unauthorized"
-            }
-          },
-          "500" : {
-            "description" : "Server side Error"
-          },
-          "403" : {
-            "description" : "Need required permission",
-            "schema" : {
-              "$ref" : "#/definitions/PermissionRequired"
-            }
-          }
-        },
-        "x-permission_required" : {
-          "PersonPermission_edit_person_permission" : "true"
-        }
-      },
-      "delete" : {
-        "tags" : [ "Permission" ],
-        "summary" : "remove the person Permission",
-        "description" : "If you want remove permission from Person. You need permission for that or have right system Roles",
-        "operationId" : "remove_Permission_Person",
-        "schemes" : [ "https" ],
-        "consumes" : [ "text/html" ],
-        "produces" : [ "application/json" ],
-        "parameters" : [ {
-          "name" : "person_id",
-          "in" : "path",
-          "required" : true,
-          "type" : "string"
-        }, {
-          "name" : "permission_id",
-          "in" : "path",
-          "required" : true,
-          "type" : "string"
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Ok Result",
-            "schema" : {
-              "$ref" : "#/definitions/Result ok"
-            }
-          },
-          "400" : {
-            "description" : "Object not found",
-            "schema" : {
-              "$ref" : "#/definitions/Object not found"
-            }
-          },
-          "401" : {
-            "description" : "Unauthorized request",
-            "schema" : {
-              "$ref" : "#/definitions/Result_Unauthorized"
-            }
-          },
-          "500" : {
-            "description" : "Server side Error"
-          },
-          "403" : {
-            "description" : "Need required permission",
-            "schema" : {
-              "$ref" : "#/definitions/PermissionRequired"
-            }
-          }
-        },
-        "x-permission_required" : {
-          "PersonPermission_edit_person_permission" : "true"
         }
       }
     },
@@ -8831,112 +8474,7 @@
         }
       }
     },
-    "/secure/role/permission/{permission_id}/{role_id}" : {
-      "put" : {
-        "tags" : [ "Permission", "Role" ],
-        "summary" : "add Permission to the Role",
-        "description" : "If you want add system person_permissions to Role. You need permission for that or have right system Roles",
-        "operationId" : "add_Permission_to_Role",
-        "schemes" : [ "https" ],
-        "produces" : [ "application/json" ],
-        "parameters" : [ {
-          "name" : "permission_id",
-          "in" : "path",
-          "required" : true,
-          "type" : "string"
-        }, {
-          "name" : "role_id",
-          "in" : "path",
-          "required" : true,
-          "type" : "string"
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Ok Result",
-            "schema" : {
-              "$ref" : "#/definitions/Result ok"
-            }
-          },
-          "400" : {
-            "description" : "Object not found",
-            "schema" : {
-              "$ref" : "#/definitions/Object not found"
-            }
-          },
-          "401" : {
-            "description" : "Unauthorized request",
-            "schema" : {
-              "$ref" : "#/definitions/Result_Unauthorized"
-            }
-          },
-          "500" : {
-            "description" : "Server side Error"
-          },
-          "403" : {
-            "description" : "Need required permission",
-            "schema" : {
-              "$ref" : "#/definitions/PermissionRequired"
-            }
-          }
-        },
-        "x-permission_required" : {
-          "SecurityRole_update" : "true"
-        }
-      },
-      "delete" : {
-        "tags" : [ "Permission", "Role" ],
-        "summary" : "remove Permission from the Role",
-        "description" : "If you want remove system person_permissions from Role. You need permission for that or have right system Roles",
-        "operationId" : "remove_Permission_from_Role",
-        "schemes" : [ "https" ],
-        "consumes" : [ "text/html" ],
-        "produces" : [ "application/json" ],
-        "parameters" : [ {
-          "name" : "permission_id",
-          "in" : "path",
-          "required" : true,
-          "type" : "string"
-        }, {
-          "name" : "role_id",
-          "in" : "path",
-          "required" : true,
-          "type" : "string"
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Ok Result",
-            "schema" : {
-              "$ref" : "#/definitions/Result ok"
-            }
-          },
-          "400" : {
-            "description" : "Object not found",
-            "schema" : {
-              "$ref" : "#/definitions/Object not found"
-            }
-          },
-          "401" : {
-            "description" : "Unauthorized request",
-            "schema" : {
-              "$ref" : "#/definitions/Result_Unauthorized"
-            }
-          },
-          "500" : {
-            "description" : "Server side Error"
-          },
-          "403" : {
-            "description" : "Need required permission",
-            "schema" : {
-              "$ref" : "#/definitions/PermissionRequired"
-            }
-          }
-        },
-        "x-permission_required" : {
-          "SecurityRole_update" : "true"
-        }
-      }
-    },
-    "/secure/role/person/{person_id}/{role_id}" : {
+    "/secure/role/person/{mail}/{role_id}" : {
       "put" : {
         "tags" : [ "Role", "Person" ],
         "summary" : "add Person to Role (Group) ",
@@ -8945,59 +8483,7 @@
         "schemes" : [ "https" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
-          "name" : "person_id",
-          "in" : "path",
-          "required" : true,
-          "type" : "string"
-        }, {
-          "name" : "role_id",
-          "in" : "path",
-          "required" : true,
-          "type" : "string"
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Ok Result",
-            "schema" : {
-              "$ref" : "#/definitions/Result ok"
-            }
-          },
-          "400" : {
-            "description" : "Object not found",
-            "schema" : {
-              "$ref" : "#/definitions/Object not found"
-            }
-          },
-          "401" : {
-            "description" : "Unauthorized request",
-            "schema" : {
-              "$ref" : "#/definitions/Result_Unauthorized"
-            }
-          },
-          "500" : {
-            "description" : "Server side Error"
-          },
-          "403" : {
-            "description" : "Need required permission",
-            "schema" : {
-              "$ref" : "#/definitions/PermissionRequired"
-            }
-          }
-        },
-        "x-permission_required" : {
-          "SecurityRole_update" : "true"
-        }
-      },
-      "delete" : {
-        "tags" : [ "Role", "Person" ],
-        "summary" : "remove Person from the Role  (Group)",
-        "description" : "If you set Role to Person. You need permission for that or have right system Roles",
-        "operationId" : "remove_Role_Person",
-        "schemes" : [ "https" ],
-        "consumes" : [ "text/html" ],
-        "produces" : [ "application/json" ],
-        "parameters" : [ {
-          "name" : "person_id",
+          "name" : "mail",
           "in" : "path",
           "required" : true,
           "type" : "string"
@@ -9041,52 +8527,19 @@
         }
       }
     },
-    "/secure/role/{role_id}" : {
-      "delete" : {
-        "tags" : [ "Role" ],
-        "summary" : "delete Role",
-        "description" : "If you want delete  Role from system. You need permission for that or have right system Roles",
-        "operationId" : "delete_Role",
-        "schemes" : [ "https" ],
-        "consumes" : [ "text/html" ],
-        "produces" : [ "application/json" ],
-        "parameters" : [ {
-          "name" : "role_id",
-          "in" : "path",
-          "required" : true,
-          "type" : "string"
-        } ],
+    "/test1" : {
+      "get" : {
+        "tags" : [ "Not Documented API - InProgress or Stuck" ],
+        "operationId" : "test1",
+        "parameters" : [ ],
         "responses" : {
           "200" : {
-            "description" : "Successfully created",
+            "description" : "successful operation",
             "schema" : {
-              "$ref" : "#/definitions/Result ok"
-            }
-          },
-          "400" : {
-            "description" : "Object not found",
-            "schema" : {
-              "$ref" : "#/definitions/Object not found"
-            }
-          },
-          "401" : {
-            "description" : "Unauthorized request",
-            "schema" : {
-              "$ref" : "#/definitions/Result_Unauthorized"
-            }
-          },
-          "500" : {
-            "description" : "Server side Error"
-          },
-          "403" : {
-            "description" : "Need required permission",
-            "schema" : {
-              "$ref" : "#/definitions/PermissionRequired"
-            }
+              "$ref" : "#/definitions/Result"
+            },
+            "headers" : { }
           }
-        },
-        "x-permission_required" : {
-          "SecurityRole_delete" : "true"
         }
       }
     },
@@ -9309,6 +8762,11 @@
           "readOnly" : true,
           "default" : false
         },
+        "delete_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
         "persons_id" : {
           "type" : "array",
           "readOnly" : true,
@@ -9322,11 +8780,6 @@
           "items" : {
             "type" : "string"
           }
-        },
-        "delete_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
         }
       }
     },
@@ -9373,13 +8826,13 @@
           "type" : "string",
           "format" : "date-time"
         },
+        "payment_method" : {
+          "type" : "string",
+          "readOnly" : true
+        },
         "pdf_link" : {
           "type" : "string",
           "description" : "Visible only when the invoice is available",
-          "readOnly" : true
-        },
-        "payment_method" : {
-          "type" : "string",
           "readOnly" : true
         },
         "require_payment" : {
@@ -9471,7 +8924,7 @@
         },
         "registration_no" : {
           "type" : "string",
-          "description" : "Required: only if company_account = trueThe registration_no must have at least 4 characters"
+          "description" : "Required: only if company_account = trueThe company_registration_no must have at least 4 characters"
         },
         "vat_number" : {
           "type" : "string",
@@ -9545,20 +8998,6 @@
           "readOnly" : true
         }
       }
-    },
-    "LibraryGroup_Version" : {
-      "type" : "object",
-      "required" : [ "version_name" ],
-      "properties" : {
-        "version_name" : {
-          "type" : "string",
-          "description" : "MinLength >= 2"
-        },
-        "version_description" : {
-          "type" : "string"
-        }
-      },
-      "description" : "Json Model for new Version for LibraryGroup"
     },
     "ScreeSizeType_New" : {
       "type" : "object",
@@ -9635,6 +9074,20 @@
       },
       "description" : "Json Model for new Scree Size Type "
     },
+    "LibraryGroup_Version" : {
+      "type" : "object",
+      "required" : [ "version_name" ],
+      "properties" : {
+        "version_name" : {
+          "type" : "string",
+          "description" : "MinLength >= 2"
+        },
+        "version_description" : {
+          "type" : "string"
+        }
+      },
+      "description" : "Json Model for new Version for LibraryGroup"
+    },
     "JsonNode" : {
       "type" : "object",
       "properties" : {
@@ -9646,27 +9099,19 @@
           "type" : "boolean",
           "default" : false
         },
-        "binary" : {
-          "type" : "boolean",
-          "default" : false
-        },
-        "float" : {
-          "type" : "boolean",
-          "default" : false
-        },
         "object" : {
           "type" : "boolean",
           "default" : false
         },
-        "long" : {
+        "binary" : {
           "type" : "boolean",
           "default" : false
         },
-        "short" : {
-          "type" : "boolean",
-          "default" : false
+        "nodeType" : {
+          "type" : "string",
+          "enum" : [ "ARRAY", "BINARY", "BOOLEAN", "MISSING", "NULL", "NUMBER", "OBJECT", "POJO", "STRING" ]
         },
-        "double" : {
+        "float" : {
           "type" : "boolean",
           "default" : false
         },
@@ -9674,19 +9119,11 @@
           "type" : "boolean",
           "default" : false
         },
-        "pojo" : {
+        "long" : {
           "type" : "boolean",
           "default" : false
         },
-        "containerNode" : {
-          "type" : "boolean",
-          "default" : false
-        },
-        "int" : {
-          "type" : "boolean",
-          "default" : false
-        },
-        "missingNode" : {
+        "double" : {
           "type" : "boolean",
           "default" : false
         },
@@ -9694,9 +9131,21 @@
           "type" : "boolean",
           "default" : false
         },
-        "nodeType" : {
-          "type" : "string",
-          "enum" : [ "ARRAY", "BINARY", "BOOLEAN", "MISSING", "NULL", "NUMBER", "OBJECT", "POJO", "STRING" ]
+        "short" : {
+          "type" : "boolean",
+          "default" : false
+        },
+        "pojo" : {
+          "type" : "boolean",
+          "default" : false
+        },
+        "missingNode" : {
+          "type" : "boolean",
+          "default" : false
+        },
+        "containerNode" : {
+          "type" : "boolean",
+          "default" : false
         },
         "integralNumber" : {
           "type" : "boolean",
@@ -9719,6 +9168,10 @@
           "default" : false
         },
         "boolean" : {
+          "type" : "boolean",
+          "default" : false
+        },
+        "int" : {
           "type" : "boolean",
           "default" : false
         }
@@ -9761,7 +9214,7 @@
     },
     "Board" : {
       "type" : "object",
-      "required" : [ "delete_permission", "edit_permission", "id", "isActive", "personal_description", "project_id", "read_permission", "status", "type_of_board_id", "up_to_date", "update_permission" ],
+      "required" : [ "delete_permission", "edit_permission", "id", "isActive", "personal_description", "project_id", "project_name", "read_permission", "status", "type_of_board_id", "type_of_board_name", "up_to_date", "update_permission" ],
       "properties" : {
         "id" : {
           "type" : "string"
@@ -9777,21 +9230,20 @@
           "readOnly" : true,
           "$ref" : "#/definitions/Board_status"
         },
-        "update_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
+        "project_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "type_of_board_id" : {
+          "type" : "string",
+          "readOnly" : true
         },
         "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
         },
-        "project_id" : {
-          "type" : "string",
-          "readOnly" : true
-        },
-        "read_permission" : {
+        "update_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -9800,6 +9252,15 @@
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
+        },
+        "read_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "type_of_board_name" : {
+          "type" : "string",
+          "readOnly" : true
         },
         "up_to_date" : {
           "type" : "boolean",
@@ -9811,7 +9272,7 @@
           "readOnly" : true,
           "$ref" : "#/definitions/boolean"
         },
-        "type_of_board_id" : {
+        "project_name" : {
           "type" : "string",
           "readOnly" : true
         }
@@ -9967,11 +9428,6 @@
         "general_description" : {
           "type" : "string"
         },
-        "update_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
         "versions" : {
           "type" : "array",
           "readOnly" : true,
@@ -9979,7 +9435,21 @@
             "type" : "string"
           }
         },
+        "type_of_block_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
         "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "update_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -9987,37 +9457,8 @@
         "author_id" : {
           "type" : "string",
           "readOnly" : true
-        },
-        "delete_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "type_of_block_id" : {
-          "type" : "string",
-          "readOnly" : true
         }
       }
-    },
-    "Homer_New" : {
-      "type" : "object",
-      "required" : [ "mac_address", "type_of_device" ],
-      "properties" : {
-        "mac_address" : {
-          "type" : "string",
-          "description" : "Required unique value - its MacAddress of Homer"
-        },
-        "type_of_device" : {
-          "type" : "string",
-          "example" : "Raspberry, ServerPC..",
-          "description" : "Its a name of Device"
-        },
-        "project_id" : {
-          "type" : "string",
-          "description" : "Required if user want used Homer with project"
-        }
-      },
-      "description" : "Json Model for new Homer"
     },
     "C_Program_Version" : {
       "type" : "object",
@@ -10073,6 +9514,26 @@
         }
       },
       "description" : "Json Model for Version of C_program"
+    },
+    "Homer_New" : {
+      "type" : "object",
+      "required" : [ "mac_address", "type_of_device" ],
+      "properties" : {
+        "mac_address" : {
+          "type" : "string",
+          "description" : "Required unique value - its MacAddress of Homer"
+        },
+        "type_of_device" : {
+          "type" : "string",
+          "example" : "Raspberry, ServerPC..",
+          "description" : "Its a name of Device"
+        },
+        "project_id" : {
+          "type" : "string",
+          "description" : "Required if user want used Homer with project"
+        }
+      },
+      "description" : "Json Model for new Homer"
     },
     "Person_Password_New" : {
       "type" : "object",
@@ -10152,6 +9613,69 @@
       },
       "description" : "Json Model for Filtering Boards"
     },
+    "C_Program" : {
+      "type" : "object",
+      "required" : [ "dateOfCreate", "delete_permission", "edit_permission", "program_name", "update_permission" ],
+      "properties" : {
+        "id" : {
+          "type" : "string"
+        },
+        "program_name" : {
+          "type" : "string",
+          "description" : "minimal length is 8 characters"
+        },
+        "program_description" : {
+          "type" : "string",
+          "description" : "can be empty"
+        },
+        "dateOfCreate" : {
+          "type" : "integer",
+          "format" : "int32",
+          "example" : "1466163478925",
+          "description" : "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
+          "readOnly" : true
+        },
+        "project_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "type_of_board_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "update_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "delete_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "type_of_board_name" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "program_versions" : {
+          "type" : "array",
+          "readOnly" : true,
+          "items" : {
+            "$ref" : "#/definitions/C_Program_Version"
+          }
+        },
+        "project_name" : {
+          "type" : "string",
+          "readOnly" : true
+        }
+      },
+      "description" : "Object represented C_Program in database"
+    },
     "Type_Of_Block_List" : {
       "type" : "object",
       "required" : [ "content", "from", "pages", "to", "total" ],
@@ -10192,61 +9716,6 @@
         }
       },
       "description" : "Individual Type_Of_Block List"
-    },
-    "C_Program" : {
-      "type" : "object",
-      "required" : [ "dateOfCreate", "delete_permission", "edit_permission", "program_name", "update_permission" ],
-      "properties" : {
-        "id" : {
-          "type" : "string"
-        },
-        "program_name" : {
-          "type" : "string",
-          "description" : "minimal length is 8 characters"
-        },
-        "program_description" : {
-          "type" : "string",
-          "description" : "can be empty"
-        },
-        "dateOfCreate" : {
-          "type" : "integer",
-          "format" : "int32",
-          "example" : "1466163478925",
-          "description" : "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
-          "readOnly" : true
-        },
-        "update_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "edit_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "project_id" : {
-          "type" : "string",
-          "readOnly" : true
-        },
-        "program_versions" : {
-          "type" : "array",
-          "readOnly" : true,
-          "items" : {
-            "$ref" : "#/definitions/C_Program_Version"
-          }
-        },
-        "delete_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "type_of_board_id" : {
-          "type" : "string",
-          "readOnly" : true
-        }
-      },
-      "description" : "Object represented C_Program in database"
     },
     "Login" : {
       "type" : "object",
@@ -10289,7 +9758,7 @@
     },
     "Project" : {
       "type" : "object",
-      "required" : [ "actual_procedures_id", "b_programs_id", "boards_id", "c_programs_id", "delete_permission", "edit_permission", "homers_id", "m_projects_id", "owners_id", "product_id", "product_individual_name", "screen_size_types_id", "share_permission", "type_of_blocks_id", "unshare_permission", "update_permission" ],
+      "required" : [ "actual_procedures_id", "b_programs_id", "boards_id", "bugs", "c_programs_id", "delete_permission", "edit_permission", "errors", "homers_id", "m_projects_id", "participants", "product_id", "product_individual_name", "screen_size_types_id", "share_permission", "tier_name", "type_of_blocks_id", "unshare_permission", "update_permission" ],
       "properties" : {
         "id" : {
           "type" : "string"
@@ -10300,12 +9769,32 @@
         "project_description" : {
           "type" : "string"
         },
+        "errors" : {
+          "type" : "integer",
+          "format" : "int32",
+          "readOnly" : true
+        },
+        "bugs" : {
+          "type" : "integer",
+          "format" : "int32",
+          "readOnly" : true
+        },
+        "product_id" : {
+          "type" : "integer",
+          "format" : "int64",
+          "readOnly" : true
+        },
+        "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
         "update_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
         },
-        "edit_permission" : {
+        "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -10345,13 +9834,6 @@
             "type" : "string"
           }
         },
-        "owners_id" : {
-          "type" : "array",
-          "readOnly" : true,
-          "items" : {
-            "type" : "string"
-          }
-        },
         "type_of_blocks_id" : {
           "type" : "array",
           "readOnly" : true,
@@ -10377,10 +9859,16 @@
           "type" : "string",
           "readOnly" : true
         },
-        "product_id" : {
-          "type" : "integer",
-          "format" : "int64",
+        "tier_name" : {
+          "type" : "string",
           "readOnly" : true
+        },
+        "participants" : {
+          "type" : "array",
+          "readOnly" : true,
+          "items" : {
+            "$ref" : "#/definitions/Project_participant"
+          }
         },
         "unshare_permission" : {
           "type" : "boolean",
@@ -10388,11 +9876,6 @@
           "default" : false
         },
         "share_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -10412,12 +9895,12 @@
         "description" : {
           "type" : "string"
         },
-        "update_permission" : {
+        "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
         },
-        "edit_permission" : {
+        "update_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -10427,14 +9910,14 @@
           "readOnly" : true,
           "default" : false
         },
-        "versions_id" : {
+        "processors_id" : {
           "type" : "array",
           "readOnly" : true,
           "items" : {
             "type" : "string"
           }
         },
-        "processors_id" : {
+        "versions_id" : {
           "type" : "array",
           "readOnly" : true,
           "items" : {
@@ -10509,12 +9992,12 @@
           "type" : "boolean",
           "default" : false
         },
-        "read_permission" : {
+        "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
         },
-        "delete_permission" : {
+        "read_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -10562,11 +10045,6 @@
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
-        },
-        "delete_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
         }
       }
     },
@@ -10604,17 +10082,6 @@
       },
       "description" : "Json Model for sending password recovery email"
     },
-    "B_Program_state_cloud" : {
-      "type" : "object",
-      "properties" : {
-        "instance" : {
-          "$ref" : "#/definitions/Homer_Instance"
-        },
-        "server_name" : {
-          "type" : "string"
-        }
-      }
-    },
     "Board_New" : {
       "type" : "object",
       "required" : [ "hardware_unique_ids", "type_of_board_id" ],
@@ -10632,6 +10099,17 @@
         }
       },
       "description" : "Json Model for create new Board"
+    },
+    "B_Program_state_cloud" : {
+      "type" : "object",
+      "properties" : {
+        "instance" : {
+          "$ref" : "#/definitions/Homer_Instance"
+        },
+        "server_name" : {
+          "type" : "string"
+        }
+      }
     },
     "Additional_package" : {
       "type" : "object",
@@ -10765,47 +10243,6 @@
       },
       "description" : "Json Model for Identificator"
     },
-    "TypeOfBlock" : {
-      "type" : "object",
-      "required" : [ "blockoBlocks", "delete_permission", "edit_permission", "general_description", "id", "name", "update_permission" ],
-      "properties" : {
-        "id" : {
-          "type" : "string"
-        },
-        "name" : {
-          "type" : "string"
-        },
-        "general_description" : {
-          "type" : "string"
-        },
-        "blockoBlocks" : {
-          "type" : "array",
-          "items" : {
-            "$ref" : "#/definitions/BlockoBlock"
-          }
-        },
-        "update_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "edit_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "project_id" : {
-          "type" : "string",
-          "description" : "This value will be in Json only if TypeOfBlock is private!",
-          "readOnly" : true
-        },
-        "delete_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        }
-      }
-    },
     "LibraryGroup_Filter" : {
       "type" : "object",
       "properties" : {
@@ -10846,6 +10283,69 @@
         }
       },
       "description" : "Json Model for new Version for SingleLibrary"
+    },
+    "TypeOfBlock" : {
+      "type" : "object",
+      "required" : [ "blockoBlocks", "delete_permission", "edit_permission", "general_description", "id", "name", "update_permission" ],
+      "properties" : {
+        "id" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "general_description" : {
+          "type" : "string"
+        },
+        "blockoBlocks" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/BlockoBlock"
+          }
+        },
+        "project_id" : {
+          "type" : "string",
+          "description" : "This value will be in Json only if TypeOfBlock is private!",
+          "readOnly" : true
+        },
+        "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "update_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "delete_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        }
+      }
+    },
+    "Project_participant" : {
+      "type" : "object",
+      "required" : [ "state", "user_email" ],
+      "properties" : {
+        "full_name" : {
+          "type" : "string",
+          "description" : "Only if the user is already part of the project"
+        },
+        "user_email" : {
+          "type" : "string",
+          "description" : "Its in object always"
+        },
+        "id" : {
+          "type" : "string",
+          "description" : "Only if the user is already part of the project (for click operations)"
+        },
+        "state" : {
+          "type" : "string",
+          "description" : "Its in object always"
+        }
+      }
     },
     "TypeOfPost" : {
       "type" : "object",
@@ -11014,11 +10514,11 @@
           "type" : "string",
           "description" : "Only if Product is for business"
         },
-        "registration_no" : {
+        "company_registration_no" : {
           "type" : "string",
           "description" : "Only if Product is for business"
         },
-        "vat_number" : {
+        "company_vat_number" : {
           "type" : "string",
           "description" : "Only if Product is for business"
         },
@@ -11178,6 +10678,20 @@
         }
       },
       "description" : "Json Model for new TypeOfConfirms"
+    },
+    "Notification_Read" : {
+      "type" : "object",
+      "required" : [ "notification_id" ],
+      "properties" : {
+        "notification_id" : {
+          "type" : "array",
+          "description" : "List of notification.id",
+          "items" : {
+            "type" : "string"
+          }
+        }
+      },
+      "description" : "Json Model for List with ids of read notifications"
     },
     "B_Program_Filter" : {
       "type" : "object",
@@ -11469,6 +10983,31 @@
       },
       "description" : "Json Model for new Post"
     },
+    "External cloud_blocko_server is offline" : {
+      "type" : "object",
+      "required" : [ "code", "message", "state" ],
+      "properties" : {
+        "state" : {
+          "type" : "string",
+          "description" : "state",
+          "readOnly" : true,
+          "enum" : [ "Object not Found" ]
+        },
+        "code" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "code",
+          "readOnly" : true,
+          "enum" : [ 400 ]
+        },
+        "message" : {
+          "type" : "string",
+          "description" : "Can be null! If not, you can show that to User",
+          "readOnly" : true
+        }
+      },
+      "description" : "External servers (compilation, blocko cloud_blocko_server etc.) are offline"
+    },
     "BlockoBlockVersion" : {
       "type" : "object",
       "required" : [ "create_permission", "date_of_create", "delete_permission", "design_json", "edit_permission", "id", "logic_json", "read_permission", "version_description", "version_name" ],
@@ -11495,17 +11034,12 @@
         "logic_json" : {
           "type" : "string"
         },
-        "create_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
         "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
         },
-        "read_permission" : {
+        "create_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -11514,33 +11048,13 @@
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
+        },
+        "read_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
         }
       }
-    },
-    "External cloud_blocko_server is offline" : {
-      "type" : "object",
-      "required" : [ "code", "message", "state" ],
-      "properties" : {
-        "state" : {
-          "type" : "string",
-          "description" : "state",
-          "readOnly" : true,
-          "enum" : [ "Object not Found" ]
-        },
-        "code" : {
-          "type" : "integer",
-          "format" : "int32",
-          "description" : "code",
-          "readOnly" : true,
-          "enum" : [ 400 ]
-        },
-        "message" : {
-          "type" : "string",
-          "description" : "Can be null! If not, you can show that to User",
-          "readOnly" : true
-        }
-      },
-      "description" : "External servers (compilation, blocko cloud_blocko_server etc.) are offline"
     },
     "Homer_Filter" : {
       "type" : "object",
@@ -11557,37 +11071,6 @@
     },
     "Result" : {
       "type" : "object"
-    },
-    "C_Program_Light" : {
-      "type" : "object",
-      "required" : [ "c_program_id", "c_program_name", "c_program_version_id", "c_program_version_name", "type_of_board_id", "type_of_board_name" ],
-      "properties" : {
-        "c_program_id" : {
-          "type" : "string",
-          "readOnly" : true
-        },
-        "c_program_name" : {
-          "type" : "string",
-          "readOnly" : true
-        },
-        "c_program_version_id" : {
-          "type" : "string",
-          "readOnly" : true
-        },
-        "c_program_version_name" : {
-          "type" : "string",
-          "readOnly" : true
-        },
-        "type_of_board_id" : {
-          "type" : "string",
-          "readOnly" : true
-        },
-        "type_of_board_name" : {
-          "type" : "string",
-          "readOnly" : true
-        }
-      },
-      "description" : "C_Program Light (only few properties)"
     },
     "Grid_Terminal" : {
       "type" : "object",
@@ -11623,6 +11106,37 @@
           "default" : false
         }
       }
+    },
+    "C_Program_Light" : {
+      "type" : "object",
+      "required" : [ "c_program_id", "c_program_name", "c_program_version_id", "c_program_version_name", "type_of_board_id", "type_of_board_name" ],
+      "properties" : {
+        "c_program_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "c_program_name" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "c_program_version_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "c_program_version_name" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "type_of_board_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "type_of_board_name" : {
+          "type" : "string",
+          "readOnly" : true
+        }
+      },
+      "description" : "C_Program Light (only few properties)"
     },
     "Financial_Summary" : {
       "type" : "object",
@@ -11671,9 +11185,6 @@
           "type" : "string"
         },
         "server_name" : {
-          "type" : "string"
-        },
-        "hash_certificate" : {
           "type" : "string"
         },
         "destination_address" : {
@@ -11727,19 +11238,24 @@
           "description" : "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
           "readOnly" : true
         },
-        "update_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
+        "project_id" : {
+          "type" : "string",
+          "readOnly" : true
         },
         "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
         },
-        "project_id" : {
-          "type" : "string",
-          "readOnly" : true
+        "update_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "delete_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
         },
         "program_versions" : {
           "type" : "array",
@@ -11751,11 +11267,6 @@
         "program_state" : {
           "readOnly" : true,
           "$ref" : "#/definitions/B_Program_State"
-        },
-        "delete_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
         }
       }
     },
@@ -11801,14 +11312,23 @@
           "type" : "string",
           "description" : "Visible here only when the object IS specifically required. Inversion value for \"m_code_url\" THIS or THAT!"
         },
+        "screen_size_type_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "m_project_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
         "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
         },
-        "screen_size_type_id" : {
-          "type" : "string",
-          "readOnly" : true
+        "delete_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
         },
         "m_code_id" : {
           "type" : "string",
@@ -11824,15 +11344,6 @@
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
-        },
-        "delete_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "m_project_id" : {
-          "type" : "string",
-          "readOnly" : true
         }
       }
     },
@@ -11861,19 +11372,6 @@
       },
       "description" : "Called object is missing. You can show that to Person"
     },
-    "Main_Board" : {
-      "type" : "object",
-      "required" : [ "board_id", "c_program_version_id" ],
-      "properties" : {
-        "board_id" : {
-          "type" : "string",
-          "description" : "TypeofBoard of this Board must be connectible_to_internet = true "
-        },
-        "c_program_version_id" : {
-          "type" : "string"
-        }
-      }
-    },
     "SingleLibrary_Filter" : {
       "type" : "object",
       "properties" : {
@@ -11899,6 +11397,19 @@
         }
       },
       "description" : "Json Model for getting Single Library by Filter"
+    },
+    "Main_Board" : {
+      "type" : "object",
+      "required" : [ "board_id", "c_program_version_id" ],
+      "properties" : {
+        "board_id" : {
+          "type" : "string",
+          "description" : "TypeofBoard of this Board must be connectible_to_internet = true "
+        },
+        "c_program_version_id" : {
+          "type" : "string"
+        }
+      }
     },
     "B_Program_Version_New" : {
       "type" : "object",
@@ -12206,16 +11717,6 @@
       },
       "description" : "Json Model for details about Tariff"
     },
-    "Blocko_Block_Filter" : {
-      "type" : "object",
-      "properties" : {
-        "project_id" : {
-          "type" : "string",
-          "description" : "Include only if you want to get Blocks of given project"
-        }
-      },
-      "description" : "Json Model for getting Blocko_Block Filter List"
-    },
     "C_Program_Version_Update" : {
       "type" : "object",
       "required" : [ "main" ],
@@ -12241,6 +11742,16 @@
         }
       },
       "description" : "Json Model for new Version of C_Program"
+    },
+    "Blocko_Block_Filter" : {
+      "type" : "object",
+      "properties" : {
+        "project_id" : {
+          "type" : "string",
+          "description" : "Include only if you want to get Blocks of given project"
+        }
+      },
+      "description" : "Json Model for getting Blocko_Block Filter List"
     },
     "External_Libraries" : {
       "type" : "object",
@@ -12395,15 +11906,12 @@
     },
     "Cloud_Compilation_Server" : {
       "type" : "object",
-      "required" : [ "delete_permission", "destination_address", "edit_permission", "hash_certificate", "id", "server_is_online", "server_name" ],
+      "required" : [ "delete_permission", "destination_address", "edit_permission", "id", "server_is_online", "server_name" ],
       "properties" : {
         "id" : {
           "type" : "string"
         },
         "server_name" : {
-          "type" : "string"
-        },
-        "hash_certificate" : {
           "type" : "string"
         },
         "destination_address" : {
@@ -12471,7 +11979,7 @@
         },
         "state" : {
           "type" : "string",
-          "description" : "Find description on Model C_ProgramUpdater_State",
+          "description" : "Description on Model C_ProgramUpdater_State",
           "enum" : [ "complete", "canceled", "in_progress", "overwritten", "waiting_for_device", "instance_inaccessible", "homer_server_is_offline", "critical_error" ]
         },
         "c_program_detail" : {
@@ -12491,84 +11999,6 @@
           "description" : "Is visible only if user send own binary file ( OR state for c_program_detail)",
           "readOnly" : true,
           "$ref" : "#/definitions/FileRecord"
-        }
-      }
-    },
-    "Private_Homer_Server" : {
-      "type" : "object",
-      "properties" : {
-        "id" : {
-          "type" : "string"
-        },
-        "mac_address" : {
-          "type" : "string"
-        },
-        "type_of_device" : {
-          "type" : "string"
-        },
-        "version" : {
-          "type" : "string"
-        },
-        "update_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "online" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "edit_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "project_id" : {
-          "type" : "string",
-          "readOnly" : true
-        },
-        "delete_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        }
-      }
-    },
-    "SingleLibrary" : {
-      "type" : "object",
-      "required" : [ "delete_permission", "description", "edit_permission", "id", "library_name", "update_permission", "versions_id" ],
-      "properties" : {
-        "id" : {
-          "type" : "string"
-        },
-        "description" : {
-          "type" : "string"
-        },
-        "library_name" : {
-          "type" : "string"
-        },
-        "update_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "edit_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "delete_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "versions_id" : {
-          "type" : "array",
-          "readOnly" : true,
-          "items" : {
-            "type" : "string"
-          }
         }
       }
     },
@@ -12605,6 +12035,84 @@
       },
       "description" : "Json Model for new M_Program"
     },
+    "SingleLibrary" : {
+      "type" : "object",
+      "required" : [ "delete_permission", "description", "edit_permission", "id", "library_name", "update_permission", "versions_id" ],
+      "properties" : {
+        "id" : {
+          "type" : "string"
+        },
+        "description" : {
+          "type" : "string"
+        },
+        "library_name" : {
+          "type" : "string"
+        },
+        "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "update_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "delete_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "versions_id" : {
+          "type" : "array",
+          "readOnly" : true,
+          "items" : {
+            "type" : "string"
+          }
+        }
+      }
+    },
+    "Private_Homer_Server" : {
+      "type" : "object",
+      "properties" : {
+        "id" : {
+          "type" : "string"
+        },
+        "mac_address" : {
+          "type" : "string"
+        },
+        "type_of_device" : {
+          "type" : "string"
+        },
+        "version" : {
+          "type" : "string"
+        },
+        "project_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "update_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "delete_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "online" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        }
+      }
+    },
     "Server_detail" : {
       "type" : "object",
       "required" : [ "instnace_id", "is_private", "server_id", "server_name" ],
@@ -12640,12 +12148,6 @@
         "full_name" : {
           "type" : "string",
           "description" : "min length = 4"
-        },
-        "first_title" : {
-          "type" : "string"
-        },
-        "last_title" : {
-          "type" : "string"
         }
       },
       "description" : "Json Model for update Person. (For password or email, you have to used separate API)"
@@ -12714,15 +12216,15 @@
           "type" : "string",
           "readOnly" : true
         },
-        "virtual_input_output" : {
-          "type" : "string",
-          "readOnly" : true
-        },
         "c_program_id" : {
           "type" : "string",
           "readOnly" : true
         },
         "c_program_version_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "virtual_input_output" : {
           "type" : "string",
           "readOnly" : true
         }
@@ -12794,21 +12296,6 @@
         }
       },
       "description" : "Json Model for new Comment"
-    },
-    "Producer_New" : {
-      "type" : "object",
-      "required" : [ "description", "name" ],
-      "properties" : {
-        "name" : {
-          "type" : "string",
-          "description" : "The name must have at least 4 characters, must be unique!"
-        },
-        "description" : {
-          "type" : "string",
-          "description" : "The description must have at least 8 characters"
-        }
-      },
-      "description" : "Json Model for new Producer"
     },
     "Board_List" : {
       "type" : "object",
@@ -12895,7 +12382,7 @@
         },
         "registration_no" : {
           "type" : "string",
-          "description" : "Required: only if account is businessThe registration_no must have at least 4 characters"
+          "description" : "Required: only if account is businessThe company_registration_no must have at least 4 characters"
         },
         "vat_number" : {
           "type" : "string",
@@ -12989,17 +12476,22 @@
             "$ref" : "#/definitions/Post"
           }
         },
-        "edit_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
         "hashTags" : {
           "type" : "array",
           "readOnly" : true,
           "items" : {
             "type" : "string"
           }
+        },
+        "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "delete_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
         },
         "type_of_confirms" : {
           "type" : "array",
@@ -13028,11 +12520,6 @@
           "default" : false
         },
         "edit_confirms_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -13109,29 +12596,29 @@
             "$ref" : "#/definitions/M_Program"
           }
         },
-        "update_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
+        "project_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "b_program_id" : {
+          "type" : "string",
+          "description" : "can be empty",
+          "readOnly" : true
         },
         "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
         },
-        "project_id" : {
-          "type" : "string",
-          "readOnly" : true
+        "update_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
         },
         "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
-        },
-        "b_program_id" : {
-          "type" : "string",
-          "description" : "can be empty",
-          "readOnly" : true
         },
         "b_progam_connected_version_id" : {
           "type" : "string",
@@ -13139,6 +12626,22 @@
           "readOnly" : true
         }
       }
+    },
+    "Type_Of_Block_Filter" : {
+      "type" : "object",
+      "required" : [ "private_type" ],
+      "properties" : {
+        "project_id" : {
+          "type" : "string",
+          "description" : "Include only if you want to get Type_Of_Blocks of given project"
+        },
+        "private_type" : {
+          "type" : "boolean",
+          "description" : "Use 'true' for private Type_Of_Block or 'false' for non-private",
+          "default" : false
+        }
+      },
+      "description" : "Json Model for getting Type_Of_Block Filter List"
     },
     "B_Program_Light" : {
       "type" : "object",
@@ -13170,22 +12673,6 @@
         }
       },
       "description" : "B_Program Light (only few properties)"
-    },
-    "Type_Of_Block_Filter" : {
-      "type" : "object",
-      "required" : [ "private_type" ],
-      "properties" : {
-        "project_id" : {
-          "type" : "string",
-          "description" : "Include only if you want to get Type_Of_Blocks of given project"
-        },
-        "private_type" : {
-          "type" : "boolean",
-          "description" : "Use 'true' for private Type_Of_Block or 'false' for non-private",
-          "default" : false
-        }
-      },
-      "description" : "Json Model for getting Type_Of_Block Filter List"
     },
     "Entity_Validation_In" : {
       "type" : "object",
@@ -13219,25 +12706,33 @@
           "type" : "boolean",
           "default" : false
         },
-        "edit_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "register_new_device_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
+        "processor_id" : {
+          "type" : "string",
+          "readOnly" : true
         },
         "producer_id" : {
           "type" : "string",
           "readOnly" : true
         },
-        "processor_id" : {
+        "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "delete_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "processor_name" : {
           "type" : "string",
           "readOnly" : true
         },
-        "delete_permission" : {
+        "producer_name" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "register_new_device_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -13337,6 +12832,20 @@
         }
       }
     },
+    "M_Project_New" : {
+      "type" : "object",
+      "required" : [ "program_name" ],
+      "properties" : {
+        "program_description" : {
+          "type" : "string"
+        },
+        "program_name" : {
+          "type" : "string",
+          "description" : "MinLength >= 4"
+        }
+      },
+      "description" : "Json Model for update M_Project"
+    },
     "B_Program_Version" : {
       "type" : "object",
       "required" : [ "connected_boards", "master_board", "program", "version_Object" ],
@@ -13377,20 +12886,6 @@
         }
       },
       "description" : "Json Model for new B_Program"
-    },
-    "M_Project_New" : {
-      "type" : "object",
-      "required" : [ "notification_id" ],
-      "properties" : {
-        "notification_id" : {
-          "type" : "array",
-          "description" : "List of notification.id",
-          "items" : {
-            "type" : "string"
-          }
-        }
-      },
-      "description" : "Json Model for List with ids of read notifications"
     },
     "Board_detail" : {
       "type" : "object",
@@ -13486,6 +12981,17 @@
       },
       "description" : "Individual B_Program List"
     },
+    "Compilation_Server" : {
+      "type" : "object",
+      "required" : [ "server_name" ],
+      "properties" : {
+        "server_name" : {
+          "type" : "string",
+          "description" : "Unique name For Compiler cloud_blocko_server, The name must have at least 6 characters"
+        }
+      },
+      "description" : "Json Model for new Compilation Server"
+    },
     "Board_status" : {
       "type" : "object",
       "required" : [ "actual_c_program_id", "actual_c_program_version_id", "b_program_id", "b_program_version_id", "where" ],
@@ -13528,17 +13034,6 @@
         }
       },
       "description" : "Json Model for Status and all information about embedded Hardware"
-    },
-    "Compilation_Server" : {
-      "type" : "object",
-      "required" : [ "server_name" ],
-      "properties" : {
-        "server_name" : {
-          "type" : "string",
-          "description" : "Unique name For Compiler cloud_blocko_server, The name must have at least 6 characters"
-        }
-      },
-      "description" : "Json Model for new Compilation Server"
     }
   }
 }
