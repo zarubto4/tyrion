@@ -3,7 +3,7 @@ package utilities.swagger.outboundClass;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.compiler.Version_Object;
-import models.project.b_program.B_Pair;
+import models.project.b_program.B_Program_Hw_Group;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,11 +17,11 @@ public class Swagger_B_Program_Version {
     public Version_Object version_Object;
 
     @ApiModelProperty(required = true, readOnly = true)
-    public List<B_Pair> connected_boards = new ArrayList<>();
+    public List<B_Program_Hw_Group> hardware_groups = new ArrayList<>();
 
-    @ApiModelProperty(required = true, readOnly = true)
-    public B_Pair master_board;
 
     @ApiModelProperty(required = true, readOnly = true)
     public String program;
+
+
 }

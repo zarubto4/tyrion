@@ -8,6 +8,7 @@ import play.data.validation.Constraints;
 import play.libs.Json;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -27,15 +28,14 @@ public class Swagger_C_Program_Version_Update {
     public String main;
 
     @Valid
-    public List<User_Files> user_files;
+    public List<User_Files> user_files = new ArrayList<>();
 
     @Valid
-    public List<External_Libraries> external_libraries;
+    public List<External_Libraries> external_libraries = new ArrayList<>();
 
 
     public static class User_Files {
-        public User_Files() {
-        }
+        public User_Files() {}
 
         public String file_name;
         public String code;

@@ -18,6 +18,9 @@ public class TypeOfBoard extends Model {
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
      @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true) public String id;
                                                              @ApiModelProperty(required = true) public String name;
+                                                                                    @JsonIgnore public String compiler_target_name;
+                                                             @ApiModelProperty(required = true) public String revision;
+
                        @Column(columnDefinition = "TEXT")    @ApiModelProperty(required = true) public String description;
                                                                         @JsonIgnore  @ManyToOne public Producer producer;
                                                                         @JsonIgnore  @ManyToOne public Processor processor;

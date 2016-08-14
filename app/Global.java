@@ -6,6 +6,7 @@ import play.mvc.Action;
 import play.mvc.Http;
 import utilities.Server;
 import utilities.UtilTools;
+import utilities.demo_data.Basic_Data;
 
 import java.lang.reflect.Method;
 import java.util.Date;
@@ -23,11 +24,11 @@ public class Global extends GlobalSettings {
            logger.warn("Setting global values");
            Server.set_Server_address();
 
-           //3
+           //2
            logger.warn("Setting system Permission");
            Server.setPermission();
 
-           //4
+           //3
            logger.warn("Setting logback configuration");
            Server.set_Logback();
 
@@ -35,29 +36,31 @@ public class Global extends GlobalSettings {
            logger.warn("Setting Directory for Files");
            Server.setDirectory();
 
+           //5
            logger.warn("Starting actualization threads");
            Server.startThreads();
 
+           //6
            logger.warn("Starting all scheduler threads");
            Server.startScheduling_procedures();
-    //****************************************************************************************************************************
-            UtilTools.set_Developer_objects(); // TODO bude smazáno - slouží jen k vytvoření prvního uživatele
-            UtilTools.set_Homer_Server();
-            UtilTools.set_Compilation_Server();
-            UtilTools.set_Type_of_board();
 
+           //7
+           logger.warn("Creating default system data in database");
+           Basic_Data.set_default_objects();
+
+           //8
+           logger.warn("Creating Administrator");
+           UtilTools.set_Developer_objects();
+    //****************************************************************************************************************************
+
+           logger.warn("Creating demo data");
+           Basic_Data.set_basic_demo_data();
 
        }catch (Exception e){
           logger.error( "Server Start Exception - Global Settings",e);
        }
-
     }
 
-    //
-    public void byScheduling(){
-
-
-    }
 
     @Override
     public void onStop(Application app){

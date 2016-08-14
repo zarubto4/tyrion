@@ -16,6 +16,7 @@ import models.project.b_program.servers.Private_Homer_Server;
 import models.project.c_program.C_Program;
 import models.project.c_program.actualization.Actualization_procedure;
 import models.project.m_program.M_Project;
+import utilities.swagger.documentationClass.Swagger_Object_detail;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -52,8 +53,8 @@ public class Project extends Model {
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> homers_id()           { List<String> l = new ArrayList<>();  for( Private_Homer_Server m    : privateHomerServerList)   l.add(m.id); return l;  }
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> boards_id()           { List<String> l = new ArrayList<>();  for( Board m                   : boards)                   l.add(m.id); return l;  }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> b_programs_id()       { List<String> l = new ArrayList<>();  for( B_Program m               : b_programs)               l.add(m.id); return l;  }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> c_programs_id()       { List<String> l = new ArrayList<>();  for( C_Program m               : c_programs)               l.add(m.id); return l;  }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Object_detail> b_programs()   { List<Swagger_Object_detail> l = new ArrayList<>();  for( B_Program m        : b_programs)               l.add(new Swagger_Object_detail(m.name, m.id)); return l;  }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Object_detail> c_programs()   { List<Swagger_Object_detail> l = new ArrayList<>();  for( C_Program m        : c_programs)               l.add(new Swagger_Object_detail(m.program_name, m.id)); return l;  }
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> m_projects_id()       { List<String> l = new ArrayList<>();  for( M_Project m               : m_projects)               l.add(m.id); return l;  }
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> type_of_blocks_id()   { List<String> l = new ArrayList<>();  for( TypeOfBlock m             : type_of_blocks)           l.add(m.id); return l;  }
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> screen_size_types_id(){ List<String> l = new ArrayList<>();  for( Screen_Size_Type m        : screen_size_types)        l.add(m.id); return l;  }
@@ -96,17 +97,15 @@ public class Project extends Model {
     }
 
 
+/* POMOCNÉ TŘÍDY ---------------------------------------------------------------------------------------------------------*/
+
+
     public class Project_participant {
         @JsonProperty @Transient @ApiModelProperty(required = false, value = "Only if the user is already part of the project") public String full_name;
         @JsonProperty @Transient @ApiModelProperty(required = true, value = "Its in object always") public String user_email;
         @JsonProperty @Transient @ApiModelProperty(required = false, value = "Only if the user is already part of the project (for click operations)")  public String id;
         @JsonProperty @Transient @ApiModelProperty(required = true, value = "Its in object always")  public String state;
     }
-
-  //   @JsonProperty @Transient @ApiModelProperty(required = true) public Integer server_name() { return 0;}
-  //  @JsonProperty @Transient @ApiModelProperty(required = true) public Integer errors() { return 0;}
-  //  @JsonProperty @Transient @ApiModelProperty(required = true) public Integer bugs() { return 0;}
-
 
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/

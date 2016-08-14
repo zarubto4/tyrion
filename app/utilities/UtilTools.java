@@ -4,9 +4,7 @@ import com.microsoft.azure.storage.blob.CloudBlob;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import com.microsoft.azure.storage.blob.ListBlobItem;
-import models.compiler.Cloud_Compilation_Server;
 import models.compiler.FileRecord;
-import models.compiler.TypeOfBoard;
 import models.compiler.Version_Object;
 import models.grid.Screen_Size_Type;
 import models.overflow.HashTag;
@@ -14,7 +12,6 @@ import models.overflow.Post;
 import models.person.Person;
 import models.person.PersonPermission;
 import models.person.SecurityRole;
-import models.project.b_program.servers.Cloud_Homer_Server;
 import play.Logger;
 import play.mvc.Controller;
 
@@ -241,7 +238,6 @@ public class UtilTools extends Controller {
     public static void remove_file_from_Azure(FileRecord file){
         try{
 
-
             CloudBlobContainer container = Server.blobClient.getContainerReference( "product");
             CloudBlob blob = container.getBlockBlobReference( file.get_path() );
             blob.delete();
@@ -263,58 +259,7 @@ public class UtilTools extends Controller {
         return  map;
     }
 
-    public static void set_Type_of_board(){
 
-        if(TypeOfBoard.find.where().eq("name", "BYZANCE_YODAG2").findList().size() < 1){
-
-            TypeOfBoard typeOfBoard = new TypeOfBoard();
-            typeOfBoard.name = "BYZANCE_YODAG2";
-            typeOfBoard.connectible_to_internet = true;
-            typeOfBoard.description = "testovací deska pro kompilaci";
-            typeOfBoard.save();
-        }
-
-    }
-
-    public static void set_Homer_Server(){
-
-        if(Cloud_Homer_Server.find.where().eq("server_name", "Alfa").findUnique() == null ){
-            Cloud_Homer_Server server = new Cloud_Homer_Server();
-            server.server_name = "Alfa";
-            server.destination_address = Server.tyrion_webSocketAddress + "/websocket/compilation_server/" + server.server_name;
-            server.set_hash_certificate();
-            server.save();
-        }
-
-        if(Cloud_Homer_Server.find.where().eq("server_name", "Beta").findUnique() == null ){
-            Cloud_Homer_Server server = new Cloud_Homer_Server();
-            server.server_name = "Beta";
-            server.destination_address = Server.tyrion_webSocketAddress + "/websocket/compilation_server/" + server.server_name;
-            server.set_hash_certificate();
-            server.save();
-        }
-
-    }
-
-    public static void set_Compilation_Server(){
-
-        if(Cloud_Compilation_Server.find.where().eq("server_name", "Alfa").findUnique() == null ){
-            Cloud_Compilation_Server server = new Cloud_Compilation_Server();
-            server.server_name = "Alfa";
-            server.destination_address = Server.tyrion_webSocketAddress + "/websocket/compilation_server/" + server.server_name;
-            server.set_hash_certificate();
-            server.save();
-        }
-
-        if(Cloud_Compilation_Server.find.where().eq("server_name", "ubuntu1").findUnique() == null ){
-            Cloud_Compilation_Server server = new Cloud_Compilation_Server();
-            server.server_name = "ubuntu1";
-            server.destination_address = Server.tyrion_webSocketAddress + "/websocket/compilation_server/" + server.server_name;
-            server.set_hash_certificate();
-            server.save();
-        }
-
-    }
 
     public static void set_Developer_objects(){
 

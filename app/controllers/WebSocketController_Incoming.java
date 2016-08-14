@@ -11,7 +11,9 @@ import models.compiler.Cloud_Compilation_Server;
 import models.compiler.Version_Object;
 import models.notification.Notification;
 import models.person.Person;
+import models.project.b_program.B_Pair;
 import models.project.b_program.B_Program;
+import models.project.b_program.B_Program_Hw_Group;
 import models.project.b_program.Homer_Instance;
 import models.project.b_program.servers.Cloud_Homer_Server;
 import models.project.m_program.Grid_Terminal;
@@ -26,6 +28,7 @@ import utilities.loginEntities.Secured_API;
 import utilities.loginEntities.TokenCache;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_Unauthorized;
+import utilities.swagger.documentationClass.Swagger_Instance_HW_Group;
 import utilities.swagger.outboundClass.Swagger_Websocket_Token;
 import utilities.webSocket.*;
 
@@ -680,7 +683,22 @@ public class WebSocketController_Incoming extends Controller {
             result.put("messageType", "createInstance");
             result.put("messageChannel", "homer-server");
             result.put("instanceId", instance.blocko_instance_name);
-            result.put("macAddress", instance.macAddress);
+
+            List<Swagger_Instance_HW_Group> hw_groups = new ArrayList<>();
+            for(B_Program_Hw_Group b_program_hw_group : instance.version_object.b_program_hw_groups){
+
+               if(b_program_hw_group.main_board_pair != null ){
+                   Swagger_Instance_HW_Group group = new Swagger_Instance_HW_Group();
+                   group.yoda_id = (b_program_hw_group.main_board_pair.board.id);
+
+                   for(B_Pair pair : b_program_hw_group.device_board_pairs){
+                       group.devices_id.add(pair.board.id);
+                   }
+                   hw_groups.add(group);
+               }
+            }
+
+            result.set("devices", Json.toJson(hw_groups));
 
             logger.debug("Sending to cloud_blocko_server request for new instance ");
             JsonNode result_instance = blockoServer.write_with_confirmation( result);

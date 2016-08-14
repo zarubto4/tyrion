@@ -55,11 +55,6 @@ public class FloatingPersonToken extends Model {
         this.setDate();
     }
 
-    @JsonIgnore
-    public void set_basic_values(String token) {
-        this.setToken( token );
-        this.setDate();
-    }
 
     @JsonIgnore
     private void setToken(String token){

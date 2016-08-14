@@ -2,6 +2,7 @@ package models.project.b_program;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import controllers.WebSocketController_Incoming;
 import io.swagger.annotations.ApiModelProperty;
 import models.compiler.Board;
 import models.compiler.Version_Object;
@@ -25,10 +26,12 @@ public class Homer_Instance extends Model {
 
                                                     @JsonIgnore     public String blocko_instance_name;
         @JsonIgnore @OneToOne   @JoinColumn(name="vrs_obj_id")      public Version_Object version_object;
-                                                                    public String macAddress;
                                          @JsonIgnore @ManyToOne()   public Project project;
 
+
     @ApiModelProperty(required = true, dataType = "integer", readOnly = true,  value = "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970", example = "1466163478925")         public Date running_from;
+
+
 
     @OneToOne(mappedBy="private_instance",  cascade = CascadeType.MERGE, fetch = FetchType.LAZY)   public Board private_instance_board;
 
@@ -43,6 +46,22 @@ public class Homer_Instance extends Model {
                 this.blocko_instance_name = UUID.randomUUID().toString();
                 if (Homer_Instance.find.where().eq("blocko_instance_name", blocko_instance_name ).findUnique() == null) break;
             }
+    }
+
+    @Override
+    public void delete(){
+
+        if(cloud_homer_server.server_is_online()){
+            try {
+
+                WebSocketController_Incoming.blocko_server_remove_instance( cloud_homer_server.get_server_webSocket_connection() ,blocko_instance_name);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        super.delete();
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

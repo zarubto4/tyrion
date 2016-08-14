@@ -26,28 +26,28 @@ public class Swagger_B_Program_Version_New {
     public String program;
 
 
+    @Valid
+    @ApiModelProperty(value = "Connected groups of hardware - User can create Blocko program without hardware.", required = false)
+    public List<Hardware_group> hardware_group  = new ArrayList<>();
+
 // ---------------------------------------------------------------------------------------------------------------------
 
+    public static class Hardware_group {
 
-    @ApiModelProperty(value = "This board must be connectible_to_internet = true! User can create new version without Main Board, but its not possible to upload that to cloud like new Instance", required = false)
-    @Valid
-    public Main_Board main_board;
+        public Hardware_group(){}
 
-    // TODO http://youtrack.byzance.cz/youtrack/issue/TYRION-263 Main_Board by se mělo transformovat na pole a integrovat do sebe zařízení které jsou na něj vázané (to jest obsahovat Connected_Board)
+        @ApiModelProperty(value = "This board must be connectible_to_internet = true! User can create new B_Program version without Main Board, but its not possible to upload that to cloud like new Instance" +
+                                  "",
+                          required = true)
+        @Valid
+        public Connected_Board main_board;
 
-    public static class Main_Board {
-        public Main_Board(){}
+        @Valid
+        @ApiModelProperty(value = "Connected boards (padavans)", required = false)
+        public List<Connected_Board> boards = new ArrayList<>();
 
-        @Constraints.Required @ApiModelProperty(required = true, value = "TypeofBoard of this Board must be connectible_to_internet = true ") public String board_id;
-        @Constraints.Required @ApiModelProperty(required = true) public String c_program_version_id;
+
     }
-
-
-// ---------------------------------------------------------------------------------------------------------------------
-
-    @Valid
-    @ApiModelProperty(value = "Connected boards (padavans)", required = false)
-    public List<Connected_Board> boards = new ArrayList<Connected_Board>();
 
     public static class Connected_Board {
         public Connected_Board(){}

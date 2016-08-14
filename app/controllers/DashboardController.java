@@ -91,17 +91,17 @@ public class DashboardController extends Controller {
 
     public Result return_page( Html content){
 
-        List<String> fileNames = new ArrayList<>();
-        File[] files = new File(application.path() + "/conf/swagger_history").listFiles();
+      //  List<String> fileNames = new ArrayList<>();
+       // File[] files = new File(application.path() + "/conf/swagger_history").listFiles();
 
-        for (File file : files) { fileNames.add((file.getName().substring(0, file.getName().lastIndexOf('.'))).replace("_", "."));}
+     //   for (File file : files) { fileNames.add((file.getName().substring(0, file.getName().lastIndexOf('.'))).replace("_", "."));}
 
-        Html menu_html = menu.render(reported_bugs, connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers, connectedCompile_servers, link_api_swagger, fileNames);
+        Html menu_html = menu.render(reported_bugs, connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers, connectedCompile_servers, link_api_swagger);
 
         return ok( main.render(menu_html,
                 content,
-                server_mode,
-                server_version)
+                server_mode
+                )
         );
     }
 

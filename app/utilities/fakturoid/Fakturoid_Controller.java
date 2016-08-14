@@ -29,7 +29,7 @@ public class Fakturoid_Controller extends Controller {
 
 
 
-// PUBLIC CONTROLLERS METHODS #####################################################################################################
+// PUBLIC CONTROLLERS METHODS ##########################################################################################
 
 
     public Result get_PDF_Invoice(Long invoice_id){
@@ -48,7 +48,7 @@ public class Fakturoid_Controller extends Controller {
     }
 
 
-// PRIVATE EXECUTIVE METHODS #####################################################################################################
+// PRIVATE EXECUTIVE METHODS ###########################################################################################
 
     public static Invoice create_proforma(Product product, Invoice invoice){
 
@@ -115,7 +115,7 @@ public class Fakturoid_Controller extends Controller {
         return invoice;
     }
 
-    public void send_Invoice_to_Email(Invoice invoice){
+    public static void send_Invoice_to_Email(Invoice invoice){
         try {
 
             logger.debug("Trying send PDF Invoice to User Email");
@@ -157,7 +157,7 @@ public class Fakturoid_Controller extends Controller {
         }
     }
 
-    public void  send_UnPaidInvoice_to_Email(Invoice invoice){
+    public static  void send_UnPaidInvoice_to_Email(Invoice invoice){
 
         try{
 

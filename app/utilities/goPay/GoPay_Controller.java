@@ -253,7 +253,7 @@ public class GoPay_Controller  extends Controller {
                 invoice.proforma = false;
                 invoice.update();
 
-                new Fakturoid_Controller().send_Invoice_to_Email(invoice);
+                Fakturoid_Controller.send_Invoice_to_Email(invoice);
 
             }
             else if(response.getStatus() == 200) {
@@ -262,7 +262,7 @@ public class GoPay_Controller  extends Controller {
                 logger.warn("Set a time limit protection for account");
                 logger.warn("Sending email with Proforma and with request for MONEY!!!! MONEY!!! ");
 
-                new Fakturoid_Controller().send_UnPaidInvoice_to_Email(invoice);
+                Fakturoid_Controller.send_UnPaidInvoice_to_Email(invoice);
             }
             else{
                 logger.error("Unknown Error");

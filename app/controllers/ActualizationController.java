@@ -6,6 +6,7 @@ import models.compiler.Board;
 import models.compiler.FileRecord;
 import models.compiler.Version_Object;
 import models.project.b_program.B_Pair;
+import models.project.b_program.B_Program_Hw_Group;
 import models.project.b_program.Homer_Instance;
 import models.project.c_program.actualization.Actualization_procedure;
 import models.project.c_program.actualization.C_Program_Update_Plan;
@@ -312,7 +313,7 @@ public class ActualizationController extends Controller {
 
     }
 
-    public static void add_new_actualization_request(Project project, Homer_Instance program_cloud) {
+    public static void add_new_actualization_request_Checking_HW_Firmware(Project project, Homer_Instance program_cloud) {
 
         try {
 
@@ -328,60 +329,65 @@ public class ActualizationController extends Controller {
             procedure.project = project;
             procedure.save();
 
-            // Seznam zařízení určených k Updatu
-            List<B_Pair> list = program_cloud.version_object.padavan_board_pairs;
+            // - Uložení bych nechal nakonec??? Co když nemám  nic k aktualizaci????
 
-            // Přidání do seznamu Master Yodu
-            list.add(program_cloud.version_object.yoda_board_pair);
 
             // Sem sesbírám aktualizační procedury, kterých se týkají změny v old_plans
             Map<String, Actualization_procedure> actualization_procedures = new HashMap<>();
 
-            for (B_Pair p : list) {
+            for(B_Program_Hw_Group group : program_cloud.version_object.b_program_hw_groups) {
 
-                logger.debug("Checking Pair:" + p.id + " for actualization where is board: " + p.board.id);
+                List<B_Pair> list = group.device_board_pairs;
+                list.add(group.main_board_pair);
 
-                // Tady chci zrušit všechny předchozí procedury vázající se na seznam příchozího hardwaru!
+                for (B_Pair p : list) {
 
-                //1. Najdu předchozí procedury, které nejsou nějakým způsobem ukončené
-                List<C_Program_Update_Plan> old_plans = C_Program_Update_Plan.find.where()
-                        .eq("board.id", p.board.id).where()
-                        .disjunction()
-                        .add(Expr.eq("state", C_ProgramUpdater_State.waiting_for_device))
-                        .add(Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible))
-                        .add(Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline))
-                        .add(Expr.isNull("state"))
-                        .findList();
+                    logger.debug("Checking Pair:" + p.id + " for actualization where is board: " + p.board.id);
 
-                //2 Měl bych zkontrolovat zda ještě nejsou nějaké aktualizace v chodu
+                    // Tady chci zrušit všechny předchozí procedury vázající se na seznam příchozího hardwaru!
 
-                logger.debug("The number still valid update plans that must be override: " + old_plans.size());
+                    //1. Najdu předchozí procedury, které nejsou nějakým způsobem ukončené
+                    List<C_Program_Update_Plan> old_plans = C_Program_Update_Plan.find.where()
+                            .eq("board.id", p.board.id).where()
+                            .disjunction()
+                            .add(Expr.eq("state", C_ProgramUpdater_State.waiting_for_device))
+                            .add(Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible))
+                            .add(Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline))
+                            .add(Expr.isNull("state"))
+                            .findList();
 
-                //3. Neukončené procedury ukončím
-                for (C_Program_Update_Plan old_plan : old_plans) {
+                    //2 Měl bych zkontrolovat zda ještě nejsou nějaké aktualizace v chodu
 
-                    logger.debug("Old plan for override under B_Program in Cloud: " + old_plan.id);
+                    logger.debug("The number still valid update plans that must be override: " + old_plans.size());
 
-                    if (!actualization_procedures.containsKey(old_plan.actualization_procedure.id)) {
-                        actualization_procedures.put(old_plan.actualization_procedure.id, old_plan.actualization_procedure);
+                    //3. Neukončené procedury ukončím
+                    for (C_Program_Update_Plan old_plan : old_plans) {
+
+                        logger.debug("Old plan for override under B_Program in Cloud: " + old_plan.id);
+
+                        if (!actualization_procedures.containsKey(old_plan.actualization_procedure.id)) {
+                            actualization_procedures.put(old_plan.actualization_procedure.id, old_plan.actualization_procedure);
+                        }
+
+                        old_plan.state = C_ProgramUpdater_State.overwritten;
+                        old_plan.update();
                     }
 
-                    old_plan.state = C_ProgramUpdater_State.overwritten;
-                    old_plan.update();
+                    logger.debug("Crating new update plan procedure");
+
+                    // Vytvářím nový aktualizační plán
+                    C_Program_Update_Plan plan = new C_Program_Update_Plan();
+                    plan.board = p.board;
+                    plan.c_program_version_for_update = p.c_program_version;
+                    plan.actualization_procedure = procedure;
+                    plan.save();
+                    procedure.updates.add(plan);
+
+                    logger.debug("Crating update procedure done");
                 }
-
-                logger.debug("Crating new update plan procedure");
-
-                // Vytvářím nový aktualizační plán
-                C_Program_Update_Plan plan = new C_Program_Update_Plan();
-                plan.board = p.board;
-                plan.c_program_version_for_update = p.c_program_version;
-                plan.actualization_procedure = procedure;
-                plan.save();
-                procedure.updates.add(plan);
-
-                logger.debug("Crating update procedure done");
             }
+
+
 
             // Kontroluji a uzavírám stavy "složky" pro aktuazlizace hardwaru a to objektu Actualization_procedure
             logger.debug("Number of Actualization_procedures for update: " + actualization_procedures.size());

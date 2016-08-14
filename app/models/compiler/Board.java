@@ -31,6 +31,10 @@ public class Board extends Model {
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @Id                                @ApiModelProperty(required = true)   public String id; // Vlastní id je přidělováno
+
+                                                                            public String ethernet_mac_address;
+                                                                            public String wifi_mac_address;
+
     @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)   public String personal_description;
                                        @JsonIgnore  @ManyToOne              public TypeOfBoard type_of_board;  // Typ desky
                                        @ApiModelProperty(required = true)   public boolean isActive;
@@ -63,45 +67,44 @@ public class Board extends Model {
     @JsonProperty  @Transient @ApiModelProperty(required = true) public Swagger_Board_status status()       {
 
         // Složený SQL dotaz pro nalezení funkční běžící instance (B_Pair)
-        B_Pair b_pair_main = B_Pair.find.where().disjunction()
-                    .add( Expr.isNotNull("padavan_board_pair.homer_instance"))
-                    .add( Expr.isNotNull("yoda_board_pair.homer_instance"))
-                .where().eq("board.id", id).findUnique();
+
+        Homer_Instance instance =  Homer_Instance.find.where().disjunction()
+                .add( Expr.eq("version_object.b_program_hw_groups.main_board_pair.board.id", id) )
+                .add( Expr.eq("version_object.b_program_hw_groups.device_board_pairs.board.id", id) )
+                .findUnique();
 
 
         Swagger_Board_status board_status = new Swagger_Board_status();
 
 
-        if(b_pair_main == null){
+        if(instance == null){
+
             board_status.where = "nowhere";
-        }
 
-        if(b_pair_main != null) {
+        }else  {
 
-            // Určím nadřazenou verzi (Yoda má  yoda_board_pair ostatní padavan_board_pair )
-            Version_Object version_object;
-            if (b_pair_main.padavan_board_pair != null) version_object = b_pair_main.padavan_board_pair;
-            else version_object = b_pair_main.yoda_board_pair;
-
-            if (version_object.homer_instance.cloud_homer_server != null) {
+            if (instance.cloud_homer_server != null) {
                 board_status.where = "cloud";
             }
 
-
-
-            if (version_object.homer_instance.private_server != null) {
+            if (instance.private_server  != null) {
                 board_status.where = "local";
             }
 
-            board_status.b_program_id = version_object.b_program.id;
-            board_status.b_program_version_id = version_object.id;
+            board_status.b_program_id = instance.version_object.b_program.id;
+            board_status.b_program_name = instance.version_object.b_program.name;
+
+            board_status.b_program_version_id = instance.version_object.id;
+            board_status.b_program_version_name = instance.version_object.version_name;
         }
 
         if(alternative_program_name != null ) board_status.actual_program = alternative_program_name;
 
         if(actual_c_program_version != null){
                     board_status.actual_c_program_id = actual_c_program_version.c_program.id;
+                    board_status.actual_c_program_name = actual_c_program_version.c_program.program_name;
                     board_status.actual_c_program_version_id = actual_c_program_version.id;
+                    board_status.actual_c_program_version_name = actual_c_program_version.version_name;
         }
 
 
@@ -110,9 +113,11 @@ public class Board extends Model {
             C_Program_Update_Plan plan = C_Program_Update_Plan.find.where().eq("board.id", id).order().asc("actualization_procedure.date_of_create").setMaxRows(1).findUnique();
 
             board_status.required_c_program_id = plan.c_program_version_for_update.c_program.id;
-            board_status.required_c_program_version_id = plan.c_program_version_for_update.id;
-         }
+            board_status.required_c_program_name = plan.c_program_version_for_update.c_program.program_name;
 
+            board_status.required_c_program_version_id = plan.c_program_version_for_update.id;
+            board_status.required_c_program_version_name = plan.c_program_version_for_update.version_name;
+         }
 
         return board_status;
 

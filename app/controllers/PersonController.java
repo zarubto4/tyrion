@@ -471,7 +471,7 @@ public class PersonController extends Controller {
 
             if (!person.activation_permission())  return GlobalResult.forbidden_Permission();
 
-            person.freeze_accent = false;
+            person.freeze_account = false;
             person.update();
 
             return GlobalResult.result_ok();
@@ -513,7 +513,7 @@ public class PersonController extends Controller {
 
             if (!person.activation_permission())  return GlobalResult.forbidden_Permission();
 
-            person.freeze_accent = true;
+            person.freeze_account = true;
 
             for(FloatingPersonToken token : person.floatingPersonTokens) token.delete();
 

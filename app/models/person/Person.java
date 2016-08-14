@@ -11,6 +11,8 @@ import models.overflow.LinkedPost;
 import models.overflow.Post;
 import models.project.global.Project;
 import models.project.global.financial.Payment_Details;
+import org.hibernate.validator.constraints.Email;
+import play.data.validation.Constraints;
 import utilities.permission.Permission;
 
 import javax.persistence.*;
@@ -26,13 +28,11 @@ public class Person extends Model {
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @ApiModelProperty(required = true)                          public String id;
 
-    @ApiModelProperty(required = true) @Column(unique=true)     public String mail;
+    @ApiModelProperty(required = true) @Column(unique=true) @Email @Constraints.Email public String mail;
     @ApiModelProperty(required = true) @Column(unique=true)     public String nick_name;
     @ApiModelProperty(required = true)                          public String full_name;
 
-                                                 @JsonIgnore    public boolean freeze_accent; // Zmražený účet - Účty totiž nechceme mazat!
-
-
+                                                 @JsonIgnore    public boolean freeze_account; // Zmražený účet - Účty totiž nechceme mazat!
                                                 @JsonIgnore     public boolean mailValidated;
 
     @JsonIgnore  @Column(length = 64)                           public byte[] shaPassword;
@@ -79,15 +79,6 @@ public class Person extends Model {
         this.shaPassword = shaPassword;
     }
 
-    @JsonIgnore @Transient
-    public void setToken(String token, String user_agent){
-        FloatingPersonToken floatingPersonToken = new FloatingPersonToken();
-        floatingPersonToken.set_basic_values(token);
-        floatingPersonToken.person = this;
-        floatingPersonToken.user_agent = user_agent;
-        floatingPersonToken.save();
-        this.floatingPersonTokens.add(floatingPersonToken);
-    }
 
     @JsonIgnore @Transient
     public boolean has_permission(String permission){

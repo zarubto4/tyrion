@@ -87,9 +87,11 @@ public class Invoice extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient                                    public boolean create_permission()              {  return true;  }
-    @JsonIgnore   @Transient                                    public boolean read_permission()                {  return true;  }
-    @Transient                                                  public boolean edit_permission()                {  return true;  }
+    @JsonIgnore @Transient public boolean create_permission() {  return true;  }
+    @JsonIgnore @Transient public boolean read_permission()   {  return true;  }
+    @JsonIgnore @Transient public boolean send_reminder()     {  return true;  }
+    @JsonIgnore @Transient public boolean edit_permission()   {  return true;  }
+    @JsonIgnore @Transient public boolean delete_permission() {  return true;  }
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<Long,Invoice> find = new Finder<>(Invoice.class);
 

@@ -737,13 +737,68 @@ public class Finance_Controller extends Controller {
     }
 
 
-    public Result send_remainder_to_custumer(Long product_id){
+    public Result send_remainder_to_custumer(Long invoice_id){
+        try{
+
+            // Kontrola objektu
+            Invoice invoice = Invoice.find.byId(invoice_id);
+            if(invoice == null) return GlobalResult.notFoundObject("Invoice invoice_id not found");
+
+            if(!invoice.send_reminder()) return GlobalResult.forbidden_Permission();
+            Fakturoid_Controller.send_UnPaidInvoice_to_Email(invoice);
+
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "remove Invoice permanently ",
+            hidden = true,
+            tags = {"Price & Invoice & Tariffs"},
+            notes = "remove invoice permanently and also from Fakturoid",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successfully updated",    response =  Result_ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result remove_invoice(Long invoice_id){
+        try{
+
+            // Kontrola objektu
+            Invoice invoice = Invoice.find.byId(invoice_id);
+            if(invoice == null) return GlobalResult.notFoundObject("Invoice invoice_id not found");
+
+            // Kontrola oprávnění
+            if(!invoice.delete_permission()) return GlobalResult.forbidden_Permission();
+
+            // TODO - Chybí navázání na fakturoid - smazání faktury (nějaký proces?)
+
+            // Vykonání operace
+            invoice.delete();
+
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    public Result connect_invoice_manualy_to_product(Long product_id, String fakturoid_reference_number){
         return TODO;
     }
 
-    public Result remove_invoice(Long product_id){
+    public Result synchonize_invoice_with_fakutoid(Long invoice_id){
         return TODO;
     }
+
 
     public Result set_invoice_as_Paid(Long invoice_id){
         try{

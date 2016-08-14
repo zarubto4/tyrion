@@ -448,7 +448,7 @@ public class CompilationLibrariesController extends Controller {
             UtilTools.uploadAzure_Version(content.toString(), "code.json" , c_program.get_path() ,  version_object);
 
 
-            String token = request().getHeader("X-AUTH-TOKEN");
+            String token = request().getHeader("X-AUTH-TOKEN"); // Určen pro exetrní vlákno zpracování
             version_object.compilation_in_progress = true;
             version_object.compilable = true;
             version_object.update();
@@ -457,7 +457,6 @@ public class CompilationLibrariesController extends Controller {
                 @Override
                 public void run() {
                     try {
-
 
                        F.Promise<WSResponse> responsePromise = ws.url(Server.tyrion_serverAddress + "/compilation/c_program/version/compile/" + version_object.id)
                                 .setContentType("undefined")

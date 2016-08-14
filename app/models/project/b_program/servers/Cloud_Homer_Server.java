@@ -7,6 +7,7 @@ import controllers.SecurityController;
 import controllers.WebSocketController_Incoming;
 import models.compiler.Board;
 import models.project.b_program.Homer_Instance;
+import utilities.webSocket.WS_BlockoServer;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -54,6 +55,11 @@ public class Cloud_Homer_Server extends Model{
             unique_identificator = UUID. randomUUID().toString().substring(0,6);
             if (Cloud_Homer_Server.find.where().eq("unique_identificator",unique_identificator).findUnique() == null) break;
         }
+    }
+
+    @JsonIgnore @Transient
+    public WS_BlockoServer get_server_webSocket_connection(){
+        return (WS_BlockoServer) WebSocketController_Incoming.blocko_servers.get(this.server_name);
     }
 
 

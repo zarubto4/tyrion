@@ -5,6 +5,7 @@ import com.cedarsoftware.util.io.JsonWriter;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.io.IOUtils;
+import play.Application;
 import play.Play;
 import play.data.Form;
 import play.libs.Json;
@@ -14,12 +15,12 @@ import utilities.loggy.Loggy;
 import utilities.response.GlobalResult;
 import utilities.swagger.swagger_diff_tools.servise_class.*;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 public class Swagger_diff_Controller extends Controller {
+
 
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
@@ -53,6 +54,17 @@ public class Swagger_diff_Controller extends Controller {
             return null;
         }
     }
+
+    public static List<String> json_docu_files(){
+
+        List<String> fileNames = new ArrayList<>();
+        File[] files = new File(  play.api.Play.current().injector().instanceOf(Application.class).path() + "/conf/swagger_history").listFiles();
+
+        for (File file : files) { fileNames.add((file.getName().substring(0, file.getName().lastIndexOf('.'))).replace("_", "."));}
+
+        return fileNames;
+    }
+
 
     // Zde budu porovnávat změny příchozích souboru API
     public static Swagger_Diff set_API_Changes(String file_name_old, String file_name_new) {

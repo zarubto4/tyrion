@@ -36,6 +36,7 @@ public class Processor extends Model {
 
     @JsonIgnore   @Transient                                    public boolean create_permission(){  return SecurityController.getPerson().has_permission("Processor_create"); }
     @JsonIgnore   @Transient                                    public boolean read_permission()  {  return true; }
+
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()  {  return SecurityController.getPerson().has_permission("Processor_edit");   }
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return SecurityController.getPerson().has_permission("Processor_delete"); }
 

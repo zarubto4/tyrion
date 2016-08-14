@@ -14,6 +14,7 @@ import models.person.Invitation;
 import models.person.Person;
 import models.project.b_program.B_Pair;
 import models.project.b_program.B_Program;
+import models.project.b_program.B_Program_Hw_Group;
 import models.project.b_program.Homer_Instance;
 import models.project.b_program.servers.Cloud_Homer_Server;
 import models.project.b_program.servers.Private_Homer_Server;
@@ -35,7 +36,10 @@ import utilities.loginEntities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
-import utilities.swagger.outboundClass.Filter_List.*;
+import utilities.swagger.outboundClass.Filter_List.Swagger_B_Program_List;
+import utilities.swagger.outboundClass.Filter_List.Swagger_Blocko_Block_List;
+import utilities.swagger.outboundClass.Filter_List.Swagger_Homer_List;
+import utilities.swagger.outboundClass.Filter_List.Swagger_Type_Of_Block_List;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 import utilities.webSocket.WS_BlockoServer;
 import utilities.webSocket.WebSCType;
@@ -92,6 +96,7 @@ public class ProgramingPackageController extends Controller {
             Swagger_Project_New help = form.get();
 
             Product product = Product.find.byId(help.product_id);
+            if(product == null)return GlobalResult.notFoundObject("Product not found");
             if(!product.create_new_project()) return GlobalResult.result_BadRequest(product.create_new_project_if_not());
 
 
@@ -1150,78 +1155,70 @@ public class ProgramingPackageController extends Controller {
             version_object.date_of_create          = new Date();
             version_object.b_program               = b_program;
 
-            Board board_main = null;
+
 
             // Definování main Board
-            if( help.main_board != null && help.main_board.board_id != null) {
-                B_Pair b_pair_main = new B_Pair();
-                board_main = Board.find.byId(help.main_board.board_id);
+            for( Swagger_B_Program_Version_New.Hardware_group group : help.hardware_group) {
 
-                if (board_main == null) return GlobalResult.notFoundObject("Board board_id not found");
-                logger.debug("main board is: " + board_main.id + " Type: " + board_main.type_of_board.name);
-                if (!board_main.type_of_board.connectible_to_internet)
-                    return GlobalResult.result_BadRequest("Main Board must be internet connectible!");
+                B_Program_Hw_Group b_program_hw_group = new B_Program_Hw_Group();
 
-                Version_Object c_program_version_main = Version_Object.find.byId(help.main_board.c_program_version_id);
-                if (c_program_version_main == null)
-                    return GlobalResult.notFoundObject("C_Program Version_Object c_program_version_id not found");
-                if (c_program_version_main.c_program == null)
-                    return GlobalResult.result_BadRequest("Version is not from C_Program");
-                if (!c_program_version_main.c_program.read_permission())
-                    return GlobalResult.result_BadRequest("You cannot used Main board in children Array!");
+                // Definuji Main Board - Tedy yodu pokud v Json přišel (není podmínkou)
+                if(group.main_board != null) {
 
-                b_pair_main.board = board_main;
-                b_pair_main.c_program_version = c_program_version_main;
-                b_pair_main.yoda_board_pair = version_object;
+                    B_Pair b_pair = new B_Pair();
 
-                // Synchronizce
-                version_object.yoda_board_pair = b_pair_main;
-                b_pair_main.save();
+                    b_pair.board = Board.find.byId(group.main_board.board_id);
+                    if ( b_pair.board == null) return GlobalResult.notFoundObject("Board board_id not found");
+                    if (!b_pair.board.type_of_board.connectible_to_internet)  return GlobalResult.result_BadRequest("Main Board must be internet connectible!");
+                    if(!b_pair.board.update_permission()) return GlobalResult.forbidden_Permission();
+
+                    b_pair.c_program_version = Version_Object.find.byId(group.main_board.c_program_version_id);
+                    if ( b_pair.c_program_version == null) return GlobalResult.notFoundObject("C_Program Version_Object c_program_version_id not found");
+                    if ( b_pair.c_program_version.c_program == null)  return GlobalResult.result_BadRequest("Version is not from C_Program");
+
+
+                    if( TypeOfBoard.find.where().eq("c_programs.id",  b_pair.c_program_version.c_program.id ).where().eq("boards.id",  b_pair.board.id).findRowCount() < 1){
+                        return GlobalResult.result_BadRequest("You want upload C++ program version id: " +  b_pair.c_program_version.id + " thats not compatible with hardware " + b_pair.board.id);
+                    }
+
+                    b_program_hw_group.main_board_pair = b_pair;
+
+                }
+
+                // Definuji Devices - Tedy yodu pokud v Json přišly (není podmínkou)
+
+                if(group.boards != null) {
+
+                    for(Swagger_B_Program_Version_New.Connected_Board connected_board : group.boards ){
+
+                        B_Pair b_pair = new B_Pair();
+
+                        b_pair.board = Board.find.byId(connected_board.board_id);
+                        if ( b_pair.board == null) return GlobalResult.notFoundObject("Board board_id not found");
+                        if(!b_pair.board.update_permission()) return GlobalResult.forbidden_Permission();
+
+
+                        b_pair.c_program_version = Version_Object.find.byId(connected_board.c_program_version_id);
+                        if ( b_pair.c_program_version == null) return GlobalResult.notFoundObject("C_Program Version_Object c_program_version_id not found");
+                        if ( b_pair.c_program_version.c_program == null)  return GlobalResult.result_BadRequest("Version is not from C_Program");
+
+                        if( TypeOfBoard.find.where().eq("c_programs.id",  b_pair.c_program_version.c_program.id ).where().eq("boards.id",  b_pair.board.id).findRowCount() < 1){
+                            return GlobalResult.result_BadRequest("You want upload C++ program version id: " +  b_pair.c_program_version.id + " thats not compatible with hardware " + b_pair.board.id);
+                        }
+
+                        b_program_hw_group.device_board_pairs.add(b_pair);
+                    }
+                }
+
+
+
+                version_object.b_program_hw_groups.add(b_program_hw_group);
             }
-
 
 
 
             // Uložení objektu
             version_object.save();
-
-
-            // List do kterého vložím všechny objekty, které vytvořím a uložím je až všechny projdu - protože je musím kontrolovat!
-            List<B_Pair> b_pairs = new ArrayList<>();
-
-            for(Swagger_B_Program_Version_New.Connected_Board h_board : help.boards){
-
-                if( board_main != null && h_board.board_id.equals(board_main.id)) return GlobalResult.result_BadRequest("You cannot used Main board in children Array!");
-                // Kontrola objektu
-                Board board = Board.find.byId(h_board.board_id);
-                if (board == null) return GlobalResult.notFoundObject("Board board_id not found");
-
-                if(!board.update_permission()) return GlobalResult.forbidden_Permission();
-
-                // Kontrola objektu
-                Version_Object c_program_version = Version_Object.find.byId(h_board.c_program_version_id);
-                if (c_program_version == null) return GlobalResult.notFoundObject("C_Program Version_Object c_program_version_id not found");
-                if( c_program_version.c_program == null ) return GlobalResult.notFoundObject("Version is not from C_Program");
-
-
-                if( TypeOfBoard.find.where().eq("c_programs.id", c_program_version.c_program.id ).where().eq("boards.id", board.id).findRowCount() < 1){
-
-                    return GlobalResult.result_BadRequest("You want upload C++ program version" +c_program_version.id  + " thats not compatible with hardware " + board.id);
-                }
-
-             //   if( board.type_of_board.id .equals( c_program_version.c_program.type_of_board.id ) )
-
-                // Vytvoření objektu
-                B_Pair b_pair = new B_Pair();
-                b_pair.board = board;
-                b_pair.c_program_version = c_program_version;
-                b_pair.padavan_board_pair = version_object;
-
-                // Uložení objektu
-                b_pairs.add(b_pair);
-            }
-
-            for(B_Pair p : b_pairs) p.save();
 
             // Úprava objektu
             b_program.version_objects.add(version_object);
@@ -1561,54 +1558,61 @@ public class ProgramingPackageController extends Controller {
             // Kontrola oprávnění
             if (! b_program.update_permission() ) return GlobalResult.forbidden_Permission();
 
-            // Kontroluji přítomnost Yody
-            if(version_object.yoda_board_pair == null || version_object.yoda_board_pair.board == null) return GlobalResult.result_BadRequest("Version needs Main Board connectible to internet!");
+            // Kontroluji přítomnost Yody - Dovolím nahrát instnaci bez HW
+            // if(version_object.b_program_hw_groups == null || version_object.yoda_board_pair.board == null) return GlobalResult.result_BadRequest("Version needs Main Board connectible to internet!");
 
 
             // Pokud už nějaká instance běžela, tak na ní budu nahrávat nový program a odstraním vazbu na běžící instanci b programu
-            Homer_Instance old_cloud_instance = Homer_Instance.find.where().eq("version_object.yoda_board_pair.board.id", version_object.yoda_board_pair.board.id).findUnique();
+            if(version_object.b_program_hw_groups!= null) {
+                logger.debug("Uploud version to cloud contains Hardware!");
 
-            if(old_cloud_instance != null){
-                return GlobalResult.result_BadRequest("Master Device is used in another working instance, you cannoct create two instance with same Master Device");
-            }
+                for(B_Program_Hw_Group group : version_object.b_program_hw_groups){
+
+                    // Kontrola Yody
+                   if(group.main_board_pair != null ) {
+
+                       Board yoda = group.main_board_pair.board;
+
+                       //1. Pokud už běží v jiné instanci mimo vlastní dočasnou instnaci
+                       if (yoda.private_instance != null) {
+                           logger.debug("Yoda měl už vlastní historickou instanci! Proto jí musím smazat a to i z Homer serveru");
+                           yoda.private_instance.delete();
+                       }
+
+                       if(Homer_Instance.find.where().eq("version_object.b_program_hw_groups.main_board_pair.board.id", yoda.id ).findUnique() != null  ){
+                           return GlobalResult.result_BadRequest("Master Device is used in another working instance, you cannoct create two instance with same Master Device");
+                       }
 
 
-            Homer_Instance temporary_yoda_instance = Homer_Instance.find.where().eq("private_instance_board.id", version_object.yoda_board_pair.board.id).findUnique();
 
-            if(temporary_yoda_instance != null){
-                System.out.println("Yoda měl už vlastní historickou instanci! Proto jí musím transformovat na klasickou blocko instanci");
+                        if(group.device_board_pairs != null) {
+                            //
 
-                Board yoda = temporary_yoda_instance.private_instance_board;
-                yoda.private_instance = null;
-                yoda.update();
 
-                temporary_yoda_instance.private_instance_board = null;
-                temporary_yoda_instance.running_from = new Date();
-                temporary_yoda_instance.version_object = version_object;
+                            //2. Pokud nikdy nebyl spárován
 
-                if(! WebSocketController_Incoming.incomingConnections_homers.containsKey(temporary_yoda_instance.blocko_instance_name)) return GlobalResult.result_BadRequest("Instance in cloud is offline");
-                WebSCType homer = WebSocketController_Incoming.incomingConnections_homers.get(temporary_yoda_instance.blocko_instance_name);
 
-                JsonNode result_upload = WebSocketController_Incoming.blocko_server_update_instance(homer, temporary_yoda_instance );
+                            // Kontrola Deviců
+                            //1. Jestli nejsou už v jiné instanci
 
-                if(result_upload.get("status").asText().equals("success")) {
-
-                    ActualizationController.add_new_actualization_request(b_program.project, temporary_yoda_instance);
-                    return GlobalResult.result_ok();
-
-                }else {
-                    logger.error("Upload instance to Cloud \n" + result_upload.textValue());
-                    return GlobalResult.badRequest("Something is wrong");
+                            //2.
+                        }
+                   }else {
+                       logger.debug("Instance neobsahovala žádný HW - respektive neobsahovala Yodu!!");
+                   }
                 }
+
             }
 
-            System.out.println("Yoda instnaci neměl a tak začínám na zelené louce!");
 
             // TODO Chytré dělení na servery - kam se blocko program nahraje??
             Cloud_Homer_Server destination_server = Cloud_Homer_Server.find.where().eq("server_name", "Alfa").findUnique();
-           //  if(! WebSocketController_Incoming.blocko_servers.containsKey( destination_server.server_name) ) return GlobalResult.result_BadRequest("Server is offline");
-           // Instance se dá nahrát se spožděním - Upozornění v Result
 
+            if(! WebSocketController_Incoming.blocko_servers.containsKey( destination_server.server_name) ) {
+
+                // Instance se dá nahrát se spožděním - Upozornění v Result
+                // TODO - upozornění uživatelovi přes bublinu
+            }
 
 
             // Vytvářím nový záznam v databázi pro běžící instanci b programu na blocko serveru
@@ -1616,28 +1620,17 @@ public class ProgramingPackageController extends Controller {
             program_cloud.running_from          = new Date();
             program_cloud.version_object        = version_object;
             program_cloud.cloud_homer_server    = destination_server;
-
-            // TODO http://youtrack.byzance.cz/youtrack/issue/TYRION-263 // Podpora pro více Yodů
-            if( version_object.yoda_board_pair == null || version_object.yoda_board_pair.board == null ) {
-                return GlobalResult.result_BadRequest("Server need Master Board!");
-            }
-
-            program_cloud.macAddress = version_object.yoda_board_pair.board.id;
             program_cloud.setUnique_blocko_instance_name();
 
             // Uložení objektu
             program_cloud.save();
 
-            if(!WebSocketController_Incoming.blocko_servers.containsKey(destination_server.server_name)){
-                return GlobalResult.result_ok("Its not uploaded yet because server is offline, but we will do that when it will be possible");
-            }
-
             try {
+
                 // Vytvářím instanci na serveru
                 WS_BlockoServer server = (WS_BlockoServer) WebSocketController_Incoming.blocko_servers.get(destination_server.server_name);
                 WebSCType homer = WebSocketController_Incoming.blocko_server_add_instance(server, program_cloud);
-
-                ActualizationController.add_new_actualization_request(b_program.project, program_cloud);
+                ActualizationController.add_new_actualization_request_Checking_HW_Firmware(b_program.project, program_cloud);
                 return GlobalResult.result_ok();
 
             }catch (Exception e){

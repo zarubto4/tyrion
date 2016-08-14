@@ -11,23 +11,46 @@ public class Swagger_Board_status {
     @ApiModelProperty(value = "Can be with null value", readOnly = true, required = true)
     public String where;
 
+//*****
     @ApiModelProperty(value = "Can be with null value", readOnly = true, required = true)
     public String b_program_id;
 
     @ApiModelProperty(value = "Can be with null value", readOnly = true, required = true)
+    public String b_program_name;
+
+//*****
+    @ApiModelProperty(value = "Can be with null value", readOnly = true, required = true)
     public String b_program_version_id;
+
+    @ApiModelProperty(value = "Can be with null value", readOnly = true, required = true)
+    public String b_program_version_name;
+
+//*****
 
     @ApiModelProperty(value = "It in Object only if user upload own binary firmware to hardware and cloud_blocko_server used file name for naming of this value" +
             "If user used classic build with Byzance - its not visible in Json!", readOnly = true, required = false)
     @JsonInclude(JsonInclude.Include.NON_NULL) public String actual_program;
 
+//*****
+
     @ApiModelProperty(value = "Can be with null value", readOnly = true, required = true)
     public String actual_c_program_id;
 
     @ApiModelProperty(value = "Can be with null value", readOnly = true, required = true)
+    public String actual_c_program_name;
+
+//*****
+    @ApiModelProperty(value = "Can be with null value", readOnly = true, required = true)
     public String actual_c_program_version_id;
+
+    @ApiModelProperty(value = "Can be with null value", readOnly = true, required = true)
+    public String actual_c_program_version_name;
+
+//*****
 
     public String required_c_program_id;
     public String required_c_program_version_id;
-
+    public String required_c_program_name;
+    public String required_c_program_version_name;
+//*****
 }

@@ -1,5 +1,7 @@
 
-@(bugs: Integer, homer_local  : Integer, becki_terminal: Integer, grid_terminal: Integer, homer_server : Integer, compiler_server: Integer, link_api_swagger : String, api_versions: List[String])
+@import utilities.Server
+@import utilities.swagger.swagger_diff_tools.Swagger_diff_Controller
+@(bugs: Integer, homer_local  : Integer, becki_terminal: Integer, grid_terminal: Integer, homer_server : Integer, compiler_server: Integer, link_api_swagger : String)
 
     <aside class="main-sidebar">
     <!-- sidebar: style can be found in sidebar.less -->
@@ -46,7 +48,7 @@
                         <li>
                             <a href="#"><i class="fa fa-circle-o"></i> Historical Version <i class="fa fa-angle-left pull-right"></i></a>
                             <ul class="treeview-menu">
-                            @for(version <- api_versions) {
+                            @for(version <- Swagger_diff_Controller.json_docu_files() ) {
                                 <li><a href='@link_api_swagger/@version' ><i class="fa fa-circle-o"></i>@version</a></li>
                             }
                             </ul>

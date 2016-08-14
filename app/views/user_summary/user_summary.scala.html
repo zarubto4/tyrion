@@ -73,7 +73,7 @@
                                 <a onclick="showEditFormPerson('@edit_person.id', '@edit_person.full_name', '@edit_person.nick_name', '@edit_person.mail')" class="btn btn-primary btn-block"> <b>Edit Information</b> </a>
                                 <a onclick="removeAllTokensPerson('@edit_person.id')" class="btn btn-warning btn-block"><b>Remove all Tokens</b></a>
 
-                                @if(!edit_person.freeze_accent){
+                                @if(!edit_person.freeze_account){
                                     <a onclick="deactivatePerson('@edit_person.id')" class="btn btn-warning btn-block"><b>Freeze Account</b></a>
                                 }else{
                                     <a onclick="activatePerson('@edit_person.id')"  class="btn btn-success btn-block"><b>Unfreeze Account</b></a>

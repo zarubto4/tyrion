@@ -1,4 +1,90 @@
-﻿
+﻿# Verze 1.06.6.5 #
+
+## Změny nad objekty ##
+
+V administraci bylo doděláno tlačítko "nahrát default data". Tyriona to naplní několika objekty. Při vývoéjářské verzi je toto děláno automaticky při prvním nastartování.
+
+  * TypeOfBoard
+     - přibyl  string:revision
+
+
+  * Producer
+     - úprava při vracení type_of_boards_id -> type_of_boards  (Obsahuje objekty kde je name a id)
+
+  * Project
+    - úprava při vracení b_programs_id -> b_programs  (Obsahuje objekty kde je name a id)
+    - úprava při vracení c_programs_id -> c_programs  (Obsahuje objekty kde je name a id)
+
+## Změny v kodu podle nové verze homera  0.0.3
+
+ * Podpora více Yodů v jedné instanci. Což znamená že je nutné upravit objekt definující B_Program -> version. Už není 1 yoda
+   - ale pole objektů ve kterém je yoda a devices na něm připojené. (Je nutné tutu strukturu mít a po uživateli vyžadovat) aby
+   mohl Homer server skládat adresu v MQTT. Pro design se doporučuje sturktura jako u složek.
+
+            - Yoda ASDFG48948ASFSFDA
+                - Dev 987ASDF6599999
+                - Dev 112ASDF6455464
+                - Dev CCCASDF6577777
+            - Yoda ASDFG48948ASFSFDA
+                - Dev 982IAZHASDFJAS
+
+
+    * JSON Vypadá takto
+
+
+                {
+                    "version_name":"verze 1.01",
+                    "version_description":"Verze 1",
+                    "hardware_groups":[
+                        {
+                            "main_board":{                           <---- Yoda
+                                "master_board_id":"AAAAAAAA",
+                                "c_program_version_id":"1"           <---- C_Program kde TypeOfBoard je stejné jako má Yoda
+                            },
+                            "boards":[                              <---- Připojené devices
+                                {
+                                    "board_id":"EEEEEE_1",
+                                    "c_program_version_id":"21"     <---- C_Program kde TypeOfBoard je stejné jako má konkrétní Device
+                                },
+                                {
+                                    "board_id":"EEEEEE_2",
+                                    "c_program_version_id":"21"
+                                }
+                            ]
+                        },
+                        {
+                            "main_board":{                          <---- Yoda
+                                "master_board_id":"BBBBBB",
+                                "c_program_version_id":"2"
+                            },
+                            "boards":[                              <---- Připojené devices
+                                {
+                                    "board_id":"EEEEEE_3",
+                                    "c_program_version_id":"21"
+                                },
+                                {
+                                    "board_id":"EEEEEE_4",
+                                    "c_program_version_id":"21"
+                                }
+                            ]
+                        }
+                    ],
+                     "program": "{js-program}"
+                }
+
+ - Podpora koncových device připojených na yodu
+ -
+
+
+### Oprava Bugů ###
+ * fixed [TYRION-353](http://youtrack.byzance.cz/youtrack/issue/TYRION-353)
+ * fixed [TYRION-352](http://youtrack.byzance.cz/youtrack/issue/TYRION-352)
+
+
+
+-----
+
+
 # Verze 1.06.6.4 #
 
 ## Nové API: ##
@@ -296,6 +382,12 @@ Přidán parametr
 Změněn název labelu 
 	* read -> was_read
 	
+* **Board** 
+Přidán parametr 
+	* project_name
+	*type_of_board_name
+	
+
 * **Cloud_Homer_Server**
 Přidány parametry	
 	* is_private -> zda je privátní pouze daného zákazníka
@@ -307,7 +399,8 @@ Přidány parametry
 	* Producer - vše kromě get Producer a get Producers 
 	* Procesor - vše kromě get Procesor 
 	* TypeOfBoard - vše kromě get TypeOfBoard  
-	
+	* Permission  - vše krome GET 
+	* Role	      - vše kromě GET (Globálně nemá smyls je v Bekci podporovat nadále)
 
 ### Změny nad API ###
 

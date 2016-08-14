@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import models.project.b_program.B_Pair;
 import models.project.b_program.B_Program;
+import models.project.b_program.B_Program_Hw_Group;
 import models.project.b_program.Homer_Instance;
 import models.project.c_program.C_Compilation;
 import models.project.c_program.C_Program;
@@ -50,14 +51,13 @@ public class Version_Object extends Model {
            @JsonIgnore   @OneToOne(mappedBy="version_object", cascade = CascadeType.PERSIST)    public Homer_Instance homer_instance;
 
 
-    @JsonIgnore  @OneToMany(mappedBy="c_program_version", cascade=CascadeType.ALL)  public List<B_Pair> b_pairs_c_program = new ArrayList<>();
-    @JsonIgnore  @OneToMany(mappedBy="padavan_board_pair",cascade=CascadeType.ALL)  public List<B_Pair> padavan_board_pairs = new ArrayList<>();
+    @JsonIgnore  @OneToMany(mappedBy="c_program_version", cascade=CascadeType.ALL)  public List<B_Pair> b_pairs_c_program = new ArrayList<>(); // Určeno pro aktualizaci
 
-    @JsonIgnore  @OneToOne(mappedBy="yoda_board_pair",cascade=CascadeType.ALL) public B_Pair yoda_board_pair;
+
+    @JsonIgnore  @OneToMany(mappedBy="b_program_version_group", cascade=CascadeType.ALL)  public List<B_Program_Hw_Group> b_program_hw_groups = new ArrayList<>();
 
     // M_Project -------------------------
     @JsonIgnore  @OneToOne(mappedBy="b_program_version", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)   public M_Project m_project;
-
 
     // Actual Procedure -------------------------
     @JsonIgnore @OneToMany(mappedBy="b_program_version_procedure", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Actualization_procedure>  actualization_procedures  = new ArrayList<>();

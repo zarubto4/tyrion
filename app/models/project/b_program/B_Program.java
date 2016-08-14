@@ -53,14 +53,14 @@ public class B_Program extends Model {
 /* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/
 
     @JsonProperty @Transient public List<Swagger_B_Program_Version> program_versions() {
+
         List<Swagger_B_Program_Version> versions = new ArrayList<>();
 
         for(Version_Object v : version_objects){
+
             Swagger_B_Program_Version b_program_version = new Swagger_B_Program_Version();
             b_program_version.version_Object = v;
-            b_program_version.connected_boards = v.padavan_board_pairs == null ? null : v.padavan_board_pairs ;
-            b_program_version.master_board = v.yoda_board_pair == null ? null : v.yoda_board_pair;
-
+            b_program_version.hardware_groups = v.b_program_hw_groups;
 
             FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", v.id).eq("file_name", "program.js").findUnique();
             if(fileRecord != null) b_program_version.program             = fileRecord.get_fileRecord_from_Azure_inString();
@@ -134,13 +134,10 @@ public class B_Program extends Model {
         Swagger_B_Program_Version b_program_version = new Swagger_B_Program_Version();
 
         b_program_version.version_Object    = version_object;
-        b_program_version.connected_boards  = version_object.padavan_board_pairs == null ? null : version_object.padavan_board_pairs ;
-        b_program_version.master_board      = version_object.yoda_board_pair == null ? null : version_object.yoda_board_pair;
+        b_program_version.hardware_groups   = version_object.b_program_hw_groups;
 
         FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "program.js").findUnique();
         if(fileRecord != null) b_program_version.program             = fileRecord.get_fileRecord_from_Azure_inString();
-
-
 
         return b_program_version;
     }

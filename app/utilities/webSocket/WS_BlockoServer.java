@@ -116,7 +116,6 @@ public class WS_BlockoServer extends WebSCType{
                                 temporary_instance.setUnique_blocko_instance_name();
                                 temporary_instance.cloud_homer_server = Cloud_Homer_Server.find.where().eq("server_name", this_server.identifikator).findUnique();
                                 temporary_instance.private_instance_board = task.board;
-                                temporary_instance.macAddress = task.board.id;
                                 temporary_instance.project = task.board.project;
                                 temporary_instance.save();
 

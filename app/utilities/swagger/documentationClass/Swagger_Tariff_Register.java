@@ -28,7 +28,7 @@ public class Swagger_Tariff_Register {
     @ApiModelProperty(required = true, value =  "Required: only in if required_payment_mode is true")
     public String payment_mode;
 
-    @ApiModelProperty(required = true, value =  "Required: only in if required_payment_mode is true")
+    @ApiModelProperty(required = true, value =  "Required: only in if required_payment_mode is true  values =>[bank, credit_card]")
     public String payment_method;
 
 
@@ -38,6 +38,7 @@ public class Swagger_Tariff_Register {
                                                 "The street must have at least 4 characters")
     public String street;
 
+    @Constraints.Required
     @ApiModelProperty(required = true, value =  "Required: always" +
                                                 "But The street_number can be empty")
     public String street_number;

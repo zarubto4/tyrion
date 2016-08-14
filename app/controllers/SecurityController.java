@@ -89,7 +89,7 @@ public class SecurityController extends Controller {
 
 
             if (!person.mailValidated) return GlobalResult.result_BadRequest("Your account is not validated");
-            if (person.freeze_accent) return GlobalResult.result_BadRequest("Your account has been temporarily suspended");
+            if (person.freeze_account) return GlobalResult.result_BadRequest("Your account has been temporarily suspended");
 
 
             FloatingPersonToken floatingPersonToken = new FloatingPersonToken();
