@@ -17,35 +17,21 @@
   "tags" : [ {
     "name" : "Not Documented API - InProgress or Stuck"
   }, {
-    "name" : "Notifications"
-  }, {
     "name" : "Actualization"
+  }, {
+    "name" : "Access"
+  }, {
+    "name" : "Social-Facebook"
   }, {
     "name" : "Person"
   }, {
-    "name" : "Access"
+    "name" : "APP-Api"
+  }, {
+    "name" : "Social-GitHub"
   }, {
     "name" : "Role"
   }, {
     "name" : "Permission"
-  }, {
-    "name" : "Blocko-OverFlow"
-  }, {
-    "name" : "Post"
-  }, {
-    "name" : "Type-Of-Post"
-  }, {
-    "name" : "Type-Of-Confirms"
-  }, {
-    "name" : "WebSocket"
-  }, {
-    "name" : "M_Program"
-  }, {
-    "name" : "APP-Api"
-  }, {
-    "name" : "Screen_Size_Type"
-  }, {
-    "name" : "Price & Invoice & Tariffs"
   }, {
     "name" : "External Server"
   }, {
@@ -67,6 +53,12 @@
   }, {
     "name" : "Producer"
   }, {
+    "name" : "M_Program"
+  }, {
+    "name" : "Screen_Size_Type"
+  }, {
+    "name" : "Notifications"
+  }, {
     "name" : "Project"
   }, {
     "name" : "Homer"
@@ -75,9 +67,17 @@
   }, {
     "name" : "Blocko-Block"
   }, {
-    "name" : "Social-Facebook"
+    "name" : "WebSocket"
   }, {
-    "name" : "Social-GitHub"
+    "name" : "Price & Invoice & Tariffs"
+  }, {
+    "name" : "Blocko-OverFlow"
+  }, {
+    "name" : "Post"
+  }, {
+    "name" : "Type-Of-Post"
+  }, {
+    "name" : "Type-Of-Confirms"
   } ],
   "paths" : {
     "/compilation/board" : {
@@ -8745,14 +8745,14 @@
           "readOnly" : true,
           "default" : false
         },
-        "persons_id" : {
+        "person_permissions_id" : {
           "type" : "array",
           "readOnly" : true,
           "items" : {
             "type" : "string"
           }
         },
-        "person_permissions_id" : {
+        "persons_id" : {
           "type" : "array",
           "readOnly" : true,
           "items" : {
@@ -8825,22 +8825,22 @@
           "type" : "string",
           "format" : "date-time"
         },
+        "pdf_link" : {
+          "type" : "string",
+          "description" : "Visible only when the invoice is available",
+          "readOnly" : true
+        },
+        "payment_method" : {
+          "type" : "string",
+          "readOnly" : true
+        },
         "require_payment" : {
           "type" : "boolean",
           "description" : "Visible only when the invoice is not paid",
           "readOnly" : true,
           "default" : false
         },
-        "pdf_link" : {
-          "type" : "string",
-          "description" : "Visible only when the invoice is available",
-          "readOnly" : true
-        },
         "payment_status" : {
-          "type" : "string",
-          "readOnly" : true
-        },
-        "payment_method" : {
           "type" : "string",
           "readOnly" : true
         }
@@ -8930,6 +8930,20 @@
           "description" : "Required: only if company_account = trueEmail must be valid"
         }
       }
+    },
+    "LibraryGroup_Version" : {
+      "type" : "object",
+      "required" : [ "version_name" ],
+      "properties" : {
+        "version_name" : {
+          "type" : "string",
+          "description" : "MinLength >= 2"
+        },
+        "version_description" : {
+          "type" : "string"
+        }
+      },
+      "description" : "Json Model for new Version for LibraryGroup"
     },
     "ScreeSizeType_New" : {
       "type" : "object",
@@ -9052,20 +9066,6 @@
         }
       }
     },
-    "LibraryGroup_Version" : {
-      "type" : "object",
-      "required" : [ "version_name" ],
-      "properties" : {
-        "version_name" : {
-          "type" : "string",
-          "description" : "MinLength >= 2"
-        },
-        "version_description" : {
-          "type" : "string"
-        }
-      },
-      "description" : "Json Model for new Version for LibraryGroup"
-    },
     "JsonNode" : {
       "type" : "object",
       "properties" : {
@@ -9081,10 +9081,6 @@
           "type" : "boolean",
           "default" : false
         },
-        "number" : {
-          "type" : "boolean",
-          "default" : false
-        },
         "float" : {
           "type" : "boolean",
           "default" : false
@@ -9093,7 +9089,7 @@
           "type" : "boolean",
           "default" : false
         },
-        "short" : {
+        "number" : {
           "type" : "boolean",
           "default" : false
         },
@@ -9105,11 +9101,15 @@
           "type" : "string",
           "enum" : [ "ARRAY", "BINARY", "BOOLEAN", "MISSING", "NULL", "NUMBER", "OBJECT", "POJO", "STRING" ]
         },
-        "valueNode" : {
+        "int" : {
           "type" : "boolean",
           "default" : false
         },
-        "int" : {
+        "short" : {
+          "type" : "boolean",
+          "default" : false
+        },
+        "pojo" : {
           "type" : "boolean",
           "default" : false
         },
@@ -9117,7 +9117,7 @@
           "type" : "boolean",
           "default" : false
         },
-        "pojo" : {
+        "valueNode" : {
           "type" : "boolean",
           "default" : false
         },
@@ -9214,21 +9214,7 @@
           "readOnly" : true,
           "$ref" : "#/definitions/Board_status"
         },
-        "update_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "delete_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
         "project_id" : {
-          "type" : "string",
-          "readOnly" : true
-        },
-        "project_name" : {
           "type" : "string",
           "readOnly" : true
         },
@@ -9250,6 +9236,16 @@
           "type" : "string",
           "readOnly" : true
         },
+        "update_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "delete_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
         "up_to_date" : {
           "type" : "boolean",
           "readOnly" : true,
@@ -9259,6 +9255,10 @@
           "description" : "It will be visible in Json object, only if value is true. This is an extraordinary value",
           "readOnly" : true,
           "$ref" : "#/definitions/boolean"
+        },
+        "project_name" : {
+          "type" : "string",
+          "readOnly" : true
         }
       }
     },
@@ -9305,6 +9305,18 @@
       },
       "description" : "Json Model for new TypeOfBoard"
     },
+    "Login_Token" : {
+      "type" : "object",
+      "required" : [ "authToken" ],
+      "properties" : {
+        "authToken" : {
+          "type" : "string",
+          "description" : "X-AUTH-TOKEN - used this token in HTML head for verifying the identities",
+          "readOnly" : true
+        }
+      },
+      "description" : "Json Model that you will get, if login was successful"
+    },
     "Single_Library_List" : {
       "type" : "object",
       "required" : [ "content", "from", "pages", "to", "total" ],
@@ -9345,18 +9357,6 @@
         }
       },
       "description" : "Individual SingleLibrary List"
-    },
-    "Login_Token" : {
-      "type" : "object",
-      "required" : [ "authToken" ],
-      "properties" : {
-        "authToken" : {
-          "type" : "string",
-          "description" : "X-AUTH-TOKEN - used this token in HTML head for verifying the identities",
-          "readOnly" : true
-        }
-      },
-      "description" : "Json Model that you will get, if login was successful"
     },
     "Post_List" : {
       "type" : "object",
@@ -9419,6 +9419,15 @@
             "type" : "string"
           }
         },
+        "author_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
         "update_permission" : {
           "type" : "boolean",
           "readOnly" : true,
@@ -9429,16 +9438,7 @@
           "readOnly" : true,
           "default" : false
         },
-        "edit_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
         "type_of_block_id" : {
-          "type" : "string",
-          "readOnly" : true
-        },
-        "author_id" : {
           "type" : "string",
           "readOnly" : true
         }
@@ -9619,16 +9619,6 @@
           "description" : "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
           "readOnly" : true
         },
-        "update_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "delete_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
         "project_id" : {
           "type" : "string",
           "readOnly" : true
@@ -9640,10 +9630,6 @@
             "$ref" : "#/definitions/C_Program_Version"
           }
         },
-        "project_name" : {
-          "type" : "string",
-          "readOnly" : true
-        },
         "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
@@ -9654,6 +9640,20 @@
           "readOnly" : true
         },
         "type_of_board_name" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "update_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "delete_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "project_name" : {
           "type" : "string",
           "readOnly" : true
         }
@@ -9745,12 +9745,12 @@
           "description" : "Description for \"(static key)\"",
           "readOnly" : true
         },
-        "edit_person_permission" : {
+        "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
         },
-        "edit_permission" : {
+        "edit_person_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -9791,6 +9791,15 @@
           "type" : "integer",
           "format" : "int32",
           "readOnly" : true
+        },
+        "product_individual_name" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
         },
         "homers_id" : {
           "type" : "array",
@@ -9869,15 +9878,6 @@
           "type" : "integer",
           "format" : "int64",
           "readOnly" : true
-        },
-        "product_individual_name" : {
-          "type" : "string",
-          "readOnly" : true
-        },
-        "edit_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
         }
       }
     },
@@ -9893,6 +9893,11 @@
         },
         "description" : {
           "type" : "string"
+        },
+        "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
         },
         "update_permission" : {
           "type" : "boolean",
@@ -9917,11 +9922,6 @@
           "items" : {
             "type" : "string"
           }
-        },
-        "edit_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
         }
       }
     },
@@ -9988,12 +9988,12 @@
           "type" : "boolean",
           "default" : false
         },
-        "delete_permission" : {
+        "read_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
         },
-        "read_permission" : {
+        "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -10067,17 +10067,6 @@
       },
       "description" : "Json Model for new Processor"
     },
-    "Person_Password_RecoveryEmail" : {
-      "type" : "object",
-      "required" : [ "mail" ],
-      "properties" : {
-        "mail" : {
-          "type" : "string",
-          "description" : "Required valid mail "
-        }
-      },
-      "description" : "Json Model for sending password recovery email"
-    },
     "Board_New" : {
       "type" : "object",
       "required" : [ "hardware_unique_ids", "type_of_board_id" ],
@@ -10095,6 +10084,17 @@
         }
       },
       "description" : "Json Model for create new Board"
+    },
+    "Person_Password_RecoveryEmail" : {
+      "type" : "object",
+      "required" : [ "mail" ],
+      "properties" : {
+        "mail" : {
+          "type" : "string",
+          "description" : "Required valid mail "
+        }
+      },
+      "description" : "Json Model for sending password recovery email"
     },
     "B_Program_state_cloud" : {
       "type" : "object",
@@ -10188,12 +10188,12 @@
             "type" : "string"
           }
         },
-        "delete_permission" : {
+        "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
         },
-        "edit_permission" : {
+        "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -10314,22 +10314,22 @@
             "$ref" : "#/definitions/BlockoBlock"
           }
         },
-        "update_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "delete_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
         "project_id" : {
           "type" : "string",
           "description" : "This value will be in Json only if TypeOfBlock is private!",
           "readOnly" : true
         },
         "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "update_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -10368,47 +10368,15 @@
         "type" : {
           "type" : "string"
         },
-        "delete_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
         "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
-        }
-      }
-    },
-    "Notification" : {
-      "type" : "object",
-      "required" : [ "Its not possible document that throw swagger. Please visit documentation.byzance.cz", "confirmation_required", "created", "id", "level", "was_read" ],
-      "properties" : {
-        "id" : {
-          "type" : "string"
         },
-        "level" : {
-          "type" : "string",
-          "enum" : [ "info", "success", "warning", "error", "question" ]
-        },
-        "confirmation_required" : {
+        "delete_permission" : {
           "type" : "boolean",
-          "default" : false
-        },
-        "was_read" : {
-          "type" : "boolean",
-          "default" : false
-        },
-        "created" : {
-          "type" : "integer",
-          "format" : "int32",
-          "example" : "1466163478925",
-          "description" : "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
-          "readOnly" : true
-        },
-        "Its not possible document that throw swagger. Please visit documentation.byzance.cz" : {
           "readOnly" : true,
-          "$ref" : "#/definitions/JsonNode"
+          "default" : false
         }
       }
     },
@@ -10454,6 +10422,38 @@
         "state_fraction" : {
           "type" : "string",
           "readOnly" : true
+        }
+      }
+    },
+    "Notification" : {
+      "type" : "object",
+      "required" : [ "Its not possible document that throw swagger. Please visit documentation.byzance.cz", "confirmation_required", "created", "id", "level", "was_read" ],
+      "properties" : {
+        "id" : {
+          "type" : "string"
+        },
+        "level" : {
+          "type" : "string",
+          "enum" : [ "info", "success", "warning", "error", "question" ]
+        },
+        "confirmation_required" : {
+          "type" : "boolean",
+          "default" : false
+        },
+        "was_read" : {
+          "type" : "boolean",
+          "default" : false
+        },
+        "created" : {
+          "type" : "integer",
+          "format" : "int32",
+          "example" : "1466163478925",
+          "description" : "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
+          "readOnly" : true
+        },
+        "Its not possible document that throw swagger. Please visit documentation.byzance.cz" : {
+          "readOnly" : true,
+          "$ref" : "#/definitions/JsonNode"
         }
       }
     },
@@ -10921,12 +10921,12 @@
           "type" : "integer",
           "format" : "int32"
         },
-        "delete_permission" : {
+        "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
         },
-        "edit_permission" : {
+        "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -11045,11 +11045,6 @@
         "logic_json" : {
           "type" : "string"
         },
-        "delete_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
         "create_permission" : {
           "type" : "boolean",
           "readOnly" : true,
@@ -11061,6 +11056,11 @@
           "default" : false
         },
         "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -11082,6 +11082,37 @@
     },
     "Result" : {
       "type" : "object"
+    },
+    "C_Program_Light" : {
+      "type" : "object",
+      "required" : [ "c_program_id", "c_program_name", "c_program_version_id", "c_program_version_name", "type_of_board_id", "type_of_board_name" ],
+      "properties" : {
+        "c_program_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "c_program_name" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "c_program_version_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "c_program_version_name" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "type_of_board_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "type_of_board_name" : {
+          "type" : "string",
+          "readOnly" : true
+        }
+      },
+      "description" : "C_Program Light (only few properties)"
     },
     "Grid_Terminal" : {
       "type" : "object",
@@ -11118,37 +11149,6 @@
         }
       }
     },
-    "C_Program_Light" : {
-      "type" : "object",
-      "required" : [ "c_program_id", "c_program_name", "c_program_version_id", "c_program_version_name", "type_of_board_id", "type_of_board_name" ],
-      "properties" : {
-        "c_program_id" : {
-          "type" : "string",
-          "readOnly" : true
-        },
-        "c_program_name" : {
-          "type" : "string",
-          "readOnly" : true
-        },
-        "c_program_version_id" : {
-          "type" : "string",
-          "readOnly" : true
-        },
-        "c_program_version_name" : {
-          "type" : "string",
-          "readOnly" : true
-        },
-        "type_of_board_id" : {
-          "type" : "string",
-          "readOnly" : true
-        },
-        "type_of_board_name" : {
-          "type" : "string",
-          "readOnly" : true
-        }
-      },
-      "description" : "C_Program Light (only few properties)"
-    },
     "Financial_Summary" : {
       "type" : "object",
       "required" : [ "products" ],
@@ -11162,39 +11162,6 @@
         }
       },
       "description" : "Json Model for details about Tariff - all financial details in one Json"
-    },
-    "Cloud_Homer_Server" : {
-      "type" : "object",
-      "properties" : {
-        "id" : {
-          "type" : "string"
-        },
-        "server_name" : {
-          "type" : "string"
-        },
-        "destination_address" : {
-          "type" : "string"
-        },
-        "is_private" : {
-          "type" : "boolean",
-          "default" : false
-        },
-        "delete_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "edit_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "server_is_online" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        }
-      }
     },
     "Login_Result" : {
       "type" : "object",
@@ -11221,6 +11188,39 @@
         }
       },
       "description" : "Json Model that you will get, if login was successful"
+    },
+    "Cloud_Homer_Server" : {
+      "type" : "object",
+      "properties" : {
+        "id" : {
+          "type" : "string"
+        },
+        "server_name" : {
+          "type" : "string"
+        },
+        "destination_address" : {
+          "type" : "string"
+        },
+        "is_private" : {
+          "type" : "boolean",
+          "default" : false
+        },
+        "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "server_is_online" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "delete_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        }
+      }
     },
     "B_Program" : {
       "type" : "object",
@@ -11249,15 +11249,9 @@
           "description" : "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
           "readOnly" : true
         },
-        "update_permission" : {
-          "type" : "boolean",
+        "program_state" : {
           "readOnly" : true,
-          "default" : false
-        },
-        "delete_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
+          "$ref" : "#/definitions/B_Program_State"
         },
         "project_id" : {
           "type" : "string",
@@ -11270,11 +11264,17 @@
             "$ref" : "#/definitions/B_Program_Version"
           }
         },
-        "program_state" : {
-          "readOnly" : true,
-          "$ref" : "#/definitions/B_Program_State"
-        },
         "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "update_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -11323,16 +11323,16 @@
           "type" : "string",
           "description" : "Visible here only when the object IS specifically required. Inversion value for \"m_code_url\" THIS or THAT!"
         },
-        "delete_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
         "m_project_id" : {
           "type" : "string",
           "readOnly" : true
         },
         "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -11590,12 +11590,12 @@
             "$ref" : "#/definitions/Object_detail"
           }
         },
-        "delete_permission" : {
+        "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
         },
-        "edit_permission" : {
+        "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -11693,23 +11693,6 @@
       },
       "description" : "Json Model for new Version of C_Program"
     },
-    "Tariff_Label" : {
-      "type" : "object",
-      "required" : [ "description", "label" ],
-      "properties" : {
-        "label" : {
-          "type" : "string",
-          "description" : "Basic Text value - for each line",
-          "readOnly" : true
-        },
-        "description" : {
-          "type" : "string",
-          "description" : "If not null or empty description=\"\" value - Show this text under the mouse pointer",
-          "readOnly" : true
-        }
-      },
-      "description" : "Json Model for details about Tariff"
-    },
     "C_Program_Version_Update" : {
       "type" : "object",
       "required" : [ "main" ],
@@ -11745,6 +11728,23 @@
         }
       },
       "description" : "Json Model for getting Blocko_Block Filter List"
+    },
+    "Tariff_Label" : {
+      "type" : "object",
+      "required" : [ "description", "label" ],
+      "properties" : {
+        "label" : {
+          "type" : "string",
+          "description" : "Basic Text value - for each line",
+          "readOnly" : true
+        },
+        "description" : {
+          "type" : "string",
+          "description" : "If not null or empty description=\"\" value - Show this text under the mouse pointer",
+          "readOnly" : true
+        }
+      },
+      "description" : "Json Model for details about Tariff"
     },
     "External_Libraries" : {
       "type" : "object",
@@ -11866,17 +11866,6 @@
       },
       "description" : "Type_Of_Block Light (only few properties)"
     },
-    "TypeOfPost_New" : {
-      "type" : "object",
-      "required" : [ "type" ],
-      "properties" : {
-        "type" : {
-          "type" : "string",
-          "description" : "MinLength >= 3"
-        }
-      },
-      "description" : "Json Model for create new TypeOfPost"
-    },
     "Applicable_Product" : {
       "type" : "object",
       "required" : [ "product_id", "product_individual_name", "product_type" ],
@@ -11897,6 +11886,17 @@
       },
       "description" : "Json Model for selecting Product for registration new project"
     },
+    "TypeOfPost_New" : {
+      "type" : "object",
+      "required" : [ "type" ],
+      "properties" : {
+        "type" : {
+          "type" : "string",
+          "description" : "MinLength >= 3"
+        }
+      },
+      "description" : "Json Model for create new TypeOfPost"
+    },
     "Cloud_Compilation_Server" : {
       "type" : "object",
       "required" : [ "delete_permission", "destination_address", "edit_permission", "id", "server_is_online", "server_name" ],
@@ -11910,17 +11910,17 @@
         "destination_address" : {
           "type" : "string"
         },
-        "delete_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
         "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
         },
         "server_is_online" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -11975,15 +11975,6 @@
           "description" : "Description on Model C_ProgramUpdater_State",
           "enum" : [ "complete", "canceled", "in_progress", "overwritten", "waiting_for_device", "instance_inaccessible", "homer_server_is_offline", "critical_error" ]
         },
-        "c_program_detail" : {
-          "description" : "Is visible only if user send compilation under C_program in system  ( OR state for binary_file)",
-          "readOnly" : true,
-          "$ref" : "#/definitions/C_Program_Update_program"
-        },
-        "server_detail" : {
-          "readOnly" : true,
-          "$ref" : "#/definitions/Server_detail"
-        },
         "board_detail" : {
           "readOnly" : true,
           "$ref" : "#/definitions/Board_detail"
@@ -11992,6 +11983,52 @@
           "description" : "Is visible only if user send own binary file ( OR state for c_program_detail)",
           "readOnly" : true,
           "$ref" : "#/definitions/FileRecord"
+        },
+        "c_program_detail" : {
+          "description" : "Is visible only if user send compilation under C_program in system  ( OR state for binary_file)",
+          "readOnly" : true,
+          "$ref" : "#/definitions/C_Program_Update_program"
+        },
+        "server_detail" : {
+          "readOnly" : true,
+          "$ref" : "#/definitions/Server_detail"
+        }
+      }
+    },
+    "SingleLibrary" : {
+      "type" : "object",
+      "required" : [ "delete_permission", "description", "edit_permission", "id", "library_name", "update_permission", "versions_id" ],
+      "properties" : {
+        "id" : {
+          "type" : "string"
+        },
+        "description" : {
+          "type" : "string"
+        },
+        "library_name" : {
+          "type" : "string"
+        },
+        "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "update_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "delete_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "versions_id" : {
+          "type" : "array",
+          "readOnly" : true,
+          "items" : {
+            "type" : "string"
+          }
         }
       }
     },
@@ -12028,43 +12065,6 @@
       },
       "description" : "Json Model for new M_Program"
     },
-    "SingleLibrary" : {
-      "type" : "object",
-      "required" : [ "delete_permission", "description", "edit_permission", "id", "library_name", "update_permission", "versions_id" ],
-      "properties" : {
-        "id" : {
-          "type" : "string"
-        },
-        "description" : {
-          "type" : "string"
-        },
-        "library_name" : {
-          "type" : "string"
-        },
-        "update_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "delete_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "versions_id" : {
-          "type" : "array",
-          "readOnly" : true,
-          "items" : {
-            "type" : "string"
-          }
-        },
-        "edit_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        }
-      }
-    },
     "Private_Homer_Server" : {
       "type" : "object",
       "properties" : {
@@ -12080,16 +12080,6 @@
         "version" : {
           "type" : "string"
         },
-        "update_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "delete_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
         "project_id" : {
           "type" : "string",
           "readOnly" : true
@@ -12100,6 +12090,16 @@
           "default" : false
         },
         "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "update_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -12201,6 +12201,27 @@
         }
       },
       "description" : "Json Model for Compilation Result"
+    },
+    "B_Pair" : {
+      "type" : "object",
+      "properties" : {
+        "board_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "c_program_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "c_program_version_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "virtual_input_output" : {
+          "type" : "string",
+          "readOnly" : true
+        }
+      }
     },
     "WebSocketString" : {
       "type" : "object",
@@ -12448,17 +12469,22 @@
             "$ref" : "#/definitions/Post"
           }
         },
+        "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "delete_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
         "hashTags" : {
           "type" : "array",
           "readOnly" : true,
           "items" : {
             "type" : "string"
           }
-        },
-        "delete_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
         },
         "type_of_confirms" : {
           "type" : "array",
@@ -12487,11 +12513,6 @@
           "default" : false
         },
         "edit_confirms_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -12568,6 +12589,20 @@
             "$ref" : "#/definitions/M_Program"
           }
         },
+        "b_program_id" : {
+          "type" : "string",
+          "description" : "can be empty",
+          "readOnly" : true
+        },
+        "project_id" : {
+          "type" : "string",
+          "readOnly" : true
+        },
+        "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
         "update_permission" : {
           "type" : "boolean",
           "readOnly" : true,
@@ -12578,24 +12613,10 @@
           "readOnly" : true,
           "default" : false
         },
-        "project_id" : {
-          "type" : "string",
-          "readOnly" : true
-        },
-        "b_program_id" : {
-          "type" : "string",
-          "description" : "can be empty",
-          "readOnly" : true
-        },
         "b_progam_connected_version_id" : {
           "type" : "string",
           "description" : "can be empty",
           "readOnly" : true
-        },
-        "edit_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
         }
       }
     },
@@ -12646,21 +12667,6 @@
       },
       "description" : "Json Model for getting Type_Of_Block Filter List"
     },
-    "Entity_Validation_In" : {
-      "type" : "object",
-      "required" : [ "key", "value" ],
-      "properties" : {
-        "key" : {
-          "type" : "string",
-          "description" : "This field is required"
-        },
-        "value" : {
-          "type" : "string",
-          "description" : "This field is required"
-        }
-      },
-      "description" : "Json Model for Validation of *-some Entity"
-    },
     "TypeOfBoard" : {
       "type" : "object",
       "required" : [ "connectible_to_internet", "delete_permission", "description", "edit_permission", "id", "name", "register_new_device_permission", "revision" ],
@@ -12679,16 +12685,6 @@
         },
         "connectible_to_internet" : {
           "type" : "boolean",
-          "default" : false
-        },
-        "delete_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
-          "default" : false
-        },
-        "edit_permission" : {
-          "type" : "boolean",
-          "readOnly" : true,
           "default" : false
         },
         "processor_name" : {
@@ -12711,8 +12707,33 @@
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
+        },
+        "edit_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
+        },
+        "delete_permission" : {
+          "type" : "boolean",
+          "readOnly" : true,
+          "default" : false
         }
       }
+    },
+    "Entity_Validation_In" : {
+      "type" : "object",
+      "required" : [ "key", "value" ],
+      "properties" : {
+        "key" : {
+          "type" : "string",
+          "description" : "This field is required"
+        },
+        "value" : {
+          "type" : "string",
+          "description" : "This field is required"
+        }
+      },
+      "description" : "Json Model for Validation of *-some Entity"
     },
     "Screen_Size_Type" : {
       "type" : "object",
@@ -12784,12 +12805,12 @@
           "type" : "boolean",
           "default" : false
         },
-        "delete_permission" : {
+        "edit_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
         },
-        "edit_permission" : {
+        "delete_permission" : {
           "type" : "boolean",
           "readOnly" : true,
           "default" : false
@@ -12798,11 +12819,15 @@
     },
     "B_Program_Hw_Group" : {
       "type" : "object",
-      "required" : [ "id" ],
       "properties" : {
-        "id" : {
-          "type" : "integer",
-          "format" : "int64"
+        "device_board_pairs" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/B_Pair"
+          }
+        },
+        "main_board_pair" : {
+          "$ref" : "#/definitions/B_Pair"
         }
       }
     },

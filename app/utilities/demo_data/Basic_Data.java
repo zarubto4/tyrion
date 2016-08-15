@@ -475,7 +475,8 @@ public class Basic_Data {
              // První verze B_Programu - Pro instanci!
             Version_Object version_b_program_1 = new Version_Object();
             version_b_program_1.version_name = "Blocko Verze č.1";
-            version_b_program_1.version_name = "Snažím se tu dělat veklé věci";
+            version_b_program_1.version_description = "Snažím se tu dělat veklé věci";
+            version_b_program_1.date_of_create = new Date();
             version_b_program_1.b_program = b_program_1;
 
 
