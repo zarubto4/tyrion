@@ -2,7 +2,10 @@ package utilities.webSocket;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.WebSocketController_Incoming;
+import utilities.swagger.outboundClass.Swagger_Instance_HW_Group;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 public class WS_Homer_Cloud extends WebSCType{
@@ -14,6 +17,11 @@ public class WS_Homer_Cloud extends WebSCType{
     public WS_BlockoServer blockoServer;
     public String version_id = "ERROR"; // Pro první inicializaci a pro případ, že se version_id nedosadí a aby to bylo v komunikaci všude jasně vidět
 
+    public boolean temporary = false; // Instance je dočasně testovacím způsobem vytvořená - tyrion k ní není tak přísný. (Má zvýšené logování)
+
+    public List<Swagger_Instance_HW_Group> group = new ArrayList<>(); // Seznam HW - Který by měl na instanci běžet!
+
+
     // Kontstruktor sloužící pro vytvoření objektu
     public WS_Homer_Cloud (String identificator,  String version_id,  WS_BlockoServer blockoServer) {
         super();
@@ -22,7 +30,6 @@ public class WS_Homer_Cloud extends WebSCType{
         this.blockoServer = blockoServer;
         super.webSCtype = this;
     }
-
 
     @Override
     public void write_without_confirmation(ObjectNode json) {

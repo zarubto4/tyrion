@@ -54,7 +54,7 @@ public class Version_Object extends Model {
     @JsonIgnore  @OneToMany(mappedBy="c_program_version", cascade=CascadeType.ALL)  public List<B_Pair> b_pairs_c_program = new ArrayList<>(); // Určeno pro aktualizaci
 
 
-    @JsonIgnore  @OneToMany(mappedBy="b_program_version_group", cascade=CascadeType.ALL)  public List<B_Program_Hw_Group> b_program_hw_groups = new ArrayList<>();
+    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)  public List<B_Program_Hw_Group> b_program_hw_groups = new ArrayList<>();
 
     // M_Project -------------------------
     @JsonIgnore  @OneToOne(mappedBy="b_program_version", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)   public M_Project m_project;

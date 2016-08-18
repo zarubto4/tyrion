@@ -53,6 +53,7 @@ public class Master_Updater{
    public static List<Actualization_procedure> procedures = new ArrayList<>();
 
     static Thread comprimator_thread = new Thread() {
+
         @Override
         public void run() {
 
@@ -62,20 +63,21 @@ public class Master_Updater{
             while(true){
                 try{
 
-
                     if(!procedures.isEmpty()) {
 
                         logger.debug("Master updater Thread is running. Tasks to solve: " + procedures.size() );
-
                         Actualization_procedure procedure =  procedures.get(0);
                         actualization_update_procedure( procedure );
                         procedures.remove(procedure);
 
                     }
+
                     else{
                         logger.debug("Master updater Thread has not other tasks. Going to sleep!");
                         sleep(500000000);
                     }
+
+
 
                 }catch (InterruptedException i){
                     // Do nothing

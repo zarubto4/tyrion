@@ -64,7 +64,12 @@
                                     -----
                                 }</td>
 
-                                <td align="center"><button class="btn btn-block btn-success btn-xs">Open Details</button></td>
+                                <td align="center">
+                                    <a href=' @routes.DashboardController.show_instance_detail( x.identifikator )' >
+                                        <button class="btn btn-block btn-info btn-xs">Details</button>
+                                    </a>
+
+                                </td>
 
                                 <td align="center">
                                     <a href=' @routes.DashboardController.ping_homer( x.identifikator )' >
@@ -206,7 +211,7 @@
                                         <a href=' @routes.DashboardController.ping_becki( x.identifikator )' >
                                             <button class="btn btn-block btn-info btn-xs">Ping All</button>
                                         </a>
-                                        <form style="margin-top: 10px;" method="get" action="@routes.NotificationController.test_notifications( Person.find.byId( x.identifikator ).mail )">
+                                        <form method="get" action="@routes.NotificationController.test_notifications( Person.find.byId( x.identifikator ).mail )">
                                             <button name="mail" value="@(Person.find.byId( x.identifikator ).mail )" class="btn btn-block btn-primary btn-xs">Send test notification</button>
                                         </form>
                                     </th>

@@ -123,7 +123,7 @@ public class WS_BlockoServer extends WebSCType{
                                 task.board.private_instance = temporary_instance;
                                 task.board.update();
 
-                                WS_Homer_Cloud homer = (WS_Homer_Cloud) WebSocketController_Incoming.blocko_server_add_instance(this_server, temporary_instance );
+                                WS_Homer_Cloud homer = (WS_Homer_Cloud) WebSocketController_Incoming.blocko_server_add_instance(this_server, temporary_instance, true );
 
 
                                 JsonNode result = WebSocketController_Incoming.homer_update_Yoda_firmware(homer, task.code);

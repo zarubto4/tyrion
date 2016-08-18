@@ -1,4 +1,12 @@
-﻿# Verze 1.06.6.5 #
+﻿# Verze 1.06.6.6 #
+
+  * Board
+    přibyla položka v Json - main_board:boolean -> jež říká že je to "yoda" co se může sám připojit k Homer serveru.
+
+
+-----
+
+# Verze 1.06.6.5 #
 
 ## Změny nad objekty ##
 

@@ -19,5 +19,18 @@ public class B_Program_Hw_Group extends Model {
 
 
 
-    @JsonIgnore  @ManyToOne() public Version_Object b_program_version_group;
+    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "b_program_hw_groups")  @JoinTable(name = "version_b_group_id") public List<Version_Object> b_program_version_groups = new ArrayList<>();
+
+
+/* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
+
+
+
+/* JSON IGNORE METHOD --------------------------------------------------------------------------------------------------*/
+
+
+
+/* FINDER --------------------------------------------------------------------------------------------------------------*/
+    public static Model.Finder<String, B_Program_Hw_Group> find = new Finder<>(B_Program_Hw_Group.class);
+
 }

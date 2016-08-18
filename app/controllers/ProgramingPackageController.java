@@ -8,6 +8,7 @@ import models.blocko.BlockoBlock;
 import models.blocko.BlockoBlockVersion;
 import models.blocko.TypeOfBlock;
 import models.compiler.Board;
+import models.compiler.FileRecord;
 import models.compiler.TypeOfBoard;
 import models.compiler.Version_Object;
 import models.person.Invitation;
@@ -1074,7 +1075,10 @@ public class ProgramingPackageController extends Controller {
         try{
 
             // Zpracování Json
-            Swagger_B_Program_New help = Json.fromJson(request().body().asJson(), Swagger_B_Program_New.class);
+            final Form<Swagger_B_Program_New> form = Form.form(Swagger_B_Program_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_B_Program_New help = form.get();
+
 
             // Kontrola objektu
             B_Program b_program  = B_Program.find.byId(b_program_id);
@@ -1209,9 +1213,6 @@ public class ProgramingPackageController extends Controller {
                         b_program_hw_group.device_board_pairs.add(b_pair);
                     }
                 }
-
-
-
                 version_object.b_program_hw_groups.add(b_program_hw_group);
             }
 
@@ -1474,7 +1475,7 @@ public class ProgramingPackageController extends Controller {
 
                     //Získání objektu
                     // Na homerovi musím zabít a smazat předchozí program - jedná se pouze o nahrávání na cloud !!!
-                    Homer_Instance old_one = Homer_Instance.find.where().eq("homer.id", private_homer_server.id).findUnique();
+                    Homer_Instance old_one = Homer_Instance.find.where().eq("private_server.id", private_homer_server.id).findUnique();
 
                     // Smazání objektu
                     if (old_one != null) { old_one.delete(); }
@@ -1493,7 +1494,7 @@ public class ProgramingPackageController extends Controller {
 
 
 
-                    if(!  WebSocketController_Incoming.homer_online_state(private_homer_server.id) ) {
+                    if(!  WebSocketController_Incoming.homer_online_state(private_homer_server.b_program_homer.blocko_instance_name) ) {
                        NotificationController.unload_Instance_was_unsuccessfull( SecurityController.getPerson() , program_homer , "One of the components of the server is not available");
                        this.interrupt();
                    }
@@ -1546,6 +1547,8 @@ public class ProgramingPackageController extends Controller {
     public  Result upload_b_Program_ToCloud(@ApiParam(value = "version_id String path", required = true) String version_id){
         try {
 
+            System.out.println("\n \n \n \n \n \n");
+
             // Kontrola objektu: Verze B programu kterou budu nahrávat do cloudu
             Version_Object version_object = Version_Object.find.byId(version_id);
             if (version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
@@ -1560,7 +1563,6 @@ public class ProgramingPackageController extends Controller {
 
             // Kontroluji přítomnost Yody - Dovolím nahrát instnaci bez HW
             // if(version_object.b_program_hw_groups == null || version_object.yoda_board_pair.board == null) return GlobalResult.result_BadRequest("Version needs Main Board connectible to internet!");
-
 
             // Pokud už nějaká instance běžela, tak na ní budu nahrávat nový program a odstraním vazbu na běžící instanci b programu
             if(version_object.b_program_hw_groups!= null) {
@@ -1622,6 +1624,10 @@ public class ProgramingPackageController extends Controller {
             program_cloud.cloud_homer_server    = destination_server;
             program_cloud.setUnique_blocko_instance_name();
 
+
+            // Pak smazat!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+           // program_cloud.id = "i1";
+
             // Uložení objektu
             program_cloud.save();
 
@@ -1629,7 +1635,7 @@ public class ProgramingPackageController extends Controller {
 
                 // Vytvářím instanci na serveru
                 WS_BlockoServer server = (WS_BlockoServer) WebSocketController_Incoming.blocko_servers.get(destination_server.server_name);
-                WebSCType homer = WebSocketController_Incoming.blocko_server_add_instance(server, program_cloud);
+                WebSCType homer = WebSocketController_Incoming.blocko_server_add_instance(server, program_cloud, true);
                 ActualizationController.add_new_actualization_request_Checking_HW_Firmware(b_program.project, program_cloud);
                 return GlobalResult.result_ok();
 
@@ -1642,6 +1648,318 @@ public class ProgramingPackageController extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
     }
+
+
+    // TODO
+    public Result update_blocko_code_in_instance_verison(String instance_name, String version_id){
+        try{
+
+            // Kontrola objektu
+            Homer_Instance homer_instance = Homer_Instance.find.where().eq("blocko_instance_name",instance_name).findUnique();
+            if (homer_instance == null) return GlobalResult.notFoundObject("Homer_Instance id not found");
+
+            Version_Object version_object = Version_Object.find.byId(version_id);
+            if (version_object == null) return GlobalResult.notFoundObject("Version_Object id not found");
+            if(version_object.b_program == null)  return GlobalResult.result_BadRequest("Version_Object is not version of B_Program");
+
+            // Kontrola oprávěnní
+            if (! version_object.b_program.edit_permission() ) return GlobalResult.forbidden_Permission();
+
+            // Kontrola oprávěnní
+            if (! homer_instance.project.update_permission() ) return GlobalResult.forbidden_Permission();
+
+            if(! homer_instance.is_online()) return GlobalResult.result_BadRequest("Instance is offline");
+
+            FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", version_id ).eq("file_name","program.js").findUnique();
+            if(fileRecord == null) return GlobalResult.notFoundObject("File with Blocko Code not found under version " + version_id);
+
+            homer_instance.version_object = version_object;
+            homer_instance.update();
+
+            // Updajtuju sice kod ? Ale nikoliv HW?
+            JsonNode result = WebSocketController_Incoming.homer_upload_program(homer_instance.get_instance(), version_object.id, fileRecord.get_fileRecord_from_Azure_inString() );
+
+            // TODO - Update HW???
+
+
+            if(result.has("state") && result.get("state").asText().equals("success")){
+                // Vrácení potvrzení
+                return GlobalResult.result_ok();
+            }else {
+                return GlobalResult.result_BadRequest(result);
+            }
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "upload B Program (code) to instnace ",
+            hidden = true
+    )
+    public Result update_blocko_code_in_instance_with_code(String instance_name){
+        try{
+
+            // Zpracování Json
+            final Form<Swagger_Instance_UpdateCode> form = Form.form(Swagger_Instance_UpdateCode.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Instance_UpdateCode help = form.get();
+
+            // Kontrola objektu
+            Homer_Instance homer_instance = Homer_Instance.find.where().eq("blocko_instance_name",instance_name).findUnique();
+            if (homer_instance == null) return GlobalResult.notFoundObject("Homer_Instance id not found");
+
+            if(!homer_instance.is_online()) return GlobalResult.notFoundObject("Homer_Instance is not online");
+
+            JsonNode result = WebSocketController_Incoming.homer_upload_program(homer_instance.get_instance(), "fake_program", help.code );
+
+            if(result.has("state") && result.get("state").asText().equals("success")){
+                // Vrácení potvrzení
+                return GlobalResult.result_ok();
+            }else {
+                return GlobalResult.result_BadRequest(result);
+            }
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "add yoda to instnace ",
+            hidden = true
+    )
+    public Result add_Yoda_To_Instance(String instance_name, String yoda_device_id){
+        try{
+
+            logger.debug("Add Yoda To Instnace " + instance_name + " yodaId " + yoda_device_id);
+
+            // Kontrola objektu
+            Homer_Instance homer_instance = Homer_Instance.find.where().eq("blocko_instance_name",instance_name).findUnique();
+            if (homer_instance == null) return GlobalResult.notFoundObject("Homer_Instance id not found");
+
+            Board board = Board.find.byId(yoda_device_id);
+            if (board == null) return GlobalResult.notFoundObject("Board id not found");
+            if (!board.main_board()) return GlobalResult.notFoundObject("Board id not main board!");
+
+            Version_Object version_object = homer_instance.version_object;
+
+            // Kontrola oprávěnní
+            if (! version_object.b_program.edit_permission() ) return GlobalResult.forbidden_Permission();
+
+            // Kontrola oprávěnní
+            if (! homer_instance.project.update_permission() ) return GlobalResult.forbidden_Permission();
+
+            if(! homer_instance.is_online()) return GlobalResult.result_BadRequest("Instance is offline");
+
+            B_Pair yoda_pair = new B_Pair();
+            yoda_pair.board = board;
+            yoda_pair.c_program_version = board.actual_c_program_version;
+            yoda_pair.save();
+
+            B_Program_Hw_Group group = new B_Program_Hw_Group();
+            group.main_board_pair = yoda_pair;
+            group.save();
+
+            yoda_pair.main_board_pair = group;
+            yoda_pair.update();
+
+            version_object.b_program_hw_groups.add(group);
+            version_object.update();
+
+            // Updajtuju sice kod ? Ale nikoliv HW?
+            JsonNode result = WebSocketController_Incoming.homer_add_Yoda_to_instance(homer_instance.get_instance(), yoda_device_id);
+
+            if(result.has("state") && result.get("state").asText().equals("success")){
+                // Vrácení potvrzení
+                return GlobalResult.result_ok();
+            }else {
+                return GlobalResult.result_BadRequest(result);
+            }
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "add yoda to instnace ",
+            hidden = true
+    )
+    public Result remove_Yoda_from_Instance(String instance_name, String yoda_device_id){
+        try{
+
+            // Kontrola objektu
+            Homer_Instance homer_instance =  Homer_Instance.find.where().eq("blocko_instance_name",instance_name).findUnique();
+            if (homer_instance == null) return GlobalResult.notFoundObject("Homer_Instance id not found");
+
+            Board board = Board.find.byId(yoda_device_id);
+            if (board == null) return GlobalResult.notFoundObject("Board id not found");
+            if (!board.main_board()) return GlobalResult.notFoundObject("Board id not main board!");
+
+            Version_Object version_object = homer_instance.version_object;
+
+            // Kontrola oprávěnní
+            if (! version_object.b_program.edit_permission() ) return GlobalResult.forbidden_Permission();
+
+            // Kontrola oprávěnní
+            if (! homer_instance.project.update_permission() ) return GlobalResult.forbidden_Permission();
+
+            if(! homer_instance.is_online()) return GlobalResult.result_BadRequest("Instance is offline");
+
+            B_Pair yoda_pair = B_Pair.find.where().eq("main_board_pair.b_program_version_groups.id",version_object.id).findUnique();
+            if(yoda_pair == null) return GlobalResult.notFoundObject("yoda_pair for removing not found");
+            yoda_pair.main_board_pair.delete();
+
+            // Updajtuju sice kod ? Ale nikoliv HW?
+            JsonNode result = WebSocketController_Incoming.homer_remove_Yoda_from_instance(homer_instance.get_instance(), yoda_device_id);
+
+            if(result.has("state") && result.get("state").asText().equals("success")){
+                // Vrácení potvrzení
+                return GlobalResult.result_ok();
+            }else {
+                return GlobalResult.result_BadRequest(result);
+            }
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "add yoda to instnace ",
+            hidden = true
+    )
+    public Result add_Device_To_Instance(String yoda_device_id, String device_id){
+        try{
+
+            Board yoda_board = Board.find.byId(yoda_device_id);
+            if (yoda_board == null) return GlobalResult.notFoundObject("Board yoda_device_id not found");
+            if (!yoda_board.main_board()) return GlobalResult.notFoundObject("Board yoda_device_id is not main board!");
+
+
+            Board device_board = Board.find.byId(device_id);
+            if (device_board == null) return GlobalResult.notFoundObject("Board device_id not found");
+            if (device_board.main_board()) return GlobalResult.notFoundObject("Board device_id main board - you cannot add Main board under main board!");
+
+            // Kontrola objektu
+            Homer_Instance homer_instance = Homer_Instance.find.where().eq("version_object.b_program_hw_groups.main_board_pair.board.id", yoda_board.id).findUnique();
+            if (homer_instance == null) return GlobalResult.notFoundObject("Homer_Instance id not found");
+
+            Version_Object version_object = homer_instance.version_object;
+
+            // Kontrola oprávěnní
+            if (! version_object.b_program.edit_permission() ) return GlobalResult.forbidden_Permission();
+
+            // Kontrola oprávěnní
+            if (! homer_instance.project.update_permission() ) return GlobalResult.forbidden_Permission();
+
+            if(! homer_instance.is_online()) return GlobalResult.result_BadRequest("Instance is offline");
+
+
+            B_Program_Hw_Group group = B_Program_Hw_Group.find.where().eq("main_board_pair.board.id", yoda_device_id).eq("b_program_version_groups.homer_instance.id", homer_instance.id).findUnique();
+
+            B_Pair device_pair = new B_Pair();
+            device_pair.board = device_board;
+            device_pair.c_program_version = device_board.actual_c_program_version;
+            device_pair.save();
+
+            group.device_board_pairs.add(device_pair);
+            group.update();
+
+            // Updajtuju sice kod ? Ale nikoliv HW?
+            JsonNode result = WebSocketController_Incoming.homer_add_Device_to_instance(homer_instance.get_instance(), yoda_device_id, device_id);
+
+            if(result.has("state") && result.get("state").asText().equals("success")){
+                // Vrácení potvrzení
+                return GlobalResult.result_ok();
+            }else {
+                return GlobalResult.result_BadRequest(result);
+            }
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "add yoda to instnace ",
+            hidden = true
+    )
+    public Result remove_Device_From_Instance(String yoda_device_id, String device_id){
+
+        try{
+
+            Board yoda_board = Board.find.byId(yoda_device_id);
+            if (yoda_board == null) return GlobalResult.notFoundObject("Board yoda_device_id not found");
+            if (!yoda_board.main_board()) return GlobalResult.notFoundObject("Board yoda_device_id is not main board!");
+
+
+            Board device_board = Board.find.byId(device_id);
+            if (device_board == null) return GlobalResult.notFoundObject("Board device_id not found");
+            if (device_board.main_board()) return GlobalResult.notFoundObject("Board device_id main board - you cannot add Main board under main board!");
+
+            // Kontrola objektu
+            Homer_Instance homer_instance = Homer_Instance.find.where().eq("version_object.b_program_hw_groups.main_board_pair.board.id", yoda_board.id).findUnique();
+            if (homer_instance == null) return GlobalResult.notFoundObject("Homer_Instance id not found");
+
+            Version_Object version_object = homer_instance.version_object;
+
+            // Kontrola oprávěnní
+            if (! version_object.b_program.edit_permission() ) return GlobalResult.forbidden_Permission();
+
+            // Kontrola oprávěnní
+            if (! homer_instance.project.update_permission() ) return GlobalResult.forbidden_Permission();
+
+            if(! homer_instance.is_online()) return GlobalResult.result_BadRequest("Instance is offline");
+
+            B_Pair device_pair = B_Pair.find.where().eq("device_board_pair.b_program_version_groups.homer_instance.id", homer_instance.id).eq("device_board_pair.b_program_version_groups.main_board_pair.board.id",yoda_device_id).findUnique();
+            if(device_pair == null) return GlobalResult.notFoundObject("device_pair for removing not found");
+            device_pair.delete();
+
+            // Updajtuju sice kod ? Ale nikoliv HW?
+            JsonNode result = WebSocketController_Incoming.homer_remove_Device_from_instance(homer_instance.get_instance(), yoda_device_id, device_id);
+
+            if(result.has("state") && result.get("state").asText().equals("success")){
+                // Vrácení potvrzení
+                return GlobalResult.result_ok();
+            }else {
+                return GlobalResult.result_BadRequest(result);
+            }
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "add yoda to instnace ",
+            hidden = true
+    )
+    public Result send_command_to_instnace(String instance_name, String target_id, String string_command){
+        try{
+
+            Homer_Instance homer_instance = Homer_Instance.find.where().eq("blocko_instance_name",instance_name).findUnique();
+            if (homer_instance == null) return GlobalResult.notFoundObject("Homer_Instance id not found");
+
+            // Kontrola oprávnění
+            if (!homer_instance.project.update_permission() ) return GlobalResult.forbidden_Permission();
+
+            // Kontrola oprávnění
+            Board board = Board.find.byId(target_id);
+            if (board == null) return GlobalResult.notFoundObject("Board targetId not found");
+
+
+            Homer_Instance.TypeOfCommand command = Homer_Instance.TypeOfCommand.getTypeCommand(string_command);
+            if(command == null) return GlobalResult.notFoundObject("Command not found!");
+
+            if(!homer_instance.is_online()) return GlobalResult.result_BadRequest("Instance is offline");
+
+            // Updajtuju sice kod ? Ale nikoliv HW?
+            JsonNode result = WebSocketController_Incoming.homer_devices_commands( homer_instance.get_instance(), target_id, command);
+
+            if(result.has("state") && result.get("state").asText().equals("success")){
+                // Vrácení potvrzení
+                return GlobalResult.result_ok();
+            }else {
+                return GlobalResult.result_BadRequest(result);
+            }
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+
+   }
+
 
     //TODO
     public Result create_list_of_instances(){

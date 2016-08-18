@@ -7,6 +7,7 @@ lazy val root = (project in file(".")).enablePlugins(PlayJava, PlayEbean)
 
 
 scalaVersion := "2.11.6"
+crossScalaVersions := Seq("2.11.6", "2.11.7")
 
 libraryDependencies ++= Seq(
 
@@ -16,8 +17,11 @@ libraryDependencies ++= Seq(
   "com.microsoft.azure" % "azure-storage" % "4.0.0",
   "com.microsoft.azure" % "azure-svc-mgmt" % "0.9.1",
 
-  "io.swagger" %% "swagger-play2" % "1.5.1",
-  "io.swagger" % "swagger-core"  % "1.5.7",
+  "io.swagger" %% "swagger-play2" % "1.5.2",
+
+  "com.typesafe.play" %% "routes-compiler"            % "2.4.6",
+  "io.swagger"         % "swagger-core"               % "1.5.8",
+  "io.swagger"        %% "swagger-scala-module"       % "1.0.2",
 
   "com.github.scribejava" % "scribejava-apis" % "2.1.0",
   "com.typesafe.play" %% "play-mailer" % "4.0.0-M1",

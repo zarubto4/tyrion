@@ -21,12 +21,14 @@ import utilities.swagger.swagger_diff_tools.Swagger_diff_Controller;
 import utilities.swagger.swagger_diff_tools.servise_class.Swagger_Diff;
 import utilities.webSocket.*;
 import views.html.*;
-import views.html.general.login;
-import views.html.general.main;
-import views.html.general.menu;
+import views.html.super_general.main;
+import views.html.super_general.menu;
+import views.html.super_general.login;
 import views.html.permission.permissions_summary;
 import views.html.permission.role;
 import views.html.user_summary.*;
+import views.html.websocket.instance_detail;
+import views.html.websocket.websocket;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -85,6 +87,8 @@ public class DashboardController extends Controller {
                         controllers.routes.javascript.CompilationLibrariesController.get_Producers(),
                         controllers.routes.javascript.CompilationLibrariesController.get_Producer(),
                         controllers.routes.javascript.CompilationLibrariesController.delete_Producer()
+
+
                 )
         );
     }
@@ -240,9 +244,9 @@ public class DashboardController extends Controller {
     }
 
     public Result ping_homer(String homer_id) throws TimeoutException, InterruptedException {
-        if(WebSocketController_Incoming.incomingConnections_homers.containsKey(homer_id))
-        WebSocketController_Incoming.homer_ping( homer_id);
 
+        if(WebSocketController_Incoming.incomingConnections_homers.containsKey(homer_id))
+        WebSocketController_Incoming.homer_ping( (WebSocketController_Incoming.incomingConnections_homers.get(homer_id)));
         return show_web_socket_stats();
     }
 
@@ -261,6 +265,15 @@ public class DashboardController extends Controller {
     public Result log_out_Terminal_User(String identificator) {
         System.out.println("Ještě neimplementováno");
         return  show_web_socket_stats();
+    }
+
+
+    public Result send_commnad_to_instnace(String intance_id, String json_command){
+        return TODO;
+    }
+
+    public Result uploud_blocko_program_to_instance(String intance_id, String json_program){
+        return TODO;
     }
 
 // LOGGY ###############################################################################################################
@@ -304,8 +317,6 @@ public class DashboardController extends Controller {
     @Security.Authenticated(Secured_Admin.class)
     public Result show_web_socket_stats() {
 
-        logger.debug("Return show_web_socket_stats.html content");
-
         List<WebSCType> homers = new ArrayList<>(WebSocketController_Incoming.incomingConnections_homers.values());
 
         List<WS_Grid_Terminal>  grids                   = new ArrayList<>(WebSocketController_Incoming.incomingConnections_terminals.values()).stream().map(o -> (WS_Grid_Terminal) o).collect(Collectors.toList());
@@ -316,6 +327,20 @@ public class DashboardController extends Controller {
         Html content =   websocket.render(homers, grids, becki_terminals, blocko_cloud_servers , compilation_servers);
         return return_page(content);
     }
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result  show_instance_detail(String instance_id) {
+
+        if(!WebSocketController_Incoming.incomingConnections_homers.containsKey(instance_id)) return show_web_socket_stats();
+
+        WS_Homer_Cloud homers = (WS_Homer_Cloud) WebSocketController_Incoming.incomingConnections_homers.get(instance_id);
+
+        Html content = instance_detail.render(homers);
+        return return_page(content);
+    }
+
+
+
 
     @Security.Authenticated(Secured_Admin.class)
     public Result basic_object_management(){
@@ -356,8 +381,6 @@ public class DashboardController extends Controller {
             }else {
                 person = SecurityController.getPerson();
             }
-
-
 
             Html user_summary_content = user_summary.render( person );
             return return_page(user_summary_content);

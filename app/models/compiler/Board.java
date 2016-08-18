@@ -61,6 +61,8 @@ public class Board extends Model {
     @JsonProperty  @Transient @ApiModelProperty(required = true) public String type_of_board_id()   { return type_of_board == null ? null : type_of_board.id; }
     @JsonProperty  @Transient @ApiModelProperty(required = true) public String type_of_board_name() { return type_of_board == null ? null : type_of_board.name; }
 
+    @JsonProperty  @Transient @ApiModelProperty(required = true) public boolean main_board()        { return type_of_board == null ? null : type_of_board.connectible_to_internet; }
+
     @JsonProperty  @Transient @ApiModelProperty(required = true) public String project_id()         { return       project == null ? null : project.id; }
     @JsonProperty  @Transient @ApiModelProperty(required = true) public String project_name()       { return       project == null ? null : project.project_name; }
 

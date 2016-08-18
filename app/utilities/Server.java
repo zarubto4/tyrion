@@ -343,19 +343,21 @@ public class Server {
             // Definované Trigry
             if(!scheduler.checkExists(every_day_key)){
 
-                Trigger every_day = newTrigger()
-                        .withIdentity(every_day_key)
-                        .startNow()
+                Trigger every_day_1 = newTrigger().withIdentity(every_day_key).startNow()
+                        .withSchedule(dailyAtHourAndMinute(2,10))// Spuštění každý den v 02:10 AM
+                        .build();
+
+                Trigger every_day_2 = newTrigger().withIdentity(every_day_key).startNow()
                         .withSchedule(dailyAtHourAndMinute(2,10))// Spuštění každý den v 02:10 AM
                         .build();
 
                 // Přidání úkolů do scheduleru
 
                 // 1) Odstraňování nepřihlášených tokenů ze sociálních sítí, kteér mají živostnost jen 24h
-                scheduler.scheduleJob(  newJob(     Removing_Unused_Tokens.class    ).withIdentity( JobKey.jobKey("removing_unused_tokens") ).build(), every_day);
+                scheduler.scheduleJob(  newJob(     Removing_Unused_Tokens.class    ).withIdentity( JobKey.jobKey("removing_unused_tokens") ).build(), every_day_1);
 
                 // 2) Kontrola a fakturace klientů na měsíční bázi
-                scheduler.scheduleJob(  newJob(     Sending_Invoices.class    ).withIdentity( JobKey.jobKey("sending_invoices") ).build(), every_day);
+                scheduler.scheduleJob(  newJob(     Sending_Invoices.class          ).withIdentity( JobKey.jobKey("sending_invoices")       ).build(), every_day_2);
 
                 // 3) Přesouvání logů v DB do Blob Serveru a uvolňování místa v DB a na serveru
 
@@ -388,7 +390,7 @@ public class Server {
             scheduler.start();
 
         }catch (Exception e){
-            logger.error("Scheduller_Exception", e);
+           // logger.error("Scheduller_Exception", e);
         }
 
     }

@@ -22,7 +22,7 @@ public class B_Pair extends Model {
 
 
     // B_Program - Skupiny HW pod Yodou
-    @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)                                         public B_Program_Hw_Group device_board_pair;  // Devices
+                                                                 @JsonIgnore @ManyToOne()   public B_Program_Hw_Group device_board_pair;  // Devices
     @JsonIgnore @OneToOne(cascade=CascadeType.ALL)  @JoinColumn(name="main_board_pair_id")  public B_Program_Hw_Group main_board_pair;    // Master Boards - třeba Yoda
 
 
@@ -34,7 +34,11 @@ public class B_Pair extends Model {
     @JsonProperty   @Transient public String virtual_input_output() { return c_program_version.c_compilation == null ? null : c_program_version.c_compilation.virtual_input_output; }
     @JsonProperty   @Transient public String board_id()             { return board == null ? null : board.id;}
 
-/* FINDER --------------------------------------------------------------------------------------------------------------*/
+
+    @JsonProperty  @Transient  public String type_of_board_id(){ return board.type_of_board.id; }
+    @JsonProperty  @Transient  public String type_of_board_name(){ return board.type_of_board.name; }
+
+    /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String,B_Pair> find = new Finder<>(B_Pair.class);
 
 }

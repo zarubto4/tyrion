@@ -34,7 +34,7 @@ public class Basic_Data {
 
 
         if(Producer.find.where().eq("name", "Byzance ltd").findUnique() != null ) {
-            System.err.print("Defaultní Objekty jsou nastavené - nelze provést znovu");
+            System.err.println("Defaultní Objekty jsou nastavené - nelze provést znovu");
             return;
         }
 
@@ -164,7 +164,7 @@ public class Basic_Data {
         try {
 
             if(Person.find.where().eq("nick_name", "pepa2").findUnique() != null ) {
-                System.err.print("Databáze je již naplněna - neprovádím žádné další změny");
+                System.err.println("Databáze je již naplněna - neprovádím žádné další změny");
                 return;
             }
 

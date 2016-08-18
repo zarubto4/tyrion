@@ -1,14 +1,14 @@
 <?php
 
 /*
- * DataTables example cloud_blocko_server-side processing script.
+ * DataTables example server-side processing script.
  *
  * Please note that this script is intentionally extremely simply to show how
- * cloud_blocko_server-side processing can be implemented, and probably shouldn't be used as
+ * server-side processing can be implemented, and probably shouldn't be used as
  * the basis for a large complex system. It is suitable for simple use cases as
  * for learning.
  *
- * See http://datatables.net/usage/server-side for full details on the cloud_blocko_server-
+ * See http://datatables.net/usage/server-side for full details on the server-
  * side processing requirements of DataTables.
  *
  * @license MIT - http://datatables.net/license_mit
@@ -36,7 +36,7 @@ $columns = array(
 	array( 'db' => 'country',    'dt' => 4 )
 );
 
-// SQL cloud_blocko_server connection information
+// SQL server connection information
 $sql_details = array(
 	'user' => '',
 	'pass' => '',
@@ -47,7 +47,7 @@ $sql_details = array(
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * If you just want to use the basic configuration for DataTables with PHP
- * cloud_blocko_server-side, there is no need to edit below this line.
+ * server-side, there is no need to edit below this line.
  */
 
 require( '../../../../examples/server_side/scripts/ssp.class.php' );
