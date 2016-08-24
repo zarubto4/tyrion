@@ -9,6 +9,8 @@ import play.mvc.WebSocket;
 import java.util.*;
 import java.util.concurrent.*;
 
+
+
 public abstract class WebSCType {
 
     // Loger
@@ -160,33 +162,6 @@ public abstract class WebSCType {
 
     public void write_without_confirmation(String messageId, ObjectNode json) {
             json.put("messageId", messageId );
-
-            Thread thread = new Thread(){
-
-                @Override
-                public void run() {
-                    try {
-
-                        Integer breaker = 10;
-
-                        while(breaker > 0){
-                            breaker--;
-                            if(isReady()) {
-                                out.write( json.toString() );
-                                break;
-                            }
-
-                            Thread.sleep(250);
-                        }
-
-                    }catch (Exception e){
-                        logger.error("It was not possible to send JSON: " + json.toString());
-                    }
-
-                }
-            };
-
-            thread.start();
-
+            out.write( json.toString() );
     }
 }

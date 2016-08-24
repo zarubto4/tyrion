@@ -86,26 +86,29 @@ public class Homer_Instance extends Model {
     */
     public enum TypeOfCommand {
 
-        INFO_FIRMWARE("info_firmware"),
-        INFO_BOOTLOADER("info_bootloader"),
-        INFO_DATETIME("info_datetime"),
-        INFO_DEVICE_COUNTER("info_device_counter"),
-        INFO_AUTO_BACKUP("info_auto_backup"),
-        INFO_STATE("info_state"),
+        INFO_FIRMWARE("INFO_FIRMWARE"),
+        INFO_BOOTLOADER("INFO_BOOTLOADER"),
+        INFO_DATETIME("INFO_DATETIME"),
+        INFO_DEVICE_COUNTER("INFO_DEVICE_COUNTER"),
+        INFO_AUTO_BACKUP("INFO_AUTO_BACKUP"),
+        INFO_STATE("INFO_STATE"),
 
-        SETTINGS_DATETIME("settings_datetime"),
-        SETTINGS_AUTOBACKUP("settings_autobackup"),
+        INFO_WIFI_USERNAME("INFO_WIFI_USERNAME"),
+        INFO_WIFI_PASSWORD("INFO_WIFI_PASSWORD"),
 
-        COMMAND_ADD_DEVICE("command_add_device"),
-        COMMAND_REMOVE_DEVICE("command_remove_device"),
-        COMMAND_ADD_MASTER_DEVICE("command_add_master_device"),
-        COMMAND_REMOVE_MASTER_DEVICE("command_remove_master_device"),
+        SETTINGS_DATETIME("SETTINGS_DATETIME"),
+        SETTINGS_AUTOBACKUP("SETTINGS_AUTOBACKUP"),
 
-        COMMAND_UPLOAD_FIRMWARE("command_upload_firmware"),
-        COMMAND_RESTART_DEVICE("command_restart_device"),
+        COMMAND_GET_DEVICE("COMMAND_GET_DEVICE"),
+        COMMAND_ADD_DEVICE("COMMAND_ADD_DEVICE"),
+        COMMAND_REMOVE_DEVICE("COMMAND_REMOVE_DEVICE"),
+        COMMAND_ADD_MASTER_DEVICE("COMMAND_ADD_MASTER_DEVICE"),
+        COMMAND_REMOVE_MASTER_DEVICE("COMMAND_REMOVE_MASTER_DEVICE"),
+
+        COMMAND_UPLOAD_FIRMWARE("COMMAND_UPLOAD_FIRMWARE"),
+        COMMAND_RESTART_DEVICE("COMMAND_RESTART_DEVICE"),
 
         COMMAND_PING_DEVICE("command_ping_device");
-
 
         private String command;
 

@@ -4,6 +4,14 @@
     přibyla položka v Json - main_board:boolean -> jež říká že je to "yoda" co se může sám připojit k Homer serveru.
 
 
+### Oprava Bugů ###
+  * fixed [TYRION-356](http://youtrack.byzance.cz/youtrack/issue/TYRION-356)
+  * fixed [TYRION-355](http://youtrack.byzance.cz/youtrack/issue/TYRION-355)
+  * fixed [TYRION-XXX](http://youtrack.byzance.cz/youtrack/issue/TYRION-XXX)
+  * fixed [TYRION-XXX](http://youtrack.byzance.cz/youtrack/issue/TYRION-XXX)
+  * fixed [TYRION-XXX](http://youtrack.byzance.cz/youtrack/issue/TYRION-XXX)
+  * fixed [TYRION-XXX](http://youtrack.byzance.cz/youtrack/issue/TYRION-XXX)
+
 -----
 
 # Verze 1.06.6.5 #
