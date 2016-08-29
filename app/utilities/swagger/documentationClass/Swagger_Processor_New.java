@@ -11,7 +11,8 @@ public class Swagger_Processor_New {
 
     @Constraints.Required
     @Constraints.MinLength(value = 24, message = "The description must have at least 24 characters")
-    @ApiModelProperty(required = true, value = "The description must have at least 24 characters")
+    @Constraints.MaxLength(value = 255, message = "The description must not have more than 255 characters.")
+    @ApiModelProperty(required = true, value = "Length must be between 24 and 255 characters.")
     public String  description;
 
 
@@ -22,8 +23,9 @@ public class Swagger_Processor_New {
 
 
     @Constraints.Required
-    @Constraints.MinLength(value = 4)
-    @ApiModelProperty(required = true, value = "The Processor name must have at least 4 characters")
+    @Constraints.MinLength(value = 4,  message = "The name must have at least 4 characters.")
+    @Constraints.MaxLength(value = 60, message = "The name must not have more than 60 characters.")
+    @ApiModelProperty(required = true, value = "Length must be between 4 and 60 characters.")
     public String  processor_name;
 
 

@@ -11,7 +11,8 @@ public class Swagger_ScreeSizeType_New {
 
     @Constraints.Required
     @Constraints.MinLength(value = 3, message = "The name must have at least 3 characters. Must be unique if its not private!")
-    @ApiModelProperty(required = true, value = "The name must have at least 3 characters. Must be unique if its not private!" )
+    @Constraints.MaxLength(value = 60, message = "The name must not have more than 60 characters. Must be unique if its not private!")
+    @ApiModelProperty(required = true, value = "The name length must be between 3 and 60 characters. Must be unique if its not private!" )
     public String name;
 
     @Constraints.Required

@@ -492,7 +492,7 @@ public class ProgramingPackageController extends Controller {
     }
 
     @ApiOperation(value = "unshare Project with Persons",
-            tags = {"Project", "Board"},
+            tags = {"Project"},
             notes = "unshare Project with all users in list: List<person_id>",
             produces = "application/json",
             protocols = "https",
@@ -2195,7 +2195,7 @@ public class ProgramingPackageController extends Controller {
 // TYPE OF BLOCK #######################################################################################################
 
     @ApiOperation(value = "create new Type of Block",
-            tags = {"Type of Block"},
+            tags = {"Type-of-Block"},
             notes = "creating group for BlockoBlocks -> Type of block",
             produces = "application/json",
             protocols = "https",
@@ -2270,7 +2270,7 @@ public class ProgramingPackageController extends Controller {
     }
 
     @ApiOperation(value = "get TypeOfBlock ",
-            tags = {"Blocko-Block"},
+            tags = {"Type-of-Block"},
             notes = "get BlockoBlock ",
             produces = "application/json",
             consumes = "text/html",
@@ -2315,7 +2315,7 @@ public class ProgramingPackageController extends Controller {
     }
 
     @ApiOperation(value = "edit Type of Block",
-            tags = {"Type of Block"},
+            tags = {"Type-of-Block"},
             notes = "edit Type of block object",
             produces = "application/json",
             protocols = "https",
@@ -2388,7 +2388,7 @@ public class ProgramingPackageController extends Controller {
     }
 
     @ApiOperation(value = "delete Type of Block",
-            tags = {"Type of Block"},
+            tags = {"Type-of-Block"},
             notes = "delete group for BlockoBlocks -> Type of block",
             produces = "application/json",
             consumes = "text/html",
@@ -2430,7 +2430,7 @@ public class ProgramingPackageController extends Controller {
     }
 
     @ApiOperation(value = "get all Type of Block list",
-            tags = {"Type of Block"},
+            tags = {"Type-of-Block"},
             notes = "delete group for BlockoBlocks -> Type of block",
             produces = "application/json",
             consumes = "text/html",
@@ -2462,7 +2462,7 @@ public class ProgramingPackageController extends Controller {
     }
 
     @ApiOperation(value = "get TypeOfBlock by Filter",
-            tags = {"Type of Block"},
+            tags = {"Type-of-Block"},
             notes = "get TypeOfBlock List",
             produces = "application/json",
             protocols = "https",

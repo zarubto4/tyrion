@@ -1,8 +1,14 @@
-﻿# Verze 1.06.6.6 #
+﻿
+# Verze 1.06.6.6 #
 
   * Board
     přibyla položka v Json - main_board:boolean -> jež říká že je to "yoda" co se může sám připojit k Homer serveru.
 
+### Oprava Bugů ###
+ * fixed [TYRION-354](http://youtrack.byzance.cz/youtrack/issue/TYRION-354)
+ * fixed [TYRION-358](http://youtrack.byzance.cz/youtrack/issue/TYRION-358)
+ * fixed [TYRION-359](http://youtrack.byzance.cz/youtrack/issue/TYRION-359)
+ * fixed [TYRION-362](http://youtrack.byzance.cz/youtrack/issue/TYRION-362)
 
 -----
 
@@ -10,7 +16,7 @@
 
 ## Změny nad objekty ##
 
-V administraci bylo doděláno tlačítko "nahrát default data". Tyriona to naplní několika objekty. Při vývoéjářské verzi je toto děláno automaticky při prvním nastartování.
+V administraci bylo doděláno tlačítko "nahrát default data". Tyriona to naplní několika objekty. Při vývojářské verzi je toto děláno automaticky při prvním nastartování.
 
   * TypeOfBoard
      - přibyl  string:revision

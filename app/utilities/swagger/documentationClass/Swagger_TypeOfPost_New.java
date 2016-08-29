@@ -9,7 +9,8 @@ import play.data.validation.Constraints;
 public class Swagger_TypeOfPost_New {
 
     @Constraints.Required
-    @Constraints.MinLength(value = 3)
-    @ApiModelProperty(required = true, value = "MinLength >= 3")
+    @Constraints.MinLength(value = 3,  message = "The type must have at least 3 characters.")
+    @Constraints.MaxLength(value = 60, message = "The type must not have more than 60 characters.")
+    @ApiModelProperty(required = true, value = "Length must be between 3 and 60 characters.")
     public String type;
 }

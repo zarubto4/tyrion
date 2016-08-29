@@ -13,12 +13,13 @@ public class Swagger_Person_Password_New {
     @ApiModelProperty(required = true, value = "Required valid mail ")
     public String mail;
 
-    @ApiModelProperty(value = "The password must have at least 8 characters", required = true)
-    @Constraints.MinLength(value = 8)
+    @ApiModelProperty(value = "The password length must be between 8 and 60 characters", required = true)
+    @Constraints.MinLength(value = 8, message = "The password must have at least 8 characters")
+    @Constraints.MaxLength(value = 60, message = "The password must not have more than 60 characters")
     @Constraints.Required
     public String password;
 
     @Constraints.Required
-    @ApiModelProperty(required = true, value = "Required authToken")
+    @ApiModelProperty(required = true, value = "Required password_recovery_token")
     public String password_recovery_token;
 }

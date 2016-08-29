@@ -287,7 +287,8 @@ public class NotificationController extends Controller {
             .setText("Test object: ")
             .setObject(Person.class, person.id, person.full_name)
             .setText("test bold text: ")
-            .setBoldText("bold text");
+            .setBoldText("bold text")
+            .save_object();
 
     send_notification(person,notification);
   }
@@ -412,7 +413,7 @@ public class NotificationController extends Controller {
 
   @ApiOperation(value = "get unconfirmed notifications",
           tags = {"Notifications"},
-          notes = "This API should by called right after user logs in. Sends notifications which require confirmation",
+          notes = "This API should by called right after user logs in. Sends notifications which require confirmation via websocket.",
           produces = "application/json",
           consumes = "text/html",
           protocols = "https",
