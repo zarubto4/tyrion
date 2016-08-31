@@ -474,7 +474,7 @@ public class NotificationController extends Controller {
       Person person = Person.find.where().eq("mail", mail).findUnique();
 
       if(person != null) NotificationController.test_notification(person, level);
-      return GlobalResult.result_ok("");
+      return GlobalResult.result_ok();
 
     }catch (Exception e){
       return GlobalResult.internalServerError();
