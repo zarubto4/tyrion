@@ -55,7 +55,7 @@ PUT             /notification/confirm/:notification_id      @controllers.Notific
 
 PUT             /notification/read                          @controllers.NotificationController.mark_as_read_notification()
 
-GET             /notification/test/:email                   @controllers.NotificationController.test_notifications(email)
+GET             /notification/test/:email                   @controllers.NotificationController.test_notifications(email, level: String?="")
 
 ### PERSON ############ PERSON ############### PERSON ################ PERSON ################# PERSON ############ PERSON ###########################################
 ######################################################################################################################################################################

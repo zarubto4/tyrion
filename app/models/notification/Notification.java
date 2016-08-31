@@ -134,7 +134,7 @@ public class Notification extends Model {
 
  /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty(value = "Its not possible document that throw swagger. Please visit documentation.byzance.cz")
+    @JsonProperty(value = "Its not possible to document that through swagger. Please visit documentation.byzance.cz")
     @ApiModelProperty(required = true)
     public JsonNode notification_body(){
         if(array.size() < 1) return Json.parse(content_string);

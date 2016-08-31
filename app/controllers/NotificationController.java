@@ -281,13 +281,26 @@ public class NotificationController extends Controller {
     }
   }
 
-  public static void test_notification(Person person){
+  public static void test_notification(Person person, String level){
 
-    Notification notification = new Notification(Notification_level.info, person)
+    Notification notification;
+
+    switch (level){
+      case "info": notification = new Notification(Notification_level.info, person);break;
+      case "success": notification = new Notification(Notification_level.success, person);break;
+      case "warning": notification = new Notification(Notification_level.warning, person);break;
+      case "error": notification = new Notification(Notification_level.error, person);break;
+      case "question": notification = new Notification(Notification_level.question, person);break;
+      default: notification = new Notification(Notification_level.info, person);break;
+    }
+
+    notification
             .setText("Test object: ")
             .setObject(Person.class, person.id, person.full_name)
             .setText("test bold text: ")
             .setBoldText("bold text")
+            .setText("test link:")
+            .setLink_ToTyrion("TestLink","#")
             .save_object();
 
     send_notification(person,notification);
@@ -444,7 +457,7 @@ public class NotificationController extends Controller {
 
   @ApiOperation(value = "try notifications",
           tags = {"Notifications"},
-          notes = "This API you can use for testing our notification",
+          notes = "This API you can use for testing our notification. Second parameter 'level' is used for setting notification level (allowable values = info, success, warning, error, question.",
           produces = "application/json",
           consumes = "text/html",
           protocols = "https",
@@ -455,12 +468,12 @@ public class NotificationController extends Controller {
           @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
           @ApiResponse(code = 500, message = "Server side Error")
   })
-  public Result test_notifications(String mail){
+  public Result test_notifications(String mail, String level){
     try {
 
       Person person = Person.find.where().eq("mail", mail).findUnique();
 
-      if(person != null) NotificationController.test_notification(person);
+      if(person != null) NotificationController.test_notification(person, level);
       return GlobalResult.result_ok("");
 
     }catch (Exception e){

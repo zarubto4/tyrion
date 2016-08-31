@@ -3,7 +3,6 @@
 
 @import utilities.webSocket.{WS_Grid_Terminal, WebSCType, WS_BlockoServer, WS_CompilerServer, WS_Becki_Website}
 @import controllers.DashboardController
-@import controllers.WikyController
 @(homers: List[WebSCType], grids: List[WS_Grid_Terminal], becki_Terminal: List[WS_Becki_Website], cloud_blocko_server: List[WS_BlockoServer], compilation_server: List[WS_CompilerServer])
 
 
@@ -212,6 +211,13 @@
                                             <button class="btn btn-block btn-info btn-xs">Ping All</button>
                                         </a>
                                         <form method="get" action="@routes.NotificationController.test_notifications( Person.find.byId( x.identifikator ).mail )">
+                                            <select name="level">
+                                                <option value="info">info</option>
+                                                <option value="success">success</option>
+                                                <option value="warning">warning</option>
+                                                <option value="error">error</option>
+                                                <option value="question">question</option>
+                                            </select>
                                             <button name="mail" value="@(Person.find.byId( x.identifikator ).mail )" class="btn btn-block btn-primary btn-xs">Send test notification</button>
                                         </form>
                                     </th>
