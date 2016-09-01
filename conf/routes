@@ -78,9 +78,12 @@ DELETE         /coreClient/person/person/remove/:id                         @con
 PUT            /coreClient/person/person/deactivate/:person_id              @controllers.PersonController.deactivatePerson(person_id)
 PUT            /coreClient/person/person/activate/:person_id                @controllers.PersonController.activatePerson(person_id)
 DELETE         /coreClient/person/person/clean_all_tokens/:person_id        @controllers.PersonController.delete_all_tokens(person_id)
-PUT           /coreClient/person/person/valid_email/:person_id              @controllers.PersonController.valid_email_Person(person_id)
+PUT            /coreClient/person/person/valid_email/:person_id             @controllers.PersonController.valid_email_Person(person_id)
 
 GET            /mail_person_authentication/:mail/:token                     @controllers.PersonController.email_Person_authentitaction(mail,token)
+
+POST           /coreClient/person/changeProperty                            @controllers.PersonController.changePersonLoginProperty()
+GET            /coreClient/authorize_change/:token                          @controllers.PersonController.authorizePropertyChange(token)
 
 #Password recovery
 POST           /coreClient/mail_person_password_recovery                    @controllers.PersonController.sendPasswordRecoveryEmail()

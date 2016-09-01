@@ -4,6 +4,25 @@
   * Board
     přibyla položka v Json - main_board:boolean -> jež říká že je to "yoda" co se může sám připojit k Homer serveru.
 
+## Feature: Změna hesla a emailu [TYRION-341](http://youtrack.byzance.cz/youtrack/issue/TYRION-341) a [TYRION-345](http://youtrack.byzance.cz/youtrack/issue/TYRION-345) ##
+
+ * Byla vytvořena nová API pro změnu hesla i emailu
+
+		POST	{{url_Tyriona}}/coreClient/person/changeProperty
+
+ * Metoda vyžaduje JSON, který bude vypadat například takto:
+
+		{
+			"property":"password",
+			"password":"newpassword"
+		}
+
+ * Položka "property" je povinná a může obsahovat pouze "password" nebo "email". Další položka je přidána podle toho, jakou žádost posílám.
+ * Volitelné položky se jmenují "password" nebo "email"
+ * Metoda heslo nebo email nezmění, ale pouze ho uchová v jiném objektu (tokenu) a pošle uživateli email, aby změnu potvrdil. Teprve pomocí linku v emailu se heslo změní. Token je platný jen 4 hodiny.
+ * Když uživatel změnu potvrdí a ta se podaří, tak je všude odhlášen a přesměrován na úvodní stránku becki, když se nepodaří je přesměrován na stránku, kde se dozví, že se změna nezdařila.
+ * Po změně emailu bude po uživateli vyžadována verifikace nové emailové adresy.
+
 ### Oprava Bugů ###
  * fixed [TYRION-350](http://youtrack.byzance.cz/youtrack/issue/TYRION-350)
  * fixed [TYRION-354](http://youtrack.byzance.cz/youtrack/issue/TYRION-354)
