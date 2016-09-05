@@ -11,6 +11,7 @@ import models.compiler.Board;
 import models.compiler.FileRecord;
 import models.compiler.TypeOfBoard;
 import models.compiler.Version_Object;
+import models.notification.Notification;
 import models.person.Invitation;
 import models.person.Person;
 import models.project.b_program.B_Pair;
@@ -560,6 +561,40 @@ public class ProgramingPackageController extends Controller {
             return GlobalResult.result_ok(Json.toJson(project));
 
         } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "delete Invitation into Project",
+            tags = {"Project"},
+            notes = "Deletes invitation into the Project, also deletes notification about this invitation.",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                                 response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",                      response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result deleteProjectInvitation(@ApiParam(value = "invitation_id String path", required = true)  String invitation_id){
+        try {
+
+            Invitation invitation = Invitation.find.where().eq("owner",SecurityController.getPerson()).eq("id", invitation_id).findUnique();
+            if(invitation == null) return GlobalResult.notFoundObject("Invitation does not exist");
+
+            invitation.project.invitations.remove(invitation);
+            invitation.owner.invitations.remove(invitation);
+
+            Notification notification = Notification.find.byId(invitation.notification_id);
+            if(!(notification == null)) notification.delete();
+
+            invitation.delete();
+
+            return GlobalResult.result_ok("Invitation successfully deleted.");
+
+        }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
         }
     }

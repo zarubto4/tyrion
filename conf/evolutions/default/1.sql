@@ -202,6 +202,7 @@ create table invitation (
   project_id                varchar(255),
   mail                      varchar(255),
   time_of_creation          timestamp,
+  notification_id           varchar(255),
   constraint pk_invitation primary key (id))
 ;
 

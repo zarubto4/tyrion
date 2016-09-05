@@ -235,6 +235,9 @@ public class NotificationController extends Controller {
             .setText(".")
             .save_object();
 
+    invitation.notification_id = notification.id;
+    invitation.update();
+
     send_notification(receiver, notification);
 
   }
