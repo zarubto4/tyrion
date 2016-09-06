@@ -24,7 +24,7 @@ public class Notification extends Model {
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true) public String id;
 
-    @Enumerated(EnumType.STRING)       @ApiModelProperty(required = true) public NotificationController.Notification_level level;     // Důležitost (podbarvení zprávy)
+    @Enumerated(EnumType.STRING)       @ApiModelProperty(required = true) public NotificationController.Notification_level notification_level;     // Důležitost (podbarvení zprávy)
 
     @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true) private String content_string;                           // Obsah v podobě Json.toString().
                                        @ApiModelProperty(required = true) public boolean confirmation_required;
@@ -46,7 +46,7 @@ public class Notification extends Model {
 
     @JsonIgnore
     public  Notification(NotificationController.Notification_level level, Person person){
-        this.level = level;
+        this.notification_level = level;
         this.person = person;
         created = new Date();
     }
@@ -134,10 +134,10 @@ public class Notification extends Model {
 
  /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty(value = "Its not possible to document that through swagger. Please visit documentation.byzance.cz")
+    @JsonProperty
     @ApiModelProperty(required = true)
     public JsonNode notification_body(){
-        if(array.size() < 1) return Json.parse(content_string);
+        if(array == null || array.size() < 1) return Json.parse(content_string);
         else return array;
     }
 

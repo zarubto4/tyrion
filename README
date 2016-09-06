@@ -4,6 +4,43 @@
   * Board
     přibyla položka v Json - main_board:boolean -> jež říká že je to "yoda" co se může sám připojit k Homer serveru.
 
+## Změny nad objekty ##
+
+### Person ###
+
+ * Nyní nově, když se zavolá:
+
+		GET	{{url_Tyriona}}/coreClient/person/person/{person_id}
+
+ * Ve vráceném JSONU je položka:
+
+		"picture_link": "https://fileserverdeveloper.blob.core.windows.net/pictures/28c207e2-dcfe-4a61-867f-e0c1b7405792.png"
+
+ * která obsahuje link na profilový obrázek uživatele nebo null, pokud žádný obrázek nemá.  
+
+## Nové API: ##
+
+### Profilový obrázek uživatele [TYRION-334](http://youtrack.byzance.cz/youtrack/issue/TYRION-334) ###
+
+ * Nové API pro nahrání obrázku přihlášeného uživatele a odebrání obrázku:
+
+		PUT	{{url_Tyriona}}/coreClient/person/uploadPicture
+		PUT	{{url_Tyriona}}/coreClient/person/removePicture
+
+ * Request musí pouze obsahovat položku "file" typu "multipart/form-data".
+ * Obrázek musí být typu .png nebo .jpg, menší než 500 KB a jeho oba rozměry musí být mezi 50 a 400 pixely.
+ * Pokud uživatel už obrázek má, ale chce si nahrát nový, stačí znovu nahrát. Starý obrázek se smaže sám. 
+
+### Mazání pozvánek ###
+
+ * Nová API na mazání pozvánek do projektu
+
+		DELETE	{{url_Tyriona}}/project/project/deleteInvitation/{invitation_id}
+
+ * slouží k tomu, aby uživatel mohl smazat pozvánky, které rozeslal. Pozvánky se mu objeví, když se podívá do projektu do "participants". Je zde boolean "pending_invitation", podle kterého se dá rozlišit,
+ * jestli uživatel už je v projektu nebo jen pozvaný.
+ * API smaže i notifikaci, ve které byl uživatel pozván do projektu.
+
 ## Feature: Změna hesla a emailu [TYRION-341](http://youtrack.byzance.cz/youtrack/issue/TYRION-341) a [TYRION-345](http://youtrack.byzance.cz/youtrack/issue/TYRION-345) ##
 
  * Byla vytvořena nová API pro změnu hesla i emailu

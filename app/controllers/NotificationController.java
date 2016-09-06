@@ -324,7 +324,8 @@ public class NotificationController extends Controller {
           tags = {"Notifications"},
           notes = "Get list of latest user notifications. Server return maximum 25 latest objects. \n\n " +
                   "For get another page (next 25 notifications) call this api with \"page_number\" path parameter. \n\n " +
-                  "May missing or you can insert Integer values from page[1,2...,n] in Json",
+                  "May missing or you can insert Integer values from page[1,2...,n] in Json" +
+                  "Notification body cannot by documented through swagger. Visit documentation.byzance.cz",
           produces = "application/json",
           protocols = "https",
           code = 200
@@ -345,6 +346,7 @@ public class NotificationController extends Controller {
         return GlobalResult.result_ok(Json.toJson(result));
 
      } catch (Exception e) {
+       e.printStackTrace();
       return GlobalResult.internalServerError();
      }
   }

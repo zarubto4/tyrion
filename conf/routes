@@ -89,6 +89,10 @@ GET            /coreClient/authorize_change/:token                          @con
 POST           /coreClient/mail_person_password_recovery                    @controllers.PersonController.sendPasswordRecoveryEmail()
 PUT            /coreClient/person_password_recovery                         @controllers.PersonController.personPasswordRecovery()
 
+#Personal Picture
+PUT            /coreClient/person/uploadPicture                             @controllers.PersonController.uploadPersonPicture()
+PUT            /coreClient/person/removePicture                             @controllers.PersonController.removePersonPicture()
+
 ### PERMISSION ############ PERMISSION ############### PERMISSION ################ PERMISSION ################# PERMISSION #####################################################
 ################################################################################################################################################################################
 

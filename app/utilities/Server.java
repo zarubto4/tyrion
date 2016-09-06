@@ -45,6 +45,7 @@ public class Server {
 
     public static CloudStorageAccount storageAccount;
     public static CloudBlobClient blobClient;
+    public static String azureLink;
     public static String tyrion_serverAddress;
     public static String tyrion_webSocketAddress;
 
@@ -162,7 +163,8 @@ public class Server {
             GoPay_return_url                     = Configuration.root().getString("GOPay.localhost.return_url");
             GoPay_notification_url               = Configuration.root().getString("GOPay.localhost.notification_url");
 
-        }
+            azureLink                            = Configuration.root().getString("Azure.developer.azureLink");
+    }
         else   {
 
             // Nastavení pro Tyrion Adresy
@@ -208,6 +210,7 @@ public class Server {
             GoPay_return_url                     = Configuration.root().getString("GOPay.production.return_url");
             GoPay_notification_url               = Configuration.root().getString("GOPay.production.notification_url");
 
+            azureLink                            = Configuration.root().getString("Azure.production.azureLink");
         }
 
         /**
