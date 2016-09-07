@@ -9,13 +9,18 @@ import play.data.validation.Constraints;
 public class Swagger_TypeOfBoard_New {
 
     @Constraints.Required
-    @Constraints.MinLength(value = 8)
-    @ApiModelProperty(required = true, value = "The name must have at least 8 characters")
+    @Constraints.MinLength(value = 4)
+    @ApiModelProperty(required = true, value = "The name must have at least 4 characters")
     public String name;
 
     @Constraints.Required
-    @Constraints.MinLength(value = 10)
-    @ApiModelProperty(required = true, value = "The description must have at least 10 characters")
+    @Constraints.MinLength(value = 4)
+    @ApiModelProperty(required = true, value = "The description must have at least 4 characters")
+    public String compiler_target_name;
+
+    @Constraints.Required
+    @Constraints.MinLength(value = 4)
+    @ApiModelProperty(required = true, value = "The description must have at least 4 characters")
     public String description;
 
     @Constraints.Required

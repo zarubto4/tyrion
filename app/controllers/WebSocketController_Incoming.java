@@ -440,7 +440,7 @@ public class WebSocketController_Incoming extends Controller {
                                 ObjectNode result = Json.newObject();
                                 result.put("messageType", "listInstances");
                                 result.put("messageChannel", "homer-server");
-                                JsonNode jsonNode = server.write_with_confirmation(result, (long) 25000);
+                                JsonNode jsonNode = server.write_with_confirmation(result, 1000*25, 0, 3);
 
                                 logger.debug("Blocko Server: In control cycle: Iteration: " + interrupter);
 
@@ -670,11 +670,17 @@ public class WebSocketController_Incoming extends Controller {
                         blocko_server_yodaConnected(blockoServer,json);
                         return;
                     }
+                    default: {
+                        logger.error("ERROR");
+                        logger.error("Blocko Server Incoming messageChanel homer-server not recognize messageType ->" + json.get("messageType").asText());
+                        logger.error("ERROR");
+                    }
+
                 }
             }
             default: {
                 logger.error("ERROR");
-                logger.error("Blocko Server Incoming message not recognize incoming messageChanel!!!");
+                logger.error("Blocko Server Incoming message not recognize incoming messageChanel!!! ->" + json.get("messageChannel").asText());
                 logger.error("ERROR");
             }
 
@@ -686,7 +692,7 @@ public class WebSocketController_Incoming extends Controller {
     }
 }
 
-    public static JsonNode blocko_server_listOfInstance(WS_BlockoServer blockoServer)  throws TimeoutException, InterruptedException{
+    public static JsonNode blocko_server_listOfInstance(WS_BlockoServer blockoServer)  throws ExecutionException, TimeoutException, InterruptedException{
 
         logger.debug("Tyrion: Server want know instances on: " + blockoServer.identifikator);
 
@@ -694,10 +700,10 @@ public class WebSocketController_Incoming extends Controller {
         result.put("messageType", "listInstances");
         result.put("messageChannel", "homer-server");
 
-        return blockoServer.write_with_confirmation(result);
+        return blockoServer.write_with_confirmation(result, 1000*4, 0, 3);
     }
 
-    public static JsonNode blocko_server_isInstanceExist(WS_BlockoServer blockoServer, String instance_name)  throws TimeoutException, InterruptedException{
+    public static JsonNode blocko_server_isInstanceExist(WS_BlockoServer blockoServer, String instance_name)  throws ExecutionException, TimeoutException, InterruptedException{
 
 
         ObjectNode result = Json.newObject();
@@ -705,7 +711,7 @@ public class WebSocketController_Incoming extends Controller {
         result.put("messageChannel", "homer-server");
         result.put("instanceId", instance_name);
 
-        return blockoServer.write_with_confirmation(result);
+        return blockoServer.write_with_confirmation(result, 1000*4, 0, 3);
     }
 
     public static WebSCType blocko_server_add_instance(WS_BlockoServer blockoServer, Homer_Instance instance, boolean with_uploud_to_server) throws Exception{
@@ -747,7 +753,7 @@ public class WebSocketController_Incoming extends Controller {
 
             if(with_uploud_to_server) {
                 logger.debug("Sending to cloud_blocko_server request for new instance ");
-                JsonNode result_instance = blockoServer.write_with_confirmation(result);
+                JsonNode result_instance = blockoServer.write_with_confirmation(result, 1000*5, 0, 3);
 
 
                 logger.debug("Sending Blocko Program if Exist");
@@ -803,14 +809,14 @@ public class WebSocketController_Incoming extends Controller {
         }
     }
 
-    public static JsonNode blocko_server_remove_instance( WS_BlockoServer blockoServer, String instance_name) throws TimeoutException, InterruptedException{
+    public static JsonNode blocko_server_remove_instance( WS_BlockoServer blockoServer, String instance_name) throws  ExecutionException,  TimeoutException, InterruptedException{
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "destroyInstance");
         result.put("messageChannel", "homer-server");
         result.put("instanceId", instance_name);
 
-        return blockoServer.write_with_confirmation(result );
+        return blockoServer.write_with_confirmation(result, 1000*5, 0, 3);
 
     }
 
@@ -937,15 +943,15 @@ public class WebSocketController_Incoming extends Controller {
     }
 
     // Vytvoř kompilaci
-        public static JsonNode compiler_server_make_Compilation(Person compilator, ObjectNode jsonNodes) throws TimeoutException, InterruptedException {
+        public static JsonNode compiler_server_make_Compilation(Person compilator, ObjectNode request) throws  ExecutionException, TimeoutException, InterruptedException {
 
         List<String> keys      = new ArrayList<>(compiler_cloud_servers.keySet());
         WS_CompilerServer server = (WS_CompilerServer) compiler_cloud_servers.get( keys.get( new Random().nextInt(keys.size())) );
 
-        ObjectNode compilation_request = server.write_with_confirmation(jsonNodes);
+
+        ObjectNode compilation_request = server.write_with_confirmation(request, 1000*5, 0, 3);
 
 
-        logger.debug("Server will send request for compilation to compilation cloud_blocko_server: " + server.identifikator + "and now must wait for result");
         if(!compilation_request.get("status").asText().equals("success")) {
 
             logger.debug("Incoming message has not contains state = success");
@@ -955,18 +961,29 @@ public class WebSocketController_Incoming extends Controller {
             return  error_result;
         }
 
-        JsonNode blocko_interface = compilation_request.get("interface");
-        server.compilation_request.put(compilation_request.get("buildId").asText()  , jsonNodes);
+        logger.debug("Start of compilation was successful - waiting for result");
+
+        SendMessage get_compilation = new SendMessage(null, null, 1000 * 35, 0, 1);
+        server.sendMessageMap.put( compilation_request.get("buildId").asText(), get_compilation);
+        ObjectNode result = get_compilation.send_with_response();
+
+        System.out.println("Co obsahuje Result?: " + result.toString());
+
+        return result;
+
+        //   JsonNode blocko_interface = compilation_request.get("interface");
+        //   server.compilation_request.put(compilation_request.get("buildId").asText()  , request);
 
 
+        /*
         class Confirmation_Thread implements Callable<ObjectNode> {
 
-            Long breaker = (long) 1000*30;
-
+            Integer number_of_retries = 5;
             @Override
             public ObjectNode call() throws Exception {
 
-                while(breaker > 0){
+                while (number_of_retries >= 0) {
+
                     Thread.sleep(1000);
                     breaker-=1000;
 
@@ -996,21 +1013,11 @@ public class WebSocketController_Incoming extends Controller {
 
         Callable<ObjectNode> callable = new Confirmation_Thread();
         Future<ObjectNode> future = pool.submit(callable);
-
-        try {
-            ObjectNode final_result = future.get();
-
-            final_result.set("interface", blocko_interface);
-
-            return final_result;
-        } catch (Exception e) {
-            logger.error("Compilation TimeoutException", e );
-            throw new TimeoutException();
-        }
+        */
     }
 
     // Ping
-        public static void compiler_server_ping(WS_CompilerServer compilerServer) throws TimeoutException, InterruptedException {
+        public static void compiler_server_ping(WS_CompilerServer compilerServer) throws  ExecutionException, TimeoutException, InterruptedException {
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "ping");
@@ -1394,7 +1401,7 @@ public class WebSocketController_Incoming extends Controller {
         }
     }
 
-    public static JsonNode homer_getState(WebSCType homer) throws TimeoutException, InterruptedException {
+    public static JsonNode homer_getState(WebSCType homer) throws  ExecutionException, TimeoutException, InterruptedException {
 
         logger.debug("Tyrion: want to know state of Homer: " + homer.identifikator);
 
@@ -1402,10 +1409,10 @@ public class WebSocketController_Incoming extends Controller {
         result.put("messageType", "getState");
         result.put("messageChannel", "tyrion");
 
-        return homer.write_with_confirmation(result);
+        return homer.write_with_confirmation(result, 1000*3, 0, 4);
     }
 
-    public static void homer_ping(WebSCType homer) throws TimeoutException, InterruptedException {
+    public static void homer_ping(WebSCType homer) throws  ExecutionException, TimeoutException, InterruptedException {
 
         logger.debug("Tyrion: Server want send ping to Homer: " + homer.identifikator);
 
@@ -1417,7 +1424,7 @@ public class WebSocketController_Incoming extends Controller {
 
     }
 
-    public static JsonNode homer_devices_commands(WebSCType homer, String targetId, Homer_Instance.TypeOfCommand command) throws TimeoutException, InterruptedException {
+    public static JsonNode homer_devices_commands(WebSCType homer, String targetId, Homer_Instance.TypeOfCommand command) throws  ExecutionException, TimeoutException, InterruptedException {
 
         logger.debug("Tyrion: Server want send command to Devices in Homer Instance: " + homer.identifikator);
 
@@ -1427,18 +1434,18 @@ public class WebSocketController_Incoming extends Controller {
         result.put("commandType", command.get_command());
         result.put("targetId", targetId);
 
-        return  homer.write_with_confirmation(result);
+        return  homer.write_with_confirmation(result, 1000*10, 0, 4);
 
     }
 
-    public static JsonNode homer_add_Yoda_to_instance(WebSCType homer, String yoda_id) throws TimeoutException, InterruptedException{
+    public static JsonNode homer_add_Yoda_to_instance(WebSCType homer, String yoda_id) throws  ExecutionException, TimeoutException, InterruptedException{
 
         ObjectNode request = Json.newObject();
         request.put("messageType", "addYodaToInstance");
         request.put("messageChannel", "tyrion");
         request.put("yodaId", yoda_id);
 
-        JsonNode result = homer.write_with_confirmation(request);
+        JsonNode result = homer.write_with_confirmation(request, 1000*3, 0, 4);
         if(result.has("status") && result.get("status").asText().equals("success")){
 
             WS_Homer_Cloud help = (WS_Homer_Cloud) homer;
@@ -1451,14 +1458,14 @@ public class WebSocketController_Incoming extends Controller {
        return result;
     }
 
-    public static JsonNode homer_remove_Yoda_from_instance(WebSCType homer, String yoda_id) throws TimeoutException, InterruptedException{
+    public static JsonNode homer_remove_Yoda_from_instance(WebSCType homer, String yoda_id) throws  ExecutionException, TimeoutException, InterruptedException{
 
         ObjectNode request = Json.newObject();
         request.put("messageType", "removeYodaFromInstance");
         request.put("messageChannel", "tyrion");
         request.put("yodaId", yoda_id);
 
-        JsonNode result = homer.write_with_confirmation(request);
+        JsonNode result = homer.write_with_confirmation(request, 1000*3, 0, 4);
         if(result.has("status") && result.get("status").asText().equals("success")){
 
             WS_Homer_Cloud help = (WS_Homer_Cloud) homer;
@@ -1476,7 +1483,7 @@ public class WebSocketController_Incoming extends Controller {
         return request;
     }
 
-    public static JsonNode homer_add_Device_to_instance(WebSCType homer, String yoda_id, String device_id) throws TimeoutException, InterruptedException{
+    public static JsonNode homer_add_Device_to_instance(WebSCType homer, String yoda_id, String device_id) throws  ExecutionException, TimeoutException, InterruptedException{
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "addDeviceToInstance");
@@ -1484,10 +1491,10 @@ public class WebSocketController_Incoming extends Controller {
         result.put("yodaId", yoda_id);
         result.put("deviceId", device_id);
 
-        return homer.write_with_confirmation(result);
+        return homer.write_with_confirmation(result, 1000*3, 0, 4);
     }
 
-    public static JsonNode homer_remove_Device_from_instance(WebSCType homer, String yoda_id, String device_id) throws TimeoutException, InterruptedException{
+    public static JsonNode homer_remove_Device_from_instance(WebSCType homer, String yoda_id, String device_id) throws  ExecutionException, TimeoutException, InterruptedException{
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "removeDeviceFromInstance");
@@ -1495,13 +1502,13 @@ public class WebSocketController_Incoming extends Controller {
         result.put("yodaId", yoda_id);
         result.put("deviceId", device_id);
 
-        return homer.write_with_confirmation(result);
+        return homer.write_with_confirmation(result, 1000*3, 0, 4);
     }
 
 
 
 
-    public static JsonNode homer_upload_program(WebSCType homer, String program_id, String program) throws TimeoutException, InterruptedException {
+    public static JsonNode homer_upload_program(WebSCType homer, String program_id, String program) throws  ExecutionException, TimeoutException, InterruptedException {
 
             ObjectNode result = Json.newObject();
             result.put("messageType", "loadProgram");
@@ -1509,20 +1516,20 @@ public class WebSocketController_Incoming extends Controller {
             result.put("programId", program_id);
             result.put("program", program);
 
-          return homer.write_with_confirmation(result);
+          return homer.write_with_confirmation(result, 1000*3, 0, 4);
     }
 
     public static boolean homer_online_state(String homer_name){
         return incomingConnections_homers.containsKey(homer_name);
     }
 
-    public static JsonNode homer_get_device_list(WebSCType homer) throws TimeoutException, InterruptedException{
+    public static JsonNode homer_get_device_list(WebSCType homer) throws  ExecutionException, TimeoutException, InterruptedException{
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "getDeviceList");
         result.put("messageChannel", "tyrion");
 
-        return homer.write_with_confirmation(result);
+        return homer.write_with_confirmation(result, 1000*3, 0, 4);
     }
 
     public static void homer_is_disconnect(WebSCType homer) {
@@ -1559,7 +1566,7 @@ public class WebSocketController_Incoming extends Controller {
 
     }
 
-    public static void homer_all_terminals_are_gone(WebSCType homer) throws TimeoutException, InterruptedException {
+    public static void homer_all_terminals_are_gone(WebSCType homer) throws  ExecutionException, TimeoutException, InterruptedException {
 
         logger.debug("Homer: " + homer.identifikator + "  does not have any subscribers:");
 
@@ -1567,10 +1574,10 @@ public class WebSocketController_Incoming extends Controller {
         result.put("messageType", "unSubscribeChannel");
         result.put("messageChannel", "the-grid");
 
-        homer.write_with_confirmation( result);
+        homer.write_with_confirmation(result, 1000*3, 0, 4);
     }
 
-    public static void ask_for_receiving_for_Grid(WebSCType homer) throws TimeoutException, InterruptedException {
+    public static void ask_for_receiving_for_Grid(WebSCType homer) throws  ExecutionException, TimeoutException, InterruptedException {
 
         logger.debug("Homer: " + homer.identifikator + ", cloud_blocko_server want send you request for receiving for Grid:");
 
@@ -1578,17 +1585,17 @@ public class WebSocketController_Incoming extends Controller {
         result.put("messageType", "subscribeChannel");
         result.put("messageChannel", "the-grid");
 
-        homer.write_with_confirmation(result);
+        homer.write_with_confirmation(result, 1000*3, 0, 4);
     }
 
     // Json Messages - Homer Odběr dat z Instaní blocka pro Becki
-        public static JsonNode homer_subscribe_blocko_instance(WebSCType homer) throws TimeoutException, InterruptedException {
+        public static JsonNode homer_subscribe_blocko_instance(WebSCType homer) throws  ExecutionException, TimeoutException, InterruptedException {
 
             ObjectNode result = Json.newObject();
             result.put("messageType", "subscribeChannel");
             result.put("messageChannel", "becki");
 
-            return homer.write_with_confirmation(result);
+            return homer.write_with_confirmation(result, 1000*3, 0, 4);
         }
 
         public static void     homer_unsubscribe_blocko_instance(WS_Homer_Cloud homer){
@@ -1600,7 +1607,7 @@ public class WebSocketController_Incoming extends Controller {
             homer.write_without_confirmation(result);
         }
 
-    public static JsonNode homer_update_Yoda_firmware(WebSCType homer, String code) throws TimeoutException, InterruptedException {
+    public static JsonNode homer_update_Yoda_firmware(WebSCType homer, String code) throws  ExecutionException, TimeoutException, InterruptedException {
 
         logger.debug("Homer: " + homer.identifikator + ", will update Yoda");
 
@@ -1609,10 +1616,10 @@ public class WebSocketController_Incoming extends Controller {
         result.put("messageChannel", "tyrion");
         result.put("firmware", code );
 
-        return homer.write_with_confirmation(result);
+        return homer.write_with_confirmation(result, 1000*3, 0, 4);
     }
 
-    public static JsonNode homer_update_embeddedHW(WebSCType homer, List<String> board_id_list, String string_code) throws TimeoutException, InterruptedException, IOException {
+    public static JsonNode homer_update_embeddedHW(WebSCType homer, List<String> board_id_list, String string_code) throws  ExecutionException, TimeoutException, InterruptedException, IOException {
 
         logger.debug("Tyrion: Sending to Hardware new Compilation of code");
 
@@ -1621,7 +1628,7 @@ public class WebSocketController_Incoming extends Controller {
         result.set("hardwareId", Json.toJson(board_id_list));
         result.put("base64Binary", string_code);
 
-        return homer.write_with_confirmation(result);
+        return homer.write_with_confirmation(result, 1000*3, 0, 4);
     }
 
 // PRIVATE Terminal ---------------------------------------------------------------------------------------------------------
@@ -1746,7 +1753,7 @@ public class WebSocketController_Incoming extends Controller {
 
     }
 
-    public static void m_project_is_connected_with_older_version(WebSCType terminal) throws TimeoutException, InterruptedException{
+    public static void m_project_is_connected_with_older_version(WebSCType terminal) throws  ExecutionException, TimeoutException, InterruptedException{
 
         logger.warn ("Tyrion: Warning!");
         logger.warn ("Tyrion: Warning: M_Project is connected to version in Homer Server and without permission to auto-increment!");

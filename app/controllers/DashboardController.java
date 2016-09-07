@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
@@ -243,7 +244,7 @@ public class DashboardController extends Controller {
        return redirect("/public/websocket");
     }
 
-    public Result ping_homer(String homer_id) throws TimeoutException, InterruptedException {
+    public Result ping_homer(String homer_id) throws TimeoutException, InterruptedException, ExecutionException {
 
         if(WebSocketController_Incoming.incomingConnections_homers.containsKey(homer_id))
         WebSocketController_Incoming.homer_ping( (WebSocketController_Incoming.incomingConnections_homers.get(homer_id)));
@@ -256,7 +257,7 @@ public class DashboardController extends Controller {
         return show_web_socket_stats();
     }
 
-    public Result ping_Compilation_Server(String identificator)  throws TimeoutException, InterruptedException {
+    public Result ping_Compilation_Server(String identificator) throws TimeoutException, InterruptedException, ExecutionException {
         if(WebSocketController_Incoming.compiler_cloud_servers.containsKey(identificator))
         WebSocketController_Incoming.compiler_server_ping( (WS_CompilerServer) WebSocketController_Incoming.compiler_cloud_servers.get(identificator) );
         return show_web_socket_stats();

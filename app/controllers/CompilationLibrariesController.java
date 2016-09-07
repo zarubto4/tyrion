@@ -4,6 +4,7 @@ import com.avaje.ebean.Ebean;
 import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.Query;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
 import io.swagger.annotations.*;
@@ -723,7 +724,7 @@ public class CompilationLibrariesController extends Controller {
             // Vytvářím objekt, jež se zašle přes websocket ke kompilaci
             ObjectNode result = Json.newObject();
                        result.put("messageType", "build");
-                       result.put("target", typeOfBoard.name);
+                       result.put("target", typeOfBoard.compiler_target_name);
                        result.put("libVersion", "v0");
                        result.put("versionId", version_id);
                        result.put("code", help.main);
@@ -883,7 +884,7 @@ public class CompilationLibrariesController extends Controller {
             // Vytvářím objekt, jež se zašle přes websocket ke kompilaci
             ObjectNode result = Json.newObject();
                        result.put("messageType", "build");
-                       result.put("target", typeOfBoard.name);
+                       result.put("target", typeOfBoard.compiler_target_name);
                        result.put("libVersion", "v0");
                        result.put("code", help.main);
                        result.set("includes", help.includes() == null ? Json.newObject() : help.includes() );
@@ -896,6 +897,7 @@ public class CompilationLibrariesController extends Controller {
 
             // Odesílám na compilační cloud_compilation_server
             JsonNode compilation_result = WebSocketController_Incoming.compiler_server_make_Compilation(SecurityController.getPerson(), result);
+            ObjectMapper mapper = new ObjectMapper();
 
             // V případě úspěšného buildu obsahuje příchozí JsonNode buildUrl
             if(compilation_result.has("buildUrl")){
@@ -903,14 +905,18 @@ public class CompilationLibrariesController extends Controller {
             }
 
             // Kompilace nebyla úspěšná a tak vracím obsah neuspěšné kompilace
-            else if(compilation_result.has("buildErrors")){
+            if(compilation_result.has("buildErrors") && ! compilation_result.get("buildErrors").toString().equals("[]")  ){
 
                 return GlobalResult.result_buildErrors(Json.toJson(compilation_result.get("buildErrors")));
             }
 
             // Nebylo úspěšné ani odeslání reqestu - Chyba v konfiguraci a tak vracím defaulní chybz
-            else if(compilation_result.has("error") ){
-                return GlobalResult.result_external_server_error(Json.toJson(compilation_result.get("error")));
+             if(compilation_result.has("error") ){
+
+                 ObjectNode result_json = Json.newObject();
+                 result_json.put("error", compilation_result.get("error").asText() );
+
+                return GlobalResult.result_external_server_error(result_json);
             }
 
             // Neznámá chyba se kterou nebylo počítání
@@ -2799,6 +2805,7 @@ public class CompilationLibrariesController extends Controller {
             // Uprava objektu
             typeOfBoard.name = help.name;
             typeOfBoard.description = help.description;
+            typeOfBoard.compiler_target_name = help.compiler_target_name;
             typeOfBoard.processor = processor;
             typeOfBoard.producer = producer;
             typeOfBoard.connectible_to_internet = help.connectible_to_internet;

@@ -1,7 +1,10 @@
 package utilities.webSocket;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.WebSocketController_Incoming;
+import play.libs.Json;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,19 +31,57 @@ public class WS_CompilerServer extends WebSCType{
     }
 
     @Override
-    public void onMessage(ObjectNode json) {
+    public void onMessage(String message) {
 
-        if(json.has("buildUrl") || json.has("buildErrors")){
-            if(compilation_request.containsKey(json.get("buildId").asText())) compilation_results.put(json.get("buildId").asText(), json );
-            else {
-                System.out.println("Kompilace neproběhla včas a tak jí zahazuji protože Tyiron na ní nepočkal a uživateli už vrátil odpověď");
+        try{
+
+            logger.debug("Incoming message on compilation server: " + message);
+            ObjectNode json = (ObjectNode) new ObjectMapper().readTree(message);
+
+            if (json.has("buildId") && super.sendMessageMap.containsKey(json.get("buildId").asText())) {
+
+                System.out.println("Jedná se o zprávu už s hotovým buildem");
+
+                super.sendMessageMap.get(json.get("buildId").asText()).insert_result(json);
+                super.sendMessageMap.remove(json.get("buildId").asText());
+                return;
             }
-        }
-        else {
-            System.out.println("příchozí zpráva v WS_CompilerServer: " + json.toString());
-            WebSocketController_Incoming.compilation_server_incoming_message(this, json);
+
+            // V případě že zpráva byla odeslaná Tyironem - existuje v zásobníku její objekt
+            if (json.has("messageId") && sendMessageMap.containsKey(json.get("messageId").asText())) {
+
+                System.out.println("Jedná se o zprávu potvrzující začátek buildu");
+
+                sendMessageMap.get(json.get("messageId").asText()).insert_result(json);
+                sendMessageMap.remove(json.get("messageId").asText());
+                return;
+            }
+
+            onMessage(json);
+
+        }catch (JsonParseException e){
+
+            ObjectNode result = Json.newObject();
+            result.put("messageType", "JsonUnrecognized");
+            webSCtype.write_without_confirmation(result);
+
+        }catch (Exception e){
+
+            ObjectNode result = Json.newObject();
+            result.put("messageType", "JsonUnrecognized");
+            webSCtype.write_without_confirmation(result);
+            e.printStackTrace();
+
         }
     }
 
+
+    @Override
+    public void onMessage(ObjectNode json) {
+
+        logger.debug("Incoming not requested message: " + json.toString());
+        WebSocketController_Incoming.compilation_server_incoming_message(this, json);
+
+    }
 
 }

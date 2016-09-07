@@ -39,14 +39,15 @@ public abstract class WebSCType {
 
             ObjectNode json = (ObjectNode) new ObjectMapper().readTree(message);
 
-
-            if (json.has("messageId") && message_out.containsKey(json.get("messageId").asText())) {
-                message_out.remove(json.get("messageId").asText());
-                message_in.put(json.get("messageId").asText(), json);
+            // V případě že zpráva byla odeslaná Tyironem - existuje v zásobníku její objekt
+            if (json.has("messageId") && sendMessageMap.containsKey(json.get("messageId").asText())) {
+                sendMessageMap.get(json.get("messageId").asText()).insert_result(json);
+                sendMessageMap.remove(json.get("messageId").asText());
                 return;
             }
 
             onMessage(json);
+
         }catch (JsonParseException e){
 
             ObjectNode result = Json.newObject();
@@ -89,79 +90,43 @@ public abstract class WebSCType {
      * nedojde k během určitého intervalu k odovědi, vláknu vyprší životnost a zavolá vyjímku TimeoutException.
      */
 
-    private  Map<String, ObjectNode> message_out = new HashMap<>(); // (meessageId, JsonNode)
-    private  Map<String, ObjectNode> message_in  = new HashMap<>(); // (meessageId, JsonNode)
+    public Map<String,SendMessage> sendMessageMap = new HashMap<>(); // MessageId, Message
 
 
-    public ObjectNode write_with_confirmation(ObjectNode json) throws TimeoutException, InterruptedException {
-            return write_with_confirmation( json, (long) (5000) );
-    }
 
-    public ObjectNode write_with_confirmation(ObjectNode json, Long time_To_TimeOutExcepting) throws TimeoutException,  InterruptedException {
+    public ObjectNode write_with_confirmation(ObjectNode json, Integer time, Integer delay, Integer number_of_retries) throws TimeoutException, ExecutionException, InterruptedException {
 
         String messageId = UUID.randomUUID().toString();
         json.put("messageId", messageId );
 
-        class Confirmation_Thread implements Callable<ObjectNode>{
+        SendMessage send_message = new SendMessage(this, json, time, delay, number_of_retries);
+        sendMessageMap.put(messageId, send_message);
 
-            @Override
-            public ObjectNode call() throws Exception {
+        System.out.println("Odesílám zprávu na kterou vyžaduji odpověď");
 
-                    logger.debug("Server send message.id [" + messageId + "], which requires confirmation. Message: " + json.toString());
+        // Může vyvolat i vyjímku o nedoručení
+        ObjectNode result = send_message.send_with_response();
 
-                    message_out.put(messageId, json);
-                    out.write(json.toString());
+        System.out.println("Dostal jsem odpověď");
 
-
-                    Long breaker = time_To_TimeOutExcepting;
-
-                    while (breaker > 0) {
-
-                        breaker-=250;
-                        Thread.sleep(250);
-
-                        if (message_in.containsKey(messageId)) {
-                            logger.debug("Result found");
-                            ObjectNode message = message_in.get(messageId);
-                            message_in.remove(messageId);
-                            return message;
-                        }
-
-                        if (breaker == 0) {
-                            logger.debug("Time out Exception - on message.id: [" + messageId + "]");
-                            message_out.remove(messageId);
-                            throw new TimeoutException();
-                        }
-
-                    }
-
-                    throw new InterruptedException();
-            }
-        }
-
-        ExecutorService pool = Executors.newFixedThreadPool(3);
-
-        Callable<ObjectNode> callable = new Confirmation_Thread();
-        Future<ObjectNode> future = pool.submit(callable);
-
-        try {
-            return future.get();
-        } catch (Exception e) {
-            logger.error("TimeoutException on message.id: [" + messageId + "]");
-            throw new TimeoutException();
-        }
-
+        return result;
     }
 
-    public void write_without_confirmation(ObjectNode json) {
 
+    // Odeslání bez nutnosti vyčkat na potvrzení
+    public void write_without_confirmation(ObjectNode json){
         String messageId = UUID.randomUUID().toString();
-
-        write_without_confirmation( messageId, json);
+        json.put("messageId", messageId );
+        out.write( json.toString() );
     }
 
-    public void write_without_confirmation(String messageId, ObjectNode json) {
-            json.put("messageId", messageId );
-            out.write( json.toString() );
+    public void write_without_confirmation(String messageId, ObjectNode json){
+        json.put("messageId", messageId );
+        out.write( json.toString() );
     }
+
+
+
+
+
 }

@@ -38,6 +38,8 @@ libraryDependencies ++= Seq(
   "mysql" % "mysql-connector-java" % "5.1.34",
   "org.quartz-scheduler" % "quartz" % "2.2.3",
 
+  "com.github.nkzawa" % "socket.io-client" % "0.1.2",
+
   javaJdbc,
   filters,
   cache,

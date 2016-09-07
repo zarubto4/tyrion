@@ -42,13 +42,23 @@
                         <li class="list-group-item">
                             <b>Owner</b> <a class="pull-right">Pepa</a>
                         </li>
+
+                        @if( B_Program.find.where().eq("version_objects.id", homer.version_id ).findUnique() != null) {
+                            <li class="list-group-item">
+                                <b>B_Program ID</b> <a class="pull-right">
+                                @B_Program.find.where().eq("version_objects.id", homer.version_id).findUnique().id)
+                            </a>
+                            </li>
+                            <li class="list-group-item">
+                                <b>B_Program Název</b>
+                                <a class="pull-right">
+                                    @B_Program.find.where().eq("version_objects.id", homer.version_id).findUnique().name
+
+                                </a>
+                            </li>
+                        }
                         <li class="list-group-item">
-                            <b>B_Program</b> <a class="pull-right">@if( B_Program.find.where().eq("version_objects.id", homer.version_id ).findUnique() != null){
-                                                                                     @B_Program.find.where().eq("version_objects.id", homer.version_id).findUnique().id
-                                                                       }</a>
-                        </li>
-                        <li class="list-group-item">
-                            <b>Version</b> <a class="pull-right">@homer.version_id</a>
+                            <b>Version ID:</b> <a class="pull-right">@homer.version_id</a>
                         </li>
                         <li class="list-group-item">
                             <b>Server name</b> <a class="pull-right">@homer.blockoServer.identifikator</a>
@@ -78,6 +88,7 @@
                             <div class="pull-right">
                                 <div class="btn-group">
 
+                                        <a onclick="executeCommand('@x.yodaId','@TypeOfCommand.INFO_STATE.get_command')" class="btn btn-info btn-sm"><b>Ping Yoda</b></a>
                                         <a onclick="showCommandDeviceModal('@x.yodaId', 'Yoda')" class="btn btn-info btn-sm"><b>Open Commander</b></a>
                                         <a onclick="showAddDeviceModal('@x.yodaId')" class="btn btn-warning btn-sm"><b>Add new Device</b></a>
                                         <a onclick="removeMasterDevice('@x.yodaId')" class="btn btn-danger btn-sm"><b>Remove Yoda</b></a>
@@ -110,7 +121,7 @@
                                         <a onclick="showCommandDeviceModal('@y', 'device')" class="btn btn-info btn-sm"><b>Open Commander</b></a>
                                     </td>
                                     <td>
-                                        <a onclick="removeDevice('@y')" class="btn btn-danger btn-sm"><b>Remove</b></a>
+                                        <a onclick="removeDevice('@y')" class="btn btn-danger btn-sm"><b>Remove Device</b></a>
                                     </td>
                                 </tr>
                             }
@@ -252,43 +263,49 @@
 
                         <tr>
                              <td>
-                                 <button id="commandButton"  type="button" class="btn btn-primary  btn-sm" onclick="executeCommand(this.value,'@TypeOfCommand.INFO_STATE.get_command')"> Get state info </button>
+                                 <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="executeCommand( this.value ,'@TypeOfCommand.INFO_STATE.get_command')"> Get state info </button>
                              </td>
-                             <td><button id="commandButton" type="button" class="btn btn-default  btn-sm"  onclick="executeCommand(this.value,'@TypeOfCommand.INFO_DEVICE_COUNTER.get_command')"> Get Device Counter Info </button></td>
-                             <td></td>
-                             <td><button id="commandButton" type="button" class="btn btn-default  btn-sm" > Send Unique Json </button></td>
+                             <td>
+                                 <button type="button" class="commandButton btn btn-default  btn-sm"  onclick="executeCommand(  this.value ,'@TypeOfCommand.INFO_DEVICE_COUNTER.get_command')"> Get Device Counter Info </button>
+                             </td>
+                             <td>
+
+                             </td>
+                             <td>
+                                 <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="executeCommand(  this.value,'@TypeOfCommand.COMMAND_PING_DEVICE.get_command')"> Ping Device</button>
+                             </td>
                         </tr>
 
                         <tr>
-                            <td><button id="commandButton" type="button" class="btn btn-primary   btn-sm"  onclick="executeCommand(this.value,'@TypeOfCommand.INFO_FIRMWARE.get_command')"> Get Firmware Version </button></td>
-                            <td><button id="commandButton" type="button" class="btn btn-default   btn-sm"  > Get Device Info </button></td>
-                            <td></td>
-                            <td></td>
-                        </tr>
-
-                        <tr>
-                            <td><button id="commandButton" type="button" class="btn btn-primary   btn-sm"  onclick="executeCommand(this.value,'@TypeOfCommand.INFO_BOOTLOADER.get_command')"> Get Bootloader Info </button></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                        </tr>
-
-                        <tr>
-                            <td><button id="commandButton" type="button" class="btn btn-primary   btn-sm"  onclick="executeCommand(this.value,'@TypeOfCommand.INFO_AUTO_BACKUP.get_command')"> Get BackUp info </button></td>
-                            <td></td>
+                            <td><button type="button" class="commandButton btn btn-primary   btn-sm"  onclick="executeCommand(  this.value ,'@TypeOfCommand.INFO_FIRMWARE.get_command')"> Get Firmware Version </button></td>
+                            <td><button  type="button" class="commandButton btn btn-default   btn-sm"  > Get Device Info </button></td>
                             <td></td>
                             <td></td>
                         </tr>
 
                         <tr>
-                            <td><button id="commandButton" type="button" class="btn btn-primary   btn-sm"  onclick="executeCommand(this.value,'@TypeOfCommand.INFO_DATETIME.get_command')"> Get Time </button></td>
+                            <td><button type="button" class="commandButton btn btn-primary   btn-sm"  onclick="executeCommand( this.value ,'@TypeOfCommand.INFO_BOOTLOADER.get_command')"> Get Bootloader Info </button></td>
                             <td></td>
                             <td></td>
                             <td></td>
                         </tr>
 
                         <tr>
-                            <td><button id="commandButton" type="button" class="btn btn-default   btn-sm" > Something else? </button></td>
+                            <td><button  type="button" class="commandButton btn btn-primary   btn-sm"  onclick="executeCommand( this.value ,'@TypeOfCommand.INFO_AUTO_BACKUP.get_command')"> Get BackUp info </button></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+
+                        <tr>
+                            <td><button  type="button" class="commandButton btn btn-primary   btn-sm"  onclick="executeCommand( this.value ,'@TypeOfCommand.INFO_DATETIME.get_command')"> Get Time </button></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+
+                        <tr>
+                            <td><button  type="button" class="commandButton btn btn-default   btn-sm" > Something else? </button></td>
                             <td></td>
                             <td></td>
                             <td></td>
@@ -310,7 +327,7 @@
             function showCommandDeviceModal(id, deviceType){
                 $("#commandDeviceModal").css("display","block");
                 $('#deviceId').text("Device iD = " + id);
-                $('#commandButton').val(id);
+                $('.commandButton').val(id);
                 $('#deviceType').text("deviceType = " + deviceType);
             }
 
@@ -320,8 +337,11 @@
     <script>
             function executeCommand(target_id, command){
 
+                console.log("Command: " + command );
+                console.log("target_id: " + target_id );
+
                 $.ajax({
-                    url: "@Server.tyrion_serverAddress" + "/project/b_program/instance/command/"+ '@homer.identifikator' + "/" + target_id + "/" + command,
+                    url: "@Server.tyrion_serverAddress" + "/project/b_program/instance/command/"+ '@homer.identifikator' + "/" + target_id + "/" +  command ,
                     type: 'PUT',
                     contentType: 'application/json',
                     headers: {
@@ -330,13 +350,63 @@
                     },
                     data: '{}',
                     dataType: 'json',
-                    success:function(e){
-                        confirm("Success");
+
+                    success:function(data, status){
+                        console.log(data);
+                        console.log(status);
+                        BootstrapDialog.show({
+                            message:  syntaxHighlight(data),
+
+                            buttons: [{
+                                label: 'Close',
+                                action: function(dialogItself){
+                                    dialogItself.close();
+                                }
+                            }]
+
+                        });
                     },
-                    error:function(e) {
-                        alert("Unsuccessful.");
+                    error:function(data) {
+                        console.log(data);
+
+                        BootstrapDialog.show({
+                            message:  syntaxHighlight(data),
+                            type: BootstrapDialog.TYPE_DANGER,
+                            buttons: [{
+                                label: 'Close',
+                                action: function(dialogItself){
+                                    dialogItself.close();
+                                }
+                            }]
+
+                        });
                     }
-                })}
+
+
+                })
+            }
+
+            function syntaxHighlight(json) {
+                if (typeof json != 'string') {
+                    json = JSON.stringify(json, null, 4);
+                }
+                json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                    var cls = 'number';
+                    if (/^"/.test(match)) {
+                        if (/:$/.test(match)) {
+                            cls = 'key';
+                        } else {
+                            cls = 'string';
+                        }
+                    } else if (/true|false/.test(match)) {
+                        cls = 'boolean';
+                    } else if (/null/.test(match)) {
+                        cls = 'null';
+                    }
+                    return '<span class="' + cls + '">' + match + '</span>';
+                });
+            }
     </script>
 
 </div>

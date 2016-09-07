@@ -6,6 +6,7 @@ import utilities.swagger.outboundClass.Swagger_Instance_HW_Group;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 public class WS_Homer_Cloud extends WebSCType{
@@ -45,28 +46,11 @@ public class WS_Homer_Cloud extends WebSCType{
     }
 
     @Override
-    public ObjectNode write_with_confirmation(ObjectNode json) throws TimeoutException, InterruptedException {
-        try {
+    public ObjectNode write_with_confirmation(ObjectNode json, Integer time, Integer delay, Integer number_of_retries) throws ExecutionException, TimeoutException, InterruptedException {
 
-            json.put("instanceId", super.identifikator);
-            return blockoServer.write_with_confirmation(json);
+        json.put("instanceId", super.identifikator);
+        return blockoServer.write_with_confirmation(json, time, delay, number_of_retries);
 
-        }catch (Exception e){
-            throw new InterruptedException();
-        }
-    }
-
-    @Override
-    public ObjectNode write_with_confirmation( ObjectNode json, Long time_To_TimeOutExcepting) throws TimeoutException, InterruptedException {
-        try {
-
-            json.put("instanceId", super.identifikator);
-            return blockoServer.write_with_confirmation(json, time_To_TimeOutExcepting);
-
-        }catch (Exception e){
-            e.printStackTrace();
-            throw new InterruptedException();
-        }
     }
 
 

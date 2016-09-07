@@ -1619,6 +1619,7 @@ public class ProgramingPackageController extends Controller {
 
             // Vytvářím nový záznam v databázi pro běžící instanci b programu na blocko serveru
             Homer_Instance program_cloud        = new Homer_Instance();
+            program_cloud.project               = b_program.project;
             program_cloud.running_from          = new Date();
             program_cloud.version_object        = version_object;
             program_cloud.cloud_homer_server    = destination_server;
@@ -1951,7 +1952,7 @@ public class ProgramingPackageController extends Controller {
                 // Vrácení potvrzení
                 return GlobalResult.result_ok();
             }else {
-                return GlobalResult.result_BadRequest(result);
+                return GlobalResult.result_ok(result);
             }
 
         } catch (Exception e) {
@@ -1959,7 +1960,6 @@ public class ProgramingPackageController extends Controller {
         }
 
    }
-
 
     //TODO
     public Result create_list_of_instances(){

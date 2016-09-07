@@ -108,7 +108,7 @@ public class Homer_Instance extends Model {
         COMMAND_UPLOAD_FIRMWARE("COMMAND_UPLOAD_FIRMWARE"),
         COMMAND_RESTART_DEVICE("COMMAND_RESTART_DEVICE"),
 
-        COMMAND_PING_DEVICE("command_ping_device");
+        COMMAND_PING_DEVICE("COMMAND_PING_DEVICE");
 
         private String command;
 

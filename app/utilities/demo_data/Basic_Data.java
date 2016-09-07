@@ -73,7 +73,7 @@ public class Basic_Data {
         TypeOfBoard typeOfBoard_1 = new TypeOfBoard();
         typeOfBoard_1.name        = "Yoda G2";
         typeOfBoard_1.description = " Yoda - Master Board with Ethernet and Wifi - second generation";
-        typeOfBoard_1.compiler_target_name  = "YODA_G2";
+        typeOfBoard_1.compiler_target_name  = "BYZANCE_YODAG2";
         typeOfBoard_1.revision = "12/2015 V1.0 #0000";
         typeOfBoard_1.processor = processor_1;
         typeOfBoard_1.producer = producer;
@@ -83,7 +83,7 @@ public class Basic_Data {
         TypeOfBoard typeOfBoard_2 = new TypeOfBoard();
         typeOfBoard_2.name        = "Wireless G2";
         typeOfBoard_2.description = " Wireless kit second generation";
-        typeOfBoard_2.compiler_target_name  = "WrlsKit_G2";
+        typeOfBoard_2.compiler_target_name  = "BYZANCE_WRLSKITG2";
         typeOfBoard_2.revision = "06/2016 V2.0 #0000";
         typeOfBoard_2.processor = processor_2;
         typeOfBoard_2.producer = producer;
@@ -93,7 +93,7 @@ public class Basic_Data {
         TypeOfBoard typeOfBoard_3 = new TypeOfBoard();
         typeOfBoard_3.name        = "BUS G2";
         typeOfBoard_3.description = " BUS kit second generation";
-        typeOfBoard_3.compiler_target_name  = "BusKit_G2";
+        typeOfBoard_3.compiler_target_name  = "BYZANCE_BUSKITG2";
         typeOfBoard_3.revision = "02/2016 V2.0 #0000";
         typeOfBoard_3.processor = processor_2;
         typeOfBoard_3.producer = producer;
@@ -103,7 +103,7 @@ public class Basic_Data {
         TypeOfBoard typeOfBoard_4 = new TypeOfBoard();
         typeOfBoard_4.name        = "Quad BUS HUB G1";
         typeOfBoard_4.description = " BUS kit second generation";
-        typeOfBoard_4.compiler_target_name  = "BusHUBKit_G2";
+        typeOfBoard_4.compiler_target_name  = "BYZANCE_QUADBUSG1";
         typeOfBoard_4.revision = "12/2015 V1.0 #0000";
         typeOfBoard_4.processor = processor_3;
         typeOfBoard_4.producer = producer;
