@@ -235,6 +235,9 @@ public class NotificationController extends Controller {
             .setText(".")
             .save_object();
 
+    invitation.notification_id = notification.id;
+    invitation.update();
+
     send_notification(receiver, notification);
 
   }
@@ -281,13 +284,27 @@ public class NotificationController extends Controller {
     }
   }
 
-  public static void test_notification(Person person){
+  public static void test_notification(Person person, String level){
 
-    Notification notification = new Notification(Notification_level.info, person)
+    Notification notification;
+
+    switch (level){
+      case "info": notification = new Notification(Notification_level.info, person);break;
+      case "success": notification = new Notification(Notification_level.success, person);break;
+      case "warning": notification = new Notification(Notification_level.warning, person);break;
+      case "error": notification = new Notification(Notification_level.error, person);break;
+      case "question": notification = new Notification(Notification_level.question, person);break;
+      default: notification = new Notification(Notification_level.info, person);break;
+    }
+
+    notification
             .setText("Test object: ")
             .setObject(Person.class, person.id, person.full_name)
             .setText("test bold text: ")
-            .setBoldText("bold text");
+            .setBoldText("bold text")
+            .setText("test link:")
+            .setLink_ToTyrion("TestLink","#")
+            .save_object();
 
     send_notification(person,notification);
   }
@@ -307,7 +324,8 @@ public class NotificationController extends Controller {
           tags = {"Notifications"},
           notes = "Get list of latest user notifications. Server return maximum 25 latest objects. \n\n " +
                   "For get another page (next 25 notifications) call this api with \"page_number\" path parameter. \n\n " +
-                  "May missing or you can insert Integer values from page[1,2...,n] in Json",
+                  "May missing or you can insert Integer values from page[1,2...,n] in Json" +
+                  "Notification body cannot by documented through swagger. Visit documentation.byzance.cz",
           produces = "application/json",
           protocols = "https",
           code = 200
@@ -328,6 +346,7 @@ public class NotificationController extends Controller {
         return GlobalResult.result_ok(Json.toJson(result));
 
      } catch (Exception e) {
+       e.printStackTrace();
       return GlobalResult.internalServerError();
      }
   }
@@ -412,7 +431,7 @@ public class NotificationController extends Controller {
 
   @ApiOperation(value = "get unconfirmed notifications",
           tags = {"Notifications"},
-          notes = "This API should by called right after user logs in. Sends notifications which require confirmation",
+          notes = "This API should by called right after user logs in. Sends notifications which require confirmation via websocket.",
           produces = "application/json",
           consumes = "text/html",
           protocols = "https",
@@ -443,7 +462,7 @@ public class NotificationController extends Controller {
 
   @ApiOperation(value = "try notifications",
           tags = {"Notifications"},
-          notes = "This API you can use for testing our notification",
+          notes = "This API you can use for testing our notification. Second parameter 'level' is used for setting notification level (allowable values = info, success, warning, error, question.",
           produces = "application/json",
           consumes = "text/html",
           protocols = "https",
@@ -454,13 +473,13 @@ public class NotificationController extends Controller {
           @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
           @ApiResponse(code = 500, message = "Server side Error")
   })
-  public Result test_notifications(String mail){
+  public Result test_notifications(String mail, String level){
     try {
 
       Person person = Person.find.where().eq("mail", mail).findUnique();
 
-      if(person != null) NotificationController.test_notification(person);
-      return GlobalResult.result_ok("");
+      if(person != null) NotificationController.test_notification(person, level);
+      return GlobalResult.result_ok();
 
     }catch (Exception e){
       return GlobalResult.internalServerError();

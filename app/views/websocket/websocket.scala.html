@@ -14,7 +14,146 @@
         <li class="active">Dashboard</li>
     </ol>
 </section>
+<script>
+        $.ajaxSetup({ cache: false });
+        function ping_homer(data){
+            $.ajax({
+                url: '/public/homer/ping/' + data,
+                type: 'GET',
+                success:function(e){
+                },
+                error:function(e) {
+                    alert("Unsuccessful.");
+                }
+            })}
+        function disconnect_homer(data){
+            $.ajax({
+                url: '/public/homer/disconnect/' + data,
+                type: 'GET',
+                success:function(e){
+                    $('#homer').load(document.URL +  ' #homer');
+                },
+                error:function(e) {
+                    alert("Unsuccessful.");
+                }
+            })}
+        function ping_terminal(data){
+            $.ajax({
+                url: '/public/homer/get_status/' + data,
+                type: 'GET',
+                success:function(e){
+                },
+                error:function(e) {
+                    alert("Unsuccessful.");
+                }
+            })}
+        function log_out_Terminal_User(data){
+            $.ajax({
+                url: '/public/terminal/log_out/' + data,
+                type: 'GET',
+                success:function(e){
+                },
+                error:function(e) {
+                    alert("Unsuccessful.");
+                }
+            })}
+        function disconnect_terminal(data){
+            $.ajax({
+                url: '/public/terminal/disconnect/' + data,
+                type: 'GET',
+                success:function(e){
+                    $('#terminal').load(document.URL +  ' #terminal');
+                },
+                error:function(e) {
+                    alert("Unsuccessful.");
+                }
+            })}
+        function ping_becki(data){
+            $.ajax({
+                url: '/public/becki/ping/' + data,
+                type: 'GET',
+                success:function(e){
+                },
+                error:function(e) {
+                    alert("Unsuccessful.");
+                }
+            })}
+        function test_notification(data){
+            level = document.getElementById('level').value;
+            $.ajax({
+                url: '/notification/test/' + data + '/' + level,
+                type: 'GET',
+                success:function(e){
+                },
+                error:function(e) {
+                    alert("Unsuccessful.");
+                }
+            })}
+        function disconnect_becki(data , k){
+            $.ajax({
+                url: '/public/becki/disconnect/' + data +"/" + k,
+                type: 'GET',
+                success:function(e){
+                    $('#becki').load(document.URL +  ' #becki');
+                },
+                error:function(e) {
+                    alert("Unsuccessful.");
+                }
+            })}
+        function show_all_logs(){
+            $.ajax({
+                url: '@routes.DashboardController.show_all_logs()',
+                type: 'GET',
+                success:function(e){
+                },
+                error:function(e) {
+                    alert("Unsuccessful.");
+                }
+            })}
+        function ping_Blocko_Server(data){
+            $.ajax({
+                url: '/public/blocko_server/ping/' + data,
+                type: 'GET',
+                success:function(e){
+                },
+                error:function(e) {
+                    alert("Unsuccessful.");
+                }
+            })}
+        function disconnect_Blocko_Server(data){
+            $.ajax({
+                url: '/public/blocko_server/disconnect/' + data,
+                type: 'GET',
+                success:function(e){
+                    $('#blocko').load(document.URL +  ' #blocko');
+                },
+                error:function(e) {
+                    alert("Unsuccessful.");
+                }
+            })}
+        function ping_Compilation_Server(data){
+            $.ajax({
+                url: '/public/compilator_server/ping/' + data ,
+                type: 'GET',
+                success:function(e){
+                },
+                error:function(e) {
+                    alert("Unsuccessful.");
+                }
+            })}
+        function disconnect_Compilation_Server(data){
+            $.ajax({
+                url: '/public/compilator_server/disconnect/' + data,
+                type: 'GET',
+                success:function(e){
+                    $('#compilation').load(document.URL +  ' #compilation');
+                },
 
+                error:function(e) {
+                    alert("Unsuccessful.");
+                }
+            })}
+</script>
 <section class="content">
 
     <div class="row">
@@ -32,13 +171,14 @@
                 </div>
 
                 <div class="box-body table-responsive no-padding">
-                    <table class="table table-bordered">
+                    <table id="homer" class="table table-bordered">
 
                         <tr>
                             <th>Instnace ID</th>
                             <th>Grid Subscribers</th>
                             <th>Becki Subscribers</th>
                             <th>Open Details</th>
+                            <th>Get Status</th>
                             <th>Disconnect</th>
                         </tr>
 
@@ -71,9 +211,11 @@
                                 </td>
 
                                 <td align="center">
-                                    <a href=' @routes.DashboardController.disconnect_homer( x.identifikator )' >
-                                        <button class="btn btn-block btn-danger btn-xs">Disconnect</button>
-                                    </a>
+                                    <button onclick="ping_homer('@x.identifikator')" class="btn btn-block btn-info btn-xs">Ping</button>
+                                </td>
+
+                                <td align="center">
+                                    <button onclick="disconnect_homer('@x.identifikator')" class="btn btn-block btn-danger btn-xs">Disconnect</button>
                                 </td>
 
                             </tr>
@@ -100,7 +242,7 @@
                     </div><!-- /.pull-right -->
                 </div>
                 <div class="box-body table-responsive no-padding">
-                    <table class="table table-bordered">
+                    <table id="terminal" class="table table-bordered">
 
                         <tr>
                             <th class="col-xs-1">Identificator</th>
@@ -137,21 +279,15 @@
                                 <td align="center"><button class="btn btn-block btn-success btn-xs">Get Status</button></td>
 
                                 <td align="center">
-                                    <a href=' @routes.DashboardController.ping_terminal( x.identifikator )' >
-                                        <button class="btn btn-block btn-info btn-xs">Ping</button>
-                                    </a>
+                                    <button onclick="ping_terminal('@x.identifikator')" class="btn btn-block btn-info btn-xs">Ping</button>
                                 </td>
 
                                 <td align="center">
-                                    <a href=' @routes.DashboardController.log_out_Terminal_User( x.identifikator )' >
-                                        <button class="btn btn-block btn-warning btn-xs">Logout</button>
-                                    </a>
+                                    <button onclick="log_out_Terminal_User('@x.identifikator')" class="btn btn-block btn-warning btn-xs">Logout</button>
                                 </td>
 
                                 <td align="center">
-                                    <a href=' @routes.DashboardController.disconnect_terminal( x.identifikator )' >
-                                        <button class="btn btn-block btn-danger btn-xs">Disconnect</button>
-                                    </a>
+                                    <button onclick="disconnect_terminal('@x.identifikator')" class="btn btn-block btn-danger btn-xs">Disconnect</button>
                                 </td>
 
                             </tr>
@@ -183,7 +319,7 @@
                 </div>
 
                 <div class="box-body table-responsive no-padding">
-                    <table class="table table-bordered">
+                    <table id="becki" class="table table-bordered">
 
                         <tr>
                             <th>Person email</th>
@@ -201,11 +337,16 @@
                                     <th></th>
 
                                     <th rowspan="@(x.all_person_Connections.size()+2)">
-                                        <a href=' @routes.DashboardController.ping_becki( x.identifikator )' >
-                                            <button class="btn btn-block btn-info btn-xs">Ping All</button>
-                                        </a>
-                                        <form method="get" action="@routes.NotificationController.test_notifications( Person.find.byId( x.identifikator ).mail )">
-                                            <button name="mail" value="@(Person.find.byId( x.identifikator ).mail )" class="btn btn-block btn-primary btn-xs">Send test notification</button>
+                                        <button onclick="ping_becki('@x.identifikator')" class="btn btn-block btn-info btn-xs">Ping</button>
+                                        <form>
+                                            <select style="width: 100%; margin: 10px 0;" id="level">
+                                                <option value="info">info</option>
+                                                <option value="success">success</option>
+                                                <option value="warning">warning</option>
+                                                <option value="error">error</option>
+                                                <option value="question">question</option>
+                                            </select>
+                                            <input type="button" onclick="test_notification('@(Person.find.byId( x.identifikator ).mail )')" class="btn btn-block btn-primary btn-xs" value="Send test notification">
                                         </form>
                                     </th>
                                 </tr>
@@ -216,9 +357,9 @@
                                     <tr>
                                         <td> @x.all_person_Connections.get(k).identifikator      </td>
 
-                                        <td><a href=' @routes.DashboardController.disconnect_becki( x.identifikator, k )' >
-                                            <button class="btn btn-block btn-danger btn-xs">Disconnect</button>
-                                        </a></td>
+                                        <td>
+                                            <button onclick="disconnect_becki( '@x.identifikator', '@k' )" class="btn btn-block btn-danger btn-xs">Disconnect</button>
+                                        </td>
                                     <tr>
                                 }
                             }
@@ -251,7 +392,7 @@
                     </div><!-- /.pull-right -->
                 </div>
                 <div class="box-body table-responsive no-padding">
-                    <table class="table table-bordered">
+                    <table id="blocko" class="table table-bordered">
 
                         <tr>
                             <th align="center" >Server</th>
@@ -269,21 +410,15 @@
                                 <td> @x.virtual_homers.size() </td>
 
                                 <td align="center">
-                                    <a href='@routes.DashboardController.show_all_logs()' >
-                                        <button class="btn btn-block btn-success btn-xs">Get Status</button>
-                                     </a>
+                                    <button onclick="show_all_logs()" class="btn btn-block btn-success btn-xs">Get Status</button>
                                 </td>
 
                                 <td align="center">
-                                    <a href=' @routes.DashboardController.ping_Blocko_Server( x.identifikator )' >
-                                        <button class="btn btn-block btn-info btn-xs">Ping</button>
-                                    </a>
+                                    <button onclick="ping_Blocko_Server('@x.identifikator')" class="btn btn-block btn-info btn-xs">Ping</button>
                                 </td>
 
                                 <td align="center">
-                                    <a href=' @routes.DashboardController.disconnect_Blocko_Server( x.identifikator )' >
-                                        <button class="btn btn-block btn-danger btn-xs">Disconnect</button>
-                                    </a>
+                                    <button onclick="disconnect_Blocko_Server('@x.identifikator')" class="btn btn-block btn-danger btn-xs">Disconnect</button>
                                 </td>
                             </tr>
                         }
@@ -306,7 +441,7 @@
                     </div><!-- /.pull-right -->
                 </div>
                 <div class="box-body table-responsive no-padding">
-                    <table class="table table-bordered">
+                    <table id="compilation" class="table table-bordered">
 
                         <tr>
                             <th>Server</th>
@@ -323,21 +458,15 @@
 
 
                                 <td align="center">
-                                    <a href='@routes.DashboardController.show_all_logs()' >
-                                        <button class="btn btn-block btn-success btn-xs">Get Status</button>
-                                    </a>
+                                    <button onclick="show_all_logs()" class="btn btn-block btn-success btn-xs">Get Status</button>
                                 </td>
 
                                 <td align="center">
-                                    <a href=' @routes.DashboardController.ping_Compilation_Server( x.identifikator )' >
-                                        <button class="btn btn-block btn-info btn-xs">Ping</button>
-                                    </a>
+                                    <button onclick="ping_Compilation_Server('@x.identifikator')" class="btn btn-block btn-info btn-xs">Ping</button>
                                 </td>
 
                                 <td align="center">
-                                    <a href=' @routes.DashboardController.disconnect_Compilation_Server( x.identifikator )' >
-                                        <button class="btn btn-block btn-danger btn-xs">Disconnect</button>
-                                    </a>
+                                    <button onclick="disconnect_Compilation_Server('@x.identifikator')" class="btn btn-block btn-danger btn-xs">Disconnect</button>
                                 </td>
                             </tr>
                         }

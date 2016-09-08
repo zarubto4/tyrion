@@ -155,7 +155,7 @@ public class DashboardController extends Controller {
 
 // API DIFF ###############################################################################################################
 
-    // Zobrazení readme podle MarkDown
+    // Zobrazení rozdílu mezi verzemi
     public Result show_diff_on_Api(String file_name_old, String file_name_new) throws IOException, NullPointerException {
         try {
 
@@ -172,7 +172,7 @@ public class DashboardController extends Controller {
             Swagger_Diff swagger_diff = Swagger_diff_Controller.set_API_Changes(file_name_old, file_name_new);
             Html content = Api_Div.render(swagger_diff, link_api_swagger, fileNames);
 
-            logger.debug("Return show_readme.html content");
+            logger.debug("Return Api_Div.html content");
             return return_page(content);
 
         }catch (Exception e){
@@ -189,7 +189,7 @@ public class DashboardController extends Controller {
         for (Map.Entry<String, WebSCType> entry :    WebSocketController_Incoming.incomingConnections_homers.entrySet()) {
             entry.getValue().onClose();
         }
-        return show_web_socket_stats();
+        return GlobalResult.result_ok();
     }
 
     public Result disconnect_terminal_all(){
@@ -199,12 +199,12 @@ public class DashboardController extends Controller {
             entry.getValue().onClose();
         }
 
-        return show_web_socket_stats();
+        return GlobalResult.result_ok();
     }
 
     public Result disconnect_terminal(String terminal_id){
         if(WebSocketController_Incoming.incomingConnections_terminals.containsKey(terminal_id) ) WebSocketController_Incoming.incomingConnections_terminals.get(terminal_id).onClose();
-        return show_web_socket_stats();
+        return GlobalResult.result_ok();
     }
 
     public Result disconnect_becki(String person_id, String token){
@@ -212,60 +212,60 @@ public class DashboardController extends Controller {
             WS_Becki_Website website = (WS_Becki_Website) WebSocketController_Incoming.becki_website.get(person_id);
             if( website.all_person_Connections.containsKey(token))website.all_person_Connections.get(token).onClose();
         }
-        return show_web_socket_stats();
+        return GlobalResult.result_ok();
     }
 
     public Result disconnect_homer(String homer_id){
         if(WebSocketController_Incoming.incomingConnections_homers.containsKey(homer_id))   WebSocketController_Incoming.incomingConnections_homers.get(homer_id).onClose();
-        return show_web_socket_stats();
+        return GlobalResult.result_ok();
     }
 
     public Result disconnect_Blocko_Server(String identificator){
         if(WebSocketController_Incoming.blocko_servers.containsKey(identificator)) WebSocketController_Incoming.blocko_servers.get(identificator).onClose();
 
-        return show_web_socket_stats();
+        return GlobalResult.result_ok();
     }
 
     public Result disconnect_Compilation_Server(String identificator){
         if(WebSocketController_Incoming.compiler_cloud_servers.containsKey(identificator)) WebSocketController_Incoming.compiler_cloud_servers.get(identificator).onClose();
 
-        return show_web_socket_stats();
+        return GlobalResult.result_ok();
     }
 
     public Result ping_terminal(String terminal_id) throws TimeoutException, InterruptedException {
 
         WebSocketController_Incoming.terminal_ping( WebSocketController_Incoming.incomingConnections_terminals.get(terminal_id) ) ;
-        return show_web_socket_stats();
+        return GlobalResult.result_ok();
     }
 
     public Result ping_becki(String person_id) throws TimeoutException, InterruptedException {
 
        if(WebSocketController_Incoming.becki_website.containsKey(person_id))  WebSocketController_Incoming.becki_ping( WebSocketController_Incoming.becki_website.get(person_id) );
-       return redirect("/public/websocket");
+        return GlobalResult.result_ok();
     }
 
     public Result ping_homer(String homer_id) throws TimeoutException, InterruptedException, ExecutionException {
 
         if(WebSocketController_Incoming.incomingConnections_homers.containsKey(homer_id))
         WebSocketController_Incoming.homer_ping( (WebSocketController_Incoming.incomingConnections_homers.get(homer_id)));
-        return show_web_socket_stats();
+        return GlobalResult.result_ok();
     }
 
     public Result ping_Blocko_Server(String identificator) throws TimeoutException, InterruptedException {
         if(WebSocketController_Incoming.blocko_servers.containsKey(identificator))
         WebSocketController_Incoming.blocko_server_ping( (WS_BlockoServer) WebSocketController_Incoming.blocko_servers.get(identificator) );
-        return show_web_socket_stats();
+        return GlobalResult.result_ok();
     }
 
     public Result ping_Compilation_Server(String identificator) throws TimeoutException, InterruptedException, ExecutionException {
         if(WebSocketController_Incoming.compiler_cloud_servers.containsKey(identificator))
         WebSocketController_Incoming.compiler_server_ping( (WS_CompilerServer) WebSocketController_Incoming.compiler_cloud_servers.get(identificator) );
-        return show_web_socket_stats();
+        return GlobalResult.result_ok();
     }
 
     public Result log_out_Terminal_User(String identificator) {
         System.out.println("Ještě neimplementováno");
-        return  show_web_socket_stats();
+        return GlobalResult.result_ok();
     }
 
 

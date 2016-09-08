@@ -55,7 +55,7 @@ PUT             /notification/confirm/:notification_id      @controllers.Notific
 
 PUT             /notification/read                          @controllers.NotificationController.mark_as_read_notification()
 
-GET             /notification/test/:email                   @controllers.NotificationController.test_notifications(email)
+GET             /notification/test/:email/:level            @controllers.NotificationController.test_notifications(email, level)
 
 ### PERSON ############ PERSON ############### PERSON ################ PERSON ################# PERSON ############ PERSON ###########################################
 ######################################################################################################################################################################
@@ -78,13 +78,20 @@ DELETE         /coreClient/person/person/remove/:id                         @con
 PUT            /coreClient/person/person/deactivate/:person_id              @controllers.PersonController.deactivatePerson(person_id)
 PUT            /coreClient/person/person/activate/:person_id                @controllers.PersonController.activatePerson(person_id)
 DELETE         /coreClient/person/person/clean_all_tokens/:person_id        @controllers.PersonController.delete_all_tokens(person_id)
-PUT           /coreClient/person/person/valid_email/:person_id              @controllers.PersonController.valid_email_Person(person_id)
+PUT            /coreClient/person/person/valid_email/:person_id             @controllers.PersonController.valid_email_Person(person_id)
 
 GET            /mail_person_authentication/:mail/:token                     @controllers.PersonController.email_Person_authentitaction(mail,token)
+
+POST           /coreClient/person/changeProperty                            @controllers.PersonController.changePersonLoginProperty()
+GET            /coreClient/authorize_change/:token                          @controllers.PersonController.authorizePropertyChange(token)
 
 #Password recovery
 POST           /coreClient/mail_person_password_recovery                    @controllers.PersonController.sendPasswordRecoveryEmail()
 PUT            /coreClient/person_password_recovery                         @controllers.PersonController.personPasswordRecovery()
+
+#Personal Picture
+PUT            /coreClient/person/uploadPicture                             @controllers.PersonController.uploadPersonPicture()
+PUT            /coreClient/person/removePicture                             @controllers.PersonController.removePersonPicture()
 
 ### PERMISSION ############ PERMISSION ############### PERMISSION ################ PERMISSION ################# PERMISSION #####################################################
 ################################################################################################################################################################################
@@ -187,6 +194,7 @@ DELETE         /project/project/:project_id                                     
 PUT            /project/project/shareProject/:project_id                                    @controllers.ProgramingPackageController.shareProjectWithUsers(project_id)
 PUT            /project/project/unshareProject/:project_id                                  @controllers.ProgramingPackageController.unshareProjectWithUsers(project_id)
 PUT            /project/project/addParticipant/:invitation_id/:decision                     @controllers.ProgramingPackageController.addParticipantToProject(invitation_id, decision: Boolean)
+DELETE         /project/project/deleteInvitation/:invitation_id                             @controllers.ProgramingPackageController.deleteProjectInvitation(invitation_id)
 
 #Homer
 POST           /project/homer                                                               @controllers.ProgramingPackageController.newHomer()

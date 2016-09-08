@@ -82,6 +82,7 @@ public class Project extends Model {
             project_participant.user_email = person.mail;
             project_participant.full_name = person.full_name;
             project_participant.state = "Project Member"; // TODO dá se tu vymyslet mnohem lepší a promakanější stavy
+            project_participant.pending_invitation = false;
             project_participants.add(project_participant);
         }
 
@@ -89,6 +90,7 @@ public class Project extends Model {
             Project_participant project_participant = new Project_participant();
             project_participant.user_email = invitation.mail;
             project_participant.state      = "Waiting for decision"; // TODO dá se tu vymyslet mnohem lepší a promakanější stavy
+            project_participant.pending_invitation = true;
             project_participants.add(project_participant);
         }
 
@@ -105,6 +107,7 @@ public class Project extends Model {
         @JsonProperty @Transient @ApiModelProperty(required = true, value = "Its in object always") public String user_email;
         @JsonProperty @Transient @ApiModelProperty(required = false, value = "Only if the user is already part of the project (for click operations)")  public String id;
         @JsonProperty @Transient @ApiModelProperty(required = true, value = "Its in object always")  public String state;
+        @JsonProperty @Transient @ApiModelProperty(required = true, value = "Its in object always")  public boolean pending_invitation;
     }
 
 

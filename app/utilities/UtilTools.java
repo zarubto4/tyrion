@@ -164,6 +164,32 @@ public class UtilTools extends Controller {
         return fileRecord;
     }
 
+    public static FileRecord uploadAzure_Picture( File file, String file_name, String file_path, Person person) throws Exception{
+
+        logger.debug("Azure load: "+ file_path);
+
+
+        int slash = file_path.indexOf("/");
+        String container_name = file_path.substring(0,slash);
+        CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
+
+        CloudBlockBlob blob = container.getBlockBlobReference(file_name);
+
+        InputStream is = new FileInputStream(file);
+        blob.upload(is, -1);
+
+        FileRecord fileRecord = new FileRecord();
+        fileRecord.file_name = file_name;
+        fileRecord.file_path = file_path;
+        fileRecord.person = person;
+        fileRecord.save();
+
+        person.picture = fileRecord;
+        person.update();
+
+        return fileRecord;
+    }
+
     public static File file_get_File_from_Azure(String file_path)throws Exception{
 
         logger.debug("FileRecord: get_fileRecord_from_Azure_inString");
@@ -238,8 +264,12 @@ public class UtilTools extends Controller {
     public static void remove_file_from_Azure(FileRecord file){
         try{
 
-            CloudBlobContainer container = Server.blobClient.getContainerReference( "product");
-            CloudBlob blob = container.getBlockBlobReference( file.get_path() );
+            int slash =  file.get_path().indexOf("/");
+            String container_name =  file.get_path().substring(0, slash);
+            String file_path =  file.get_path().substring(slash+1);
+
+            CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
+            CloudBlob blob = container.getBlockBlobReference(file_path);
             blob.delete();
 
         }catch (Exception e){

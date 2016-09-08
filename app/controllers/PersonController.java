@@ -1,15 +1,14 @@
 package controllers;
 
 import io.swagger.annotations.*;
+import models.compiler.FileRecord;
 import models.person.*;
 import play.api.libs.mailer.MailerClient;
 import play.data.Form;
 import play.libs.Json;
-import play.mvc.BodyParser;
-import play.mvc.Controller;
-import play.mvc.Result;
-import play.mvc.Security;
+import play.mvc.*;
 import utilities.Server;
+import utilities.UtilTools;
 import utilities.emails.EmailTool;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_API;
@@ -18,9 +17,13 @@ import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Swagger_Entity_Validation_Out;
 
+import javax.imageio.ImageIO;
 import javax.inject.Inject;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Api(value = "Not Documented API - InProgress or Stuck") // Překrývá nezdokumentované API do jednotné serverové kategorie ve Swaggeru.
 public class PersonController extends Controller {
@@ -271,7 +274,6 @@ public class PersonController extends Controller {
                 return GlobalResult.result_BadRequest("You must recover your password in 24 hours.");
             }
 
-            System.out.println("Mažu tokeny!");
             for ( FloatingPersonToken floatingPersonToken : person.floatingPersonTokens  ) {
                 floatingPersonToken.delete();
             }
@@ -753,6 +755,300 @@ public class PersonController extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(validation));
 
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "change person login info",
+            tags = {"Person"},
+            notes = "Request password or email change. API does not change password or email, only sends email for authorization of the change and holds values in different object." +
+                    "JSON value 'property' contains only 'password' or 'email'",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.documentationClass.Swagger_Person_ChangeProperty",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK Result",               response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured_API.class)
+    public Result changePersonLoginProperty(){
+
+        // Získání JSON
+        final Form<Swagger_Person_ChangeProperty> form = Form.form(Swagger_Person_ChangeProperty.class).bindFromRequest();
+        if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+        Swagger_Person_ChangeProperty help = form.get();
+
+        // Proměnné mailu
+        String subject;
+        String text;
+        String link;
+
+        try {
+
+            switch (help.property){
+
+                case "password":{
+
+                    if (help.password == null) return GlobalResult.badRequest("You must fill in the password");
+
+                    // Vytvoření tokenu pro podržení hesla
+                    ChangePropertyToken changePropertyToken = new ChangePropertyToken();
+                    changePropertyToken.person = SecurityController.getPerson();
+                    changePropertyToken.property = help.property;
+                    changePropertyToken.time_of_creation = new Date();
+                    changePropertyToken.value = help.password;
+                    changePropertyToken.setChangePropertyToken();
+                    changePropertyToken.save();
+
+                    // Úprava proměnných mailu
+                    subject = "Password change - need authorization";
+                    text = "Password change was requested for your account. Click on the link below to authorize the change.";
+                    link = Server.tyrion_serverAddress + "/coreClient/authorize_change/" + changePropertyToken.change_property_token;
+
+                    break;}
+
+                case "email":{
+
+                    if (help.email == null) return GlobalResult.badRequest("You must fill in the email");
+
+                    // Vytvoření tokenu pro podržení emailu
+                    ChangePropertyToken changePropertyToken = new ChangePropertyToken();
+                    changePropertyToken.person = SecurityController.getPerson();
+                    changePropertyToken.property = help.property;
+                    changePropertyToken.time_of_creation = new Date();
+                    changePropertyToken.value = help.email;
+                    changePropertyToken.setChangePropertyToken();
+                    changePropertyToken.save();
+
+                    // Úprava proměnných mailu
+                    subject = "Email change - need authorization";
+                    text = "Email change was requested for your account. Click on the link below to authorize the change. Verification email will be sent to your new email";
+                    link = Server.tyrion_serverAddress + "/coreClient/authorize_change/" + changePropertyToken.change_property_token;
+
+                    break;}
+
+                default: return GlobalResult.badRequest("No such property");
+            }
+
+            // Odeslání emailu
+            try {
+
+                new EmailTool()
+                        .addEmptyLineSpace()
+                        .startParagraph("13")
+                        .addText(text)
+                        .endParagraph()
+                        .startParagraph("13")
+                        .addText("If you do not recognize any of this activity, we strongly recommend you to go to your account and change your password there, because it was probably stolen")
+                        .endParagraph()
+                        .addEmptyLineSpace()
+                        .addLine()
+                        .addEmptyLineSpace()
+                        .addLink(link, "Authorize", "18")
+                        .addEmptyLineSpace()
+                        .sendEmail(SecurityController.getPerson().mail, subject);
+
+            } catch (Exception e) {
+                logger.error ("Sending mail -> critical error", e);
+                e.printStackTrace();
+            }
+
+            return GlobalResult.result_ok("Change was requested. You must authorize the change in next 4 hours via your email. Authorization email was sent.");
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "Authorization of password or email change", hidden = true)
+    public Result authorizePropertyChange(String token){
+        try{
+            ChangePropertyToken changePropertyToken = ChangePropertyToken.find.where().eq("change_property_token",token).findUnique();
+            if(changePropertyToken == null) return redirect(Server.becki_propertyChangeFailed);
+
+            if(((new java.util.Date()).getTime() - changePropertyToken.time_of_creation.getTime()) > 14400000 ){
+                changePropertyToken.delete();
+                return redirect(Server.becki_propertyChangeFailed);
+            }
+
+            Person person = Person.find.byId(changePropertyToken.person.id);
+            if(person == null) return redirect(Server.becki_propertyChangeFailed);
+
+            switch (changePropertyToken.property){
+
+                case "password":{
+                    // Úprava objektu
+                    person.setSha(changePropertyToken.value);
+                    person.update();
+                    break;
+                }
+
+                case "email":{
+
+                    // Úprava objektu
+                    person.mail = changePropertyToken.value;
+                    person.mailValidated = false;
+                    person.update();
+
+                    // Vytvoření validačního tokenu
+                    ValidationToken validationToken = ValidationToken.find.where().eq("personEmail",person.mail).findUnique();
+                    if(validationToken!=null) validationToken.delete();
+                    validationToken = new ValidationToken().setValidation(person.mail);
+
+                    String link = Server.tyrion_serverAddress + "/mail_person_authentication" + "/" + person.mail + "/" + validationToken.authToken;
+
+                    // Odeslání emailu
+                    try {
+                        new EmailTool()
+                                .addEmptyLineSpace()
+                                .startParagraph("13")
+                                .addText("Email verification is needed to complete your email change.")
+                                .endParagraph()
+                                .addEmptyLineSpace()
+                                .addLine()
+                                .addEmptyLineSpace()
+                                .addLink(link,"Click here to verify","18")
+                                .addEmptyLineSpace()
+                                .sendEmail(person.mail, "Email Verification");
+
+                    } catch (Exception e) {
+                        logger.error("Sending mail -> critical error", e);
+                        e.printStackTrace();
+                    }
+                    break;
+                }
+            }
+
+            // Odhlášení uživatele všude
+            for ( FloatingPersonToken floatingPersonToken : person.floatingPersonTokens  ) {
+                floatingPersonToken.delete();
+            }
+
+            changePropertyToken.delete();
+
+            return redirect(Server.becki_mainUrl);
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "upload Person picture",
+            tags = {"Person"},
+            notes = "Uploads personal photo. Picture must be smaller than 500 KB and its dimensions must be between 50 and 400 pixels. If user already has a picture, it will be replaced by the new one. " +
+                    "API requires 'multipart/form-data' Content-Type, name of the property is 'file'.",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK Result",               response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured_API.class)
+    public Result uploadPersonPicture(){
+        try {
+
+            Person person = SecurityController.getPerson();
+
+            // Přijmu soubor
+            Http.MultipartFormData body = request().body().asMultipartFormData();
+            Http.MultipartFormData.FilePart file_from_request = body.getFile("file");
+
+            if (file_from_request == null) return GlobalResult.notFoundObject("Picture not found!");
+
+            File file = file_from_request.getFile();
+
+            int dot = file_from_request.getFilename().lastIndexOf(".");
+            String file_type = file_from_request.getFilename().substring(dot);
+
+            // Zkontroluji soubor - formát, velikost, rozměry
+            if((!file_type.equals(".jpg"))&&(!file_type.equals(".png"))) return GlobalResult.result_BadRequest("Wrong type of File - '.jpg' or '.png' required! ");
+            if( (file.length() / 1024) > 500) return GlobalResult.result_BadRequest("Picture is bigger than 500 KB");
+            BufferedImage bimg = ImageIO.read(file);
+            if((bimg.getWidth() < 50)||(bimg.getWidth() > 400)||(bimg.getHeight() < 50)||(bimg.getHeight() > 400)) return GlobalResult.result_BadRequest("Picture height or width is not between 50 and 400 pixels.");
+
+            // Odebrání předchozího obrázku
+            if(!(person.picture == null)){
+                UtilTools.remove_file_from_Azure(person.picture);
+                FileRecord fileRecord = person.picture;
+                person.picture = null;
+                person.update();
+                fileRecord.delete();
+            }
+
+            // Pokud link není, vygeneruje se nový, unikátní
+            if(person.azure_picture_link == null){
+                while(true){ // I need Unique Value
+                    String azure_picture_link = person.get_Container().getName() + "/" + UUID.randomUUID().toString() + file_type;
+                    if (Person.find.where().eq("azure_picture_link", azure_picture_link ).findUnique() == null) {
+                        person.azure_picture_link = azure_picture_link;
+                        person.update();
+                        break;
+                    }
+                }
+            }
+
+            String file_path = person.get_picture_path();
+
+            int slash = file_path.indexOf("/");
+            String file_name = file_path.substring(slash+1);
+
+            UtilTools.uploadAzure_Picture(file, file_name, file_path, person);
+
+            return GlobalResult.result_ok("Picture successfully uploaded");
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "remove Person picture",
+            tags = {"Person"},
+            notes = "Removes picture of logged person",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK Result",               response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured_API.class)
+    public Result removePersonPicture(){
+        try {
+
+            Person person = SecurityController.getPerson();
+
+            if(!(person.picture == null)) {
+                UtilTools.remove_file_from_Azure(person.picture);
+                FileRecord fileRecord = person.picture;
+                person.picture = null;
+                person.azure_picture_link = null;
+                person.update();
+                fileRecord.delete();
+            }else{
+                return GlobalResult.badRequest("There is no picture to remove.");
+            }
+
+            return GlobalResult.result_ok("Picture successfully removed");
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
         }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.ApiModelProperty;
+import models.person.Person;
 import models.project.c_program.C_Compilation;
 import models.project.c_program.actualization.C_Program_Update_Plan;
 import utilities.UtilTools;
@@ -29,6 +30,7 @@ public class FileRecord extends Model {
     @ApiModelProperty(required = true)                          public String file_name;
                                                  @JsonIgnore    public String file_path;
 
+                                    @JsonIgnore @OneToOne()     public Person person;
                                    @JsonIgnore @ManyToOne()     public Version_Object version_object;
              @JsonIgnore @OneToMany(mappedBy="binary_file")     public List<C_Program_Update_Plan> c_program_update_plen  = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="bin_compilation_file")     public List<C_Compilation> c_compilations_binary_files  = new ArrayList<>();

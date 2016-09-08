@@ -3,9 +3,11 @@ package models.person;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
 import models.blocko.BlockoBlock;
+import models.compiler.FileRecord;
 import models.notification.Notification;
 import models.overflow.LinkedPost;
 import models.overflow.Post;
@@ -13,6 +15,7 @@ import models.project.global.Project;
 import models.project.global.financial.Payment_Details;
 import org.hibernate.validator.constraints.Email;
 import play.data.validation.Constraints;
+import utilities.Server;
 import utilities.permission.Permission;
 
 import javax.persistence.*;
@@ -32,8 +35,11 @@ public class Person extends Model {
     @ApiModelProperty(required = true) @Column(unique=true)     public String nick_name;
     @ApiModelProperty(required = true)                          public String full_name;
 
+                                                    @JsonIgnore public String azure_picture_link;
+                                        @JsonIgnore @OneToOne   public FileRecord picture;
+
                                                  @JsonIgnore    public boolean freeze_account; // Zmražený účet - Účty totiž nechceme mazat!
-                                                @JsonIgnore     public boolean mailValidated;
+                                                 @JsonIgnore    public boolean mailValidated;
 
     @JsonIgnore  @Column(length = 64)                           public byte[] shaPassword;
     @JsonIgnore  @OneToOne(mappedBy = "person")                 public PasswordRecoveryToken passwordRecoveryToken;
@@ -56,6 +62,13 @@ public class Person extends Model {
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
+    @JsonProperty @ApiModelProperty(required = true)
+    public String picture_link(){
+        if(this.azure_picture_link == null){
+            return null;
+        }
+        return Server.azureLink + azure_picture_link;
+    }
 
 
 /* Security Tools @ JsonIgnore -----------------------------------------------------------------------------------------*/
@@ -83,6 +96,21 @@ public class Person extends Model {
     @JsonIgnore @Transient
     public boolean has_permission(String permission){
         return Permission.check_permission(permission);
+    }
+
+    @JsonIgnore @Transient
+    public CloudBlobContainer get_Container(){
+        try {
+            return Server.blobClient.getContainerReference("pictures");
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new NullPointerException();
+        }
+    }
+
+    @JsonIgnore @Transient
+    public String get_picture_path(){
+        return  this.azure_picture_link;
     }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/

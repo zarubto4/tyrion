@@ -1136,8 +1136,12 @@ public class WebSocketController_Incoming extends Controller {
                 ObjectNode result = Json.newObject();
                 result.put("messageType", "notification");
                 result.put("messageChannel", "becki");
-                result.put("notification_level",   notification.level.name() );
+                result.put("id", notification.id);
+                result.put("notification_level",   notification.notification_level.name() );
+                result.put("confirmation_required", notification.confirmation_required);
                 result.set("notification_body",    notification.notification_body());
+                result.put("was_read", notification.was_read);
+                result.put("created", notification.created.getTime());
 
                 for(String person_connection_token : becki.all_person_Connections.keySet()){
                     WS_Becki_Single_Connection single_connection =  (WS_Becki_Single_Connection) becki.all_person_Connections.get(person_connection_token);
