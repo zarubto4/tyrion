@@ -5,6 +5,8 @@
 # Home page - for testing connected device
 # Home page
 
+#CORS
+OPTIONS        /*all                                        @controllers.SecurityController.optionLink(all)
 
 ### Testovací ############ Testovací ############### Testovací ################ Testovací ###########################################################################
 ###################################################################################f#################################################################################
@@ -409,8 +411,7 @@ GET            /api-docs                                    @utilities.swagger.A
 GET            /api-docs/:version                           @utilities.swagger.swagger_diff_tools.Swagger_diff_Controller.getResources_version(version)
 
 
-#CORS
-OPTIONS        /*all                                        @controllers.SecurityController.optionLink(all)
+
 
 # Map static resources from the /public folder to the /assets URL path
 GET           /assets/*file                                 controllers.Assets.at(path="/public", file)

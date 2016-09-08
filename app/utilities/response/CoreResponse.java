@@ -12,7 +12,7 @@ public class CoreResponse extends Controller {
     public static void cors() {
         try {
             response().setHeader("Access-Control-Allow-Origin", "*"); // Zde bude web se kterým to může komunikovat (url frontendu)
-            response().setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, PATCH, OPTIONS");
+            response().setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS");
             response().setHeader("Access-Control-Max-Age", "72000");
             response().setHeader("Content-Type", "application/json");
             response().setHeader("Byzance-Api-Version", Server.server_version);
@@ -29,12 +29,12 @@ public class CoreResponse extends Controller {
 
             response().setHeader("Access-Control-Link", url);
             response().setHeader("Access-Control-Allow-Origin", "*"); // Zde bude web se kterým to může komunikovat (url frontendu)
-            response().setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, PATCH, OPTIONS");
+            response().setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS");
             response().setHeader("Access-Control-Max-Age", "72000");
             response().setHeader("Content-Type", "*");
             response().setHeader("Byzance-Api-Version", Server.server_version);
             response().setHeader("Accept", "*");
-            response().setHeader("Access-Control-Allow-Headers", "Content-Type, Content-Type,  api_key, Authorization, x-auth-token, accept, appid, appname, authorization, content-type");
+            response().setHeader("Access-Control-Allow-Headers", "ccess-Control-Allow-Origin,, Content-Type, Content-Type,  api_key, Authorization, x-auth-token, accept, appid, appname, authorization, content-type");
         }catch (Exception e){
             //TODO dodělat Loggy
             e.printStackTrace();
@@ -51,7 +51,7 @@ public class CoreResponse extends Controller {
             response().setHeader("Content-Type", "application/pdf");
             response().setHeader("Byzance-Api-Version", Server.server_version);
             response().setHeader("Accept", "*");
-            response().setHeader("Access-Control-Allow-Headers", "content-Type, api_key, Authorization, x-auth-token, accept, appid, appname, authorization, content-type");
+            response().setHeader("Access-Control-Allow-Headers", "ccess-Control-Allow-Origin, content-Type, api_key, Authorization, x-auth-token, accept, appid, appname, authorization, content-type");
         }catch (Exception e){
             //TODO dodělat Loggy
             e.printStackTrace();

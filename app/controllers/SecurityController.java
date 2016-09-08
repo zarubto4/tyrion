@@ -182,7 +182,7 @@ public class SecurityController extends Controller {
             }
 
             // JE nutné garantovat vždy odpověď ok za všech situací kromě kritického selhální
-            return GlobalResult.result_ok();
+            return GlobalResult.result_ok("Success");
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -488,7 +488,6 @@ public class SecurityController extends Controller {
     @ApiOperation( value = "optionLink", hidden = true)
     public Result optionLink(String url){
 
-        System.out.print("Opetion!!! " + request().toString() );
         CoreResponse.cors(url);
         return ok();
 
