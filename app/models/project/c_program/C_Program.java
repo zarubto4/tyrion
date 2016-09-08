@@ -13,6 +13,7 @@ import models.compiler.Version_Object;
 import models.project.b_program.B_Pair;
 import models.project.global.Project;
 import play.libs.Json;
+import utilities.swagger.documentationClass.Swagger_C_Program_Version_New;
 import utilities.swagger.outboundClass.Swagger_C_Program_Version;
 
 import javax.persistence.*;
@@ -80,9 +81,12 @@ public class C_Program extends Model {
         if(fileRecord != null) {
 
             JsonNode json = Json.parse( fileRecord.get_fileRecord_from_Azure_inString() ) ;
-            c_program_versions.main = json.get("main");
-            c_program_versions.user_files = json.get("user_files");
-            c_program_versions.external_libraries = json.get("external_libraries");
+
+            Swagger_C_Program_Version_New version_new = Json.fromJson(json, Swagger_C_Program_Version_New.class);
+
+            c_program_versions.main = version_new.main;
+            c_program_versions.user_files = version_new.user_files;
+            c_program_versions.external_libraries = version_new.external_libraries;
 
         }
 

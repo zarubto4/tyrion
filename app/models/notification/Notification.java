@@ -2,11 +2,10 @@ package models.notification;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.NotificationController;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
@@ -15,10 +14,14 @@ import play.libs.Json;
 import utilities.Server;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 public class Notification extends Model {
+
+    static play.Logger.ALogger logger = play.Logger.of("Notification");
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
@@ -42,7 +45,7 @@ public class Notification extends Model {
 /* BODY NOTIFICATION SEGMENTS ------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
-    ArrayNode array = new ObjectMapper().createArrayNode();
+    List<Notification_Element> array = new ArrayList<>();
 
     @JsonIgnore
     public  Notification(NotificationController.Notification_level level, Person person){
@@ -65,47 +68,47 @@ public class Notification extends Model {
     @JsonIgnore @Transient
     public Notification setText(String message){
 
-        ObjectNode o = Json.newObject();
-             o.put("type", "text");
-             o.put("value", message);
+        Notification_Element element = new Notification_Element();
+        element.type     = Notification_Type.text;
+        element.value    = message;
 
-        array.add(o);
+        array.add(element);
         return this;
     }
 
     @JsonIgnore @Transient
     public Notification setBoldText(String message){
 
-        ObjectNode o = Json.newObject();
-        o.put("type", "bold_text");
-        o.put("value", message);
+        Notification_Element element = new Notification_Element();
+        element.type     = Notification_Type.bold_text;
+        element.value    = message;
 
-        array.add(o);
+        array.add(element);
         return this;
     }
 
     @JsonIgnore @Transient
     public Notification setObject(Class object , String id , String label){
 
-        ObjectNode o = Json.newObject();
-        o.put("type", "object");
-        o.put("value", object.getSimpleName().replaceAll("Swagger_","") );
-        o.put("id", id);
-        o.put("label",  label );
+        Notification_Element element = new Notification_Element();
+        element.type     = Notification_Type.object;
+        element.value    = object.getSimpleName().replaceAll("Swagger_","");
+        element.id       = id;
+        element.label    = label;
 
-        array.add(o);
+        array.add(element);
         return this;
     }
 
     @JsonIgnore @Transient
     public Notification setLink_ToTyrion(String label, String url){
 
-        ObjectNode o = Json.newObject();
-        o.put("type", "link");
-        o.put("url",url);
-        o.put("label", label);
+        Notification_Element element = new Notification_Element();
+        element.type     = Notification_Type.confirmation;
+        element.url = url;
+        element.label = label;
 
-        array.add(o);
+        array.add(element);
         return this;
     }
 
@@ -113,18 +116,18 @@ public class Notification extends Model {
     public Notification required(){
         confirmation_required = true;
 
-        ObjectNode o = Json.newObject();
-        o.put("type", "confirmation");
-        o.put("required", true);
-        o.put("get_url", Server.tyrion_serverAddress + "/notification/confirm/" + this.id);
+        Notification_Element element = new Notification_Element();
+        element.type     = Notification_Type.confirmation;
+        element.required = true;
+        element.get_url     = Server.tyrion_serverAddress + "/notification/confirm/" + this.id;
 
-        array.add(o);
+        array.add(element);
         return this;
     }
 
     @JsonIgnore @Transient
     public Notification save_object(){
-        content_string = array.toString();
+        content_string = Json.toJson(array).toString();
         super.save();
         return this;
     }
@@ -136,9 +139,16 @@ public class Notification extends Model {
 
     @JsonProperty
     @ApiModelProperty(required = true)
-    public JsonNode notification_body(){
-        if(array == null || array.size() < 1) return Json.parse(content_string);
-        else return array;
+    public List<Notification_Element> notification_body(){
+        try {
+                if(array == null || array.size() < 1) array = new ObjectMapper().readValue(content_string, new TypeReference<List<Notification_Element>>() {});
+                return array;
+
+        }catch (Exception e){
+            logger.error("Parsing notification error", e);
+            return new ArrayList<Notification_Element>();   // Vracím prázdný list - ale reportuji chybu
+        }
+
     }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
@@ -156,4 +166,26 @@ public class Notification extends Model {
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String,Notification> find = new Finder<>(Notification.class);
+
+    public class Notification_Element{
+
+        @ApiModelProperty(required =  true)    public Notification_Type type = null;
+        @ApiModelProperty(required =  true)    public boolean required = false;
+
+        @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public String get_url  = null;
+        @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public String url      = null;
+        @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public String label    = null;
+
+        @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public String value    = null;
+        @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public String id       = null;
+
+    }
+
+    public enum Notification_Type{
+        confirmation,
+        link,
+        object,
+        bold_text,
+        text,
+    }
 }

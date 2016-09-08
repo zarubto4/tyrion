@@ -1139,7 +1139,7 @@ public class WebSocketController_Incoming extends Controller {
                 result.put("id", notification.id);
                 result.put("notification_level",   notification.notification_level.name() );
                 result.put("confirmation_required", notification.confirmation_required);
-                result.set("notification_body",    notification.notification_body());
+                result.set("notification_body",    Json.toJson(notification.notification_body()));
                 result.put("was_read", notification.was_read);
                 result.put("created", notification.created.getTime());
 

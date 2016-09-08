@@ -243,7 +243,7 @@ public class Basic_Data {
             Board board_yoda_1 = new Board();
             board_yoda_1.id = "002600513533510B34353732";
             board_yoda_1.personal_description = "Martinův Yoda";
-            board_yoda_1.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "YODA_G2").findUnique();
+            board_yoda_1.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_YODAG2").findUnique();
             board_yoda_1.date_of_create = new Date();
             board_yoda_1.project = project_1;
             board_yoda_1.save();
@@ -251,7 +251,7 @@ public class Basic_Data {
             Board board_yoda_2 = new Board();
             board_yoda_2.id = "003E00523533510B34353732";
             board_yoda_2.personal_description = "Tomův Yoda";
-            board_yoda_2.type_of_board =TypeOfBoard.find.where().eq("compiler_target_name", "YODA_G2").findUnique();
+            board_yoda_2.type_of_board =TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_YODAG2").findUnique();
             board_yoda_2.date_of_create = new Date();
             board_yoda_2.project = project_1;
             board_yoda_2.save();
@@ -259,7 +259,7 @@ public class Basic_Data {
             Board board_yoda_3 = new Board();
             board_yoda_3.id = "004C00523533510B34353732";
             board_yoda_3.personal_description = "Yoda s WIFI";
-            board_yoda_3.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "YODA_G2").findUnique();
+            board_yoda_3.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_YODAG2").findUnique();
             board_yoda_3.date_of_create = new Date();
             board_yoda_3.project = project_1;
             board_yoda_3.save();
@@ -267,7 +267,7 @@ public class Basic_Data {
             Board board_yoda_4 = new Board();
             board_yoda_4.id = "002300513533510B34353732";
             board_yoda_4.personal_description = "Viktorův Yoda";
-            board_yoda_4.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "YODA_G2").findUnique();
+            board_yoda_4.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_YODAG2").findUnique();
             board_yoda_4.date_of_create = new Date();
             board_yoda_4.project = project_1;
             board_yoda_4.save();
@@ -278,7 +278,7 @@ public class Basic_Data {
             Board wireless_1 = new Board();
             wireless_1.id = "EEEEEEEEEE_999999999";
             wireless_1.personal_description = "Bezdrátový device 9";
-            wireless_1.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "WrlsKit_G2").findUnique();
+            wireless_1.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_WRLSKITG2").findUnique();
             wireless_1.date_of_create = new Date();
             wireless_1.project = project_1;
             wireless_1.save();
@@ -286,7 +286,7 @@ public class Basic_Data {
             Board wireless_2 = new Board();
             wireless_2.id = "EEEEEEEEEE_999999998";
             wireless_2.personal_description = "Bezdrátový device 8";
-            wireless_2.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "WrlsKit_G2").findUnique();
+            wireless_2.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_WRLSKITG2").findUnique();
             wireless_2.date_of_create = new Date();
             wireless_2.project = project_1;
             wireless_2.save();
@@ -294,7 +294,7 @@ public class Basic_Data {
             Board wireless_3 = new Board();
             wireless_3.id = "EEEEEEEEEE_999999997";
             wireless_3.personal_description = "Bezdrátový device 7";
-            wireless_3.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "WrlsKit_G2").findUnique();
+            wireless_3.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_WRLSKITG2").findUnique();
             wireless_3.date_of_create = new Date();
             wireless_3.project = project_1;
             wireless_3.save();
@@ -303,7 +303,7 @@ public class Basic_Data {
             Board bus_1 = new Board();
             bus_1.id = "BBBBBBBBBB_999999999";
             bus_1.personal_description = "Bus device 9";
-            bus_1.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BusKit_G2").findUnique();
+            bus_1.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_BUSKITG2").findUnique();
             bus_1.date_of_create = new Date();
             bus_1.project = project_1;
             bus_1.save();
@@ -311,7 +311,7 @@ public class Basic_Data {
             Board bus_2 = new Board();
             bus_2.id = "BBBBBBBBBB_999999998";
             bus_2.personal_description = "Bus device 8";
-            bus_2.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BusKit_G2").findUnique();
+            bus_2.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_BUSKITG2").findUnique();
             bus_2.date_of_create = new Date();
             bus_2.project = project_1;
             bus_2.save();
@@ -319,7 +319,7 @@ public class Basic_Data {
             Board bus_3 = new Board();
             bus_3.id = "BBBBBBBBBB_999999997";
             bus_3.personal_description = "Bus device 7";
-            bus_3.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BusKit_G2").findUnique();
+            bus_3.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_BUSKITG2").findUnique();
             bus_3.date_of_create = new Date();
             bus_3.project = project_1;
             bus_3.save();
