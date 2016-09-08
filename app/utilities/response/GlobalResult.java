@@ -20,7 +20,7 @@ public class GlobalResult extends Controller {
     // Vracím pouze OK 200 state
     public static Result result_ok(){
         CoreResponse.cors();
-        return ok(Json.toJson(new Result_ok()));
+        return ok(  Json.toJson(new Result_ok())  );
     }
 
     // Vracím pouze OK 200 state se zprávou

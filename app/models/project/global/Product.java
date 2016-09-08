@@ -1,6 +1,7 @@
 package models.project.global;
 
 import com.avaje.ebean.Model;
+import com.avaje.ebean.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -14,6 +15,8 @@ import models.project.global.financial.Payment_Details;
 import play.Configuration;
 import play.libs.Json;
 import utilities.Server;
+import utilities.enums.Payment_mode;
+import utilities.enums.Product_Type;
 import utilities.goPay.helps_objects.enums.Currency;
 import utilities.goPay.helps_objects.enums.Payment_method;
 
@@ -70,10 +73,12 @@ public class Product extends Model {
    @Transient  @ApiModelProperty(required = true, readOnly = true)
    public String product_type(){
 
-       switch (type) {
-           case alpha:       {return  "Alpha - Temporal limitation";}
-           case free:        {return  "Free Account ";}
-           case business:    {return  "Enterprise account";}
+       System.out.println("Type" + type);
+
+       switch ( type.toString() ) {
+           case "alpha":       {return  "Alpha - Temporal limitation";}
+           case "free":        {return  "Free Account ";}
+           case "business":    {return  "Enterprise account";}
            default: return  "Undefined state";
        }
    }
@@ -192,26 +197,12 @@ public class Product extends Model {
 
 /* ENUM values ---------------------------------------------------------------------------------------------------------*/
 
-    public enum Product_Type{
-        alpha,
-        free,
-        business
-    }
-
-    public enum Payment_mode{
-        free,
-        monthly,
-        annual,
-        per_credit
-    }
-
-    public enum Recurrence_cycle{
-        ON_DEMAND // Režim, kdy Tyrion žádá sám Go_Pay o platbu!
-    }
-
-
-
 }
+
+
+
+
+
 
 
 

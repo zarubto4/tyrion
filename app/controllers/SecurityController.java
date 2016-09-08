@@ -160,6 +160,7 @@ public class SecurityController extends Controller {
             tags = {"Access", "Person", "APP-Api"},
             notes = "for logout person - that's deactivate person token ",
             produces = "application/json",
+            consumes = "text/html",
             response =  Result_ok.class,
             protocols = "https",
             code = 200
@@ -178,11 +179,11 @@ public class SecurityController extends Controller {
                 FloatingPersonToken.find.where().eq("authToken", token).findUnique().deleteAuthToken();
 
             }catch (Exception e){
-                e.printStackTrace();
+                //e.printStackTrace();
             }
 
             // JE nutné garantovat vždy odpověď ok za všech situací kromě kritického selhální
-            return GlobalResult.result_ok("Success");
+            return GlobalResult.result_ok();
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());

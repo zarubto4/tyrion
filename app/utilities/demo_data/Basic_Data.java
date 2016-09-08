@@ -20,6 +20,8 @@ import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import utilities.Server;
 import utilities.UtilTools;
+import utilities.enums.Payment_mode;
+import utilities.enums.Product_Type;
 
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -194,10 +196,10 @@ public class Basic_Data {
 
             // Vytvoří tarif
             Product product = new Product();
-            product.type = Product.Product_Type.alpha;
+            product.type = Product_Type.alpha;
             product.product_individual_name = "Pepkova velkolepá Alfa";
             product.active = true;  // Produkt jelikož je Aplha je aktivní - Alpha nebo Trial dojedou kvuli omezení času
-            product.mode = Product.Payment_mode.free;
+            product.mode = Payment_mode.free;
             product.paid_until_the_day = new GregorianCalendar(2016, 12, 30).getTime();
             Payment_Details payment_details = new Payment_Details();
             payment_details.person = person;

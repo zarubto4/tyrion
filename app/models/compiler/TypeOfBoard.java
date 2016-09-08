@@ -21,10 +21,10 @@ public class TypeOfBoard extends Model {
                                                                                     @JsonIgnore public String compiler_target_name;
                                                              @ApiModelProperty(required = true) public String revision;
 
-                       @Column(columnDefinition = "TEXT")    @ApiModelProperty(required = true) public String description;
-                                                                        @JsonIgnore  @ManyToOne public Producer producer;
+                       @Column(columnDefinition = "TEXT")    @ApiModelProperty(required = true) public String    description;
+                                                                        @JsonIgnore  @ManyToOne public Producer  producer;
                                                                         @JsonIgnore  @ManyToOne public Processor processor;
-                                                             @ApiModelProperty(required = true) public Boolean connectible_to_internet;
+                                                             @ApiModelProperty(required = true) public Boolean   connectible_to_internet;
 
     @JsonIgnore @OneToMany(mappedBy="type_of_board", cascade = CascadeType.ALL) public List<Board> boards = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="type_of_board", cascade = CascadeType.ALL) public List<C_Program> c_programs = new ArrayList<>();

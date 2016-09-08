@@ -14,6 +14,8 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.UtilTools;
+import utilities.enums.Payment_mode;
+import utilities.enums.Product_Type;
 import utilities.fakturoid.Fakturoid_Controller;
 import utilities.goPay.GoPay_Controller;
 import utilities.goPay.helps_objects.enums.Currency;
@@ -177,13 +179,13 @@ public class Finance_Controller extends Controller {
 
 
 
-            if(help.tariff_type.equals( Product.Product_Type.alpha.name() )){
+            if(help.tariff_type.equals( Product_Type.alpha.name() )){
 
-                product.type =  Product.Product_Type.alpha;
+                product.type =  Product_Type.alpha;
                 product.product_individual_name = help.product_individual_name;
                 product.active = true;  // Produkt jelikož je Aplha je aktivní - Alpha nebo Trial dojedou kvuli omezení času
 
-                product.mode = Product.Payment_mode.free;
+                product.mode = Payment_mode.free;
                 product.paid_until_the_day = new GregorianCalendar(2016, 12, 30).getTime();
 
                 Person person = SecurityController.getPerson();
@@ -210,11 +212,11 @@ public class Finance_Controller extends Controller {
             }
 
 
-            if(help.tariff_type.equals( Product.Product_Type.free.name() )){
-                product.type =  Product.Product_Type.free;
+            if(help.tariff_type.equals( Product_Type.free.name() )){
+                product.type =  Product_Type.free;
                 product.product_individual_name = help.product_individual_name;
                 product.active = true;  // Produkt jelikož je free je aktivní - Alpha nebo Trial dojedou kvuli omezení času
-                product.mode = Product.Payment_mode.free;
+                product.mode = Payment_mode.free;
 
 
                 product.paid_until_the_day = new GregorianCalendar(2025, 12, 30).getTime();
@@ -239,16 +241,16 @@ public class Finance_Controller extends Controller {
             }
 
 
-            if(help.tariff_type.equals( Product.Product_Type.business.name() )){
+            if(help.tariff_type.equals( Product_Type.business.name() )){
                 product.active = true; // Produkt se aktivuje okamžitě ale nenastaví se tam jeho čas do kdy je funkční
                 product.product_individual_name = help.product_individual_name;
 
                 // payment_mode
                 if(help.payment_mode == null) return GlobalResult.result_BadRequest("payment_mode is required with this tariff");
 
-                if(help.payment_mode.equals( Product.Payment_mode.monthly.name()))           product.mode = Product.Payment_mode.monthly;
-                else if(help.payment_mode.equals( Product.Payment_mode.annual.name()))       product.mode = Product.Payment_mode.annual;
-                else if(help.payment_mode.equals( Product.Payment_mode.per_credit.name()))   product.mode = Product.Payment_mode.per_credit;
+                if(help.payment_mode.equals( Payment_mode.monthly.name()))           product.mode = Payment_mode.monthly;
+                else if(help.payment_mode.equals( Payment_mode.annual.name()))       product.mode = Payment_mode.annual;
+                else if(help.payment_mode.equals( Payment_mode.per_credit.name()))   product.mode = Payment_mode.per_credit;
                 else { return GlobalResult.result_BadRequest("payment_mode is invalid. Use only (monthly, annual, per_credit)");}
 
 
@@ -260,7 +262,7 @@ public class Finance_Controller extends Controller {
                 else { return GlobalResult.result_BadRequest("payment_mode is invalid. Use only (bank, credit_card)");}
 
 
-                product.type  =  Product.Product_Type.business;
+                product.type  =  Product_Type.business;
 
                 Payment_Details payment_details = new Payment_Details();
                 payment_details.person = SecurityController.getPerson();

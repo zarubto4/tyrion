@@ -13,6 +13,8 @@ import play.libs.ws.WSResponse;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utilities.Server;
+import utilities.enums.Payment_mode;
+import utilities.enums.Recurrence_cycle;
 import utilities.fakturoid.Fakturoid_Controller;
 import utilities.goPay.helps_objects.*;
 
@@ -46,10 +48,10 @@ public class GoPay_Controller  extends Controller {
 
                 // Pouze
                 if(!product.on_demand_active) {
-                    if (product.mode.name().equals(Product.Payment_mode.monthly.name())) {
+                    if (product.mode.name().equals(Payment_mode.monthly.name())) {
                         payment.recurrence = new Recurrence();
 
-                        payment.recurrence.recurrence_cycle = Product.Recurrence_cycle.ON_DEMAND;
+                        payment.recurrence.recurrence_cycle = Recurrence_cycle.ON_DEMAND;
 
 
 
@@ -63,9 +65,9 @@ public class GoPay_Controller  extends Controller {
                             product.paid_until_the_day = cal.getTime() ;
 
                         product.update();
-                    } else if (product.mode.name().equals(Product.Payment_mode.annual.name())) {
+                    } else if (product.mode.name().equals(Payment_mode.annual.name())) {
                         payment.recurrence = new Recurrence();
-                        payment.recurrence.recurrence_cycle = Product.Recurrence_cycle.ON_DEMAND;
+                        payment.recurrence.recurrence_cycle = Recurrence_cycle.ON_DEMAND;
 
                         Calendar cal = Calendar.getInstance();
                         product.monthly_day_period = (cal.get(Calendar.DAY_OF_WEEK_IN_MONTH) + cal.get(Calendar.WEEK_OF_MONTH)*7) > 28 ? 28 : (cal.get(Calendar.DAY_OF_WEEK_IN_MONTH) + cal.get(Calendar.WEEK_OF_MONTH)*7);

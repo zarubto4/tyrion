@@ -413,8 +413,8 @@ create table product (
   remaining_credit          float,
   currency                  varchar(3),
   azure_product_link        varchar(255),
-  constraint ck_product_type check (type in ('alpha','free','business')),
-  constraint ck_product_mode check (mode in ('free','monthly','annual','per_credit')),
+  constraint ck_product_type check (type in ('business','alpha','free')),
+  constraint ck_product_mode check (mode in ('per_credit','monthly','annual','free')),
   constraint ck_product_method check (method in ('bank','credit_card')),
   constraint ck_product_currency check (currency in ('CZK','EUR')),
   constraint pk_product primary key (id))
