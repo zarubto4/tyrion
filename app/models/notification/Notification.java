@@ -12,6 +12,7 @@ import io.swagger.annotations.ApiModelProperty;
 import models.person.Person;
 import play.libs.Json;
 import utilities.Server;
+import utilities.enums.Notification_Type;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -181,11 +182,5 @@ public class Notification extends Model {
 
     }
 
-    public enum Notification_Type{
-        confirmation,
-        link,
-        object,
-        bold_text,
-        text,
-    }
+
 }
