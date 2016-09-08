@@ -269,21 +269,6 @@ public class NotificationController extends Controller {
 
   }
 
-  public Result notification_confirm(String notification_id){
-
-    try{
-      Notification notification = Notification.find.byId(notification_id);
-
-      notification.confirmed = true;
-      notification.update();
-
-      return GlobalResult.result_ok();
-
-    }catch (Exception e){
-      return GlobalResult.internalServerError();
-    }
-  }
-
   public static void test_notification(Person person, String level){
 
     Notification notification;
@@ -367,7 +352,7 @@ public class NotificationController extends Controller {
           @ApiResponse(code = 500, message = "Server side Error")
   })
   @Security.Authenticated(Secured_API.class)
-  public Result delete_notification(String notification_id){
+  public Result delete_notification(@ApiParam(value = "notification_id String path", required = true) String notification_id){
     try {
 
       Notification notification =  Notification.find.byId(notification_id);
@@ -486,6 +471,34 @@ public class NotificationController extends Controller {
     }
   }
 
+  @ApiOperation(value = "confirm notification",
+          tags = {"Notifications"},
+          notes = "Confirms notification",
+          produces = "application/json",
+          consumes = "text/html",
+          protocols = "https",
+          code = 200
+  )
+  @ApiResponses(value = {
+          @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+          @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+          @ApiResponse(code = 500, message = "Server side Error")
+  })
+  @Security.Authenticated(Secured_API.class)
+  public Result notification_confirm(@ApiParam(value = "notification_id String path", required = true) String notification_id){
 
+    try{
+      Notification notification = Notification.find.byId(notification_id);
+      if(notification == null) return GlobalResult.notFoundObject("Notification does not exist");
+
+      notification.confirmed = true;
+      notification.update();
+
+      return GlobalResult.result_ok();
+
+    }catch (Exception e){
+      return GlobalResult.internalServerError();
+    }
+  }
 
 }

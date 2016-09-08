@@ -110,15 +110,8 @@ public class Notification extends Model {
     }
 
     @JsonIgnore @Transient
-    public Notification required(){
+    public Notification confirmation_required(){
         confirmation_required = true;
-
-        ObjectNode o = Json.newObject();
-        o.put("type", "confirmation");
-        o.put("required", true);
-        o.put("get_url", Server.tyrion_serverAddress + "/notification/confirm/" + this.id);
-
-        array.add(o);
         return this;
     }
 
