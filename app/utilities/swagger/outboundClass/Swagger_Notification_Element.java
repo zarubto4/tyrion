@@ -1,12 +1,15 @@
 package utilities.swagger.outboundClass;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.enums.Notification_Type;
 
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 
+@ApiModel(description = "Json Model for Notification body=[Array of Notification_Element]",
+          value = "Notification_Element")
 public class Swagger_Notification_Element {
 
         public Swagger_Notification_Element(){}
