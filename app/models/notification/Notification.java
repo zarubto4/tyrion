@@ -2,7 +2,6 @@ package models.notification;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,6 +12,7 @@ import models.person.Person;
 import play.libs.Json;
 import utilities.Server;
 import utilities.enums.Notification_Type;
+import utilities.swagger.outboundClass.Swagger_Notification_Element;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -46,7 +46,7 @@ public class Notification extends Model {
 /* BODY NOTIFICATION SEGMENTS ------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
-    List<Notification_Element> array = new ArrayList<>();
+    List<Swagger_Notification_Element> array = new ArrayList<>();
 
     @JsonIgnore
     public  Notification(NotificationController.Notification_level level, Person person){
@@ -69,7 +69,7 @@ public class Notification extends Model {
     @JsonIgnore @Transient
     public Notification setText(String message){
 
-        Notification_Element element = new Notification_Element();
+        Swagger_Notification_Element element = new Swagger_Notification_Element();
         element.type     = Notification_Type.text;
         element.value    = message;
 
@@ -80,7 +80,7 @@ public class Notification extends Model {
     @JsonIgnore @Transient
     public Notification setBoldText(String message){
 
-        Notification_Element element = new Notification_Element();
+        Swagger_Notification_Element element = new Swagger_Notification_Element();
         element.type     = Notification_Type.bold_text;
         element.value    = message;
 
@@ -91,7 +91,7 @@ public class Notification extends Model {
     @JsonIgnore @Transient
     public Notification setObject(Class object , String id , String label){
 
-        Notification_Element element = new Notification_Element();
+        Swagger_Notification_Element element = new Swagger_Notification_Element();
         element.type     = Notification_Type.object;
         element.value    = object.getSimpleName().replaceAll("Swagger_","");
         element.id       = id;
@@ -104,7 +104,7 @@ public class Notification extends Model {
     @JsonIgnore @Transient
     public Notification setLink_ToTyrion(String label, String url){
 
-        Notification_Element element = new Notification_Element();
+        Swagger_Notification_Element element = new Swagger_Notification_Element();
         element.type     = Notification_Type.confirmation;
         element.url = url;
         element.label = label;
@@ -117,7 +117,7 @@ public class Notification extends Model {
     public Notification required(){
         confirmation_required = true;
 
-        Notification_Element element = new Notification_Element();
+        Swagger_Notification_Element element = new Swagger_Notification_Element();
         element.type     = Notification_Type.confirmation;
         element.required = true;
         element.get_url     = Server.tyrion_serverAddress + "/notification/confirm/" + this.id;
@@ -140,14 +140,14 @@ public class Notification extends Model {
 
     @JsonProperty
     @ApiModelProperty(required = true)
-    public List<Notification_Element> notification_body(){
+    public List<Swagger_Notification_Element> notification_body(){
         try {
-                if(array == null || array.size() < 1) array = new ObjectMapper().readValue(content_string, new TypeReference<List<Notification_Element>>() {});
+                if(array == null || array.size() < 1) array = new ObjectMapper().readValue(content_string, new TypeReference<List<Swagger_Notification_Element>>() {});
                 return array;
 
         }catch (Exception e){
             logger.error("Parsing notification error", e);
-            return new ArrayList<Notification_Element>();   // Vracím prázdný list - ale reportuji chybu
+            return new ArrayList<Swagger_Notification_Element>();   // Vracím prázdný list - ale reportuji chybu
         }
 
     }
@@ -167,23 +167,5 @@ public class Notification extends Model {
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String,Notification> find = new Finder<>(Notification.class);
-
-    public class Notification_Element{
-
-        @ApiModelProperty(required =  true)    @Enumerated(EnumType.STRING) public Notification_Type type = null;
-        @ApiModelProperty(required =  true)                                 public boolean required = false;
-
-        @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public String get_url  = null;
-        @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public String url      = null;
-        @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public String label    = null;
-
-        @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public String value    = null;
-        @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public String id       = null;
-
-
-
-
-    }
-
 
 }
