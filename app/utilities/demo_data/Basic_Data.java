@@ -2,6 +2,9 @@ package utilities.demo_data;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import models.blocko.BlockoBlock;
+import models.blocko.BlockoBlockVersion;
+import models.blocko.TypeOfBlock;
 import models.compiler.*;
 import models.person.FloatingPersonToken;
 import models.person.Person;
@@ -29,17 +32,21 @@ import java.util.UUID;
 
 public class Basic_Data {
 
-
-
-
     public static void  set_default_objects(){
-
 
         if(Producer.find.where().eq("name", "Byzance ltd").findUnique() != null ) {
             System.err.println("Defaultní Objekty jsou nastavené - nelze provést znovu");
             return;
         }
 
+        set_default_object_PRODUCER_AND_BOARDS();
+        set_default_object_EXTERNAL_SERVERS();
+        set_default_object_BLOCKO();
+
+    }
+
+
+    public static void set_default_object_PRODUCER_AND_BOARDS() {
         // Nastavím Producer
         Producer producer    = new Producer();
         producer.name        = "Byzance ltd";
@@ -111,36 +118,21 @@ public class Basic_Data {
         typeOfBoard_4.producer = producer;
         typeOfBoard_4.connectible_to_internet = false;
         typeOfBoard_4.save();
+    }
 
 
+    public static void set_default_object_EXTERNAL_SERVERS(){
 
-
-        /*
-        Board board_yoda_5 = new Board();
-        board_yoda_5.id = "XXXXXXxXXXXXXXXXXX";
-        board_yoda_5.personal_description = "Davidův Yoda";
-        board_yoda_5.type_of_board = typeOfBoard_1;
-        board_yoda_5.date_of_create = new Date();
-        board_yoda_5.save();
-        */
-
-
-        // Nastavím základní skupinu bločků
-
-
-        // Nastavím první bločky
-
-
-       // Nasstavím Homer servery
+        // Nasstavím Homer servery
         Cloud_Homer_Server cloud_server_1 = new Cloud_Homer_Server();
         cloud_server_1.server_name = "Alfa";
-        cloud_server_1.destination_address = Server.tyrion_webSocketAddress + "/websocket/compilation_server/" + cloud_server_1.server_name;
+        cloud_server_1.destination_address = Server.tyrion_webSocketAddress + "/websocket/homer_server/" + cloud_server_1.server_name;
         cloud_server_1.set_hash_certificate();
         cloud_server_1.save();
 
         Cloud_Homer_Server cloud_server_2 = new Cloud_Homer_Server();
         cloud_server_2.server_name = "Beta";
-        cloud_server_2.destination_address = Server.tyrion_webSocketAddress + "/websocket/compilation_server/" + cloud_server_2.server_name;
+        cloud_server_2.destination_address = Server.tyrion_webSocketAddress + "/websocket/homer_server/" + cloud_server_2.server_name;
         cloud_server_2.set_hash_certificate();
 
         // Nastavím kompilační servery
@@ -156,10 +148,318 @@ public class Basic_Data {
         compilation_server_2.set_hash_certificate();
         compilation_server_2.save();
 
+    }
+
+    public static void set_default_object_BLOCKO(){
+
+        TypeOfBlock typeOfBlock_1 = new TypeOfBlock();
+            typeOfBlock_1.name =  "Social Sites Blocks";
+            typeOfBlock_1.general_description = "Sociální bločky pro Facebook, Twitter a další";
+            typeOfBlock_1.save();
+
+        TypeOfBlock typeOfBlock_2 = new TypeOfBlock();
+            typeOfBlock_2.name =  "Logic Blocks";
+            typeOfBlock_2.general_description = "Základní logické bločky na principu booleovy algebry";
+            typeOfBlock_2.save();
+
+        TypeOfBlock typeOfBlock_3 = new TypeOfBlock();
+            typeOfBlock_3.name =  "Api Blocks";
+            typeOfBlock_3.general_description = "Bločky pro Externí API";
+            typeOfBlock_3.save();
+
+        TypeOfBlock typeOfBlock_4 = new TypeOfBlock();
+            typeOfBlock_4.name =  "Times Blocks";
+            typeOfBlock_4.general_description = "Bločky s časovou konstantou";
+            typeOfBlock_4.save();
+
+
+        //**************************************************************************************************************
+
+
+        //1
+        BlockoBlock blockoBlock_1_1 = new BlockoBlock();
+            blockoBlock_1_1.producer = Producer.find.where().eq("name", "Byzance ltd").findUnique();
+            blockoBlock_1_1.name = "Facebook Post";
+            blockoBlock_1_1.general_description = "m.n,a sldjkfbnlskjd bjsdnf jkbsjndafio bjkvc,mxnymf můiwljhkn bfm,mn.adsjlůxkbcvnymn klnaf m,mnbjlů§k nbasldfb,n jkl.lkn nmsgl,můfjk br,mn.fl kbmfkllykbv vkůljmyn,d.mckůlxůklxbvnm,dsf m.ylp§foigkljsadůjfndmsvoija kdsfvůljnkjb fkljgfbvclasgfbnlfagkbkcnlsgkfklndgdk an dsja";
+            blockoBlock_1_1.type_of_block = typeOfBlock_1;
+        blockoBlock_1_1.save();
+
+        BlockoBlock blockoBlock_1_2 = new BlockoBlock();
+            blockoBlock_1_2.producer = Producer.find.where().eq("name", "Byzance ltd").findUnique();
+            blockoBlock_1_2.name = "Twitter tweet";
+            blockoBlock_1_2.general_description = "Lorem ipsum di lasjdhflkj dshaflj  sadfsdfas dfsadf sad gsfgsdf sadfsd fas";
+            blockoBlock_1_2.type_of_block = typeOfBlock_1;
+        blockoBlock_1_2.save();
+
+        BlockoBlock blockoBlock_1_3 = new BlockoBlock();
+            blockoBlock_1_3.producer = Producer.find.where().eq("name", "Byzance ltd").findUnique();
+            blockoBlock_1_3.name = "Google+";
+            blockoBlock_1_3.general_description = "Google+ Function dsafkjb bjbsadlkjbf kblasdf adsf";
+            blockoBlock_1_3.type_of_block = typeOfBlock_1;
+        blockoBlock_1_3.save();
+
+
+        //2
+        BlockoBlock blockoBlock_2_1 = new BlockoBlock();
+            blockoBlock_2_1.producer = Producer.find.where().eq("name", "Byzance ltd").findUnique();
+            blockoBlock_2_1.name = "OR";
+            blockoBlock_2_1.general_description = "Logic function OR";
+            blockoBlock_2_1.type_of_block = typeOfBlock_2;
+        blockoBlock_2_1.save();
+
+        BlockoBlock blockoBlock_2_2 = new BlockoBlock();
+            blockoBlock_2_2.producer = Producer.find.where().eq("name", "Byzance ltd").findUnique();
+            blockoBlock_2_2.name = "AND";
+            blockoBlock_2_2.general_description = "Logic function AND";
+            blockoBlock_2_2.type_of_block = typeOfBlock_2;
+        blockoBlock_2_2.save();
+
+        BlockoBlock blockoBlock_2_3 = new BlockoBlock();
+            blockoBlock_2_3.producer = Producer.find.where().eq("name", "Byzance ltd").findUnique();
+            blockoBlock_2_3.name = "XOR";
+            blockoBlock_2_3.general_description = "Logic function AND";
+            blockoBlock_2_3.type_of_block = typeOfBlock_2;
+        blockoBlock_2_3.save();
+
+
+        //3
+        BlockoBlock blockoBlock_3_1 = new BlockoBlock();
+            blockoBlock_3_1.producer = Producer.find.where().eq("name", "Byzance ltd").findUnique();
+            blockoBlock_3_1.name = "POST";
+            blockoBlock_3_1.general_description = "Basic REST-API REQUEST POST";
+            blockoBlock_3_1.type_of_block = typeOfBlock_3;
+        blockoBlock_3_1.save();
+
+        BlockoBlock blockoBlock_3_2 = new BlockoBlock();
+            blockoBlock_3_2.producer = Producer.find.where().eq("name", "Byzance ltd").findUnique();
+            blockoBlock_3_2.name = "GET";
+            blockoBlock_3_1.general_description = "Basic REST-API REQUEST GET";
+            blockoBlock_3_2.type_of_block = typeOfBlock_3;
+        blockoBlock_3_2.save();
+
+        BlockoBlock blockoBlock_3_3 = new BlockoBlock();
+            blockoBlock_3_3.producer = Producer.find.where().eq("name", "Byzance ltd").findUnique();
+            blockoBlock_3_3.name = "PUT";
+            blockoBlock_3_1.general_description = "Basic REST-API REQUEST PUT";
+            blockoBlock_3_3.type_of_block = typeOfBlock_3;
+        blockoBlock_3_3.save();
+
+        BlockoBlock blockoBlock_3_4 = new BlockoBlock();
+            blockoBlock_3_4.producer = Producer.find.where().eq("name", "Byzance ltd").findUnique();
+            blockoBlock_3_4.name = "DELETE";
+            blockoBlock_3_1.general_description = "Basic REST-API REQUEST DELETE";
+            blockoBlock_3_4.type_of_block = typeOfBlock_3;
+        blockoBlock_3_4.save();
+
+
+        //**************************************************************************************************************
+
+
+        // 1_1
+        BlockoBlockVersion version_1_1_1 = new BlockoBlockVersion();
+            version_1_1_1.blocko_block = blockoBlock_1_1;
+            version_1_1_1.date_of_create = new Date();
+            version_1_1_1.logic_json = "{}";
+            version_1_1_1.version_description = "První update";
+            version_1_1_1.version_name = "1.0.1";
+        version_1_1_1.save();
+
+        BlockoBlockVersion version_1_1_2 = new BlockoBlockVersion();
+            version_1_1_2.blocko_block = blockoBlock_1_1;
+            version_1_1_2.date_of_create = new Date();
+            version_1_1_2.logic_json = "{}";
+            version_1_1_2.version_description = "První update";
+            version_1_1_2.version_name = "1.0.1";
+        version_1_1_2.save();
+
+        // 1_2
+        BlockoBlockVersion version_1_2_1 = new BlockoBlockVersion();
+            version_1_2_1.blocko_block = blockoBlock_1_2;
+            version_1_2_1.date_of_create = new Date();
+            version_1_2_1.logic_json = "{}";
+            version_1_2_1.version_description = "První update";
+            version_1_2_1.version_name = "1.0.1";
+        version_1_2_1.save();
+
+        BlockoBlockVersion version_1_2_2 = new BlockoBlockVersion();
+            version_1_2_2.blocko_block = blockoBlock_1_2;
+            version_1_2_2.date_of_create = new Date();
+            version_1_2_2.logic_json = "{}";
+            version_1_2_2.version_description = "První update";
+            version_1_2_2.version_name = "1.0.1";
+        version_1_2_2.save();
+
+        // 1_3
+        BlockoBlockVersion version_1_3_1 = new BlockoBlockVersion();
+            version_1_3_1.blocko_block = blockoBlock_1_3;
+            version_1_3_1.date_of_create = new Date();
+            version_1_3_1.logic_json = "{}";
+            version_1_3_1.version_description = "První update";
+            version_1_3_1.version_name = "1.0.1";
+        version_1_3_1.save();
+
+        BlockoBlockVersion version_1_3_2 = new BlockoBlockVersion();
+            version_1_3_2.blocko_block = blockoBlock_1_3;
+            version_1_3_2.date_of_create = new Date();
+            version_1_3_2.logic_json = "{}";
+            version_1_3_2.version_description = "První update";
+            version_1_3_2.version_name = "1.0.1";
+        version_1_3_2.save();
+
+        // 2_1
+        BlockoBlockVersion version_2_1_1 = new BlockoBlockVersion();
+        version_2_1_1.blocko_block = blockoBlock_2_1;
+            version_2_1_1.date_of_create = new Date();
+            version_2_1_1.logic_json = "{}";
+            version_2_1_1.version_description = "První update";
+            version_2_1_1.version_name = "1.0.1";
+        version_2_1_1.save();
+
+        BlockoBlockVersion version_2_1_2 = new BlockoBlockVersion();
+            version_2_1_1.blocko_block = blockoBlock_2_1;
+            version_2_1_1.date_of_create = new Date();
+            version_2_1_1.logic_json = "{}";
+            version_2_1_1.version_description = "Prvnsafd -a.kshm fn.,mbs gjknbm akdfsm,.cxy ndfam,nkvxclůavcx namxyklnvdfsam ,cvklůdfsmv.lyům ,klnvyůmc,.í update";
+            version_2_1_1.version_name = "1.0.2";
+        version_2_1_2.save();
+
+        // 2_2
+        BlockoBlockVersion version_2_2_1 = new BlockoBlockVersion();
+            version_2_2_1.blocko_block = blockoBlock_2_2;
+            version_2_2_1.date_of_create = new Date();
+            version_2_2_1.logic_json = "{}";
+            version_2_2_1.version_description = "První update";
+            version_2_2_1.version_name = "1.0.1";
+        version_2_2_1.save();
+
+        BlockoBlockVersion version_2_2_2 = new BlockoBlockVersion();
+            version_2_2_2.blocko_block = blockoBlock_2_2;
+            version_2_2_2.date_of_create = new Date();
+            version_2_2_2.logic_json = "{}";
+            version_2_2_2.version_description = "Druhý update";
+            version_2_2_2.version_name = "1.0.2";
+        version_2_2_2.save();
+
+        BlockoBlockVersion version_2_2_3= new BlockoBlockVersion();
+            version_2_2_3.blocko_block = blockoBlock_2_2;
+            version_2_2_3.date_of_create = new Date();
+            version_2_2_3.logic_json = "{}";
+            version_2_2_3.version_description = "Třetí update";
+            version_2_2_3.version_name = "1.0.3";
+        version_2_2_3.save();
+
+        BlockoBlockVersion version_2_2_4 = new BlockoBlockVersion();
+            version_2_2_4.blocko_block = blockoBlock_2_2;
+            version_2_2_4.date_of_create = new Date();
+            version_2_2_4.logic_json = "{}";
+            version_2_2_4.version_description = "Čtvrtý  update";
+            version_2_2_4.version_name = "1.0.4";
+        version_2_2_4.save();
+
+        // 2_3
+        BlockoBlockVersion version_2_3_1 = new BlockoBlockVersion();
+            version_2_3_1.blocko_block = blockoBlock_2_3;
+            version_2_3_1.date_of_create = new Date();
+            version_2_3_1.logic_json = "{}";
+            version_2_3_1.version_description = "První update";
+            version_2_3_1.version_name = "Na poprvé";
+
+        BlockoBlockVersion version_2_3_2 = new BlockoBlockVersion();
+            version_2_3_2.blocko_block = blockoBlock_2_3;
+            version_2_3_2.date_of_create = new Date();
+            version_2_3_2.logic_json = "{}";
+            version_2_3_2.version_description = "První update";
+            version_2_3_2.version_name = "Na podruhé";
+        version_2_3_2.save();
+
+
+        // 3_1
+        BlockoBlockVersion version_3_1_1 = new BlockoBlockVersion();
+            version_3_1_1.blocko_block = blockoBlock_3_1;
+            version_3_1_1.date_of_create = new Date();
+            version_3_1_1.logic_json = "{}";
+            version_3_1_1.version_description = "První update";
+            version_3_1_1.version_name = "Verze 1";
+        version_3_1_1.save();
+
+        BlockoBlockVersion version_3_1_2 = new BlockoBlockVersion();
+            version_3_1_2.blocko_block = blockoBlock_3_1;
+            version_3_1_2.date_of_create = new Date();
+            version_3_1_2.logic_json = "{}";
+            version_3_1_2.version_description = "Druhý velkopeý asdklbfj aslaksbdfjlkbalskbdf lkjbafs lkjbafslbkjafslkjba sdflkbjasf update";
+            version_3_1_2.version_name = "Verze 2";
+        version_3_1_2.save();
+
+        // 3_2
+        BlockoBlockVersion version_3_2_1 = new BlockoBlockVersion();
+            version_3_2_1.blocko_block = blockoBlock_3_2;
+            version_3_2_1.date_of_create = new Date();
+            version_3_2_1.logic_json = "{}";
+            version_3_2_1.version_description = "První update";
+            version_3_2_1.version_name = "1.0.1";
+        version_3_2_1.save();
+
+        BlockoBlockVersion version_3_2_2 = new BlockoBlockVersion();
+            version_3_2_2.blocko_block = blockoBlock_3_2;
+            version_3_2_2.date_of_create = new Date();
+            version_3_2_2.logic_json = "{}";
+            version_3_2_2.version_description = "První update";
+            version_3_2_2.version_name = "1.0.2";
+        version_3_2_2.save();
+
+        BlockoBlockVersion version_3_2_3 = new BlockoBlockVersion();
+            version_3_2_3.blocko_block = blockoBlock_3_2;
+            version_3_2_3.date_of_create = new Date();
+            version_3_2_3.logic_json = "{}";
+            version_3_2_3.version_description = "První update";
+            version_3_2_3.version_name = "1.1.3";
+        version_3_2_3.save();
+
+        // 3_3
+        BlockoBlockVersion version_3_3_1 = new BlockoBlockVersion();
+            version_3_3_1.blocko_block = blockoBlock_3_3;
+            version_3_3_1.date_of_create = new Date();
+            version_3_3_1.logic_json = "{}";
+            version_3_3_1.version_description = "První update";
+            version_3_3_1.version_name = "1.0.1";
+        version_3_3_1.save();
+
+        BlockoBlockVersion version_3_3_2 = new BlockoBlockVersion();
+            version_3_3_2.blocko_block = blockoBlock_3_3;
+            version_3_3_2.date_of_create = new Date();
+            version_3_3_2.logic_json = "{}";
+            version_3_3_2.version_description = "Druhý update";
+            version_3_3_2.version_name = "1.0.2";
+        version_3_3_2.save();
+
+        // 3_4
+        BlockoBlockVersion version_3_4_1 = new BlockoBlockVersion();
+            version_3_4_1.blocko_block = blockoBlock_3_4;
+            version_3_4_1.date_of_create = new Date();
+            version_3_4_1.logic_json = "{}";
+            version_3_4_1.version_description = "První update";
+            version_3_4_1.version_name = "1.0.1";
+            version_3_4_1.save();
+
+        BlockoBlockVersion version_3_4_2 = new BlockoBlockVersion();
+            version_3_4_2.blocko_block = blockoBlock_3_4;
+            version_3_4_2.date_of_create = new Date();
+            version_3_4_2.logic_json = "{}";
+            version_3_4_2.version_description = "Druhý update";
+            version_3_4_2.version_name = "1.0.2";
+        version_3_4_2.save();
+
 
     }
 
 
+
+    public static void set_default_object_NECO(){
+
+
+
+
+    }
 
     public static void set_basic_demo_data(){
 

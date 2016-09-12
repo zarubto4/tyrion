@@ -39,6 +39,7 @@ public class NotificationController extends Controller {
   static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
     public enum Notification_level {
+      // TODO - VY5ADIT VEN OBDOBNĚ JAKO JSOU UDĚLANÉ V UTILITIES/ENUM OSTATNÍ OBJEKTY
       info,
       success,
       warning,

@@ -3,7 +3,8 @@
 @import models.person.Person
 @import models.project.b_program.B_Program
 @import models.project.b_program.Homer_Instance
-@import models.project.b_program.Homer_Instance.TypeOfCommand
+@import utilities.enums.TypeOfCommand
+@import utilities.enums.FirmwareType
 @import models.compiler.Board
 @import utilities.Server
 @import utilities.webSocket.{WS_Homer_Cloud, WebSCType}
@@ -277,17 +278,33 @@
                         </tr>
 
                         <tr>
-                            <td><button type="button" class="commandButton btn btn-primary   btn-sm"  onclick="executeCommand(  this.value ,'@TypeOfCommand.INFO_FIRMWARE.get_command')"> Get Firmware Version </button></td>
-                            <td><button  type="button" class="commandButton btn btn-default   btn-sm"  > Get Device Info </button></td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <button type="button" class="commandButton btn btn-primary   btn-sm"  onclick="executeCommand(  this.value ,'@TypeOfCommand.INFO_FIRMWARE.get_command')"> Get Firmware Version </button>
+                            </td>
+                            <td>
+                                <button  type="button" class="commandButton btn btn-default   btn-sm"  > Get Device Info </button>
+                            </td>
+                            <td>
+
+                            </td>
+                            <td>
+                                <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="showUploadModal(  this.value,'@FirmwareType.FIRMWARE_YODA_FIRMWARE.get_firmwareType()')"> Uploud Firmware</button>
+                            </td>
                         </tr>
 
                         <tr>
-                            <td><button type="button" class="commandButton btn btn-primary   btn-sm"  onclick="executeCommand( this.value ,'@TypeOfCommand.INFO_BOOTLOADER.get_command')"> Get Bootloader Info </button></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <button type="button" class="commandButton btn btn-primary   btn-sm"  onclick="executeCommand( this.value ,'@TypeOfCommand.INFO_BOOTLOADER.get_command')"> Get Bootloader Info </button>
+                            </td>
+                            <td>
+
+                            </td>
+                            <td>
+
+                            </td>
+                            <td>
+                                <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="showUploadModal(  this.value,'@FirmwareType.FIRMWARE_YODA_BOOTLOADER.get_firmwareType()')">Uploud Bootloader</button>
+                            </td>
                         </tr>
 
                         <tr>
@@ -321,16 +338,94 @@
             </div>
         </div>
     </div>
+</div>
+
+
+    <div id="uploadFileModal" style="display: none;" class="modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Uploud Bin File To device</h4>
+                </div>
+
+                <div class="modal-body">
+
+                    <form id="uploadFileForm" enctype="multipart/form-data" role="form">
+
+
+                        <b> Device ID:</b> <label id="deviceId_uploadFileModal" style="display: block"></label>
+                        <b> Command:</b>   <label id="command_uploadFileModal"  style="display: block"></label>
+
+                        <div class="modal-body">
+                            <input type="file" id="file" name="file" />
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#uploadFileModal').css('display','none')">Close</button>
+                            <button id="uploudFileButton" value="" class="btn btn-primary" type="button" onclick="uploadFile( $('#deviceId_uploadFileModal').text(), $('#command_uploadFileModal').text())">Uploud</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+         </div>
+     </div>
+
+
+
 
     <script>
 
             function showCommandDeviceModal(id, deviceType){
                 $("#commandDeviceModal").css("display","block");
-                $('#deviceId').text("Device iD = " + id);
+                $('#deviceId').text("Device ID = " + id);
                 $('.commandButton').val(id);
-                $('#deviceType').text("deviceType = " + deviceType);
+                $('#deviceType').text("Device Type = " + deviceType);
             }
 
+    </script>
+
+    <script>
+
+        function showUploadModal(target_id, command){
+
+            console.log("Command: " + command );
+            console.log("target_id: " + target_id );
+
+            $("#uploadFileModal").css("display","block");
+            $('#deviceId_uploadFileModal').text(target_id);
+            $('#uploudFileButton').val(target_id);
+            $('#command_uploadFileModal').text(command);
+        }
+
+        function uploadFile(target_id, firmwareType){
+
+            event.preventDefault();
+
+            var file = $('#file').get(0).files[0];
+            var formData = new FormData();
+            formData.append('file', file);
+
+            $.ajax({
+
+                url: "@Server.tyrion_serverAddress" + "/compilation/c_program/binary/"+ target_id + "/" +  firmwareType ,
+                type: 'POST',
+                processData: false,  // tell jQuery not to process the data
+                contentType: false,  // tell jQuery not to set contentType
+                data : formData,
+
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken"),
+                },
+
+                success:function(data, status){
+                    console.log("úspěch");
+                    console.log(status);
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    alert(textStatus + ': ' + errorThrown);
+                }
+
+            })
+        }
     </script>
 
 
@@ -409,7 +504,7 @@
             }
     </script>
 
-</div>
+
 
 
 <div id="addMasterDeviceModal" style="display: none;" class="modal">

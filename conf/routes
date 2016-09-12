@@ -299,7 +299,7 @@ PUT             /compilation/c_program/version/compile/:version_id              
 
 #Actualization
 PUT             /compilation/c_program/version/upload/:version_id                           @controllers.CompilationLibrariesController.uploadCompilationToBoard(version_id)
-POST            /compilation/c_program/binary/:board_id                                     @controllers.CompilationLibrariesController.uploadBinaryFileToBoard(board_id)
+POST            /compilation/c_program/binary/:board_id/:command                            @controllers.CompilationLibrariesController.uploadBinaryFileToBoard(board_id, command)
 
 
 #Processor

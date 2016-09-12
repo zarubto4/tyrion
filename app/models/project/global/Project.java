@@ -65,16 +65,7 @@ public class Project extends Model {
     @JsonProperty @Transient @ApiModelProperty(required = true) public String product_individual_name() { return product.product_individual_name;}
     @JsonProperty @Transient @ApiModelProperty(required = true) public Long   product_id() { return product.id;}
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public String tier_name() {
-
-        try {
-            return product.product_type();
-        }catch (Exception e){
-            e.printStackTrace();
-            return "bla bla";
-        }
-
-    }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public String tier_name() {return product.product_type();}
 
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public Integer errors() { return 0;}

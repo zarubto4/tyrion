@@ -1,7 +1,6 @@
 package models.project.global;
 
 import com.avaje.ebean.Model;
-import com.avaje.ebean.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -72,9 +71,6 @@ public class Product extends Model {
    @JsonProperty
    @Transient  @ApiModelProperty(required = true, readOnly = true)
    public String product_type(){
-
-       System.out.println("Type" + type);
-
        switch ( type.toString() ) {
            case "alpha":       {return  "Alpha - Temporal limitation";}
            case "free":        {return  "Free Account ";}

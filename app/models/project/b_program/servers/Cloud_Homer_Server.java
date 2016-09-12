@@ -24,8 +24,8 @@ public class Cloud_Homer_Server extends Model{
                                        @JsonIgnore              public String unique_identificator;
                                        @JsonIgnore              public String hash_certificate;
 
-                                                                public String server_name;
-                                                                public String destination_address;
+                                       @Column(unique=true)     public String server_name;
+                                       @Column(unique=true)     public String destination_address;
 
                                                                 public boolean is_private = false;  // Todo navázat na produkt
 

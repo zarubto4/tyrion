@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
-import utilities.swagger.documentationClass.Swagger_Object_detail;
+import models.blocko.BlockoBlock;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -22,12 +22,12 @@ public class Producer extends Model {
                      @Column(columnDefinition = "TEXT")     @ApiModelProperty(required = true)  public String description;
 
     @JsonIgnore @OneToMany(mappedBy="producer", cascade = CascadeType.ALL) public List<TypeOfBoard> type_of_boards = new ArrayList<>();
-
+    @JsonIgnore @OneToMany(mappedBy="producer", cascade = CascadeType.ALL) public List<BlockoBlock> blocko_blocks = new ArrayList<>();
 
 
 /* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public  List<Swagger_Object_detail> type_of_boards()   { List<Swagger_Object_detail> l = new ArrayList<>();  for( TypeOfBoard m  : type_of_boards)   l.add(new Swagger_Object_detail(m.name, m.id)); return l;  }
+   // @JsonProperty @Transient @ApiModelProperty(required = true) public  List<Swagger_Object_detail> type_of_boards()   { List<Swagger_Object_detail> l = new ArrayList<>();  for( TypeOfBoard m  : type_of_boards)   l.add(new Swagger_Object_detail(m.name, m.id)); return l;  }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 

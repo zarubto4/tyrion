@@ -758,7 +758,7 @@
                         };
 
                         jQuery.extend($.valHooks, {
-                            text: {
+                            textContenttext: {
                                 get: function (elem) {
                                     var $elem = $(elem);
                                     if ($elem.data('_inputmask')) {

@@ -35,7 +35,7 @@ public class SendMessage{
     }
 
     public void insert_result(ObjectNode result) {
-        logger.debug("Incoming result:" + result.toString());
+     //   logger.debug("Incoming result:" + result.toString());
         future.cancel(true);
         this.result = result;
     }
@@ -45,7 +45,7 @@ public class SendMessage{
         try {
             return future.get(time * number_of_retries + 250, TimeUnit.MILLISECONDS);
         }catch (CancellationException e){
-            logger.debug("Došlo k přerušení příchozí zprávou - vracím výsledek: " + result.toString());
+            //logger.debug("Došlo k přerušení příchozí zprávou - vracím výsledek: " + result.toString());
             return result;
         }
     }
@@ -61,7 +61,7 @@ public class SendMessage{
                 while (number_of_retries >= 0) {
 
                     if(json != null) {
-                        logger.debug("Sending message");
+                      //  logger.debug("Sending message");
                         webSCType.out.write(json.toString());
                         --number_of_retries;
 
@@ -71,7 +71,7 @@ public class SendMessage{
                             return result;
                         }
                     }else {
-                        logger.debug("Nothing for sending - just waiting for result");
+                       // logger.debug("Nothing for sending - just waiting for result");
                     }
 
                     Thread.sleep(time);

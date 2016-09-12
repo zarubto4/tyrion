@@ -170,8 +170,8 @@ public class Notification extends Model {
 
     public class Notification_Element{
 
-        @ApiModelProperty(required =  true)    public Notification_Type type = null;
-        @ApiModelProperty(required =  true)    public boolean required = false;
+        @ApiModelProperty(required =  true)    @Enumerated(EnumType.STRING) public Notification_Type type = null;
+        @ApiModelProperty(required =  true)                                 public boolean required = false;
 
         @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public String get_url  = null;
         @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public String url      = null;
@@ -179,6 +179,9 @@ public class Notification extends Model {
 
         @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public String value    = null;
         @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public String id       = null;
+
+
+
 
     }
 

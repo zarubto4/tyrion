@@ -7,6 +7,7 @@ import models.compiler.FileRecord;
 import models.project.b_program.Homer_Instance;
 import models.project.c_program.actualization.Actualization_procedure;
 import models.project.c_program.actualization.C_Program_Update_Plan;
+import utilities.enums.FirmwareType;
 import utilities.hardware_updater.States.C_ProgramUpdater_State;
 import utilities.webSocket.WS_BlockoServer;
 import utilities.webSocket.WebSCType;
@@ -95,7 +96,7 @@ public class Master_Updater{
 
            Map<String, String> files_codes = new HashMap<>(); // < c_program_version_id, code of program >
 
-        logger.debug("Master Updater: actualization_update_procedure or " + ( procedure.id == null ? "virtual procedure" : ("real procedure" + procedure.id) ) );
+           logger.debug("Master Updater: actualization_update_procedure -> " + ( procedure.id == null ? "virtual procedure " : ("real procedure ID: " + procedure.id) ) );
 
            for (C_Program_Update_Plan plan : procedure.updates) {
                try {
@@ -103,6 +104,7 @@ public class Master_Updater{
                // Desku kterou chci updatovat
 
                Board board  = plan.board;
+               FirmwareType firmware_type = plan.firmware_type;
                String id    = plan.c_program_version_for_update != null ? plan.c_program_version_for_update.id : ( plan.binary_file.file_name + "_" + plan.binary_file.id);
                WS_BlockoServer server = null;
                WebSCType actual_homer = null;
@@ -111,8 +113,8 @@ public class Master_Updater{
                //1
                Homer_Instance homer_instance = Homer_Instance.find.where()
                        .disjunction()
-                           .add(Expr.eq("version_object.yoda_board_pair.board.id", board.id))
-                           .add(Expr.eq("version_object.padavan_board_pairs.board.id", board.id))
+                           .add(Expr.eq("version_object.b_program_hw_groups.main_board_pair.board.id", board.id))
+                           .add(Expr.eq("version_object.b_program_hw_groups.device_board_pairs.board.id", board.id))
                            .add(Expr.eq("private_instance_board.id", board.id))
                        .findUnique();
 
@@ -203,6 +205,7 @@ public class Master_Updater{
                    task.homer = actual_homer;
                    task.code = files_codes.get(id);
                    task.board = board;
+                   task.firmware_type = firmware_type;
 
                    plan.state = C_ProgramUpdater_State.in_progress;
                    plan.update();

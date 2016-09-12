@@ -15,13 +15,11 @@ public class Cloud_Compilation_Server extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    @ApiModelProperty(required = true)                          public String id;
-    @ApiModelProperty(required = true)                          public String server_name;
-                            @JsonIgnore                         public String unique_identificator;
-                            @JsonIgnore                         public String hash_certificate;
-    @ApiModelProperty(required = true)                          public String destination_address;
+    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  @ApiModelProperty(required = true)     public String id;
+                                        @Column(unique=true) @ApiModelProperty(required = true)     public String server_name;
+                                        @Column(unique=true) @JsonIgnore                            public String unique_identificator;
+                                                             @JsonIgnore                            public String hash_certificate;
+                                        @Column(unique=true) @ApiModelProperty(required = true)     public String destination_address;
 
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/

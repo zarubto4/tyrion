@@ -33,6 +33,7 @@ import play.mvc.Security;
 import utilities.Server;
 import utilities.UtilTools;
 import utilities.emails.EmailTool;
+import utilities.enums.TypeOfCommand;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_API;
 import utilities.response.GlobalResult;
@@ -1975,7 +1976,7 @@ public class ProgramingPackageController extends Controller {
             if (board == null) return GlobalResult.notFoundObject("Board targetId not found");
 
 
-            Homer_Instance.TypeOfCommand command = Homer_Instance.TypeOfCommand.getTypeCommand(string_command);
+            TypeOfCommand command = TypeOfCommand.getTypeCommand(string_command);
             if(command == null) return GlobalResult.notFoundObject("Command not found!");
 
             if(!homer_instance.is_online()) return GlobalResult.result_BadRequest("Instance is offline");

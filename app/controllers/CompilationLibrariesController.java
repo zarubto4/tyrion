@@ -21,6 +21,7 @@ import play.libs.ws.WSResponse;
 import play.mvc.*;
 import utilities.Server;
 import utilities.UtilTools;
+import utilities.enums.FirmwareType;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_API;
 import utilities.response.GlobalResult;
@@ -950,8 +951,10 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result uploadBinaryFileToBoard(@ApiParam(value = "version_id ", required = true) String board_id ) {
+    public Result uploadBinaryFileToBoard(@ApiParam(value = "version_id ", required = true) String board_id, @ApiParam(value = "version_id ", required = true) String firmware_type_string) {
         try{
+
+            System.out.println("Body " + request().body().asText() );
 
             // Vyhledání objektů
             Board board = Board.find.byId(board_id);
@@ -959,24 +962,32 @@ public class CompilationLibrariesController extends Controller {
 
             if(!board.update_permission())  return GlobalResult.forbidden_Permission();
 
+            FirmwareType firmware_type = FirmwareType.getFirmwareType(firmware_type_string);
+            if(firmware_type == null) return GlobalResult.notFoundObject("FirmwareType not found!");
+
             // Přijmu soubor
             Http.MultipartFormData body = request().body().asMultipartFormData();
-            Http.MultipartFormData.FilePart file_from_request = body.getFile("file");
 
-            if (file_from_request == null) return GlobalResult.notFoundObject("Bin File not found!");
+            List<Http.MultipartFormData.FilePart> files_from_request = body.getFiles();
 
-            File file = file_from_request.getFile();
+            if (files_from_request == null || files_from_request.isEmpty()) return GlobalResult.notFoundObject("Bin File not found!");
+            if(files_from_request.size() > 1)return GlobalResult.result_BadRequest("More than one File is not allowed!");
 
-            int dot = file_from_request.getFilename().lastIndexOf(".");
-            String file_type = file_from_request.getFilename().substring(dot);
-            String file_name = file_from_request.getFilename().substring(0,dot);
+            File file = files_from_request.get(0).getFile();
+            if(file == null) return GlobalResult.result_BadRequest("File not found!");
+            if(file.length() < 1) return GlobalResult.result_BadRequest("File is Empty!");
+
+
+            int dot = files_from_request.get(0).getFilename().lastIndexOf(".");
+            String file_type = files_from_request.get(0).getFilename().substring(dot);
+            String file_name = files_from_request.get(0).getFilename().substring(0,dot);
 
             // Zkontroluji soubor
             if(!file_type.equals(".bin")) return GlobalResult.result_BadRequest("Wrong type of File - \"Bin\" required! ");
             if( (file.length() / 1024) > 500) return GlobalResult.result_BadRequest("File is bigger than 500K b");
 
             // Existuje Homer?
-            ActualizationController.add_new_actualization_request(board.project, board, file, file_from_request.getFilename());
+            ActualizationController.add_new_actualization_request(board.project, firmware_type, board, file, file_name);
 
             return GlobalResult.result_ok();
 
@@ -1067,7 +1078,7 @@ public class CompilationLibrariesController extends Controller {
             }
 
 
-            ActualizationController.add_new_actualization_request(c_program_version.c_program.project , board_for_update, c_program_version );
+            ActualizationController.add_new_actualization_request(c_program_version.c_program.project, board_for_update, c_program_version );
 
             // Vracím odpověď
             return GlobalResult.result_ok("Procedura byla spuštěna - uživatel bude informován!");
