@@ -82,13 +82,14 @@ public class Notification extends Model {
     }
 
     @JsonIgnore @Transient
-    public Notification setObject(Class object , String id , String label){
+    public Notification setObject(Class object , String id , String label, String project_id){
 
         Swagger_Notification_Element element = new Swagger_Notification_Element();
         element.type     = Notification_type.object;
         element.value    = object.getSimpleName().replaceAll("Swagger_","");
         element.id       = id;
         element.label    = label;
+        element.project_id = project_id;
 
         array.add(element);
         return this;
