@@ -109,12 +109,24 @@ public class Notification extends Model {
     @JsonIgnore @Transient
     public Notification confirmation_required(){
         this.confirmation_required = true;
-
         return this;
+    }
+
+
+    @Override
+    public void save(){
+        // Notifikace je automaticky uložena pomocí save_object()
+        logger.info("Notifikace je automaticky uložena pomocí save_object()");
+        try {
+            throw new Exception("Not supported! Notifications are saved automatically using save_object()");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @JsonIgnore @Transient
     public Notification save_object(){
+        // Uložím notifikaci a její obsah převedu do Stringu
         content_string = Json.toJson(array).toString();
         super.save();
         return this;
@@ -147,6 +159,12 @@ public class Notification extends Model {
         this.update();
     }
 
+    @JsonIgnore @Transient
+    public void confirm(){
+        this.confirmed = true;
+        this.update();
+    }
+
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient public boolean delete_permission(){return this.person.id.equals(SecurityController.getPerson().id);}
@@ -162,15 +180,14 @@ public class Notification extends Model {
         link,
         object,
         bold_text,
-        text,
+        text
     }
 
     public enum Notification_level {
         info,
         success,
         warning,
-        error,
-        question
+        error
     }
 
     public enum Notification_importance {

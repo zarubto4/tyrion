@@ -1530,7 +1530,7 @@ public class ProgramingPackageController extends Controller {
 
 
                     if(!  WebSocketController_Incoming.homer_online_state(private_homer_server.b_program_homer.blocko_instance_name) ) {
-                       NotificationController.unload_Instance_was_unsuccessfull( SecurityController.getPerson() , program_homer , "One of the components of the server is not available");
+                       NotificationController.unload_Instance_was_unsuccessful( SecurityController.getPerson() , program_homer , "One of the components of the server is not available");
                        this.interrupt();
                    }
 
@@ -1539,11 +1539,11 @@ public class ProgramingPackageController extends Controller {
                     if(result.get("status").asText().equals("success")){
                        NotificationController.upload_Instance_was_successful( SecurityController.getPerson() , program_homer);
                     } else {
-                       NotificationController.unload_Instance_was_unsuccessfull( SecurityController.getPerson() , program_homer , result.get("error").asText() );
+                       NotificationController.unload_Instance_was_unsuccessful( SecurityController.getPerson() , program_homer , result.get("error").asText() );
                     }
 
                 } catch (Exception e) {
-                    NotificationController.unload_of_Instance_was_unsuccessfull_with_error( SecurityController.getPerson() , version_object);
+                    NotificationController.unload_of_Instance_was_unsuccessful_with_error( SecurityController.getPerson() , version_object);
                 }
 
             }};

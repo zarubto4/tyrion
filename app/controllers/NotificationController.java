@@ -43,6 +43,11 @@ public class NotificationController extends Controller {
 
   private static void send_notification(Person person, Notification notification) {
 
+    // Pokud je notification_importance vyšší než "low" notifikaci uložím
+    if(!(notification.notification_importance == Notification.Notification_importance.low))
+      notification.save_object();
+
+    // Pokud je uživatel přihlášený pošlu notifikaci přes websocket
     if (WebSocketController_Incoming.becki_website.containsKey(person.id) ) {
       WebSocketController_Incoming.becki_sendNotification( (WS_Becki_Website) WebSocketController_Incoming.becki_website.get(person.id)  , notification );
     }
@@ -84,12 +89,11 @@ public class NotificationController extends Controller {
 
   public static void unsuccessful_compilation_error(Person person, Version_Object version_object, String result){
 
-    Notification notification = new Notification(Notification.Notification_importance.low, Notification.Notification_level.error, person)
+    Notification notification = new Notification(Notification.Notification_importance.normal, Notification.Notification_level.error, person)
                                       .setText( "Compilation on Version")
                                       .setObject(Swagger_B_Program_Version.class, version_object.id, version_object.version_name )
                                       .setText("with critical Error:")
-                                      .setBoldText(result)
-                                      .save_object();
+                                      .setBoldText(result);
 
     send_notification(person, notification);
   }
@@ -116,29 +120,27 @@ public class NotificationController extends Controller {
     send_notification(person, notification);
   }
 
-  public static void unload_Instance_was_unsuccessfull(Person person, Homer_Instance instance, String reason){
+  public static void unload_Instance_was_unsuccessful(Person person, Homer_Instance instance, String reason){
 
-    Notification notification = new Notification(Notification.Notification_importance.low, Notification.Notification_level.warning, person)
+    Notification notification = new Notification(Notification.Notification_importance.normal, Notification.Notification_level.warning, person)
                                     .setText("Server not upload instance to cloud on Blocko Version <b>" + instance.version_object.version_name + "</b> from Blocko program <b>" + instance.version_object.b_program.name + "</b> for <b> reason:\"" +  reason + "\" </b> ")
                                     .setObject(Swagger_B_Program_Version.class, instance.version_object.id, instance.version_object.version_name )
                                     .setText("from Blocko program")
                                     .setObject(B_Program.class, instance.version_object.b_program.id, instance.version_object.b_program.name )
-                                    .setText("Server will try to do that as soon as possible.")
-                                    .save_object();
+                                    .setText("Server will try to do that as soon as possible.");
 
     send_notification(person, notification);
 
   }
 
-  public static void unload_of_Instance_was_unsuccessfull_with_error(Person person, Version_Object version_object){
+  public static void unload_of_Instance_was_unsuccessful_with_error(Person person, Version_Object version_object){
 
-    Notification notification = new Notification(Notification.Notification_importance.low, Notification.Notification_level.error, person)
+    Notification notification = new Notification(Notification.Notification_importance.normal, Notification.Notification_level.error, person)
                                     .setText("Server not upload instance to cloud on Blocko Version")
                                     .setObject(Swagger_B_Program_Version_New.class, version_object.id, version_object.version_name )
                                     .setText("from Blocko program")
                                     .setObject(B_Program.class, version_object.b_program.id, version_object.b_program.name )
-                                    .setText("with Critical unknown Error, Probably some bug.")
-                                    .save_object();
+                                    .setText("with Critical unknown Error, Probably some bug.");
 
     send_notification(person, notification);
   }
@@ -197,7 +199,7 @@ public class NotificationController extends Controller {
       Notification notification = new Notification(Notification.Notification_importance.low, Notification.Notification_level.info, person)
               .setText("One of your Board " + (board.personal_description != null ? board.personal_description : null ))
               .setObject(Board.class, board.id, board.id)
-              .setText("connected");
+              .setText("is connected.");
 
       send_notification(person, notification);
 
@@ -208,7 +210,7 @@ public class NotificationController extends Controller {
     Notification notification = new Notification(Notification.Notification_importance.low, Notification.Notification_level.info, person)
             .setText("One of your Board " + (board.personal_description != null ? board.personal_description : null ))
             .setObject(Board.class, board.id, board.id)
-            .setText("disconnect");
+            .setText("is disconnected.");
 
     send_notification(person, notification);
 
@@ -221,13 +223,13 @@ public class NotificationController extends Controller {
             .setText("User")
             .setObject(Person.class, owner.id, owner.full_name)
             .setText("wants to invite you into the project ")
-            .setBoldText(project.project_name +".")
+            .setObject(Project.class, project.id, project.project_name)
+            .setText(".")
             .setText("Do you agree?")
             .setLink_ToTyrion("Yes", Server.tyrion_serverAddress + "/project/project/addParticipant/" + invitation.id + "/true")
             .setText(" / ")
             .setLink_ToTyrion("No", Server.tyrion_serverAddress + "/project/project/addParticipant/" + invitation.id + "/false")
-            .setText(".")
-            .save_object();
+            .setText(".");
 
     invitation.notification_id = notification.id;
     invitation.update();
@@ -243,8 +245,8 @@ public class NotificationController extends Controller {
             .setText("User ")
             .setObject(Person.class, person.id, person.full_name)
             .setText("did not accept your invitation to the project ")
-            .setBoldText(project.project_name +".")
-            .save_object();
+            .setObject(Project.class, project.id, project.project_name)
+            .setText(".");
 
     send_notification(owner,notification);
 
@@ -256,8 +258,8 @@ public class NotificationController extends Controller {
             .setText("User ")
             .setObject(Person.class, person.id, person.full_name)
             .setText("accepted your invitation to the project ")
-            .setBoldText(project.project_name +".")
-            .save_object();
+            .setObject(Project.class, project.id, project.project_name)
+            .setText(".");
 
     send_notification(owner,notification);
 
@@ -281,7 +283,6 @@ public class NotificationController extends Controller {
       case "success": lvl = Notification.Notification_level.success;break;
       case "warning": lvl = Notification.Notification_level.warning;break;
       case "error": lvl = Notification.Notification_level.error;break;
-      case "question": lvl = Notification.Notification_level.question;break;
       default: lvl = Notification.Notification_level.info;break;
     }
 
@@ -294,8 +295,6 @@ public class NotificationController extends Controller {
             .setLink_ToTyrion("TestLink","#");
 
     if(confirmation_required) notification.confirmation_required();
-
-    notification.save_object();
 
     send_notification(person,notification);
   }
@@ -407,8 +406,7 @@ public class NotificationController extends Controller {
 
       for(Notification notification : notifications) {
 
-        notification.was_read = true;
-        notification.update();
+        notification.set_read();
       }
 
       return GlobalResult.result_ok();
@@ -456,8 +454,9 @@ public class NotificationController extends Controller {
       Swagger_Notification_Test help = form.get();
 
       Person person = Person.find.where().eq("mail", mail).findUnique();
+      if (person == null) return GlobalResult.notFoundObject("Person not found");
 
-      if(person != null) NotificationController.test_notification(person, help.level, help.importance, help.confirmation_required);
+      NotificationController.test_notification(person, help.level, help.importance, help.confirmation_required);
       return GlobalResult.result_ok();
 
     }catch (Exception e){
@@ -485,8 +484,7 @@ public class NotificationController extends Controller {
       Notification notification = Notification.find.byId(notification_id);
       if(notification == null) return GlobalResult.notFoundObject("Notification does not exist");
 
-      notification.confirmed = true;
-      notification.update();
+      notification.confirm();
 
       return GlobalResult.result_ok();
 
