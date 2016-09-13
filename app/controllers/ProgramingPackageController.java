@@ -58,6 +58,8 @@ public class ProgramingPackageController extends Controller {
 
     @Inject MailerClient mailerClient;
 
+    public enum approval_state{pending, approved, disapproved, edited}
+
 // Loger  ##############################################################################################################
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
@@ -2613,11 +2615,58 @@ public class ProgramingPackageController extends Controller {
            blockoBlock.author              = SecurityController.getPerson();
 
            // Kontrola objektu
-           TypeOfBlock typeOfBlock = TypeOfBlock.find.byId( help.type_of_block_id);
-           if(typeOfBlock == null) return GlobalResult.notFoundObject("TypeOfBlock type_of_block_id not found");
+           TypeOfBlock typeOfBlock = null;
+           if(!(help.new_type_of_block)) {
+
+               if(!((help.type_of_block_id == null)||(help.type_of_block_id.equals("")))){
+
+                   typeOfBlock = TypeOfBlock.find.byId( help.type_of_block_id);
+                   if(typeOfBlock == null) return GlobalResult.notFoundObject("TypeOfBlock type_of_block_id not found");
+               }
+           }else {
+
+               typeOfBlock = new TypeOfBlock();
+               typeOfBlock.general_description = help.type_of_block_general_description;
+               typeOfBlock.name                = help.type_of_block_name;
+
+               // Nejedná se o privátní Typ Bločku
+               if(help.project_id != null){
+
+                   // Kontrola objektu
+                   Project project = Project.find.byId(help.project_id);
+                   if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
+                   if(! project.update_permission()) return GlobalResult.forbidden_Permission();
+
+                   // Úprava objektu
+                   typeOfBlock.project = project;
+
+               }
+
+               // Kontrola oprávnění těsně před uložením podle standardu
+               if (! typeOfBlock.create_permission() ) return GlobalResult.forbidden_Permission();
+
+               // Uložení objektu
+               typeOfBlock.save();
+           }
 
            // Úprava objektu
-           blockoBlock.type_of_block = typeOfBlock;
+           if(!(typeOfBlock == null))blockoBlock.type_of_block = typeOfBlock;
+
+           // Vytvoření objektu
+           BlockoBlockVersion version = new BlockoBlockVersion();
+           version.date_of_create = new Date();
+
+           version.version_name = help.version_name;
+           version.version_description = help.version_description;
+           version.design_json = help.design_json;
+           version.logic_json = help.logic_json;
+           version.blocko_block = blockoBlock;
+
+           // Kontrola oprávnění
+           if (! version.create_permission()) return GlobalResult.forbidden_Permission();
+
+           // Uložení objektu
+           version.save();
 
            // Kontrola oprávnění těsně před uložením
            if (! blockoBlock.create_permission() ) return GlobalResult.forbidden_Permission();
