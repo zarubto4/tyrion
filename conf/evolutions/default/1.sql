@@ -292,6 +292,7 @@ create table m_project (
 create table notification (
   id                        varchar(255) not null,
   notification_level        varchar(8),
+  notification_importance   varchar(6),
   content_string            TEXT,
   confirmation_required     boolean,
   confirmed                 boolean,
@@ -299,6 +300,7 @@ create table notification (
   created                   timestamp,
   person_id                 varchar(255),
   constraint ck_notification_notification_level check (notification_level in ('info','success','warning','error','question')),
+  constraint ck_notification_notification_importance check (notification_importance in ('low','normal','high')),
   constraint pk_notification primary key (id))
 ;
 

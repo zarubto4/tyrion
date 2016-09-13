@@ -19,12 +19,14 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.Server;
+import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_Unauthorized;
 import utilities.response.response_objects.Result_ok;
 import utilities.swagger.documentationClass.Swagger_B_Program_Version_New;
 import utilities.swagger.documentationClass.Swagger_Notification_Read;
+import utilities.swagger.documentationClass.Swagger_Notification_Test;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Notification_List;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Swagger_C_Program_Version;
@@ -37,14 +39,6 @@ public class NotificationController extends Controller {
 
   //####################################################################################################################
   static play.Logger.ALogger logger = play.Logger.of("Loggy");
-
-    public enum Notification_level {
-      info,
-      success,
-      warning,
-      error,
-      question
-    }
 
 
   private static void send_notification(Person person, Notification notification) {
@@ -60,7 +54,7 @@ public class NotificationController extends Controller {
 
   public static void starting_of_compilation(Person person, Version_Object version_object){
 
-        Notification notification = new Notification(Notification_level.info, person)
+        Notification notification = new Notification(Notification.Notification_importance.low, Notification.Notification_level.info, person)
                                      .setText("Server start with compilation on Version")
                                      .setObject(Swagger_B_Program_Version.class, version_object.id, version_object.version_name + ".");
 
@@ -69,7 +63,7 @@ public class NotificationController extends Controller {
 
   public static void successful_compilation(Person person, Version_Object version_object ){
 
-      Notification notification = new Notification(Notification_level.success, person)
+      Notification notification = new Notification(Notification.Notification_importance.low, Notification.Notification_level.success, person)
                                     .setText("Compilation on Version")
                                     .setObject(Swagger_B_Program_Version.class, version_object.id, version_object.version_name )
                                     .setText("was successful.");
@@ -79,7 +73,7 @@ public class NotificationController extends Controller {
 
   public static void unsuccessful_compilation_warn(Person person, Version_Object version_object, String reason){
 
-      Notification notification = new Notification( Notification_level.warning , person)
+      Notification notification = new Notification(Notification.Notification_importance.low, Notification.Notification_level.warning , person)
                                       .setText("Compilation on Version")
                                       .setObject(Swagger_B_Program_Version.class, version_object.id, version_object.version_name )
                                       .setText("was unsuccessful, for reason:")
@@ -90,7 +84,7 @@ public class NotificationController extends Controller {
 
   public static void unsuccessful_compilation_error(Person person, Version_Object version_object, String result){
 
-    Notification notification = new Notification(Notification_level.error, person)
+    Notification notification = new Notification(Notification.Notification_importance.low, Notification.Notification_level.error, person)
                                       .setText( "Compilation on Version")
                                       .setObject(Swagger_B_Program_Version.class, version_object.id, version_object.version_name )
                                       .setText("with critical Error:")
@@ -102,7 +96,7 @@ public class NotificationController extends Controller {
 
   public static void upload_Instance_start(Person person, Homer_Instance instance){
 
-    Notification notification = new Notification( Notification_level.info, person)
+    Notification notification = new Notification(Notification.Notification_importance.low, Notification.Notification_level.info, person)
                                   .setText("Server start creating new Blocko Instance on Blocko Version  <b>" + instance.version_object.b_program.name + "</b>")
                                   .setObject(Swagger_B_Program_Version.class, instance.version_object.id, instance.version_object.version_name )
                                   .setText("from Blocko program")
@@ -113,7 +107,7 @@ public class NotificationController extends Controller {
 
   public static void upload_Instance_was_successful(Person person, Homer_Instance instance){
 
-    Notification notification = new Notification(Notification_level.success, person)
+    Notification notification = new Notification(Notification.Notification_importance.low, Notification.Notification_level.success, person)
                                     .setText("Server created successfully instance in cloud on Blocko Version")
                                     .setObject(Swagger_B_Program_Version.class, instance.version_object.id, instance.version_object.version_name )
                                     .setText("from Blocko program")
@@ -124,7 +118,7 @@ public class NotificationController extends Controller {
 
   public static void unload_Instance_was_unsuccessfull(Person person, Homer_Instance instance, String reason){
 
-    Notification notification = new Notification( Notification_level.warning, person)
+    Notification notification = new Notification(Notification.Notification_importance.low, Notification.Notification_level.warning, person)
                                     .setText("Server not upload instance to cloud on Blocko Version <b>" + instance.version_object.version_name + "</b> from Blocko program <b>" + instance.version_object.b_program.name + "</b> for <b> reason:\"" +  reason + "\" </b> ")
                                     .setObject(Swagger_B_Program_Version.class, instance.version_object.id, instance.version_object.version_name )
                                     .setText("from Blocko program")
@@ -138,7 +132,7 @@ public class NotificationController extends Controller {
 
   public static void unload_of_Instance_was_unsuccessfull_with_error(Person person, Version_Object version_object){
 
-    Notification notification = new Notification(Notification_level.error, person)
+    Notification notification = new Notification(Notification.Notification_importance.low, Notification.Notification_level.error, person)
                                     .setText("Server not upload instance to cloud on Blocko Version")
                                     .setObject(Swagger_B_Program_Version_New.class, version_object.id, version_object.version_name )
                                     .setText("from Blocko program")
@@ -151,7 +145,7 @@ public class NotificationController extends Controller {
 
   public static void new_actualization_request_with_file(Person person, Board board, String file_name){
 
-    Notification notification = new Notification(Notification_level.info, person)
+    Notification notification = new Notification(Notification.Notification_importance.low, Notification.Notification_level.info, person)
             .setText("New actualization task was added to Task Queue on")
             .setObject(Board.class, board.id, "board")
             .setText("with File " + file_name);
@@ -163,7 +157,7 @@ public class NotificationController extends Controller {
 
   public static void new_actualization_request_on_version(Person person, Version_Object version_object){
 
-    Notification notification = new Notification(Notification_level.info, person)
+    Notification notification = new Notification(Notification.Notification_importance.low, Notification.Notification_level.info, person)
             .setText("New actualization task was added to Task Queue on ")
             .setObject(Swagger_C_Program_Version.class, version_object.id, "Version " + version_object.version_name )
             .setText("from Program ")
@@ -176,7 +170,7 @@ public class NotificationController extends Controller {
 
   public static void new_actualization_request_homer_instance(Person person, Homer_Instance homer_instance){
 
-    Notification notification = new Notification(Notification_level.info, person)
+    Notification notification = new Notification(Notification.Notification_importance.low, Notification.Notification_level.info, person)
             .setText("New actualization task was added to Task Queue on ")
             .setObject(Swagger_B_Program_Version_New.class, homer_instance.version_object.id, "Version " + homer_instance.version_object.version_name );
 
@@ -200,7 +194,7 @@ public class NotificationController extends Controller {
 
   public static void board_connect(Person person, Board board){
 
-      Notification notification = new Notification(Notification_level.info, person)
+      Notification notification = new Notification(Notification.Notification_importance.low, Notification.Notification_level.info, person)
               .setText("One of your Board " + (board.personal_description != null ? board.personal_description : null ))
               .setObject(Board.class, board.id, board.id)
               .setText("connected");
@@ -211,7 +205,7 @@ public class NotificationController extends Controller {
 
   public static void board_disconnect(Person person, Board board){
 
-    Notification notification = new Notification(Notification_level.info, person)
+    Notification notification = new Notification(Notification.Notification_importance.low, Notification.Notification_level.info, person)
             .setText("One of your Board " + (board.personal_description != null ? board.personal_description : null ))
             .setObject(Board.class, board.id, board.id)
             .setText("disconnect");
@@ -223,7 +217,7 @@ public class NotificationController extends Controller {
 
   public static void project_invitation(Person owner, Person receiver, Project project, Invitation invitation){
 
-    Notification notification = new Notification(Notification_level.info, receiver)
+    Notification notification = new Notification(Notification.Notification_importance.normal, Notification.Notification_level.info, receiver)
             .setText("User")
             .setObject(Person.class, owner.id, owner.full_name)
             .setText("wants to invite you into the project ")
@@ -245,7 +239,7 @@ public class NotificationController extends Controller {
 
   public static void project_accepted_by_invited_person(Person owner, Person person, Project project){
 
-    Notification notification = new Notification(Notification_level.info, owner)
+    Notification notification = new Notification(Notification.Notification_importance.normal, Notification.Notification_level.info, owner)
             .setText("User ")
             .setObject(Person.class, person.id, person.full_name)
             .setText("did not accept your invitation to the project ")
@@ -258,7 +252,7 @@ public class NotificationController extends Controller {
 
   public static void project_rejected_by_invited_person(Person owner, Person person, Project project){
 
-    Notification notification = new Notification(Notification_level.info, owner)
+    Notification notification = new Notification(Notification.Notification_importance.normal, Notification.Notification_level.info, owner)
             .setText("User ")
             .setObject(Person.class, person.id, person.full_name)
             .setText("accepted your invitation to the project ")
@@ -269,27 +263,39 @@ public class NotificationController extends Controller {
 
   }
 
-  public static void test_notification(Person person, String level){
+  public static void test_notification(Person person, String level, String importance, boolean confirmation_required){
 
-    Notification notification;
+    Notification.Notification_level lvl;
 
-    switch (level){
-      case "info": notification = new Notification(Notification_level.info, person);break;
-      case "success": notification = new Notification(Notification_level.success, person);break;
-      case "warning": notification = new Notification(Notification_level.warning, person);break;
-      case "error": notification = new Notification(Notification_level.error, person);break;
-      case "question": notification = new Notification(Notification_level.question, person);break;
-      default: notification = new Notification(Notification_level.info, person);break;
+    Notification.Notification_importance imp;
+
+    switch (importance){
+      case "low": imp = Notification.Notification_importance.low; break;
+      case "normal": imp = Notification.Notification_importance.normal; break;
+      case "high": imp = Notification.Notification_importance.high; break;
+      default: imp = Notification.Notification_importance.normal; break;
     }
 
-    notification
+    switch (level){
+      case "info": lvl = Notification.Notification_level.info;break;
+      case "success": lvl = Notification.Notification_level.success;break;
+      case "warning": lvl = Notification.Notification_level.warning;break;
+      case "error": lvl = Notification.Notification_level.error;break;
+      case "question": lvl = Notification.Notification_level.question;break;
+      default: lvl = Notification.Notification_level.info;break;
+    }
+
+    Notification notification = new Notification(imp, lvl, person)
             .setText("Test object: ")
             .setObject(Person.class, person.id, person.full_name)
             .setText("test bold text: ")
             .setBoldText("bold text")
             .setText("test link:")
-            .setLink_ToTyrion("TestLink","#")
-            .save_object();
+            .setLink_ToTyrion("TestLink","#");
+
+    if(confirmation_required) notification.confirmation_required();
+
+    notification.save_object();
 
     send_notification(person,notification);
   }
@@ -310,7 +316,7 @@ public class NotificationController extends Controller {
           notes = "Get list of latest user notifications. Server return maximum 25 latest objects. \n\n " +
                   "For get another page (next 25 notifications) call this api with \"page_number\" path parameter. \n\n " +
                   "May missing or you can insert Integer values from page[1,2...,n] in Json" +
-                  "Notification body cannot by documented through swagger. Visit documentation.byzance.cz",
+                  "Notification body cannot by documented through swagger. Visit wiki.byzance.cz",
           produces = "application/json",
           protocols = "https",
           code = 200
@@ -332,7 +338,7 @@ public class NotificationController extends Controller {
 
      } catch (Exception e) {
        e.printStackTrace();
-      return GlobalResult.internalServerError();
+       return Loggy.result_internalServerError(e, request());
      }
   }
 
@@ -362,7 +368,7 @@ public class NotificationController extends Controller {
       return GlobalResult.result_ok();
 
     } catch (Exception e) {
-      return GlobalResult.internalServerError();
+      return Loggy.result_internalServerError(e, request());
     }
   }
 
@@ -385,14 +391,13 @@ public class NotificationController extends Controller {
           }
   )
   @ApiResponses(value = {
-          @ApiResponse(code = 200, message = "Delete Successful",        response = Result_ok.class),
-          @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+          @ApiResponse(code = 200, message = "Successfully marked as read", response = Result_ok.class),
+          @ApiResponse(code = 401, message = "Unauthorized request",        response = Result_Unauthorized.class),
           @ApiResponse(code = 500, message = "Server side Error")
   })
   @Security.Authenticated(Secured_API.class)
   public Result mark_as_read_notification(){
     try {
-
 
       final Form<Swagger_Notification_Read> form = Form.form(Swagger_Notification_Read.class).bindFromRequest();
       if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
@@ -402,15 +407,14 @@ public class NotificationController extends Controller {
 
       for(Notification notification : notifications) {
 
-        if (!notification.delete_permission()) return GlobalResult.forbidden_Permission();
-        notification.delete();
-
+        notification.was_read = true;
+        notification.update();
       }
 
       return GlobalResult.result_ok();
 
     } catch (Exception e) {
-      return GlobalResult.internalServerError();
+      return Loggy.result_internalServerError(e, request());
     }
   }
 
@@ -440,34 +444,24 @@ public class NotificationController extends Controller {
       return GlobalResult.result_ok("Notifications were sent again");
 
     }catch (Exception e){
-      return GlobalResult.internalServerError();
+      return Loggy.result_internalServerError(e, request());
     }
   }
 
-
-  @ApiOperation(value = "try notifications",
-          tags = {"Notifications"},
-          notes = "This API you can use for testing our notification. Second parameter 'level' is used for setting notification level (allowable values = info, success, warning, error, question.",
-          produces = "application/json",
-          consumes = "text/html",
-          protocols = "https",
-          code = 200
-  )
-  @ApiResponses(value = {
-          @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
-          @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-          @ApiResponse(code = 500, message = "Server side Error")
-  })
-  public Result test_notifications(String mail, String level){
+  public Result test_notifications(String mail){
     try {
+
+      final Form<Swagger_Notification_Test> form = Form.form(Swagger_Notification_Test.class).bindFromRequest();
+      if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+      Swagger_Notification_Test help = form.get();
 
       Person person = Person.find.where().eq("mail", mail).findUnique();
 
-      if(person != null) NotificationController.test_notification(person, level);
+      if(person != null) NotificationController.test_notification(person, help.level, help.importance, help.confirmation_required);
       return GlobalResult.result_ok();
 
     }catch (Exception e){
-      return GlobalResult.internalServerError();
+      return Loggy.result_internalServerError(e, request());
     }
   }
 
@@ -497,7 +491,7 @@ public class NotificationController extends Controller {
       return GlobalResult.result_ok();
 
     }catch (Exception e){
-      return GlobalResult.internalServerError();
+      return Loggy.result_internalServerError(e, request());
     }
   }
 
