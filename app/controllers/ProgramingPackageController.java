@@ -33,6 +33,7 @@ import play.mvc.Security;
 import utilities.Server;
 import utilities.UtilTools;
 import utilities.emails.EmailTool;
+import utilities.enums.Approval_state;
 import utilities.enums.TypeOfCommand;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_API;
@@ -57,8 +58,6 @@ import java.util.List;
 public class ProgramingPackageController extends Controller {
 
     @Inject MailerClient mailerClient;
-
-    public enum approval_state{pending, approved, disapproved, edited}
 
 // Loger  ##############################################################################################################
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
@@ -2625,6 +2624,8 @@ public class ProgramingPackageController extends Controller {
                }
            }else {
 
+               if((help.type_of_block_name == null)||(help.type_of_block_general_description == null)) return GlobalResult.badRequest("You must fill in 'type of block' details.");
+
                typeOfBlock = new TypeOfBlock();
                typeOfBlock.general_description = help.type_of_block_general_description;
                typeOfBlock.name                = help.type_of_block_name;
@@ -2640,17 +2641,47 @@ public class ProgramingPackageController extends Controller {
                    // Úprava objektu
                    typeOfBlock.project = project;
 
+                   // Kontrola oprávnění těsně před uložením podle standardu
+                   if (! typeOfBlock.create_permission() ) return GlobalResult.forbidden_Permission();
+
+                   // Uložení objektu
+                   typeOfBlock.save();
+
+               }else{
+
+                   // Kontrola oprávnění těsně před uložením podle standardu
+                   if (! typeOfBlock.create_permission() ) {
+
+                       // Nastavení stavu schvalování
+                       typeOfBlock.approval_state = Approval_state.pending;
+                   }
+
+                   // Uložení objektu
+                   typeOfBlock.approval_state = Approval_state.approved;
+                   typeOfBlock.save();
                }
-
-               // Kontrola oprávnění těsně před uložením podle standardu
-               if (! typeOfBlock.create_permission() ) return GlobalResult.forbidden_Permission();
-
-               // Uložení objektu
-               typeOfBlock.save();
            }
 
            // Úprava objektu
            if(!(typeOfBlock == null))blockoBlock.type_of_block = typeOfBlock;
+
+           // Kontrola oprávnění těsně před uložením
+           if (! blockoBlock.create_permission() ){
+               if((blockoBlock.type_of_block == null)||(blockoBlock.type_of_block.project_id() == null)){
+
+                   // Nastavení stavu schvalování
+                   blockoBlock.approval_state = Approval_state.pending;
+
+                   // Uložení objektu
+                   blockoBlock.save();
+
+               }else return GlobalResult.forbidden_Permission();
+           }else {
+
+               // Uložení objektu
+               blockoBlock.approval_state = Approval_state.approved;
+               blockoBlock.save();
+           }
 
            // Vytvoření objektu
            BlockoBlockVersion version = new BlockoBlockVersion();
@@ -2663,16 +2694,22 @@ public class ProgramingPackageController extends Controller {
            version.blocko_block = blockoBlock;
 
            // Kontrola oprávnění
-           if (! version.create_permission()) return GlobalResult.forbidden_Permission();
+           if (! version.create_permission()){
+               if((version.blocko_block.type_of_block == null)||(version.blocko_block.type_of_block.project_id() == null)){
 
-           // Uložení objektu
-           version.save();
+                   // Nastavení stavu schvalování
+                   version.approval_state = Approval_state.pending;
 
-           // Kontrola oprávnění těsně před uložením
-           if (! blockoBlock.create_permission() ) return GlobalResult.forbidden_Permission();
+                   // Uložení objektu
+                   version.save();
 
-           // Uložení objektu
-           blockoBlock.save();
+               }else return GlobalResult.forbidden_Permission();
+           }else {
+
+               // Uložení objektu
+               version.approval_state = Approval_state.approved;
+               version.save();
+           }
 
            // Vrácení objektu
            return GlobalResult.created( Json.toJson(blockoBlock) );
@@ -3158,6 +3195,60 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
+// BLOCKO GENERAL ######################################################################################################*/
+
+    public Result changeApprovalState(){
+        try {
+
+            final Form<Swagger_BlockoObject_Approval> form = Form.form(Swagger_BlockoObject_Approval.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_BlockoObject_Approval help = form.get();
+
+            switch (help.object_name){
+                case "type_of_block": {
+
+                    TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(help.object_id);
+                    if (typeOfBlock == null) return GlobalResult.notFoundObject("type_of_block not found");
+
+                    if(help.approval) typeOfBlock.approval_state = Approval_state.approved;
+                    else typeOfBlock.approval_state = Approval_state.disapproved;
+
+                    typeOfBlock.update();
+
+                    break;
+                }
+                case "blocko_block": {
+
+                    BlockoBlock blockoBlock = BlockoBlock.find.byId(help.object_id);
+                    if (blockoBlock == null) return GlobalResult.notFoundObject("blocko_block not found");
+
+                    if(help.approval) blockoBlock.approval_state = Approval_state.approved;
+                    else blockoBlock.approval_state = Approval_state.disapproved;
+
+                    blockoBlock.update();
+
+                    break;
+                }
+                case "blocko_block_version": {
+
+                    BlockoBlockVersion blockoBlockVersion = BlockoBlockVersion.find.byId(help.object_id);
+                    if (blockoBlockVersion == null) return GlobalResult.notFoundObject("blocko_block_version not found");
+
+                    if(help.approval) blockoBlockVersion.approval_state = Approval_state.approved;
+                    else blockoBlockVersion.approval_state = Approval_state.disapproved;
+
+                    blockoBlockVersion.update();
+
+                    break;
+                }
+            }
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+
+        }
+    }
 
 // BOARD ###################################################################################################################*/
 

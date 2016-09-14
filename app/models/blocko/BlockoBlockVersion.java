@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.ProgramingPackageController;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
+import utilities.enums.Approval_state;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -18,7 +19,7 @@ public class BlockoBlockVersion extends Model {
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true)    public String id;
                                                             @ApiModelProperty(required = true)    public String version_name;
                                                             @ApiModelProperty(required = true)    public String version_description;
-                                                            @ApiModelProperty(required = true)    public ProgramingPackageController.approval_state approval_state;
+                                                            @ApiModelProperty(required = true)    public Approval_state approval_state;
     @ApiModelProperty(required = true,
             dataType = "integer", readOnly = true,
             value = "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",

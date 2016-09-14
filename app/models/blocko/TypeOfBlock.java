@@ -4,10 +4,10 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers.ProgramingPackageController;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
 import models.project.global.Project;
+import utilities.enums.Approval_state;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -21,7 +21,7 @@ public class TypeOfBlock extends Model {
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true) public String id;
                                        @Column(unique=true) @ApiModelProperty(required = true) public String name;
                          @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true) public String general_description;
-                                                            @ApiModelProperty(required = true) public ProgramingPackageController.approval_state approval_state;
+                                                            @ApiModelProperty(required = true) public Approval_state approval_state;
 
 
                                     @JsonIgnore @ManyToOne  public Project project;

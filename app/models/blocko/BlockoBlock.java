@@ -4,10 +4,10 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers.ProgramingPackageController;
 import io.swagger.annotations.ApiModelProperty;
 import models.compiler.Producer;
 import models.person.Person;
+import utilities.enums.Approval_state;
 import utilities.swagger.outboundClass.Swagger_BlockoBlock_ShortVersion;
 
 import javax.persistence.*;
@@ -23,7 +23,7 @@ public class BlockoBlock extends Model {
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true)   public String id;
                                                             @ApiModelProperty(required = true)   public String name;
                          @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)   public String general_description;
-                                                            @ApiModelProperty(required = true)   public ProgramingPackageController.approval_state approval_state;
+                                                            @ApiModelProperty(required = true)   public Approval_state approval_state;
                                     @JsonIgnore @ManyToOne                                       public Person author;
                                     @JsonIgnore @ManyToOne                                       public TypeOfBlock type_of_block;
                                     @JsonIgnore @ManyToOne()                                     public Producer producer;
