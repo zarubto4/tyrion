@@ -44,9 +44,11 @@ create table blocko_block (
   id                        varchar(255) not null,
   name                      varchar(255),
   general_description       TEXT,
+  approval_state            integer,
   author_id                 varchar(255),
   type_of_block_id          varchar(255),
   producer_id               varchar(255),
+  constraint ck_blocko_block_approval_state check (approval_state in (0,1,2,3)),
   constraint pk_blocko_block primary key (id))
 ;
 
@@ -54,10 +56,12 @@ create table blocko_block_version (
   id                        varchar(255) not null,
   version_name              varchar(255),
   version_description       varchar(255),
+  approval_state            integer,
   date_of_create            timestamp,
   design_json               TEXT,
   logic_json                TEXT,
   blocko_block_id           varchar(255),
+  constraint ck_blocko_block_version_approval_state check (approval_state in (0,1,2,3)),
   constraint pk_blocko_block_version primary key (id))
 ;
 
@@ -484,7 +488,9 @@ create table type_of_block (
   id                        varchar(255) not null,
   name                      varchar(255),
   general_description       TEXT,
+  approval_state            integer,
   project_id                varchar(255),
+  constraint ck_type_of_block_approval_state check (approval_state in (0,1,2,3)),
   constraint uq_type_of_block_name unique (name),
   constraint pk_type_of_block primary key (id))
 ;

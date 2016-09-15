@@ -37,6 +37,7 @@ import utilities.enums.Approval_state;
 import utilities.enums.TypeOfCommand;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_API;
+import utilities.loginEntities.Secured_Admin;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
@@ -3197,6 +3198,7 @@ public class ProgramingPackageController extends Controller {
 
 // BLOCKO GENERAL ######################################################################################################*/
 
+    @Security.Authenticated(Secured_Admin.class)
     public Result changeApprovalState(){
         try {
 
@@ -3215,7 +3217,7 @@ public class ProgramingPackageController extends Controller {
 
                     typeOfBlock.update();
 
-                    break;
+                    return GlobalResult.result_ok(Json.toJson(typeOfBlock));
                 }
                 case "blocko_block": {
 
@@ -3227,7 +3229,7 @@ public class ProgramingPackageController extends Controller {
 
                     blockoBlock.update();
 
-                    break;
+                    return GlobalResult.result_ok(Json.toJson(blockoBlock));
                 }
                 case "blocko_block_version": {
 
@@ -3239,14 +3241,116 @@ public class ProgramingPackageController extends Controller {
 
                     blockoBlockVersion.update();
 
-                    break;
+                    return GlobalResult.result_ok(Json.toJson(blockoBlockVersion));
                 }
+                default: return GlobalResult.badRequest("Check if object_name is 'type_of_block', 'blocko_block' or 'blocko_block_version'.");
             }
-            return GlobalResult.result_ok();
 
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
 
+        }
+    }
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result approveWithChanges(){
+
+        try {
+
+            final Form<Swagger_BlockoObject_Approve_withChanges> form = Form.form(Swagger_BlockoObject_Approve_withChanges.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_BlockoObject_Approve_withChanges help = form.get();
+
+            switch (help.object_name){
+                case "type_of_block": {
+
+                    TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(help.object_id);
+                    if (typeOfBlock == null) return GlobalResult.notFoundObject("type_of_block not found");
+
+                    if((help.type_of_block_name == null)||(help.type_of_block_general_description == null)) return GlobalResult.badRequest("You must fill in type_of_block details");
+
+                    typeOfBlock.name = help.type_of_block_name;
+                    typeOfBlock.general_description = help.type_of_block_general_description;
+                    typeOfBlock.approval_state = Approval_state.edited;
+
+                    typeOfBlock.update();
+
+                    return GlobalResult.result_ok(Json.toJson(typeOfBlock));
+                }
+                case "blocko_block": {
+
+                    BlockoBlock blockoBlock = BlockoBlock.find.byId(help.object_id);
+                    if (blockoBlock == null) return GlobalResult.notFoundObject("blocko_block not found");
+
+                    if((help.blocko_block_name == null)||(help.blocko_block_general_description == null)) return GlobalResult.badRequest("You must fill in blocko_block details");
+
+                    blockoBlock.name = help.blocko_block_name;
+                    blockoBlock.general_description = help.blocko_block_general_description;
+                    blockoBlock.approval_state = Approval_state.edited;
+
+                    if((help.blocko_block_type_of_block_id != null)&&(!(help.blocko_block_type_of_block_id.equals("")))){
+                        blockoBlock.type_of_block = TypeOfBlock.find.byId(help.blocko_block_type_of_block_id);
+                    }
+
+                    blockoBlock.update();
+
+                    return GlobalResult.result_ok(Json.toJson(blockoBlock));
+                }
+                case "blocko_block_version": {
+
+                    BlockoBlockVersion blockoBlockVersion = BlockoBlockVersion.find.byId(help.object_id);
+                    if (blockoBlockVersion == null) return GlobalResult.notFoundObject("blocko_block_version not found");
+
+                    if((help.blocko_block_version_name == null)||(help.blocko_block_version_description == null)||(help.blocko_block_logic_json == null)) return GlobalResult.badRequest("You must fill in type_of_block details");
+
+                    blockoBlockVersion.version_name = help.blocko_block_version_name;
+                    blockoBlockVersion.version_description = help.blocko_block_version_description;
+                    blockoBlockVersion.logic_json = help.blocko_block_logic_json;
+                    blockoBlockVersion.approval_state = Approval_state.edited;
+
+                    blockoBlockVersion.update();
+
+                    return GlobalResult.result_ok(Json.toJson(blockoBlockVersion));
+                }
+                default: return GlobalResult.badRequest("Check if object_name is 'type_of_block', 'blocko_block' or 'blocko_block_version'.");
+            }
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+
+        }
+    }
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result getTypeOfBlockPending(){
+        try {
+            List<TypeOfBlock> typeOfBlocks = TypeOfBlock.find.where().eq("approval_state", Approval_state.pending).findList();
+
+            return GlobalResult.result_ok(Json.toJson(typeOfBlocks));
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result getBlockoBlockPending(){
+        try {
+            List<BlockoBlock> blockoBlocks = BlockoBlock.find.where().eq("approval_state", Approval_state.pending).findList();
+
+            return GlobalResult.result_ok(Json.toJson(blockoBlocks));
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result getBlockoBlockVersionPending(){
+        try {
+            List<BlockoBlockVersion> blockoBlockVersions = BlockoBlockVersion.find.where().eq("approval_state", Approval_state.pending).findList();
+
+            return GlobalResult.result_ok(Json.toJson(blockoBlockVersions));
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
         }
     }
 

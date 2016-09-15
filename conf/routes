@@ -267,6 +267,9 @@ PUT             /project/blocko/server/:server_id                               
 GET             /project/blocko/server                                                      @controllers.ProgramingPackageController.get_All_Blocko_Server()
 DELETE          /project/blocko/server/:server_id                                           @controllers.ProgramingPackageController.delete_Blocko_Server(server_id)
 
+#Blocko General
+PUT             /project/blocko/approval                                                    @controllers.ProgramingPackageController.changeApprovalState()
+PUT             /project/blocko/approve_with_changes                                        @controllers.ProgramingPackageController.approveWithChanges()
 
 ### ACTUALIZATION PROCEDURE ############ ACTUALIZATION PROCEDURE ############### ACTUALIZATION PROCEDURE ################ ACTUALIZATION PROCEDURE ##############################
 ################################################################################################################################################################################
@@ -437,6 +440,7 @@ GET             /admin/user_summary/                    @controllers.DashboardCo
 GET             /admin/user_summary/:mail               @controllers.DashboardController.user_summary(mail)
 GET             /admin/permission/permission_summary    @controllers.DashboardController.permissions_summary()
 GET             /admin/permission/role/:role_id         @controllers.DashboardController.role(role_id)
+GET             /admin/blocko_objects                   @controllers.DashboardController.blocko_objects()
 
 
 GET             /javascriptRoutes                           @controllers.DashboardController.javascriptRoutes()

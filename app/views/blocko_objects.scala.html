@@ -1,0 +1,156 @@
+@import models.blocko.BlockoBlock
+@import models.blocko.TypeOfBlock
+@import models.blocko.BlockoBlockVersion
+@import utilities.Server
+@import utilities.enums.Approval_state
+
+<section class="content-header">
+  <h1> Blocko object approving </h1>
+  <ol class="breadcrumb">
+    <li><a href="#"><i class="fa fa-wrench"></i> Blocko Page </a></li>
+    <li class="active">Dashboard</li>
+  </ol>
+</section>
+
+@*/*/*  TypeOfBoard ---------------------------------------------------------------------------------------------   */*/*@
+
+<section class="content">
+  <div id="editBlockoBlockModal" style="display: none;" class="modal">
+    <div style="margin-top: 15%;" class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">Edit Blocko Block</h4>
+        </div>
+        <div class="modal-body">
+          <form id="editBlockoBlock">
+            <label id="blockoBlockId" style="display: block">ID</label>
+            <label>Name</label>
+            <input style="display: block" type="text" name="blocko_block_name" id="blocko_block_name">
+            <label>Description</label>
+            <input style="display: block" type="text" name="blocko_block_general_description" id="blocko_block_general_description">
+            <label>Type of Block</label>
+            <select style="display: block" name="blocko_block_type_of_block_id" id="blocko_block_type_of_block_id">
+              <option selected >If you don't want to change it, leave this empty.</option>
+              @for(typeOfBlock <- TypeOfBlock.find.where().eq("project", null).findList()) {
+                <option value="@typeOfBlock.id">@typeOfBlock.name</option>
+              }
+            </select>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editBlockoBlockModal').css('display','none')">Close</button>
+          <button id="editBlockoBlockButton" value="" class="btn btn-primary" type="button" onclick="editBlockoBlock(this.value)">Save changes & Approve</button>
+        </div>
+      </div>
+        <!-- /.modal-content -->
+    </div>
+      <!-- /.modal-dialog -->
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="box">
+        <div class="box-header with-border">
+          <h3 class="box-title">BlockoBlock</h3>
+        </div>
+        <div class="box-body">
+
+
+        </div>
+        <div class="box-body">
+          <label style="font-size: 13pt;">Pending BlockoBlocks</label>
+          <table id="pendingBlockoBlock" class="table table-bordered">
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Pending versions</th>
+              <th>Type of Block</th>
+              <th>Edit</th>
+              <th>Decision</th>
+            </tr>
+              @for(blockoBlock <- BlockoBlock.find.where().eq("approval_state",Approval_state.pending).findList()) {
+                <tr>
+                  <td>@blockoBlock.id</td>
+                  <td>@blockoBlock.name</td>
+                  <td>@blockoBlock.general_description</td>
+                  <td>@*/*/*BlockoBlockVersion.find.where().eq("blockoBlock",blockoBlock.id).eq("approval_state", Approval_state.pending).findList().size()*/*/*@</td>
+                  <td>@blockoBlock.type_of_block.name</td>
+                  <td><button class="btn btn-block btn-info" type="button" onclick="showEditForm(@blockoBlock.id, '@blockoBlock.name', '@blockoBlock.general_description')">Edit</button></td>
+                  <td>
+                    <button style="width: 48%; margin-right: 2%; display: inline-block; float: left;" class="btn btn-block btn-success" type="button" onclick="approveBlockoObject('blocko_block',true,@blockoBlock.id)">Approve</button>
+                    <button style="width: 48%; margin-left: 2%; margin-top: 0; display: inline-block; float: left;" class="btn btn-block btn-danger" type="button" onclick="approveBlockoObject('blocko_block',false,@blockoBlock.id)">Disapprove</button>
+                  </td>
+                </tr>
+              }
+          </table>
+        </div>
+        <div class="box-footer">
+        </div>
+
+
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<script>
+
+        $.ajaxSetup({ cache: false });
+        function approveBlockoObject(object, decision, id){
+          model_data = {"object_name": object,
+                        "object_id": id,
+                        "approval": decision};
+          $.ajax({
+            url: '@routes.ProgramingPackageController.changeApprovalState()',
+            type: 'PUT',
+            contentType: 'application/json',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+            success:function(e){
+              $('#pendingBlockoBlock').load(document.URL +  ' #pendingBlockoBlock');
+            },
+            error:function(e) {
+              alert("Unsuccessful. Try again.");
+            }
+          })}
+
+        function editBlockoBlock(id){
+          model_data = {"object_name": "blocko_block",
+                        "object_id": id,
+                        "blocko_block_name": document.getElementById('blocko_block_name').value,
+                        "blocko_block_general_description": document.getElementById('blocko_block_general_description').value,
+                        "blocko_block_type_of_block_id": document.getElementById('blocko_block_type_of_block_id').value};
+
+          $.ajax({
+            url: '@routes.ProgramingPackageController.approveWithChanges()' ,
+            type: 'PUT',
+            contentType: 'application/json',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+            success:function(e){
+              $("#editBlockoBlock input[type=text]").val("");
+              $("#editBlockoBlockModal").css("display","none");
+              $('#pendingBlockoBlock').load(document.URL +  ' #pendingBlockoBlock');
+            },
+            error:function(e) {
+              alert("Unsuccessful. Try again.");
+            }
+          })}
+
+        function showEditForm(id, name, description){
+          $("#editBlockoBlockModal").css("display","block");
+          $('#editBlockoBlockButton').val(id);
+          $('#blockoBlockId').text("ID = " + id);
+          $("#editBlockoBlock input[name=blocko_block_name]").val(name);
+          $("#editBlockoBlock input[name=blocko_block_general_description]").val(description);
+          }
+</script>
