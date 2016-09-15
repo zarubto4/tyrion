@@ -237,7 +237,7 @@ GET            /project/b_program/instance/listOfUploadedHomers/:id             
 GET            /project/b_program/instance/listOfHomersWaitingForUpload/:id                 @controllers.ProgramingPackageController.listOfHomersWaitingForUpload(id: String)
 
 PUT            /project/b_program/instance/command/:instance_id/:target_id/:command         @controllers.ProgramingPackageController.send_command_to_instnace(instance_id, target_id, command)
-
+PUT            /project/b_program/instance/program/:instance_id                             @controllers.ProgramingPackageController.update_blocko_code_in_instance_with_code(instance_id)
 
 #Blocks
 POST           /project/blockoBlock                                                         @controllers.ProgramingPackageController.new_Block()

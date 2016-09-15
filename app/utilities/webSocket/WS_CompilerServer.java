@@ -53,7 +53,6 @@ public class WS_CompilerServer extends WebSCType{
                 System.out.println("Jedná se o zprávu potvrzující začátek buildu");
 
                 sendMessageMap.get(json.get("messageId").asText()).insert_result(json);
-                sendMessageMap.remove(json.get("messageId").asText());
                 return;
             }
 

@@ -96,7 +96,7 @@ public class Global extends GlobalSettings {
 
         System.err.println(" ");
         System.err.println(" ");
-        System.err.println("  __________    __                                             ___                   __        ________                                                              ");
+        System.err.println("  _____________ __                                             ___                   __        ________                                                              ");
         System.err.println("  YMMMM9MMMMMMM MM                                             `MM                  69MM      `MMMMMMMb.                                                             ");
         System.err.println("        MM      MM                                              MM                 6M' `       MM    `Mb                                                             ");
         System.err.println("        MM      MM  __     ____           ____  ___  __     ____MM         _____  _MM__        MM     MM ___  __   _____     __     ___  __    ___   ___  __    __   ");
@@ -112,15 +112,17 @@ public class Global extends GlobalSettings {
         System.err.println("                                                                                                                            YMMMM9                                   ");
         System.err.println("");
 
-
     }
+
 
     @Override
     public Action onRequest(Http.Request request, Method actionMethod) {
-        logger.debug(request.toString());
-        logger.info(request.toString());
+        logger.trace(request.toString());
         return super.onRequest(request, actionMethod);
     }
+
+
+
 
 
 }

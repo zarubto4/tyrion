@@ -1583,8 +1583,6 @@ public class ProgramingPackageController extends Controller {
     public  Result upload_b_Program_ToCloud(@ApiParam(value = "version_id String path", required = true) String version_id){
         try {
 
-            System.out.println("\n \n \n \n \n \n");
-
             // Kontrola objektu: Verze B programu kterou budu nahrávat do cloudu
             Version_Object version_object = Version_Object.find.byId(version_id);
             if (version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
@@ -1594,15 +1592,19 @@ public class ProgramingPackageController extends Controller {
             if (version_object.b_program == null) return GlobalResult.result_BadRequest("Version_Object is not version of B_Program");
             B_Program b_program = version_object.b_program;
 
+            logger.debug("User want uploud new instance under version: " + version_id);
+
             // Kontrola oprávnění
             if (! b_program.update_permission() ) return GlobalResult.forbidden_Permission();
+
+
 
             // Kontroluji přítomnost Yody - Dovolím nahrát instnaci bez HW
             // if(version_object.b_program_hw_groups == null || version_object.yoda_board_pair.board == null) return GlobalResult.result_BadRequest("Version needs Main Board connectible to internet!");
 
             // Pokud už nějaká instance běžela, tak na ní budu nahrávat nový program a odstraním vazbu na běžící instanci b programu
             if(version_object.b_program_hw_groups!= null) {
-                logger.debug("Uploud version to cloud contains Hardware!");
+                logger.trace("Uploud version to cloud contains Hardware!");
 
                 for(B_Program_Hw_Group group : version_object.b_program_hw_groups){
 
@@ -1642,16 +1644,8 @@ public class ProgramingPackageController extends Controller {
 
             }
 
-
-            // TODO Chytré dělení na servery - kam se blocko program nahraje??
+            // TODO Chytré dělení na servery - kam se blocko program nahraje?? Zatím je podporovaná jenom alfa
             Cloud_Homer_Server destination_server = Cloud_Homer_Server.find.where().eq("server_name", "Alfa").findUnique();
-
-            if(! WebSocketController_Incoming.blocko_servers.containsKey( destination_server.server_name) ) {
-
-                // Instance se dá nahrát se spožděním - Upozornění v Result
-                // TODO - upozornění uživatelovi přes bublinu
-            }
-
 
             // Vytvářím nový záznam v databázi pro běžící instanci b programu na blocko serveru
             Homer_Instance program_cloud        = new Homer_Instance();
@@ -1661,12 +1655,17 @@ public class ProgramingPackageController extends Controller {
             program_cloud.cloud_homer_server    = destination_server;
             program_cloud.setUnique_blocko_instance_name();
 
-
-            // Pak smazat!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-           // program_cloud.id = "i1";
-
             // Uložení objektu
             program_cloud.save();
+
+
+
+
+            if(! WebSocketController_Incoming.blocko_servers.containsKey( destination_server.server_name) ) {
+
+                NotificationController.unload_Instance_was_unsuccessfull(SecurityController.getPerson(), program_cloud, "Server is offline now. It will be uploaded as soon as possible");
+                return GlobalResult.result_ok();
+            }
 
             try {
 
@@ -1741,6 +1740,9 @@ public class ProgramingPackageController extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Instance_UpdateCode help = form.get();
 
+            JsonNode json = Json.parse(help.code);
+            System.out.println(json.toString());
+
             // Kontrola objektu
             Homer_Instance homer_instance = Homer_Instance.find.where().eq("blocko_instance_name",instance_name).findUnique();
             if (homer_instance == null) return GlobalResult.notFoundObject("Homer_Instance id not found");
@@ -1749,7 +1751,7 @@ public class ProgramingPackageController extends Controller {
 
             JsonNode result = WebSocketController_Incoming.homer_upload_program(homer_instance.get_instance(), "fake_program", help.code );
 
-            if(result.has("state") && result.get("state").asText().equals("success")){
+            if(result.has("status") && result.get("status").asText().equals("success")){
                 // Vrácení potvrzení
                 return GlobalResult.result_ok();
             }else {
@@ -1959,7 +1961,8 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-    @ApiOperation(value = "add yoda to instnace ",
+    @ApiOperation(value = "send command to instance",
+    // SLouží k zasílání blocko programu bez jakkýchkoliv vazeb na objekty do Homera do instnace - není databázováno.
             hidden = true
     )
     public Result send_command_to_instnace(String instance_name, String target_id, String string_command){
@@ -1987,6 +1990,7 @@ public class ProgramingPackageController extends Controller {
             if(result.has("state") && result.get("state").asText().equals("success")){
                 // Vrácení potvrzení
                 return GlobalResult.result_ok();
+
             }else {
                 return GlobalResult.result_ok(result);
             }

@@ -19,6 +19,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.Server;
+import utilities.enums.Notification_level;
 import utilities.loginEntities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_Unauthorized;
@@ -38,14 +39,7 @@ public class NotificationController extends Controller {
   //####################################################################################################################
   static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
-    public enum Notification_level {
-      // TODO - VY5ADIT VEN OBDOBNĚ JAKO JSOU UDĚLANÉ V UTILITIES/ENUM OSTATNÍ OBJEKTY
-      info,
-      success,
-      warning,
-      error,
-      question
-    }
+
 
 
   private static void send_notification(Person person, Notification notification) {
@@ -61,7 +55,7 @@ public class NotificationController extends Controller {
 
   public static void starting_of_compilation(Person person, Version_Object version_object){
 
-        Notification notification = new Notification(Notification_level.info, person)
+        Notification notification = new Notification( Notification_level.info, person)
                                      .setText("Server start with compilation on Version")
                                      .setObject(Swagger_B_Program_Version.class, version_object.id, version_object.version_name + ".");
 
@@ -136,6 +130,17 @@ public class NotificationController extends Controller {
     send_notification(person, notification);
 
   }
+
+  public static void unload_firmare_progress(Person person, Notification_level level, String reason){
+
+    Notification notification = new Notification(level, person)
+            .setText("Progress notifikace????? " + reason)
+            .save_object();
+
+    send_notification(person, notification);
+
+  }
+
 
   public static void unload_of_Instance_was_unsuccessfull_with_error(Person person, Version_Object version_object){
 

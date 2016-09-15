@@ -5,13 +5,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import controllers.NotificationController;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
 import models.person.Person;
 import play.libs.Json;
 import utilities.Server;
 import utilities.enums.Notification_Type;
+import utilities.enums.Notification_level;
 import utilities.swagger.outboundClass.Swagger_Notification_Element;
 
 import javax.persistence.*;
@@ -28,7 +28,7 @@ public class Notification extends Model {
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true) public String id;
 
-    @Enumerated(EnumType.STRING)       @ApiModelProperty(required = true) public NotificationController.Notification_level notification_level;     // Důležitost (podbarvení zprávy)
+    @Enumerated(EnumType.STRING)       @ApiModelProperty(required = true) public Notification_level notification_level;     // Důležitost (podbarvení zprávy)
 
     @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true) private String content_string;                           // Obsah v podobě Json.toString().
                                        @ApiModelProperty(required = true) public boolean confirmation_required;
@@ -49,7 +49,7 @@ public class Notification extends Model {
     List<Swagger_Notification_Element> array = new ArrayList<>();
 
     @JsonIgnore
-    public  Notification(NotificationController.Notification_level level, Person person){
+    public  Notification(Notification_level level, Person person){
         this.notification_level = level;
         this.person = person;
         created = new Date();

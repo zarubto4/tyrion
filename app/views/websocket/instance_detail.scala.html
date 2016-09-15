@@ -224,8 +224,7 @@
 
                     <label id="instanceId" style="display: block">ID</label>
                     <div class="form-group">
-                        <label>Textarea</label>
-                        <textarea id="blocko_code"  class="form-control" rows="3" placeholder="Insert Blocko code ..."></textarea>
+                        <textarea id="code" name="code" class="form-control" rows="3" placeholder="Insert Blocko code ..."></textarea>
                     </div>
                 </form>
             </div>
@@ -417,11 +416,30 @@
                 },
 
                 success:function(data, status){
-                    console.log("úspěch");
-                    console.log(status);
+                    BootstrapDialog.show({
+                        message:  syntaxHighlight(data),
+
+                        buttons: [{
+                            label: 'Close',
+                            action: function(dialogItself){
+                                dialogItself.close();
+                            }
+                        }]
+                    });
+
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
-                    alert(textStatus + ': ' + errorThrown);
+                    BootstrapDialog.show({
+                        message:  syntaxHighlight(data),
+                        type: BootstrapDialog.TYPE_DANGER,
+                        buttons: [{
+                            label: 'Close',
+                            action: function(dialogItself){
+                                dialogItself.close();
+                            }
+                        }]
+
+                    });
                 }
 
             })
@@ -615,9 +633,13 @@
             <script>
                     function uploadBlockoProgram(instanceId){
                         model_data = $("#uploadBlockoProgram").serializeObject();
+                        json = JSON.stringify(model_data);
+
+                        console.log(json);
+
 
                         $.ajax({
-                            url: "@Server.tyrion_serverAddress" + "/project/b_program/instance/update_blocko_program/code/" + instanceId ,
+                            url: "@Server.tyrion_serverAddress" + "/project/b_program/instance/program/" + instanceId,
                             type: 'PUT',
                             contentType: 'application/json',
                             headers: {
@@ -626,13 +648,35 @@
                             },
                             data: JSON.stringify(model_data),
                             dataType: 'json',
-                            success:function(e){
+                            success:function(data, status){
+
                                 $("#uploadBlockoProgram input[type=text]").val("");
                                 $("#uploadBlockoProgramModal").css("display","none");
-                                // $('#person_detail').load(document.URL +  ' #person_detail');
+
+                                BootstrapDialog.show({
+                                    message:  syntaxHighlight("Úpsěšně nahráno na homer do instance"),
+
+                                    buttons: [{
+                                        label: 'Close',
+                                        action: function(dialogItself){
+                                            dialogItself.close();
+                                        }
+                                    }]
+
+                                });
                             },
-                            error:function(e) {
-                                alert("Unsuccessful.");
+                            error:function(data) {
+                                BootstrapDialog.show({
+                                    message:  syntaxHighlight(data),
+                                    type: BootstrapDialog.TYPE_DANGER,
+                                    buttons: [{
+                                        label: 'Close',
+                                        action: function(dialogItself){
+                                            dialogItself.close();
+                                        }
+                                    }]
+
+                                });
                             }
                         })}
             </script>

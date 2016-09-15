@@ -37,24 +37,30 @@ public abstract class WebSCType {
 
             logger.debug("Incoming message: " + message);
 
+
             ObjectNode json = (ObjectNode) new ObjectMapper().readTree(message);
+
 
             // V případě že zpráva byla odeslaná Tyironem - existuje v zásobníku její objekt
             if (json.has("messageId") && sendMessageMap.containsKey(json.get("messageId").asText())) {
+
                 sendMessageMap.get(json.get("messageId").asText()).insert_result(json);
-                sendMessageMap.remove(json.get("messageId").asText());
                 return;
             }
+
+            System.out.println("Zprávu se nepodařilo najít v seznamu odeslaných zpráv - a asi je to zpráva - kterou nám někdo poslal zvenčí");
 
             onMessage(json);
 
         }catch (JsonParseException e){
+            e.printStackTrace();
 
             ObjectNode result = Json.newObject();
             result.put("messageType", "JsonUnrecognized");
             webSCtype.write_without_confirmation(result);
 
         }catch (Exception e){
+            e.printStackTrace();
 
             ObjectNode result = Json.newObject();
             result.put("messageType", "JsonUnrecognized");
@@ -99,7 +105,7 @@ public abstract class WebSCType {
         String messageId = UUID.randomUUID().toString();
         json.put("messageId", messageId );
 
-        SendMessage send_message = new SendMessage(this, json, time, delay, number_of_retries);
+        SendMessage send_message = new SendMessage(this, subscribers_becki, json, messageId, time, delay, number_of_retries);
         sendMessageMap.put(messageId, send_message);
 
         // Vytvořeno jen pro redukci délky vypisovaného kodu (zvláště při přeposílání dlouhých programů - bylo to nečitelné
@@ -109,13 +115,13 @@ public abstract class WebSCType {
                 copy_json.put("program", "loooong  Base64 String ");
                 logger.debug("Outcomming message: " + messageId + " " + copy_json.toString());
             }else logger.debug("Outcomming message: " + messageId + " " + json.toString());
-
         }
 
         // Může vyvolat i vyjímku o nedoručení
         ObjectNode result = send_message.send_with_response();
 
         logger.debug("Message confirm: " + messageId);
+        logger.debug("Incoming message: " + result.toString());
 
         return result;
     }

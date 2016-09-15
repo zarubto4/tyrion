@@ -734,6 +734,7 @@ public class CompilationLibrariesController extends Controller {
             logger.debug("Server checks compilation cloud_compilation_server");
             // Kontroluji zda je nějaký kompilační cloud_compilation_server připojený
             if(WebSocketController_Incoming.compiler_cloud_servers.isEmpty()) {
+                logger.error("All compilation servers are offline!!!!!!!!!!!");
                 return GlobalResult.result_external_server_is_offline("Compilation cloud_compilation_server is offline!");
             }
 

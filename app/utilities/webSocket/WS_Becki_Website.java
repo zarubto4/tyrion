@@ -2,6 +2,7 @@ package utilities.webSocket;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.WebSocketController_Incoming;
+import models.person.Person;
 import play.mvc.WebSocket;
 
 import java.util.HashMap;
@@ -10,11 +11,13 @@ import java.util.concurrent.TimeoutException;
 
 public class WS_Becki_Website extends  WebSCType {
 
-   public Map<String, WebSCType> all_person_Connections = new HashMap<>();
+    public Map<String, WebSCType> all_person_Connections = new HashMap<>();
+    public Person person;
 
-    public WS_Becki_Website(String person_id) {
+    public WS_Becki_Website(Person person) {
         super();
-        super.identifikator = person_id;
+        this.person = person;
+        super.identifikator = person.id;
     }
 
     @Override

@@ -631,7 +631,7 @@ public class WebSocketController_Incoming extends Controller {
             if(becki_website.containsKey(person.id)) {
                 website = (WS_Becki_Website) becki_website.get(person.id);
             }else{
-                website = new WS_Becki_Website(person.id);
+                website = new WS_Becki_Website(person);
                 becki_website.put(person.id , website);
             }
 
@@ -966,57 +966,12 @@ public class WebSocketController_Incoming extends Controller {
 
         logger.debug("Start of compilation was successful - waiting for result");
 
-        SendMessage get_compilation = new SendMessage(null, null, 1000 * 35, 0, 1);
+        SendMessage get_compilation = new SendMessage(null, null, null, "compilation_message", 1000 * 35, 0, 1);
         server.sendMessageMap.put( compilation_request.get("buildId").asText(), get_compilation);
         ObjectNode result = get_compilation.send_with_response();
 
-        System.out.println("Co obsahuje Result?: " + result.toString());
-
         return result;
 
-        //   JsonNode blocko_interface = compilation_request.get("interface");
-        //   server.compilation_request.put(compilation_request.get("buildId").asText()  , request);
-
-
-        /*
-        class Confirmation_Thread implements Callable<ObjectNode> {
-
-            Integer number_of_retries = 5;
-            @Override
-            public ObjectNode call() throws Exception {
-
-                while (number_of_retries >= 0) {
-
-                    Thread.sleep(1000);
-                    breaker-=1000;
-
-                    if(server.compilation_results.containsKey( compilation_request.get("buildId").asText() )) {
-                       // Kompilace dokončena protože cloud_blocko_server zavěsil do Result odpověď
-
-                        // Mažu žádost
-                        server.compilation_request.remove(compilation_request.get("buildId").asText());
-                        ObjectNode compilation_result = server.compilation_results.get(compilation_request.get("buildId").asText());
-
-                        // Mažu odpověď
-                        server.compilation_results.remove(compilation_request.get("buildId").asText());
-
-                        // Vracím odpověď
-                        return compilation_result;
-                    }
-                }
-
-                server.compilation_request.remove(compilation_request.get("buildId").asText());
-                ObjectNode error_result = Json.newObject();
-                error_result.put("error", "Something was wrong");
-                return error_result;
-            }
-        }
-
-        ExecutorService pool = Executors.newFixedThreadPool(3);
-
-        Callable<ObjectNode> callable = new Confirmation_Thread();
-        Future<ObjectNode> future = pool.submit(callable);
-        */
     }
 
     // Ping

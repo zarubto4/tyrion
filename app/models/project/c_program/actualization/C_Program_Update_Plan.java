@@ -67,8 +67,8 @@ public class C_Program_Update_Plan extends Model {
 
         Homer_Instance homer_instance = Homer_Instance.find.where()
                 .disjunction()
-                    .add(Expr.eq("version_object.yoda_board_pair.board.id", board.id))
-                    .add(Expr.eq("version_object.padavan_board_pairs.board.id", board.id))
+                    .add(Expr.eq("version_object.b_program_hw_groups.main_board_pair.board.id", board.id))
+                    .add(Expr.eq("version_object.b_program_hw_groups.device_board_pairs.board.id", board.id))
                     .add(Expr.eq("private_instance_board.id", board.id))
                 .findUnique();
 

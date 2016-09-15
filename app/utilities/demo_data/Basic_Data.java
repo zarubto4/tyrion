@@ -42,9 +42,8 @@ public class Basic_Data {
         set_default_object_PRODUCER_AND_BOARDS();
         set_default_object_EXTERNAL_SERVERS();
         set_default_object_BLOCKO();
-
+        set_default_object_BOARD();
     }
-
 
     public static void set_default_object_PRODUCER_AND_BOARDS() {
         // Nastavím Producer
@@ -119,7 +118,6 @@ public class Basic_Data {
         typeOfBoard_4.connectible_to_internet = false;
         typeOfBoard_4.save();
     }
-
 
     public static void set_default_object_EXTERNAL_SERVERS(){
 
@@ -452,20 +450,174 @@ public class Basic_Data {
 
     }
 
+    public static void set_default_object_BOARD(){
+
+        // Zaregistruji Yody
+        Board board_yoda_1 = new Board();
+        board_yoda_1.id = "002600513533510B34353732";
+        board_yoda_1.personal_description = "Yoda B";
+        board_yoda_1.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_YODAG2").findUnique();
+        board_yoda_1.date_of_create = new Date();
+        board_yoda_1.save();
+
+        Board board_yoda_2 = new Board();
+        board_yoda_2.id = "003E00523533510B34353732";
+        board_yoda_2.personal_description = "Yoda E";
+        board_yoda_2.type_of_board =TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_YODAG2").findUnique();
+        board_yoda_2.date_of_create = new Date();
+        board_yoda_2.save();
+
+        Board board_yoda_3 = new Board();
+        board_yoda_3.id = "004C00523533510B34353732";
+        board_yoda_3.personal_description = "Yoda C";
+        board_yoda_3.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_YODAG2").findUnique();
+        board_yoda_3.date_of_create = new Date();
+        board_yoda_3.save();
+
+        Board board_yoda_4 = new Board();
+        board_yoda_4.id = "002300513533510B34353732";
+        board_yoda_4.personal_description = "Yoda A";
+        board_yoda_4.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_YODAG2").findUnique();
+        board_yoda_4.date_of_create = new Date();
+        board_yoda_4.save();
+
+        /* Nebyl funkční - čeká se na Martina
+        Board board_yoda_5 = new Board();
+        board_yoda_5.id = "XXXXXXXXXXXXXX";
+        board_yoda_5.personal_description = "YODA D";
+        board_yoda_5.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_YODAG2").findUnique();
+        board_yoda_5.date_of_create = new Date();
+        board_yoda_5.save();
+        */
 
 
-    public static void set_default_object_NECO(){
+        // Wireless
+        Board wireless_1 = new Board();
+        wireless_1.id = "001C00074247430D20363439";
+        wireless_1.personal_description = "[6]";
+        wireless_1.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_WRLSKITG2").findUnique();
+        wireless_1.date_of_create = new Date();
+        wireless_1.save();
+
+        Board wireless_2 = new Board();
+        wireless_2.id = "001200254247430E20363439";
+        wireless_2.personal_description = "[7]";
+        wireless_2.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_WRLSKITG2").findUnique();
+        wireless_2.date_of_create = new Date();
+        wireless_2.save();
+
+        Board wireless_3 = new Board();
+        wireless_3.id = "001C000A4247430D20363439";
+        wireless_3.personal_description = "[10]";
+        wireless_3.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_WRLSKITG2").findUnique();
+        wireless_3.date_of_create = new Date();
+        wireless_3.save();
+
+        Board wireless_4 = new Board();
+        wireless_4.id = "001200244247430E20363439";
+        wireless_4.personal_description = "[11]";
+        wireless_4.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_WRLSKITG2").findUnique();
+        wireless_4.date_of_create = new Date();
+        wireless_4.save();
+
+        Board wireless_5 = new Board();
+        wireless_5.id = "001200264247430E20363439";
+        wireless_5.personal_description = "Bezdrátový device [12]";
+        wireless_5.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_WRLSKITG2").findUnique();
+        wireless_5.date_of_create = new Date();
+        wireless_5.save();
+
+        Board wireless_6 = new Board();
+        wireless_6.id = "001C00094247430D20363439";
+        wireless_6.personal_description = "[13]";
+        wireless_6.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_WRLSKITG2").findUnique();
+        wireless_6.date_of_create = new Date();
+        wireless_6.save();
+
+
+        Board wireless_7 = new Board();
+        wireless_7.id = "001C00144247430D20363439";
+        wireless_7.personal_description = "[14]";
+        wireless_7.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_WRLSKITG2").findUnique();
+        wireless_7.date_of_create = new Date();
+        wireless_7.save();
 
 
 
+
+        Board bus_1 = new Board();
+        bus_1.id = "001C00054247430D20363439";
+        bus_1.personal_description = "[1]";
+        bus_1.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_BUSKITG2").findUnique();
+        bus_1.date_of_create = new Date();
+        bus_1.save();
+
+        Board bus_2 = new Board();
+        bus_2.id = "001300274247430E20363439";
+        bus_2.personal_description = "[2]";
+        bus_2.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_BUSKITG2").findUnique();
+        bus_2.date_of_create = new Date();
+        bus_2.save();
+
+        Board bus_3 = new Board();
+        bus_3.id = "001C00064247430D20363439";
+        bus_3.personal_description  = "[3]";
+        bus_3.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_BUSKITG2").findUnique();
+        bus_3.date_of_create = new Date();
+        bus_3.save();
+
+        Board bus_4 = new Board();
+        bus_4.id = "001200224247430E20363439";
+        bus_4.personal_description  = "[4]";
+        bus_4.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_BUSKITG2").findUnique();
+        bus_4.date_of_create = new Date();
+        bus_4.save();
+
+        Board bus_5 = new Board();
+        bus_5.id = "001300244247430E20363439";
+        bus_5.personal_description  = "[5]";
+        bus_5.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_BUSKITG2").findUnique();
+        bus_5.date_of_create = new Date();
+        bus_5.save();
+
+        Board bus_6 = new Board();
+        bus_6.id = "001C00104247430D20363439";
+        bus_6.personal_description  = "[8]";
+        bus_6.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_BUSKITG2").findUnique();
+        bus_6.date_of_create = new Date();
+        bus_6.save();
+
+        Board bus_7 = new Board();
+        bus_7.id = "001C000C4247430D20363439";
+        bus_7.personal_description  = "[9]";
+        bus_7.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_BUSKITG2").findUnique();
+        bus_7.date_of_create = new Date();
+        bus_7.save();
+
+        Board bus_8 = new Board();
+        bus_8.id = "001200234247430E20363439";
+        bus_8.personal_description  = "[15]";
+        bus_8.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_BUSKITG2").findUnique();
+        bus_8.date_of_create = new Date();
+        bus_8.save();
+
+        Board bus_9 = new Board();
+        bus_9.id = "001300214247430E20363439";
+        bus_9.personal_description  = "[16]";
+        bus_9.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_BUSKITG2").findUnique();
+        bus_9.date_of_create = new Date();
+        bus_9.save();
 
     }
+
+
+
 
     public static void set_basic_demo_data(){
 
         try {
 
-            if(Person.find.where().eq("nick_name", "pepa2").findUnique() != null ) {
+            if(Person.find.where().eq("nick_name", "Pepíno").findUnique() != null ) {
                 System.err.println("Databáze je již naplněna - neprovádím žádné další změny");
                 return;
             }
@@ -478,8 +630,8 @@ public class Basic_Data {
 
             // Vytvoří osobu
             Person person = new Person();
-            person.full_name = "Testovací Pepa";
-            person.nick_name = "pepa2";
+            person.full_name = "Pačmund Pepa";
+            person.nick_name = "Pepíno";
             person.mail = "test_user@byzance.cz";
             person.freeze_account = false;
             person.mailValidated = true;
@@ -540,99 +692,10 @@ public class Basic_Data {
             // Zaregistruji pod ně Yody
 
 
-
-            // Zaregistruji Yody
-            Board board_yoda_1 = new Board();
-            board_yoda_1.id = "002600513533510B34353732";
-            board_yoda_1.personal_description = "Martinův Yoda";
-            board_yoda_1.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_YODAG2").findUnique();
-            board_yoda_1.date_of_create = new Date();
-            board_yoda_1.project = project_1;
-            board_yoda_1.save();
-
-            Board board_yoda_2 = new Board();
-            board_yoda_2.id = "003E00523533510B34353732";
-            board_yoda_2.personal_description = "Tomův Yoda";
-            board_yoda_2.type_of_board =TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_YODAG2").findUnique();
-            board_yoda_2.date_of_create = new Date();
-            board_yoda_2.project = project_1;
-            board_yoda_2.save();
-
-            Board board_yoda_3 = new Board();
-            board_yoda_3.id = "004C00523533510B34353732";
-            board_yoda_3.personal_description = "Yoda s WIFI";
-            board_yoda_3.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_YODAG2").findUnique();
-            board_yoda_3.date_of_create = new Date();
-            board_yoda_3.project = project_1;
-            board_yoda_3.save();
-
-            Board board_yoda_4 = new Board();
-            board_yoda_4.id = "002300513533510B34353732";
-            board_yoda_4.personal_description = "Viktorův Yoda";
-            board_yoda_4.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_YODAG2").findUnique();
-            board_yoda_4.date_of_create = new Date();
-            board_yoda_4.project = project_1;
-            board_yoda_4.save();
-
-            //project_1.boards.add(  Board.find.byId("002600513533510B34353732") );   // Davidův
-
-            // Zaregistuji Devices
-            Board wireless_1 = new Board();
-            wireless_1.id = "EEEEEEEEEE_999999999";
-            wireless_1.personal_description = "Bezdrátový device 9";
-            wireless_1.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_WRLSKITG2").findUnique();
-            wireless_1.date_of_create = new Date();
-            wireless_1.project = project_1;
-            wireless_1.save();
-
-            Board wireless_2 = new Board();
-            wireless_2.id = "EEEEEEEEEE_999999998";
-            wireless_2.personal_description = "Bezdrátový device 8";
-            wireless_2.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_WRLSKITG2").findUnique();
-            wireless_2.date_of_create = new Date();
-            wireless_2.project = project_1;
-            wireless_2.save();
-
-            Board wireless_3 = new Board();
-            wireless_3.id = "EEEEEEEEEE_999999997";
-            wireless_3.personal_description = "Bezdrátový device 7";
-            wireless_3.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_WRLSKITG2").findUnique();
-            wireless_3.date_of_create = new Date();
-            wireless_3.project = project_1;
-            wireless_3.save();
-
-
-            Board bus_1 = new Board();
-            bus_1.id = "BBBBBBBBBB_999999999";
-            bus_1.personal_description = "Bus device 9";
-            bus_1.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_BUSKITG2").findUnique();
-            bus_1.date_of_create = new Date();
-            bus_1.project = project_1;
-            bus_1.save();
-
-            Board bus_2 = new Board();
-            bus_2.id = "BBBBBBBBBB_999999998";
-            bus_2.personal_description = "Bus device 8";
-            bus_2.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_BUSKITG2").findUnique();
-            bus_2.date_of_create = new Date();
-            bus_2.project = project_1;
-            bus_2.save();
-
-            Board bus_3 = new Board();
-            bus_3.id = "BBBBBBBBBB_999999997";
-            bus_3.personal_description = "Bus device 7";
-            bus_3.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_BUSKITG2").findUnique();
-            bus_3.date_of_create = new Date();
-            bus_3.project = project_1;
-            bus_3.save();
-
-
-
-
             // Vytvořím C_Programy YODA
             C_Program c_program_1 = new C_Program();
             c_program_1.dateOfCreate = new Date();
-            c_program_1.program_name = "Blikání s Ledkou Pro Yodu";
+            c_program_1.program_name = "Defaultní program";
             c_program_1.type_of_board = TypeOfBoard.find.where().eq("name", "Yoda G2").findUnique();
             c_program_1.program_description = "Tento program je určen na blikání s ledkou";
             c_program_1.project = project_1;
@@ -652,7 +715,7 @@ public class Basic_Data {
             // Vytvořím C_Programy Bezdrát
             C_Program c_program_3 = new C_Program();
             c_program_3.dateOfCreate = new Date();
-            c_program_3.program_name = "Tlačítko na Bezdrátu";
+            c_program_3.program_name = "Tlačítko s ledkou na Bezdrátu";
             c_program_3.type_of_board = TypeOfBoard.find.where().eq("name", "Wireless G2").findUnique();
             c_program_3.program_description = "Tento program je určen na testování tlačítka na bezdrátovém modulu";
             c_program_3.project = project_1;
@@ -662,7 +725,7 @@ public class Basic_Data {
             // Vytvořím C_Programy Drát
             C_Program c_program_4 = new C_Program();
             c_program_4.dateOfCreate = new Date();
-            c_program_4.program_name = "Tlačítko na BUS kitu";
+            c_program_4.program_name = "Tlačítko s ledkou na BUS kitu";
             c_program_4.type_of_board = TypeOfBoard.find.where().eq("name", "BUS G2").findUnique();
             c_program_4.program_description = "Tento program je určen na testování tlačítka na BUS modulu";
             c_program_4.project = project_1;
@@ -685,20 +748,35 @@ public class Basic_Data {
                 version_c_program_1.refresh();
 
             // Druhá verze verze C_Programu pro YODU c_program_1
-            Version_Object version_c_program_2 = new Version_Object();
-                version_c_program_2.version_name = "Verze 0.0.2";
-                version_c_program_2.version_name = "Když jem podruhé a snad finálně zkoušel blikat ledkou";
-                version_c_program_2.c_program = c_program_1;
-                version_c_program_2.save();
+            Version_Object version_c_program_1_2 = new Version_Object();
+                version_c_program_1_2.version_name = "Verze 0.0.2";
+                version_c_program_1_2.version_name = "Když jem podruhé a snad finálně zkoušel blikat ledkou";
+                version_c_program_1_2.c_program = c_program_1;
+                version_c_program_1_2.save();
 
                 // Nahraje do Azure a připojí do verze soubor
-                ObjectNode content_2 = Json.newObject();
-                content_2.put("main", "#include \\\"mbed.h\\\"\\r\\n\\r\\n// nasledujici 2 radky jsou urceny pouze pro interni debug byzance knihovny\\r\\n/*\\r\\n#include \\\"ByzanceLogger.h\\\"\\r\\n#define MQTT_DEBUG 1\\r\\n*/\\r\\n\\r\\n#include \\\"byzance.h\\\"\\r\\n\\r\\nDigitalOut\\tledRed(LED_RED);\\r\\nDigitalOut\\tledGrn(LED_GREEN);\\r\\nInterruptIn button(USER_BUTTON);\\r\\n\\r\\nSerial pc(SERIAL_TX, SERIAL_RX); // tx, rx\\r\\n\\r\\n/*\\r\\n * digital in registrations\\r\\n */\\r\\n\\r\\nBYZANCE_DIGITAL_IN (led_red, {\\r\\n    ledRed = value;\\r\\n    pc.printf(\\\"DIN1: %d \\\\n\\\", value);\\r\\n})\\r\\n\\r\\n\\r\\nBYZANCE_DIGITAL_IN(led_green, {\\r\\n    ledGrn = value;\\r\\n    pc.printf(\\\"DIN2: %d \\\\n\\\", value);\\r\\n})\\r\\n\\r\\nBYZANCE_DIGITAL_IN(din555, {\\r\\n    pc.printf(\\\"DIN555: %d \\\\n\\\", value);\\r\\n})\\r\\n\\r\\n/*\\r\\n * analog in registrations\\r\\n */\\r\\n\\r\\nBYZANCE_ANALOG_IN(pwmled1, {\\r\\n    //ledPwm1 = value;\\r\\n    pc.printf(\\\"AIN1: %f \\\\n\\\", value);\\r\\n})\\r\\n\\r\\nBYZANCE_ANALOG_IN(ain10, {\\r\\n    pc.printf(\\\"AIN10: %f \\\\n\\\", value);\\r\\n})\\r\\n\\r\\n/*\\r\\n * message in registrations\\r\\n */\\r\\n\\r\\nBYZANCE_MESSAGE_IN(test1, ByzanceString, ByzanceBool, ByzanceInt, {\\r\\n    pc.printf(\\\"test1\\\\n\\\");\\r\\n    pc.printf(\\\"arg1=%s\\\\n\\\", arg1);\\r\\n    pc.printf(\\\"arg2=%d\\\\n\\\", arg2);\\r\\n    pc.printf(\\\"arg3=%ld\\\\n\\\", arg3);\\r\\n});\\r\\n\\r\\nBYZANCE_MESSAGE_IN(test2, ByzanceFloat, ByzanceFloat, {\\r\\n\\tpc.printf(\\\"test2\\\\n\\\");\\r\\n\\tpc.printf(\\\"arg1=%f\\\\n\\\", arg1);\\r\\n\\tpc.printf(\\\"arg2=%f\\\\n\\\", arg2);\\r\\n});\\r\\n\\r\\n/*\\r\\n * message out registrations\\r\\n */\\r\\n\\r\\nBYZANCE_MESSAGE_OUT(click1, ByzanceString);\\r\\nBYZANCE_MESSAGE_OUT(out3, ByzanceInt, ByzanceInt, ByzanceInt, ByzanceInt);\\r\\nBYZANCE_MESSAGE_OUT(test666, ByzanceString, ByzanceString, ByzanceInt, ByzanceString, ByzanceString, ByzanceFloat, ByzanceBool, ByzanceString);\\r\\n\\r\\n/*\\r\\n * digital out registrations\\r\\n */\\r\\nBYZANCE_DIGITAL_OUT(clicked1);\\r\\n\\r\\n/*\\r\\n * analog out registrations\\r\\n */\\r\\nBYZANCE_ANALOG_OUT(analog1);\\r\\n\\r\\nbool button_clicked = 0;\\r\\nstatic int click_counter;\\r\\nchar buffer[100];\\r\\n\\r\\nvoid button_callback(){\\r\\n\\r\\n\\t// vypíše do terminálu\\r\\n    pc.printf(\\\"Button clicked!\\\\n\\\");\\r\\n\\r\\n    button_clicked = 1;\\r\\n    /*\\r\\n     *\\r\\n     * BLBE JE TO, ZE POKUD SEM DO CALLBACKU DAM KTEROUKOLIV Z NASICH FUNKCI\\r\\n     * PROCESOR ZAMRZNE\\r\\n     * V MAINU FUNKCE FUNGUJI OK\\r\\n     * MUZE TO BYT S TIM, ZE TOTO JE PRERUSENI A V PRERUSENI SE BLBE PRACUJE S TIMERAMA/DELAYEMA A TAK,\\r\\n     * PROTOZE JSOU TO VETSINOU TAKY PRERUSENI\\r\\n    */\\r\\n}\\r\\n\\r\\nint main(int argc, char* argv[])\\r\\n{\\r\\n\\r\\n\\t//ByzanceLogger::init_serial(SERIAL_TX, SERIAL_RX);\\r\\n\\r\\n    pc.baud(115200);\\r\\n\\r\\n    BYZANCE_UNUSED_ARG(argc);\\r\\n    BYZANCE_UNUSED_ARG(argv);\\r\\n\\r\\n    pc.printf(\\\"Compiled on %02d. %02d. %04d - %02d:%02d:%02d\\\\n\\\", __BUILD_DAY__, __BUILD_MONTH__, __BUILD_YEAR_LEN4__, __BUILD_HOUR__, __BUILD_MINUTE__, __BUILD_SECOND__);\\r\\n    pc.printf(\\\"Firmware build ID is %s\\\\n\\\", TOSTRING(__BUILD_ID__));\\r\\n    // verze společné knihovny ByzanceCore\\r\\n    pc.printf(\\\"%s:\\\\t %d.%d.%d;\\\\n\\\", (char*)BYZANCE_NAME, (unsigned int)BYZANCE_VERSION_MAJOR, (unsigned int)BYZANCE_VERSION_MINOR, (unsigned int)BYZANCE_VERSION_SUBMINOR);\\r\\n    //verze specifické knihovny podle typu targetu\\r\\n\\t pc.printf(\\\"%s:\\\\t %d.%d.%d;\\\\n\\\", (char*)BYZANCE_LIB_NAME, (unsigned int)BYZANCE_LIB_VERSION_MAJOR, (unsigned int)BYZANCE_LIB_VERSION_MINOR, (unsigned int)BYZANCE_LIB_VERSION_SUBMINOR);\\r\\n    pc.printf(\\\"Waiting for connection...\\\\n\\\");\\r\\n\\r\\n    // pokud se byzance knihovně nepodaří připojit k serveru (vrátí nenulové číslo),\\r\\n    // tak se resetne procesor a zkusí to znovu\\r\\n\\tif(Byzance::connect()) NVIC_SystemReset();\\r\\n\\tpc.printf(\\\"Succesfully connected to MQTT broker\\\\n\\\");\\r\\n\\r\\n\\t// připojí callback (adresu funkce button callback) při stisknutí tlačítka\\r\\n    button.fall(&button_callback);\\r\\n\\r\\n    //set_time(1467994200);\\r\\n\\r\\n    /*\\r\\n    char* vysledek;\\r\\n\\r\\n    vysledek = setlocale(LC_ALL, \\\"cs_CZ\\\");\\r\\n    if(vysledek==NULL){\\r\\n    \\tpc.printf(\\\"Napicu\\\\n\\\");\\r\\n    \\twait_ms(2000);\\r\\n    }\\r\\n\\r\\n\\r\\n    //char buffer[32];\\r\\n     */\\r\\n\\r\\n\\r\\n    while(true) {\\r\\n\\r\\n/*\\r\\n    \\t  time_t rawtime;\\r\\n    \\t  struct tm * timeinfo;\\r\\n    \\t  char buffer [80];\\r\\n\\r\\n    \\t  struct lconv * lc;\\r\\n\\r\\n    \\t  time ( &rawtime );\\r\\n    \\t  timeinfo = localtime ( &rawtime );\\r\\n\\r\\n    \\t  int twice=0;\\r\\n\\r\\n    \\t  do {\\r\\n    \\t    pc.printf (\\\"Locale is: %s\\\\n\\\", setlocale(LC_ALL,NULL) );\\r\\n\\r\\n    \\t    strftime (buffer,80,\\\"%c\\\",timeinfo);\\r\\n    \\t    pc.printf (\\\"Date is: %s\\\\n\\\",buffer);\\r\\n\\r\\n    \\t    lc = localeconv ();\\r\\n    \\t    pc.printf (\\\"Currency symbol is: %s\\\\n-\\\\n\\\",lc->currency_symbol);\\r\\n\\r\\n    \\t    setlocale (LC_ALL,\\\"\\\");\\r\\n    \\t  } while (!twice++);\\r\\n*/\\r\\n\\r\\n    \\tif(button_clicked)\\r\\n    \\t{\\r\\n    \\t\\tbutton_clicked=0;\\r\\n    \\t    sprintf(buffer, \\\"Click #%d\\\", click_counter);\\r\\n    \\t    click1(buffer);\\r\\n    \\t    analog1(66.55f);\\r\\n    \\t    out3(11, 22, 33, 44);\\r\\n    \\t    test666(\\\"Frantisek\\\", \\\"Dobrota\\\", 666, \\\"rodak\\\", \\\"z blizke\\\", 12346.789, true, \\\"vesnice\\\");\\r\\n    \\t    click_counter++;\\r\\n    \\t}\\r\\n\\r\\n    \\t// bez nejakeho Thread::wait to zatim nefunguje,\\r\\n    \\t// protoze main vlakno (asi) zabere 100% vykonu procesoru\\r\\n    \\t// a nedostane se na byzance knihovnu\\r\\n    \\t// mozna by stacilo main vlaknu snizit prioritu a zvysit prioritu vlaknum v byzance knihovne\\r\\n        Thread::wait(100);\\r\\n    }\\r\\n}\\r\\n");
-                content_2.set("user_files", Json.parse("[{\"file_name\":\"Koloběžka\",\"code\":\"//nic\"},{\"file_name\":\"autíčko\",\"code\":\"//nic\"}]") );
+                ObjectNode content_1_2 = Json.newObject();
+                content_1_2.put("main", "#include \\\"mbed.h\\\"\\r\\n\\r\\n// nasledujici 2 radky jsou urceny pouze pro interni debug byzance knihovny\\r\\n/*\\r\\n#include \\\"ByzanceLogger.h\\\"\\r\\n#define MQTT_DEBUG 1\\r\\n*/\\r\\n\\r\\n#include \\\"byzance.h\\\"\\r\\n\\r\\nDigitalOut\\tledRed(LED_RED);\\r\\nDigitalOut\\tledGrn(LED_GREEN);\\r\\nInterruptIn button(USER_BUTTON);\\r\\n\\r\\nSerial pc(SERIAL_TX, SERIAL_RX); // tx, rx\\r\\n\\r\\n/*\\r\\n * digital in registrations\\r\\n */\\r\\n\\r\\nBYZANCE_DIGITAL_IN (led_red, {\\r\\n    ledRed = value;\\r\\n    pc.printf(\\\"DIN1: %d \\\\n\\\", value);\\r\\n})\\r\\n\\r\\n\\r\\nBYZANCE_DIGITAL_IN(led_green, {\\r\\n    ledGrn = value;\\r\\n    pc.printf(\\\"DIN2: %d \\\\n\\\", value);\\r\\n})\\r\\n\\r\\nBYZANCE_DIGITAL_IN(din555, {\\r\\n    pc.printf(\\\"DIN555: %d \\\\n\\\", value);\\r\\n})\\r\\n\\r\\n/*\\r\\n * analog in registrations\\r\\n */\\r\\n\\r\\nBYZANCE_ANALOG_IN(pwmled1, {\\r\\n    //ledPwm1 = value;\\r\\n    pc.printf(\\\"AIN1: %f \\\\n\\\", value);\\r\\n})\\r\\n\\r\\nBYZANCE_ANALOG_IN(ain10, {\\r\\n    pc.printf(\\\"AIN10: %f \\\\n\\\", value);\\r\\n})\\r\\n\\r\\n/*\\r\\n * message in registrations\\r\\n */\\r\\n\\r\\nBYZANCE_MESSAGE_IN(test1, ByzanceString, ByzanceBool, ByzanceInt, {\\r\\n    pc.printf(\\\"test1\\\\n\\\");\\r\\n    pc.printf(\\\"arg1=%s\\\\n\\\", arg1);\\r\\n    pc.printf(\\\"arg2=%d\\\\n\\\", arg2);\\r\\n    pc.printf(\\\"arg3=%ld\\\\n\\\", arg3);\\r\\n});\\r\\n\\r\\nBYZANCE_MESSAGE_IN(test2, ByzanceFloat, ByzanceFloat, {\\r\\n\\tpc.printf(\\\"test2\\\\n\\\");\\r\\n\\tpc.printf(\\\"arg1=%f\\\\n\\\", arg1);\\r\\n\\tpc.printf(\\\"arg2=%f\\\\n\\\", arg2);\\r\\n});\\r\\n\\r\\n/*\\r\\n * message out registrations\\r\\n */\\r\\n\\r\\nBYZANCE_MESSAGE_OUT(click1, ByzanceString);\\r\\nBYZANCE_MESSAGE_OUT(out3, ByzanceInt, ByzanceInt, ByzanceInt, ByzanceInt);\\r\\nBYZANCE_MESSAGE_OUT(test666, ByzanceString, ByzanceString, ByzanceInt, ByzanceString, ByzanceString, ByzanceFloat, ByzanceBool, ByzanceString);\\r\\n\\r\\n/*\\r\\n * digital out registrations\\r\\n */\\r\\nBYZANCE_DIGITAL_OUT(clicked1);\\r\\n\\r\\n/*\\r\\n * analog out registrations\\r\\n */\\r\\nBYZANCE_ANALOG_OUT(analog1);\\r\\n\\r\\nbool button_clicked = 0;\\r\\nstatic int click_counter;\\r\\nchar buffer[100];\\r\\n\\r\\nvoid button_callback(){\\r\\n\\r\\n\\t// vypíše do terminálu\\r\\n    pc.printf(\\\"Button clicked!\\\\n\\\");\\r\\n\\r\\n    button_clicked = 1;\\r\\n    /*\\r\\n     *\\r\\n     * BLBE JE TO, ZE POKUD SEM DO CALLBACKU DAM KTEROUKOLIV Z NASICH FUNKCI\\r\\n     * PROCESOR ZAMRZNE\\r\\n     * V MAINU FUNKCE FUNGUJI OK\\r\\n     * MUZE TO BYT S TIM, ZE TOTO JE PRERUSENI A V PRERUSENI SE BLBE PRACUJE S TIMERAMA/DELAYEMA A TAK,\\r\\n     * PROTOZE JSOU TO VETSINOU TAKY PRERUSENI\\r\\n    */\\r\\n}\\r\\n\\r\\nint main(int argc, char* argv[])\\r\\n{\\r\\n\\r\\n\\t//ByzanceLogger::init_serial(SERIAL_TX, SERIAL_RX);\\r\\n\\r\\n    pc.baud(115200);\\r\\n\\r\\n    BYZANCE_UNUSED_ARG(argc);\\r\\n    BYZANCE_UNUSED_ARG(argv);\\r\\n\\r\\n    pc.printf(\\\"Compiled on %02d. %02d. %04d - %02d:%02d:%02d\\\\n\\\", __BUILD_DAY__, __BUILD_MONTH__, __BUILD_YEAR_LEN4__, __BUILD_HOUR__, __BUILD_MINUTE__, __BUILD_SECOND__);\\r\\n    pc.printf(\\\"Firmware build ID is %s\\\\n\\\", TOSTRING(__BUILD_ID__));\\r\\n    // verze společné knihovny ByzanceCore\\r\\n    pc.printf(\\\"%s:\\\\t %d.%d.%d;\\\\n\\\", (char*)BYZANCE_NAME, (unsigned int)BYZANCE_VERSION_MAJOR, (unsigned int)BYZANCE_VERSION_MINOR, (unsigned int)BYZANCE_VERSION_SUBMINOR);\\r\\n    //verze specifické knihovny podle typu targetu\\r\\n\\t pc.printf(\\\"%s:\\\\t %d.%d.%d;\\\\n\\\", (char*)BYZANCE_LIB_NAME, (unsigned int)BYZANCE_LIB_VERSION_MAJOR, (unsigned int)BYZANCE_LIB_VERSION_MINOR, (unsigned int)BYZANCE_LIB_VERSION_SUBMINOR);\\r\\n    pc.printf(\\\"Waiting for connection...\\\\n\\\");\\r\\n\\r\\n    // pokud se byzance knihovně nepodaří připojit k serveru (vrátí nenulové číslo),\\r\\n    // tak se resetne procesor a zkusí to znovu\\r\\n\\tif(Byzance::connect()) NVIC_SystemReset();\\r\\n\\tpc.printf(\\\"Succesfully connected to MQTT broker\\\\n\\\");\\r\\n\\r\\n\\t// připojí callback (adresu funkce button callback) při stisknutí tlačítka\\r\\n    button.fall(&button_callback);\\r\\n\\r\\n    //set_time(1467994200);\\r\\n\\r\\n    /*\\r\\n    char* vysledek;\\r\\n\\r\\n    vysledek = setlocale(LC_ALL, \\\"cs_CZ\\\");\\r\\n    if(vysledek==NULL){\\r\\n    \\tpc.printf(\\\"Napicu\\\\n\\\");\\r\\n    \\twait_ms(2000);\\r\\n    }\\r\\n\\r\\n\\r\\n    //char buffer[32];\\r\\n     */\\r\\n\\r\\n\\r\\n    while(true) {\\r\\n\\r\\n/*\\r\\n    \\t  time_t rawtime;\\r\\n    \\t  struct tm * timeinfo;\\r\\n    \\t  char buffer [80];\\r\\n\\r\\n    \\t  struct lconv * lc;\\r\\n\\r\\n    \\t  time ( &rawtime );\\r\\n    \\t  timeinfo = localtime ( &rawtime );\\r\\n\\r\\n    \\t  int twice=0;\\r\\n\\r\\n    \\t  do {\\r\\n    \\t    pc.printf (\\\"Locale is: %s\\\\n\\\", setlocale(LC_ALL,NULL) );\\r\\n\\r\\n    \\t    strftime (buffer,80,\\\"%c\\\",timeinfo);\\r\\n    \\t    pc.printf (\\\"Date is: %s\\\\n\\\",buffer);\\r\\n\\r\\n    \\t    lc = localeconv ();\\r\\n    \\t    pc.printf (\\\"Currency symbol is: %s\\\\n-\\\\n\\\",lc->currency_symbol);\\r\\n\\r\\n    \\t    setlocale (LC_ALL,\\\"\\\");\\r\\n    \\t  } while (!twice++);\\r\\n*/\\r\\n\\r\\n    \\tif(button_clicked)\\r\\n    \\t{\\r\\n    \\t\\tbutton_clicked=0;\\r\\n    \\t    sprintf(buffer, \\\"Click #%d\\\", click_counter);\\r\\n    \\t    click1(buffer);\\r\\n    \\t    analog1(66.55f);\\r\\n    \\t    out3(11, 22, 33, 44);\\r\\n    \\t    test666(\\\"Frantisek\\\", \\\"Dobrota\\\", 666, \\\"rodak\\\", \\\"z blizke\\\", 12346.789, true, \\\"vesnice\\\");\\r\\n    \\t    click_counter++;\\r\\n    \\t}\\r\\n\\r\\n    \\t// bez nejakeho Thread::wait to zatim nefunguje,\\r\\n    \\t// protoze main vlakno (asi) zabere 100% vykonu procesoru\\r\\n    \\t// a nedostane se na byzance knihovnu\\r\\n    \\t// mozna by stacilo main vlaknu snizit prioritu a zvysit prioritu vlaknum v byzance knihovne\\r\\n        Thread::wait(100);\\r\\n    }\\r\\n}\\r\\n");
+                content_1_2.set("user_files", Json.parse("[{\"file_name\":\"Koloběžka\",\"code\":\"//nic\"},{\"file_name\":\"autíčko\",\"code\":\"//nic\"}]") );
                // content_2.put("external_libraries", "");
-                UtilTools.uploadAzure_Version(content_2.toString(), "code.json", c_program_1.get_path(), version_c_program_2);
-                version_c_program_2.refresh();
+                UtilTools.uploadAzure_Version(content_1_2.toString(), "code.json", c_program_1.get_path(), version_c_program_1_2);
+                version_c_program_1_2.refresh();
 
+
+            // Druhá verze verze C_Programu pro YODU c_program_1
+            Version_Object version_c_program_2 = new Version_Object();
+                version_c_program_2.version_name = "Verze 0.0.1";
+                version_c_program_2.version_name = "Trala la tra lalala";
+                version_c_program_2.c_program = c_program_2;
+                version_c_program_2.save();
+
+            // Nahraje do Azure a připojí do verze soubor
+            ObjectNode content_2 = Json.newObject();
+            content_2.put("main", "#include \\\"mbed.h\\\"\\r\\n\\r\\n// nasledujici 2 radky jsou urceny pouze pro interni debug byzance knihovny\\r\\n/*\\r\\n#include \\\"ByzanceLogger.h\\\"\\r\\n#define MQTT_DEBUG 1\\r\\n*/\\r\\n\\r\\n#include \\\"byzance.h\\\"\\r\\n\\r\\nDigitalOut\\tledRed(LED_RED);\\r\\nDigitalOut\\tledGrn(LED_GREEN);\\r\\nInterruptIn button(USER_BUTTON);\\r\\n\\r\\nSerial pc(SERIAL_TX, SERIAL_RX); // tx, rx\\r\\n\\r\\n/*\\r\\n * digital in registrations\\r\\n */\\r\\n\\r\\nBYZANCE_DIGITAL_IN (led_red, {\\r\\n    ledRed = value;\\r\\n    pc.printf(\\\"DIN1: %d \\\\n\\\", value);\\r\\n})\\r\\n\\r\\n\\r\\nBYZANCE_DIGITAL_IN(led_green, {\\r\\n    ledGrn = value;\\r\\n    pc.printf(\\\"DIN2: %d \\\\n\\\", value);\\r\\n})\\r\\n\\r\\nBYZANCE_DIGITAL_IN(din555, {\\r\\n    pc.printf(\\\"DIN555: %d \\\\n\\\", value);\\r\\n})\\r\\n\\r\\n/*\\r\\n * analog in registrations\\r\\n */\\r\\n\\r\\nBYZANCE_ANALOG_IN(pwmled1, {\\r\\n    //ledPwm1 = value;\\r\\n    pc.printf(\\\"AIN1: %f \\\\n\\\", value);\\r\\n})\\r\\n\\r\\nBYZANCE_ANALOG_IN(ain10, {\\r\\n    pc.printf(\\\"AIN10: %f \\\\n\\\", value);\\r\\n})\\r\\n\\r\\n/*\\r\\n * message in registrations\\r\\n */\\r\\n\\r\\nBYZANCE_MESSAGE_IN(test1, ByzanceString, ByzanceBool, ByzanceInt, {\\r\\n    pc.printf(\\\"test1\\\\n\\\");\\r\\n    pc.printf(\\\"arg1=%s\\\\n\\\", arg1);\\r\\n    pc.printf(\\\"arg2=%d\\\\n\\\", arg2);\\r\\n    pc.printf(\\\"arg3=%ld\\\\n\\\", arg3);\\r\\n});\\r\\n\\r\\nBYZANCE_MESSAGE_IN(test2, ByzanceFloat, ByzanceFloat, {\\r\\n\\tpc.printf(\\\"test2\\\\n\\\");\\r\\n\\tpc.printf(\\\"arg1=%f\\\\n\\\", arg1);\\r\\n\\tpc.printf(\\\"arg2=%f\\\\n\\\", arg2);\\r\\n});\\r\\n\\r\\n/*\\r\\n * message out registrations\\r\\n */\\r\\n\\r\\nBYZANCE_MESSAGE_OUT(click1, ByzanceString);\\r\\nBYZANCE_MESSAGE_OUT(out3, ByzanceInt, ByzanceInt, ByzanceInt, ByzanceInt);\\r\\nBYZANCE_MESSAGE_OUT(test666, ByzanceString, ByzanceString, ByzanceInt, ByzanceString, ByzanceString, ByzanceFloat, ByzanceBool, ByzanceString);\\r\\n\\r\\n/*\\r\\n * digital out registrations\\r\\n */\\r\\nBYZANCE_DIGITAL_OUT(clicked1);\\r\\n\\r\\n/*\\r\\n * analog out registrations\\r\\n */\\r\\nBYZANCE_ANALOG_OUT(analog1);\\r\\n\\r\\nbool button_clicked = 0;\\r\\nstatic int click_counter;\\r\\nchar buffer[100];\\r\\n\\r\\nvoid button_callback(){\\r\\n\\r\\n\\t// vypíše do terminálu\\r\\n    pc.printf(\\\"Button clicked!\\\\n\\\");\\r\\n\\r\\n    button_clicked = 1;\\r\\n    /*\\r\\n     *\\r\\n     * BLBE JE TO, ZE POKUD SEM DO CALLBACKU DAM KTEROUKOLIV Z NASICH FUNKCI\\r\\n     * PROCESOR ZAMRZNE\\r\\n     * V MAINU FUNKCE FUNGUJI OK\\r\\n     * MUZE TO BYT S TIM, ZE TOTO JE PRERUSENI A V PRERUSENI SE BLBE PRACUJE S TIMERAMA/DELAYEMA A TAK,\\r\\n     * PROTOZE JSOU TO VETSINOU TAKY PRERUSENI\\r\\n    */\\r\\n}\\r\\n\\r\\nint main(int argc, char* argv[])\\r\\n{\\r\\n\\r\\n\\t//ByzanceLogger::init_serial(SERIAL_TX, SERIAL_RX);\\r\\n\\r\\n    pc.baud(115200);\\r\\n\\r\\n    BYZANCE_UNUSED_ARG(argc);\\r\\n    BYZANCE_UNUSED_ARG(argv);\\r\\n\\r\\n    pc.printf(\\\"Compiled on %02d. %02d. %04d - %02d:%02d:%02d\\\\n\\\", __BUILD_DAY__, __BUILD_MONTH__, __BUILD_YEAR_LEN4__, __BUILD_HOUR__, __BUILD_MINUTE__, __BUILD_SECOND__);\\r\\n    pc.printf(\\\"Firmware build ID is %s\\\\n\\\", TOSTRING(__BUILD_ID__));\\r\\n    // verze společné knihovny ByzanceCore\\r\\n    pc.printf(\\\"%s:\\\\t %d.%d.%d;\\\\n\\\", (char*)BYZANCE_NAME, (unsigned int)BYZANCE_VERSION_MAJOR, (unsigned int)BYZANCE_VERSION_MINOR, (unsigned int)BYZANCE_VERSION_SUBMINOR);\\r\\n    //verze specifické knihovny podle typu targetu\\r\\n\\t pc.printf(\\\"%s:\\\\t %d.%d.%d;\\\\n\\\", (char*)BYZANCE_LIB_NAME, (unsigned int)BYZANCE_LIB_VERSION_MAJOR, (unsigned int)BYZANCE_LIB_VERSION_MINOR, (unsigned int)BYZANCE_LIB_VERSION_SUBMINOR);\\r\\n    pc.printf(\\\"Waiting for connection...\\\\n\\\");\\r\\n\\r\\n    // pokud se byzance knihovně nepodaří připojit k serveru (vrátí nenulové číslo),\\r\\n    // tak se resetne procesor a zkusí to znovu\\r\\n\\tif(Byzance::connect()) NVIC_SystemReset();\\r\\n\\tpc.printf(\\\"Succesfully connected to MQTT broker\\\\n\\\");\\r\\n\\r\\n\\t// připojí callback (adresu funkce button callback) při stisknutí tlačítka\\r\\n    button.fall(&button_callback);\\r\\n\\r\\n    //set_time(1467994200);\\r\\n\\r\\n    /*\\r\\n    char* vysledek;\\r\\n\\r\\n    vysledek = setlocale(LC_ALL, \\\"cs_CZ\\\");\\r\\n    if(vysledek==NULL){\\r\\n    \\tpc.printf(\\\"Napicu\\\\n\\\");\\r\\n    \\twait_ms(2000);\\r\\n    }\\r\\n\\r\\n\\r\\n    //char buffer[32];\\r\\n     */\\r\\n\\r\\n\\r\\n    while(true) {\\r\\n\\r\\n/*\\r\\n    \\t  time_t rawtime;\\r\\n    \\t  struct tm * timeinfo;\\r\\n    \\t  char buffer [80];\\r\\n\\r\\n    \\t  struct lconv * lc;\\r\\n\\r\\n    \\t  time ( &rawtime );\\r\\n    \\t  timeinfo = localtime ( &rawtime );\\r\\n\\r\\n    \\t  int twice=0;\\r\\n\\r\\n    \\t  do {\\r\\n    \\t    pc.printf (\\\"Locale is: %s\\\\n\\\", setlocale(LC_ALL,NULL) );\\r\\n\\r\\n    \\t    strftime (buffer,80,\\\"%c\\\",timeinfo);\\r\\n    \\t    pc.printf (\\\"Date is: %s\\\\n\\\",buffer);\\r\\n\\r\\n    \\t    lc = localeconv ();\\r\\n    \\t    pc.printf (\\\"Currency symbol is: %s\\\\n-\\\\n\\\",lc->currency_symbol);\\r\\n\\r\\n    \\t    setlocale (LC_ALL,\\\"\\\");\\r\\n    \\t  } while (!twice++);\\r\\n*/\\r\\n\\r\\n    \\tif(button_clicked)\\r\\n    \\t{\\r\\n    \\t\\tbutton_clicked=0;\\r\\n    \\t    sprintf(buffer, \\\"Click #%d\\\", click_counter);\\r\\n    \\t    click1(buffer);\\r\\n    \\t    analog1(66.55f);\\r\\n    \\t    out3(11, 22, 33, 44);\\r\\n    \\t    test666(\\\"Frantisek\\\", \\\"Dobrota\\\", 666, \\\"rodak\\\", \\\"z blizke\\\", 12346.789, true, \\\"vesnice\\\");\\r\\n    \\t    click_counter++;\\r\\n    \\t}\\r\\n\\r\\n    \\t// bez nejakeho Thread::wait to zatim nefunguje,\\r\\n    \\t// protoze main vlakno (asi) zabere 100% vykonu procesoru\\r\\n    \\t// a nedostane se na byzance knihovnu\\r\\n    \\t// mozna by stacilo main vlaknu snizit prioritu a zvysit prioritu vlaknum v byzance knihovne\\r\\n        Thread::wait(100);\\r\\n    }\\r\\n}\\r\\n");
+            content_2.set("user_files", Json.parse("[{\"file_name\":\"Koloběžka\",\"code\":\"//nic\"},{\"file_name\":\"autíčko\",\"code\":\"//nic\"}]") );
+            // content_2.put("external_libraries", "");
+            UtilTools.uploadAzure_Version(content_2.toString(), "code.json", c_program_3.get_path(), version_c_program_2);
+            version_c_program_2.refresh();
 
 
             // První verze  C_Programu pro Wireles c_program_3
@@ -738,26 +816,86 @@ public class Basic_Data {
                 public void run() {
                     try {
 
-                        F.Promise<WSResponse> responsePromise_1 = Play.current().injector().instanceOf(WSClient.class).url(Server.tyrion_serverAddress + "/compilation/c_program/version/compile/" + version_c_program_1.id)
+                        // Zkompiluji - ale dám dostatečnou časovou rezervu pro kompilátor
+                        sleep(20000);
+
+                        try{
+
+                            F.Promise<WSResponse> responsePromise_1 = Play.current().injector().instanceOf(WSClient.class).url(Server.tyrion_serverAddress + "/compilation/c_program/version/compile/" + version_c_program_1.id)
                                 .setContentType("undefined").setMethod("PUT").setHeader("X-AUTH-TOKEN", token.authToken).setRequestTimeout(50000).put("");
 
-                        JsonNode result_1 = responsePromise_1.get(50000).asJson();
+                            JsonNode result_1 = responsePromise_1.get(50000).asJson();
+                            System.out.print("Result 1 " + result_1.toString());
 
-                        F.Promise<WSResponse> responsePromise_2 = Play.current().injector().instanceOf(WSClient.class).url(Server.tyrion_serverAddress + "/compilation/c_program/version/compile/" + version_c_program_2.id)
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+
+
+
+                        try{
+
+                            F.Promise<WSResponse> responsePromise_1_2 = Play.current().injector().instanceOf(WSClient.class).url(Server.tyrion_serverAddress + "/compilation/c_program/version/compile/" + version_c_program_1_2.id)
+                                    .setContentType("undefined").setMethod("PUT").setHeader("X-AUTH-TOKEN", token.authToken).setRequestTimeout(50000).put("");
+
+                            JsonNode result_1_2 = responsePromise_1_2.get(50000).asJson();
+                            System.out.print("Result 1_2 " + result_1_2.toString());
+
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+
+
+                        try{
+
+                            F.Promise<WSResponse> responsePromise_2 = Play.current().injector().instanceOf(WSClient.class).url(Server.tyrion_serverAddress + "/compilation/c_program/version/compile/" + version_c_program_2.id)
+                                    .setContentType("undefined").setMethod("PUT").setHeader("X-AUTH-TOKEN", token.authToken).setRequestTimeout(50000).put("");
+
+                            JsonNode result_2 = responsePromise_2.get(50000).asJson();
+                            System.out.print("Result 2 " + result_2.toString());
+
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+
+                         try{
+
+                            F.Promise<WSResponse> responsePromise_3 = Play.current().injector().instanceOf(WSClient.class).url(Server.tyrion_serverAddress + "/compilation/c_program/version/compile/" + version_c_program_3.id)
+                                    .setContentType("undefined").setMethod("PUT").setHeader("X-AUTH-TOKEN", token.authToken).setRequestTimeout(50000).put("");
+
+                            JsonNode result_3 = responsePromise_3.get(50000).asJson();
+                            System.out.print("Result 3 " + result_3.toString());
+
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+
+
+                        try{
+
+                             F.Promise<WSResponse> responsePromise_4 = Play.current().injector().instanceOf(WSClient.class).url(Server.tyrion_serverAddress + "/compilation/c_program/version/compile/" + version_c_program_4.id)
                                 .setContentType("undefined").setMethod("PUT").setHeader("X-AUTH-TOKEN", token.authToken).setRequestTimeout(50000).put("");
 
-                        JsonNode result_2 = responsePromise_2.get(50000).asJson();
+                            JsonNode result_4 = responsePromise_4.get(50000).asJson();
+                            System.out.print("Result 4 " + result_4.toString());
+
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+
 
                     }catch (Exception e){
+                        e.printStackTrace();
                     }
 
                 }
             };
 
+            System.err.println("Zapínám žádost o kompilace");
             compile_that.start();
 
 
-
+     // První verze B_Programu - Pro instanc Yoda E a Ci!
             B_Program b_program_1 = new B_Program();
             b_program_1.name = "První blocko program";
             b_program_1.program_description = "Blocko program je úžasná věc když funguje... a tady v tomto progtramu už je připravený i HW!!!!";
@@ -766,15 +904,6 @@ public class Basic_Data {
             b_program_1.save();
 
 
-            B_Program b_program_2 = new B_Program();
-            b_program_2.name = "Druhý blocko program";
-            b_program_2.program_description = "Lorem Ipsum dolorem h ljahsdf lkasjdbflkjsdbf ndsabflhsbdljkhsafglbjsknbflk jnm.gbcvxůkdjnslvůd jfůsjadbf ůdjkůsjkahůk bam.sd, dsaf bhas dbflhjasbdlfjhbdsalhjbf sdlhfb lsdjfblsd jfbsadbfjhblvhjasdljhf ljh lsdhjfg asjhf bkhjfd";
-            b_program_2.dateOfCreate = new Date();
-            b_program_2.project = project_1;
-            b_program_2.save();
-
-
-             // První verze B_Programu - Pro instanci!
             Version_Object version_b_program_1 = new Version_Object();
             version_b_program_1.version_name = "Blocko Verze č.1";
             version_b_program_1.version_description = "Snažím se tu dělat veklé věci";
@@ -782,65 +911,270 @@ public class Basic_Data {
             version_b_program_1.b_program = b_program_1;
 
 
+            // Instance 1 (TOM - YODA E a Yoda C)
             B_Program_Hw_Group group_1 = new B_Program_Hw_Group();
                 // Main Boad - Yoda
                 B_Pair main_1 = new B_Pair();
-                    main_1.board = board_yoda_1;
+                    main_1.board = Board.find.where().eq("personal_description", "Yoda E").findUnique();
                     main_1.c_program_version = version_c_program_1;
 
                 group_1.main_board_pair = main_1;
 
-                // Bezdrát 1
-                B_Pair device_1 = new B_Pair();
-                    device_1.board = wireless_1;
-                    device_1.c_program_version = version_c_program_3;
-                    group_1.device_board_pairs.add(device_1);
+                // Bus
+                B_Pair device_16 = new B_Pair();
+                    device_16.board = Board.find.where().eq("personal_description", "[16]").findUnique();
+                    device_16.c_program_version = version_c_program_4;
+                    group_1.device_board_pairs.add(device_16);
 
-                // Bezdrát 2
+                // Bus
+                B_Pair device_15 = new B_Pair();
+                    device_15.board = Board.find.where().eq("personal_description", "[15]").findUnique();
+                    device_15.c_program_version = version_c_program_4;
+                    group_1.device_board_pairs.add(device_15);
+
+                // Bus
                 B_Pair device_2 = new B_Pair();
-                    device_2.board = wireless_2;
-                    device_2.c_program_version = version_c_program_3;
+                    device_2.board =Board.find.where().eq("personal_description", "[2]").findUnique();
+                    device_2.c_program_version = version_c_program_4;
                     group_1.device_board_pairs.add(device_2);
 
-                // Bus 1
-                B_Pair device_3 = new B_Pair();
-                    device_3.board = bus_1;
-                    device_3.c_program_version = version_c_program_4;
-                    group_1.device_board_pairs.add(device_3);
+                // Bezdrát
+                B_Pair device_13 = new B_Pair();
+                    device_13.board =Board.find.where().eq("personal_description", "[13]").findUnique();
+                    device_13.c_program_version = version_c_program_3;
+                    group_1.device_board_pairs.add(device_13);
+
+                // Bezdrát
+                B_Pair device_14 = new B_Pair();
+                    device_14.board =Board.find.where().eq("personal_description", "[14]").findUnique();
+                    device_14.c_program_version = version_c_program_3;
+                    group_1.device_board_pairs.add(device_14);
 
 
             B_Program_Hw_Group group_2 = new B_Program_Hw_Group();
                 // Main Board - Yoda
                 B_Pair main_2 = new B_Pair();
-                    main_2.board = board_yoda_2;
+                    main_2.board = Board.find.where().eq("personal_description", "Yoda C").findUnique();
                     main_2.c_program_version = version_c_program_2;
 
                 group_2.main_board_pair = main_2;
 
-                // Bus 1
-                B_Pair device_4 = new B_Pair();
-                    device_4.board = bus_2;
-                    device_4.c_program_version = version_c_program_4;
-                    group_2.device_board_pairs.add(device_4);
-
-
-                  B_Pair device_5 = new B_Pair();
-                      device_5.board = bus_3;
-                      device_4.c_program_version = version_c_program_4;
-                      group_2.device_board_pairs.add(device_5);
-
-                   B_Pair device_6 = new B_Pair();
-                       device_6.board = wireless_3;
-                       device_6.c_program_version = version_c_program_2;
-                       group_2.device_board_pairs.add(device_6);
-
             version_b_program_1.b_program_hw_groups.add(group_1);
             version_b_program_1.b_program_hw_groups.add(group_2);
             version_b_program_1.save();
+            version_b_program_1.refresh();
 
             UtilTools.uploadAzure_Version("Blocko Program zde!", "program.js", b_program_1.get_path() , version_b_program_1);
 
-            version_b_program_1.update();
+
+    // Druhý B_Program - Pro instanci Yoda B!
+            // Instance 2 - Martinův Yoda
+            B_Program b_program_2 = new B_Program();
+            b_program_2.name = "Druhý blocko program - Určený pro Yodu B ";
+            b_program_2.program_description = "Tento program má sloužit Martinovi";
+            b_program_2.dateOfCreate = new Date();
+            b_program_2.project = project_1;
+            b_program_2.save();
+
+            // První verze B_Programu - Pro instanci!
+            Version_Object version_b_program_2 = new Version_Object();
+            version_b_program_2.version_name = "Blocko Verze č.1";
+            version_b_program_2.version_description = "Snažím se tu dělat veklé věci";
+            version_b_program_2.date_of_create = new Date();
+            version_b_program_2.b_program = b_program_2;
+
+
+            B_Program_Hw_Group group_3 = new B_Program_Hw_Group();
+
+                B_Pair main_3 = new B_Pair();
+                main_3.board = Board.find.where().eq("personal_description", "Yoda B").findUnique();
+                main_3.c_program_version = version_c_program_1;
+
+            group_3.main_board_pair = main_3;
+            version_b_program_2.b_program_hw_groups.add(group_3);
+            version_b_program_2.save();
+            version_b_program_2.refresh();
+
+
+    // Instance 3 - Viktorv Yoda
+            // Instance 3 - Voktorův Yoda
+            B_Program b_program_3 = new B_Program();
+            b_program_3.name = "Druhý blocko program - Určený pro Yodu A ";
+            b_program_3.program_description = "Tento program má sloužit Viktorovi";
+            b_program_3.dateOfCreate = new Date();
+            b_program_3.project = project_1;
+            b_program_3.save();
+
+            // První verze B_Programu - Pro instanci!
+            Version_Object version_b_program_3 = new Version_Object();
+            version_b_program_3.version_name = "Blocko Verze č.1";
+            version_b_program_3.version_description = "Snažím se tu dělat veklé věci";
+            version_b_program_3.date_of_create = new Date();
+            version_b_program_3.b_program = b_program_3;
+
+
+            B_Program_Hw_Group group_4 = new B_Program_Hw_Group();
+
+            // Main A - yoda
+            B_Pair main_4 = new B_Pair();
+                main_4.board = Board.find.where().eq("personal_description", "Yoda A").findUnique();
+                main_4.c_program_version = version_c_program_1;
+                group_4.main_board_pair = main_4;
+
+
+            // BUS
+            B_Pair device_1 = new B_Pair();
+            device_1.board =Board.find.where().eq("personal_description", "[1]").findUnique();
+            device_1.c_program_version = version_c_program_4;
+            group_4.device_board_pairs.add(device_1);
+
+
+            // BUS
+            B_Pair device_3 = new B_Pair();
+            device_3.board =Board.find.where().eq("personal_description", "[3]").findUnique();
+            device_3.c_program_version = version_c_program_4;
+            group_4.device_board_pairs.add(device_3);
+
+
+            // BUS
+            B_Pair device_4 = new B_Pair();
+            device_4.board =Board.find.where().eq("personal_description", "[4]").findUnique();
+            device_4.c_program_version = version_c_program_4;
+            group_4.device_board_pairs.add(device_4);
+
+            // BUS
+            B_Pair device_5 = new B_Pair();
+            device_5.board =Board.find.where().eq("personal_description", "[5]").findUnique();
+            device_5.c_program_version = version_c_program_4;
+            group_4.device_board_pairs.add(device_5);
+
+
+            // BUS
+            B_Pair device_8 = new B_Pair();
+                device_8.board =Board.find.where().eq("personal_description", "[8]").findUnique();
+                device_8.c_program_version = version_c_program_4;
+                group_4.device_board_pairs.add(device_8);
+
+            // BUS
+            B_Pair device_9 = new B_Pair();
+                device_9.board =Board.find.where().eq("personal_description", "[9]").findUnique();
+                device_9.c_program_version = version_c_program_4;
+                group_4.device_board_pairs.add(device_9);
+
+
+            // Bezdrát
+            B_Pair device_6 = new B_Pair();
+                device_6.board =Board.find.where().eq("personal_description", "[6]").findUnique();
+                device_6.c_program_version = version_c_program_3;
+                group_4.device_board_pairs.add(device_6);
+
+            // Bezdrát
+            B_Pair device_7 = new B_Pair();
+                device_7.board =Board.find.where().eq("personal_description", "[7]").findUnique();
+                device_7.c_program_version = version_c_program_3;
+                group_4.device_board_pairs.add(device_7);
+
+            version_b_program_3.b_program_hw_groups.add(group_4);
+            version_b_program_3.save();
+            version_b_program_3.refresh();
+
+
+    // Instance 4 - Davidův Yoda - Nefuknční Yoda
+
+            /*
+            // Instance 3 - Voktorův Yoda
+            B_Program b_program_4 = new B_Program();
+                b_program_4.name = "Čtvrtý blocko program - Určený pro Yodu D";
+                b_program_4.program_description = "Tento program má sloužit Davidovi";
+                b_program_4.dateOfCreate = new Date();
+                b_program_4.project = project_1;
+                b_program_4.save();
+
+            // První verze B_Programu - Pro instanci!
+            Version_Object version_b_program_4 = new Version_Object();
+                version_b_program_4.version_name = "Blocko Verze č.1";
+                version_b_program_4.version_description = "Snažím se tu dělat veklé věci";
+                version_b_program_4.date_of_create = new Date();
+                version_b_program_4.b_program = b_program_4;
+
+            B_Program_Hw_Group group_5 = new B_Program_Hw_Group();
+
+            B_Pair main_5 = new B_Pair();
+            main_5.board = Board.find.where().eq("personal_description", "Yoda D").findUnique();
+            main_5.c_program_version = version_c_program_1;
+
+            group_5.main_board_pair = main_5;
+            version_b_program_4.b_program_hw_groups.add(group_5);
+            version_b_program_4.save();
+            */
+
+            Thread uploud_instances = new Thread() {
+                @Override
+                public void run() {
+                    try {
+
+                        // Nahraju instance ??? - Ale pak je tu problém nehotových C_programů.... :(
+                        System.err.println("Zapínám vlákno nahrávání instnací na server");
+                        sleep(20000);
+
+                        System.out.println("Zapínám nahrávání instnací do serveru");
+
+                        try{
+
+                            F.Promise<WSResponse> responsePromise_1 = Play.current().injector().instanceOf(WSClient.class).url(Server.tyrion_serverAddress + "/project/b_program/uploadToCloud/" + version_b_program_1.id)
+                                    .setContentType("undefined").setMethod("PUT").setHeader("X-AUTH-TOKEN", token.authToken).setRequestTimeout(5000).put("");
+                            JsonNode result_1 = responsePromise_1.get(5000).asJson();
+
+                            System.out.print("Result 1 " + result_1.toString());
+
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+
+                        try{
+
+                            F.Promise<WSResponse> responsePromise_2 = Play.current().injector().instanceOf(WSClient.class).url(Server.tyrion_serverAddress + "/project/b_program/uploadToCloud/" + version_b_program_2.id)
+                                    .setContentType("undefined").setMethod("PUT").setHeader("X-AUTH-TOKEN", token.authToken).setRequestTimeout(5000).put("");
+                            JsonNode result_2 = responsePromise_2.get(5000).asJson();
+
+                            System.out.print("Result 2 " + result_2.toString());
+
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+
+                        try{
+
+                            F.Promise<WSResponse> responsePromise_3 = Play.current().injector().instanceOf(WSClient.class).url(Server.tyrion_serverAddress + "/project/b_program/uploadToCloud/" + version_b_program_3.id)
+                                    .setContentType("undefined").setMethod("PUT").setHeader("X-AUTH-TOKEN", token.authToken).setRequestTimeout(5000).put("");
+                            JsonNode result_3 = responsePromise_3.get(5000).asJson();
+
+                            System.out.print("Result 3 " + result_3.toString());
+
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+                        /*
+
+                        F.Promise<WSResponse> responsePromise_4 = Play.current().injector().instanceOf(WSClient.class).url(Server.tyrion_serverAddress + "/project/b_program/uploadToCloud/" + version_c_program_4.id)
+                                .setContentType("undefined").setMethod("PUT").setHeader("X-AUTH-TOKEN", token.authToken).setRequestTimeout(50000).put("");
+                        JsonNode result_4 = responsePromise_4.get(50000).asJson();
+
+                        System.out.print("Result 4 " + result_4.toString());
+
+                        */
+
+
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                }
+            };
+
+            System.err.println("Nahrávám instnace na server");
+            uploud_instances.start();
+
 
         }catch (Exception e){
             e.printStackTrace();
