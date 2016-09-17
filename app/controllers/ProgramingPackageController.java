@@ -2275,6 +2275,9 @@ public class ProgramingPackageController extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_TypeOfBlock_New help = form.get();
 
+            if(TypeOfBlock.find.where().eq("name",help.name).findUnique() != null)
+                return GlobalResult.badRequest("Type of Block with this name already exists, type a new one.");
+
             // Vytvoření objektu
             TypeOfBlock typeOfBlock = new TypeOfBlock();
             typeOfBlock.general_description = help.general_description;
@@ -2469,7 +2472,7 @@ public class ProgramingPackageController extends Controller {
 
     @ApiOperation(value = "get all Type of Block list",
             tags = {"Type-of-Block"},
-            notes = "delete group for BlockoBlocks -> Type of block",
+            notes = "get all groups for BlockoBlocks -> Type of block",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -3196,7 +3199,7 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-// BLOCKO GENERAL ######################################################################################################*/
+// BLOCKO ADMIN ########################################################################################################*/
 
     @Security.Authenticated(Secured_Admin.class)
     public Result changeApprovalState(){
@@ -3217,19 +3220,53 @@ public class ProgramingPackageController extends Controller {
 
                     typeOfBlock.update();
 
-                    return GlobalResult.result_ok(Json.toJson(typeOfBlock));
+                    break;
                 }
                 case "blocko_block": {
 
                     BlockoBlock blockoBlock = BlockoBlock.find.byId(help.object_id);
                     if (blockoBlock == null) return GlobalResult.notFoundObject("blocko_block not found");
 
-                    if(help.approval) blockoBlock.approval_state = Approval_state.approved;
-                    else blockoBlock.approval_state = Approval_state.disapproved;
+                    if (blockoBlock.type_of_block == null) return GlobalResult.badRequest("Block must be assigned to a Type Of Block");
 
+                    if(help.approval) {
+                        blockoBlock.approval_state = Approval_state.approved;
+                        if(blockoBlock.type_of_block.approval_state == Approval_state.pending)
+                            blockoBlock.type_of_block.approval_state = Approval_state.approved;
+                        blockoBlock.blocko_versions.get(0).approval_state = Approval_state.approved;
+                    }
+                    else {
+                        if((help.reason == null)||(help.reason.equals(""))) return GlobalResult.badRequest("Reason is empty");
+                        blockoBlock.approval_state = Approval_state.disapproved;
+                        if(blockoBlock.type_of_block.approval_state == Approval_state.pending)
+                            blockoBlock.type_of_block.approval_state = Approval_state.disapproved;
+                        blockoBlock.blocko_versions.get(0).approval_state = Approval_state.disapproved;
+
+                        try {
+                            new EmailTool()
+                                    .addEmptyLineSpace()
+                                    .startParagraph("13")
+                                    .addText("Block: ")
+                                    .addBoldText(blockoBlock.name)
+                                    .addText(" was not approved for this reason: ")
+                                    .endParagraph()
+                                    .startParagraph("13")
+                                    .addText( help.reason)
+                                    .endParagraph()
+                                    .addEmptyLineSpace()
+                                    .sendEmail(blockoBlock.author.mail, "Block was disapproved" );
+
+                        } catch (Exception e) {
+                            logger.error ("Sending mail -> critical error", e);
+                            e.printStackTrace();
+                        }
+                    }
+
+                    blockoBlock.blocko_versions.get(0).update();
+                    blockoBlock.type_of_block.update();
                     blockoBlock.update();
 
-                    return GlobalResult.result_ok(Json.toJson(blockoBlock));
+                    break;
                 }
                 case "blocko_block_version": {
 
@@ -3237,14 +3274,38 @@ public class ProgramingPackageController extends Controller {
                     if (blockoBlockVersion == null) return GlobalResult.notFoundObject("blocko_block_version not found");
 
                     if(help.approval) blockoBlockVersion.approval_state = Approval_state.approved;
-                    else blockoBlockVersion.approval_state = Approval_state.disapproved;
+                    else{
+                        if((help.reason == null)||(help.reason.equals(""))) return GlobalResult.badRequest("Reason is empty");
+                        blockoBlockVersion.approval_state = Approval_state.disapproved;
+
+                        try {
+                            new EmailTool()
+                                    .addEmptyLineSpace()
+                                    .startParagraph("13")
+                                    .addText("Version of Block " + blockoBlockVersion.blocko_block.name + ": ")
+                                    .addBoldText(blockoBlockVersion.version_name)
+                                    .addText(" was not approved for this reason: ")
+                                    .endParagraph()
+                                    .startParagraph("13")
+                                    .addText( help.reason)
+                                    .endParagraph()
+                                    .addEmptyLineSpace()
+                                    .sendEmail(blockoBlockVersion.blocko_block.author.mail, "Version of Block disapproved" );
+
+                        } catch (Exception e) {
+                            logger.error ("Sending mail -> critical error", e);
+                            e.printStackTrace();
+                        }
+                    }
 
                     blockoBlockVersion.update();
 
-                    return GlobalResult.result_ok(Json.toJson(blockoBlockVersion));
+                    break;
                 }
-                default: return GlobalResult.badRequest("Check if object_name is 'type_of_block', 'blocko_block' or 'blocko_block_version'.");
+                default: return GlobalResult.badRequest("Something went wrong.");
             }
+
+            return GlobalResult.result_ok();
 
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
@@ -3275,26 +3336,52 @@ public class ProgramingPackageController extends Controller {
 
                     typeOfBlock.update();
 
-                    return GlobalResult.result_ok(Json.toJson(typeOfBlock));
+                    return GlobalResult.result_ok();
                 }
                 case "blocko_block": {
 
                     BlockoBlock blockoBlock = BlockoBlock.find.byId(help.object_id);
                     if (blockoBlock == null) return GlobalResult.notFoundObject("blocko_block not found");
 
-                    if((help.blocko_block_name == null)||(help.blocko_block_general_description == null)) return GlobalResult.badRequest("You must fill in blocko_block details");
+                    if((help.blocko_block_name == null)||(help.blocko_block_general_description == null)) return GlobalResult.badRequest("You must fill in blocko_block details.");
+                    if((help.blocko_block_type_of_block_id == null)||(help.type_of_block_name == null)||(help.type_of_block_general_description == null)) return GlobalResult.badRequest("You must fill in type_of_block details.");
+                    if((help.blocko_block_version_name == null)||(help.blocko_block_version_description == null)||(help.blocko_block_design_json == null)||(help.blocko_block_logic_json == null)) return GlobalResult.badRequest("You must fill in type_of_block details");
 
                     blockoBlock.name = help.blocko_block_name;
                     blockoBlock.general_description = help.blocko_block_general_description;
                     blockoBlock.approval_state = Approval_state.edited;
 
-                    if((help.blocko_block_type_of_block_id != null)&&(!(help.blocko_block_type_of_block_id.equals("")))){
-                        blockoBlock.type_of_block = TypeOfBlock.find.byId(help.blocko_block_type_of_block_id);
+                    TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(help.blocko_block_type_of_block_id);
+                    if(typeOfBlock == null) return GlobalResult.notFoundObject("type_of_block not found");
+
+                    if(typeOfBlock.approval_state == Approval_state.pending){
+
+                        typeOfBlock.name = help.type_of_block_name;
+                        typeOfBlock.general_description = help.type_of_block_general_description;
+                        typeOfBlock.approval_state = Approval_state.approved;
+
+                        typeOfBlock.update();
                     }
+                    if((blockoBlock.type_of_block_id()!= null)&&(!(typeOfBlock.id.equals(blockoBlock.type_of_block_id())))&&(blockoBlock.type_of_block.approval_state == Approval_state.pending)) {
+                        blockoBlock.type_of_block.approval_state = Approval_state.disapproved;
+                        blockoBlock.type_of_block.update();
+                    }
+
+                    blockoBlock.type_of_block = typeOfBlock;
 
                     blockoBlock.update();
 
-                    return GlobalResult.result_ok(Json.toJson(blockoBlock));
+                    BlockoBlockVersion blockoBlockVersion = blockoBlock.blocko_versions.get(0);
+
+                    blockoBlockVersion.version_name = help.blocko_block_version_name;
+                    blockoBlockVersion.version_description = help.blocko_block_version_description;
+                    blockoBlockVersion.design_json = help.blocko_block_design_json;
+                    blockoBlockVersion.logic_json = help.blocko_block_logic_json;
+                    blockoBlockVersion.approval_state = Approval_state.edited;
+
+                    blockoBlockVersion.update();
+
+                    return GlobalResult.result_ok();
                 }
                 case "blocko_block_version": {
 
@@ -3305,52 +3392,20 @@ public class ProgramingPackageController extends Controller {
 
                     blockoBlockVersion.version_name = help.blocko_block_version_name;
                     blockoBlockVersion.version_description = help.blocko_block_version_description;
+                    blockoBlockVersion.design_json = help.blocko_block_design_json;
                     blockoBlockVersion.logic_json = help.blocko_block_logic_json;
                     blockoBlockVersion.approval_state = Approval_state.edited;
 
                     blockoBlockVersion.update();
 
-                    return GlobalResult.result_ok(Json.toJson(blockoBlockVersion));
+                    return GlobalResult.result_ok();
                 }
-                default: return GlobalResult.badRequest("Check if object_name is 'type_of_block', 'blocko_block' or 'blocko_block_version'.");
+                default: return GlobalResult.badRequest("Something went wrong");
             }
 
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
 
-        }
-    }
-
-    @Security.Authenticated(Secured_Admin.class)
-    public Result getTypeOfBlockPending(){
-        try {
-            List<TypeOfBlock> typeOfBlocks = TypeOfBlock.find.where().eq("approval_state", Approval_state.pending).findList();
-
-            return GlobalResult.result_ok(Json.toJson(typeOfBlocks));
-        }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-    @Security.Authenticated(Secured_Admin.class)
-    public Result getBlockoBlockPending(){
-        try {
-            List<BlockoBlock> blockoBlocks = BlockoBlock.find.where().eq("approval_state", Approval_state.pending).findList();
-
-            return GlobalResult.result_ok(Json.toJson(blockoBlocks));
-        }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-    @Security.Authenticated(Secured_Admin.class)
-    public Result getBlockoBlockVersionPending(){
-        try {
-            List<BlockoBlockVersion> blockoBlockVersions = BlockoBlockVersion.find.where().eq("approval_state", Approval_state.pending).findList();
-
-            return GlobalResult.result_ok(Json.toJson(blockoBlockVersions));
-        }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
         }
     }
 

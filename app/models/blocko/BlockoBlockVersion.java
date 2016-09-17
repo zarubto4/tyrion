@@ -45,6 +45,6 @@ public class BlockoBlockVersion extends Model {
     public enum permissions{BlockoBlock_create, BlockoBlock_read, BlockoBlock_edit, BlockoBlock_delete}
 
 /* FINDER -------------------------------------------------------------------------------------------------------------*/
-    public static Finder<String,BlockoBlockVersion> find = new Finder<>(BlockoBlockVersion.class);
+    public static Model.Finder<String,BlockoBlockVersion> find = new Finder<>(BlockoBlockVersion.class);
 
 }

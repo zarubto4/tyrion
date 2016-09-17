@@ -27,7 +27,7 @@ public class TypeOfBlock extends Model {
                                     @JsonIgnore @ManyToOne  public Project project;
 
     @OneToMany(mappedBy="type_of_block", cascade = CascadeType.ALL)
-    @ApiModelProperty(required = true)                                                         public List<BlockoBlock> blockoBlocks = new ArrayList<>();
+    @JsonIgnore                                                                                public List<BlockoBlock> blockoBlocks = new ArrayList<>();
 
 
     @ApiModelProperty(value = "This value will be in Json only if TypeOfBlock is private!",readOnly =true, required = false)
@@ -36,6 +36,17 @@ public class TypeOfBlock extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
+/* JSON PROPERTY -------------------------------------------------------------------------------------------------------*/
+
+    @ApiModelProperty(required = true)
+    @JsonProperty @Transient public List<BlockoBlock> blockoBlocks(){
+        List<BlockoBlock> approvedBlocks = new ArrayList<>();
+        for(BlockoBlock blockoBlock : this.blockoBlocks){
+            if((blockoBlock.approval_state == Approval_state.approved)||(blockoBlock.approval_state == Approval_state.edited)||(blockoBlock.author.id == SecurityController.getPerson().id))
+                approvedBlocks.add(blockoBlock);
+        }
+        return approvedBlocks;
+    }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
@@ -54,5 +65,5 @@ public class TypeOfBlock extends Model {
     public enum permissions{TypeOfBlock_create, TypeOfBlock_read, TypeOfBlock_edit , TypeOfBlock_delete, TypeOfBlock_update}
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Finder<String,TypeOfBlock> find = new Finder<>(TypeOfBlock.class);
+    public static Model.Finder<String,TypeOfBlock> find = new Finder<>(TypeOfBlock.class);
 }

@@ -16,30 +16,73 @@
 
 <section class="content">
   <div id="editBlockoBlockModal" style="display: none;" class="modal">
-    <div style="margin-top: 15%;" class="modal-dialog">
+    <div style="margin-top: 5%;" class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h4 class="modal-title">Edit Blocko Block</h4>
         </div>
         <div class="modal-body">
-          <form id="editBlockoBlock">
-            <label id="blockoBlockId" style="display: block">ID</label>
-            <label>Name</label>
-            <input style="display: block" type="text" name="blocko_block_name" id="blocko_block_name">
-            <label>Description</label>
-            <input style="display: block" type="text" name="blocko_block_general_description" id="blocko_block_general_description">
-            <label>Type of Block</label>
+            <label id="blockoBlockId" style="display: block; font-size: 15pt;">ID</label>
+            <div style="float: left; width: 30%;">
+              <label style="color: #2e6da4">Name:</label>
+              <input style="display: block;" type="text" id="blocko_block_name">
+            </div>
+            <div style="width:100%;">
+              <label style="color: #2e6da4">Description:</label>
+              <input style="display: block; width: 70%;" type="text" id="blocko_block_general_description">
+            </div>
+            <label style="color: #2e6da4">Type of Block:</label>
             <select style="display: block" name="blocko_block_type_of_block_id" id="blocko_block_type_of_block_id">
-              <option selected >If you don't want to change it, leave this empty.</option>
-              @for(typeOfBlock <- TypeOfBlock.find.where().eq("project", null).findList()) {
+              <option id="type_of_block_option" selected value="">If you don't want to change it, leave this empty.</option>
+              @for(typeOfBlock <- TypeOfBlock.find.where().eq("project", null).ne("approval_state", Approval_state.disapproved).findList()) {
                 <option value="@typeOfBlock.id">@typeOfBlock.name</option>
               }
             </select>
-          </form>
+        </div>
+        <div class="modal-body">
+
+            <label id="blocko_version_id" style="display: block; font-size: 15pt;"></label>
+            <div style="float: left; width: 30%;">
+              <label style="color: #2e6da4">Version name:</label>
+              <input type="text" name="blocko_block_version_name" id="blocko_version_name" style="display: block;">
+            </div>
+            <div style="width:100%;">
+              <label style="color: #2e6da4">Version description:</label>
+              <input type="text" id="blocko_version_description" style="display: block; width: 70%;">
+            </div>
+            <label style="color: #2e6da4">Design JSON:</label>
+            <textarea id="blocko_version_desing" style="display: block; width: 100%; height: auto;" rows="3"></textarea>
+            <label style="color: #2e6da4">Logic JSON:</label>
+            <textarea id="blocko_version_logic" style="display: block; width: 100%; height: auto;" rows="6"></textarea>
         </div>
         <div class="modal-footer">
           <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editBlockoBlockModal').css('display','none')">Close</button>
           <button id="editBlockoBlockButton" value="" class="btn btn-primary" type="button" onclick="editBlockoBlock(this.value)">Save changes & Approve</button>
+        </div>
+      </div>
+        <!-- /.modal-content -->
+    </div>
+      <!-- /.modal-dialog -->
+  </div>
+  <div id="showBlockoVersionModal" style="display: none;" class="modal">
+    <div style="margin-top: 10%;" class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">Blocko Block Version</h4>
+        </div>
+        <div class="modal-body">
+            <label id="blockoVersionId" style="display: block"></label>
+            <label style="color: #2e6da4">Name:</label>
+            <label id="blockoVersionName" style="display: block; text-indent: 20px;"></label>
+            <label style="color: #2e6da4">Description:</label>
+            <label id="blockoVersionDescription" style="display: block; text-indent: 20px;"></label>
+            <label style="color: #2e6da4">Design JSON:</label>
+            <label id="blockoVersionDesing" style="display: block; text-indent: 20px;"></label>
+            <label style="color: #2e6da4">Logic JSON:</label>
+            <label id="blockoVersionLogic" style="display: block; text-indent: 20px;"></label>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#showBlockoVersionModal').css('display','none')">Close</button>
         </div>
       </div>
         <!-- /.modal-content -->
@@ -61,24 +104,24 @@
           <table id="pendingBlockoBlock" class="table table-bordered">
             <tr>
               <th>ID</th>
+              <th>Type of Block</th>
               <th>Name</th>
               <th>Description</th>
-              <th>Pending versions</th>
-              <th>Type of Block</th>
+              <th>First version</th>
               <th>Edit</th>
               <th>Decision</th>
             </tr>
               @for(blockoBlock <- BlockoBlock.find.where().eq("approval_state",Approval_state.pending).findList()) {
                 <tr>
                   <td>@blockoBlock.id</td>
+                  <td>@blockoBlock.type_of_block_name()</td>
                   <td>@blockoBlock.name</td>
                   <td>@blockoBlock.general_description</td>
-                  <td>@*/*/*BlockoBlockVersion.find.where().eq("blockoBlock",blockoBlock.id).eq("approval_state", Approval_state.pending).findList().size()*/*/*@</td>
-                  <td>@blockoBlock.type_of_block.name</td>
-                  <td><button class="btn btn-block btn-info" type="button" onclick="showEditForm(@blockoBlock.id, '@blockoBlock.name', '@blockoBlock.general_description')">Edit</button></td>
+                  <td><button class="btn btn-block btn-primary" type="button" onclick="showBlockoVersion('@blockoBlock.blocko_versions.get(0).id', '@blockoBlock.blocko_versions.get(0).version_name', '@blockoBlock.blocko_versions.get(0).version_description', '@blockoBlock.blocko_versions.get(0).design_json', '@blockoBlock.blocko_versions.get(0).logic_json')">Show version</button></td>
+                  <td><button class="btn btn-block btn-info" type="button" onclick="showEditForm('@blockoBlock.id', '@blockoBlock.name', '@blockoBlock.general_description', '@blockoBlock.type_of_block_id()', '@blockoBlock.type_of_block_name()', '@blockoBlock.blocko_versions.get(0).id', '@blockoBlock.blocko_versions.get(0).version_name', '@blockoBlock.blocko_versions.get(0).version_description', '@blockoBlock.blocko_versions.get(0).design_json', '@blockoBlock.blocko_versions.get(0).logic_json')">Edit</button></td>
                   <td>
-                    <button style="width: 48%; margin-right: 2%; display: inline-block; float: left;" class="btn btn-block btn-success" type="button" onclick="approveBlockoObject('blocko_block',true,@blockoBlock.id)">Approve</button>
-                    <button style="width: 48%; margin-left: 2%; margin-top: 0; display: inline-block; float: left;" class="btn btn-block btn-danger" type="button" onclick="approveBlockoObject('blocko_block',false,@blockoBlock.id)">Disapprove</button>
+                    <button style="width: 48%; margin-right: 2%; display: inline-block; float: left;" class="btn btn-block btn-success" type="button" onclick="approveBlockoObject('blocko_block',true,'@blockoBlock.id')">Approve</button>
+                    <button style="width: 48%; margin-left: 2%; margin-top: 0; display: inline-block; float: left;" class="btn btn-block btn-danger" type="button" onclick="approveBlockoObject('blocko_block',false,'@blockoBlock.id')">Disapprove</button>
                   </td>
                 </tr>
               }
@@ -124,7 +167,11 @@
                         "object_id": id,
                         "blocko_block_name": document.getElementById('blocko_block_name').value,
                         "blocko_block_general_description": document.getElementById('blocko_block_general_description').value,
-                        "blocko_block_type_of_block_id": document.getElementById('blocko_block_type_of_block_id').value};
+                        "blocko_block_type_of_block_id": document.getElementById('blocko_block_type_of_block_id').value,
+                        "blocko_block_version_name": document.getElementById('blockoVersionName').value,
+                        "blocko_block_version_description": document.getElementById('blockoVersionDescription').value,
+                        "blocko_block_design_json": document.getElementById('blockoVersionDesing').value,
+                        "blocko_block_logic_json": document.getElementById('blockoVersionLogic').value};
 
           $.ajax({
             url: '@routes.ProgramingPackageController.approveWithChanges()' ,
@@ -146,11 +193,29 @@
             }
           })}
 
-        function showEditForm(id, name, description){
+        function showEditForm(id, name, description, type_of_block_id, type_of_block_name, version_id, version_name, version_description, design, logic){
           $("#editBlockoBlockModal").css("display","block");
           $('#editBlockoBlockButton').val(id);
           $('#blockoBlockId').text("ID = " + id);
-          $("#editBlockoBlock input[name=blocko_block_name]").val(name);
-          $("#editBlockoBlock input[name=blocko_block_general_description]").val(description);
+          $("#blocko_block_name").val(name);
+          $("#blocko_block_general_description").val(description);
+          $('#type_of_block_option').val(type_of_block_id);
+          $('#type_of_block_option').text(type_of_block_name);
+          $('#blocko_version_id').text("Version ID = " + version_id);
+          $('#blocko_version_name').val(version_name);
+          $('#blocko_version_description').val(version_description);
+          $('#blocko_version_desing').val(design);
+          $('#blocko_version_logic').val(logic);
+
+
           }
+
+        function showBlockoVersion(id, name, description, design_json, logic_json){
+          $("#showBlockoVersionModal").css("display","block");
+          $('#blockoVersionId').text("ID = " + id);
+          $('#blockoVersionName').text(name);
+          $('#blockoVersionDescription').text(description);
+          $('#blockoVersionDesing').text(design_json);
+          $('#blockoVersionLogic').text(logic_json);
+        }
 </script>

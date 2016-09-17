@@ -16,4 +16,6 @@ public class Swagger_BlockoObject_Approval {
 
     @Constraints.Required
     public boolean approval;
+
+    public String reason;
 }
