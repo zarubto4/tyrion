@@ -2275,7 +2275,7 @@ public class ProgramingPackageController extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_TypeOfBlock_New help = form.get();
 
-            if(TypeOfBlock.find.where().eq("name",help.name).findUnique() != null)
+            if(TypeOfBlock.find.where().isNull("project").eq("name",help.name).findUnique() != null)
                 return GlobalResult.badRequest("Type of Block with this name already exists, type a new one.");
 
             // Vytvoření objektu
@@ -2597,6 +2597,7 @@ public class ProgramingPackageController extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successfully created",    response = BlockoBlock.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Something went wrong",    response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -2648,9 +2649,6 @@ public class ProgramingPackageController extends Controller {
                    // Kontrola oprávnění těsně před uložením podle standardu
                    if (! typeOfBlock.create_permission() ) return GlobalResult.forbidden_Permission();
 
-                   // Uložení objektu
-                   typeOfBlock.save();
-
                }else{
 
                    // Kontrola oprávnění těsně před uložením podle standardu
@@ -2658,16 +2656,20 @@ public class ProgramingPackageController extends Controller {
 
                        // Nastavení stavu schvalování
                        typeOfBlock.approval_state = Approval_state.pending;
-                   }
+                   }else typeOfBlock.approval_state = Approval_state.approved;
 
-                   // Uložení objektu
-                   typeOfBlock.approval_state = Approval_state.approved;
-                   typeOfBlock.save();
                }
            }
 
            // Úprava objektu
            if(!(typeOfBlock == null))blockoBlock.type_of_block = typeOfBlock;
+
+           if((typeOfBlock == null)||(typeOfBlock.project_id() == null)){
+               if(BlockoBlock.find.where().eq("name", help.name).isNull("type_of_block.project.id").findUnique() != null) return GlobalResult.badRequest("Name of Block already exists. Type a new one.");
+           }
+
+           // Uložení objektu
+           typeOfBlock.save();
 
            // Kontrola oprávnění těsně před uložením
            if (! blockoBlock.create_permission() ){
@@ -3344,7 +3346,7 @@ public class ProgramingPackageController extends Controller {
                     if (blockoBlock == null) return GlobalResult.notFoundObject("blocko_block not found");
 
                     if((help.blocko_block_name == null)||(help.blocko_block_general_description == null)) return GlobalResult.badRequest("You must fill in blocko_block details.");
-                    if((help.blocko_block_type_of_block_id == null)||(help.type_of_block_name == null)||(help.type_of_block_general_description == null)) return GlobalResult.badRequest("You must fill in type_of_block details.");
+                    if(help.blocko_block_type_of_block_id == null) return GlobalResult.badRequest("You must fill in type_of_block details.");
                     if((help.blocko_block_version_name == null)||(help.blocko_block_version_description == null)||(help.blocko_block_design_json == null)||(help.blocko_block_logic_json == null)) return GlobalResult.badRequest("You must fill in type_of_block details");
 
                     blockoBlock.name = help.blocko_block_name;
@@ -3381,6 +3383,25 @@ public class ProgramingPackageController extends Controller {
 
                     blockoBlockVersion.update();
 
+                    try {
+                        new EmailTool()
+                                .addEmptyLineSpace()
+                                .startParagraph("13")
+                                .addText("Block: ")
+                                .addBoldText(blockoBlock.name)
+                                .addText(" was edited for this reason: ")
+                                .endParagraph()
+                                .startParagraph("13")
+                                .addText( help.reason)
+                                .endParagraph()
+                                .addEmptyLineSpace()
+                                .sendEmail(blockoBlock.author.mail, "Block was edited" );
+
+                    } catch (Exception e) {
+                        logger.error ("Sending mail -> critical error", e);
+                        e.printStackTrace();
+                    }
+
                     return GlobalResult.result_ok();
                 }
                 case "blocko_block_version": {
@@ -3397,6 +3418,25 @@ public class ProgramingPackageController extends Controller {
                     blockoBlockVersion.approval_state = Approval_state.edited;
 
                     blockoBlockVersion.update();
+
+                    try {
+                        new EmailTool()
+                                .addEmptyLineSpace()
+                                .startParagraph("13")
+                                .addText("Version of Block " + blockoBlockVersion.blocko_block.name + ": ")
+                                .addBoldText(blockoBlockVersion.version_name)
+                                .addText(" was edited for this reason: ")
+                                .endParagraph()
+                                .startParagraph("13")
+                                .addText( help.reason)
+                                .endParagraph()
+                                .addEmptyLineSpace()
+                                .sendEmail(blockoBlockVersion.blocko_block.author.mail, "Version of Block edited" );
+
+                    } catch (Exception e) {
+                        logger.error ("Sending mail -> critical error", e);
+                        e.printStackTrace();
+                    }
 
                     return GlobalResult.result_ok();
                 }

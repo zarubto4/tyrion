@@ -491,7 +491,6 @@ create table type_of_block (
   approval_state            integer,
   project_id                varchar(255),
   constraint ck_type_of_block_approval_state check (approval_state in (0,1,2,3)),
-  constraint uq_type_of_block_name unique (name),
   constraint pk_type_of_block primary key (id))
 ;
 

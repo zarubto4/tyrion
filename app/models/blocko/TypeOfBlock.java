@@ -19,7 +19,7 @@ public class TypeOfBlock extends Model {
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true) public String id;
-                                       @Column(unique=true) @ApiModelProperty(required = true) public String name;
+                                                            @ApiModelProperty(required = true) public String name;
                          @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true) public String general_description;
                                                             @ApiModelProperty(required = true) public Approval_state approval_state;
 
