@@ -58,7 +58,7 @@ public class Finance_Controller extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Swagger_Tariff.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "Ok Result", response =  Swagger_Tariff.class),
             @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
@@ -66,7 +66,6 @@ public class Finance_Controller extends Controller {
     })
     public Result get_poducts_tariffs(){
         try{
-
 
             if(swagger_tariff != null ) return GlobalResult.result_ok(Json.toJson(swagger_tariff));
             else  swagger_tariff = new Swagger_Tariff();
