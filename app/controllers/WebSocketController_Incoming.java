@@ -1556,6 +1556,7 @@ public class WebSocketController_Incoming extends Controller {
             ObjectNode result = Json.newObject();
             result.put("messageType", "subscribeChannel");
             result.put("messageChannel", "becki");
+            result.put("instanceId", homer.identifikator);
 
             return homer.write_with_confirmation(result, 1000*3, 0, 4);
         }
@@ -1563,8 +1564,9 @@ public class WebSocketController_Incoming extends Controller {
         public static void     homer_unsubscribe_blocko_instance(WS_Homer_Cloud homer){
 
             ObjectNode result = Json.newObject();
-            result.put("messageType", "unSubscribeChannel");
+            result.put("messageType",    "unSubscribeChannel");
             result.put("messageChannel", "becki");
+            result.put("instanceId",     homer.identifikator);
 
             homer.write_without_confirmation(result);
         }
