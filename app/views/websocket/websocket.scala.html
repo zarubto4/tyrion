@@ -80,9 +80,13 @@
             })}
         function test_notification(data){
             level = document.getElementById('level').value;
+            model_data = $("#testNotification").serializeObject();
             $.ajax({
-                url: '/notification/test/' + data + '/' + level,
-                type: 'GET',
+                url: '/notification/test/' + data,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(model_data),
+                dataType: 'json',
                 success:function(e){
                 },
                 error:function(e) {
@@ -338,14 +342,19 @@
 
                                     <th rowspan="@(x.all_person_Connections.size()+2)">
                                         <button onclick="ping_becki('@x.identifikator')" class="btn btn-block btn-info btn-xs">Ping</button>
-                                        <form>
-                                            <select style="width: 100%; margin: 10px 0;" id="level">
+                                        <form id="testNotification">
+                                            <select style="width: 100%; margin: 10px 0;" name="level" id="level">
                                                 <option value="info">info</option>
                                                 <option value="success">success</option>
                                                 <option value="warning">warning</option>
                                                 <option value="error">error</option>
-                                                <option value="question">question</option>
                                             </select>
+                                            <select style="width: 80%; margin: 0 0 10px 0;" name="importance" id="importance">
+                                                <option value="low">low</option>
+                                                <option value="normal">normal</option>
+                                                <option value="high">high</option>
+                                            </select>
+                                            <input type="checkbox" name="confirmation_required">
                                             <input type="button" onclick="test_notification('@(Person.find.byId( x.identifikator ).mail )')" class="btn btn-block btn-primary btn-xs" value="Send test notification">
                                         </form>
                                     </th>

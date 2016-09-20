@@ -37,8 +37,7 @@ import utilities.webSocket.*;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class WebSocketController_Incoming extends Controller {
@@ -631,7 +630,7 @@ public class WebSocketController_Incoming extends Controller {
             if(becki_website.containsKey(person.id)) {
                 website = (WS_Becki_Website) becki_website.get(person.id);
             }else{
-                website = new WS_Becki_Website(person);
+                website = new WS_Becki_Website(person.id);
                 becki_website.put(person.id , website);
             }
 
@@ -1095,9 +1094,10 @@ public class WebSocketController_Incoming extends Controller {
                 result.put("messageType", "notification");
                 result.put("messageChannel", "becki");
                 result.put("id", notification.id);
-                result.put("notification_level",   notification.notification_level.name() );
+                result.put("notification_level",   notification.notification_level.name());
+                result.put("notification_importance", notification.notification_importance.name());
                 result.put("confirmation_required", notification.confirmation_required);
-                result.set("notification_body",    Json.toJson(notification.notification_body()));
+                result.set("notification_body", Json.toJson(notification.notification_body()));
                 result.put("was_read", notification.was_read);
                 result.put("created", notification.created.getTime());
 
