@@ -1533,7 +1533,7 @@ public class ProgramingPackageController extends Controller {
 
 
                     if(!  WebSocketController_Incoming.homer_online_state(private_homer_server.b_program_homer.blocko_instance_name) ) {
-                       NotificationController.unload_Instance_was_unsuccessful( SecurityController.getPerson() , program_homer , "One of the components of the server is not available");
+                       NotificationController.upload_Instance_was_unsuccessfull( SecurityController.getPerson() , program_homer , "Main component is offline!");
                        this.interrupt();
                    }
 
@@ -1542,11 +1542,11 @@ public class ProgramingPackageController extends Controller {
                     if(result.get("status").asText().equals("success")){
                        NotificationController.upload_Instance_was_successful( SecurityController.getPerson() , program_homer);
                     } else {
-                       NotificationController.unload_Instance_was_unsuccessful( SecurityController.getPerson() , program_homer , result.get("error").asText() );
+                       NotificationController.upload_Instance_was_unsuccessfull( SecurityController.getPerson() , program_homer , result.get("error").asText() );
                     }
 
                 } catch (Exception e) {
-                    NotificationController.unload_of_Instance_was_unsuccessful_with_error( SecurityController.getPerson() , version_object);
+                    NotificationController.upload_of_Instance_was_unsuccessfull_with_error( SecurityController.getPerson() , version_object);
                 }
 
             }};
@@ -1665,7 +1665,7 @@ public class ProgramingPackageController extends Controller {
 
             if(! WebSocketController_Incoming.blocko_servers.containsKey( destination_server.server_name) ) {
 
-                NotificationController.unload_Instance_was_unsuccessfull(SecurityController.getPerson(), program_cloud, "Server is offline now. It will be uploaded as soon as possible");
+                NotificationController.upload_Instance_was_unsuccessfull(SecurityController.getPerson(), program_cloud, "Server is offline now. It will be uploaded as soon as possible");
                 return GlobalResult.result_ok();
             }
 

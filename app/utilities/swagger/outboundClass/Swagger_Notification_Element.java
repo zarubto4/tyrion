@@ -3,8 +3,7 @@ package utilities.swagger.outboundClass;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import utilities.enums.Notification_Type;
-import models.notification.Notification.Notification_type;
+import utilities.enums.Notification_type;
 
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;

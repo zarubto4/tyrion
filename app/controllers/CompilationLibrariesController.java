@@ -741,10 +741,11 @@ public class CompilationLibrariesController extends Controller {
             logger.debug("Server send c++ program for compilation");
             // Odesílám na compilační cloud_compilation_server
 
-            NotificationController.starting_of_compilation(SecurityController.getPerson(), version_object);
+            NotificationController.starting_of_compilation( SecurityController.getPerson() , version_object);
 
             JsonNode compilation_result = WebSocketController_Incoming.compiler_server_make_Compilation(SecurityController.getPerson(), result);
 
+            logger.debug("Kompletní zprýva z kompilačního serveru: " + compilation_result.toString());
 
             // V případě úspěšného buildu obsahuje příchozí JsonNode buildUrl
            if( compilation_result.has("buildUrl") ){
@@ -784,7 +785,7 @@ public class CompilationLibrariesController extends Controller {
                         // Daný soubor potřebuji dostat na Azure a Propojit s verzí
 
                           String binary_file_in_string = UtilTools.get_encoded_binary_string_from_body(body);
-                          c_compilation.bin_compilation_file =  UtilTools.create_Binary_file( binary_file_in_string, "compilation.bin");
+                          c_compilation.bin_compilation_file =  UtilTools.create_Binary_file(  version_object.get_path()  , binary_file_in_string ,  "compilation.bin");
                           logger.debug("File succesfuly restored in Azure!");
                    }
                }catch (Exception e){

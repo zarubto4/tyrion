@@ -10,7 +10,8 @@ import io.swagger.annotations.ApiModelProperty;
 import models.person.Person;
 import play.libs.Json;
 import utilities.Server;
-import utilities.enums.Notification_Type;
+import utilities.enums.Notification_type;
+import utilities.enums.Notification_importance;
 import utilities.enums.Notification_level;
 import utilities.swagger.outboundClass.Swagger_Notification_Element;
 
@@ -59,14 +60,7 @@ public class Notification extends Model {
 
     //---------------------------------------------------------------------------------------------------------------------
 
-    public enum Notification_type {
-
-        SINGLE_STRING_MESSAGE,
-        BOARD_UPDATE, // Typ zprávy při updatu desky
-        PROJECT_INVITE, // Typ zprávy, když uživatel pozve jiného do projektu
-    }
-
- //---------------------------------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------------------------------
 
     @JsonIgnore @Transient
     public Notification setText(String message){
@@ -108,7 +102,7 @@ public class Notification extends Model {
     public Notification setLink_ToTyrion(String label, String url){
 
         Swagger_Notification_Element element = new Swagger_Notification_Element();
-        element.type     = Notification_Type.confirmation;
+        element.type     = Notification_type.confirmation;
         element.url = url;
         element.label = label;
 
@@ -121,8 +115,8 @@ public class Notification extends Model {
         confirmation_required = true;
 
         Swagger_Notification_Element element = new Swagger_Notification_Element();
-        element.type     = Notification_Type.confirmation;
-        element.required = true;
+        element.type        = Notification_type.confirmation;
+        element.required    = true;
         element.get_url     = Server.tyrion_serverAddress + "/notification/confirm/" + this.id;
 
         array.add(element);

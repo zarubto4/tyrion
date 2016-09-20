@@ -630,7 +630,7 @@ public class WebSocketController_Incoming extends Controller {
             if(becki_website.containsKey(person.id)) {
                 website = (WS_Becki_Website) becki_website.get(person.id);
             }else{
-                website = new WS_Becki_Website(person.id);
+                website = new WS_Becki_Website(person);
                 becki_website.put(person.id , website);
             }
 
@@ -968,7 +968,7 @@ public class WebSocketController_Incoming extends Controller {
         SendMessage get_compilation = new SendMessage(null, null, null, "compilation_message", 1000 * 35, 0, 1);
         server.sendMessageMap.put( compilation_request.get("buildId").asText(), get_compilation);
         ObjectNode result = get_compilation.send_with_response();
-
+            result.set("interface",compilation_request.get("interface") ); // Přiřadím interface do zprávy
         return result;
 
     }

@@ -241,20 +241,27 @@ public class UtilTools extends Controller {
     }
 
 
-    public static FileRecord create_Binary_file(String file_content, String file_name) throws Exception{
-        logger.debug("Azure create_Binary_file: binaryFile/"+ file_name );
+    public static FileRecord create_Binary_file(String file_path, String file_content, String file_name) throws Exception{
 
-        String authToken = UUID.randomUUID().toString();
+        logger.debug("Azure create_Binary_file: " + file_path +"/"+ file_name );
 
-        CloudBlobContainer container = Server.blobClient.getContainerReference("binary-file");
-        CloudBlockBlob blob = container.getBlockBlobReference( authToken +"/" + file_name );
+        int slash = file_path.indexOf("/");
+        String container_name = file_path.substring(0,slash);
+        String real_file_path = file_path.substring(slash+1);
+
+        logger.debug("Azure save path: " + file_path );
+        logger.debug("Azure Container: " + container_name);
+        logger.debug("Real File  Path: " + real_file_path);
+
+        CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
+        CloudBlockBlob blob = container.getBlockBlobReference( real_file_path +"/" + file_name );
 
         InputStream is = new ByteArrayInputStream(file_content.getBytes());
         blob.upload(is, -1);
 
         FileRecord fileRecord = new FileRecord();
         fileRecord.file_name = file_name;
-        fileRecord.file_path = "binary-file" +"/" + authToken +"/" + file_name;
+        fileRecord.file_path = file_path + "/" + file_name;
         fileRecord.save();
 
 

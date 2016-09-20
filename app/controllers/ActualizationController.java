@@ -162,7 +162,7 @@ public class ActualizationController extends Controller {
             logger.debug("Incoming new Actualization request with user bin file! ");
 
             String binary_file = UtilTools.get_encoded_binary_string_from_File(file);
-            FileRecord fileRecord = UtilTools.create_Binary_file(binary_file, file_name);
+            FileRecord fileRecord = UtilTools.create_Binary_file("byzance-private/binaryfiles", binary_file, file_name);
 
             logger.debug("Creating new actualization procedure");
             Actualization_procedure procedure = new Actualization_procedure();

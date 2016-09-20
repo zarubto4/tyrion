@@ -19,7 +19,9 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.Server;
+import utilities.enums.Notification_importance;
 import utilities.enums.Notification_level;
+import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_Unauthorized;
@@ -46,7 +48,7 @@ public class NotificationController extends Controller {
   private static void send_notification(Person person, Notification notification) {
 
     // Pokud je notification_importance vyšší než "low" notifikaci uložím
-    if(!(notification.notification_importance == Notification.Notification_importance.low))
+    if(!(notification.notification_importance == Notification_importance.low))
       notification.save_object();
 
     // Pokud je uživatel přihlášený pošlu notifikaci přes websocket
@@ -61,18 +63,23 @@ public class NotificationController extends Controller {
 
   public static void starting_of_compilation(Person person, Version_Object version_object){
 
-        Notification notification = new Notification(Notification_level.info, person)
+        Notification notification = new Notification(Notification_importance.low, Notification_level.info, person)
                                      .setText("Server start with compilation on Version")
-                                     .setObject(Swagger_B_Program_Version.class, version_object.id, version_object.version_name + ".", version_object.b_program.project_id());
+                                     .setObject(Swagger_B_Program_Version.class, version_object.id, version_object.version_name + ".", version_object.c_program.project_id());
 
         send_notification(person, notification);
   }
 
+  public static void upload_firmare_progress(Person person, String version_object){
+    // TODO
+  }
+
+
   public static void successful_compilation(Person person, Version_Object version_object ){
 
-      Notification notification = new Notification(Notification_level.success, person)
+      Notification notification = new Notification(Notification_importance.low, Notification_level.success, person)
                                     .setText("Compilation on Version")
-                                    .setObject(Swagger_B_Program_Version.class, version_object.id, version_object.version_name, version_object.b_program.project_id() )
+                                    .setObject(Swagger_B_Program_Version.class, version_object.id, version_object.version_name, version_object.c_program.project_id() )
                                     .setText("was successful.");
 
       send_notification(person, notification);
@@ -80,9 +87,9 @@ public class NotificationController extends Controller {
 
   public static void unsuccessful_compilation_warn(Person person, Version_Object version_object, String reason){
 
-      Notification notification = new Notification( Notification_level.warning , person)
+      Notification notification = new Notification(Notification_importance.normal,  Notification_level.warning , person)
                                       .setText("Compilation on Version")
-                                      .setObject(Swagger_B_Program_Version.class, version_object.id, version_object.version_name, version_object.b_program.project_id() )
+                                      .setObject(Swagger_B_Program_Version.class, version_object.id, version_object.version_name, version_object.c_program.project_id() )
                                       .setText("was unsuccessful, for reason:")
                                       .setBoldText(reason);
 
@@ -91,9 +98,9 @@ public class NotificationController extends Controller {
 
   public static void unsuccessful_compilation_error(Person person, Version_Object version_object, String result){
 
-    Notification notification = new Notification(Notification_level.error, person)
+    Notification notification = new Notification(Notification_importance.normal, Notification_level.error, person)
                                       .setText( "Compilation on Version")
-                                      .setObject(Swagger_B_Program_Version.class, version_object.id, version_object.version_name, version_object.b_program.project_id() )
+                                      .setObject(Swagger_B_Program_Version.class, version_object.id, version_object.version_name, version_object.c_program.project_id() )
                                       .setText("with critical Error:")
                                       .setBoldText(result);
 
@@ -102,7 +109,7 @@ public class NotificationController extends Controller {
 
   public static void upload_Instance_start(Person person, Homer_Instance instance){
 
-    Notification notification = new Notification( Notification_level.info, person)
+    Notification notification = new Notification(Notification_importance.low,  Notification_level.info, person)
                                   .setText("Server start creating new Blocko Instance on Blocko Version  <b>" + instance.version_object.b_program.name + "</b>")
                                   .setObject(Swagger_B_Program_Version.class, instance.version_object.id, instance.version_object.version_name, instance.version_object.b_program.project_id() )
                                   .setText("from Blocko program")
@@ -113,7 +120,7 @@ public class NotificationController extends Controller {
 
   public static void upload_Instance_was_successful(Person person, Homer_Instance instance){
 
-    Notification notification = new Notification(Notification_level.success, person)
+    Notification notification = new Notification(Notification_importance.low, Notification_level.success, person)
                                     .setText("Server created successfully instance in cloud on Blocko Version")
                                     .setObject(Swagger_B_Program_Version.class, instance.version_object.id, instance.version_object.version_name, instance.version_object.b_program.project_id() )
                                     .setText("from Blocko program")
@@ -122,9 +129,10 @@ public class NotificationController extends Controller {
     send_notification(person, notification);
   }
 
-  public static void unload_Instance_was_unsuccessfull(Person person, Homer_Instance instance, String reason){
 
-    Notification notification = new Notification(Notification.Notification_importance.normal, Notification.Notification_level.warning, person)
+  public static void upload_Instance_was_unsuccessfull(Person person, Homer_Instance instance, String reason){
+
+    Notification notification = new Notification(Notification_importance.normal, Notification_level.warning, person)
                                     .setText("Server not upload instance to cloud on Blocko Version <b>" + instance.version_object.version_name + "</b> from Blocko program <b>" + instance.version_object.b_program.name + "</b> for <b> reason:\"" +  reason + "\" </b> ")
                                     .setObject(Swagger_B_Program_Version.class, instance.version_object.id, instance.version_object.version_name, instance.version_object.b_program.project_id() )
                                     .setText("from Blocko program")
@@ -135,9 +143,9 @@ public class NotificationController extends Controller {
 
   }
 
-  public static void unload_of_Instance_was_unsuccessfull_with_error(Person person, Version_Object version_object){
+  public static void upload_of_Instance_was_unsuccessfull_with_error(Person person, Version_Object version_object){
 
-    Notification notification = new Notification(Notification.Notification_importance.normal, Notification.Notification_level.error, person)
+    Notification notification = new Notification(Notification_importance.normal, Notification_level.error, person)
                                     .setText("Server not upload instance to cloud on Blocko Version")
                                     .setObject(Swagger_B_Program_Version_New.class, version_object.id, version_object.version_name, version_object.b_program.project_id() )
                                     .setText("from Blocko program")
@@ -149,7 +157,7 @@ public class NotificationController extends Controller {
 
   public static void new_actualization_request_with_file(Person person, Board board, String file_name){
 
-    Notification notification = new Notification(Notification.Notification_importance.low, Notification.Notification_level.info, person)
+    Notification notification = new Notification(Notification_importance.low, Notification_level.info, person)
             .setText("New actualization task was added to Task Queue on")
             .setObject(Board.class, board.id, "board", board.project_id())
             .setText("with File " + file_name);
@@ -161,7 +169,7 @@ public class NotificationController extends Controller {
 
   public static void new_actualization_request_on_version(Person person, Version_Object version_object){
 
-    Notification notification = new Notification(Notification.Notification_importance.low, Notification.Notification_level.info, person)
+    Notification notification = new Notification(Notification_importance.low, Notification_level.info, person)
             .setText("New actualization task was added to Task Queue on ")
             .setObject(Swagger_C_Program_Version.class, version_object.id, "Version " + version_object.version_name, version_object.c_program.project_id() )
             .setText("from Program ")
@@ -174,7 +182,7 @@ public class NotificationController extends Controller {
 
   public static void new_actualization_request_homer_instance(Person person, Homer_Instance homer_instance){
 
-    Notification notification = new Notification(Notification.Notification_importance.low, Notification.Notification_level.info, person)
+    Notification notification = new Notification(Notification_importance.low, Notification_level.info, person)
             .setText("New actualization task was added to Task Queue on ")
             .setObject(Swagger_B_Program_Version_New.class, homer_instance.version_object.id, "Version " + homer_instance.version_object.version_name, homer_instance.version_object.b_program.project_id()  );
 
@@ -184,21 +192,21 @@ public class NotificationController extends Controller {
   }
 
   public static void upload_firmware_was_successful(Person person, C_Program_Update_Plan plan){
-
+      // TODO
   }
 
   public static void uplood_firmware_was_Unsuccessful(Person person, C_Program_Update_Plan plan){
-
+      // TODO
   }
 
   public static void actualization_procedure_update(Person person, Actualization_procedure procedure){
-
+     // TODO
   }
 
 
   public static void board_connect(Person person, Board board){
 
-      Notification notification = new Notification(Notification.Notification_importance.low, Notification.Notification_level.info, person)
+      Notification notification = new Notification(Notification_importance.low, Notification_level.info, person)
               .setText("One of your Board " + (board.personal_description != null ? board.personal_description : null ))
               .setObject(Board.class, board.id, board.id, board.project_id())
               .setText("is connected.");
@@ -209,7 +217,7 @@ public class NotificationController extends Controller {
 
   public static void board_disconnect(Person person, Board board){
 
-    Notification notification = new Notification(Notification.Notification_importance.low, Notification.Notification_level.info, person)
+    Notification notification = new Notification(Notification_importance.low, Notification_level.info, person)
             .setText("One of your Board " + (board.personal_description != null ? board.personal_description : null ))
             .setObject(Board.class, board.id, board.id, board.project_id())
             .setText("is disconnected.");
@@ -221,7 +229,7 @@ public class NotificationController extends Controller {
 
   public static void project_invitation(Person owner, Person receiver, Project project, Invitation invitation){
 
-    Notification notification = new Notification(Notification.Notification_importance.normal, Notification.Notification_level.info, receiver)
+    Notification notification = new Notification(Notification_importance.normal, Notification_level.info, receiver)
             .setText("User")
             .setObject(Person.class, owner.id, owner.full_name, "")
             .setText("wants to invite you into the project ")
@@ -243,7 +251,7 @@ public class NotificationController extends Controller {
 
   public static void project_accepted_by_invited_person(Person owner, Person person, Project project){
 
-    Notification notification = new Notification(Notification.Notification_importance.normal, Notification.Notification_level.info, owner)
+    Notification notification = new Notification(Notification_importance.normal, Notification_level.info, owner)
             .setText("User ")
             .setObject(Person.class, person.id, person.full_name, "")
             .setText("did not accept your invitation to the project ")
@@ -256,7 +264,7 @@ public class NotificationController extends Controller {
 
   public static void project_rejected_by_invited_person(Person owner, Person person, Project project){
 
-    Notification notification = new Notification(Notification.Notification_importance.normal, Notification.Notification_level.info, owner)
+    Notification notification = new Notification(Notification_importance.normal, Notification_level.info, owner)
             .setText("User ")
             .setObject(Person.class, person.id, person.full_name, "")
             .setText("accepted your invitation to the project ")
@@ -269,23 +277,23 @@ public class NotificationController extends Controller {
 
   public static void test_notification(Person person, String level, String importance, boolean confirmation_required){
 
-    Notification.Notification_level lvl;
+    Notification_level lvl;
 
-    Notification.Notification_importance imp;
+    Notification_importance imp;
 
     switch (importance){
-      case "low": imp = Notification.Notification_importance.low; break;
-      case "normal": imp = Notification.Notification_importance.normal; break;
-      case "high": imp = Notification.Notification_importance.high; break;
-      default: imp = Notification.Notification_importance.normal; break;
+      case "low": imp = Notification_importance.low; break;
+      case "normal": imp = Notification_importance.normal; break;
+      case "high": imp = Notification_importance.high; break;
+      default: imp = Notification_importance.normal; break;
     }
 
     switch (level){
-      case "info": lvl = Notification.Notification_level.info;break;
-      case "success": lvl = Notification.Notification_level.success;break;
-      case "warning": lvl = Notification.Notification_level.warning;break;
-      case "error": lvl = Notification.Notification_level.error;break;
-      default: lvl = Notification.Notification_level.info;break;
+      case "info": lvl = Notification_level.info;break;
+      case "success": lvl = Notification_level.success;break;
+      case "warning": lvl = Notification_level.warning;break;
+      case "error": lvl = Notification_level.error;break;
+      default: lvl = Notification_level.info;break;
     }
 
     Notification notification = new Notification(imp, lvl, person)
@@ -296,7 +304,7 @@ public class NotificationController extends Controller {
             .setText("test link:")
             .setLink_ToTyrion("TestLink","#");
 
-    if(confirmation_required) notification.confirmation_required();
+    if(confirmation_required) notification.confirmation_required = true;
 
     send_notification(person,notification);
   }

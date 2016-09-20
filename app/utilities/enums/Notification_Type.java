@@ -2,7 +2,7 @@ package utilities.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-public enum Notification_Type{
+public enum Notification_type {
 
     confirmation,
     link,
@@ -11,8 +11,8 @@ public enum Notification_Type{
     text;
 
     @JsonCreator
-    public static Notification_Type fromString(String key) {
-        for(Notification_Type type : Notification_Type.values()) {
+    public static Notification_type fromString(String key) {
+        for(Notification_type type : Notification_type.values()) {
             if(type.name().equalsIgnoreCase(key)) {
                 return type;
             }
