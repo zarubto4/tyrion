@@ -16,7 +16,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.UtilTools;
-import utilities.enums.FirmwareType;
+import utilities.enums.Firmware_type;
 import utilities.hardware_updater.Master_Updater;
 import utilities.hardware_updater.States.Actual_procedure_State;
 import utilities.hardware_updater.States.C_ProgramUpdater_State;
@@ -146,7 +146,7 @@ public class ActualizationController extends Controller {
 
 // Private -------------------------------------------------------------------------------------------------------------
 
-    public static void add_new_actualization_request(Project project, FirmwareType command, Board board, File file, String file_name){
+    public static void add_new_actualization_request(Project project, Firmware_type command, Board board, File file, String file_name){
 
             NotificationController.new_actualization_request_with_file( SecurityController.getPerson(), board,  file_name );
 
@@ -155,7 +155,7 @@ public class ActualizationController extends Controller {
             add_new_actualization_request(project, command, boards, file, file_name);
     }
 
-    public static void add_new_actualization_request(Project project, FirmwareType firmware_type,  List<Board> boards, File file, String file_name){
+    public static void add_new_actualization_request(Project project, Firmware_type firmware_type, List<Board> boards, File file, String file_name){
         try {
 
 
@@ -299,8 +299,8 @@ public class ActualizationController extends Controller {
             plan.c_program_version_for_update = c_program_version;
             plan.actualization_procedure = procedure;
 
-            if(board.main_board()) plan.firmware_type = FirmwareType.FIRMWARE_YODA_FIRMWARE;
-            else plan.firmware_type = FirmwareType.FIRMWARE_DEVICE_FIRMWARE;
+            if(board.main_board()) plan.firmware_type = Firmware_type.FIRMWARE_YODA_FIRMWARE;
+            else plan.firmware_type = Firmware_type.FIRMWARE_DEVICE_FIRMWARE;
 
             plan.save();
             procedure.updates.add(plan);
@@ -387,8 +387,8 @@ public class ActualizationController extends Controller {
                     plan.c_program_version_for_update = p.c_program_version;
                     plan.actualization_procedure = procedure;
 
-                    if(p.board.main_board()) plan.firmware_type = FirmwareType.FIRMWARE_YODA_FIRMWARE;
-                    else plan.firmware_type = FirmwareType.FIRMWARE_DEVICE_FIRMWARE;
+                    if(p.board.main_board()) plan.firmware_type = Firmware_type.FIRMWARE_YODA_FIRMWARE;
+                    else plan.firmware_type = Firmware_type.FIRMWARE_DEVICE_FIRMWARE;
 
                     plan.save();
                     procedure.updates.add(plan);

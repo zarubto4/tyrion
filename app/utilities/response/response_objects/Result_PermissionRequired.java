@@ -7,7 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
           "SERVER IS LOGGING THIS FRONTEND ISSUE")
 public class Result_PermissionRequired {
 
-    @ApiModelProperty(value = "state", allowableValues = "Permission required", required = true, readOnly = true)
+    @ApiModelProperty(value = "state", required = true, readOnly = true)
     public String state = "Permission required";
 
     @ApiModelProperty(value = "code", allowableValues = "403", required = true, readOnly = true)

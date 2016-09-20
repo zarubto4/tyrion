@@ -21,7 +21,7 @@ import play.libs.ws.WSResponse;
 import play.mvc.*;
 import utilities.Server;
 import utilities.UtilTools;
-import utilities.enums.FirmwareType;
+import utilities.enums.Firmware_type;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_API;
 import utilities.response.GlobalResult;
@@ -964,7 +964,7 @@ public class CompilationLibrariesController extends Controller {
 
             if(!board.update_permission())  return GlobalResult.forbidden_Permission();
 
-            FirmwareType firmware_type = FirmwareType.getFirmwareType(firmware_type_string);
+            Firmware_type firmware_type = Firmware_type.getFirmwareType(firmware_type_string);
             if(firmware_type == null) return GlobalResult.notFoundObject("FirmwareType not found!");
 
             // Přijmu soubor

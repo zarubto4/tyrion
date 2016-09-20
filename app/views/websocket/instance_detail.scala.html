@@ -3,8 +3,7 @@
 @import models.person.Person
 @import models.project.b_program.B_Program
 @import models.project.b_program.Homer_Instance
-@import utilities.enums.TypeOfCommand
-@import utilities.enums.FirmwareType
+@import utilities.enums.{Firmware_type, TypeOfCommand}
 @import models.compiler.Board
 @import utilities.Server
 @import utilities.webSocket.{WS_Homer_Cloud, WebSCType}
@@ -288,7 +287,7 @@
 
                             </td>
                             <td>
-                                <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="showUploadModal(  this.value,'@FirmwareType.FIRMWARE_YODA_FIRMWARE.get_firmwareType()')"> Uploud Firmware</button>
+                                <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="showUploadModal(  this.value,'@Firmware_type.FIRMWARE_YODA_FIRMWARE.get_firmwareType()')"> Uploud Firmware</button>
                             </td>
                         </tr>
 
@@ -304,7 +303,7 @@
 
                             </td>
                             <td>
-                                <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="showUploadModal(  this.value,'@FirmwareType.FIRMWARE_YODA_BOOTLOADER.get_firmwareType()')">Uploud Bootloader</button>
+                                <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="showUploadModal(  this.value,'@Firmware_type.FIRMWARE_YODA_BOOTLOADER.get_firmwareType()')">Uploud Bootloader</button>
                             </td>
                         </tr>
 

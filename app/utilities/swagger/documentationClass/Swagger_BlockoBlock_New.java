@@ -38,8 +38,7 @@ public class Swagger_BlockoBlock_New {
     @ApiModelProperty(required = false, value = "Can be null, if type exists. Required if 'new_type_of_block' = true. Length must be between 24 and 255 characters.")
     public String type_of_block_general_description;
 
-    @ApiModelProperty(required = false, value = "\n \n if you want make private TypeOfBlock group. You have to have \"project_id\" parameter in Json.",
-            allowableValues = "Value can be null or contains project_id")
+    @ApiModelProperty(required = false, value = "\n \n if you want make private TypeOfBlock group. You have to have \"project_id\" parameter in Json. Value can be null or contains project_id")
     public String project_id;
 
     @Constraints.Required

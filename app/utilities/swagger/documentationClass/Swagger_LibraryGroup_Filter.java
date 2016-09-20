@@ -18,7 +18,7 @@ public class Swagger_LibraryGroup_Filter {
     @ApiModelProperty(value = "Value of order", allowableValues = "group_name, id, date_of_create" , required = false)
     public String order;
 
-    @ApiModelProperty(value = "Set type of Order -> ascending / descending, If you used order - its required!!!", allowableValues = "asc OR desc" , required = false)
+    @ApiModelProperty(value = "Set type of Order -> ascending / descending, If you used order - its required!!!", allowableValues = "asc, desc" , required = false)
     public String value;
 
 

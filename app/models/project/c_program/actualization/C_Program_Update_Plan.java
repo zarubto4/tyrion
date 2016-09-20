@@ -10,7 +10,7 @@ import models.compiler.Board;
 import models.compiler.FileRecord;
 import models.compiler.Version_Object;
 import models.project.b_program.Homer_Instance;
-import utilities.enums.FirmwareType;
+import utilities.enums.Firmware_type;
 import utilities.hardware_updater.States.C_ProgramUpdater_State;
 
 import javax.persistence.*;
@@ -31,7 +31,7 @@ public class C_Program_Update_Plan extends Model {
               @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                    public Actualization_procedure actualization_procedure;
 
               @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                    public Board board; // Deska k aktualizaci
-              @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)  public FirmwareType firmware_type;
+              @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)  public Firmware_type firmware_type;
 
 
                                                                 // Aktualizace je vázána buď na verzi C++ kodu nebo na soubor, nahraný uživatelem

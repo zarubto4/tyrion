@@ -8,7 +8,7 @@ import io.swagger.annotations.ApiModelProperty;
         "SERVER IS LOGGING THIS FRONTEND ISSUE")
 public class Result_JsonValueMissing {
 
-    @ApiModelProperty(value = "state", allowableValues = "Some Json value missing", required = true, readOnly = true)
+    @ApiModelProperty(value = "state", required = true, readOnly = true)
     public String state = "Some Json value missing";
 
     @ApiModelProperty(value = "code", allowableValues = "400", required = true, readOnly = true)

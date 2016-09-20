@@ -38,6 +38,8 @@ public class TypeOfBoard extends Model {
     @ApiModelProperty(readOnly =true) @Transient @JsonProperty public String producer_name     (){ return producer  == null ? null : producer.name;}
     @ApiModelProperty(readOnly =true) @Transient @JsonProperty public String producer_id       (){ return producer  == null ? null : producer.id;}
 
+    @ApiModelProperty(readOnly =true) @Transient @JsonProperty public String target_name(){ return compiler_target_name;}
+
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/

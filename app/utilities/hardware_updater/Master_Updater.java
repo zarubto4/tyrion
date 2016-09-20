@@ -7,7 +7,7 @@ import models.compiler.FileRecord;
 import models.project.b_program.Homer_Instance;
 import models.project.c_program.actualization.Actualization_procedure;
 import models.project.c_program.actualization.C_Program_Update_Plan;
-import utilities.enums.FirmwareType;
+import utilities.enums.Firmware_type;
 import utilities.hardware_updater.States.C_ProgramUpdater_State;
 import utilities.webSocket.WS_BlockoServer;
 import utilities.webSocket.WebSCType;
@@ -104,7 +104,7 @@ public class Master_Updater{
                // Desku kterou chci updatovat
 
                Board board  = plan.board;
-               FirmwareType firmware_type = plan.firmware_type;
+               Firmware_type firmware_type = plan.firmware_type;
                String id    = plan.c_program_version_for_update != null ? plan.c_program_version_for_update.id : ( plan.binary_file.file_name + "_" + plan.binary_file.id);
                WS_BlockoServer server = null;
                WebSCType actual_homer = null;

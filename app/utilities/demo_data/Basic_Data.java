@@ -522,7 +522,7 @@ public class Basic_Data {
 
         /* Nebyl funkční - čeká se na Martina
         Board board_yoda_5 = new Board();
-        board_yoda_5.id = "XXXXXXXXXXXXXX";
+        board_yoda_5.id = "wiki";
         board_yoda_5.personal_description = "YODA D";
         board_yoda_5.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_YODAG2").findUnique();
         board_yoda_5.date_of_create = new Date();
@@ -580,9 +580,6 @@ public class Basic_Data {
         wireless_7.type_of_board = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_WRLSKITG2").findUnique();
         wireless_7.date_of_create = new Date();
         wireless_7.save();
-
-
-
 
         Board bus_1 = new Board();
         bus_1.id = "001C00054247430D20363439";
@@ -729,7 +726,31 @@ public class Basic_Data {
             project_3.save();
 
             // Zaregistruji pod ně Yody
+            project_1.boards.add( Board.find.byId("Yoda A")  );
+            project_1.boards.add( Board.find.byId("Yoda B")  );
+            project_1.boards.add( Board.find.byId("Yoda C")  );
 
+            //project_1.boards.add( Board.find.byId("Yoda D")  );
+            project_1.boards.add( Board.find.byId("Yoda E")  );
+
+            // Bezdráty a Bezdráty
+            project_1.boards.add( Board.find.byId("[1]")  );
+            project_1.boards.add( Board.find.byId("[2]")  );
+            project_1.boards.add( Board.find.byId("[3]")  );
+            project_1.boards.add( Board.find.byId("[4]")  );
+            project_1.boards.add( Board.find.byId("[5]")  );
+            project_1.boards.add( Board.find.byId("[6]")  );
+            project_1.boards.add( Board.find.byId("[7]")  );
+            project_1.boards.add( Board.find.byId("[8]")  );
+            project_1.boards.add( Board.find.byId("[9]")  );
+            project_1.boards.add( Board.find.byId("[11]")  );
+            project_1.boards.add( Board.find.byId("[12]")  );
+            project_1.boards.add( Board.find.byId("[13]")  );
+            project_1.boards.add( Board.find.byId("[14]")  );
+            project_1.boards.add( Board.find.byId("[15]")  );
+            project_1.boards.add( Board.find.byId("[19]")  );
+
+            project_1.update();
 
             // Vytvořím C_Programy YODA
             C_Program c_program_1 = new C_Program();

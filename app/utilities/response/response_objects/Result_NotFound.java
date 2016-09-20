@@ -6,7 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 @ApiModel(value="Object not found", description="Called object is missing. You can show that to Person")
 public class Result_NotFound {
 
-    @ApiModelProperty(value = "state", allowableValues = "Object not Found", required = true, readOnly = true)
+    @ApiModelProperty(value = "state", required = true, readOnly = true)
     public String state = "Object not Found";
 
     @ApiModelProperty(value = "code", allowableValues = "400", required = true, readOnly = true)

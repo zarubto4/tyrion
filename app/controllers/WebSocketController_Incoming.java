@@ -24,7 +24,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import play.mvc.WebSocket;
-import utilities.enums.FirmwareType;
+import utilities.enums.Firmware_type;
 import utilities.enums.TypeOfCommand;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_API;
@@ -1571,7 +1571,7 @@ public class WebSocketController_Incoming extends Controller {
             homer.write_without_confirmation(result);
         }
 
-    public static JsonNode homer_update_Yoda_firmware(WebSCType homer, String targetId, FirmwareType firmware_type, String code) throws  ExecutionException, TimeoutException, InterruptedException {
+    public static JsonNode homer_update_Yoda_firmware(WebSCType homer, String targetId, Firmware_type firmware_type, String code) throws  ExecutionException, TimeoutException, InterruptedException {
 
         logger.debug("Homer: " + homer.identifikator + ", will update Yoda");
 
