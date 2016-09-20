@@ -21,16 +21,14 @@ import play.libs.ws.WSResponse;
 import play.mvc.*;
 import utilities.Server;
 import utilities.UtilTools;
+import utilities.enums.Approval_state;
 import utilities.enums.FirmwareType;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
-import utilities.swagger.outboundClass.Filter_List.Swagger_Board_List;
-import utilities.swagger.outboundClass.Filter_List.Swagger_C_Program_List;
-import utilities.swagger.outboundClass.Filter_List.Swagger_LibraryGroup_List;
-import utilities.swagger.outboundClass.Filter_List.Swagger_Single_Library_List;
+import utilities.swagger.outboundClass.Filter_List.*;
 import utilities.swagger.outboundClass.*;
 
 import java.io.File;
@@ -655,6 +653,66 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "make C_program_Version public",
+            tags = {"C_Program"},
+            notes = "make C_program public, so other users can see it and use it",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension(name = "permission_required", properties = {
+                            @ExtensionProperty(name = "C_Program.edit_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value = "C_program_edit"),
+                    })
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result make_C_Program_Version_public(@ApiParam(value = "version_id String query", required = true)  String version_id){
+        try {
+
+            // Kontrola objektu
+            Version_Object version = Version_Object.find.byId(version_id);
+            if(version == null) return GlobalResult.notFoundObject("Version not found");
+
+            // Úprava objektu
+            version.approval_state = Approval_state.pending;
+
+            // Kontrola oprávnění
+            if(!(version.c_program.edit_permission())) return GlobalResult.forbidden_Permission();
+
+            // Uložení změn
+            version.update();
+
+            // Vrácení potvrzení
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    public Result get_C_Program_public(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true)  Integer page_number){
+        try {
+
+            Query<Version_Object> query = Ebean.find(Version_Object.class);
+            query.where().isNotNull("c_program").eq("public_version", true).ne("approval_state", Approval_state.pending).ne("approval_state", Approval_state.disapproved);
+
+            //Swagger_C_Program_Version_Public_List result = new Swagger_C_Program_Version_Public_List(query,page_number);
+
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
         }
     }

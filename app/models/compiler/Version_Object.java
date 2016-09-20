@@ -12,6 +12,7 @@ import models.project.c_program.C_Program;
 import models.project.c_program.actualization.Actualization_procedure;
 import models.project.c_program.actualization.C_Program_Update_Plan;
 import models.project.m_program.M_Project;
+import utilities.enums.Approval_state;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -26,6 +27,8 @@ public class Version_Object extends Model {
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true)  public String  id;
                                                             @ApiModelProperty(required = true)  public String version_name;
                      @Column(columnDefinition = "TEXT")     @ApiModelProperty(required = true)  public String version_description;
+                                                            @ApiModelProperty(required = true)  public Approval_state approval_state;
+                                                            @ApiModelProperty(required = true)  public boolean public_version;
 
 
 
