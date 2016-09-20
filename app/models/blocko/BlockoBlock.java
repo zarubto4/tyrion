@@ -4,9 +4,11 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
 import models.compiler.Producer;
 import models.person.Person;
+import utilities.enums.Approval_state;
 import utilities.swagger.outboundClass.Swagger_BlockoBlock_ShortVersion;
 
 import javax.persistence.*;
@@ -22,6 +24,7 @@ public class BlockoBlock extends Model {
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true)   public String id;
                                                             @ApiModelProperty(required = true)   public String name;
                          @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)   public String general_description;
+                                                            @ApiModelProperty(required = true)   public Approval_state approval_state;
                                     @JsonIgnore @ManyToOne                                       public Person author;
                                     @JsonIgnore @ManyToOne                                       public TypeOfBlock type_of_block;
                                     @JsonIgnore @ManyToOne()                                     public Producer producer;
@@ -31,17 +34,17 @@ public class BlockoBlock extends Model {
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-    @ApiModelProperty(required = false, readOnly = true, value = "can be hide, if BlockoBlock is created by Byzance or Other Company")
+    @ApiModelProperty(required = false, readOnly = true, value = "can be hidden, if BlockoBlock is created by Byzance or Other Company")
     @JsonInclude(JsonInclude.Include.NON_NULL)  @Transient  @JsonProperty                                               public String    author_id()         { return author != null ? author.id : null;}
 
-    @ApiModelProperty(required = false, readOnly = true, value = "can be hide, if BlockoBlock is created by Byzance or Other Company")
+    @ApiModelProperty(required = false, readOnly = true, value = "can be hidden, if BlockoBlock is created by Byzance or Other Company")
     @JsonInclude(JsonInclude.Include.NON_NULL)  @Transient  @JsonProperty                                               public String    author_nick_name()  { return  author != null ? author.nick_name : null;}
 
 
-    @ApiModelProperty(required = false, readOnly = true, value = "can be hide, if BlockoBlock is created by User not by Company")
+    @ApiModelProperty(required = false, readOnly = true, value = "can be hidden, if BlockoBlock is created by User not by Company")
     @JsonInclude(JsonInclude.Include.NON_NULL)  @Transient  @JsonProperty                                               public String    producer_id()       { return producer != null ? producer.id : null;}
 
-    @ApiModelProperty(required = false, readOnly = true, value = "can be hide, if BlockoBlock is created by User not by Company")
+    @ApiModelProperty(required = false, readOnly = true, value = "can be hidden, if BlockoBlock is created by User not by Company")
     @JsonInclude(JsonInclude.Include.NON_NULL)  @Transient  @JsonProperty                                               public String    producer_name()     { return producer != null ? producer.name : null;}
 
 
@@ -57,12 +60,14 @@ public class BlockoBlock extends Model {
         List<Swagger_BlockoBlock_ShortVersion> list = new ArrayList<>();
 
         for( BlockoBlockVersion m : blocko_versions){
+            if((m.approval_state == Approval_state.approved)||(m.approval_state == Approval_state.edited)||((this.author != null)&&(this.author.id.equals(SecurityController.getPerson().id)))) {
 
-            Swagger_BlockoBlock_ShortVersion short_version = new Swagger_BlockoBlock_ShortVersion();
-            short_version.id = m.id;
-            short_version.name = m.version_name;
+                Swagger_BlockoBlock_ShortVersion short_version = new Swagger_BlockoBlock_ShortVersion();
+                short_version.id = m.id;
+                short_version.name = m.version_name;
 
-            list.add(short_version);
+                list.add(short_version);
+            }
         }
 
         return list;
@@ -87,6 +92,7 @@ public class BlockoBlock extends Model {
     public enum permissions{BlockoBlock_create, BlockoBlock_read, BlockoBlock_edit, BlockoBlock_delete}
 
 /* FINDER -------------------------------------------------------------------------------------------------------------*/
-    public static Finder<String,BlockoBlock> find = new Finder<>(BlockoBlock.class);
+    public static Model.Finder<String,BlockoBlock> find = new Finder<>(BlockoBlock.class);
+
 
 }

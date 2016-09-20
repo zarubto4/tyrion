@@ -16,7 +16,14 @@
 
 		"picture_link": "https://fileserverdeveloper.blob.core.windows.net/pictures/28c207e2-dcfe-4a61-867f-e0c1b7405792.png"
 
- * která obsahuje link na profilový obrázek uživatele nebo null, pokud žádný obrázek nemá.  
+ * která obsahuje link na profilový obrázek uživatele nebo null, pokud žádný obrázek nemá.
+
+### TypeOfBlock, BlockoBlock a BlockoBlockVersion ###
+
+ * U těchto objektů přibyla enum vlastnost "approval_state", která může nabývat hodnot: "pending", "approved", "edited", "disapproved".
+ * Tato vlastnost je důležitá především u veřejných bločků, kdy je potřeba naše schválení, než se bloček zveřejní. Pokud uživatel vytvoří soukormý bloček, je vždy approval_state nastaven "approved".
+ * Co se týče API nad těmito objekty, nic se nemění, pouze se vrací ty typy bločků, bločky a jejich verze, které může uživatel vidět, tzn. approval_state = approved nebo je jejich vlastníkem.
+ * Uživatelovi, který bloček vytvořil se tedy vrátí i disapproved, edited nebo pending. Důležité: Je třeba mu nějak ukázat v jakém stavu bloček je.
 
 ## Nové API: ##
 
