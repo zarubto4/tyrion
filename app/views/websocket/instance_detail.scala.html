@@ -102,6 +102,7 @@
                             <tr>
                                 <th>Device Id</th>
                                 <th>Type Of Board</th>
+                                <th>User Name</th>
                                 <th>Commands</th>
                                 <th>Disconnect</th>
                             </tr>
@@ -115,6 +116,13 @@
                                             @Board.find.byId(y).type_of_board.name
                                         }else {
                                             Device is not saved in database
+                                        }
+                                    </td>
+                                    <td>
+                                        @if( Board.find.byId(y) != null) {
+                                            @Board.find.byId(y).personal_description
+                                        }else {
+                                            ----
                                         }
                                     </td>
                                     <td>

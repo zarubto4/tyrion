@@ -4,11 +4,7 @@ import com.avaje.ebean.Query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.blocko.BlockoBlock;
-import models.blocko.TypeOfBlock;
-import models.project.b_program.B_Program;
-import utilities.swagger.outboundClass.Swagger_B_Program_Light;
 import utilities.swagger.outboundClass.Swagger_Blocko_Block_Light;
-import utilities.swagger.outboundClass.Swagger_Type_Of_Block_Light;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,9 +38,9 @@ public class Swagger_Blocko_Block_List {
     public Swagger_Blocko_Block_List(Query<BlockoBlock> query, int page_number){
 
         if(page_number < 1) page_number = 1;
-        List<BlockoBlock> blockoBlocks =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findList();
+        List<BlockoBlock> blocko_blocks =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findList();
 
-        for(BlockoBlock blockoBlock : blockoBlocks){
+        for(BlockoBlock blockoBlock : blocko_blocks){
 
             Swagger_Blocko_Block_Light help = new Swagger_Blocko_Block_Light();
 

@@ -436,10 +436,10 @@ public class GridController extends Controller {
             code = 200,
             extensions = {
                     @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "M_Program.read_qrToken_permission", value = M_Program.read_qrToken_permission_docs),
+                            @ExtensionProperty(name = "M_Program.read_qr_token_permission", value = M_Program.read_qr_token_permission_docs),
                     }),
                     @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "M_Program.read_qrToken_permission", value = "true"),
+                            @ExtensionProperty(name = "M_Program.read_qr_token_permission", value = "true"),
                             @ExtensionProperty(name = "Static Permission key"    , value = "M_Program_read" ),
                             @ExtensionProperty(name = "Dynamic Permission key"   , value = "M_Program_read.{project_id}"),
                     })
@@ -459,7 +459,7 @@ public class GridController extends Controller {
            if(m_program == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
            m_program.m_code = m_program.programInString;
 
-           if (!m_program.read_qrToken_permission())  return GlobalResult.forbidden_Permission();
+           if (!m_program.read_qr_token_permission())  return GlobalResult.forbidden_Permission();
            return GlobalResult.result_ok(Json.toJson(m_program));
 
        }catch (Exception e){

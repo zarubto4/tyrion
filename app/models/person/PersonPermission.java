@@ -47,7 +47,7 @@ public class PersonPermission extends Model {
     // Floating shared documentation for Swagger
     @JsonIgnore @Transient public static final String read_permission_docs         = "read: If user have M_Project.read_permission = true, you can create M_program on this M_Project - Or you need static/dynamic permission key";
     @JsonIgnore @Transient public static final String create_permission_docs       = "create: If user have M_Project.update_permission = true, you can create M_Program on this M_Project - Or you need static/dynamic permission key";
-    @JsonIgnore @Transient public static final String read_qrToken_permission_docs = "read: Private settings for M_Program";
+    @JsonIgnore @Transient public static final String read_qr_token_permission_docs = "read: Private settings for M_Program";
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_person_permission() {  return SecurityController.getPerson() != null && SecurityController.getPerson().has_permission("PersonPermission_edit_person_permission");  }
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()        {  return SecurityController.getPerson() != null && SecurityController.getPerson().has_permission("PersonPermission_edit"); }

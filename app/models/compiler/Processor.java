@@ -21,13 +21,13 @@ public class Processor extends Model {
                                                             @ApiModelProperty(required = true)  public String processor_code;
                                                             @ApiModelProperty(required = true)  public int speed;
 
-    @JsonIgnore @OneToMany(mappedBy="processor", cascade = CascadeType.ALL) public List<TypeOfBoard> typeOfBoards = new ArrayList<>();
-    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "processors")  @JoinTable(name = "processor_libraryGroups")  public List<LibraryGroup>  libraryGroups = new ArrayList<>();
-    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "processors")  @JoinTable(name = "processor_singleLibrary")  public List<SingleLibrary> singleLibraries = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="processor", cascade = CascadeType.ALL) public List<TypeOfBoard> type_of_boards = new ArrayList<>();
+    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "processors")  @JoinTable(name = "processor_libraryGroups")  public List<LibraryGroup> library_groups = new ArrayList<>();
+    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "processors")  @JoinTable(name = "processor_singleLibrary")  public List<SingleLibrary> single_libraries = new ArrayList<>();
 
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> library_groups    (){ List<String> l = new ArrayList<>();  for( LibraryGroup m  : libraryGroups)    l.add(m.id); return l;  }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> single_libraries  (){ List<String> l = new ArrayList<>();  for( SingleLibrary m : singleLibraries)  l.add(m.id); return l;  }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> library_groups    (){ List<String> l = new ArrayList<>();  for( LibraryGroup m  : library_groups)    l.add(m.id); return l;  }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> single_libraries  (){ List<String> l = new ArrayList<>();  for( SingleLibrary m : single_libraries)  l.add(m.id); return l;  }
 
 
 

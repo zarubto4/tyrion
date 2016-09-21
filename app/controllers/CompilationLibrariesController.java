@@ -2901,10 +2901,10 @@ public class CompilationLibrariesController extends Controller {
         try {
 
             // Získání seznamu
-            List<TypeOfBoard> typeOfBoards = TypeOfBoard.find.all();
+            List<TypeOfBoard> type_of_boards = TypeOfBoard.find.all();
 
             // Vrácení seznamu
-            return  GlobalResult.result_ok(Json.toJson(typeOfBoards));
+            return  GlobalResult.result_ok(Json.toJson(type_of_boards));
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -3143,8 +3143,8 @@ public class CompilationLibrariesController extends Controller {
             Query<Board> query = Ebean.find(Board.class);
 
             // If Json contains TypeOfBoards list of id's
-            if(help.typeOfBoards != null ){
-                query.where().in("type_of_board.id", help.typeOfBoards);
+            if(help.type_of_boards != null ){
+                query.where().in("type_of_board.id", help.type_of_boards);
             }
 
             // If contains confirms

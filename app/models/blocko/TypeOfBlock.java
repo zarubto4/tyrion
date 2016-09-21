@@ -27,7 +27,7 @@ public class TypeOfBlock extends Model {
                                     @JsonIgnore @ManyToOne  public Project project;
 
     @OneToMany(mappedBy="type_of_block", cascade = CascadeType.ALL)
-    @JsonIgnore                                                                                public List<BlockoBlock> blockoBlocks = new ArrayList<>();
+    @JsonIgnore                                                                                public List<BlockoBlock> blocko_blocks = new ArrayList<>();
 
 
     @ApiModelProperty(value = "This value will be in Json only if TypeOfBlock is private!",readOnly =true, required = false)
@@ -39,10 +39,10 @@ public class TypeOfBlock extends Model {
 /* JSON PROPERTY -------------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true)
-    @JsonProperty @Transient public List<BlockoBlock> blockoBlocks(){
+    @JsonProperty @Transient public List<BlockoBlock> blocko_blocks(){
         List<BlockoBlock> approvedBlocks = new ArrayList<>();
-        for(BlockoBlock blockoBlock : this.blockoBlocks){
-            if((blockoBlock.approval_state == Approval_state.approved)||(blockoBlock.approval_state == Approval_state.edited)||(blockoBlock.author.id == SecurityController.getPerson().id))
+        for(BlockoBlock blockoBlock : this.blocko_blocks){
+            if((blockoBlock.approval_state == Approval_state.approved)||(blockoBlock.approval_state == Approval_state.edited)||(blockoBlock.author.id.equals(SecurityController.getPerson().id)))
                 approvedBlocks.add(blockoBlock);
         }
         return approvedBlocks;

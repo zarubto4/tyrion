@@ -6,11 +6,11 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.List;
 
 @ApiModel(description = "Json Model for Filtering Boards",
-          value = "Board_Filter")
+          value = "Board_filter")
 public class Swagger_Board_Filter {
 
     @ApiModelProperty(value = "List of typeOfBoard.id", required = false)
-    public List<String> typeOfBoards;
+    public List<String> type_of_boards;
 
 
     @ApiModelProperty(value = "Boolean - required in String! \"true\" or \"false \"", required = false)

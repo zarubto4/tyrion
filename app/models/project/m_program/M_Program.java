@@ -71,12 +71,12 @@ public class M_Program extends Model{
     // Floating shared documentation for Swagger
     @JsonIgnore @Transient public static final String read_permission_docs         = "read: If user have M_Project.read_permission = true, you can create M_program on this M_Project - Or you need static/dynamic permission key";
     @JsonIgnore @Transient public static final String create_permission_docs       = "create: If user have M_Project.update_permission = true, you can create M_Program on this M_Project - Or you need static/dynamic permission key";
-    @JsonIgnore @Transient public static final String read_qrToken_permission_docs = "read: Private settings for M_Program";
+    @JsonIgnore @Transient public static final String read_qr_token_permission_docs     = "read: Private settings for M_Program";
 
 
     @JsonIgnore   @Transient public boolean create_permission(){  return ( Project.find.where().where().eq("ownersOfProject.id", SecurityController.getPerson().id ).eq("m_projects.id", m_project.id).findUnique().create_permission() ) || SecurityController.getPerson().has_permission("M_Program_create");      }
     @JsonIgnore   @Transient public boolean read_permission()  {  return ( M_Program.find.where().eq("m_project.project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("M_Program_read"); }
-    @JsonProperty @Transient public boolean read_qrToken_permission() { return  true; } // TODO pokud uživatel vyloženě nebude chtít zakázat public přístup
+    @JsonProperty @Transient public boolean read_qr_token_permission() { return  true; } // TODO pokud uživatel vyloženě nebude chtít zakázat public přístup
     @JsonProperty @Transient public boolean edit_permission() {return SecurityController.getPerson() != null && ((M_Program.find.where().eq("m_project.project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("M_Program_edit"));}
     @JsonProperty @Transient public boolean delete_permission(){
        if (SecurityController.getPerson() == null) return false;
