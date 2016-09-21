@@ -42,15 +42,16 @@ public class Swagger_B_Program_Version_New {
                                   "",
                           required = true)
         @Valid
-        public Connected_Board main_board;
+        public Connected_Board main_board_pair;
 
         @Valid
         @ApiModelProperty(value = "Connected boards (padavans)", required = false)
-        public List<Connected_Board> boards = new ArrayList<>();
+        public List<Connected_Board> device_board_pairs = new ArrayList<>();
 
 
     }
 
+    @ApiModel(value = "B_Pair")
     public static class Connected_Board {
         public Connected_Board(){}
         @Constraints.Required @ApiModelProperty(required = true) public String board_id;

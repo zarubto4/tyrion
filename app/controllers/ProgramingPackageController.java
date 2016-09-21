@@ -982,7 +982,7 @@ public class ProgramingPackageController extends Controller {
 
             // Tvorba programu
             B_Program b_program             = new B_Program();
-            b_program.dateOfCreate          = new Date();
+            b_program.date_of_create = new Date();
             b_program.program_description   = help.program_description;
             b_program.name                  = help.name;
             b_program.project               = project;
@@ -1205,16 +1205,16 @@ public class ProgramingPackageController extends Controller {
                 B_Program_Hw_Group b_program_hw_group = new B_Program_Hw_Group();
 
                 // Definuji Main Board - Tedy yodu pokud v Json přišel (není podmínkou)
-                if(group.main_board != null) {
+                if(group.main_board_pair != null) {
 
                     B_Pair b_pair = new B_Pair();
 
-                    b_pair.board = Board.find.byId(group.main_board.board_id);
+                    b_pair.board = Board.find.byId(group.main_board_pair.board_id);
                     if ( b_pair.board == null) return GlobalResult.notFoundObject("Board board_id not found");
                     if (!b_pair.board.type_of_board.connectible_to_internet)  return GlobalResult.result_BadRequest("Main Board must be internet connectible!");
                     if(!b_pair.board.update_permission()) return GlobalResult.forbidden_Permission();
 
-                    b_pair.c_program_version = Version_Object.find.byId(group.main_board.c_program_version_id);
+                    b_pair.c_program_version = Version_Object.find.byId(group.main_board_pair.c_program_version_id);
                     if ( b_pair.c_program_version == null) return GlobalResult.notFoundObject("C_Program Version_Object c_program_version_id not found");
                     if ( b_pair.c_program_version.c_program == null)  return GlobalResult.result_BadRequest("Version is not from C_Program");
 
@@ -1229,9 +1229,9 @@ public class ProgramingPackageController extends Controller {
 
                 // Definuji Devices - Tedy yodu pokud v Json přišly (není podmínkou)
 
-                if(group.boards != null) {
+                if(group.device_board_pairs != null) {
 
-                    for(Swagger_B_Program_Version_New.Connected_Board connected_board : group.boards ){
+                    for(Swagger_B_Program_Version_New.Connected_Board connected_board : group.device_board_pairs ){
 
                         B_Pair b_pair = new B_Pair();
 

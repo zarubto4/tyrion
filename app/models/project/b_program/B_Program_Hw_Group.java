@@ -2,6 +2,7 @@ package models.project.b_program;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.compiler.Version_Object;
 
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@ApiModel(value = "Hardware_group") // POZOR - Je zde záměrně sjednocen objekt s dokumentační třídou pro swagger Hardware_group.class
 public class B_Program_Hw_Group extends Model {
 
     @JsonIgnore @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true)  public Long  id;

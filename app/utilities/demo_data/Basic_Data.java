@@ -959,7 +959,7 @@ public class Basic_Data {
             B_Program b_program_1 = new B_Program();
             b_program_1.name = "První blocko program";
             b_program_1.program_description = "Blocko program je úžasná věc když funguje... a tady v tomto progtramu už je připravený i HW!!!!";
-            b_program_1.dateOfCreate = new Date();
+            b_program_1.date_of_create = new Date();
             b_program_1.project = project_1;
             b_program_1.save();
 
@@ -1032,7 +1032,7 @@ public class Basic_Data {
             B_Program b_program_2 = new B_Program();
             b_program_2.name = "Druhý blocko program - Určený pro Yodu B ";
             b_program_2.program_description = "Tento program má sloužit Martinovi";
-            b_program_2.dateOfCreate = new Date();
+            b_program_2.date_of_create = new Date();
             b_program_2.project = project_1;
             b_program_2.save();
 
@@ -1061,7 +1061,7 @@ public class Basic_Data {
             B_Program b_program_3 = new B_Program();
             b_program_3.name = "Druhý blocko program - Určený pro Yodu A ";
             b_program_3.program_description = "Tento program má sloužit Viktorovi";
-            b_program_3.dateOfCreate = new Date();
+            b_program_3.date_of_create = new Date();
             b_program_3.project = project_1;
             b_program_3.save();
 
@@ -1146,7 +1146,7 @@ public class Basic_Data {
             B_Program b_program_4 = new B_Program();
                 b_program_4.name = "Čtvrtý blocko program - Určený pro Yodu D";
                 b_program_4.program_description = "Tento program má sloužit Davidovi";
-                b_program_4.dateOfCreate = new Date();
+                b_program_4.date_of_create = new Date();
                 b_program_4.project = project_1;
                 b_program_4.save();
 
