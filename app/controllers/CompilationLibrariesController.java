@@ -763,7 +763,7 @@ public class CompilationLibrariesController extends Controller {
                c_compilation.c_comp_build_url     = compilation_result.get("buildUrl").asText();
                c_compilation.virtual_input_output = compilation_result.get("interface").toString();
                c_compilation.version_object       = version_object;
-               c_compilation.dateOfCreate         = new Date();
+               c_compilation.date_of_create = new Date();
 
                // Ukládám kompilační objekt
 
@@ -3018,7 +3018,7 @@ public class CompilationLibrariesController extends Controller {
             for(String hw_id : help.hardware_unique_ids) {
                 Board board = new Board();
                 board.id = hw_id;
-                board.isActive = false;
+                board.is_active = false;
                 board.date_of_create = new Date();
                 board.type_of_board = typeOfBoard;
 
@@ -3150,7 +3150,7 @@ public class CompilationLibrariesController extends Controller {
             // If contains confirms
             if(help.active != null){
                 Boolean isActive = help.active.equals("true");
-                query.where().eq("isActive", isActive);
+                query.where().eq("is_active", isActive);
             }
 
             // From date
@@ -3208,7 +3208,7 @@ public class CompilationLibrariesController extends Controller {
             if(board.update_permission()) return GlobalResult.forbidden_Permission();
 
             // Úprava stavu
-            board.isActive = false;
+            board.is_active = false;
 
             // Uložení do databáze
             board.update();
@@ -3384,7 +3384,7 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response =  Swagger_Boards_For_Blocko.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response =  Swagger_Boards_for_blocko.class),
             @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
@@ -3401,9 +3401,9 @@ public class CompilationLibrariesController extends Controller {
             if (! project.read_permission()) return GlobalResult.forbidden_Permission();
 
             // Získání objektu
-            Swagger_Boards_For_Blocko boards_for_blocko = new Swagger_Boards_For_Blocko();
+            Swagger_Boards_for_blocko boards_for_blocko = new Swagger_Boards_for_blocko();
             boards_for_blocko.boards = project.boards;
-            boards_for_blocko.typeOfBoards = TypeOfBoard.find.where().eq("boards.project.id", project.id ).findList();
+            boards_for_blocko.type_of_boards = TypeOfBoard.find.where().eq("boards.project.id", project.id ).findList();
             boards_for_blocko.c_programs = project.c_programs;
 
             // Vrácení objektu

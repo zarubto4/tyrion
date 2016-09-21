@@ -37,7 +37,7 @@ public class Board extends Model {
 
     @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)   public String personal_description;
                                        @JsonIgnore  @ManyToOne              public TypeOfBoard type_of_board;  // Typ desky
-                                       @ApiModelProperty(required = true)   public boolean isActive;
+                                       @ApiModelProperty(required = true)   public boolean is_active;
                                                             @JsonIgnore     public Date date_of_create;
 
                                                    @JsonIgnore @ManyToOne   public Project project;

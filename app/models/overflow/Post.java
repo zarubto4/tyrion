@@ -69,7 +69,7 @@ public class Post extends Model {
     @JsonInclude(JsonInclude.Include.NON_NULL)   @JsonProperty  public List<Post>           comments()              { return name == null && postParentAnswer == null ? null : comments;}
 
     @ApiModelProperty(required = true) @Transient
-    @JsonInclude(JsonInclude.Include.NON_NULL)   @JsonProperty  public List<String>         hashTags()              { return hashTagsList.stream().map(tag -> tag.postHashTagId).collect(Collectors.toList());}
+    @JsonInclude(JsonInclude.Include.NON_NULL)   @JsonProperty  public List<String>         hash_tags()              { return hashTagsList.stream().map(tag -> tag.postHashTagId).collect(Collectors.toList());}
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 

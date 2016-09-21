@@ -15,7 +15,7 @@ public class C_Compilation extends Model {
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
               @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)      public String id;
-                                                          @JsonIgnore      public Date dateOfCreate;
+                                                          @JsonIgnore      public Date date_of_create;
 
     @JsonIgnore @OneToOne(cascade = CascadeType.ALL)   @JoinColumn(name="c_compilation_version")      public Version_Object version_object;
 

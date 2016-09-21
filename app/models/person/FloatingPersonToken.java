@@ -34,13 +34,13 @@ public class FloatingPersonToken extends Model {
     @ApiModelProperty(required = true)                      public String user_agent;
 
 
-    @ApiModelProperty(required = true)                      public String providerUserId;          // user_id ze sociální služby (facebook, git atd)
+    @ApiModelProperty(required = true)                      public String provider_user_id;          // user_id ze sociální služby (facebook, git atd)
     @Column(columnDefinition = "TEXT")
-    @ApiModelProperty(required = true)                      public String providerKey;             // provider key - slouží k identifikaci pro oauth2
-    @ApiModelProperty(required = true)                      public String typeOfConnection;        // Typ Spojení
-    @ApiModelProperty(required = true)                      public String returnUrl;               // Url pna které užáivatele přesměruji
+    @ApiModelProperty(required = true)                      public String provider_key;             // provider key - slouží k identifikaci pro oauth2
+    @ApiModelProperty(required = true)                      public String type_of_connection;        // Typ Spojení
+    @ApiModelProperty(required = true)                      public String return_url;               // Url pna které užáivatele přesměruji
 
-    @ApiModelProperty(required = true)                      public boolean social_tokenVerified;  // Pro ověření, že token byl sociální sítí ověřen
+    @ApiModelProperty(required = true)                      public boolean social_token_verified;  // Pro ověření, že token byl sociální sítí ověřen
 
     @ApiModelProperty(required = true)                      public boolean notification_subscriber;  // Pokud se s tímto tokenem frontend přihlásí k odebírání notifikací nastaví se mu hodnota true
                                                                                                      // a to z důvodů rychlého filtrování, protože uživatel může být přihlášen na 50 zařízeních a na 15 odebírá notifikace
@@ -82,8 +82,8 @@ public class FloatingPersonToken extends Model {
         FloatingPersonToken floatingPersonToken = new FloatingPersonToken();
         while(true){ // I need Unique Value
             String key = UUID.randomUUID().toString();
-            if (FloatingPersonToken.find.where().eq("providerKey",key).findUnique() == null) {
-                floatingPersonToken.providerKey = key;
+            if (FloatingPersonToken.find.where().eq("provider_key",key).findUnique() == null) {
+                floatingPersonToken.provider_key = key;
                 break;
             }
         }
@@ -96,7 +96,7 @@ public class FloatingPersonToken extends Model {
             }
         }
 
-        floatingPersonToken.typeOfConnection = typeOfConnection;
+        floatingPersonToken.type_of_connection = typeOfConnection;
         floatingPersonToken.created = new Date();
         floatingPersonToken.save();
         return floatingPersonToken;

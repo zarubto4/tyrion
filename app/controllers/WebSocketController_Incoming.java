@@ -877,7 +877,7 @@ public class WebSocketController_Incoming extends Controller {
 
                     board.refresh();
                     board.latest_know_server = server;
-                    board.isActive = true;
+                    board.is_active = true;
                     board.update();
                 }
 

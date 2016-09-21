@@ -10,15 +10,15 @@ import java.util.List;
 
 
 @ApiModel(description = "Json Model for Blocko in Becki for accessible hardware and firmware versions",
-        value = "Boards_For_Blocko ")
-public class Swagger_Boards_For_Blocko {
+        value = "Boards_for_blocko ")
+public class Swagger_Boards_for_blocko {
 
 
     @ApiModelProperty(required = true, readOnly = true)
     public List<C_Program> c_programs;
 
     @ApiModelProperty(required = true, readOnly = true)
-    public List<TypeOfBoard> typeOfBoards;
+    public List<TypeOfBoard> type_of_boards;
 
     @ApiModelProperty(required = true, readOnly = true)
     public List<Board> boards;

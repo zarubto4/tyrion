@@ -205,7 +205,7 @@ public class SecurityController extends Controller {
 
             if (map.containsKey("error")) {
                 if (map.containsKey("state"))
-                    FloatingPersonToken.find.where().eq("providerKey", map.get("state")).findUnique().delete();
+                    FloatingPersonToken.find.where().eq("provider_key", map.get("state")).findUnique().delete();
                 return redirect(Server.becki_redirectFail);
             }
 
@@ -213,9 +213,9 @@ public class SecurityController extends Controller {
             String code = map.get("code").replace("[", "").replace("]", "");
 
 
-            FloatingPersonToken floatingPersonToken = FloatingPersonToken.find.where().eq("providerKey", state).findUnique();
+            FloatingPersonToken floatingPersonToken = FloatingPersonToken.find.where().eq("provider_key", state).findUnique();
             if (floatingPersonToken == null) return redirect(Server.becki_redirectFail);
-            floatingPersonToken.social_tokenVerified = true;
+            floatingPersonToken.social_token_verified = true;
 
             OAuthService service = Socials.GitHub(state);
             Token accessToken = service.getAccessToken(null, new Verifier(code));
@@ -231,11 +231,11 @@ public class SecurityController extends Controller {
 
             JsonNode jsonNode = Json.parse(response.getBody());
 
-            floatingPersonToken.providerUserId = jsonNode.get("id").asText();
+            floatingPersonToken.provider_user_id = jsonNode.get("id").asText();
             floatingPersonToken.update();
 
 
-            List<FloatingPersonToken> before_registred = FloatingPersonToken.find.where().eq("providerUserId", floatingPersonToken.providerUserId).where().ne("connection_id", floatingPersonToken.connection_id).findList();
+            List<FloatingPersonToken> before_registred = FloatingPersonToken.find.where().eq("provider_user_id", floatingPersonToken.provider_user_id).where().ne("connection_id", floatingPersonToken.connection_id).findList();
             if (!before_registred.isEmpty()) {
                 System.out.println("Tento uživatel se nepřihlašuje poprvné");
                 floatingPersonToken.person = before_registred.get(0).person;
@@ -265,7 +265,7 @@ public class SecurityController extends Controller {
 
             }
 
-            return redirect(Server.becki_mainUrl + floatingPersonToken.returnUrl);
+            return redirect(Server.becki_mainUrl + floatingPersonToken.return_url);
 
 
         } catch (Exception e) {
@@ -284,7 +284,7 @@ public class SecurityController extends Controller {
 
             if (map.containsKey("error")) {
                 if (map.containsKey("state"))
-                FloatingPersonToken.find.where().eq("providerKey", map.get("state")).findUnique().delete();
+                FloatingPersonToken.find.where().eq("provider_key", map.get("state")).findUnique().delete();
                 return redirect(Server.becki_redirectFail);
             }
 
@@ -295,9 +295,9 @@ public class SecurityController extends Controller {
             System.out.println("Code: " + code);
 
 
-            FloatingPersonToken floatingPersonToken = FloatingPersonToken.find.where().eq("providerKey", state).findUnique();
+            FloatingPersonToken floatingPersonToken = FloatingPersonToken.find.where().eq("provider_key", state).findUnique();
             if (floatingPersonToken == null) return redirect(Server.becki_redirectFail);
-            floatingPersonToken.social_tokenVerified = true;
+            floatingPersonToken.social_token_verified = true;
             floatingPersonToken.setDate();
 
             OAuthService  service = Socials.Facebook(state);
@@ -320,10 +320,10 @@ public class SecurityController extends Controller {
             F.Promise<JsonNode> jsonPromise = wsrequest.get().map(rsp -> { return rsp.asJson();});
             JsonNode jsonRequest = jsonPromise.get(10000);
 
-            List<FloatingPersonToken> before_registred = FloatingPersonToken.find.where().eq("providerUserId", jsonRequest.get("id").asText() ).where().ne("connection_id", floatingPersonToken.connection_id).findList();
+            List<FloatingPersonToken> before_registred = FloatingPersonToken.find.where().eq("provider_user_id", jsonRequest.get("id").asText() ).where().ne("connection_id", floatingPersonToken.connection_id).findList();
             if (!before_registred.isEmpty()){
                 floatingPersonToken.person = before_registred.get(0).person;
-                floatingPersonToken.providerUserId = jsonRequest.get("id").asText();
+                floatingPersonToken.provider_user_id = jsonRequest.get("id").asText();
                 floatingPersonToken.update();
             }
             else{
@@ -339,7 +339,7 @@ public class SecurityController extends Controller {
                 floatingPersonToken.update();
             }
 
-            return redirect(Server.becki_mainUrl + floatingPersonToken.returnUrl);
+            return redirect(Server.becki_mainUrl + floatingPersonToken.return_url);
 
 
         } catch (Exception e) {
@@ -372,14 +372,14 @@ public class SecurityController extends Controller {
 
             FloatingPersonToken floatingPersonToken = FloatingPersonToken.setProviderKey("GitHub");
 
-            floatingPersonToken.returnUrl = return_link;
+            floatingPersonToken.return_url = return_link;
 
             if( Http.Context.current().request().headers().get("User-Agent")[0] != null) floatingPersonToken.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
             else  floatingPersonToken.user_agent = "Unknown browser";
 
             floatingPersonToken.update();
 
-            OAuthService service = Socials.GitHub( floatingPersonToken.providerKey);
+            OAuthService service = Socials.GitHub( floatingPersonToken.provider_key);
 
             Login_Social_Network result = new Login_Social_Network();
             result.type = "GitHub";
@@ -414,14 +414,14 @@ public class SecurityController extends Controller {
         try {
             FloatingPersonToken floatingPersonToken = FloatingPersonToken.setProviderKey("Facebook");
 
-            floatingPersonToken.returnUrl = return_link;
+            floatingPersonToken.return_url = return_link;
 
             if( Http.Context.current().request().headers().get("User-Agent")[0] != null) floatingPersonToken.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
             else  floatingPersonToken.user_agent = "Unknown browser";
 
             floatingPersonToken.update();
 
-            OAuthService service = Socials.Facebook(floatingPersonToken.providerKey);
+            OAuthService service = Socials.Facebook(floatingPersonToken.provider_key);
 
             Login_Social_Network result = new Login_Social_Network();
             result.type = "Facebook";
@@ -441,7 +441,7 @@ public class SecurityController extends Controller {
         try {
             FloatingPersonToken floatingPersonToken = FloatingPersonToken.setProviderKey("Twitter");
 
-            OAuthService service = Socials.Twitter(floatingPersonToken.providerKey);
+            OAuthService service = Socials.Twitter(floatingPersonToken.provider_key);
 
             Token requestToken = service.getRequestToken();
 
@@ -463,7 +463,7 @@ public class SecurityController extends Controller {
         try {
             FloatingPersonToken floatingPersonToken = FloatingPersonToken.setProviderKey("Vkontakte");
 
-            OAuthService service = Socials.Vkontakte(floatingPersonToken.providerKey);
+            OAuthService service = Socials.Vkontakte(floatingPersonToken.provider_key);
 
             ObjectNode result = Json.newObject();
             result.put("type", "Vkontakte");

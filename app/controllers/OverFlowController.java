@@ -511,7 +511,7 @@ public class OverFlowController  extends Controller {
 
             post.text_of_post = help.text_of_post;
 
-            post.hashTags().clear();
+            post.hash_tags().clear();
 
             if (help.hash_tags != null) UtilTools.add_hashTags_to_Post(form.get().hash_tags, post);
 
