@@ -6,6 +6,12 @@
 
 ## Změny nad objekty ##
 
+### Version_Object ###
+
+ * Version_Object nyní obsahuje položku "author", aby se vědělo, kdo verzi vytvořil.
+ * Další položka je boolean "public_version", zda je to veřejný kód.
+ * A poslední položka je enum "approval_state". Jestli má být kód veřejný, musí být schválený.
+
 ### Person ###
 
  * Nyní nově, když se zavolá:
@@ -18,14 +24,36 @@
 
  * která obsahuje link na profilový obrázek uživatele nebo null, pokud žádný obrázek nemá.
 
-### TypeOfBlock, BlockoBlock a BlockoBlockVersion ###
+### BlockoBlockVersion ###
 
- * U těchto objektů přibyla enum vlastnost "approval_state", která může nabývat hodnot: "pending", "approved", "edited", "disapproved".
+ * U tohoto objektu přibyla enum vlastnost "approval_state", která může nabývat hodnot: "pending", "approved", "edited", "disapproved".
  * Tato vlastnost je důležitá především u veřejných bločků, kdy je potřeba naše schválení, než se bloček zveřejní. Pokud uživatel vytvoří soukormý bloček, je vždy approval_state nastaven "approved".
- * Co se týče API nad těmito objekty, nic se nemění, pouze se vrací ty typy bločků, bločky a jejich verze, které může uživatel vidět, tzn. approval_state = approved nebo je jejich vlastníkem.
- * Uživatelovi, který bloček vytvořil se tedy vrátí i disapproved, edited nebo pending. Důležité: Je třeba mu nějak ukázat v jakém stavu bloček je.
+ * Co se týče API nad těmito objekty, nic se nemění, pouze se vrací ty bločky a jejich verze, které může uživatel vidět, tzn. approval_state = approved/edited nebo je jejich vlastníkem.
+ * Uživatelovi, který bloček vytvořil se tedy vrátí i disapproved nebo pending. Důležité: Je třeba mu nějak ukázat v jakém stavu bloček je.
 
 ## Nové API: ##
+
+### Veřejné c_programy ###
+
+ * Nová API pro zveřejnění verze C_Programu, aby jí mohli použít ostatní uživatelé:
+
+		PUT	{{url_Tyriona}}/compilation/c_program/version/make_public/{version_id}
+
+ * Proto přibyla další API, která vrací list po stránkách s 25 objekty, pro získání veřejných verzí:
+
+		GET	{{url_Tyriona}}/compilation/c_program/version/public/list/{page_number}
+
+ * API vrací JSON ve tvaru:
+
+		{
+			"content": [{}],
+			"from": 0,
+			"to": 0,
+			"total": 0,
+			"pages": [0]
+		}
+
+ * v contentu je list "odlehčených" verzí, které jsou veřejné.
 
 ### Profilový obrázek uživatele [TYRION-334](http://youtrack.byzance.cz/youtrack/issue/TYRION-334) ###
 

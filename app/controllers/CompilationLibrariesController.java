@@ -21,10 +21,12 @@ import play.libs.ws.WSResponse;
 import play.mvc.*;
 import utilities.Server;
 import utilities.UtilTools;
+import utilities.emails.EmailTool;
 import utilities.enums.Approval_state;
 import utilities.enums.FirmwareType;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_API;
+import utilities.loginEntities.Secured_Admin;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
@@ -431,6 +433,7 @@ public class CompilationLibrariesController extends Controller {
             version_object.version_description = help.version_description;
             version_object.date_of_create = new Date();
             version_object.c_program = c_program;
+            version_object.public_version = false;
 
             // Zkontroluji oprávnění
             if(!version_object.c_program.update_permission()) return GlobalResult.forbidden_Permission();
@@ -702,15 +705,142 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
-    public Result get_C_Program_public(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true)  Integer page_number){
+    @ApiOperation(value = "get C_program_Version public",
+            tags = {"C_Program"},
+            notes = "get approved or edited C_program public Versions ",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_C_Program_Version_Public_List.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result get_C_Program_public_list(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true)  Integer page_number){
         try {
 
+            // Vytřídění objektů
             Query<Version_Object> query = Ebean.find(Version_Object.class);
             query.where().isNotNull("c_program").eq("public_version", true).ne("approval_state", Approval_state.pending).ne("approval_state", Approval_state.disapproved);
 
-            //Swagger_C_Program_Version_Public_List result = new Swagger_C_Program_Version_Public_List(query,page_number);
+            // Vytvoření výsledku a stránkování
+            Swagger_C_Program_Version_Public_List result = new Swagger_C_Program_Version_Public_List(query,page_number);
 
+            // Vrácení výsledku
+            return GlobalResult.result_ok(Json.toJson(result));
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result changeApprovalState(){
+        try {
+
+            // Získání Json
+            final Form<Swagger_C_Program_Version_Approval> form = Form.form(Swagger_C_Program_Version_Approval.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_C_Program_Version_Approval help = form.get();
+
+            // Kontrola objektu
+            Version_Object version_object = Version_Object.find.byId(help.id);
+            if(version_object == null) return GlobalResult.notFoundObject("Version not found.");
+
+            // Úprava objektu na základě rozhodnutí
+            if(help.decision){
+
+                // Schválení objektu
+                version_object.approval_state = Approval_state.approved;
+                version_object.public_version = true;
+
+            }else {
+
+                // Neschválení objektu
+                version_object.approval_state = Approval_state.disapproved;
+
+                if (help.reason == null) return GlobalResult.badRequest("Fill in the reason");
+
+                // Odeslání emailu s důvodem
+                try {
+                    new EmailTool()
+                            .addEmptyLineSpace()
+                            .startParagraph("13")
+                            .addText("Your code: ")
+                            .addBoldText(version_object.version_name)
+                            .addText(" was disapproved for this reason: ")
+                            .endParagraph()
+                            .startParagraph("13")
+                            .addText( help.reason)
+                            .endParagraph()
+                            .addEmptyLineSpace()
+                            .sendEmail(version_object.author.mail, "Code disapproved" );
+
+                } catch (Exception e) {
+                    logger.error ("Sending mail -> critical error", e);
+                    e.printStackTrace();
+                }
+            }
+
+            // Uložení změn
+            version_object.update();
+
+            // Potvrzení
             return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result approveWithChanges(){
+        try {
+
+            // Získání Json
+            final Form<Swagger_C_Program_Version_Approve_WithChanges> form = Form.form(Swagger_C_Program_Version_Approve_WithChanges.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_C_Program_Version_Approve_WithChanges help = form.get();
+
+            // Kontrola objektu
+            Version_Object version_object = Version_Object.find.byId(help.id);
+            if(version_object == null) return GlobalResult.notFoundObject("Version not found");
+
+            // Úprava objektu
+            //TODO Lexa - doplnit editaci
+
+            version_object.approval_state = Approval_state.edited;
+            version_object.public_version = true;
+
+            if (help.reason == null) return GlobalResult.badRequest("Fill in the reason");
+
+            // Odeslání emailu s důvodem
+            try {
+                new EmailTool()
+                        .addEmptyLineSpace()
+                        .startParagraph("13")
+                        .addText("Your code: ")
+                        .addBoldText(version_object.version_name)
+                        .addText(" was edited for this reason: ")
+                        .endParagraph()
+                        .startParagraph("13")
+                        .addText( help.reason)
+                        .endParagraph()
+                        .addEmptyLineSpace()
+                        .sendEmail(version_object.c_program.project.product.payment_details.person.mail, "Code edited" );
+
+            } catch (Exception e) {
+                logger.error ("Sending mail -> critical error", e);
+                e.printStackTrace();
+            }
+
+            // Uložení změn
+            version_object.update();
+
+            // Potvrzení
+            return  GlobalResult.result_ok();
 
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());

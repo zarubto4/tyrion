@@ -44,11 +44,9 @@ create table blocko_block (
   id                        varchar(255) not null,
   name                      varchar(255),
   general_description       TEXT,
-  approval_state            integer,
   author_id                 varchar(255),
   type_of_block_id          varchar(255),
   producer_id               varchar(255),
-  constraint ck_blocko_block_approval_state check (approval_state in (0,1,2,3)),
   constraint pk_blocko_block primary key (id))
 ;
 
@@ -488,9 +486,7 @@ create table type_of_block (
   id                        varchar(255) not null,
   name                      varchar(255),
   general_description       TEXT,
-  approval_state            integer,
   project_id                varchar(255),
-  constraint ck_type_of_block_approval_state check (approval_state in (0,1,2,3)),
   constraint pk_type_of_block primary key (id))
 ;
 
@@ -530,6 +526,9 @@ create table version_object (
   id                        varchar(255) not null,
   version_name              varchar(255),
   version_description       TEXT,
+  author_id                 varchar(255),
+  approval_state            integer,
+  public_version            boolean,
   date_of_create            timestamp,
   library_group_id          varchar(255),
   single_library_id         varchar(255),
@@ -538,6 +537,7 @@ create table version_object (
   compilable                boolean,
   b_program_id              varchar(255),
   blob_version_link         varchar(255),
+  constraint ck_version_object_approval_state check (approval_state in (0,1,2,3)),
   constraint pk_version_object primary key (id))
 ;
 
@@ -813,14 +813,16 @@ alter table type_of_board add constraint fk_type_of_board_producer_62 foreign ke
 create index ix_type_of_board_producer_62 on type_of_board (producer_id);
 alter table type_of_board add constraint fk_type_of_board_processor_63 foreign key (processor_id) references processor (id);
 create index ix_type_of_board_processor_63 on type_of_board (processor_id);
-alter table version_object add constraint fk_version_object_library_gro_64 foreign key (library_group_id) references library_group (id);
-create index ix_version_object_library_gro_64 on version_object (library_group_id);
-alter table version_object add constraint fk_version_object_single_libr_65 foreign key (single_library_id) references single_library (id);
-create index ix_version_object_single_libr_65 on version_object (single_library_id);
-alter table version_object add constraint fk_version_object_c_program_66 foreign key (c_program_id) references c_program (id);
-create index ix_version_object_c_program_66 on version_object (c_program_id);
-alter table version_object add constraint fk_version_object_b_program_67 foreign key (b_program_id) references b_program (id);
-create index ix_version_object_b_program_67 on version_object (b_program_id);
+alter table version_object add constraint fk_version_object_author_64 foreign key (author_id) references person (id);
+create index ix_version_object_author_64 on version_object (author_id);
+alter table version_object add constraint fk_version_object_library_gro_65 foreign key (library_group_id) references library_group (id);
+create index ix_version_object_library_gro_65 on version_object (library_group_id);
+alter table version_object add constraint fk_version_object_single_libr_66 foreign key (single_library_id) references single_library (id);
+create index ix_version_object_single_libr_66 on version_object (single_library_id);
+alter table version_object add constraint fk_version_object_c_program_67 foreign key (c_program_id) references c_program (id);
+create index ix_version_object_c_program_67 on version_object (c_program_id);
+alter table version_object add constraint fk_version_object_b_program_68 foreign key (b_program_id) references b_program (id);
+create index ix_version_object_b_program_68 on version_object (b_program_id);
 
 
 

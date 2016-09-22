@@ -2,7 +2,9 @@ package models.compiler;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
+import models.person.Person;
 import models.project.b_program.B_Pair;
 import models.project.b_program.B_Program;
 import models.project.b_program.B_Program_Hw_Group;
@@ -24,9 +26,12 @@ import java.util.UUID;
 public class Version_Object extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
-    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true)  public String  id;
+    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true)  public String id;
                                                             @ApiModelProperty(required = true)  public String version_name;
                      @Column(columnDefinition = "TEXT")     @ApiModelProperty(required = true)  public String version_description;
+
+                                                 @ManyToOne @ApiModelProperty(required = true)  public Person author;
+
                                                             @ApiModelProperty(required = true)  public Approval_state approval_state;
                                                             @ApiModelProperty(required = true)  public boolean public_version;
 
@@ -84,6 +89,8 @@ public class Version_Object extends Model {
             this.blob_version_link = "/versions/" + UUID.randomUUID().toString();
             if (Version_Object.find.where().eq("blob_version_link", blob_version_link ).findUnique() == null) break;
         }
+
+        this.author = SecurityController.getPerson();
 
         super.save();
     }

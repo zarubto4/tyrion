@@ -268,8 +268,8 @@ GET             /project/blocko/server                                          
 DELETE          /project/blocko/server/:server_id                                           @controllers.ProgramingPackageController.delete_Blocko_Server(server_id)
 
 #Blocko General
-PUT             /project/blocko/approval                                                    @controllers.ProgramingPackageController.changeApprovalState()
-PUT             /project/blocko/approve_with_changes                                        @controllers.ProgramingPackageController.approveWithChanges()
+PUT             /project/blocko/disapprove                                                  @controllers.ProgramingPackageController.blockoDisapprove()
+PUT             /project/blocko/approval                                                    @controllers.ProgramingPackageController.blockoApproval()
 
 ### ACTUALIZATION PROCEDURE ############ ACTUALIZATION PROCEDURE ############### ACTUALIZATION PROCEDURE ################ ACTUALIZATION PROCEDURE ##############################
 ################################################################################################################################################################################
@@ -299,6 +299,12 @@ DELETE          /compilation/c_program/version/:version_id                      
 GET             /compilation/c_program/version/:version_id                                  @controllers.CompilationLibrariesController.get_C_Program_Version(version_id)
 POST            /compilation/c_program/version/compile                                      @controllers.CompilationLibrariesController.compile_C_Program_code()
 PUT             /compilation/c_program/version/compile/:version_id                          @controllers.CompilationLibrariesController.compile_C_Program_version(version_id)
+
+PUT             /compilation/c_program/version/make_public/:version_id                      @controllers.CompilationLibrariesController.make_C_Program_Version_public(version_id)
+GET             /compilation/c_program/version/public/list/:page_number                     @controllers.CompilationLibrariesController.get_C_Program_public_list(page_number: Integer)
+
+PUT             /compilation/c_program/version/approval                                     @controllers.CompilationLibrariesController.changeApprovalState()
+PUT             /compilation/c_program/version/approve_with_changes                         @controllers.CompilationLibrariesController.approveWithChanges()
 
 #Actualization
 PUT             /compilation/c_program/version/upload/:version_id                           @controllers.CompilationLibrariesController.uploadCompilationToBoard(version_id)

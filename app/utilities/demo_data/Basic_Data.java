@@ -156,25 +156,21 @@ public class Basic_Data {
         TypeOfBlock typeOfBlock_1 = new TypeOfBlock();
             typeOfBlock_1.name =  "Social Sites Blocks";
             typeOfBlock_1.general_description = "Sociální bločky pro Facebook, Twitter a další";
-            typeOfBlock_1.approval_state = Approval_state.approved;
             typeOfBlock_1.save();
 
         TypeOfBlock typeOfBlock_2 = new TypeOfBlock();
             typeOfBlock_2.name =  "Logic Blocks";
             typeOfBlock_2.general_description = "Základní logické bločky na principu booleovy algebry";
-            typeOfBlock_2.approval_state = Approval_state.approved;
             typeOfBlock_2.save();
 
         TypeOfBlock typeOfBlock_3 = new TypeOfBlock();
             typeOfBlock_3.name =  "Api Blocks";
             typeOfBlock_3.general_description = "Bločky pro Externí API";
-            typeOfBlock_3.approval_state = Approval_state.approved;
             typeOfBlock_3.save();
 
         TypeOfBlock typeOfBlock_4 = new TypeOfBlock();
             typeOfBlock_4.name =  "Times Blocks";
             typeOfBlock_4.general_description = "Bločky s časovou konstantou";
-            typeOfBlock_4.approval_state = Approval_state.approved;
             typeOfBlock_4.save();
 
 
@@ -187,7 +183,6 @@ public class Basic_Data {
             blockoBlock_1_1.name = "Facebook Post";
             blockoBlock_1_1.general_description = "m.n,a sldjkfbnlskjd bjsdnf jkbsjndafio bjkvc,mxnymf můiwljhkn bfm,mn.adsjlůxkbcvnymn klnaf m,mnbjlů§k nbasldfb,n jkl.lkn nmsgl,můfjk br,mn.fl kbmfkllykbv vkůljmyn,d.mckůlxůklxbvnm,dsf m.ylp§foigkljsadůjfndmsvoija kdsfvůljnkjb fkljgfbvclasgfbnlfagkbkcnlsgkfklndgdk an dsja";
             blockoBlock_1_1.type_of_block = typeOfBlock_1;
-            blockoBlock_1_1.approval_state = Approval_state.approved;
         blockoBlock_1_1.save();
 
         BlockoBlock blockoBlock_1_2 = new BlockoBlock();
@@ -195,7 +190,6 @@ public class Basic_Data {
             blockoBlock_1_2.name = "Twitter tweet";
             blockoBlock_1_2.general_description = "Lorem ipsum di lasjdhflkj dshaflj  sadfsdfas dfsadf sad gsfgsdf sadfsd fas";
             blockoBlock_1_2.type_of_block = typeOfBlock_1;
-            blockoBlock_1_2.approval_state = Approval_state.approved;
         blockoBlock_1_2.save();
 
         BlockoBlock blockoBlock_1_3 = new BlockoBlock();
@@ -203,7 +197,6 @@ public class Basic_Data {
             blockoBlock_1_3.name = "Google+";
             blockoBlock_1_3.general_description = "Google+ Function dsafkjb bjbsadlkjbf kblasdf adsf";
             blockoBlock_1_3.type_of_block = typeOfBlock_1;
-            blockoBlock_1_3.approval_state = Approval_state.approved;
         blockoBlock_1_3.save();
 
 
@@ -213,7 +206,6 @@ public class Basic_Data {
             blockoBlock_2_1.name = "OR";
             blockoBlock_2_1.general_description = "Logic function OR";
             blockoBlock_2_1.type_of_block = typeOfBlock_2;
-            blockoBlock_2_1.approval_state = Approval_state.approved;
         blockoBlock_2_1.save();
 
         BlockoBlock blockoBlock_2_2 = new BlockoBlock();
@@ -221,7 +213,6 @@ public class Basic_Data {
             blockoBlock_2_2.name = "AND";
             blockoBlock_2_2.general_description = "Logic function AND";
             blockoBlock_2_2.type_of_block = typeOfBlock_2;
-            blockoBlock_2_2.approval_state = Approval_state.approved;
         blockoBlock_2_2.save();
 
         BlockoBlock blockoBlock_2_3 = new BlockoBlock();
@@ -229,7 +220,6 @@ public class Basic_Data {
             blockoBlock_2_3.name = "XOR";
             blockoBlock_2_3.general_description = "Logic function XOR";
             blockoBlock_2_3.type_of_block = typeOfBlock_2;
-            blockoBlock_2_3.approval_state = Approval_state.approved;
         blockoBlock_2_3.save();
 
 
@@ -239,7 +229,6 @@ public class Basic_Data {
             blockoBlock_3_1.name = "POST";
             blockoBlock_3_1.general_description = "Basic REST-API REQUEST POST";
             blockoBlock_3_1.type_of_block = typeOfBlock_3;
-            blockoBlock_3_1.approval_state = Approval_state.approved;
         blockoBlock_3_1.save();
 
         BlockoBlock blockoBlock_3_2 = new BlockoBlock();
@@ -247,7 +236,6 @@ public class Basic_Data {
             blockoBlock_3_2.name = "GET";
             blockoBlock_3_2.general_description = "Basic REST-API REQUEST GET";
             blockoBlock_3_2.type_of_block = typeOfBlock_3;
-            blockoBlock_3_2.approval_state = Approval_state.approved;
         blockoBlock_3_2.save();
 
         BlockoBlock blockoBlock_3_3 = new BlockoBlock();
@@ -255,7 +243,6 @@ public class Basic_Data {
             blockoBlock_3_3.name = "PUT";
             blockoBlock_3_3.general_description = "Basic REST-API REQUEST PUT";
             blockoBlock_3_3.type_of_block = typeOfBlock_3;
-            blockoBlock_3_3.approval_state = Approval_state.approved;
         blockoBlock_3_3.save();
 
         BlockoBlock blockoBlock_3_4 = new BlockoBlock();
@@ -263,7 +250,6 @@ public class Basic_Data {
             blockoBlock_3_4.name = "DELETE";
             blockoBlock_3_4.general_description = "Basic REST-API REQUEST DELETE";
             blockoBlock_3_4.type_of_block = typeOfBlock_3;
-            blockoBlock_3_4.approval_state = Approval_state.approved;
         blockoBlock_3_4.save();
 
 
@@ -338,12 +324,12 @@ public class Basic_Data {
         version_2_1_1.save();
 
         BlockoBlockVersion version_2_1_2 = new BlockoBlockVersion();
-            version_2_1_1.blocko_block = blockoBlock_2_1;
-            version_2_1_1.date_of_create = new Date();
-            version_2_1_1.logic_json = "{}";
-            version_2_1_1.version_description = "Prvnsafd -a.kshm fn.,mbs gjknbm akdfsm,.cxy ndfam,nkvxclůavcx namxyklnvdfsam ,cvklůdfsmv.lyům ,klnvyůmc,.í update";
-            version_2_1_1.version_name = "1.0.2";
-            version_2_1_1.approval_state = Approval_state.approved;
+            version_2_1_2.blocko_block = blockoBlock_2_1;
+            version_2_1_2.date_of_create = new Date();
+            version_2_1_2.logic_json = "{}";
+            version_2_1_2.version_description = "Prvnsafd -a.kshm fn.,mbs gjknbm akdfsm,.cxy ndfam,nkvxclůavcx namxyklnvdfsam ,cvklůdfsmv.lyům ,klnvyůmc,.í update";
+            version_2_1_2.version_name = "1.0.2";
+            version_2_1_2.approval_state = Approval_state.approved;
         version_2_1_2.save();
 
         // 2_2

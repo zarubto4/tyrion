@@ -2619,103 +2619,15 @@ public class ProgramingPackageController extends Controller {
            blockoBlock.author              = SecurityController.getPerson();
 
            // Kontrola objektu
-           TypeOfBlock typeOfBlock = null;
-           if(!(help.new_type_of_block)) {
+           TypeOfBlock typeOfBlock = TypeOfBlock.find.byId( help.type_of_block_id);
+           if(typeOfBlock == null) return GlobalResult.notFoundObject("TypeOfBlock type_of_block_id not found");
 
-               if(!((help.type_of_block_id == null)||(help.type_of_block_id.equals("")))){
-
-                   typeOfBlock = TypeOfBlock.find.byId( help.type_of_block_id);
-                   if(typeOfBlock == null) return GlobalResult.notFoundObject("TypeOfBlock type_of_block_id not found");
-               }
-           }else {
-
-               if((help.type_of_block_name == null)||(help.type_of_block_general_description == null)) return GlobalResult.badRequest("You must fill in 'type of block' details.");
-
-               typeOfBlock = new TypeOfBlock();
-               typeOfBlock.general_description = help.type_of_block_general_description;
-               typeOfBlock.name                = help.type_of_block_name;
-
-               // Nejedná se o privátní Typ Bločku
-               if(help.project_id != null){
-
-                   // Kontrola objektu
-                   Project project = Project.find.byId(help.project_id);
-                   if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
-                   if(! project.update_permission()) return GlobalResult.forbidden_Permission();
-
-                   // Úprava objektu
-                   typeOfBlock.project = project;
-
-                   // Kontrola oprávnění těsně před uložením podle standardu
-                   if (! typeOfBlock.create_permission() ) return GlobalResult.forbidden_Permission();
-
-               }else{
-
-                   // Kontrola oprávnění těsně před uložením podle standardu
-                   if (! typeOfBlock.create_permission() ) {
-
-                       // Nastavení stavu schvalování
-                       typeOfBlock.approval_state = Approval_state.pending;
-                   }else typeOfBlock.approval_state = Approval_state.approved;
-
-               }
-           }
-
-           // Úprava objektu
-           if(!(typeOfBlock == null))blockoBlock.type_of_block = typeOfBlock;
-
-           if((typeOfBlock == null)||(typeOfBlock.project_id() == null)){
-               if(BlockoBlock.find.where().eq("name", help.name).isNull("type_of_block.project.id").findUnique() != null) return GlobalResult.badRequest("Name of Block already exists. Type a new one.");
-           }
-
-           // Uložení objektu
-           typeOfBlock.save();
 
            // Kontrola oprávnění těsně před uložením
-           if (! blockoBlock.create_permission() ){
-               if((blockoBlock.type_of_block == null)||(blockoBlock.type_of_block.project_id() == null)){
+           if (! blockoBlock.create_permission() ) return GlobalResult.forbidden_Permission();
 
-                   // Nastavení stavu schvalování
-                   blockoBlock.approval_state = Approval_state.pending;
-
-                   // Uložení objektu
-                   blockoBlock.save();
-
-               }else return GlobalResult.forbidden_Permission();
-           }else {
-
-               // Uložení objektu
-               blockoBlock.approval_state = Approval_state.approved;
-               blockoBlock.save();
-           }
-
-           // Vytvoření objektu
-           BlockoBlockVersion version = new BlockoBlockVersion();
-           version.date_of_create = new Date();
-
-           version.version_name = help.version_name;
-           version.version_description = help.version_description;
-           version.design_json = help.design_json;
-           version.logic_json = help.logic_json;
-           version.blocko_block = blockoBlock;
-
-           // Kontrola oprávnění
-           if (! version.create_permission()){
-               if((version.blocko_block.type_of_block == null)||(version.blocko_block.type_of_block.project_id() == null)){
-
-                   // Nastavení stavu schvalování
-                   version.approval_state = Approval_state.pending;
-
-                   // Uložení objektu
-                   version.save();
-
-               }else return GlobalResult.forbidden_Permission();
-           }else {
-
-               // Uložení objektu
-               version.approval_state = Approval_state.approved;
-               version.save();
-           }
+           // Uložení objektu
+           blockoBlock.save();
 
            // Vrácení objektu
            return GlobalResult.created( Json.toJson(blockoBlock) );
@@ -3204,108 +3116,38 @@ public class ProgramingPackageController extends Controller {
 // BLOCKO ADMIN ########################################################################################################*/
 
     @Security.Authenticated(Secured_Admin.class)
-    public Result changeApprovalState(){
+    public Result blockoDisapprove(){
         try {
 
             final Form<Swagger_BlockoObject_Approval> form = Form.form(Swagger_BlockoObject_Approval.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_BlockoObject_Approval help = form.get();
 
-            switch (help.object_name){
-                case "type_of_block": {
+            BlockoBlockVersion blockoBlockVersion = BlockoBlockVersion.find.byId(help.object_id);
+            if (blockoBlockVersion == null) return GlobalResult.notFoundObject("blocko_block_version not found");
 
-                    TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(help.object_id);
-                    if (typeOfBlock == null) return GlobalResult.notFoundObject("type_of_block not found");
+            blockoBlockVersion.approval_state = Approval_state.disapproved;
 
-                    if(help.approval) typeOfBlock.approval_state = Approval_state.approved;
-                    else typeOfBlock.approval_state = Approval_state.disapproved;
+            try {
+                new EmailTool()
+                        .addEmptyLineSpace()
+                        .startParagraph("13")
+                        .addText("Version of Block " + blockoBlockVersion.blocko_block.name + ": ")
+                        .addBoldText(blockoBlockVersion.version_name)
+                        .addText(" was not approved for this reason: ")
+                        .endParagraph()
+                        .startParagraph("13")
+                        .addText( help.reason)
+                        .endParagraph()
+                        .addEmptyLineSpace()
+                        .sendEmail(blockoBlockVersion.blocko_block.author.mail, "Version of Block disapproved" );
 
-                    typeOfBlock.update();
-
-                    break;
-                }
-                case "blocko_block": {
-
-                    BlockoBlock blockoBlock = BlockoBlock.find.byId(help.object_id);
-                    if (blockoBlock == null) return GlobalResult.notFoundObject("blocko_block not found");
-
-                    if (blockoBlock.type_of_block == null) return GlobalResult.badRequest("Block must be assigned to a Type Of Block");
-
-                    if(help.approval) {
-                        blockoBlock.approval_state = Approval_state.approved;
-                        if(blockoBlock.type_of_block.approval_state == Approval_state.pending)
-                            blockoBlock.type_of_block.approval_state = Approval_state.approved;
-                        blockoBlock.blocko_versions.get(0).approval_state = Approval_state.approved;
-                    }
-                    else {
-                        if((help.reason == null)||(help.reason.equals(""))) return GlobalResult.badRequest("Reason is empty");
-                        blockoBlock.approval_state = Approval_state.disapproved;
-                        if(blockoBlock.type_of_block.approval_state == Approval_state.pending)
-                            blockoBlock.type_of_block.approval_state = Approval_state.disapproved;
-                        blockoBlock.blocko_versions.get(0).approval_state = Approval_state.disapproved;
-
-                        try {
-                            new EmailTool()
-                                    .addEmptyLineSpace()
-                                    .startParagraph("13")
-                                    .addText("Block: ")
-                                    .addBoldText(blockoBlock.name)
-                                    .addText(" was not approved for this reason: ")
-                                    .endParagraph()
-                                    .startParagraph("13")
-                                    .addText( help.reason)
-                                    .endParagraph()
-                                    .addEmptyLineSpace()
-                                    .sendEmail(blockoBlock.author.mail, "Block was disapproved" );
-
-                        } catch (Exception e) {
-                            logger.error ("Sending mail -> critical error", e);
-                            e.printStackTrace();
-                        }
-                    }
-
-                    blockoBlock.blocko_versions.get(0).update();
-                    blockoBlock.type_of_block.update();
-                    blockoBlock.update();
-
-                    break;
-                }
-                case "blocko_block_version": {
-
-                    BlockoBlockVersion blockoBlockVersion = BlockoBlockVersion.find.byId(help.object_id);
-                    if (blockoBlockVersion == null) return GlobalResult.notFoundObject("blocko_block_version not found");
-
-                    if(help.approval) blockoBlockVersion.approval_state = Approval_state.approved;
-                    else{
-                        if((help.reason == null)||(help.reason.equals(""))) return GlobalResult.badRequest("Reason is empty");
-                        blockoBlockVersion.approval_state = Approval_state.disapproved;
-
-                        try {
-                            new EmailTool()
-                                    .addEmptyLineSpace()
-                                    .startParagraph("13")
-                                    .addText("Version of Block " + blockoBlockVersion.blocko_block.name + ": ")
-                                    .addBoldText(blockoBlockVersion.version_name)
-                                    .addText(" was not approved for this reason: ")
-                                    .endParagraph()
-                                    .startParagraph("13")
-                                    .addText( help.reason)
-                                    .endParagraph()
-                                    .addEmptyLineSpace()
-                                    .sendEmail(blockoBlockVersion.blocko_block.author.mail, "Version of Block disapproved" );
-
-                        } catch (Exception e) {
-                            logger.error ("Sending mail -> critical error", e);
-                            e.printStackTrace();
-                        }
-                    }
-
-                    blockoBlockVersion.update();
-
-                    break;
-                }
-                default: return GlobalResult.badRequest("Something went wrong.");
+            } catch (Exception e) {
+                logger.error ("Sending mail -> critical error", e);
+                e.printStackTrace();
             }
+
+            blockoBlockVersion.update();
 
             return GlobalResult.result_ok();
 
@@ -3316,7 +3158,7 @@ public class ProgramingPackageController extends Controller {
     }
 
     @Security.Authenticated(Secured_Admin.class)
-    public Result approveWithChanges(){
+    public Result blockoApproval(){
 
         try {
 
@@ -3324,124 +3166,56 @@ public class ProgramingPackageController extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_BlockoObject_Approve_withChanges help = form.get();
 
-            switch (help.object_name){
-                case "type_of_block": {
+            BlockoBlockVersion privateBlockoBlockVersion = BlockoBlockVersion.find.byId(help.object_id);
+            if (privateBlockoBlockVersion == null) return GlobalResult.notFoundObject("blocko_block_version not found");
 
-                    TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(help.object_id);
-                    if (typeOfBlock == null) return GlobalResult.notFoundObject("type_of_block not found");
+            TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(help.blocko_block_type_of_block_id);
+            if (typeOfBlock == null) return GlobalResult.notFoundObject("type_of_block not found");
 
-                    if((help.type_of_block_name == null)||(help.type_of_block_general_description == null)) return GlobalResult.badRequest("You must fill in type_of_block details");
+            BlockoBlock blockoBlock = new BlockoBlock();
+            blockoBlock.name = help.blocko_block_name;
+            blockoBlock.general_description = help.blocko_block_general_description;
+            blockoBlock.type_of_block = typeOfBlock;
+            blockoBlock.author = privateBlockoBlockVersion.blocko_block.author;
+            blockoBlock.save();
 
-                    typeOfBlock.name = help.type_of_block_name;
-                    typeOfBlock.general_description = help.type_of_block_general_description;
-                    typeOfBlock.approval_state = Approval_state.edited;
+            BlockoBlockVersion blockoBlockVersion = new BlockoBlockVersion();
+            blockoBlockVersion.version_name = help.blocko_block_version_name;
+            blockoBlockVersion.version_description = help.blocko_block_version_description;
+            blockoBlockVersion.design_json = help.blocko_block_design_json;
+            blockoBlockVersion.logic_json = help.blocko_block_logic_json;
+            blockoBlockVersion.approval_state = Approval_state.approved;
+            blockoBlockVersion.blocko_block = blockoBlock;
+            blockoBlockVersion.date_of_create = new Date();
+            blockoBlockVersion.save();
 
-                    typeOfBlock.update();
+            if(help.state.equals("edit")) {
+                privateBlockoBlockVersion.approval_state = Approval_state.edited;
 
-                    return GlobalResult.result_ok();
+                try {
+                    new EmailTool()
+                            .addEmptyLineSpace()
+                            .startParagraph("13")
+                            .addText("Version of Block " + blockoBlockVersion.blocko_block.name + ": ")
+                            .addBoldText(blockoBlockVersion.version_name)
+                            .addText(" was edited before publishing for this reason: ")
+                            .endParagraph()
+                            .startParagraph("13")
+                            .addText( help.reason)
+                            .endParagraph()
+                            .addEmptyLineSpace()
+                            .sendEmail(blockoBlockVersion.blocko_block.author.mail, "Version of Block edited" );
+
+                } catch (Exception e) {
+                    logger.error ("Sending mail -> critical error", e);
+                    e.printStackTrace();
                 }
-                case "blocko_block": {
-
-                    BlockoBlock blockoBlock = BlockoBlock.find.byId(help.object_id);
-                    if (blockoBlock == null) return GlobalResult.notFoundObject("blocko_block not found");
-
-                    if((help.blocko_block_name == null)||(help.blocko_block_general_description == null)) return GlobalResult.badRequest("You must fill in blocko_block details.");
-                    if(help.blocko_block_type_of_block_id == null) return GlobalResult.badRequest("You must fill in type_of_block details.");
-                    if((help.blocko_block_version_name == null)||(help.blocko_block_version_description == null)||(help.blocko_block_design_json == null)||(help.blocko_block_logic_json == null)) return GlobalResult.badRequest("You must fill in type_of_block details");
-
-                    blockoBlock.name = help.blocko_block_name;
-                    blockoBlock.general_description = help.blocko_block_general_description;
-                    blockoBlock.approval_state = Approval_state.edited;
-
-                    TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(help.blocko_block_type_of_block_id);
-                    if(typeOfBlock == null) return GlobalResult.notFoundObject("type_of_block not found");
-
-                    if(typeOfBlock.approval_state == Approval_state.pending){
-
-                        typeOfBlock.name = help.type_of_block_name;
-                        typeOfBlock.general_description = help.type_of_block_general_description;
-                        typeOfBlock.approval_state = Approval_state.approved;
-
-                        typeOfBlock.update();
-                    }
-                    if((blockoBlock.type_of_block_id()!= null)&&(!(typeOfBlock.id.equals(blockoBlock.type_of_block_id())))&&(blockoBlock.type_of_block.approval_state == Approval_state.pending)) {
-                        blockoBlock.type_of_block.approval_state = Approval_state.disapproved;
-                        blockoBlock.type_of_block.update();
-                    }
-
-                    blockoBlock.type_of_block = typeOfBlock;
-
-                    blockoBlock.update();
-
-                    BlockoBlockVersion blockoBlockVersion = blockoBlock.blocko_versions.get(0);
-
-                    blockoBlockVersion.version_name = help.blocko_block_version_name;
-                    blockoBlockVersion.version_description = help.blocko_block_version_description;
-                    blockoBlockVersion.design_json = help.blocko_block_design_json;
-                    blockoBlockVersion.logic_json = help.blocko_block_logic_json;
-                    blockoBlockVersion.approval_state = Approval_state.edited;
-
-                    blockoBlockVersion.update();
-
-                    try {
-                        new EmailTool()
-                                .addEmptyLineSpace()
-                                .startParagraph("13")
-                                .addText("Block: ")
-                                .addBoldText(blockoBlock.name)
-                                .addText(" was edited for this reason: ")
-                                .endParagraph()
-                                .startParagraph("13")
-                                .addText( help.reason)
-                                .endParagraph()
-                                .addEmptyLineSpace()
-                                .sendEmail(blockoBlock.author.mail, "Block was edited" );
-
-                    } catch (Exception e) {
-                        logger.error ("Sending mail -> critical error", e);
-                        e.printStackTrace();
-                    }
-
-                    return GlobalResult.result_ok();
-                }
-                case "blocko_block_version": {
-
-                    BlockoBlockVersion blockoBlockVersion = BlockoBlockVersion.find.byId(help.object_id);
-                    if (blockoBlockVersion == null) return GlobalResult.notFoundObject("blocko_block_version not found");
-
-                    if((help.blocko_block_version_name == null)||(help.blocko_block_version_description == null)||(help.blocko_block_logic_json == null)) return GlobalResult.badRequest("You must fill in type_of_block details");
-
-                    blockoBlockVersion.version_name = help.blocko_block_version_name;
-                    blockoBlockVersion.version_description = help.blocko_block_version_description;
-                    blockoBlockVersion.design_json = help.blocko_block_design_json;
-                    blockoBlockVersion.logic_json = help.blocko_block_logic_json;
-                    blockoBlockVersion.approval_state = Approval_state.edited;
-
-                    blockoBlockVersion.update();
-
-                    try {
-                        new EmailTool()
-                                .addEmptyLineSpace()
-                                .startParagraph("13")
-                                .addText("Version of Block " + blockoBlockVersion.blocko_block.name + ": ")
-                                .addBoldText(blockoBlockVersion.version_name)
-                                .addText(" was edited for this reason: ")
-                                .endParagraph()
-                                .startParagraph("13")
-                                .addText( help.reason)
-                                .endParagraph()
-                                .addEmptyLineSpace()
-                                .sendEmail(blockoBlockVersion.blocko_block.author.mail, "Version of Block edited" );
-
-                    } catch (Exception e) {
-                        logger.error ("Sending mail -> critical error", e);
-                        e.printStackTrace();
-                    }
-
-                    return GlobalResult.result_ok();
-                }
-                default: return GlobalResult.badRequest("Something went wrong");
             }
+            else privateBlockoBlockVersion.approval_state = Approval_state.approved;
+
+            privateBlockoBlockVersion.update();
+
+            return GlobalResult.result_ok();
 
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());

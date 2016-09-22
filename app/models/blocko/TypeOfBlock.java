@@ -21,7 +21,6 @@ public class TypeOfBlock extends Model {
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true) public String id;
                                                             @ApiModelProperty(required = true) public String name;
                          @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true) public String general_description;
-                                                            @ApiModelProperty(required = true) public Approval_state approval_state;
 
 
                                     @JsonIgnore @ManyToOne  public Project project;
@@ -39,14 +38,7 @@ public class TypeOfBlock extends Model {
 /* JSON PROPERTY -------------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true)
-    @JsonProperty @Transient public List<BlockoBlock> blockoBlocks(){
-        List<BlockoBlock> approvedBlocks = new ArrayList<>();
-        for(BlockoBlock blockoBlock : this.blockoBlocks){
-            if((blockoBlock.approval_state == Approval_state.approved)||(blockoBlock.approval_state == Approval_state.edited)||(blockoBlock.author.id == SecurityController.getPerson().id))
-                approvedBlocks.add(blockoBlock);
-        }
-        return approvedBlocks;
-    }
+    @JsonProperty @Transient public List<BlockoBlock> blockoBlocks(){ return this.blockoBlocks; }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
