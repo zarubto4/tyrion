@@ -1,0 +1,166 @@
+@import models.blocko.TypeOfBlock
+@import utilities.Server
+
+
+
+<section class="content-header">
+  <h1> Basic object settings </h1>
+  <ol class="breadcrumb">
+    <li><a href="#"><i class="fa fa-wrench"></i> Admin Page </a></li>
+    <li class="active">Dashboard</li>
+  </ol>
+</section>
+
+@*/*/*  TypeOfBoard ---------------------------------------------------------------------------------------------   */*/*@
+
+<section class="content">
+  <div id="editTypeOfBlockModal" style="display: none;" class="modal">
+    <div style="margin-top: 15%;" class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">Edit Type of Block</h4>
+        </div>
+        <div class="modal-body">
+          <form id="editTypeOfBlock")>
+            <label id="typeOfBlockId" style="display: block">ID</label>
+            <label>Name</label>
+            <input style="display: block" type="text" name="name" >
+            <label>Description</label>
+            <input style="display: block" type="text" name="description" >
+            </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editTypeOfBlockModal').css('display','none')">Close</button>
+          <button id="editTypeOfBlockButton" value="" class="btn btn-primary" type="button" onclick="editTypeOfBlock(this.value)">Save changes</button>
+        </div>
+      </div>
+        <!-- /.modal-content -->
+    </div>
+      <!-- /.modal-dialog -->
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="box">
+        <div class="box-header with-border">
+          <h3 class="box-title">Type Of Block</h3>
+        </div>
+        <div class="box-body">
+
+          <label style="font-size: 13pt;">New Type of Block</label>
+          <form id="newTypeOfBlock")>
+            <div style="width: 16%; display: inline-block">
+              <label>Name</label>
+              <input type="text" name="name" >
+            </div>
+            <div style="width: 16%; display: inline-block;">
+              <label>Description</label>
+              <input type="text" name="description" >
+            </div>
+            <button style="width: 16%; display: inline-block;" class="btn btn-block btn-success" type="button" onclick="newTypeOfBlock()">New type of block</button>
+          </form>
+        </div>
+        <div class="box-body">
+          <label style="font-size: 13pt;">All Types of Blocks</label>
+          <table id="allTypesOfBlocks" class="table table-bordered">
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Description</th>
+              <th>EDIT</th>
+              <th>DELETE</th>
+            </tr>
+              @for(typeOfBlock <- TypeOfBlock.find.where().isNull("project").findList()) {
+                <tr>
+                  <td>@typeOfBlock.id</td>
+                  <td>@typeOfBlock.name</td>
+                  <td>@typeOfBlock.general_description</td>
+                  <td><button class="btn btn-block btn-info" type="button" onclick="showEditForm('@typeOfBlock.id', '@typeOfBlock.name', '@typeOfBlock.general_description')">Edit</button></td>
+                  <td><button class="btn btn-block btn-danger" type="button" onclick="deleteTypeOfBlock(@typeOfBlock.id)">Delete</button></td>
+                </tr>
+              }
+          </table>
+        </div>
+        <div class="box-footer">
+        </div>
+
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+
+@*/*/*  TypeOfBoard ---------------------------------------------------------------------------------------------   */*/*@
+
+        function newTypeOfBlock(){
+          model_data = $("#newTypeOfBoard").serializeObject();
+          $.ajax({
+            url: '@routes.CompilationLibrariesController.new_TypeOfBoard()',
+            type: 'POST',
+            contentType: 'application/json',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+            success:function(e){
+              $("#newTypeOfBoard input[type=text]").val("");
+              $('#allTypesOfBoards').load(document.URL +  ' #allTypesOfBoards');
+            },
+            error:function(e) {
+              alert("Unsuccessful. Check if all properties are correct");
+            }
+          })}
+
+        function editTypeOfBlock(id){
+          model_data = $("#editTypeOfBoard").serializeObject();
+
+          $.ajax({
+            url: "@Server.tyrion_serverAddress" + "/compilation/typeOfBoard/" + id ,
+            type: 'PUT',
+            contentType: 'application/json',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+            success:function(e){
+              $("#editTypeOfBoard input[type=text]").val("");
+              $("#editTypeOfBoardModal").css("display","none");
+              $('#allTypesOfBoards').load(document.URL +  ' #allTypesOfBoards');
+            },
+            error:function(e) {
+              alert("Unsuccessful. Check if all properties are correct");
+            }
+          })}
+
+        function deleteTypeOfBlock(id){
+
+          $.ajax({
+            url: " @Server.tyrion_serverAddress" + "/compilation/typeOfBoard/" + id ,
+            type: 'DELETE',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+            },
+            success:function(e){
+              $('#allTypesOfBoards').load(document.URL +  ' #allTypesOfBoards');
+            },
+            error:function(e) {
+              alert("Unsuccessful. Maybe it cannot be deleted, because there are some boards of this type.");
+            }
+          })}
+
+        function showEditForm(id, name, description){
+          $("#editTypeOfBlockModal").css("display","block");
+          $('#editTypeOfBlockButton').val(id);
+          $('#typeOfBlockId').text("ID = " + id);
+          $("#editTypeOfBlock input[name=name]").val(name);
+          $("#editTypeOfBlock input[name=description]").val(description);
+
+        }
+
+
+</script>
