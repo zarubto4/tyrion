@@ -656,7 +656,7 @@ public class Basic_Data {
 
             // Vytvořím C_Programy YODA
             C_Program c_program_1 = new C_Program();
-            c_program_1.dateOfCreate = new Date();
+            c_program_1.date_of_create = new Date();
             c_program_1.program_name = "Blikání s Ledkou Pro Yodu";
             c_program_1.type_of_board = TypeOfBoard.find.where().eq("name", "Yoda G2").findUnique();
             c_program_1.program_description = "Tento program je určen na blikání s ledkou";
@@ -666,7 +666,7 @@ public class Basic_Data {
 
             // Vytvořím C_Programy YODA
             C_Program c_program_2 = new C_Program();
-            c_program_2.dateOfCreate = new Date();
+            c_program_2.date_of_create = new Date();
             c_program_2.program_name = "Hraní si s tlačítkem Pro Yodu";
             c_program_2.type_of_board = TypeOfBoard.find.where().eq("name", "Yoda G2").findUnique();
             c_program_2.program_description = "Tento program je určen na testování tlačítka na yodovi";
@@ -676,7 +676,7 @@ public class Basic_Data {
 
             // Vytvořím C_Programy Bezdrát
             C_Program c_program_3 = new C_Program();
-            c_program_3.dateOfCreate = new Date();
+            c_program_3.date_of_create = new Date();
             c_program_3.program_name = "Tlačítko na Bezdrátu";
             c_program_3.type_of_board = TypeOfBoard.find.where().eq("name", "Wireless G2").findUnique();
             c_program_3.program_description = "Tento program je určen na testování tlačítka na bezdrátovém modulu";
@@ -686,7 +686,7 @@ public class Basic_Data {
 
             // Vytvořím C_Programy Drát
             C_Program c_program_4 = new C_Program();
-            c_program_4.dateOfCreate = new Date();
+            c_program_4.date_of_create = new Date();
             c_program_4.program_name = "Tlačítko na BUS kitu";
             c_program_4.type_of_board = TypeOfBoard.find.where().eq("name", "BUS G2").findUnique();
             c_program_4.program_description = "Tento program je určen na testování tlačítka na BUS modulu";
@@ -714,6 +714,7 @@ public class Basic_Data {
                 version_c_program_2.version_name = "Verze 0.0.2";
                 version_c_program_2.version_name = "Když jem podruhé a snad finálně zkoušel blikat ledkou";
                 version_c_program_2.c_program = c_program_1;
+                version_c_program_2.approval_state = Approval_state.pending;
                 version_c_program_2.save();
 
                 // Nahraje do Azure a připojí do verze soubor
@@ -731,6 +732,7 @@ public class Basic_Data {
                 version_c_program_3.version_name = "Verze 0.0.1";
                 version_c_program_3.version_name = "Když jem podruhé a snad finálně zkoušel blikat ledkou";
                 version_c_program_3.c_program = c_program_3;
+                version_c_program_3.approval_state = Approval_state.pending;
                 version_c_program_3.save();
 
                 // Nahraje do Azure a připojí do verze soubor

@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
 import io.swagger.annotations.*;
 import models.compiler.*;
+import models.person.Person;
 import models.project.c_program.C_Compilation;
 import models.project.c_program.C_Program;
 import models.project.global.Product;
@@ -113,7 +114,7 @@ public class CompilationLibrariesController extends Controller {
             c_program.program_name          = help.program_name;
             c_program.program_description   = help.program_description;
             c_program.project               = project;
-            c_program.dateOfCreate          = new Date();
+            c_program.date_of_create = new Date();
             c_program.type_of_board         = typeOfBoard;
 
 
@@ -761,7 +762,7 @@ public class CompilationLibrariesController extends Controller {
                 // Neschválení objektu
                 version_object.approval_state = Approval_state.disapproved;
 
-                if (help.reason == null) return GlobalResult.badRequest("Fill in the reason");
+                if ((help.reason == null)||(help.reason.equals(""))) return GlobalResult.result_BadRequest("Fill in the reason");
 
                 // Odeslání emailu s důvodem
                 try {
@@ -805,16 +806,76 @@ public class CompilationLibrariesController extends Controller {
             Swagger_C_Program_Version_Approve_WithChanges help = form.get();
 
             // Kontrola objektu
-            Version_Object version_object = Version_Object.find.byId(help.id);
-            if(version_object == null) return GlobalResult.notFoundObject("Version not found");
+            Version_Object version_old = Version_Object.find.byId(help.id);
+            if(version_old == null) return GlobalResult.notFoundObject("Version not found");
 
-            // Úprava objektu
-            //TODO Lexa - doplnit editaci
+            // Ověření objektu
+            C_Program c_program = C_Program.find.byId(version_old.c_program.id);
+            if(c_program == null) return GlobalResult.notFoundObject("C_Program c_program_id not found");
 
-            version_object.approval_state = Approval_state.edited;
-            version_object.public_version = true;
+            // Zkontroluji oprávnění
+            if(!c_program.update_permission()) return GlobalResult.forbidden_Permission();
 
-            if (help.reason == null) return GlobalResult.badRequest("Fill in the reason");
+            // První nová Verze
+            Version_Object version_object      = new Version_Object();
+            version_object.version_name        = help.name;
+            version_object.version_description = help.description;
+            version_object.date_of_create      = new Date();
+            version_object.c_program           = c_program;
+            version_object.public_version      = true;
+            version_object.author              = version_old.author;
+
+            // Zkontroluji oprávnění
+            if(!version_object.c_program.update_permission()) return GlobalResult.forbidden_Permission();
+
+            version_object.save();
+
+            // Nahraje do Azure a připojí do verze soubor
+            ObjectNode  content = Json.newObject();
+            content.put("main", help.main );
+            content.set("user_files", Json.toJson( help.user_files) );
+            content.set("external_libraries", Json.toJson( help.external_libraries) );
+
+            // Content se nahraje na Azure
+
+            UtilTools.uploadAzure_Version(content.toString(), "code.json" , c_program.get_path() ,  version_object);
+
+
+            String token = request().getHeader("X-AUTH-TOKEN"); // Určen pro exetrní vlákno zpracování
+            version_object.compilation_in_progress = true;
+            version_object.compilable = true;
+            version_object.update();
+
+            Thread compile_that = new Thread() {
+                @Override
+                public void run() {
+                    try {
+
+                        F.Promise<WSResponse> responsePromise = ws.url(Server.tyrion_serverAddress + "/compilation/c_program/version/compile/" + version_object.id)
+                                .setContentType("undefined")
+                                .setMethod("PUT")
+                                .setHeader("X-AUTH-TOKEN", token)
+                                .setRequestTimeout(50000)
+                                .put("");
+
+                        JsonNode result = responsePromise.get(50000).asJson();
+
+                        // At se deje co se deje nakonci stejnak musím změnit stav compilation_in_progress = false.
+                        // A objekt hledám znovu protože na druhe strane ho nekdo mohl updatovat o nove iformace a ty bych updatem na puvodnim objeektu přemazal
+                        Version_Object update_version = Version_Object.find.byId(version_object.id);
+                        update_version.compilation_in_progress = false;
+                        update_version.update();
+                        return;
+
+
+                    }catch (Exception e){
+                        logger.error("Error while cloud_compilation_server tried compile version of C_program", e);
+                    }
+
+                }
+            };
+
+            compile_that.start();
 
             // Odeslání emailu s důvodem
             try {

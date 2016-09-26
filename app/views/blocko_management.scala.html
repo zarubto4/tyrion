@@ -4,14 +4,14 @@
 
 
 <section class="content-header">
-  <h1> Basic object settings </h1>
+  <h1> Blocko object settings </h1>
   <ol class="breadcrumb">
     <li><a href="#"><i class="fa fa-wrench"></i> Admin Page </a></li>
     <li class="active">Dashboard</li>
   </ol>
 </section>
 
-@*/*/*  TypeOfBoard ---------------------------------------------------------------------------------------------   */*/*@
+@*/*/*  TypeOfBlock ---------------------------------------------------------------------------------------------   */*/*@
 
 <section class="content">
   <div id="editTypeOfBlockModal" style="display: none;" class="modal">
@@ -24,9 +24,9 @@
           <form id="editTypeOfBlock")>
             <label id="typeOfBlockId" style="display: block">ID</label>
             <label>Name</label>
-            <input style="display: block" type="text" name="name" >
+            <input placeholder="Name" style="display: block" type="text" name="name" >
             <label>Description</label>
-            <input style="display: block" type="text" name="description" >
+            <input placeholder="Description" style="display: block; width: 100%;" type="text" name="general_description" >
             </form>
         </div>
         <div class="modal-footer">
@@ -39,45 +39,108 @@
       <!-- /.modal-dialog -->
   </div>
   <div class="row">
+  <div class="col-md-12">
+    <div class="box">
+      <div class="box-header with-border">
+        <h3 class="box-title">Type Of Block</h3>
+      </div>
+      <div class="box-body">
+
+        <label style="font-size: 13pt;">New Type of Block</label>
+        <form id="newTypeOfBlock")>
+          <div style="width: 16%; display: inline-block">
+            <label>Name</label>
+            <input placeholder="Name" type="text" name="name" >
+          </div>
+          <div style="width: 30%; display: inline-block; margin-right: 20px;">
+            <label>Description</label>
+            <input placeholder="Description" style="width: 70%;" type="text" name="general_description" >
+          </div>
+          <button style="width: 16%; display: inline-block;" class="btn btn-block btn-success" type="button" onclick="newTypeOfBlock()">New type of block</button>
+        </form>
+      </div>
+      <div class="box-body">
+        <label style="font-size: 13pt;">All Types of Blocks</label>
+        <table id="allTypesOfBlocks" class="table table-bordered">
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>EDIT</th>
+            <th>DELETE</th>
+          </tr>
+          @for(typeOfBlock <- TypeOfBlock.find.where().isNull("project").findList()) {
+            <tr>
+              <td>@typeOfBlock.id</td>
+              <td>@typeOfBlock.name</td>
+              <td>@typeOfBlock.general_description</td>
+              <td><button class="btn btn-block btn-info" type="button" onclick="showEditTypeForm('@typeOfBlock.id', '@typeOfBlock.name', '@typeOfBlock.general_description')">Edit</button></td>
+              <td><button class="btn btn-block btn-danger" type="button" onclick="deleteTypeOfBlock(@typeOfBlock.id)">Delete</button></td>
+            </tr>
+          }
+        </table>
+      </div>
+      <div class="box-footer">
+        </div>
+
+
+    </div>
+  </div>
+</div>
+
+  @*/*/*  BlockoBlock ---------------------------------------------------------------------------------------------   */*/*@
+
+  <div class="row">
     <div class="col-md-12">
       <div class="box">
         <div class="box-header with-border">
-          <h3 class="box-title">Type Of Block</h3>
+          <h3 class="box-title">Blocko Block</h3>
         </div>
         <div class="box-body">
 
-          <label style="font-size: 13pt;">New Type of Block</label>
-          <form id="newTypeOfBlock")>
+          <label style="font-size: 13pt;">New Blocko Block</label>
+          <form id="newBlockoBlock")>
             <div style="width: 16%; display: inline-block">
               <label>Name</label>
-              <input type="text" name="name" >
+              <input placeholder="Name" type="text" name="name" >
             </div>
-            <div style="width: 16%; display: inline-block;">
+            <div style="width: 30%; display: inline-block; margin-right: 20px;">
               <label>Description</label>
-              <input type="text" name="description" >
+              <input placeholder="Description" style="width: 70%;" type="text" name="general_description" >
             </div>
-            <button style="width: 16%; display: inline-block;" class="btn btn-block btn-success" type="button" onclick="newTypeOfBlock()">New type of block</button>
+            <div style="width: 16%; display: inline-block">
+              <label>Type of Block</label>
+              <select name="type_of_block_id">
+                <option selected disabled>Choose type</option>
+                @for(typeOfBlock <- TypeOfBlock.find.where().isNull("project").findList()){
+                  <option value="@typeOfBlock.id">@typeOfBlock.name</option>
+                }
+              </select>
+            </div>
+            <button style="width: 16%; display: inline-block;" class="btn btn-block btn-success" type="button" onclick="newBlockoBlock()">New Blocko block</button>
           </form>
         </div>
         <div class="box-body">
-          <label style="font-size: 13pt;">All Types of Blocks</label>
-          <table id="allTypesOfBlocks" class="table table-bordered">
+          <label style="font-size: 13pt;">All Blocko Blocks</label>
+          <table id="allBlockoBlocks" class="table table-bordered">
             <tr>
               <th>ID</th>
               <th>Name</th>
               <th>Description</th>
+              <th>Type of Block</th>
               <th>EDIT</th>
               <th>DELETE</th>
             </tr>
-              @for(typeOfBlock <- TypeOfBlock.find.where().isNull("project").findList()) {
-                <tr>
-                  <td>@typeOfBlock.id</td>
-                  <td>@typeOfBlock.name</td>
-                  <td>@typeOfBlock.general_description</td>
-                  <td><button class="btn btn-block btn-info" type="button" onclick="showEditForm('@typeOfBlock.id', '@typeOfBlock.name', '@typeOfBlock.general_description')">Edit</button></td>
-                  <td><button class="btn btn-block btn-danger" type="button" onclick="deleteTypeOfBlock(@typeOfBlock.id)">Delete</button></td>
-                </tr>
-              }
+            @for(blockoBlock <- BlockoBlock.find.where().isNull("type_of_block.project").findList()) {
+              <tr>
+                <td>@blockoBlock.id</td>
+                <td>@blockoBlock.name</td>
+                <td>@blockoBlock.general_description</td>
+                <td>@blockoBlock.type_of_block_name()</td>
+                <td><button class="btn btn-block btn-info" type="button" onclick="showEditBlockForm('@blockoBlock.id', '@blockoBlock.name', '@blockoBlock.general_description')">Edit</button></td>
+                <td><button class="btn btn-block btn-danger" type="button" onclick="deleteBlockoBlock(@blockoBlock.id)">Delete</button></td>
+              </tr>
+            }
           </table>
         </div>
         <div class="box-footer">
@@ -91,12 +154,14 @@
 
 <script>
 
-@*/*/*  TypeOfBoard ---------------------------------------------------------------------------------------------   */*/*@
+        $.ajaxSetup({ cache: false });
+
+@*/*/*  TypeOfBlock ---------------------------------------------------------------------------------------------   */*/*@
 
         function newTypeOfBlock(){
-          model_data = $("#newTypeOfBoard").serializeObject();
+          model_data = $("#newTypeOfBlock").serializeObject();
           $.ajax({
-            url: '@routes.CompilationLibrariesController.new_TypeOfBoard()',
+            url: '@routes.ProgramingPackageController.newTypeOfBlock()',
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -106,19 +171,19 @@
             data: JSON.stringify(model_data),
             dataType: 'json',
             success:function(e){
-              $("#newTypeOfBoard input[type=text]").val("");
-              $('#allTypesOfBoards').load(document.URL +  ' #allTypesOfBoards');
+              $("#newTypeOfBlock input[type=text]").val("");
+              $('#allTypesOfBlocks').load(document.URL +  ' #allTypesOfBlocks');
             },
             error:function(e) {
-              alert("Unsuccessful. Check if all properties are correct");
+              alert(e.responseText);
             }
           })}
 
         function editTypeOfBlock(id){
-          model_data = $("#editTypeOfBoard").serializeObject();
+          model_data = $("#editTypeOfBlock").serializeObject();
 
           $.ajax({
-            url: "@Server.tyrion_serverAddress" + "/compilation/typeOfBoard/" + id ,
+            url: "@Server.tyrion_serverAddress" + "/project/typeOfBlock/" + id ,
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -128,39 +193,39 @@
             data: JSON.stringify(model_data),
             dataType: 'json',
             success:function(e){
-              $("#editTypeOfBoard input[type=text]").val("");
-              $("#editTypeOfBoardModal").css("display","none");
-              $('#allTypesOfBoards').load(document.URL +  ' #allTypesOfBoards');
+              $("#editTypeOfBlock input[type=text]").val("");
+              $("#editTypeOfBlockModal").css("display","none");
+              $('#allTypesOfBlocks').load(document.URL +  ' #allTypesOfBlocks');
             },
             error:function(e) {
-              alert("Unsuccessful. Check if all properties are correct");
+              alert(e.responseText);
             }
           })}
 
         function deleteTypeOfBlock(id){
 
           $.ajax({
-            url: " @Server.tyrion_serverAddress" + "/compilation/typeOfBoard/" + id ,
+            url: " @Server.tyrion_serverAddress" + "/project/typeOfBlock/" + id ,
             type: 'DELETE',
             headers: {
               "X-AUTH-TOKEN":getCookie("authToken"),
             },
             success:function(e){
-              $('#allTypesOfBoards').load(document.URL +  ' #allTypesOfBoards');
+              $('#allTypesOfBlocks').load(document.URL +  ' #allTypesOfBlocks');
             },
             error:function(e) {
-              alert("Unsuccessful. Maybe it cannot be deleted, because there are some boards of this type.");
+              alert(e.responseText);
             }
           })}
 
-        function showEditForm(id, name, description){
+        function showEditTypeForm(id, name, description){
           $("#editTypeOfBlockModal").css("display","block");
           $('#editTypeOfBlockButton').val(id);
           $('#typeOfBlockId').text("ID = " + id);
           $("#editTypeOfBlock input[name=name]").val(name);
-          $("#editTypeOfBlock input[name=description]").val(description);
+          $("#editTypeOfBlock input[name=general_description]").val(description);
 
         }
 
 
-</script>
+</script>@import models.blocko.BlockoBlock

@@ -447,6 +447,8 @@ GET             /admin/user_summary/:mail               @controllers.DashboardCo
 GET             /admin/permission/permission_summary    @controllers.DashboardController.permissions_summary()
 GET             /admin/permission/role/:role_id         @controllers.DashboardController.role(role_id)
 GET             /admin/blocko_objects                   @controllers.DashboardController.blocko_objects()
+GET             /admin/blocko_management                @controllers.DashboardController.blocko_management()
+GET             /admin/public_code                      @controllers.DashboardController.public_code()
 
 
 GET             /javascriptRoutes                           @controllers.DashboardController.javascriptRoutes()

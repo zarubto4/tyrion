@@ -434,6 +434,32 @@ public class DashboardController extends Controller {
         }
     }
 
+    @Security.Authenticated(Secured_Admin.class)
+    public Result blocko_management(){
+        try {
+
+            Html blocko_management_content = blocko_management.render();
+            return return_page(blocko_management_content);
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return ok();
+        }
+    }
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result public_code(){
+        try {
+
+            Html public_code_content = public_code.render();
+            return return_page(public_code_content);
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return ok();
+        }
+    }
+
 
 // LOGIN ###############################################################################################################
 

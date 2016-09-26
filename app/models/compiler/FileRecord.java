@@ -48,8 +48,6 @@ public class FileRecord extends Model {
 
     }
 
-    //product/product/3b7c6115-a314-4e01-8af4-224a509fc058/projects/116d57b6-e728-4e0f-b9b1-3b8ce05b6c8a/c-programs/fcc19406-38bc-4f75-b338-559f2c1d87a6/versions/bfabb0af-0521-42d0-be47-76466f514fff/code.json
-    //        product/3b7c6115-a314-4e01-8af4-224a509fc058/projects/116d57b6-e728-4e0f-b9b1-3b8ce05b6c8a/c-programs/fcc19406-38bc-4f75-b338-559f2c1d87a6/versions/bfabb0af-0521-42d0-be47-76466f514fff/code.json
     @JsonIgnore @Transient  public String get_fileRecord_from_Azure_inString(){
         try {
             logger.debug("FileRecord: get_fileRecord_from_Azure_inString");
@@ -87,6 +85,6 @@ public class FileRecord extends Model {
 
 
     /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Finder<String, FileRecord> find = new Finder<>(FileRecord.class);
+    public static Model.Finder<String, FileRecord> find = new Finder<>(FileRecord.class);
 
 }

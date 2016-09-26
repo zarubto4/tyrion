@@ -18,6 +18,19 @@ public class Swagger_C_Program_Version_Approve_WithChanges {
     @ApiModelProperty(required = true)
     public String description;
 
-    @ApiModelProperty(required = false)
+    @Constraints.Required
+    @ApiModelProperty(required = true)
+    public String main;
+
+    @Constraints.Required
+    @ApiModelProperty(required = true)
+    public String user_files;
+
+    @Constraints.Required
+    @ApiModelProperty(required = true)
+    public String external_libraries;
+
+    @Constraints.Required
+    @ApiModelProperty(required = true)
     public String reason;
 }

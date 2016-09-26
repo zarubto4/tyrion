@@ -90,7 +90,12 @@ public class Version_Object extends Model {
             if (Version_Object.find.where().eq("blob_version_link", blob_version_link ).findUnique() == null) break;
         }
 
-        this.author = SecurityController.getPerson();
+        try {
+            if(this.author == null)
+            this.author = SecurityController.getPerson();
+        }catch (Exception e){
+            this.author = Person.find.byId("1");
+        }
 
         super.save();
     }
@@ -111,7 +116,7 @@ public class Version_Object extends Model {
     // Oprávnění volejte na objektu kterého se to týká např.  version.b_program.read_permission()...
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Finder<String, Version_Object> find = new Finder<>(Version_Object.class);
+    public static Model.Finder<String, Version_Object> find = new Finder<>(Version_Object.class);
 
 
 }
