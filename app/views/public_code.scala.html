@@ -185,11 +185,11 @@
             model_data = {
                 "id": id,
                 "reason" : reason,
-                "name": ,
-                "description": ,
-                "main":,
-                "user_files":,
-                "external_libraries":
+                "name": document.getElementById('code_name').value,
+                "description": document.getElementById('code_description').value,
+                "main": document.getElementById('code_edit').value,
+                "user_files": document.getElementById('user_files').value,
+                "external_libraries": document.getElementById('external_libraries').value
             };
             $.ajax({
                 url: '@routes.CompilationLibrariesController.changeApprovalState()' ,
@@ -216,12 +216,13 @@
                 headers: {
                     "X-AUTH-TOKEN":getCookie("authToken")
                 },
+                dataType: 'json',
                 success:function(json){
                     $("#editCodeModal").css("display","block");
                     $('#editCodeButton').val(id);
-                    $('#codeId').val(id);
-                    $('#code_name').val(JSON.parse(JSON.stringify(json.version_name)));
-                    $('#code_description').val(JSON.parse(JSON.stringify(json.version_description)));
+                    $('#codeId').text("ID = " + id);
+                    $('#code_name').val(JSON.parse(JSON.stringify(json.version_object.version_name)));
+                    $('#code_description').val(JSON.parse(JSON.stringify(json.version_object.version_description)));
                     $('#user_files').val(JSON.parse(JSON.stringify(json.user_files)));
                     $('#external_libraries').val(JSON.parse(JSON.stringify(json.external_libraries)));
                     $('#code_edit').text(JSON.parse(JSON.stringify(json.main)));
@@ -253,7 +254,6 @@
                     alert(e.responseText);
                 }
             })
-
         }
 
 </script>
