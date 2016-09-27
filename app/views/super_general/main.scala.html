@@ -48,6 +48,7 @@
         <script type="text/javascript" src='@routes.DashboardController.javascriptRoutes()'></script>
 
         <script>
+            $.ajaxSetup({ cache: false });
         function getCookie(name)
         {
             var re = new RegExp(name + "=([^;]+)");

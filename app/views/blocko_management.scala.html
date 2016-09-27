@@ -11,9 +11,33 @@
   </ol>
 </section>
 
-@*/*/*  TypeOfBlock ---------------------------------------------------------------------------------------------   */*/*@
-
 <section class="content">
+
+  @*/*/*  Modals ---------------------------------------------------------------------------------------------   */*/*@
+
+<div id="newTypeOfBlockModal" style="display: none;" class="modal">
+  <div style="margin-top: 15%;" class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">New Type of Block</h4>
+      </div>
+      <div class="modal-body">
+        <form id="newTypeOfBlock")>
+          <label>Name</label>
+          <input id="newTypeOfBlockName" placeholder="Name" style="display: block" type="text" name="name" >
+          <label>Description</label>
+          <input id="newTypeOfBlockDescription" placeholder="Description" style="display: block; width: 100%;" type="text" name="general_description" >
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newTypeOfBlockModal').css('display','none')">Close</button>
+        <button class="btn btn-success" type="button" onclick="newTypeOfBlock()">Save changes</button>
+      </div>
+    </div>
+      <!-- /.modal-content -->
+  </div>
+    <!-- /.modal-dialog -->
+</div>
   <div id="editTypeOfBlockModal" style="display: none;" class="modal">
     <div style="margin-top: 15%;" class="modal-dialog">
       <div class="modal-content">
@@ -38,118 +62,174 @@
     </div>
       <!-- /.modal-dialog -->
   </div>
-  <div class="row">
-  <div class="col-md-12">
-    <div class="box">
-      <div class="box-header with-border">
-        <h3 class="box-title">Type Of Block</h3>
-      </div>
-      <div class="box-body">
 
-        <label style="font-size: 13pt;">New Type of Block</label>
-        <form id="newTypeOfBlock")>
-          <div style="width: 16%; display: inline-block">
-            <label>Name</label>
-            <input placeholder="Name" type="text" name="name" >
-          </div>
-          <div style="width: 30%; display: inline-block; margin-right: 20px;">
-            <label>Description</label>
-            <input placeholder="Description" style="width: 70%;" type="text" name="general_description" >
-          </div>
-          <button style="width: 16%; display: inline-block;" class="btn btn-block btn-success" type="button" onclick="newTypeOfBlock()">New type of block</button>
+<div id="editTypeOfBlockModal" style="display: none;" class="modal">
+  <div style="margin-top: 15%;" class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Edit Type of Block</h4>
+      </div>
+      <div class="modal-body">
+        <form id="editTypeOfBlock")>
+          <label id="typeOfBlockId" style="display: block">ID</label>
+          <label>Name</label>
+          <input placeholder="Name" style="display: block" type="text" name="name" >
+          <label>Description</label>
+          <input placeholder="Description" style="display: block; width: 100%;" type="text" name="general_description" >
         </form>
       </div>
-      <div class="box-body">
-        <label style="font-size: 13pt;">All Types of Blocks</label>
-        <table id="allTypesOfBlocks" class="table table-bordered">
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Description</th>
-            <th>EDIT</th>
-            <th>DELETE</th>
-          </tr>
-          @for(typeOfBlock <- TypeOfBlock.find.where().isNull("project").findList()) {
-            <tr>
-              <td>@typeOfBlock.id</td>
-              <td>@typeOfBlock.name</td>
-              <td>@typeOfBlock.general_description</td>
-              <td><button class="btn btn-block btn-info" type="button" onclick="showEditTypeForm('@typeOfBlock.id', '@typeOfBlock.name', '@typeOfBlock.general_description')">Edit</button></td>
-              <td><button class="btn btn-block btn-danger" type="button" onclick="deleteTypeOfBlock(@typeOfBlock.id)">Delete</button></td>
-            </tr>
-          }
-        </table>
+      <div class="modal-footer">
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editTypeOfBlockModal').css('display','none')">Close</button>
+        <button id="editTypeOfBlockButton" value="" class="btn btn-primary" type="button" onclick="editTypeOfBlock(this.value)">Save changes</button>
       </div>
-      <div class="box-footer">
-        </div>
-
-
     </div>
+      <!-- /.modal-content -->
   </div>
+    <!-- /.modal-dialog -->
 </div>
 
-  @*/*/*  BlockoBlock ---------------------------------------------------------------------------------------------   */*/*@
-
-  <div class="row">
-    <div class="col-md-12">
-      <div class="box">
-        <div class="box-header with-border">
-          <h3 class="box-title">Blocko Block</h3>
-        </div>
-        <div class="box-body">
-
-          <label style="font-size: 13pt;">New Blocko Block</label>
-          <form id="newBlockoBlock")>
-            <div style="width: 16%; display: inline-block">
-              <label>Name</label>
-              <input placeholder="Name" type="text" name="name" >
-            </div>
-            <div style="width: 30%; display: inline-block; margin-right: 20px;">
-              <label>Description</label>
-              <input placeholder="Description" style="width: 70%;" type="text" name="general_description" >
-            </div>
-            <div style="width: 16%; display: inline-block">
-              <label>Type of Block</label>
-              <select name="type_of_block_id">
-                <option selected disabled>Choose type</option>
-                @for(typeOfBlock <- TypeOfBlock.find.where().isNull("project").findList()){
-                  <option value="@typeOfBlock.id">@typeOfBlock.name</option>
-                }
-              </select>
-            </div>
-            <button style="width: 16%; display: inline-block;" class="btn btn-block btn-success" type="button" onclick="newBlockoBlock()">New Blocko block</button>
-          </form>
-        </div>
-        <div class="box-body">
-          <label style="font-size: 13pt;">All Blocko Blocks</label>
-          <table id="allBlockoBlocks" class="table table-bordered">
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Description</th>
-              <th>Type of Block</th>
-              <th>EDIT</th>
-              <th>DELETE</th>
-            </tr>
-            @for(blockoBlock <- BlockoBlock.find.where().isNull("type_of_block.project").findList()) {
-              <tr>
-                <td>@blockoBlock.id</td>
-                <td>@blockoBlock.name</td>
-                <td>@blockoBlock.general_description</td>
-                <td>@blockoBlock.type_of_block_name()</td>
-                <td><button class="btn btn-block btn-info" type="button" onclick="showEditBlockForm('@blockoBlock.id', '@blockoBlock.name', '@blockoBlock.general_description')">Edit</button></td>
-                <td><button class="btn btn-block btn-danger" type="button" onclick="deleteBlockoBlock(@blockoBlock.id)">Delete</button></td>
-              </tr>
-            }
-          </table>
-        </div>
-        <div class="box-footer">
-        </div>
-
-
+<div id="editTypeOfBlockModal" style="display: none;" class="modal">
+  <div style="margin-top: 15%;" class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Edit Type of Block</h4>
+      </div>
+      <div class="modal-body">
+        <form id="editTypeOfBlock")>
+          <label id="typeOfBlockId" style="display: block">ID</label>
+          <label>Name</label>
+          <input placeholder="Name" style="display: block" type="text" name="name" >
+          <label>Description</label>
+          <input placeholder="Description" style="display: block; width: 100%;" type="text" name="general_description" >
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editTypeOfBlockModal').css('display','none')">Close</button>
+        <button id="editTypeOfBlockButton" value="" class="btn btn-primary" type="button" onclick="editTypeOfBlock(this.value)">Save changes</button>
       </div>
     </div>
+      <!-- /.modal-content -->
   </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div id="editTypeOfBlockModal" style="display: none;" class="modal">
+  <div style="margin-top: 15%;" class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Edit Type of Block</h4>
+      </div>
+      <div class="modal-body">
+        <form id="editTypeOfBlock")>
+          <label id="typeOfBlockId" style="display: block">ID</label>
+          <label>Name</label>
+          <input placeholder="Name" style="display: block" type="text" name="name" >
+          <label>Description</label>
+          <input placeholder="Description" style="display: block; width: 100%;" type="text" name="general_description" >
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editTypeOfBlockModal').css('display','none')">Close</button>
+        <button id="editTypeOfBlockButton" value="" class="btn btn-primary" type="button" onclick="editTypeOfBlock(this.value)">Save changes</button>
+      </div>
+    </div>
+      <!-- /.modal-content -->
+  </div>
+    <!-- /.modal-dialog -->
+</div>
+
+  @*/*/*  Content ---------------------------------------------------------------------------------------------   */*/*@
+
+  <div class="row">
+    <div class="col-md-2">
+      <div class="box">
+        <div class="box-header with-border">
+          <h3 class="box-title">Type</h3>
+          <button class="btn btn-xs btn-success pull-right" type="button" onclick="$('#newTypeOfBlockModal').css('display','block')"><i class="fa fa-plus"></i></button>
+        </div>
+        <div id="typeOfBlockTableWrapper" class="box-body">
+          <table id="allTypesOfBlocks" class="table table-bordered">
+            <thead><tr><th>Types of Block</th></tr></thead>
+            <tbody>
+            @for(typeOfBlock <- TypeOfBlock.find.where().isNull("project").findList()) {
+              <tr>
+                <td><button class="btn btn-block btn-info" type="button" onclick="openTypeOfBlock('@typeOfBlock.id')">@typeOfBlock.name</button></td>
+              </tr>
+            }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="box">
+        <div class="box-header with-border">
+          <h3 id="type_of_block" style="max-width: 65%;" class="box-title"></h3>
+          <div id="type_info_id" style="display: none;"></div>
+          <div id="type_info_description" style="display: none;"></div>
+          <div class="btn-group pull-right">
+            <button id="deleteTypeOfBlockButton" value="" class="btn btn-xs btn-danger " type="button" onclick="deleteTypeOfBlock(this.value)"><i class="fa fa-times"></i></button>
+            <button class="btn btn-xs btn-info " type="button"><i class="fa fa-edit"></i></button>
+            <button class="btn btn-xs btn-success " type="button"><i class="fa fa-plus"></i></button>
+          </div>
+        </div>
+        <div class="box-body">
+
+          <table id="blockoBlocks" class="table table-bordered">
+            <thead><tr><th>Blocks</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="box">
+        <div class="box-header with-border">
+          <h3 id="blocko_block" style="max-width: 65%;" class="box-title"></h3>
+          <div class="btn-group pull-right">
+            <button id="deleteBlockoBlockButton" value="" class="btn btn-xs btn-danger " type="button" onclick="deleteBlockoBlock(this.value)"><i class="fa fa-times"></i></button>
+            <button class="btn btn-xs btn-info " type="button"><i class="fa fa-edit"></i></button>
+            <button class="btn btn-xs btn-success " type="button"><i class="fa fa-plus"></i></button>
+          </div>
+        </div>
+        <div class="box-body">
+          <div id="block_info_description" style="display: none;"></div>
+          <table id="blockoBlockVersions" class="table table-bordered">
+            <thead><tr><th>Versions</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="box">
+        <div class="box-header with-border">
+          <h3 id="blocko_block_version" class="box-title"></h3>
+          <div class="btn-group pull-right">
+            <button id="deleteBlockoBlockVersionButton" value="" class="btn btn-xs btn-danger " type="button" onclick="deleteBlockoBlockVersion(this.value)"><i class="fa fa-times"></i></button>
+            <button class="btn btn-xs btn-info " type="button"><i class="fa fa-edit"></i></button>
+            <button class="btn btn-xs btn-success " type="button"><i class="fa fa-plus"></i></button>
+          </div>
+        </div>
+        <div class="box-body">
+          <div style="display: none" id="blockoBlockVersion">
+            <div style="float: left; width: 30%;">
+              <label style="color: #2e6da4">Version name:</label>
+              <input readonly type="text" id="blocko_version_name" style="display: block;">
+            </div>
+            <div style="width:100%;">
+              <label style="color: #2e6da4">Version description:</label>
+              <input readonly type="text" id="blocko_version_description" style="display: block; width: 70%;">
+            </div>
+            <label style="color: #2e6da4">Design JSON:</label>
+            <textarea readonly id="blocko_version_design" style="display: block; width: 100%; height: auto;" rows="6"></textarea>
+            <label style="color: #2e6da4">Logic JSON:</label>
+            <textarea readonly id="blocko_version_logic" style="display: block; width: 100%; height: auto;" rows="6"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
 </section>
 
 <script>
@@ -172,7 +252,8 @@
             dataType: 'json',
             success:function(e){
               $("#newTypeOfBlock input[type=text]").val("");
-              $('#allTypesOfBlocks').load(document.URL +  ' #allTypesOfBlocks');
+              $("#newTypeOfBlockModal").css("display","none");
+              $('#typeOfBlockTableWrapper').html("").load(document.URL +  ' #allTypesOfBlocks');
             },
             error:function(e) {
               alert(e.responseText);
@@ -211,7 +292,39 @@
               "X-AUTH-TOKEN":getCookie("authToken"),
             },
             success:function(e){
-              $('#allTypesOfBlocks').load(document.URL +  ' #allTypesOfBlocks');
+              $('#typeOfBlockTableWrapper').load(document.URL +  ' #allTypesOfBlocks');
+            },
+            error:function(e) {
+              alert(e.responseText);
+            }
+          })}
+
+        function deleteBlockoBlock(id){
+
+          $.ajax({
+            url: " @Server.tyrion_serverAddress" + "/project/blockoBlock/" + id ,
+            type: 'DELETE',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+            },
+            success:function(e){
+              openTypeOfBlock($('#type_info_id').text)
+            },
+            error:function(e) {
+              alert(e.responseText);
+            }
+          })}
+
+        function deleteBlockoBlockVersion(id){
+
+          $.ajax({
+            url: " @Server.tyrion_serverAddress" + "/project/blockoBlock/version/" + id ,
+            type: 'DELETE',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+            },
+            success:function(e){
+
             },
             error:function(e) {
               alert(e.responseText);
@@ -227,5 +340,79 @@
 
         }
 
+        function openTypeOfBlock(id){
+          $.ajax({
+            url: '@Server.tyrion_serverAddress' + '/project/typeOfBlock/' + id,
+            type: 'GET',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            dataType: 'json',
+            success:function(json){
+              $('#type_of_block').text(json.name);
+              $('#type_info_id').text(json.id);
+              $('#type_info_description').text(json.general_description);
+              $('#blockoBlocks tbody').html("");
+              $('#blockoBlockVersions tbody').html("");
+              $("#blockoBlockVersion").css("display","none");
+              $('#blocko_block_version').text("");
+              $('#blocko_block').text("");
+              $('#deleteTypeOfBlockButton').val(json.id);
+              var content = '';
+              $.each(json.blockoBlocks, function(k, v) {
+                content = "<tr><td><button class='btn btn-block btn-info' type='button' onclick=\"openBlockoBlock('" + v.id + "')\">" + v.name + "</button></td></tr>";
+                $('#blockoBlocks tbody').append(content);
+              });
+            },
+            error:function(e) {
+              alert(e.responseText);
+            }
+          })}
 
-</script>@import models.blocko.BlockoBlock
+        function openBlockoBlock(id){
+          $.ajax({
+            url: '@Server.tyrion_serverAddress' + '/project/blockoBlock/' + id,
+            type: 'GET',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            dataType: 'json',
+            success:function(json){
+              $('#blocko_block').text(json.name);
+              $('#blocko_block_version').text("");
+              var content = '';
+              $('#blockoBlockVersions tbody').html("");
+              $("#blockoBlockVersion").css("display","none");
+              $.each(json.versions, function(k, v) {
+                content = "<tr><td><button class='btn btn-block btn-info' type='button' onclick=\"openBlockoBlockVersion('" + v.id + "')\">" + v.name + "</button></td></tr>";
+                $('#blockoBlockVersions tbody').append(content);
+              });
+            },
+            error:function(e) {
+              alert(e.responseText);
+            }
+          })}
+
+        function openBlockoBlockVersion(id){
+          $("#blockoBlockVersion").css("display","block");
+          $.ajax({
+            url: '@Server.tyrion_serverAddress' + '/project/blockoBlock/version/' + id,
+            type: 'GET',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            dataType: 'json',
+            success:function(json){
+              $('#blocko_block_version').text(json.version_name);
+              $('#blocko_version_name').val(json.version_name);
+              $('#blocko_version_description').val(json.version_description);
+              $('#blocko_version_design').text(json.design_json);
+              $('#blocko_version_logic').text(json.logic_json);
+
+            },
+            error:function(e) {
+              alert(e.responseText);
+            }
+          })}
+
+</script>
