@@ -2611,16 +2611,21 @@ public class ProgramingPackageController extends Controller {
            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
            Swagger_BlockoBlock_New help = form.get();
 
+           if(BlockoBlock.find.where().isNull("type_of_block.project").eq("name", help.name).findUnique()!= null)
+               return GlobalResult.result_BadRequest("BlockoBlock with this name already exists, type a new one.");
+
+           // Kontrola objektu
+           TypeOfBlock typeOfBlock = TypeOfBlock.find.byId( help.type_of_block_id);
+           if(typeOfBlock == null) return GlobalResult.notFoundObject("TypeOfBlock type_of_block_id not found");
+
            // Vytvoření objektu
            BlockoBlock blockoBlock = new BlockoBlock();
 
            blockoBlock.general_description = help.general_description;
            blockoBlock.name                = help.name;
            blockoBlock.author              = SecurityController.getPerson();
+           blockoBlock.type_of_block       = typeOfBlock;
 
-           // Kontrola objektu
-           TypeOfBlock typeOfBlock = TypeOfBlock.find.byId( help.type_of_block_id);
-           if(typeOfBlock == null) return GlobalResult.notFoundObject("TypeOfBlock type_of_block_id not found");
 
 
            // Kontrola oprávnění těsně před uložením

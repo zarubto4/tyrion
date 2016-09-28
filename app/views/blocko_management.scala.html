@@ -22,7 +22,7 @@
         <h4 class="modal-title">New Type of Block</h4>
       </div>
       <div class="modal-body">
-        <form id="newTypeOfBlock")>
+        <form id="newTypeOfBlock">
           <label>Name</label>
           <input id="newTypeOfBlockName" placeholder="Name" style="display: block" type="text" name="name" >
           <label>Description</label>
@@ -31,31 +31,56 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newTypeOfBlockModal').css('display','none')">Close</button>
-        <button class="btn btn-success" type="button" onclick="newTypeOfBlock()">Save changes</button>
+        <button class="btn btn-success" type="button" onclick="newTypeOfBlock()">New Type of Block</button>
       </div>
     </div>
       <!-- /.modal-content -->
   </div>
     <!-- /.modal-dialog -->
 </div>
-  <div id="editTypeOfBlockModal" style="display: none;" class="modal">
+<div id="newBlockoBlockModal" style="display: none;" class="modal">
+  <div style="margin-top: 15%;" class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">New Blocko Block</h4>
+      </div>
+      <div class="modal-body">
+        <form id="newBlockoBlock">
+          <label id="newBlockoBlockTypeOfBlockName" style="display: block"></label>
+          <label>Name</label>
+          <input placeholder="Name" style="display: block" type="text" name="name" >
+          <label>Description</label>
+          <input placeholder="Description" style="display: block; width: 100%;" type="text" name="general_description" >
+          <input id="newBlockoBlockTypeOfBlockId" style="display: none;" type="text" name="type_of_block_id">
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newBlockoBlockModal').css('display','none')">Close</button>
+        <button class="btn btn-success" type="button" onclick="newBlockoBlock()">New Blocko Block</button>
+      </div>
+    </div>
+      <!-- /.modal-content -->
+  </div>
+    <!-- /.modal-dialog -->
+</div>
+  <div id="newBlockoBlockVersionModal" style="display: none;" class="modal">
     <div style="margin-top: 15%;" class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h4 class="modal-title">Edit Type of Block</h4>
+          <h4 class="modal-title">New Blocko Block Version</h4>
         </div>
         <div class="modal-body">
-          <form id="editTypeOfBlock")>
-            <label id="typeOfBlockId" style="display: block">ID</label>
+          <form id="newBlockoBlockVersion">
+            <label id="newBlockoBlockVersionBlockoBlockName" style="display: block">ID</label>
             <label>Name</label>
-            <input placeholder="Name" style="display: block" type="text" name="name" >
+            <input placeholder="Name" style="display: block" type="text" name="version_name" >
             <label>Description</label>
-            <input placeholder="Description" style="display: block; width: 100%;" type="text" name="general_description" >
+            <input placeholder="Description" style="display: block; width: 100%;" type="text" name="version_description" >
             </form>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editTypeOfBlockModal').css('display','none')">Close</button>
-          <button id="editTypeOfBlockButton" value="" class="btn btn-primary" type="button" onclick="editTypeOfBlock(this.value)">Save changes</button>
+          <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newBlockoBlockVersionModal').css('display','none')">Close</button>
+          <button id="newBlockoBlockVersionButton" value="" class="btn btn-primary" type="button" onclick="newBlockoBlockVersion(this.value)">New Blocko Block Version</button>
         </div>
       </div>
         <!-- /.modal-content -->
@@ -70,7 +95,7 @@
         <h4 class="modal-title">Edit Type of Block</h4>
       </div>
       <div class="modal-body">
-        <form id="editTypeOfBlock")>
+        <form id="editTypeOfBlock">
           <label id="typeOfBlockId" style="display: block">ID</label>
           <label>Name</label>
           <input placeholder="Name" style="display: block" type="text" name="name" >
@@ -95,7 +120,7 @@
         <h4 class="modal-title">Edit Type of Block</h4>
       </div>
       <div class="modal-body">
-        <form id="editTypeOfBlock")>
+        <form id="editTypeOfBlock">
           <label id="typeOfBlockId" style="display: block">ID</label>
           <label>Name</label>
           <input placeholder="Name" style="display: block" type="text" name="name" >
@@ -120,7 +145,7 @@
         <h4 class="modal-title">Edit Type of Block</h4>
       </div>
       <div class="modal-body">
-        <form id="editTypeOfBlock")>
+        <form id="editTypeOfBlock">
           <label id="typeOfBlockId" style="display: block">ID</label>
           <label>Name</label>
           <input placeholder="Name" style="display: block" type="text" name="name" >
@@ -164,13 +189,13 @@
     <div class="col-md-2">
       <div class="box">
         <div class="box-header with-border">
-          <h3 id="type_of_block" style="max-width: 65%;" class="box-title"></h3>
+          <h3 id="type_of_block" style="max-width: 60%;" class="box-title"></h3>
           <div id="type_info_id" style="display: none;"></div>
           <div id="type_info_description" style="display: none;"></div>
           <div class="btn-group pull-right">
             <button id="deleteTypeOfBlockButton" value="" class="btn btn-xs btn-danger " type="button" onclick="deleteTypeOfBlock(this.value)"><i class="fa fa-times"></i></button>
-            <button class="btn btn-xs btn-info " type="button"><i class="fa fa-edit"></i></button>
-            <button class="btn btn-xs btn-success " type="button"><i class="fa fa-plus"></i></button>
+            <button id="editTypeOfBlockButton" value="" class="btn btn-xs btn-info " type="button" onclick="showEditTypeForm(this.value, $('#type_of_block').value, $('#type_info_description').value)"><i class="fa fa-edit"></i></button>
+            <button class="btn btn-xs btn-success " type="button" onclick="$('#newBlockoBlockModal').css('display','block'); $('#newBlockoBlockTypeOfBlockId').val(document.getElementById('type_info_id').textContent)"><i class="fa fa-plus"></i></button>
           </div>
         </div>
         <div class="box-body">
@@ -185,7 +210,7 @@
     <div class="col-md-2">
       <div class="box">
         <div class="box-header with-border">
-          <h3 id="blocko_block" style="max-width: 65%;" class="box-title"></h3>
+          <h3 id="blocko_block" style="max-width: 60%;" class="box-title"></h3>
           <div class="btn-group pull-right">
             <button id="deleteBlockoBlockButton" value="" class="btn btn-xs btn-danger " type="button" onclick="deleteBlockoBlock(this.value)"><i class="fa fa-times"></i></button>
             <button class="btn btn-xs btn-info " type="button"><i class="fa fa-edit"></i></button>
@@ -260,6 +285,50 @@
             }
           })}
 
+        function newBlockoBlock(){
+          model_data = $("#newBlockoBlock").serializeObject();
+          $.ajax({
+            url: '@routes.ProgramingPackageController.new_Block()',
+            type: 'POST',
+            contentType: 'application/json',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+            success:function(e){
+              $("#newBlockoBlock input[type=text]").val("");
+              $("#newBlockoBlockModal").css("display","none");
+              openTypeOfBlock(document.getElementById('type_info_id').textContent)
+            },
+            error:function(e) {
+              alert(e.responseText);
+            }
+          })}
+
+        function newBlockoBlockVersion(){
+          model_data = $("#newTypeOfBlock").serializeObject();
+          $.ajax({
+            url: '@routes.ProgramingPackageController.newTypeOfBlock()',
+            type: 'POST',
+            contentType: 'application/json',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+            success:function(e){
+              $("#newTypeOfBlock input[type=text]").val("");
+              $("#newTypeOfBlockModal").css("display","none");
+              $('#typeOfBlockTableWrapper').html("").load(document.URL +  ' #allTypesOfBlocks');
+            },
+            error:function(e) {
+              alert(e.responseText);
+            }
+          })}
+
         function editTypeOfBlock(id){
           model_data = $("#editTypeOfBlock").serializeObject();
 
@@ -276,7 +345,7 @@
             success:function(e){
               $("#editTypeOfBlock input[type=text]").val("");
               $("#editTypeOfBlockModal").css("display","none");
-              $('#allTypesOfBlocks').load(document.URL +  ' #allTypesOfBlocks');
+              $('#typeOfBlockTableWrapper').load(document.URL +  ' #allTypesOfBlocks');
             },
             error:function(e) {
               alert(e.responseText);
@@ -308,7 +377,7 @@
               "X-AUTH-TOKEN":getCookie("authToken"),
             },
             success:function(e){
-              openTypeOfBlock($('#type_info_id').text)
+              openTypeOfBlock(document.getElementById('type_info_id').textContent)
             },
             error:function(e) {
               alert(e.responseText);
@@ -380,9 +449,10 @@
             success:function(json){
               $('#blocko_block').text(json.name);
               $('#blocko_block_version').text("");
-              var content = '';
+              $('#deleteBlockoBlockButton').val(json.id);
               $('#blockoBlockVersions tbody').html("");
               $("#blockoBlockVersion").css("display","none");
+              var content = '';
               $.each(json.versions, function(k, v) {
                 content = "<tr><td><button class='btn btn-block btn-info' type='button' onclick=\"openBlockoBlockVersion('" + v.id + "')\">" + v.name + "</button></td></tr>";
                 $('#blockoBlockVersions tbody').append(content);
@@ -403,6 +473,7 @@
             },
             dataType: 'json',
             success:function(json){
+              $('#deleteBlockoBlockVersionButton').val(json.id);
               $('#blocko_block_version').text(json.version_name);
               $('#blocko_version_name').val(json.version_name);
               $('#blocko_version_description').val(json.version_description);
