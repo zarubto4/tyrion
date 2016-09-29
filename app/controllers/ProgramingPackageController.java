@@ -2276,7 +2276,7 @@ public class ProgramingPackageController extends Controller {
             Swagger_TypeOfBlock_New help = form.get();
 
             if(TypeOfBlock.find.where().isNull("project").eq("name",help.name).findUnique() != null)
-                return GlobalResult.badRequest("Type of Block with this name already exists, type a new one.");
+                return GlobalResult.result_BadRequest("Type of Block with this name already exists, type a new one.");
 
             // Vytvoření objektu
             TypeOfBlock typeOfBlock = new TypeOfBlock();
@@ -2335,7 +2335,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_TypeOfBlock(String type_of_block_id){
+    public Result get_TypeOfBlock(@ApiParam(value = "type_of_block_id String path",   required = true)  String type_of_block_id){
         try {
 
             // Kontrola objektu
@@ -2736,10 +2736,10 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_BlockoBlock_Version(String blocko_version_id){
+    public Result get_BlockoBlock_Version(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_version_id){
         try {
                 // Kontrola objektu
-                BlockoBlockVersion blocko_version = BlockoBlockVersion.find.byId(blocko_version_id);
+                BlockoBlockVersion blocko_version = BlockoBlockVersion.find.byId(blocko_block_version_id);
                 if(blocko_version == null) return GlobalResult.notFoundObject("BlockoBlock blocko_block_id not found");
 
                 // Kontrola oprávnění
@@ -2914,7 +2914,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result delete_BlockoBlock_Version(String blocko_block_version_id){
+    public Result delete_BlockoBlock_Version(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_version_id){
         try {
 
             // Kontrola objektu
@@ -3039,7 +3039,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_BlockBlock_version(String blocko_block_version_id){
+    public Result edit_BlockoBlock_Version(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_version_id){
         try {
 
             // Zpracování Json
@@ -3100,7 +3100,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_BlockoBlock_all_versions(String blocko_block_id){
+    public Result get_BlockoBlock_all_versions(@ApiParam(value = "blocko_block_id String path",   required = true) String blocko_block_id){
         try {
 
             // Kontrola objektu

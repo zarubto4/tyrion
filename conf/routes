@@ -247,6 +247,7 @@ DELETE         /project/blockoBlock/:blocko_block_id                            
 PUT            /project/blockoBlock/list/:page_number                                       @controllers.ProgramingPackageController.get_BlockoBlock_by_Filter(page_number: Integer)
 
 POST           /project/blockoBlock/version/:blocko_block_id                                @controllers.ProgramingPackageController.new_BlockoBlock_Version(blocko_block_id)
+PUT            /project/blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.edit_BlockoBlock_Version(blocko_block_version_id)
 GET            /project/blockoBlock/version/all/:blocko_block_id                            @controllers.ProgramingPackageController.get_BlockoBlock_all_versions(blocko_block_id)
 GET            /project/blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.get_BlockoBlock_Version(blocko_block_version_id)
 DELETE         /project/blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.delete_BlockoBlock_Version(blocko_block_version_id)
