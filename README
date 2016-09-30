@@ -33,6 +33,14 @@
 
 ## Nové API: ##
 
+### Zveřejňování bločků ###
+
+ * Nová API pro žádost o zveřejnění bločku:
+
+        PUT {{url_Tyriona}}/project/blockoBlock/version/make_public/{blocko_block_version_id}
+
+ * Po schválení se bloček zveřejní tím, že se nakopíruje do veřejné skupiny
+
 ### Veřejné c_programy ###
 
  * Nová API pro zveřejnění verze C_Programu, aby jí mohli použít ostatní uživatelé:

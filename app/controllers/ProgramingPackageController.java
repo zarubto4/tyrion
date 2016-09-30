@@ -46,6 +46,7 @@ import utilities.swagger.outboundClass.Filter_List.Swagger_Blocko_Block_List;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Homer_List;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Type_Of_Block_List;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
+import utilities.swagger.outboundClass.Swagger_BlockoBlock_Version_scheme;
 import utilities.webSocket.WS_BlockoServer;
 import utilities.webSocket.WebSCType;
 
@@ -2626,13 +2627,28 @@ public class ProgramingPackageController extends Controller {
            blockoBlock.author              = SecurityController.getPerson();
            blockoBlock.type_of_block       = typeOfBlock;
 
-
-
            // Kontrola oprávnění těsně před uložením
            if (! blockoBlock.create_permission() ) return GlobalResult.forbidden_Permission();
 
            // Uložení objektu
            blockoBlock.save();
+
+           // Získání šablony
+           BlockoBlockVersion scheme = BlockoBlockVersion.find.where().eq("version_name", "version_scheme").findUnique();
+
+           // Kontrola objektu
+           if(scheme == null) return GlobalResult.created( Json.toJson(blockoBlock) );
+
+           // Vytvoření objektu první verze
+           BlockoBlockVersion blockoBlockVersion = new BlockoBlockVersion();
+           blockoBlockVersion.version_name = "0.0.1";
+           blockoBlockVersion.version_description = "This is a first version of block.";
+           blockoBlockVersion.approval_state = Approval_state.approved;
+           blockoBlockVersion.design_json = scheme.design_json;
+           blockoBlockVersion.logic_json = scheme.logic_json;
+           blockoBlockVersion.date_of_create = new Date();
+           blockoBlockVersion.blocko_block = blockoBlock;
+           blockoBlockVersion.save();
 
            // Vrácení objektu
            return GlobalResult.created( Json.toJson(blockoBlock) );
@@ -2978,6 +2994,9 @@ public class ProgramingPackageController extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_BlockoBlock_BlockoVersion_New help = form.get();
 
+            // Kontrola názvu
+            if(help.version_name.equals("version_scheme")) return GlobalResult.result_BadRequest("This name is reserved for the system");
+
             // Kontrola objektu
             BlockoBlock blockoBlock = BlockoBlock.find.byId(blocko_block_id);
             if(blockoBlock == null) return GlobalResult.notFoundObject("blockoBlock not found");
@@ -3047,6 +3066,9 @@ public class ProgramingPackageController extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_BlockoBlock_BlockoVersion_Edit help = form.get();
 
+            // Kontrola názvu
+            if(help.version_name.equals("version_scheme")) return GlobalResult.result_BadRequest("This name is reserved for the system");
+
             // Kontrola objektu
             BlockoBlockVersion version = BlockoBlockVersion.find.byId(blocko_block_version_id);
             if(version == null) return GlobalResult.notFoundObject("blocko_block_version_id not found");
@@ -3074,7 +3096,7 @@ public class ProgramingPackageController extends Controller {
             code = 200,
             extensions = {
                     @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "BlockoBlockVersion_readd_permission", value = BlockoBlockVersion.read_permission_docs),
+                            @ExtensionProperty(name = "BlockoBlockVersion_read_permission", value = BlockoBlockVersion.read_permission_docs),
                     }),
                     @Extension( name = "permission_required", properties = {
                             @ExtensionProperty(name = "BlockoBlock.read_permission", value = "true"),
@@ -3118,21 +3140,72 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
+    @ApiOperation(value = "make BlockoBlock version public",
+            tags = {"Blocko-Block"},
+            notes = "sets Approval_state to pending",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "BlockoBlockVersion_edit_permission", value = "If user has BlockoBlock.update_permission"),
+                    }),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "BlockoBlockVersion.edit_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "BlockoBlockVersion_edit_permission")
+                    })
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = BlockoBlockVersion.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result make_BlockoBlock_Version_public(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_version_id){
+        try{
+
+            // Kontrola objektu
+            BlockoBlockVersion blockoBlockVersion = BlockoBlockVersion.find.byId(blocko_block_version_id);
+            if(blockoBlockVersion == null) return GlobalResult.notFoundObject("BlockoBlockVersion blocko_block_version_id not found");
+
+            // Kontrola orávnění
+            if(!(blockoBlockVersion.edit_permission())) return GlobalResult.forbidden_Permission();
+
+            // Úprava objektu
+            blockoBlockVersion.approval_state = Approval_state.pending;
+
+            // Uložení změn
+            blockoBlockVersion.update();
+
+            // Vrácení výsledku
+            return GlobalResult.result_ok(Json.toJson(blockoBlockVersion));
+
+        }catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
 // BLOCKO ADMIN ########################################################################################################*/
 
     @Security.Authenticated(Secured_Admin.class)
     public Result blockoDisapprove(){
         try {
 
+            // Získání JSON
             final Form<Swagger_BlockoObject_Approval> form = Form.form(Swagger_BlockoObject_Approval.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_BlockoObject_Approval help = form.get();
 
+            // Kontrola objektu
             BlockoBlockVersion blockoBlockVersion = BlockoBlockVersion.find.byId(help.object_id);
             if (blockoBlockVersion == null) return GlobalResult.notFoundObject("blocko_block_version not found");
 
+            // Změna stavu schválení
             blockoBlockVersion.approval_state = Approval_state.disapproved;
 
+            // Odeslání emailu s důvodem
             try {
                 new EmailTool()
                         .addEmptyLineSpace()
@@ -3152,8 +3225,10 @@ public class ProgramingPackageController extends Controller {
                 e.printStackTrace();
             }
 
+            // Uložení změn
             blockoBlockVersion.update();
 
+            // Vrácení potvrzení
             return GlobalResult.result_ok();
 
         }catch (Exception e){
@@ -3163,20 +3238,27 @@ public class ProgramingPackageController extends Controller {
     }
 
     @Security.Authenticated(Secured_Admin.class)
-    public Result blockoApproval(){
+    public Result blockoApproval() {
 
         try {
 
+            // Získání JSON
             final Form<Swagger_BlockoObject_Approve_withChanges> form = Form.form(Swagger_BlockoObject_Approve_withChanges.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_BlockoObject_Approve_withChanges help = form.get();
 
+            // Kontrola názvu
+            if(help.blocko_block_version_name.equals("version_scheme")) return GlobalResult.result_BadRequest("This name is reserved for the system");
+
+            // Kontrola objektu
             BlockoBlockVersion privateBlockoBlockVersion = BlockoBlockVersion.find.byId(help.object_id);
             if (privateBlockoBlockVersion == null) return GlobalResult.notFoundObject("blocko_block_version not found");
 
+            // Kontrola objektu
             TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(help.blocko_block_type_of_block_id);
             if (typeOfBlock == null) return GlobalResult.notFoundObject("type_of_block not found");
 
+            // Vytvoření objektu
             BlockoBlock blockoBlock = new BlockoBlock();
             blockoBlock.name = help.blocko_block_name;
             blockoBlock.general_description = help.blocko_block_general_description;
@@ -3184,6 +3266,7 @@ public class ProgramingPackageController extends Controller {
             blockoBlock.author = privateBlockoBlockVersion.blocko_block.author;
             blockoBlock.save();
 
+            // Vytvoření objektu
             BlockoBlockVersion blockoBlockVersion = new BlockoBlockVersion();
             blockoBlockVersion.version_name = help.blocko_block_version_name;
             blockoBlockVersion.version_description = help.blocko_block_version_description;
@@ -3194,9 +3277,11 @@ public class ProgramingPackageController extends Controller {
             blockoBlockVersion.date_of_create = new Date();
             blockoBlockVersion.save();
 
+            // Pokud jde o schválení po ediatci
             if(help.state.equals("edit")) {
                 privateBlockoBlockVersion.approval_state = Approval_state.edited;
 
+                // Odeslání emailu
                 try {
                     new EmailTool()
                             .addEmptyLineSpace()
@@ -3218,13 +3303,63 @@ public class ProgramingPackageController extends Controller {
             }
             else privateBlockoBlockVersion.approval_state = Approval_state.approved;
 
+            // Uložení úprav
             privateBlockoBlockVersion.update();
 
+            // Vrácení výsledku
             return GlobalResult.result_ok();
 
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
+        }
+    }
 
+    @Security.Authenticated(Secured_Admin.class)
+    public Result edit_BlockoBlock_Version_scheme(){
+
+        try {
+
+            // Získání JSON
+            final Form<Swagger_BlockoBlock_BlockoVersion_Scheme_Edit> form = Form.form(Swagger_BlockoBlock_BlockoVersion_Scheme_Edit.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_BlockoBlock_BlockoVersion_Scheme_Edit help = form.get();
+
+            // Kontrola objektu
+            BlockoBlockVersion blockoBlockVersion = BlockoBlockVersion.find.where().eq("version_name", "version_scheme").findUnique();
+            if (blockoBlockVersion == null) return GlobalResult.notFoundObject("Scheme not found");
+
+            // Úprava objektu
+            blockoBlockVersion.design_json = help.design_json;
+            blockoBlockVersion.logic_json = help.logic_json;
+
+            // Uložení změn
+            blockoBlockVersion.update();
+
+            // Vrácení výsledku
+            return GlobalResult.result_ok();
+        }catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result get_BlockoBlock_Version_scheme(){
+
+        try {
+
+            // Kontrola objektu
+            BlockoBlockVersion blockoBlockVersion = BlockoBlockVersion.find.where().eq("version_name", "version_scheme").findUnique();
+            if (blockoBlockVersion == null) return GlobalResult.notFoundObject("Scheme not found");
+
+            // Vytvoření výsledku
+            Swagger_BlockoBlock_Version_scheme result = new Swagger_BlockoBlock_Version_scheme();
+            result.design_json = blockoBlockVersion.design_json;
+            result.logic_json = blockoBlockVersion.logic_json;
+
+            // Vrácení výsledku
+            return GlobalResult.result_ok(Json.toJson(result));
+        }catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
         }
     }
 

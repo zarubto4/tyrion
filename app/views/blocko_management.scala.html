@@ -6,8 +6,10 @@
 <section class="content-header">
   <h1> Blocko object settings </h1>
   <ol class="breadcrumb">
-    <li><a href="#"><i class="fa fa-wrench"></i> Admin Page </a></li>
-    <li class="active">Dashboard</li>
+    <li><a href="@routes.DashboardController.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
+    <li class="active"><i class="fa fa-share"></i> Tyrion Object Management </li>
+    <li class="active"><i class="fa fa-wrench"></i> Blocko Management </li>
+    <li class="active"><i class="fa fa-wrench"></i> Blocko Objects </li>
   </ol>
 </section>
 
@@ -71,7 +73,7 @@
   </div>
     <!-- /.modal-dialog -->
 </div>
-  <div id="newBlockoBlockVersionModal" style="display: none;" class="modal">
+<div id="newBlockoBlockVersionModal" style="display: none;" class="modal">
     <div style="margin-top: 15%;" class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
@@ -197,6 +199,30 @@
     <!-- /.modal-dialog -->
 </div>
 
+<div id="editVersionSchemeModal" style="display: none;" class="modal">
+  <div style="margin-top: 15%;" class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Edit Version Scheme </h4>
+      </div>
+      <div class="modal-body">
+        <form id="editVersionScheme">
+          <label style="color: #2e6da4">Design JSON:</label>
+          <textarea id="version_scheme_design" name="design_json" style="display: block; width: 100%; height: auto;" rows="6"></textarea>
+          <label style="color: #2e6da4">Logic JSON:</label>
+          <textarea id="version_scheme_logic" name="logic_json" style="display: block; width: 100%; height: auto;" rows="6"></textarea>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editVersionSchemeModal').css('display','none')">Close</button>
+        <button class="btn btn-primary" type="button" onclick="editVersionScheme()">Save changes</button>
+      </div>
+    </div>
+      <!-- /.modal-content -->
+  </div>
+    <!-- /.modal-dialog -->
+</div>
+
   @*/*/*  Content ---------------------------------------------------------------------------------------------   */*/*@
 
   <div class="row">
@@ -276,6 +302,7 @@
             <button class="btn btn-xs btn-danger disabled" disabled type="button" onclick="deleteBlockoBlockVersion(document.getElementById('version_info_id').textContent)"><i class="fa fa-times"></i></button>
             <button class="btn btn-xs btn-info disabled" disabled type="button" onclick="$('#editBlockoBlockVersionModal').css('display','block'); $('#editBlockoBlockVersionButton').val(document.getElementById('version_info_id').textContent);  $('#edit_blocko_version_name').val(document.getElementById('blocko_version_name').value); $('#edit_blocko_version_description').val(document.getElementById('blocko_version_description').value);"><i class="fa fa-edit"></i></button>
           </div>
+          <button class="btn btn-primary btn-xs pull-right" style="margin-right: 10px;" type="button" onclick="showVersionScheme()">Version scheme</button>
         </div>
         <div class="box-body">
           <div style="display: none" id="blockoBlockVersion">
@@ -468,6 +495,14 @@
             success:function(e){
               $('#typeOfBlockTableWrapper').load(document.URL +  ' #allTypesOfBlocks');
               $('#type_of_block').text("");
+              $('#blockoBlocks tbody').html("");
+              $('#blockoBlockVersions tbody').html("");
+              $("#blockoBlockVersion").css("display","none");
+              $('#blocko_block_version').text("");
+              $('#blocko_block').text("");
+              disableButtonGroup('#type_btn_group', true);
+              disableButtonGroup('#block_btn_group', true);
+              disableButtonGroup('#version_btn_group', true);
             },
             error:function(e) {
               alert(e.responseText);
@@ -610,7 +645,44 @@
           }else {
             $(id + ' button').removeClass('disabled');
           }
-
         }
 
+        function showVersionScheme(){
+          $.ajax({
+            url: '@routes.ProgramingPackageController.get_BlockoBlock_Version_scheme()',
+            type: 'GET',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            dataType: 'json',
+            success:function(json){
+              $("#editVersionSchemeModal").css("display","block");
+              $('#version_scheme_design').val(json.design_json);
+              $('#version_scheme_logic').val(json.logic_json);
+            },
+            error:function(e) {
+              alert(e.responseText);
+            }
+          })}
+
+        function editVersionScheme(){
+          model_data = $("#editVersionScheme").serializeObject();
+          $.ajax({
+            url: '@routes.ProgramingPackageController.edit_BlockoBlock_Version_scheme()',
+            type: 'PUT',
+            contentType: 'application/json',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+            success:function(e){
+              $("#editVersionScheme input[type=text]").val("");
+              $("#editVersionSchemeModal").css("display","none");
+            },
+            error:function(e) {
+              alert(e.responseText);
+            }
+          })}
 </script>
