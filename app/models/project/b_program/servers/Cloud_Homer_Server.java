@@ -4,7 +4,7 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
-import controllers.WebSocketController_Incoming;
+import controllers.WebSocketController;
 import models.compiler.Board;
 import models.project.b_program.Homer_Instance;
 import utilities.webSocket.WS_BlockoServer;
@@ -37,7 +37,7 @@ public class Cloud_Homer_Server extends Model{
 
 
     @JsonProperty  public boolean server_is_online(){
-        return WebSocketController_Incoming.blocko_servers.containsKey(this.server_name);
+        return WebSocketController.blocko_servers.containsKey(this.server_name);
     }
 
 
@@ -59,7 +59,7 @@ public class Cloud_Homer_Server extends Model{
 
     @JsonIgnore @Transient
     public WS_BlockoServer get_server_webSocket_connection(){
-        return (WS_BlockoServer) WebSocketController_Incoming.blocko_servers.get(this.server_name);
+        return (WS_BlockoServer) WebSocketController.blocko_servers.get(this.server_name);
     }
 
 

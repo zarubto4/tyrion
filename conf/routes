@@ -18,12 +18,12 @@ GET             /test1                                      @controllers.WikyCon
 ### WEBSOCKET ############ WEBSOCKET ############### WEBSOCKET ################ WEBSOCKET ###########################################################################
 ###################################################################################f#################################################################################
 
-GET              /websocket/homer/:mac_adress                  @controllers.WebSocketController_Incoming.homer_connection(mac_adress)
-GET              /websocket/mobile/:m_project_id/:mac_adress   @controllers.WebSocketController_Incoming.mobile_connection(m_project_id, mac_adress)
-GET              /websocket/blocko_server/:identificator       @controllers.WebSocketController_Incoming.homer_cloud_server_connection(identificator)
-GET              /websocket/compilation_server/:identificator  @controllers.WebSocketController_Incoming.compilator_server_connection(identificator)
-GET              /websocket/becki/:secure_token                @controllers.WebSocketController_Incoming.becki_website_connection(secure_token)
-GET              /websocket/access_token                       @controllers.WebSocketController_Incoming.get_Websocket_token()
+GET              /websocket/homer/:mac_adress                  @controllers.WebSocketController.homer_connection(mac_adress)
+GET              /websocket/mobile/:m_project_id/:mac_adress   @controllers.WebSocketController.mobile_connection(m_project_id, mac_adress)
+GET              /websocket/blocko_server/:identificator       @controllers.WebSocketController.homer_cloud_server_connection(identificator)
+GET              /websocket/compilation_server/:identificator  @controllers.WebSocketController.compilator_server_connection(identificator)
+GET              /websocket/becki/:secure_token                @controllers.WebSocketController.becki_website_connection(secure_token)
+GET              /websocket/access_token                       @controllers.WebSocketController.get_Websocket_token()
 
 
 
@@ -238,6 +238,9 @@ GET            /project/b_program/instance/listOfHomersWaitingForUpload/:id     
 
 PUT            /project/b_program/instance/command/:instance_id/:target_id/:command         @controllers.ProgramingPackageController.send_command_to_instnace(instance_id, target_id, command)
 PUT            /project/b_program/instance/program/:instance_id                             @controllers.ProgramingPackageController.update_blocko_code_in_instance_with_code(instance_id)
+PUT            /project/b_program/instance/ping/:instance_id                                @controllers.ProgramingPackageController.ping_instance(instance_id)
+PUT            /project/b_program/instance/shut_down/:instance_id                           @controllers.ProgramingPackageController.instance_shut_down(instance_id)
+
 
 #Blocks
 POST           /project/blockoBlock                                                         @controllers.ProgramingPackageController.new_Block()
@@ -285,7 +288,7 @@ GET             /project/actualization_procedure/:actualization_procedure_id    
 ################################################################################################################################################################################
 
 #C_Program
-POST            /compilation/c_program/c_program/:project_id                                @controllers.CompilationLibrariesController.create_C_Program(project_id)
+POST            /compilation/c_program/c_program                                            @controllers.CompilationLibrariesController.create_C_Program()
 GET             /compilation/c_program/c_program/:c_program_id                              @controllers.CompilationLibrariesController.get_C_Program(c_program_id)
 PUT             /compilation/c_program/list/:page_number                                    @controllers.CompilationLibrariesController.get_C_Program_by_Filter(page_number: Integer)
 
@@ -338,7 +341,15 @@ PUT             /compilation/typeOfBoard/:type_of_board_id                      
 DELETE          /compilation/typeOfBoard/:type_of_board_id                                  @controllers.CompilationLibrariesController.delete_TypeOfBoard(type_of_board_id)
 GET             /compilation/typeOfBoard/all                                                @controllers.CompilationLibrariesController.get_TypeOfBoard_all()
 GET             /compilation/typeOfBoard/:type_of_board_id                                  @controllers.CompilationLibrariesController.get_TypeOfBoard(type_of_board_id)
+PUT             /compilation/typeOfBoard/mark/c_version/:type_of_board_id/:version_id       @controllers.CompilationLibrariesController.typeOfBoard_mark_C_program_Version_as_main(type_of_board_id,version_id)
 
+#Bootloader
+POST            /bootloader/:type_of_board_id                                               @controllers.CompilationLibrariesController.new_Boot_loader(type_of_board_id)
+PUT             /bootloader/file/:boot_loader_id                                            @controllers.CompilationLibrariesController.boot_loader_uploud_file(boot_loader_id)
+PUT             /bootloader/mark/bootloader/:boot_loader_id                                 @controllers.CompilationLibrariesController.boot_loader_mark_as_main(boot_loader_id)
+
+
+PUT             /bootloader/update_device_list                                              @controllers.CompilationLibrariesController.boot_loader_update_device_list()
 
 #LibraryGroups
 POST            /compilation/libraryGroup                                                   @controllers.CompilationLibrariesController.new_LibraryGroup()
@@ -427,23 +438,24 @@ GET           /assets/*file                                 controllers.Assets.v
 ###################################################################################f#################################################################################
 
 # Basic Page Requests
-GET             /                                       @controllers.DashboardController.index()
-GET             /admin/login                            @controllers.DashboardController.login()
-GET             /admin/bugs                             @controllers.DashboardController.show_all_logs()
-GET             /admin/websocket/summary                @controllers.DashboardController.show_web_socket_stats()
-GET             /admin/websocket/detail/:instance_id    @controllers.DashboardController.show_instance_detail(instance_id)
-GET             /admin/show_readme                      @controllers.DashboardController.show_readme()
-GET             /admin/show_diff_on_Api/                @controllers.DashboardController.show_diff_on_Api(old_api: String?="",new_api: String?="")
-GET             /admin/admin_page                       @controllers.DashboardController.basic_object_management()
-GET             /admin/external_servers                 @controllers.DashboardController.external_servers()
-GET             /admin/user_summary/                    @controllers.DashboardController.user_summary(email: String?="")
-GET             /admin/user_summary/:mail               @controllers.DashboardController.user_summary(mail)
-GET             /admin/permission/permission_summary    @controllers.DashboardController.permissions_summary()
-GET             /admin/permission/role/:role_id         @controllers.DashboardController.role(role_id)
-GET             /admin/blocko_objects                   @controllers.DashboardController.blocko_objects()
+GET             /                                               @controllers.DashboardController.index()
+GET             /admin/login                                    @controllers.DashboardController.login()
+GET             /admin/bugs                                     @controllers.DashboardController.show_all_logs()
+GET             /admin/websocket/summary                        @controllers.DashboardController.show_web_socket_stats()
+GET             /admin/websocket/detail/:instance_id            @controllers.DashboardController.show_instance_detail(instance_id)
+GET             /admin/show_readme                              @controllers.DashboardController.show_readme()
+GET             /admin/show_diff_on_Api/                        @controllers.DashboardController.show_diff_on_Api(old_api: String?="",new_api: String?="")
+GET             /admin/board_settings                           @controllers.DashboardController.basic_board_management()
+GET             /admin/bootloader_settings/:type_of_board_id    @controllers.DashboardController.bootloader_management(type_of_board_id)
+GET             /admin/external_servers                         @controllers.DashboardController.external_servers()
+GET             /admin/user_summary/                            @controllers.DashboardController.user_summary(email: String?="")
+GET             /admin/user_summary/:mail                       @controllers.DashboardController.user_summary(mail)
+GET             /admin/permission/permission_summary            @controllers.DashboardController.permissions_summary()
+GET             /admin/permission/role/:role_id                 @controllers.DashboardController.role(role_id)
+GET             /admin/blocko_objects                           @controllers.DashboardController.blocko_objects()
 
 
-GET             /javascriptRoutes                           @controllers.DashboardController.javascriptRoutes()
+GET             /javascriptRoutes                               @controllers.DashboardController.javascriptRoutes()
 
 # BUGS SERVISE PAGE
 
@@ -452,16 +464,16 @@ GET             /public/bug/remove/:id                      @controllers.Dashboa
 GET             /public/bug/report/:id                      @controllers.DashboardController.loggy_report_bug_to_youtrack(id: String)
 
 # WEBSOCKET SERVISE PAGE
-GET             /public/homer/ping/:id                      @controllers.DashboardController.ping_homer(id)
-GET             /public/homer/disconnect/:id                @controllers.DashboardController.disconnect_homer(id)
-GET             /public/homer/get_status/:id                @controllers.DashboardController.loggy_remove_bug(id)
+GET             /public/instance/ping/:id                   @controllers.DashboardController.ping_homer_instance(id: String)
+GET             /public/instance/disconnect/:id             @controllers.DashboardController.disconnect_homer_instance(id: String)
+GET             /public/instance/get_status/:id             @controllers.DashboardController.loggy_remove_bug(id: String)
 
-GET             /public/blocko_server/ping/:id              @controllers.DashboardController.ping_Blocko_Server(id)
-GET             /public/blocko_server/disconnect/:id        @controllers.DashboardController.disconnect_Blocko_Server(id)
-GET             /public/blocko_server/get_status/:id        @controllers.DashboardController.loggy_remove_bug(id)
+GET             /public/homer_server/ping/:id               @controllers.DashboardController.ping_homer_server(id)
+GET             /public/homer_server/disconnect/:id         @controllers.DashboardController.disconnect_blocko_server(id)
+GET             /public/homer_server/get_status/:id         @controllers.DashboardController.loggy_remove_bug(id)
 
-GET             /public/compilator_server/ping/:id          @controllers.DashboardController.ping_Compilation_Server(id)
-GET             /public/compilator_server/disconnect/:id    @controllers.DashboardController.disconnect_Compilation_Server(id)
+GET             /public/compilator_server/ping/:id          @controllers.DashboardController.ping_compilation_server(id)
+GET             /public/compilator_server/disconnect/:id    @controllers.DashboardController.disconnect_compilation_server(id)
 GET             /public/compilator_server/get_status/:id    @controllers.DashboardController.loggy_remove_bug(id)
 
 GET             /public/terminal/ping/:id                   @controllers.DashboardController.ping_terminal(id)
@@ -471,10 +483,7 @@ GET             /public/terminal/get_status/:id             @controllers.Dashboa
 GET             /public/becki/ping/:id                      @controllers.DashboardController.ping_becki(id)
 GET             /public/becki/disconnect/:id/:token         @controllers.DashboardController.disconnect_becki(id, token)
 
-GET             /public/terminal/log_out/:id                @controllers.DashboardController.log_out_Terminal_User(id)
-
-POST            /public/disconect_all_terminals             @controllers.DashboardController.disconnect_terminal_all()
-POST            /public/disconect_all_homers                @controllers.DashboardController.disconnect_homer_all()
+GET             /public/terminal/log_out/:id                @controllers.DashboardController.log_out_terminal_user(id)
 
 
 GET             /public/*file                               @controllers.Assets.versioned(path="/public", file: Asset)

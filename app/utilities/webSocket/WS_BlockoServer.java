@@ -2,9 +2,7 @@ package utilities.webSocket;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import controllers.WebSocketController_Incoming;
-import models.project.b_program.Homer_Instance;
-import models.project.b_program.servers.Cloud_Homer_Server;
+import controllers.WebSocketController;
 import utilities.hardware_updater.Actualization_Task;
 
 import java.util.ArrayList;
@@ -39,7 +37,7 @@ public class WS_BlockoServer extends WebSCType{
         }
 
        this.update_thread.stop();
-        WebSocketController_Incoming.blocko_server_is_disconnect(this);
+        WebSocketController.homer_server_is_disconnect(this);
     }
 
     @Override
@@ -60,7 +58,7 @@ public class WS_BlockoServer extends WebSCType{
 
         // Zpráva je ze serveru
         else {
-            WebSocketController_Incoming.blocko_server_incoming_message(this, json);
+            WebSocketController.homer_server_incoming_message(this, json);
         }
 
     }
@@ -102,7 +100,7 @@ public class WS_BlockoServer extends WebSCType{
                         System.out.println("Odesílám požadavek na aktualizaci!");
 
                         if(task.homer != null){
-                            JsonNode result = WebSocketController_Incoming.homer_update_Yoda_firmware(task.homer, task.board.id, task.firmware_type, task.code);
+                            JsonNode result = WebSocketController.homer_instance_update_devices_firmware(task.homer, task.get_ids(), task.firmware_type, task.file_record);
                             System.out.println("Odpověď na Aktualizaci:" + result.toString());
                             System.out.println("Ještě neřeším reakci");
                             task_list.remove(task);
@@ -110,8 +108,11 @@ public class WS_BlockoServer extends WebSCType{
                         else {
 
                             try {
-                                System.out.println("Homer ještě neexistuje a tak je ho nutné vytvořit");
 
+                                System.err.println("Homer ještě neexistuje a tak je ho nutné vytvořit");
+
+                                System.err.println("Není to dodělané!!!!!");
+                                /*
                                 Homer_Instance temporary_instance = new Homer_Instance();
                                 temporary_instance.setUnique_blocko_instance_name();
                                 temporary_instance.cloud_homer_server = Cloud_Homer_Server.find.where().eq("server_name", this_server.identifikator).findUnique();
@@ -123,13 +124,14 @@ public class WS_BlockoServer extends WebSCType{
                                 task.board.private_instance = temporary_instance;
                                 task.board.update();
 
-                                WS_Homer_Cloud homer = (WS_Homer_Cloud) WebSocketController_Incoming.blocko_server_add_instance(this_server, temporary_instance, true );
+                                WS_Homer_Cloud homer = (WS_Homer_Cloud) WebSocketController.homer_server_add_instance(this_server, temporary_instance, true );
 
 
-                                JsonNode result = WebSocketController_Incoming.homer_update_Yoda_firmware(homer, task.board.id, task.firmware_type, task.code);
+                                JsonNode result = WebSocketController.homer_instance_update_devices_firmware(homer, task.board.id, task.firmware_type, task.code);
                                 System.out.println("Odpověď na Aktualizaci:" + result.toString());
 
                                 task_list.remove(task);
+                                */
 
                             }catch (Exception e){
                                 e.printStackTrace();

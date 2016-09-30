@@ -595,7 +595,8 @@
                         <th>Latest know server</th>
                         <th>Status</th>
                         <th>Active</th>
-                        <th>Up to Date</th>
+                        <th>Up to Date Firmware</th>
+                        <th>Up to Date BootLoader</th>
                     </tr>
                 </thead>
                <tbody>
@@ -616,7 +617,18 @@
                            </td>
                            <td>@board.status()</td>
                            <td>@board.is_active</td>
-                           <td>@board.up_to_date()</td>
+                           <td>@if(board.up_to_date_firmware()){
+                                    <p class="text-red">(Update Required)</p>
+                                }else {
+                                   <p class="text-green">(Actual)</p>
+                                }
+                           </td>
+                           <td>@if(board.update_boot_loader_required()){
+                                    <p class="text-red">(Update Required)</p>
+                                }else{
+                                    <p class="text-green">(Actual)</p>
+                                }
+                           </td>
                        </tr>
 
                    }

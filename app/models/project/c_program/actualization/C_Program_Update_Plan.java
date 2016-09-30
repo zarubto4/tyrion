@@ -1,6 +1,5 @@
 package models.project.c_program.actualization;
 
-import com.avaje.ebean.Expr;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -9,7 +8,6 @@ import io.swagger.annotations.ApiModelProperty;
 import models.compiler.Board;
 import models.compiler.FileRecord;
 import models.compiler.Version_Object;
-import models.project.b_program.Homer_Instance;
 import utilities.enums.Firmware_type;
 import utilities.hardware_updater.States.C_ProgramUpdater_State;
 
@@ -33,10 +31,9 @@ public class C_Program_Update_Plan extends Model {
               @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                    public Board board; // Deska k aktualizaci
               @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)  public Firmware_type firmware_type;
 
-
-                                                                // Aktualizace je vázána buď na verzi C++ kodu nebo na soubor, nahraný uživatelem
-                        /** OR **/  @JsonIgnore @ManyToOne()    public Version_Object c_program_version_for_update; // C_program k aktualizaci
-                        /** OR **/  @JsonIgnore @ManyToOne()    public FileRecord binary_file;
+                                                                                // Aktualizace je vázána buď na verzi C++ kodu nebo na soubor, nahraný uživatelem
+    /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)                 public Version_Object c_program_version_for_update; // C_program k aktualizaci
+    /** OR **/  @JsonIgnore @ManyToOne()                                        public FileRecord binary_file; // Soubor, když firmware nahrává uživatel sám mimo flow
 
     @ApiModelProperty(required = true, value = "Description on Model C_ProgramUpdater_State")  @Enumerated(EnumType.STRING)    public C_ProgramUpdater_State state;
 
@@ -57,29 +54,8 @@ public class C_Program_Update_Plan extends Model {
             c_program_detail.c_program_version_name     = c_program_version_for_update.version_name;
 
             return c_program_detail;
-
     }
 
-    @JsonProperty @ApiModelProperty(required = true, readOnly = true) @Transient
-    public Server_detail server_detail(){
-
-        Server_detail server_detail = new Server_detail();
-
-        Homer_Instance homer_instance = Homer_Instance.find.where()
-                .disjunction()
-                    .add(Expr.eq("version_object.b_program_hw_groups.main_board_pair.board.id", board.id))
-                    .add(Expr.eq("version_object.b_program_hw_groups.device_board_pairs.board.id", board.id))
-                    .add(Expr.eq("private_instance_board.id", board.id))
-                .findUnique();
-
-        server_detail.server_id   =  homer_instance.cloud_homer_server.id;
-        server_detail.server_name =  homer_instance.cloud_homer_server.server_name;
-        server_detail.is_private  =  homer_instance.cloud_homer_server.is_private;
-        server_detail.instnace_id =  homer_instance.id;
-
-        return  server_detail;
-
-    }
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true) @Transient
     public Board_detail board_detail(){

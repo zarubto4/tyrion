@@ -1,7 +1,7 @@
 package utilities.webSocket;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import controllers.WebSocketController_Incoming;
+import controllers.WebSocketController;
 
 import java.util.Map;
 
@@ -22,14 +22,14 @@ public class WS_Grid_Terminal extends  WebSCType {
     public void onClose() {
         System.out.println("Local_Terminal onClose " + super.identifikator);
         this.close();
-        WebSocketController_Incoming.terminal_is_disconnected(this);
+        WebSocketController.terminal_is_disconnected(this);
     }
 
 
     @Override
     public void onMessage(ObjectNode json) {
         System.out.println("příchozí zpráva v WS_Grid_Terminal: " + json.toString());
-         WebSocketController_Incoming.terminal_incoming_message(this, json);
+         WebSocketController.terminal_incoming_message(this, json);
     }
 
 

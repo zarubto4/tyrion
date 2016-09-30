@@ -1,5 +1,5 @@
 @import utilities.Server
-@(menu: Html, content: Html, mode: Boolean)
+@(content: Html)
 
 
 <!DOCTYPE html>
@@ -32,7 +32,6 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js" type="text/javascript"></script>
         <script src="@routes.Assets.at("../../../../public/plugins/morris/morris.min.js")" type="text/javascript"></script>
         <script src="@routes.Assets.at("../../../../public/plugins/sparkline/jquery.sparkline.min.js")" type="text/javascript"></script>
-
         <script src="@routes.Assets.at("../../../../public/plugins/knob/jquery.knob.js")" type="text/javascript">></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.2/moment.min.js"></script>
         <script src="@routes.Assets.at("../../../../public/plugins/daterangepicker/daterangepicker.js")" type="text/javascript"></script>
@@ -48,20 +47,48 @@
         <script type="text/javascript" src='@routes.DashboardController.javascriptRoutes()'></script>
 
         <script>
+
+        // Získání cookies z prohlížeče
         function getCookie(name)
         {
             var re = new RegExp(name + "=([^;]+)");
             var value = re.exec(document.cookie);
             return (value != null) ? unescape(value[1]) : null;
         }
+
+        // Pomocný objekt pro zvýrazňování a formátování JSON objektů, které vkládáme do bublin
+        function syntaxHighlight(json) {
+            if (typeof json != 'string') {
+                json = JSON.stringify(json, null, 4);
+            }
+            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                var cls = 'number';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'key';
+                    } else {
+                        cls = 'string';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'boolean';
+                } else if (/null/.test(match)) {
+                    cls = 'null';
+                }
+                return '<span class="' + cls + '">' + match + '</span>';
+            });
+        }
+
         </script>
     </head>
 
-    @if(mode){
-        <body class="hold-transition skin-blue sidebar-mini">
-    }else{
-       <body class="hold-transition skin-red sidebar-mini">
-    }
+    <body
+       @if(Server.server_mode){
+            class="hold-transition skin-blue sidebar-mini"
+       }else{
+            class="hold-transition skin-red sidebar-mini"
+       }
+    >
 
             <div class="wrapper">
 
@@ -82,7 +109,7 @@
 
                         <div class="navbar-custom-menu">
                             <ul class="nav navbar-nav">
-                                <h4 > <font color="white">  <b>Version:</b> @Server.server_version   &nbsp &nbsp &nbsp <b>Production mode: </b> @if(!mode){Production}else{Developer}   &nbsp &nbsp &nbsp  </font> </h4>
+                                <h4 > <font color="white">  <b>Version:</b> @Server.server_version   &nbsp &nbsp &nbsp <b>Production mode: </b> @if(!Server.server_mode){Production}else{Developer}   &nbsp &nbsp &nbsp  </font> </h4>
 
                             </ul>
 
@@ -92,7 +119,7 @@
                 </header>
 
                     <!-- Left side column. contains the logo and sidebar -->
-                    @menu
+                    @views.html.super_general.menu()
 
                     <!-- Content Wrapper. Contains page content -->
                 <div class="content-wrapper">
@@ -124,10 +151,8 @@
 
 
            <script> $.widget.bridge('uibutton', $.ui.button);</script>
-
            <script src="@routes.Assets.at("../../../../public/bootstrap/js/bootstrap.min.js")"></script>
            <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
-
            <script src="@routes.Assets.at("../../../../public/plugins/knob/jquery.knob.js")"></script>
            <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.2/moment.min.js'></script>
            <script src="@routes.Assets.at("../../../../public/plugins/daterangepicker/daterangepicker.js")"></script>

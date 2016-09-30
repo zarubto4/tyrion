@@ -34,7 +34,6 @@ public class Actualization_procedure extends Model {
 
     @ApiModelProperty(required = true, value = "Can be empty")  @OneToMany(mappedBy="actualization_procedure", cascade = CascadeType.ALL, fetch = FetchType.LAZY)   public List<C_Program_Update_Plan> updates = new ArrayList<>();
 
-
     @ApiModelProperty(required = true, value = "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
                                                 example = "1466163478925")   public Date date_of_create;
     @ApiModelProperty(required = true, value = "can be empty, which means that the procedure is not done yet. " +

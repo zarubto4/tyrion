@@ -16,8 +16,8 @@ public class B_Program_Hw_Group extends Model {
 
     @JsonIgnore @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true)  public Long  id;
 
-    @OneToMany(mappedBy="device_board_pair",cascade= CascadeType.ALL)   public List<B_Pair> device_board_pairs = new ArrayList<>();
-    @OneToOne(mappedBy="main_board_pair",cascade=CascadeType.ALL)       public B_Pair main_board_pair;
+    @OneToMany(mappedBy="device_board_pair",cascade= CascadeType.ALL, fetch = FetchType.EAGER)   public List<B_Pair> device_board_pairs = new ArrayList<>();
+    @OneToOne(mappedBy="main_board_pair",cascade=CascadeType.ALL, fetch = FetchType.EAGER)       public B_Pair main_board_pair;
 
 
 

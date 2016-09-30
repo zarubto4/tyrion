@@ -986,7 +986,6 @@ public class PersonController extends Controller {
 
             // Odebrání předchozího obrázku
             if(!(person.picture == null)){
-                UtilTools.remove_file_from_Azure(person.picture);
                 FileRecord fileRecord = person.picture;
                 person.picture = null;
                 person.update();
@@ -1010,7 +1009,10 @@ public class PersonController extends Controller {
             int slash = file_path.indexOf("/");
             String file_name = file_path.substring(slash+1);
 
-            UtilTools.uploadAzure_Picture(file, file_name, file_path, person);
+            FileRecord fileRecord = UtilTools.uploadAzure_File(file, file_name, file_path);
+            person.picture = fileRecord;
+            person.update();
+
 
             return GlobalResult.result_ok("Picture successfully uploaded");
         }catch (Exception e){
@@ -1038,7 +1040,6 @@ public class PersonController extends Controller {
             Person person = SecurityController.getPerson();
 
             if(!(person.picture == null)) {
-                UtilTools.remove_file_from_Azure(person.picture);
                 FileRecord fileRecord = person.picture;
                 person.picture = null;
                 person.azure_picture_link = null;

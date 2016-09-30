@@ -94,7 +94,6 @@ public class UtilTools extends Controller {
 
         for (ListBlobItem blobItem : container.listBlobs( pocatekMazani + "/" )) {
 
-
             if (blobItem instanceof CloudBlob) ((CloudBlob) blobItem).deleteIfExists();
 
             // Break & loop
@@ -131,7 +130,6 @@ public class UtilTools extends Controller {
         return fileRecord;
     }
 
-
     public static FileRecord uploadAzure_Version( File file, String file_name, String file_path, Version_Object version_object) throws Exception{
 
         logger.debug("Azure load: "+ file_path + version_object.get_path() + "/" + file_name);
@@ -164,80 +162,44 @@ public class UtilTools extends Controller {
         return fileRecord;
     }
 
-    public static FileRecord uploadAzure_Picture( File file, String file_name, String file_path, Person person) throws Exception{
+    public static FileRecord uploadAzure_File(File file, String file_name, String file_path) throws Exception{
 
         logger.debug("Azure load: "+ file_path);
 
 
         int slash = file_path.indexOf("/");
         String container_name = file_path.substring(0,slash);
+        String real_file_path = file_path.substring(slash+1);
         CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
 
-        CloudBlockBlob blob = container.getBlockBlobReference(file_name);
+        CloudBlockBlob blob = container.getBlockBlobReference(real_file_path + "/" + file_name);
 
         InputStream is = new FileInputStream(file);
         blob.upload(is, -1);
 
         FileRecord fileRecord = new FileRecord();
         fileRecord.file_name = file_name;
-        fileRecord.file_path = file_path;
-        fileRecord.person = person;
+        fileRecord.file_path = file_path + "/" + file_name;
         fileRecord.save();
 
-        person.picture = fileRecord;
-        person.update();
-
         return fileRecord;
-    }
-
-    public static File file_get_File_from_Azure(String file_path)throws Exception{
-
-        logger.debug("FileRecord: get_fileRecord_from_Azure_inString");
-
-        int slash = file_path.indexOf("/");
-        String container_name = file_path.substring(0,slash);
-        String real_file_path = file_path.substring(slash+1);
-
-        logger.debug("Azure load path: " + file_path );
-        logger.debug("Azure Container: " + container_name);
-        logger.debug("Real File  Path: " + real_file_path);
-
-        CloudBlobContainer container = Server.blobClient.getContainerReference(container_name );
-
-        CloudBlob blob = container.getBlockBlobReference(real_file_path );
-
-        File fileMain = new File("files/" + UUID.randomUUID().toString()  );
-
-        // Tento soubor se nesmí zapomínat mazat!!!!
-        OutputStream outputStreamMain = new FileOutputStream (fileMain);
-
-        blob.download(outputStreamMain);
-
-        return fileMain;
     }
 
 
     public static String get_encoded_binary_string_from_File(File binary_file) throws Exception {
 
-        String encodedBase64 = null;
-
         FileInputStream fileInputStreamReader = new FileInputStream(binary_file);
         byte[] bytes = new byte[(int)binary_file.length()];
         fileInputStreamReader.read(bytes);
-        encodedBase64 = new String(Base64.getEncoder().encode(bytes));
+        String encodedBase64 = new String(Base64.getEncoder().encode(bytes));
 
         return encodedBase64;
 
     }
 
     public static String get_encoded_binary_string_from_body(byte[] bytes) throws Exception {
-
-        String encodedBase64 = null;
-
-        encodedBase64 = new String(Base64.getEncoder().encode( bytes ));
-
+        String encodedBase64 = new String(Base64.getEncoder().encode( bytes ));
         return encodedBase64;
-
     }
 
 
@@ -268,21 +230,7 @@ public class UtilTools extends Controller {
         return fileRecord;
     }
 
-    public static void remove_file_from_Azure(FileRecord file){
-        try{
 
-            int slash =  file.get_path().indexOf("/");
-            String container_name =  file.get_path().substring(0, slash);
-            String file_path =  file.get_path().substring(slash+1);
-
-            CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
-            CloudBlob blob = container.getBlockBlobReference(file_path);
-            blob.delete();
-
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
 
     public static Map<String, String> getMap_From_querry(Set<Map.Entry<String, String[]>> url){
         Map<String, String> map = new HashMap<>();
@@ -331,7 +279,7 @@ public class UtilTools extends Controller {
         }
 
 
-
+        // TODO - vložit do Defualt Objektů
         if( Screen_Size_Type.find.where().eq("name","iPhone6").findUnique() == null){
 
             Logger.warn("Creating screen size type for developers iPhone`s");
@@ -363,20 +311,4 @@ public class UtilTools extends Controller {
 
     }
 
-
-    public static String get_String_from_file(File file) {
-        try {
-            Scanner scanner = new Scanner(file);
-            String text = scanner.useDelimiter("\\A").next();
-            scanner.close();
-
-            if(! file.delete()) logger.warn("File wasn't removed from folder!");
-
-            return text;
-
-        }catch (Exception e){
-            logger.error("Get string from file exception!", e);
-            return null;
-        }
-    }
 }

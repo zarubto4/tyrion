@@ -1,7 +1,7 @@
 package utilities.webSocket;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import controllers.WebSocketController_Incoming;
+import controllers.WebSocketController;
 import utilities.swagger.outboundClass.Swagger_Instance_HW_Group;
 
 import java.util.ArrayList;
@@ -57,7 +57,7 @@ public class WS_Homer_Cloud extends WebSCType{
     @Override
     public void onClose() {
         this.close();
-        WebSocketController_Incoming.homer_is_disconnect(this);
+        WebSocketController.homer_instance_is_disconnect(this);
     }
 
     @Override
@@ -66,6 +66,6 @@ public class WS_Homer_Cloud extends WebSCType{
 
         json.put("version_id", version_id);
         json.remove("instanceId");
-        WebSocketController_Incoming.homer_incoming_message(this, json);
+        WebSocketController.homer_instance_incoming_message(this, json);
     }
 }

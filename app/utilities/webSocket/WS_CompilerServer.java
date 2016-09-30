@@ -3,7 +3,7 @@ package utilities.webSocket;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import controllers.WebSocketController_Incoming;
+import controllers.WebSocketController;
 import play.libs.Json;
 
 import java.util.HashMap;
@@ -27,7 +27,7 @@ public class WS_CompilerServer extends WebSCType{
     @Override
     public void onClose() {
         this.close();
-        WebSocketController_Incoming.compiler_server_is_disconnect(this);
+        WebSocketController.compiler_server_is_disconnect(this);
     }
 
     @Override
@@ -79,7 +79,7 @@ public class WS_CompilerServer extends WebSCType{
     public void onMessage(ObjectNode json) {
 
         logger.debug("Incoming not requested message: " + json.toString());
-        WebSocketController_Incoming.compilation_server_incoming_message(this, json);
+        WebSocketController.compilation_server_incoming_message(this, json);
 
     }
 

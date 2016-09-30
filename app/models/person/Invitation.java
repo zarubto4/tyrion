@@ -2,7 +2,6 @@ package models.person;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import models.project.global.Project;
@@ -21,7 +20,7 @@ public class Invitation extends Model{
     @JsonIgnore                        @ManyToOne public Person owner;
     @ApiModelProperty(required = true) @ManyToOne public Project project;
     @JsonIgnore @Constraints.Email                public String mail;
-    @JsonIgnore                                   public Date time_of_creation;
+    @JsonIgnore                                   public Date date_of_creation;
     @JsonIgnore                                   public String notification_id;
 
 /* JSON PROPERTY -------------------------------------------------------------------------------------------------------*/

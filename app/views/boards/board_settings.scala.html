@@ -16,8 +16,9 @@
 @*/*/*  TypeOfBoard ---------------------------------------------------------------------------------------------   */*/*@
 
 <section class="content">
+
   <div id="editTypeOfBoardModal" style="display: none;" class="modal">
-    <div style="margin-top: 15%;" class="modal-dialog">
+    <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h4 class="modal-title">Edit Type of Board</h4>
@@ -25,18 +26,12 @@
         <div class="modal-body">
           <form id="editTypeOfBoard")>
             <label id="typeOfBoardId" style="display: block">ID</label>
-            <label>Name</label>
-            <input style="display: block" type="text" name="name" >
-            <label>Target name</label>
-            <input style="display: block" type="text" name="compiler_target_name" >
-            <label>Description</label>
-            <input style="display: block" type="text" name="description" >
-            <label>Producer id</label>
-            <input style="display: block" type="text" name="producer_id" >
-            <label>Processor id</label>
-            <input style="display: block" type="text" name="processor_id" >
-            <label>Connectible to internet</label>
-            <input style="display: block" type="checkbox" name="connectible_to_internet" >
+            <label>Name</label><input style="display: block" type="text" name="name" >
+            <label>Target name</label><input style="display: block" type="text" name="compiler_target_name" >
+            <label>Description</label><input style="display: block" type="text" name="description" >
+            <label>Producer id</label><input style="display: block" type="text" name="producer_id" >
+            <label>Processor id</label><input style="display: block" type="text" name="processor_id" >
+            <label>Connectible to internet</label><input style="display: block" type="checkbox" name="connectible_to_internet" >
           </form>
         </div>
         <div class="modal-footer">
@@ -44,59 +39,60 @@
           <button id="editTypeOfBoardButton" value="" class="btn btn-primary" type="button" onclick="editTypeOfBoard(this.value)">Save changes</button>
         </div>
       </div>
-        <!-- /.modal-content -->
     </div>
-      <!-- /.modal-dialog -->
   </div>
+
+
+  <div id="createTypeOfBoardModal" style="display: none;" class="modal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">Update Blocko Program</h4>
+        </div>
+        <div class="modal-body">
+          <form id="newTypeOfBoardForm">
+            <label>Name</label>                         <input type="text" name="name"> <p>
+            <label>Target compilation name</label>      <input type="text" name="target_name"> <p>
+            <label>Description</label>  <p>             <textarea id="description" name="code" class="form-control" rows="3" placeholder="Description... "></textarea> <p>
+            <label>Producer Id </label>                 <input type="text" name="producer_id"> <p>
+            <label>Processor Id</label>                 <input type="text" name="processor_id"> <p>
+            <label>Connectible to internet</label>      <input type="checkbox" name="connectible_to_internet">
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#createTypeOfBoardModal').css('display','none')">Close</button>
+          <button id="uploadBlockoProgramButton" value="" class="btn btn-primary" type="button" onclick="newTypeOfBoard()">Create</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
   <div class="row">
     <div class="col-md-12">
       <div class="box">
         <div class="box-header with-border">
           <h3 class="box-title">Type Of Board</h3>
+          <div class="pull-right">
+            <div class="btn-group">
+              <td><button class="btn btn-block btn-info" type="button" onclick="showCreateTypeOfBoardModal()">Create New One</button></td>
+            </div><!-- /.btn-group -->
+          </div><!-- /.pull-right -->
         </div>
         <div class="box-body">
-
-          <label style="font-size: 13pt;">New Type of Board</label>
-          <form id="newTypeOfBoard")>
-            <div style="width: 16%; display: inline-block">
-              <label>Name</label>
-              <input type="text" name="name" >
-            </div>
-            <div style="width: 16%; display: inline-block">
-              <label>Target Name</label>
-              <input type="text" name="target_name" >
-            </div>
-            <div style="width: 16%; display: inline-block;">
-              <label>Description</label>
-              <input type="text" name="description" >
-            </div>
-            <div style="width: 16%; display: inline-block;">
-              <label>Producer id</label>
-              <input type="text" name="producer_id" >
-            </div>
-            <div style="width: 16%; display: inline-block;">
-              <label>Processor id</label>
-              <input type="text" name="processor_id" >
-            </div>
-            <div style="width: 16%; display: inline-block;">
-              <label>Connectible to internet</label>
-              <input type="checkbox" name="connectible_to_internet" >
-            </div>
-            <button style="width: 16%; display: inline-block;" class="btn btn-block btn-success" type="button" onclick="newTypeOfBoard()">New type of board</button>
-          </form>
-        </div>
-        <div class="box-body">
-          <label style="font-size: 13pt;">All Types of Boards</label>
+          <label>All Types of Boards</label>
           <table id="allTypesOfBoards" class="table table-bordered">
             <tr>
               <th>ID</th>
               <th>Name</th>
               <th>Target Name</th>
               <th>Description</th>
+              <th>Bootloader</th>
+              <th>Default firmware</th>
               <th>Producer</th>
               <th>Processor</th>
               <th>Connectible to Internet</th>
-              <th>Reg. new device perm.</th>
+              <th>Bootloader Settings</th>
               <th>EDIT</th>
               <th>DELETE</th>
             </tr>
@@ -106,11 +102,28 @@
                   <td>@typeOfBoard.name</td>
                   <td>@typeOfBoard.compiler_target_name</td>
                   <td>@typeOfBoard.description</td>
+
+                  <td>
+                  @if(typeOfBoard.main_boot_loader == null){
+                    <p class="lead text-red">(MAIN BOOTLOADER NOT SET!!!)</p>
+                  }else{
+                    <p class="lead text-green">(BOOTLOADER set)</p>
+                  }
+                  </td>
+
+                  <td>
+                  @if(typeOfBoard.default_program == null){
+                    <p class="lead text-red">(MAIN FIRMWARE NOT SET!!!)</p>
+                  }else{
+                    <p class="lead text-green">(FIRMWARE set)</p>
+                  }
+                  </td>
+
                   <td>@typeOfBoard.producer_id()</td>
                   <td>@typeOfBoard.processor_id()</td>
                   <td>@typeOfBoard.connectible_to_internet</td>
-                  <td>@typeOfBoard.register_new_device_permission()</td>
-                  <td><button class="btn btn-block btn-info" type="button" onclick="showEditForm('@typeOfBoard.id', '@typeOfBoard.name', '@typeOfBoard.compiler_target_name', '@typeOfBoard.description', '@typeOfBoard.producer_id()', '@typeOfBoard.processor_id()', '@typeOfBoard.connectible_to_internet')">Edit</button></td>
+                  <td><a href='@routes.DashboardController.bootloader_management(typeOfBoard.id)'><button class="btn btn-block btn-info"   type="button"> Settings </button></a></td>
+                  <td><button class="btn btn-block btn-info"   type="button" onclick="showEditForm('@typeOfBoard.id', '@typeOfBoard.name', '@typeOfBoard.compiler_target_name', '@typeOfBoard.description', '@typeOfBoard.producer_id()', '@typeOfBoard.processor_id()', '@typeOfBoard.connectible_to_internet')">Edit</button></td>
                   <td><button class="btn btn-block btn-danger" type="button" onclick="deleteTypeOfBoard(@typeOfBoard.id)">Delete</button></td>
                 </tr>
               }
@@ -118,62 +131,77 @@
         </div>
         <div class="box-footer">
         </div>
-
-
       </div>
     </div>
   </div>
 </section>
 
+
 @*/*/*  Procesor ---------------------------------------------------------------------------------------------   */*/*@
 
 <section class="content">
-  <div id="editProcessorModal" style="display: none;" class="modal">
-    <div style="margin-top: 15%;" class="modal-dialog">
-      <div class="modal-content">
 
+
+  <div id="editProcessorModal" style="display: none;" class="modal">
+    <div  class="modal-dialog">
+      <div class="modal-content">
         <div class="modal-header">
           <h4 class="modal-title">Edit Processor</h4>
         </div>
-
         <div class="modal-body">
           <form id="editProcessor")>
             <label id="processor_id" style="display: block">ID</label>
-            <label>Name</label><input style="display: block" type="text" name="processor_name" >
-            <label>Description</label><input style="display: block" type="text" name="description" >
-            <label>Processor code</label><input style="display: block" type="text" name="processor_code" >
-            <label>Speed</label><input style="display: block" type="text" name="speed" >
+            <label>Name</label>           <input style="display: block" type="text" name="processor_name">
+            <label>Description</label>    <input style="display: block" type="text" name="description">
+            <label>Processor code</label> <input style="display: block" type="text" name="processor_code">
+            <label>Speed</label>          <input style="display: block" type="text" name="speed">
           </form>
         </div>
-
         <div class="modal-footer">
           <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editProcessorModal').css('display','none')">Close</button>
           <button id="editProcessorButton" value="" class="btn btn-primary" type="button" onclick="editProcessor(this.value)">Save changes</button>
         </div>
       </div>
-        <!-- /.modal-content -->
     </div>
-      <!-- /.modal-dialog -->
   </div>
+
+
+  <div id="createProcessorModal" style="display: none;" class="modal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">Update Blocko Program</h4>
+        </div>
+        <div class="modal-body">
+          <form id="newProcessorForm">
+            <label>Name</label>        <input type="text" name="processor_name" ><p>
+            <label>Description</label>  <p>   <textarea id="description" name="description" class="form-control" rows="3" placeholder="Description... "></textarea> <p>
+            <label>Code</label>        <input type="text" name="processor_code" >
+            <label>Speed</label>       <input type="text" name="speed" >
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#createProcessorModal').css('display','none')">Close</button>
+          <button id="uploadBlockoProgramButton" value="" class="btn btn-primary" type="button" onclick="newProcessor()">Create</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
   <div class="row">
     <div class="col-md-12">
       <div class="box">
         <div class="box-header with-border">
           <h3 class="box-title">Processor</h3>
+          <div class="pull-right">
+            <div class="btn-group">
+              <td><button class="btn btn-block btn-info" type="button" onclick="showCreateProcessorModal()">Create New One</button></td>
+            </div><!-- /.btn-group -->
+          </div><!-- /.pull-right -->
         </div>
         <div class="box-body">
-                    <label style="font-size: 13pt;">New Processor</label>
-          <form id="newProcessor")>
-            <div style="width: 16%; display: inline-block"><label>Name</label>        <input type="text" name="processor_name" ></div>
-            <div style="width: 16%; display: inline-block;"><label>Description</label><input type="text" name="description" ></div>
-            <div style="width: 16%; display: inline-block;"><label>Code</label>       <input type="text" name="processor_code" ></div>
-            <div style="width: 16%; display: inline-block;"><label>Speed</label>      <input type="text" name="speed" ></div>
-
-            <button style="width: 16%; display: inline-block;" class="btn btn-block btn-success" type="button" onclick="newProcessor()">New processor</button>
-          </form>
-        </div>
-        <div class="box-body">
-          <label style="font-size: 13pt;">All Processors</label>
+          <label>All Processors</label>
           <table id="allProcessors" class="table table-bordered">
             <tr>
               <th>ID</th>
@@ -292,8 +320,12 @@
 
 @*/*/*  TypeOfBoard ---------------------------------------------------------------------------------------------   */*/*@
 
+        function showCreateTypeOfBoardModal(){
+          $("#createTypeOfBoardModal").css("display","block");
+        }
+
         function newTypeOfBoard(){
-          model_data = $("#newTypeOfBoard").serializeObject();
+          model_data = $("#newTypeOfBoardForm").serializeObject();
           $.ajax({
             url: '@routes.CompilationLibrariesController.new_TypeOfBoard()',
             type: 'POST',
@@ -305,7 +337,8 @@
             data: JSON.stringify(model_data),
             dataType: 'json',
             success:function(e){
-              $("#newTypeOfBoard input[type=text]").val("");
+              $('#createTypeOfBoardModal').css('display','none');
+              $("#newTypeOfBoardForm input[type=text]").val("");
               $('#allTypesOfBoards').load(document.URL +  ' #allTypesOfBoards');
             },
             error:function(e) {
@@ -366,26 +399,45 @@
 
  @*/*/*  Procesor ---------------------------------------------------------------------------------------------   */*/*@
 
+        function showCreateProcessorModal(){
+          $("#createProcessorModal").css("display","block");
+        }
+
         function newProcessor(){
-          model_data = $("#newProcessor").serializeObject();
+
+          model_data = $("#newProcessorForm").serializeObject();
+
           $.ajax({
             url: '@routes.CompilationLibrariesController.new_Processor()',
             type: 'POST',
             contentType: 'application/json',
             headers: {
-              "X-AUTH-TOKEN":getCookie("authToken"),
-              "Content-Type":"application/json"
+              "X-AUTH-TOKEN": getCookie("authToken"),
+              "Content-Type": "application/json"
             },
             data: JSON.stringify(model_data),
             dataType: 'json',
             success:function(e){
-              $("#newProcessor input[type=text]").val("");
+              $('#createProcessorModal').css('display','none');
+              $("#newProcessorForm input[type=text]").val("");
               $('#allProcessors').load(document.URL +  ' #allProcessors');
             },
-            error:function(e) {
-              alert("Unsuccessful. Check if all properties are correct");
+            error: function(data) {
+
+              BootstrapDialog.show({
+                message: syntaxHighlight(data),
+                type: BootstrapDialog.TYPE_DANGER,
+                buttons: [{
+                  label: 'Close',
+                  action: function(dialogItself) {
+                    dialogItself.close();
+                  }
+                }]
+
+              });
             }
-          })}
+          })
+        }
 
         function editProcessor(id){
           model_data = $("#editProcessor").serializeObject();

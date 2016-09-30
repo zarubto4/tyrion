@@ -1,7 +1,7 @@
 package utilities.webSocket;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import controllers.WebSocketController_Incoming;
+import controllers.WebSocketController;
 import models.person.Person;
 import play.mvc.WebSocket;
 
@@ -27,7 +27,7 @@ public class WS_Becki_Website extends  WebSCType {
     public void onClose() {
         System.out.println("Local_Terminal onClose " + super.identifikator);
         this.close();
-        WebSocketController_Incoming.becki_disconnect(this);
+        WebSocketController.becki_disconnect(this);
     }
 
     public void person_connection_onClose(WS_Becki_Single_Connection becki){
@@ -41,11 +41,11 @@ public class WS_Becki_Website extends  WebSCType {
             System.out.println("Už žádné připojení uživatele id=" + super.identifikator );
             System.out.println("Odmazávám z centrální mapy" );
             // smažu z mapy připojení
-            WebSocketController_Incoming.becki_website.remove(super.identifikator);
+            WebSocketController.becki_website.remove(super.identifikator);
 
             // a informuji odběratele o tom že je nikdo neodebírá
             for(WebSCType homer : super.subscribers_becki){
-                WebSocketController_Incoming.homer_unsubscribe_blocko_instance( (WS_Homer_Cloud) homer);
+                WebSocketController.homer_instance_unsubscribe_blocko_instance( (WS_Homer_Cloud) homer);
             }
 
             this.onClose();
@@ -76,7 +76,7 @@ public class WS_Becki_Website extends  WebSCType {
 
     @Override
     public void onMessage(ObjectNode json) {
-         WebSocketController_Incoming.becki_incoming_message(this, json);
+         WebSocketController.becki_incoming_message(this, json);
     }
 }
 

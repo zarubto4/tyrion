@@ -40,27 +40,41 @@ public class Version_Object extends Model {
 
                                      @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST)     public LibraryGroup library_group;
                                      @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST)     public SingleLibrary single_library;
-                                     @JsonIgnore  @ManyToOne(cascade = CascadeType.ALL)         public C_Program      c_program;
+
+
+    // C_Programs --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                                         @JsonIgnore  @ManyToOne(cascade = CascadeType.ALL)     public C_Program      c_program;
                @JsonIgnore  @OneToOne(mappedBy="version_object", cascade = CascadeType.ALL)     public C_Compilation  c_compilation;
                                                                                 @JsonIgnore     public boolean compilation_in_progress; // Používáme jako flag pro mezičas kdy se verze kompiluje a uživatel vyvolá get Version
                                                                                 @JsonIgnore     public boolean compilable;
                                 @JsonIgnore @OneToMany(mappedBy="actual_c_program_version")     public List<Board>  c_program_version_boards  = new ArrayList<>(); // Používám pro zachycení, která verze C_programu na desce běží
     @JsonIgnore @OneToMany(mappedBy="c_program_version_for_update",cascade=CascadeType.ALL)     public List<C_Program_Update_Plan> c_program_update_plans = new ArrayList<>();
 
-                                       @JsonIgnore @ManyToOne(cascade = CascadeType.PERSIST)    public B_Program      b_program;
-           @JsonIgnore   @OneToOne(mappedBy="version_object", cascade = CascadeType.PERSIST)    public Homer_Instance homer_instance;
+    @JsonIgnore @OneToOne(mappedBy="default_main_version")                                                     public C_Program default_version_program;    // Použito pro defaulntí program vázaný na TypeOfBoard hlavní verze určená k aktivitám - typu hardwaru a taktéž firmware, který se nahrává na devices
+    @JsonIgnore @OneToMany(mappedBy="first_default_version_object",fetch = FetchType.LAZY) @OrderBy("id DESC") public List<C_Program> first_version_of_c_programs = new ArrayList<>(); // Vazba na prnví verzi uživateli vytvořenými C_Programi - tak aby nebylo první verzi nutné kopírovat
 
 
-    @JsonIgnore  @OneToMany(mappedBy="c_program_version", cascade=CascadeType.ALL)  public List<B_Pair> b_pairs_c_program = new ArrayList<>(); // Určeno pro aktualizaci
+
+    // B_Programs --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST)                          public B_Program      b_program;
+
+    @JsonIgnore  @OneToMany(mappedBy="c_program_version", cascade=CascadeType.ALL)  public List<B_Pair>   b_pairs_c_program = new ArrayList<>(); // Určeno pro aktualizaci
+
+    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)    public List<B_Program_Hw_Group> b_program_hw_groups = new ArrayList<>();
+
+    @JsonIgnore  @OneToOne(mappedBy="version_object", cascade = CascadeType.PERSIST)public Homer_Instance homer_instance;
 
 
-    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)  public List<B_Program_Hw_Group> b_program_hw_groups = new ArrayList<>();
-
-    // M_Project -------------------------
+    // M_Project --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     @JsonIgnore  @OneToOne(mappedBy="b_program_version", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)   public M_Project m_project;
 
-    // Actual Procedure -------------------------
+
+
+    // Actual Procedure --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     @JsonIgnore @OneToMany(mappedBy="b_program_version_procedure", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Actualization_procedure>  actualization_procedures  = new ArrayList<>();
+
+
+
 
 
 /* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/
@@ -101,7 +115,7 @@ public class Version_Object extends Model {
     // Oprávnění volejte na objektu kterého se to týká např.  version.b_program.read_permission()...
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Finder<String, Version_Object> find = new Finder<>(Version_Object.class);
+    public static Model.Finder<String, Version_Object> find = new Finder<>(Version_Object.class);
 
 
 }

@@ -159,10 +159,8 @@ public class SendMessage{
 
                 throw new TimeoutException();
             }catch (CancellationException e){
-                logger.debug("CancellationException");
                 throw e;
             }catch (InterruptedException e){
-                logger.debug("InterruptedException");
                 throw e;
             } catch (Exception e) {
                 e.printStackTrace();

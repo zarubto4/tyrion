@@ -2,7 +2,7 @@ package models.project.b_program;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import controllers.WebSocketController_Incoming;
+import controllers.WebSocketController;
 import io.swagger.annotations.ApiModelProperty;
 import models.compiler.Board;
 import models.compiler.Version_Object;
@@ -55,7 +55,7 @@ public class Homer_Instance extends Model {
         if(cloud_homer_server.server_is_online()){
             try {
 
-                WebSocketController_Incoming.blocko_server_remove_instance( cloud_homer_server.get_server_webSocket_connection() ,blocko_instance_name);
+                WebSocketController.homer_server_remove_instance( cloud_homer_server.get_server_webSocket_connection() ,blocko_instance_name);
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -66,12 +66,12 @@ public class Homer_Instance extends Model {
 
     @JsonIgnore @Transient
     public boolean is_online(){
-       return cloud_homer_server.server_is_online() && WebSocketController_Incoming.homer_online_state(blocko_instance_name);
+       return cloud_homer_server.server_is_online() && WebSocketController.homer__instance_online_state(blocko_instance_name);
     }
 
     @JsonIgnore @Transient
     public WebSCType get_instance(){
-        return WebSocketController_Incoming.incomingConnections_homers.get(blocko_instance_name);
+        return WebSocketController.incomingConnections_homers.get(blocko_instance_name);
     }
 
 

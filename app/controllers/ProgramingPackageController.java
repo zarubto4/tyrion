@@ -34,7 +34,7 @@ import utilities.Server;
 import utilities.UtilTools;
 import utilities.emails.EmailTool;
 import utilities.enums.Approval_state;
-import utilities.enums.TypeOfCommand;
+import utilities.enums.Type_of_command;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_API;
 import utilities.loginEntities.Secured_Admin;
@@ -47,6 +47,7 @@ import utilities.swagger.outboundClass.Filter_List.Swagger_Homer_List;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Type_Of_Block_List;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 import utilities.webSocket.WS_BlockoServer;
+import utilities.webSocket.WS_Homer_Cloud;
 import utilities.webSocket.WebSCType;
 
 import javax.inject.Inject;
@@ -381,7 +382,7 @@ public class ProgramingPackageController extends Controller {
                 if(invitation == null){
                     invitation = new Invitation();
                     invitation.mail = mail;
-                    invitation.time_of_creation = new Date();
+                    invitation.date_of_creation = new Date();
                     invitation.owner = SecurityController.getPerson();
                     invitation.project = project;
                     invitation.save();
@@ -421,7 +422,7 @@ public class ProgramingPackageController extends Controller {
                 if(invitation == null){
                     invitation = new Invitation();
                     invitation.mail = person.mail;
-                    invitation.time_of_creation = new Date();
+                    invitation.date_of_creation = new Date();
                     invitation.owner = SecurityController.getPerson();
                     invitation.project = project;
                     invitation.save();
@@ -1317,11 +1318,11 @@ public class ProgramingPackageController extends Controller {
 
 
             for(Homer_Instance blockoInstnace : blockoInstnaces){
-               if(  WebSocketController_Incoming.blocko_servers.containsKey(blockoInstnace.cloud_homer_server.server_name)){
+               if(  WebSocketController.blocko_servers.containsKey(blockoInstnace.cloud_homer_server.server_name)){
 
-                   WS_BlockoServer server = (WS_BlockoServer)  WebSocketController_Incoming.blocko_servers.get(blockoInstnace.cloud_homer_server.server_name);
-                   WebSocketController_Incoming.blocko_server_remove_instance( server, blockoInstnace.blocko_instance_name);
-                   if(WebSocketController_Incoming.incomingConnections_homers.containsKey( blockoInstnace.blocko_instance_name ))   WebSocketController_Incoming.incomingConnections_homers.get(blockoInstnace.blocko_instance_name).onClose();
+                   WS_BlockoServer server = (WS_BlockoServer)  WebSocketController.blocko_servers.get(blockoInstnace.cloud_homer_server.server_name);
+                   WebSocketController.homer_server_remove_instance( server, blockoInstnace.blocko_instance_name);
+                   if(WebSocketController.incomingConnections_homers.containsKey( blockoInstnace.blocko_instance_name ))   WebSocketController.incomingConnections_homers.get(blockoInstnace.blocko_instance_name).onClose();
                }
             }
 
@@ -1378,13 +1379,13 @@ public class ProgramingPackageController extends Controller {
 
                 Cloud_Homer_Server server_cloud = Cloud_Homer_Server.find.where().eq("cloud_programs.id", version_object.homer_instance.id).findUnique();
 
-                if (WebSocketController_Incoming.blocko_servers.containsKey(server_cloud.server_name)) {
+                if (WebSocketController.blocko_servers.containsKey(server_cloud.server_name)) {
 
-                    WS_BlockoServer server = (WS_BlockoServer) WebSocketController_Incoming.blocko_servers.get(blockoInstnace.cloud_homer_server.server_name);
-                    WebSocketController_Incoming.blocko_server_remove_instance(server, blockoInstnace.blocko_instance_name);
+                    WS_BlockoServer server = (WS_BlockoServer) WebSocketController.blocko_servers.get(blockoInstnace.cloud_homer_server.server_name);
+                    WebSocketController.homer_server_remove_instance(server, blockoInstnace.blocko_instance_name);
 
-                    if (WebSocketController_Incoming.incomingConnections_homers.containsKey(blockoInstnace.blocko_instance_name))
-                        WebSocketController_Incoming.incomingConnections_homers.get(blockoInstnace.blocko_instance_name).onClose();
+                    if (WebSocketController.incomingConnections_homers.containsKey(blockoInstnace.blocko_instance_name))
+                        WebSocketController.incomingConnections_homers.get(blockoInstnace.blocko_instance_name).onClose();
                 }
             }
 
@@ -1456,8 +1457,6 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-
-
     @ApiOperation(value = "upload B_Program (version) to Homer",
             tags = {"B_Program", "Homer"},
             notes = "If you want upload program (!Immediately!) to Homer -> Homer must be online and connect to Cloud Server, " +
@@ -1505,7 +1504,7 @@ public class ProgramingPackageController extends Controller {
             if (private_homer_server == null)  return GlobalResult.notFoundObject("Homer id not found");
 
 
-            if(! WebSocketController_Incoming.homer_online_state(homer_id)) return GlobalResult.result_BadRequest("Device is not online");
+            if(! WebSocketController.homer__instance_online_state(homer_id)) return GlobalResult.result_BadRequest("Device is not online");
 
 
             Thread thread = new Thread(){ @Override public void run() {
@@ -1532,12 +1531,12 @@ public class ProgramingPackageController extends Controller {
 
 
 
-                    if(!  WebSocketController_Incoming.homer_online_state(private_homer_server.b_program_homer.blocko_instance_name) ) {
+                    if(!  WebSocketController.homer__instance_online_state(private_homer_server.b_program_homer.blocko_instance_name) ) {
                        NotificationController.upload_Instance_was_unsuccessfull( SecurityController.getPerson() , program_homer , "Main component is offline!");
                        this.interrupt();
                    }
 
-                    JsonNode result = WebSocketController_Incoming.homer_upload_program(WebSocketController_Incoming.incomingConnections_homers.get(private_homer_server.id), version_object.id, version_object.files.get(0).get_fileRecord_from_Azure_inString());
+                    JsonNode result = WebSocketController.homer_instance_upload_blocko_program(WebSocketController.incomingConnections_homers.get(private_homer_server.id), version_object.id, version_object.files.get(0).get_fileRecord_from_Azure_inString());
 
                     if(result.get("status").asText().equals("success")){
                        NotificationController.upload_Instance_was_successful( SecurityController.getPerson() , program_homer);
@@ -1663,7 +1662,7 @@ public class ProgramingPackageController extends Controller {
 
 
 
-            if(! WebSocketController_Incoming.blocko_servers.containsKey( destination_server.server_name) ) {
+            if(! WebSocketController.blocko_servers.containsKey( destination_server.server_name) ) {
 
                 NotificationController.upload_Instance_was_unsuccessfull(SecurityController.getPerson(), program_cloud, "Server is offline now. It will be uploaded as soon as possible");
                 return GlobalResult.result_ok();
@@ -1672,8 +1671,8 @@ public class ProgramingPackageController extends Controller {
             try {
 
                 // Vytvářím instanci na serveru
-                WS_BlockoServer server = (WS_BlockoServer) WebSocketController_Incoming.blocko_servers.get(destination_server.server_name);
-                WebSCType homer = WebSocketController_Incoming.blocko_server_add_instance(server, program_cloud, true);
+                WS_BlockoServer server = (WS_BlockoServer) WebSocketController.blocko_servers.get(destination_server.server_name);
+                WebSCType homer = WebSocketController.homer_server_add_instance(server, program_cloud, true);
                 ActualizationController.add_new_actualization_request_Checking_HW_Firmware(b_program.project, program_cloud);
                 return GlobalResult.result_ok();
 
@@ -1715,7 +1714,7 @@ public class ProgramingPackageController extends Controller {
             homer_instance.update();
 
             // Updajtuju sice kod ? Ale nikoliv HW?
-            JsonNode result = WebSocketController_Incoming.homer_upload_program(homer_instance.get_instance(), version_object.id, fileRecord.get_fileRecord_from_Azure_inString() );
+            JsonNode result = WebSocketController.homer_instance_upload_blocko_program(homer_instance.get_instance(), version_object.id, fileRecord.get_fileRecord_from_Azure_inString() );
 
             // TODO - Update HW???
 
@@ -1734,6 +1733,7 @@ public class ProgramingPackageController extends Controller {
     @ApiOperation(value = "upload B Program (code) to instnace ",
             hidden = true
     )
+    //TODO
     public Result update_blocko_code_in_instance_with_code(String instance_name){
         try{
 
@@ -1751,12 +1751,64 @@ public class ProgramingPackageController extends Controller {
 
             if(!homer_instance.is_online()) return GlobalResult.notFoundObject("Homer_Instance is not online");
 
-            JsonNode result = WebSocketController_Incoming.homer_upload_program(homer_instance.get_instance(), "fake_program", help.code );
+            JsonNode result = WebSocketController.homer_instance_upload_blocko_program(homer_instance.get_instance(), "fake_program", help.code );
 
             if(result.has("status") && result.get("status").asText().equals("success")){
                 // Vrácení potvrzení
                 return GlobalResult.result_ok();
             }else {
+                return GlobalResult.result_BadRequest(result);
+            }
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+
+    // TODO
+    public Result ping_instance(String instance_name){
+        try{
+            // Kontrola objektu
+            Homer_Instance homer_instance = Homer_Instance.find.where().eq("blocko_instance_name",instance_name).findUnique();
+            if (homer_instance == null) return GlobalResult.notFoundObject("Homer_Instance id not found");
+
+            if(!homer_instance.is_online()) return GlobalResult.notFoundObject("Homer_Instance on Tyrion is not online");
+
+
+            JsonNode result = WebSocketController.homer_instance_ping_instance(homer_instance.get_instance());
+
+            if(result.has("status") && result.get("status").asText().equals("success")){
+                // Vrácení potvrzení
+                return GlobalResult.result_ok();
+            }else {
+                return GlobalResult.result_BadRequest(result);
+            }
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    // TODO
+    public Result instance_shut_down(String instance_name){
+        try{
+            // Kontrola objektu
+            Homer_Instance homer_instance = Homer_Instance.find.where().eq("blocko_instance_name",instance_name).findUnique();
+            if (homer_instance == null) return GlobalResult.notFoundObject("Homer_Instance id not found");
+
+            if(!homer_instance.is_online()) return GlobalResult.notFoundObject("Homer_Instance on Tyrion is not online");
+
+            WS_Homer_Cloud homer_cloud = (WS_Homer_Cloud) homer_instance.get_instance();
+
+            JsonNode result = WebSocketController.homer_server_remove_instance(homer_cloud.blockoServer, instance_name);
+
+            if(result.has("status") && result.get("status").asText().equals("success")){
+
+                homer_instance.delete();
+                return GlobalResult.result_ok();
+
+            }else {
+
+                homer_instance.delete();
                 return GlobalResult.result_BadRequest(result);
             }
         } catch (Exception e) {
@@ -1806,7 +1858,7 @@ public class ProgramingPackageController extends Controller {
             version_object.update();
 
             // Updajtuju sice kod ? Ale nikoliv HW?
-            JsonNode result = WebSocketController_Incoming.homer_add_Yoda_to_instance(homer_instance.get_instance(), yoda_device_id);
+            JsonNode result = WebSocketController.homer_instance_add_Yoda_to_instance(homer_instance.get_instance(), yoda_device_id);
 
             if(result.has("state") && result.get("state").asText().equals("success")){
                 // Vrácení potvrzení
@@ -1848,7 +1900,7 @@ public class ProgramingPackageController extends Controller {
             yoda_pair.main_board_pair.delete();
 
             // Updajtuju sice kod ? Ale nikoliv HW?
-            JsonNode result = WebSocketController_Incoming.homer_remove_Yoda_from_instance(homer_instance.get_instance(), yoda_device_id);
+            JsonNode result = WebSocketController.homer_instance_remove_Yoda_from_instance(homer_instance.get_instance(), yoda_device_id);
 
             if(result.has("state") && result.get("state").asText().equals("success")){
                 // Vrácení potvrzení
@@ -1902,7 +1954,7 @@ public class ProgramingPackageController extends Controller {
             group.update();
 
             // Updajtuju sice kod ? Ale nikoliv HW?
-            JsonNode result = WebSocketController_Incoming.homer_add_Device_to_instance(homer_instance.get_instance(), yoda_device_id, device_id);
+            JsonNode result = WebSocketController.homer_instance_add_Device_to_instance(homer_instance.get_instance(), yoda_device_id, device_id);
 
             if(result.has("state") && result.get("state").asText().equals("success")){
                 // Vrácení potvrzení
@@ -1950,7 +2002,7 @@ public class ProgramingPackageController extends Controller {
             device_pair.delete();
 
             // Updajtuju sice kod ? Ale nikoliv HW?
-            JsonNode result = WebSocketController_Incoming.homer_remove_Device_from_instance(homer_instance.get_instance(), yoda_device_id, device_id);
+            JsonNode result = WebSocketController.homer_instance_remove_Device_from_instance(homer_instance.get_instance(), yoda_device_id, device_id);
 
             if(result.has("state") && result.get("state").asText().equals("success")){
                 // Vrácení potvrzení
@@ -1964,7 +2016,7 @@ public class ProgramingPackageController extends Controller {
     }
 
     @ApiOperation(value = "send command to instance",
-    // SLouží k zasílání blocko programu bez jakkýchkoliv vazeb na objekty do Homera do instnace - není databázováno.
+    // SLouží k zasílání příkazů (různých) z jakkýchkoliv vazeb na objekty do Homera nebo instance
             hidden = true
     )
     public Result send_command_to_instnace(String instance_name, String target_id, String string_command){
@@ -1980,14 +2032,17 @@ public class ProgramingPackageController extends Controller {
             Board board = Board.find.byId(target_id);
             if (board == null) return GlobalResult.notFoundObject("Board targetId not found");
 
-
-            TypeOfCommand command = TypeOfCommand.getTypeCommand(string_command);
+            Type_of_command command = Type_of_command.getTypeCommand(string_command);
             if(command == null) return GlobalResult.notFoundObject("Command not found!");
+
+
+            // Seznam povolených
+
 
             if(!homer_instance.is_online()) return GlobalResult.result_BadRequest("Instance is offline");
 
             // Updajtuju sice kod ? Ale nikoliv HW?
-            JsonNode result = WebSocketController_Incoming.homer_devices_commands( homer_instance.get_instance(), target_id, command);
+            JsonNode result = WebSocketController.homer_instance_devices_commands( homer_instance.get_instance(), target_id, command);
 
             if(result.has("state") && result.get("state").asText().equals("success")){
                 // Vrácení potvrzení

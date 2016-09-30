@@ -67,8 +67,9 @@ public class Finance_Controller extends Controller {
     public Result get_poducts_tariffs(){
         try{
 
-            if(swagger_tariff != null ) return GlobalResult.result_ok(Json.toJson(swagger_tariff));
-            else  swagger_tariff = new Swagger_Tariff();
+           // if(swagger_tariff != null ) return GlobalResult.result_ok(Json.toJson(swagger_tariff));
+           // else
+            swagger_tariff = new Swagger_Tariff();
 
             // Vytvořím seznam tarifu
             List<String> product_tariffs = Configuration.root().getStringList("Byzance.tariff.tariffs");
@@ -83,6 +84,7 @@ public class Finance_Controller extends Controller {
 
                    tariff.identificator = tariff_name;
                    tariff.tariff_name = Configuration.root().getString("Byzance.tariff." + tariff_name + ".name");
+                   tariff.color         =  Configuration.root().getString("Byzance.tariff." + tariff_name + ".color");
 
                    tariff.company_details_required = Configuration.root().getBoolean("Byzance.tariff." + tariff_name + ".company_details_required");
                    tariff.required_payment_mode    = Configuration.root().getBoolean("Byzance.tariff." + tariff_name + ".required_payment_mode");

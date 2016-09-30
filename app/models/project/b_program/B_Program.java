@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers.SecurityController;
-import controllers.WebSocketController_Incoming;
+import controllers.WebSocketController;
 import io.swagger.annotations.ApiModelProperty;
 import models.compiler.Board;
 import models.compiler.FileRecord;
@@ -89,12 +89,12 @@ public class B_Program extends Model {
 
         if( version_object.homer_instance.cloud_homer_server != null ) {
             state.where = "cloud";
-            state.set_Cloud_State(version_object.homer_instance, version_object.homer_instance.cloud_homer_server, WebSocketController_Incoming.incomingConnections_homers.containsKey( version_object.homer_instance.blocko_instance_name )  );
+            state.set_Cloud_State(version_object.homer_instance, version_object.homer_instance.cloud_homer_server, WebSocketController.incomingConnections_homers.containsKey( version_object.homer_instance.blocko_instance_name )  );
 
-            if(WebSocketController_Incoming.incomingConnections_homers.containsKey( version_object.homer_instance.blocko_instance_name ) ){
-                WS_Homer_Cloud homer = (WS_Homer_Cloud) WebSocketController_Incoming.incomingConnections_homers.get( version_object.homer_instance.blocko_instance_name );
+            if(WebSocketController.incomingConnections_homers.containsKey( version_object.homer_instance.blocko_instance_name ) ){
+                WS_Homer_Cloud homer = (WS_Homer_Cloud) WebSocketController.incomingConnections_homers.get( version_object.homer_instance.blocko_instance_name );
                 try {
-                    JsonNode result = WebSocketController_Incoming.homer_get_device_list(homer);
+                    JsonNode result = WebSocketController.homer_instance_get_device_list(homer);
 
                     Form<Swagger_Homer_DeviceList_Result> form = Form.form(Swagger_Homer_DeviceList_Result.class).bind(result);
                     Swagger_Homer_DeviceList_Result help = form.get();
@@ -114,7 +114,7 @@ public class B_Program extends Model {
         }
         else {
             state.where = "homer";
-            state.set_Local_State(version_object.homer_instance, version_object.homer_instance.private_server, WebSocketController_Incoming.incomingConnections_homers.containsKey( version_object.homer_instance.blocko_instance_name ) );
+            state.set_Local_State(version_object.homer_instance, version_object.homer_instance.private_server, WebSocketController.incomingConnections_homers.containsKey( version_object.homer_instance.blocko_instance_name ) );
             // Tady doplnit dotaz na HW který tam běží
             System.out.println("------------------------NApiču dopiš co je u cloudu");
 

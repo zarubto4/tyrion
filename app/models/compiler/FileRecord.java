@@ -4,17 +4,19 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microsoft.azure.storage.blob.CloudBlob;
+import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import io.swagger.annotations.ApiModelProperty;
 import models.person.Person;
 import models.project.c_program.C_Compilation;
 import models.project.c_program.actualization.C_Program_Update_Plan;
-import utilities.UtilTools;
+import utilities.Server;
 
 import javax.persistence.*;
-import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-
 
 @Entity
 public class FileRecord extends Model {
@@ -30,32 +32,56 @@ public class FileRecord extends Model {
     @ApiModelProperty(required = true)                          public String file_name;
                                                  @JsonIgnore    public String file_path;
 
-                                    @JsonIgnore @OneToOne()     public Person person;
+                                    @JsonIgnore @OneToOne()     public Person person;   // personal_picture
+                                    @JsonIgnore @OneToOne()     public BootLoader boot_loader;
                                    @JsonIgnore @ManyToOne()     public Version_Object version_object;
              @JsonIgnore @OneToMany(mappedBy="binary_file")     public List<C_Program_Update_Plan> c_program_update_plen  = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="bin_compilation_file")     public List<C_Compilation> c_compilations_binary_files  = new ArrayList<>();
+    @JsonIgnore @OneToOne(mappedBy="bin_compilation_file")      public C_Compilation c_compilations_binary_file;
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    // Určeno pro načítání souborů z Azure pro Tyriona
-    // Trochu nedomyšleno, že u File Record nevím, jaký je mateřský objekt - ale vím, že má vždy jen jeden
-    // záznam - to znamená, že file_record je vázán pouze bud k b programu, nebo jen k c programu atd...
-    @JsonIgnore @Transient public File get_fileRecord_from_Azure_inFile() throws Exception{
-
-        return UtilTools.file_get_File_from_Azure(file_path);
-
+    @JsonIgnore @Transient
+    public String get_path() {
+        return  file_path;
     }
 
-    //product/product/3b7c6115-a314-4e01-8af4-224a509fc058/projects/116d57b6-e728-4e0f-b9b1-3b8ce05b6c8a/c-programs/fcc19406-38bc-4f75-b338-559f2c1d87a6/versions/bfabb0af-0521-42d0-be47-76466f514fff/code.json
-    //        product/3b7c6115-a314-4e01-8af4-224a509fc058/projects/116d57b6-e728-4e0f-b9b1-3b8ce05b6c8a/c-programs/fcc19406-38bc-4f75-b338-559f2c1d87a6/versions/bfabb0af-0521-42d0-be47-76466f514fff/code.json
     @JsonIgnore @Transient  public String get_fileRecord_from_Azure_inString(){
         try {
-            logger.debug("FileRecord: get_fileRecord_from_Azure_inString");
-            File file = this.get_fileRecord_from_Azure_inFile();
-            return UtilTools.get_String_from_file(file);
 
+            logger.debug("FileRecord: get_fileRecord_from_Azure_inString");
+
+            int slash = file_path.indexOf("/");
+            String container_name = file_path.substring(0,slash);
+            String real_file_path = file_path.substring(slash+1);
+
+            logger.debug("Azure load path: " + file_path );
+            logger.debug("Azure Container: " + container_name);
+            logger.debug("Real File  Path: " + real_file_path);
+
+            CloudBlobContainer container = Server.blobClient.getContainerReference(container_name );
+
+            CloudBlob blob = container.getBlockBlobReference(real_file_path );
+
+
+            InputStream input =  blob.openInputStream();
+            InputStreamReader inr = new InputStreamReader(input, "UTF-8");
+            String utf8str = org.apache.commons.io.IOUtils.toString(inr);
+
+            return utf8str;
+
+        }catch (Exception e){
+            logger.error("Get File from Azure in string ", e);
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @JsonIgnore @Transient public JsonNode get_file_As_Json(){
+        try {
+
+            return  new ObjectMapper().readTree(this.get_fileRecord_from_Azure_inString());
 
         }catch (Exception e){
             logger.error("Error when parsing Json File to Json Node", e);
@@ -63,26 +89,30 @@ public class FileRecord extends Model {
         }
     }
 
-    @JsonIgnore @Transient public JsonNode get_file_As_Json(){
-          try {
-
-              File file = this.get_fileRecord_from_Azure_inFile();
-              String string =  UtilTools.get_String_from_file(file);
-              return  new ObjectMapper().readTree(string);
-
-          }catch (Exception e){
-             logger.error("Error when parsing Json File to Json Node", e);
-             return null;
-          }
-    }
-
-
-
-
     @JsonIgnore @Transient
-    public String get_path() {
-        return  file_path;
+    public void remove_file_from_Azure(){
+        try{
+
+            int slash =  this.get_path().indexOf("/");
+            String container_name =  this.get_path().substring(0, slash);
+            String file_path =  this.get_path().substring(slash+1);
+
+            CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
+            CloudBlob blob = container.getBlockBlobReference(file_path);
+            blob.delete();
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
+
+    @Override
+    public void delete(){
+        this.remove_file_from_Azure();
+        super.delete();
+    }
+
+
 
 
 

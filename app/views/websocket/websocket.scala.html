@@ -1,11 +1,12 @@
 @import java.util.List
 @import models.person.Person
-
+@import utilities.enums.{Firmware_type, Type_of_command}
 @import utilities.webSocket.{WS_Grid_Terminal, WebSCType, WS_BlockoServer, WS_CompilerServer, WS_Becki_Website}
 @import controllers.DashboardController
 @import controllers.WikyController
+@import utilities.Server
+@import utilities.webSocket.{WS_Homer_Cloud, WebSCType}
 @(homers: List[WebSCType], grids: List[WS_Grid_Terminal], becki_Terminal: List[WS_Becki_Website], cloud_blocko_server: List[WS_BlockoServer], compilation_server: List[WS_CompilerServer])
-
 
 <section class="content-header">
     <h1> Websocket <small> connections </small> </h1>
@@ -14,68 +15,275 @@
         <li class="active">Dashboard</li>
     </ol>
 </section>
+
+<script type="text/javascript" src="@routes.DashboardController.javascriptRoutes"></script>
 <script>
         $.ajaxSetup({ cache: false });
-        function ping_homer(data){
+
+        function test_test(instance_id){
+
+            jsRoutes.controllers.ProgramingPackageController.ping_instance(instance_id).ajax({
+
+                headers: {"X-AUTH-TOKEN":getCookie("authToken")},
+
+                success : function(data, status) {
+                    console.log(data);
+                    console.log(status);
+                    BootstrapDialog.show({
+                        message:  syntaxHighlight(data),
+
+                        buttons: [{
+                            label: 'Close',
+                            action: function(dialogItself){
+                                dialogItself.close();
+                            }
+                        }]
+
+                    });}
+                error:function(e) {
+                    BootstrapDialog.show({
+                        message:  syntaxHighlight(data),
+                        type: BootstrapDialog.TYPE_DANGER,
+                        buttons: [{
+                            label: 'Close',
+                            action: function(dialogItself){
+                                dialogItself.close();
+                            }
+                        }]
+                    });
+                }
+            });
+
+        }
+
+        function ping_instance(instance_id){
+
             $.ajax({
-                url: '/public/homer/ping/' + data,
+                url: '/sdfdfasdf/sadfsdf/sdafsdf',
+                data : {
+                    instance_id: instance_id
+                },
                 type: 'GET',
-                success:function(e){
+
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken"),
+                },
+
+                success:function(data, status){
+                    console.log(data);
+                    console.log(status);
+                    BootstrapDialog.show({
+                        message:  syntaxHighlight(data),
+
+                        buttons: [{
+                            label: 'Close',
+                            action: function(dialogItself){
+                                dialogItself.close();
+                            }
+                        }]
+
+                    });
                 },
                 error:function(e) {
-                    alert("Unsuccessful.");
+                    BootstrapDialog.show({
+                        message:  syntaxHighlight(data),
+                        type: BootstrapDialog.TYPE_DANGER,
+                        buttons: [{
+                            label: 'Close',
+                            action: function(dialogItself){
+                                dialogItself.close();
+                            }
+                        }]
+                    });
                 }
             })}
-        function disconnect_homer(data){
+
+        function disconnect_instance(instance_id){
             $.ajax({
-                url: '/public/homer/disconnect/' + data,
+                url: '/project/b_program/instance/shut_down/' + instance_id,
                 type: 'GET',
+
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken"),
+                },
+
                 success:function(e){
+                    BootstrapDialog.show({
+                        message:  syntaxHighlight(data),
+
+                        buttons: [{
+                            label: 'Close',
+                            action: function(dialogItself){
+                                dialogItself.close();
+                            }
+                        }]
+
+                    });
                     $('#homer').load(document.URL +  ' #homer');
                 },
                 error:function(e) {
-                    alert("Unsuccessful.");
+                    BootstrapDialog.show({
+                        message:  syntaxHighlight(data),
+                        type: BootstrapDialog.TYPE_DANGER,
+                        buttons: [{
+                            label: 'Close',
+                            action: function(dialogItself){
+                                dialogItself.close();
+                            }
+                        }]
+
+                    });
                 }
             })}
+
         function ping_terminal(data){
             $.ajax({
                 url: '/public/homer/get_status/' + data,
                 type: 'GET',
+
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken"),
+                },
+
                 success:function(e){
+                    BootstrapDialog.show({
+                        message:  syntaxHighlight(data),
+
+                        buttons: [{
+                            label: 'Close',
+                            action: function(dialogItself){
+                                dialogItself.close();
+                            }
+                        }]
+
+                    });
+                    $('#homer').load(document.URL +  ' #homer');
                 },
                 error:function(e) {
-                    alert("Unsuccessful.");
+                    BootstrapDialog.show({
+                        message:  syntaxHighlight(data),
+                        type: BootstrapDialog.TYPE_DANGER,
+                        buttons: [{
+                            label: 'Close',
+                            action: function(dialogItself){
+                                dialogItself.close();
+                            }
+                        }]
+
+                    });
                 }
             })}
+
+
         function log_out_Terminal_User(data){
             $.ajax({
                 url: '/public/terminal/log_out/' + data,
                 type: 'GET',
+
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken"),
+                },
+
                 success:function(e){
+                    BootstrapDialog.show({
+                        message:  syntaxHighlight(data),
+
+                        buttons: [{
+                            label: 'Close',
+                            action: function(dialogItself){
+                                dialogItself.close();
+                            }
+                        }]
+
+                    });
+                    $('#homer').load(document.URL +  ' #homer');
                 },
                 error:function(e) {
-                    alert("Unsuccessful.");
+                    BootstrapDialog.show({
+                        message:  syntaxHighlight(data),
+                        type: BootstrapDialog.TYPE_DANGER,
+                        buttons: [{
+                            label: 'Close',
+                            action: function(dialogItself){
+                                dialogItself.close();
+                            }
+                        }]
+
+                    });
                 }
             })}
         function disconnect_terminal(data){
             $.ajax({
                 url: '/public/terminal/disconnect/' + data,
                 type: 'GET',
+
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken"),
+                },
+
                 success:function(e){
-                    $('#terminal').load(document.URL +  ' #terminal');
+                    BootstrapDialog.show({
+                        message:  syntaxHighlight(data),
+
+                        buttons: [{
+                            label: 'Close',
+                            action: function(dialogItself){
+                                dialogItself.close();
+                            }
+                        }]
+
+                    });
+                    $('#homer').load(document.URL +  ' #homer');
                 },
                 error:function(e) {
-                    alert("Unsuccessful.");
+                    BootstrapDialog.show({
+                        message:  syntaxHighlight(data),
+                        type: BootstrapDialog.TYPE_DANGER,
+                        buttons: [{
+                            label: 'Close',
+                            action: function(dialogItself){
+                                dialogItself.close();
+                            }
+                        }]
+
+                    });
                 }
             })}
         function ping_becki(data){
             $.ajax({
                 url: '/public/becki/ping/' + data,
                 type: 'GET',
+
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken"),
+                },
+
                 success:function(e){
+                    BootstrapDialog.show({
+                        message:  syntaxHighlight(data),
+
+                        buttons: [{
+                            label: 'Close',
+                            action: function(dialogItself){
+                                dialogItself.close();
+                            }
+                        }]
+
+                    });
+                    $('#homer').load(document.URL +  ' #homer');
                 },
                 error:function(e) {
-                    alert("Unsuccessful.");
+                    BootstrapDialog.show({
+                        message:  syntaxHighlight(data),
+                        type: BootstrapDialog.TYPE_DANGER,
+                        buttons: [{
+                            label: 'Close',
+                            action: function(dialogItself){
+                                dialogItself.close();
+                            }
+                        }]
+
+                    });
                 }
             })}
         function test_notification(data){
@@ -114,20 +322,82 @@
                     alert("Unsuccessful.");
                 }
             })}
+
         function ping_Blocko_Server(data){
             $.ajax({
                 url: '/public/blocko_server/ping/' + data,
                 type: 'GET',
+
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken"),
+                },
+
                 success:function(e){
+                    BootstrapDialog.show({
+                        message:  syntaxHighlight(data),
+
+                        buttons: [{
+                            label: 'Close',
+                            action: function(dialogItself){
+                                dialogItself.close();
+                            }
+                        }]
+
+                    });
+                    $('#homer').load(document.URL +  ' #homer');
                 },
                 error:function(e) {
-                    alert("Unsuccessful.");
+                    BootstrapDialog.show({
+                        message:  syntaxHighlight(data),
+                        type: BootstrapDialog.TYPE_DANGER,
+                        buttons: [{
+                            label: 'Close',
+                            action: function(dialogItself){
+                                dialogItself.close();
+                            }
+                        }]
+
+                    });
                 }
             })}
+
         function disconnect_Blocko_Server(data){
             $.ajax({
                 url: '/public/blocko_server/disconnect/' + data,
                 type: 'GET',
+
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken"),
+                },
+
+                success:function(e){
+                    BootstrapDialog.show({
+                        message:  syntaxHighlight(data),
+
+                        buttons: [{
+                            label: 'Close',
+                            action: function(dialogItself){
+                                dialogItself.close();
+                            }
+                        }]
+
+                    });
+                    $('#homer').load(document.URL +  ' #homer');
+                },
+                error:function(e) {
+                    BootstrapDialog.show({
+                        message:  syntaxHighlight(data),
+                        type: BootstrapDialog.TYPE_DANGER,
+                        buttons: [{
+                            label: 'Close',
+                            action: function(dialogItself){
+                                dialogItself.close();
+                            }
+                        }]
+
+                    });
+                }
+
                 success:function(e){
                     $('#blocko').load(document.URL +  ' #blocko');
                 },
@@ -135,26 +405,82 @@
                     alert("Unsuccessful.");
                 }
             })}
+
         function ping_Compilation_Server(data){
             $.ajax({
                 url: '/public/compilator_server/ping/' + data ,
                 type: 'GET',
-                success:function(e){
+
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken"),
                 },
+
+                success:function(e){
+                    BootstrapDialog.show({
+                        message:  syntaxHighlight(data),
+
+                        buttons: [{
+                            label: 'Close',
+                            action: function(dialogItself){
+                                dialogItself.close();
+                            }
+                        }]
+
+                    });
+                    $('#homer').load(document.URL +  ' #homer');
+                },
+
                 error:function(e) {
-                    alert("Unsuccessful.");
+                    BootstrapDialog.show({
+                        message:  syntaxHighlight(data),
+                        type: BootstrapDialog.TYPE_DANGER,
+                        buttons: [{
+                            label: 'Close',
+                            action: function(dialogItself){
+                                dialogItself.close();
+                            }
+                        }]
+
+                    });
                 }
-            })}
+        })}
+
         function disconnect_Compilation_Server(data){
             $.ajax({
                 url: '/public/compilator_server/disconnect/' + data,
                 type: 'GET',
+
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken"),
+                },
+
                 success:function(e){
+                    BootstrapDialog.show({
+                        message:  syntaxHighlight(data),
+
+                        buttons: [{
+                            label: 'Close',
+                            action: function(dialogItself){
+                                dialogItself.close();
+                            }
+                        }]
+
+                    });
                     $('#compilation').load(document.URL +  ' #compilation');
                 },
 
                 error:function(e) {
-                    alert("Unsuccessful.");
+                    BootstrapDialog.show({
+                        message:  syntaxHighlight(data),
+                        type: BootstrapDialog.TYPE_DANGER,
+                        buttons: [{
+                            label: 'Close',
+                            action: function(dialogItself){
+                                dialogItself.close();
+                            }
+                        }]
+
+                    });
                 }
             })}
 </script>
@@ -167,8 +493,6 @@
                     <h3 class="box-title">Connected Homers (PC/RPI..)</h3>
                     <div class="pull-right">
                         <div class="btn-group">
-                            <button type="button" class="btn btn-danger   btn-sm">   Disconnect All </button>
-                            <button type="button" class="btn btn-info     btn-sm ">  Send Ping to all</button>
                             <button type="button" class="btn btn-success  btn-sm ">  ADD TEMPORARY INSTANCE</button>
                         </div><!-- /.btn-group -->
                     </div><!-- /.pull-right -->
@@ -215,11 +539,11 @@
                                 </td>
 
                                 <td align="center">
-                                    <button onclick="ping_homer('@x.identifikator')" class="btn btn-block btn-info btn-xs">Ping</button>
+                                    <button onclick="ping_instance('@x.identifikator', '@Type_of_command.COMMAND_PING_INSTANCE.get_command')" class="btn btn-block btn-info btn-xs">Ping</button>
                                 </td>
 
                                 <td align="center">
-                                    <button onclick="disconnect_homer('@x.identifikator')" class="btn btn-block btn-danger btn-xs">Disconnect</button>
+                                    <button onclick="disconnect_instance('@x.identifikator', '@Type_of_command.COMMAND_DISCONECT_INSTANCE.get_command' )" class="btn btn-block btn-danger btn-xs">Disconnect</button>
                                 </td>
 
                             </tr>
@@ -343,13 +667,13 @@
                                     <th rowspan="@(x.all_person_Connections.size()+2)">
                                         <button onclick="ping_becki('@x.identifikator')" class="btn btn-block btn-info btn-xs">Ping</button>
                                         <form id="testNotification">
-                                            <select style="width: 100%; margin: 10px 0;" name="level" id="level">
+                                            <select  name="level" id="level">
                                                 <option value="info">info</option>
                                                 <option value="success">success</option>
                                                 <option value="warning">warning</option>
                                                 <option value="error">error</option>
                                             </select>
-                                            <select style="width: 80%; margin: 0 0 10px 0;" name="importance" id="importance">
+                                            <select name="importance" id="importance">
                                                 <option value="low">low</option>
                                                 <option value="normal">normal</option>
                                                 <option value="high">high</option>

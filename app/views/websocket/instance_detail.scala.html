@@ -3,8 +3,9 @@
 @import models.person.Person
 @import models.project.b_program.B_Program
 @import models.project.b_program.Homer_Instance
-@import utilities.enums.{Firmware_type, TypeOfCommand}
+@import utilities.enums.{Firmware_type, Type_of_command}
 @import models.compiler.Board
+@import models.compiler.BootLoader
 @import utilities.Server
 @import utilities.webSocket.{WS_Homer_Cloud, WebSCType}
 
@@ -20,13 +21,14 @@
     </ol>
 </section>
 
-<section class="content">
 
+
+
+<section class="content">
     <div class="row">
         <div class="col-xs-3">
             <div class="box box-primary">
                 <div id="instance_detail" class="box-body box-profile">
-
                     <h3 class="text-center">Instance:</h3>
 
                     <p class="text-muted text-center"> @homer.identifikator</p>
@@ -38,7 +40,6 @@
                     }
 
                     <ul class="list-group list-group-unbordered">
-
                         <li class="list-group-item">
                             <b>Owner</b> <a class="pull-right">Pepa</a>
                         </li>
@@ -63,138 +64,150 @@
                         <li class="list-group-item">
                             <b>Server name</b> <a class="pull-right">@homer.blockoServer.identifikator</a>
                         </li>
-
                     </ul>
 
                     <a onclick="showAddMasterDeviceModal('@homer.identifikator')"  class="btn btn-warning btn-block"> <b>Add Master board to Instance</b> </a>
-
                     <a onclick="showUploadBlockoProgram('@homer.identifikator')"   class="btn btn-primary btn-block"> <b>Uploud Blocko Program</b>        </a>
-
-
-
                 </div>
-                    <!-- /.box-body -->
             </div>
         </div>
-
         <div class="col-xs-9">
-            <div class="box box-primary">
+            @for(x <- homer.group){
+                <div class="box box-primary">
+                        <div class="box-body table-responsive no-padding">
+                           <div class="box-header">
+                                <h3 class="box-title"> Yoda: @x.yodaId </h3>
+                                <div class="pull-right">
+                                    <div class="btn-group">
 
-                @for(x <- homer.group){
-                    <div class="box-body table-responsive no-padding">
+                                            @if(BootLoader.find.where().eq("main_type_of_board.boards.id", x.yodaId ).findUnique() != null){
+                                                @if(Board.find.byId( x.yodaId).update_boot_loader_required()) {
+                                                    <a  onclick="updateBootLoader('@x.yodaId')" class="btn btn-primary btn-sm" ><b>Update Firmware</b></a>
+                                                }else {
+                                                    <p class="lead text-green">(Actual)</p>
+                                                    <a  onclick="executeCommand( '','')" class="btn btn-success btn-sm disabled" ><b> Bootloader Up To date </b></a>
+                                                }
+                                            }else{
+                                                <a  onclick="executeCommand( '' ,'')" class="btn btn-danger btn-sm disabled" ><b>Missing bootloader</b></a>
+                                            }
 
-                       <div class="box-header">
-                            <h3 class="box-title"> Yoda: @x.yodaId </h3>
-                            <div class="pull-right">
-                                <div class="btn-group">
-
-                                        <a onclick="executeCommand('@x.yodaId','@TypeOfCommand.INFO_STATE.get_command')" class="btn btn-info btn-sm"><b>Ping Yoda</b></a>
-                                        <a onclick="showCommandDeviceModal('@x.yodaId', 'Yoda')" class="btn btn-info btn-sm"><b>Open Commander</b></a>
-                                        <a onclick="showAddDeviceModal('@x.yodaId')" class="btn btn-warning btn-sm"><b>Add new Device</b></a>
-                                        <a onclick="removeMasterDevice('@x.yodaId')" class="btn btn-danger btn-sm"><b>Remove Yoda</b></a>
-
-                                </div><!-- /.btn-group -->
-                            </div><!-- /.pull-right -->
-                        </div>
-
-                        <table class="table table-bordered">
-
-                            <tr>
-                                <th>Device Id</th>
-                                <th>Type Of Board</th>
-                                <th>User Name</th>
-                                <th>Commands</th>
-                                <th>Disconnect</th>
-                            </tr>
-
-
-                            @for(y <- x.devicesId) {
+                                            <a onclick="executeCommand('@x.yodaId','@Type_of_command.INFO_STATE.get_command')" class="btn btn-info btn-sm"><b>Ping Yoda</b></a>
+                                            <a onclick="showCommandDeviceModal('@x.yodaId', 'Yoda')" class="btn btn-info btn-sm"><b>Open Commander</b></a>
+                                            <a onclick="showAddDeviceModal('@x.yodaId')" class="btn btn-warning btn-sm"><b>Add new Device</b></a>
+                                            <a onclick="removeMasterDevice('@x.yodaId')" class="btn btn-danger btn-sm"><b>Remove Yoda</b></a>
+                                    </div>
+                                </div>
+                            </div>
+                            <table class="table table-bordered">
                                 <tr>
-                                    <td> @y</td>
-                                    <td>
-                                        @if( Board.find.byId(y) != null) {
-                                            @Board.find.byId(y).type_of_board.name
-                                        }else {
-                                            Device is not saved in database
-                                        }
-                                    </td>
-                                    <td>
-                                        @if( Board.find.byId(y) != null) {
-                                            @Board.find.byId(y).personal_description
-                                        }else {
-                                            ----
-                                        }
-                                    </td>
-                                    <td>
-                                        <a onclick="showCommandDeviceModal('@y', 'device')" class="btn btn-info btn-sm"><b>Open Commander</b></a>
-                                    </td>
-                                    <td>
-                                        <a onclick="removeDevice('@y')" class="btn btn-danger btn-sm"><b>Remove Device</b></a>
-                                    </td>
+                                    <th>Device Id</th>
+                                    <th>Type Of Board</th>
+                                    <th>User Name</th>
+                                    <th>BootLoader</th>
+                                    <th>Commands</th>
+                                    <th>Remove</th>
                                 </tr>
-                            }
 
-                        </table>
-                    </div><!-- /.box-body -->
-                }
-            </div>
+                                @if(x.devicesId != null && x.devicesId.size() > 0 ){
 
-            <script>
+                                    @for(board <- Board.find.where().in("id", x.devicesId ).findList() ) {
 
+                                                <tr>
 
-                    function removeMasterDevice(id){
+                                                <td> @board.id</td>
+                                                <td> @board.type_of_board.name</td>
+                                                <td> @board.personal_description</td>
+                                                <td>
+                                                    @if(BootLoader.find.where().eq("main_type_of_board.id", board.type_of_board.id ).findUnique() != null){
+                                                        @if(board.update_boot_loader_required()) {
+                                                           <button  type="button" class="commandButton btn btn-primary   btn-sm"  onclick="updateBootLoader('@board.id')">Update Firmware</button>
+                                                        }else {
+                                                            <p class="text-green">(Actual)</p>
+                                                        }
+                                                    }else{
+                                                        <p class="text-red">(Missing bootloader)</p>
+                                                    }
+                                                </td>
+                                                <td><a onclick="showCommandDeviceModal('@board.id', 'device')" class="btn btn-info btn-sm"><b>Open Commander</b></a></td>
+                                                <td><a onclick="removeDevice('@board.id')" class="btn btn-danger btn-sm"><b>Remove Device</b></a></td>
 
-                        $.ajax({
-                            url: " @Server.tyrion_serverAddress" + "/project/b_program/instance/master_device" + '@homer.identifikator' +  "/" + id ,
-                            type: 'DELETE',
-                            headers: {
-                                "X-AUTH-TOKEN":getCookie("authToken"),
-                            },
-                            success:function(e){
-                                $('#allCompilationServers').load(document.URL +  ' #allCompilationServers');
-                            },
-                            error:function(e) {
-                                alert("Unsuccessful.");
-                            }
-                    })}
+                                            </tr>
+                                        }
 
-                    function removeDevice(id){
+                                }
 
-                        $.ajax({
-                            url: " @Server.tyrion_serverAddress" + "/project/b_program/instance/device" + '@homer.identifikator' +  "/" + id ,
-                            type: 'DELETE',
-                            headers: {
-                                "X-AUTH-TOKEN":getCookie("authToken"),
-                            },
-                            success:function(e){
-                                $('#allCompilationServers').load(document.URL +  ' #allCompilationServers');
-                            },
-                            error:function(e) {
-                                alert("Unsuccessful.");
-                            }
-                    })}
-
-
-
-
-            </script>
-
+                            </table>
+                        </div>
+                </div>
+            }
         </div>
     </div>
+
+    <script>
+
+        function removeMasterDevice(id){
+
+            $.ajax({
+                        url: " @Server.tyrion_serverAddress" + "/project/b_program/instance/master_device" + '@homer.identifikator' +  "/" + id ,
+                        type: 'DELETE',
+                        headers: {
+                            "X-AUTH-TOKEN":getCookie("authToken"),
+                        },
+                        success:function(e){
+                            $('#allCompilationServers').load(document.URL +  ' #allCompilationServers');
+                        },
+                        error:function(e) {
+                            alert("Unsuccessful.");
+                        }
+                    }
+            )}
+
+        function removeMasterDevice(id){
+
+            $.ajax({
+                url: " @Server.tyrion_serverAddress" + "/project/b_program/instance/master_device" + '@homer.identifikator' +  "/" + id ,
+                type: 'DELETE',
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken"),
+                },
+                success:function(e){
+                    $('#allCompilationServers').load(document.URL +  ' #allCompilationServers');
+                },
+                error:function(e) {
+                    alert("Unsuccessful.");
+                }
+            })}
+
+        function removeDevice(id){
+
+            $.ajax({
+                url: " @Server.tyrion_serverAddress" + "/project/b_program/instance/device" + '@homer.identifikator' +  "/" + id ,
+                type: 'DELETE',
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken"),
+                },
+                success:function(e){
+                    $('#allCompilationServers').load(document.URL +  ' #allCompilationServers');
+                },
+                error:function(e) {
+                    alert("Unsuccessful.");
+                }
+            })}
+
+    </script>
+
 </section>
 
 
 
 
 <section class="content">
-
     <div class="row">
         <div class="col-xs-12">
             <div class="box">
                 <div class="box-header">
                     <h3 class="box-title">Connected Grids Temrinal on this Instance</h3>
                 </div>
-
                 <div class="box-body table-responsive no-padding">
                     <table class="table table-bordered">
 
@@ -205,16 +218,12 @@
                             <th>Disconnect</th>
                         </tr>
 
-
                     </table>
-                </div><!-- /.box-body -->
-
-            </div><!-- /.box -->
+                </div>
+            </div>
         </div>
     </div>
 </section>
-
-
 
 
 
@@ -225,7 +234,6 @@
             <div class="modal-header">
                 <h4 class="modal-title">Update Blocko Program</h4>
             </div>
-
             <div class="modal-body">
                 <form id="uploadBlockoProgram">
 
@@ -270,60 +278,60 @@
 
                         <tr>
                              <td>
-                                 <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="executeCommand( this.value ,'@TypeOfCommand.INFO_STATE.get_command')"> Get state info </button>
+                                 <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="executeCommand( this.value ,'@Type_of_command.INFO_STATE.get_command')"> Get state info </button>
                              </td>
                              <td>
-                                 <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="executeCommand(  this.value ,'@TypeOfCommand.INFO_DEVICE_COUNTER.get_command')"> Get Device Counter Info </button>
+                                 <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="executeCommand(  this.value ,'@Type_of_command.INFO_DEVICE_COUNTER.get_command')"> Get Device Counter Info </button>
                              </td>
                              <td>
 
                              </td>
                              <td>
-                                 <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="executeCommand(  this.value,'@TypeOfCommand.COMMAND_PING_DEVICE.get_command')"> Ping Device</button>
+                                 <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="executeCommand(  this.value,'@Type_of_command.COMMAND_PING_DEVICE.get_command')"> Ping Device</button>
                              </td>
                         </tr>
 
                         <tr>
                             <td>
-                                <button type="button" class="commandButton btn btn-primary   btn-sm"  onclick="executeCommand(  this.value ,'@TypeOfCommand.INFO_FIRMWARE.get_command')"> Get Firmware Version </button>
+                                <button type="button" class="commandButton btn btn-primary   btn-sm"  onclick="executeCommand(  this.value ,'@Type_of_command.INFO_FIRMWARE.get_command')"> Get Firmware Version </button>
                             </td>
                             <td>
-                                <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="executeCommand(  this.value ,'@TypeOfCommand.INFO_WIFI_USERNAME.get_command')"> Get WIFI User Name </button><br>
-                                <button type="button" class="commandButton btn btn-success  btn-sm"  onclick="executeCommand(  this.value ,'@TypeOfCommand.COMMAND_WIFI_USERNAME.get_command')"> SET WIFI User Name </button>
+                                <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="executeCommand(  this.value ,'@Type_of_command.INFO_WIFI_USERNAME.get_command')"> Get WIFI User Name </button><br>
+                                <button type="button" class="commandButton btn btn-success  btn-sm"  onclick="executeCommand(  this.value ,'@Type_of_command.COMMAND_WIFI_USERNAME.get_command')"> SET WIFI User Name </button>
                             </td>
                             <td>
 
                             </td>
                             <td>
-                                <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="showUploadModal(  this.value,'@Firmware_type.FIRMWARE_YODA_FIRMWARE.get_firmwareType()')"> Uploud Firmware</button>
+                                <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="showUploadModal(  this.value,'@Firmware_type.FIRMWARE.get_firmwareType()')"> Uploud Firmware</button>
                             </td>
                         </tr>
 
                         <tr>
                             <td>
-                                <button type="button" class="commandButton btn btn-primary   btn-sm"  onclick="executeCommand( this.value ,'@TypeOfCommand.INFO_BOOTLOADER.get_command')"> Get Bootloader Info </button>
+                                <button type="button" class="commandButton btn btn-primary   btn-sm"  onclick="executeCommand( this.value ,'@Type_of_command.INFO_BOOTLOADER.get_command')"> Get Bootloader Info </button>
                             </td>
                             <td>
-                                <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="executeCommand(  this.value ,'@TypeOfCommand.INFO_WIFI_PASSWORD.get_command')"> Get WIFI Password </button><br>
-                                <button type="button" class="commandButton btn btn-success  btn-sm"  onclick="executeCommand(  this.value ,'@TypeOfCommand.COMMAND_WIFI_PASSWORD.get_command')"> SET WIFI Password </button>
+                                <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="executeCommand(  this.value ,'@Type_of_command.INFO_WIFI_PASSWORD.get_command')"> Get WIFI Password </button><br>
+                                <button type="button" class="commandButton btn btn-success  btn-sm"  onclick="executeCommand(  this.value ,'@Type_of_command.COMMAND_WIFI_PASSWORD.get_command')"> SET WIFI Password </button>
                             </td>
                             <td>
 
                             </td>
                             <td>
-                                <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="showUploadModal(  this.value,'@Firmware_type.FIRMWARE_YODA_BOOTLOADER.get_firmwareType()')">Uploud Bootloader</button>
+                                <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="showUploadModal(  this.value,'@Firmware_type.BOOTLOADER.get_firmwareType()')">Upload Bootloader</button>
                             </td>
                         </tr>
 
                         <tr>
-                            <td><button  type="button" class="commandButton btn btn-primary   btn-sm"  onclick="executeCommand( this.value ,'@TypeOfCommand.INFO_AUTO_BACKUP.get_command')"> Get BackUp info </button></td>
+                            <td><button  type="button" class="commandButton btn btn-primary   btn-sm"  onclick="executeCommand( this.value ,'@Type_of_command.INFO_AUTO_BACKUP.get_command')"> Get BackUp info </button></td>
                             <td></td>
                             <td></td>
                             <td></td>
                         </tr>
 
                         <tr>
-                            <td><button  type="button" class="commandButton btn btn-primary   btn-sm"  onclick="executeCommand( this.value ,'@TypeOfCommand.INFO_DATETIME.get_command')"> Get Time </button></td>
+                            <td><button  type="button" class="commandButton btn btn-primary   btn-sm"  onclick="executeCommand( this.value ,'@Type_of_command.INFO_DATETIME.get_command')"> Get Time </button></td>
                             <td></td>
                             <td></td>
                             <td></td>
@@ -389,78 +397,118 @@
                 $('#deviceType').text("Device Type = " + deviceType);
             }
 
-    </script>
-
-    <script>
-
-        function showUploadModal(target_id, command){
-
-            console.log("Command: " + command );
-            console.log("target_id: " + target_id );
-
-            $("#uploadFileModal").css("display","block");
-            $('#deviceId_uploadFileModal').text(target_id);
-            $('#uploudFileButton').val(target_id);
-            $('#command_uploadFileModal').text(command);
-        }
-
-        function uploadFile(target_id, firmwareType){
-
-            event.preventDefault();
-
-            var file = $('#file').get(0).files[0];
-            var formData = new FormData();
-            formData.append('file', file);
-
-            $.ajax({
-
-                url: "@Server.tyrion_serverAddress" + "/compilation/c_program/binary/"+ target_id + "/" +  firmwareType ,
-                type: 'POST',
-                processData: false,  // tell jQuery not to process the data
-                contentType: false,  // tell jQuery not to set contentType
-                data : formData,
-
-                headers: {
-                    "X-AUTH-TOKEN":getCookie("authToken"),
-                },
-
-                success:function(data, status){
-                    BootstrapDialog.show({
-                        message:  syntaxHighlight(data),
-
-                        buttons: [{
-                            label: 'Close',
-                            action: function(dialogItself){
-                                dialogItself.close();
-                            }
-                        }]
-                    });
-
-                },
-                error: function (jqXHR, textStatus, errorThrown) {
-                    BootstrapDialog.show({
-                        message:  syntaxHighlight(data),
-                        type: BootstrapDialog.TYPE_DANGER,
-                        buttons: [{
-                            label: 'Close',
-                            action: function(dialogItself){
-                                dialogItself.close();
-                            }
-                        }]
-
-                    });
-                }
-
-            })
-        }
-    </script>
-
-
-    <script>
-            function executeCommand(target_id, command){
+            function showUploadModal(target_id, command){
 
                 console.log("Command: " + command );
                 console.log("target_id: " + target_id );
+
+                $("#uploadFileModal").css("display","block");
+                $('#deviceId_uploadFileModal').text(target_id);
+                $('#uploudFileButton').val(target_id);
+                $('#command_uploadFileModal').text(command);
+            }
+
+
+            function uploadFile(target_id, firmwareType){
+
+                event.preventDefault();
+
+                var file = $('#file').get(0).files[0];
+                var formData = new FormData();
+                formData.append('file', file);
+
+                $.ajax({
+
+                    url: "@Server.tyrion_serverAddress" + "/compilation/c_program/binary/"+ target_id + "/" +  firmwareType ,
+                    type: 'POST',
+                    processData: false,  // tell jQuery not to process the data
+                    contentType: false,  // tell jQuery not to set contentType
+                    data : formData,
+
+                    headers: {
+                        "X-AUTH-TOKEN":getCookie("authToken"),
+                    },
+
+                    success:function(data, status){
+                        BootstrapDialog.show({
+                            message:  syntaxHighlight(data),
+
+                            buttons: [{
+                                label: 'Close',
+                                action: function(dialogItself){
+                                    dialogItself.close();
+                                }
+                            }]
+                        });
+
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        BootstrapDialog.show({
+                            message:  syntaxHighlight(data),
+                            type: BootstrapDialog.TYPE_DANGER,
+                            buttons: [{
+                                label: 'Close',
+                                action: function(dialogItself){
+                                    dialogItself.close();
+                                }
+                            }]
+
+                        });
+                    }
+
+                })
+            }
+
+            function updateBootLoader(target_id){
+                var obj = '{' +'"device_ids":' + '["' + target_id + '"]' + '}';
+
+                $.ajax({
+                    url: "@Server.tyrion_serverAddress" + "/bootloader/update_device_list",
+                    type: 'PUT',
+                    contentType: 'application/json',
+                    headers: {
+                        "X-AUTH-TOKEN":getCookie("authToken"),
+                        "Content-Type":"application/json"
+                    },
+                    data: obj,
+                    dataType: 'json',
+
+                    success:function(data, status){
+                        console.log(data);
+                        console.log(status);
+                        BootstrapDialog.show({
+                            message:  syntaxHighlight(data),
+
+                            buttons: [{
+                                label: 'Close',
+                                action: function(dialogItself){
+                                    dialogItself.close();
+                                }
+                            }]
+
+                        });
+                    },
+                    error:function(data) {
+                        console.log(data);
+
+                        BootstrapDialog.show({
+                            message:  syntaxHighlight(data),
+                            type: BootstrapDialog.TYPE_DANGER,
+                            buttons: [{
+                                label: 'Close',
+                                action: function(dialogItself){
+                                    dialogItself.close();
+                                }
+                            }]
+
+                        });
+                    }
+
+
+                })
+            }
+
+            function executeCommand(target_id, command){
 
                 $.ajax({
                     url: "@Server.tyrion_serverAddress" + "/project/b_program/instance/command/"+ '@homer.identifikator' + "/" + target_id + "/" +  command ,
@@ -531,9 +579,6 @@
             }
     </script>
 
-
-
-
 <div id="addMasterDeviceModal" style="display: none;" class="modal">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -576,122 +621,116 @@
                 <button class="btn btn-danger pull-left" type="button" data-dismiss="modal" onclick="$('#addDeviceModal').css('display','none')">Close</button>
                 <button id="addDeviceButton" value="" class="btn btn-primary" type="button" onclick="addDevice(this.value)">Update code in instance</button>
             </div>
-
-            <script>
-                    function showAddDeviceModal(id){
-                        $("#addDeviceModal").css("display","block");
-                        $('#addDeviceButton').val(id);
-                        $('#yodaId').text("ID = " + id);
-                    }
-            </script>
-
-            <script>
-                    function addDevice(master_board_Id){
-                        var device_id = document.getElementById("addDeviceForm").elements.namedItem("device_id").value;
-
-                        $.ajax({
-                            url: " @Server.tyrion_serverAddress" + "/project/b_program/instance/device/" + master_board_Id + "/" + device_id,
-                            type: 'PUT',
-                            headers: {
-                                "X-AUTH-TOKEN":getCookie("authToken"),
-                            },
-                            success:function(e){
-                                $("#addDeviceModal").css("display","none");
-                            },
-                            error:function(e) {
-                                alert("Unsuccessful.");
-                            }
-                        })}
-            </script>
-
-            <script>
-                    function showAddMasterDeviceModal(instanceId){
-                        $("#addMasterDeviceModal").css("display","block");
-                        $('#addMasterDeviceButton').val(instanceId);
-                        $('#yodaId').text("ID = " + instanceId);
-                    }
-            </script>
-
-            <script>
-                    function addMasterDevice(id){
-                        var master_device_id = document.getElementById("addMasterDeviceForm").elements.namedItem("master_device_id").value;
-
-                        $.ajax({
-                            url: " @Server.tyrion_serverAddress" + "/project/b_program/instance/master_device/" + id + "/" + master_device_id,
-                            type: 'PUT',
-                            headers: {
-                                "X-AUTH-TOKEN":getCookie("authToken"),
-                            },
-                            success:function(e){
-                                $("#addMasterDevice").css("display","none");
-                            },
-                            error:function(e) {
-                                alert("Unsuccessful.");
-                            }
-                        })}
-            </script>
-
-            <script>
-                    function showUploadBlockoProgram(id){
-                        $("#uploadBlockoProgramModal").css("display","block");
-                        $('#uploadBlockoProgramButton').val(id);
-                        $('#instanceId').text("ID = " + id);
-                    }
-            </script>
-
-            <script>
-                    function uploadBlockoProgram(instanceId){
-                        model_data = $("#uploadBlockoProgram").serializeObject();
-                        json = JSON.stringify(model_data);
-
-                        console.log(json);
-
-
-                        $.ajax({
-                            url: "@Server.tyrion_serverAddress" + "/project/b_program/instance/program/" + instanceId,
-                            type: 'PUT',
-                            contentType: 'application/json',
-                            headers: {
-                                "X-AUTH-TOKEN":getCookie("authToken"),
-                                "Content-Type":"application/json"
-                            },
-                            data: JSON.stringify(model_data),
-                            dataType: 'json',
-                            success:function(data, status){
-
-                                $("#uploadBlockoProgram input[type=text]").val("");
-                                $("#uploadBlockoProgramModal").css("display","none");
-
-                                BootstrapDialog.show({
-                                    message:  syntaxHighlight("Úpsěšně nahráno na homer do instance"),
-
-                                    buttons: [{
-                                        label: 'Close',
-                                        action: function(dialogItself){
-                                            dialogItself.close();
-                                        }
-                                    }]
-
-                                });
-                            },
-                            error:function(data) {
-                                BootstrapDialog.show({
-                                    message:  syntaxHighlight(data),
-                                    type: BootstrapDialog.TYPE_DANGER,
-                                    buttons: [{
-                                        label: 'Close',
-                                        action: function(dialogItself){
-                                            dialogItself.close();
-                                        }
-                                    }]
-
-                                });
-                            }
-                        })}
-            </script>
-
         </div>
     </div>
 </div>
+
+
+
+
+
+  <script>
+
+          function showAddDeviceModal(id){
+              $("#addDeviceModal").css("display","block");
+              $('#addDeviceButton').val(id);
+              $('#yodaId').text("ID = " + id);
+          }
+
+          function addDevice(master_board_Id){
+              var device_id = document.getElementById("addDeviceForm").elements.namedItem("device_id").value;
+
+              $.ajax({
+                  url: " @Server.tyrion_serverAddress" + "/project/b_program/instance/device/" + master_board_Id + "/" + device_id,
+                  type: 'PUT',
+                  headers: {
+                      "X-AUTH-TOKEN":getCookie("authToken"),
+                  },
+                  success:function(e){
+                      $("#addDeviceModal").css("display","none");
+                  },
+                  error:function(e) {
+                      alert("Unsuccessful.");
+                  }
+              })}
+
+          function showAddMasterDeviceModal(instanceId){
+              $("#addMasterDeviceModal").css("display","block");
+              $('#addMasterDeviceButton').val(instanceId);
+              $('#yodaId').text("ID = " + instanceId);
+          }
+
+          function addMasterDevice(id){
+              var master_device_id = document.getElementById("addMasterDeviceForm").elements.namedItem("master_device_id").value;
+
+              $.ajax({
+                  url: " @Server.tyrion_serverAddress" + "/project/b_program/instance/master_device/" + id + "/" + master_device_id,
+                  type: 'PUT',
+                  headers: {
+                      "X-AUTH-TOKEN":getCookie("authToken"),
+                  },
+                  success:function(e){
+                      $("#addMasterDevice").css("display","none");
+                  },
+                  error:function(e) {
+                      alert("Unsuccessful.");
+                  }
+              })}
+
+          function showUploadBlockoProgram(id){
+              $("#uploadBlockoProgramModal").css("display","block");
+              $('#uploadBlockoProgramButton').val(id);
+              $('#instanceId').text("ID = " + id);
+          }
+
+          function uploadBlockoProgram(instanceId){
+              model_data = $("#uploadBlockoProgram").serializeObject();
+              json = JSON.stringify(model_data);
+
+              console.log(json);
+
+
+              $.ajax({
+                  url: "@Server.tyrion_serverAddress" + "/project/b_program/instance/program/" + instanceId,
+                  type: 'PUT',
+                  contentType: 'application/json',
+                  headers: {
+                      "X-AUTH-TOKEN":getCookie("authToken"),
+                      "Content-Type":"application/json"
+                  },
+                  data: JSON.stringify(model_data),
+                  dataType: 'json',
+                  success:function(data, status){
+
+                      $("#uploadBlockoProgram input[type=text]").val("");
+                      $("#uploadBlockoProgramModal").css("display","none");
+
+                      BootstrapDialog.show({
+                          message:  syntaxHighlight("Úpsěšně nahráno na homer do instance"),
+
+                          buttons: [{
+                              label: 'Close',
+                              action: function(dialogItself){
+                                  dialogItself.close();
+                              }
+                          }]
+
+                      });
+                  },
+                  error:function(data) {
+                      BootstrapDialog.show({
+                          message:  syntaxHighlight(data),
+                          type: BootstrapDialog.TYPE_DANGER,
+                          buttons: [{
+                              label: 'Close',
+                              action: function(dialogItself){
+                                  dialogItself.close();
+                              }
+                          }]
+
+                      });
+                  }
+              })}
+   </script>
 
 

@@ -1,4 +1,4 @@
-import controllers.WebSocketController_Incoming;
+import controllers.WebSocketController;
 import org.quartz.SchedulerException;
 import play.Application;
 import play.GlobalSettings;
@@ -68,16 +68,16 @@ public class Global extends GlobalSettings {
         logger.warn("Restarting Server - Time: " + new Date());
 
         logger.warn("Disconnection all Homers");
-        WebSocketController_Incoming.disconnect_all_homers();
+        WebSocketController.disconnect_all_homers();
 
         logger.warn("Disconnection all Terminals");
-        WebSocketController_Incoming.disconnect_all_mobiles();
+        WebSocketController.disconnect_all_mobiles();
 
         logger.warn("Disconnection all Blocko Servers");
-        WebSocketController_Incoming.disconnect_all_Blocko_Servers();
+        WebSocketController.disconnect_all_Blocko_Servers();
 
         logger.warn("Disconnection all Compilation Servers");
-        WebSocketController_Incoming.disconnect_all_Compilation_Servers();
+        WebSocketController.disconnect_all_Compilation_Servers();
 
 
 

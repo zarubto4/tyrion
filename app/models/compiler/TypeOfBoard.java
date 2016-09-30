@@ -26,9 +26,14 @@ public class TypeOfBoard extends Model {
                                                                         @JsonIgnore  @ManyToOne public Processor processor;
                                                              @ApiModelProperty(required = true) public Boolean   connectible_to_internet;
 
-    @JsonIgnore @OneToMany(mappedBy="type_of_board", cascade = CascadeType.ALL) public List<Board> boards = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="type_of_board", cascade = CascadeType.ALL) public List<C_Program> c_programs = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="type_of_board", cascade = CascadeType.ALL) public List<Board>       boards      = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="type_of_board", cascade = CascadeType.ALL) public List<C_Program>   c_programs  = new ArrayList<>();
 
+    @JsonIgnore @OneToMany(mappedBy="type_of_board", cascade = CascadeType.ALL) public List<BootLoader>  boot_loaders = new ArrayList<>();
+                @OneToOne (mappedBy="main_type_of_board")                       public BootLoader        main_boot_loader;
+
+
+    @JsonIgnore @OneToOne(mappedBy="defaul_program_type_of_board") public C_Program default_program;
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
@@ -38,7 +43,9 @@ public class TypeOfBoard extends Model {
     @ApiModelProperty(readOnly =true) @Transient @JsonProperty public String producer_name     (){ return producer  == null ? null : producer.name;}
     @ApiModelProperty(readOnly =true) @Transient @JsonProperty public String producer_id       (){ return producer  == null ? null : producer.id;}
 
-    @ApiModelProperty(readOnly =true) @Transient @JsonProperty public String target_name(){ return compiler_target_name;}
+    @ApiModelProperty(readOnly =true) @Transient @JsonProperty public String target_name       (){ return compiler_target_name;}
+
+
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 

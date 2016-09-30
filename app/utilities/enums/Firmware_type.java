@@ -2,11 +2,9 @@ package utilities.enums;
 
 public enum Firmware_type {
 
-    FIRMWARE_YODA_FIRMWARE("FIRMWARE_YODA_FIRMWARE"),
-    FIRMWARE_YODA_BOOTLOADER("FIRMWARE_YODA_BOOTLOADER"),
-    FIRMWARE_YODA_BACKUP("FIRMWARE_YODA_BACKUP"),
-    FIRMWARE_DEVICE_FIRMWARE("FIRMWARE_DEVICE_FIRMWARE"),
-    FIRMWARE_DEVICE_BOOTLOADER("FIRMWARE_DEVICE_BOOTLOADER");
+    FIRMWARE("FIRMWARE"),
+    BOOTLOADER("BOOTLOADER"),
+    BACKUP("BACKUP");
 
     private String firmwareType;
 
@@ -16,11 +14,9 @@ public enum Firmware_type {
 
     public static Firmware_type getFirmwareType(String value){
 
-             if(value.equalsIgnoreCase(FIRMWARE_YODA_FIRMWARE.toString()       ))   return Firmware_type.FIRMWARE_YODA_FIRMWARE;
-        else if(value.equalsIgnoreCase(FIRMWARE_YODA_BOOTLOADER.toString()     ))   return Firmware_type.FIRMWARE_YODA_BOOTLOADER;
-        else if(value.equalsIgnoreCase(FIRMWARE_YODA_BACKUP.toString()         ))   return Firmware_type.FIRMWARE_YODA_BACKUP;
-        else if(value.equalsIgnoreCase(FIRMWARE_DEVICE_FIRMWARE.toString()     ))   return Firmware_type.FIRMWARE_DEVICE_FIRMWARE;
-        else if(value.equalsIgnoreCase(FIRMWARE_DEVICE_BOOTLOADER.toString()   ))   return Firmware_type.FIRMWARE_DEVICE_BOOTLOADER;
+             if(value.equalsIgnoreCase(FIRMWARE.toString()       ))   return Firmware_type.FIRMWARE;
+        else if(value.equalsIgnoreCase(BOOTLOADER.toString()     ))   return Firmware_type.BOOTLOADER;
+        else if(value.equalsIgnoreCase(BACKUP.toString()         ))   return Firmware_type.BACKUP;
 
         return null;
     }

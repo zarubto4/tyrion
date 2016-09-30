@@ -3,7 +3,9 @@
 @import utilities.swagger.swagger_diff_tools.servise_class.News
 @import utilities.swagger.swagger_diff_tools.servise_class.Remws
 
-@(diff: Swagger_Diff, link_api_swagger : String, versionList: List[String])
+@import utilities.Server
+
+@(diff: Swagger_Diff, versionList: List[String])
 
 
 <section class="content-header">
@@ -23,7 +25,7 @@
           <div class="mailbox-read-message">
               <div>
                   <form method="GET" action="@routes.DashboardController.show_diff_on_Api()">
-                    <div style="width: 30%; float: left; margin-left: 10%; margin-right: 5%;" class="form-group">
+                    <div class="form-group">
                         <label>Old Version</label>
                         <select name="old_api" class="form-control">
                         @for(version <- versionList){
@@ -31,7 +33,7 @@
                         }
                         </select>
                     </div>
-                    <div style="width: 30%; float: left; margin-right: 5%;" class="form-group">
+                    <div class="form-group">
                         <label>New Version</label>
                         <select name="new_api" class="form-control">
                         @for(version <- versionList){
@@ -39,7 +41,7 @@
                         }
                         </select>
                     </div>
-                    <button style="width: 10%; float: left; margin-top: 25px;" type="submit" class="btn btn-primary">Show diff</button>
+                    <button type="submit" class="btn btn-primary">Show diff</button>
                   </form>
                   <div style="clear: both"></div>
               </div>
@@ -60,7 +62,7 @@
                               </div><!-- /.box-header -->
                               <div class="box-body">
                               @for(x <- diff.removed_groups){
-                                  <p class="text-red">  @x <a href='@(link_api_swagger + "/" + diff.old_Version + "#" + x)' ><i class="fa fa-graduation-cap"></i>[Swagger]</a> </p>
+                                  <p class="text-red">  @x <a href='@(Server.link_api_swagger + "/" + diff.old_Version + "#" + x)' ><i class="fa fa-graduation-cap"></i>[Swagger]</a> </p>
                               }
                               </div>
                           </div>
@@ -74,7 +76,7 @@
                               </div><!-- /.box-header -->
                               <div class="box-body">
                                   @for(x <- diff.add_groups ){
-                                      <p class="text-green">  @x <a href='@(link_api_swagger + "/" + diff.new_Version + "#" + x)' ><i class="fa fa-graduation-cap"></i>[Swagger]</a> </p>
+                                      <p class="text-green">  @x <a href='@(Server.link_api_swagger + "/" + diff.new_Version + "#" + x)' ><i class="fa fa-graduation-cap"></i>[Swagger]</a> </p>
                                   }
                               </div>
                           </div><!-- /.box-body -->

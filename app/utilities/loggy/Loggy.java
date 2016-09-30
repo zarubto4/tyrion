@@ -37,6 +37,8 @@ public class Loggy{
 
     public static Result result_internalServerError(Exception exception, Http.Request request) {
 
+        exception.printStackTrace();
+
         String id = UUID.randomUUID().toString();
 
         StringBuilder summaryBuilder = new StringBuilder();         // stavění nadpisu
@@ -80,10 +82,7 @@ public class Loggy{
         String summary = summaryBuilder.toString();
         String description = descriptionBuilder.toString();
 
-        // error(id, summary, description);
-
-        exception.printStackTrace();
-
+        error(id, summary, description);
         return GlobalResult.internalServerError();
     }
 

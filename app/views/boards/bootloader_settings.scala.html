@@ -1,0 +1,594 @@
+@import models.compiler.TypeOfBoard
+@import models.compiler.BootLoader
+@import models.compiler.Version_Object
+@import models.compiler.Processor
+@import models.compiler.Producer
+@import com.avaje.ebean.Expr;
+@import utilities.Server
+
+@(typeOfBoard: TypeOfBoard)
+
+<section class="content-header">
+    <div class="pull-left">
+        <div class="btn-group">
+            <a  href='@routes.DashboardController.basic_board_management()' >
+                <button class="btn btn-block btn-danger" type="button"> Back </button>
+            </a>
+        </div><!-- /.btn-group -->
+    </div>
+    <div></div>
+    <h1> &nbsp;&nbsp;&nbsp; Type Of Board: @typeOfBoard.name </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-wrench"></i> Admin Page </a></li>
+        <li class="active">Dashboard</li>
+    </ol>
+</section>
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="box">
+            <div class="box-header with-border">
+                <h3 class="box-title">Bootlooder summary</h3>
+                <div class="pull-right">
+                    <div class="btn-group">
+                        <td><button class="btn btn-block btn-info" type="button" onclick="openNewBootLoaderModal(@typeOfBoard.id)">New Bootloader</button></td>
+                    </div><!-- /.btn-group -->
+                </div><!-- /.pull-right -->
+            </div>
+            <div class="box-body">
+
+                <table id="allBootloaderVersions" class="table table-bordered">
+
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>HW identificator</th>
+                        <th>Description</th>
+                        <th>Changing notes</th>
+                        <th>Bin file ID</th>
+                        <th>Set as Main</th>
+                    </tr>
+
+                    @for(boot_loader <- BootLoader.find.where().disjunction()
+                                .add(Expr.eq("type_of_board.id", typeOfBoard.id))
+                                .add(Expr.eq("main_type_of_board.id", typeOfBoard.id))
+                                .findList() ){
+                        <tr>
+
+                            <td>@boot_loader.id</td>
+                            <td>@boot_loader.name</td>
+                            <td>@boot_loader.version_identificator</td>
+                            <td>@boot_loader.description</td>
+                            <td>@boot_loader.changing_note</td>
+                            <td>@if( boot_loader.file != null ){
+                                     @boot_loader.file.id
+                                }else{
+                                    <button class="btn btn-block btn-danger" type="button" onclick="uploadBootLoaderFileModal(@boot_loader.id)">Upload file</button>
+                                }
+                            </td>
+
+                            <td>
+                                @if(boot_loader.main_type_of_board != null && boot_loader.file != null) {
+                                    <p class="lead text-red">(ITS Main)</p>
+                                }
+                                @if(boot_loader.main_type_of_board == null && boot_loader.type_of_board != null && boot_loader.file != null){
+                                    <button class="btn btn-block btn-warning" type="button" onclick="setBootLoaderAsMain(@boot_loader.id)">SET as Main</button>
+                                }
+                                @if(boot_loader.file == null){
+                                    <p class="text-red">-----------</p>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </table>
+
+            </div>
+            <div class="box-footer">
+        </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div id="firmware_summary" class="box">
+            <div class="box-header with-border">
+                <h3 class="box-title">Default Device Program - FirstVersion of C_Program && First Firmware in Device! </h3>
+                <div class="pull-right">
+                    @if(typeOfBoard.default_program == null) {
+                        <div class="btn-group">
+                            <button class="btn btn-block btn-warning" type="button" onclick="createCProgramModal(@typeOfBoard.id)">Create default program</button>
+                        </div>
+                    }else{
+                        <div class="btn-group">
+                            <a onclick="editCProgramModal( '@typeOfBoard.default_program.id' , '@typeOfBoard.id', '@typeOfBoard.default_program.program_name', '@typeOfBoard.default_program.program_description' )" class="btn btn-warning btn-sm"><b> Update Information </b></a>
+                            <a onclick="createCProgramVersionModal(@typeOfBoard.default_program.id)" class="btn btn-info btn-sm"><b>New Version </b></a>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="box-body">
+
+                @if(typeOfBoard.default_program != null) {
+
+                    <div class="row invoice-info">
+                        <div class="col-sm-4 invoice-col">
+                            <address>
+                                <strong>Name: </strong>  @typeOfBoard.default_program.program_name<br>
+                                <strong>ID:   </strong>  @typeOfBoard.default_program.id<br>
+                                <strong>Date: </strong>  @typeOfBoard.default_program.date_of_create<br>
+                            </address>
+                        </div>
+                        <div class="col-sm-4 invoice-col">
+                            <address>
+                                <strong>Description: </strong>  @typeOfBoard.default_program.program_description
+                            </address>
+                        </div>
+                    </div>
+                }
+
+                <table id="allCProgramsVersions" class="table table-bordered">
+
+                    <tr>
+                        <th>C_Program ID</th>
+                        <th>Date</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Compiled & BIN Restored</th>
+                        <th>State</th>
+                    </tr>
+
+                    @for(version <- Version_Object.find.where().eq("c_program.defaul_program_type_of_board.id", typeOfBoard.id).findList()){
+                        <tr>
+                            <td>@version.id</td>
+                            <td>@version.date_of_create</td>
+                            <td>@version.version_name</td>
+                            <td>@version.version_description</td>
+
+                            <td>
+                                @if(version.c_compilation != null && version.c_compilation.bin_compilation_file != null){
+                                    <p class="text-green">Yes</p>
+
+                                }else{
+                                    <p class="text-red">NO!!!!</p>
+                                }
+                            </td>
+
+                            <td>
+                                @if(typeOfBoard.default_program.default_main_version != null && typeOfBoard.default_program.default_main_version.id == version.id) {
+                                    <p class="lead text-green">(ITS Main)</p>
+                                }
+                                @if(version.default_version_program == null && version.c_compilation != null && version.c_compilation.bin_compilation_file != null){
+                                    <button class="btn btn-block btn-warning" type="button" onclick="setVersionAsMain('@typeOfBoard.id', '@version.id')" > SET as Main </button>
+                                }
+                                @if(version.default_version_program == null && version.c_compilation == null || version.c_compilation.bin_compilation_file == null){
+                                    <p class="text-red"> Not compilable!!</p>
+                                }
+                            </td>
+
+
+                        </tr>
+                    }
+                </table>
+
+            </div>
+            <div class="box-footer">
+        </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="newBootLoaderModal" style="display: none;" class="modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">New BootLoader</h4>
+            </div>
+            <div class="modal-body">
+                <form id="newBootLoaderForm">
+                    <label>Name</label>                                     <input type="text" name="name"> <p>
+                    <label>Version Identificator (255.255.255)</label>      <input type="text" name="version_identificator"> <p>
+                    <label>Changing notes</label>  <p>                      <textarea name="changing_notes" class="form-control" rows="3" placeholder="What has changed... "></textarea> <p>
+                    <label>Description</label>     <p>                      <textarea name="description" class="form-control" rows="3" placeholder="Description... "></textarea> <p>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newBootLoaderModal').css('display','none')">Close</button>
+                <button id="newBootLoaderButton" value="" class="btn btn-primary" type="button" onclick="createNewBootLoaderRecord(this.value)">Create</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="newCProgramModal" style="display: none;" class="modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Create new C Program</h4>
+            </div>
+            <div class="modal-body">
+                <form id="newCProgramForm">
+                    <label>TypeOfDevice ID</label>                          <input type="text" name="type_of_board_id"> <p>
+                    <label>Name</label>                                     <input type="text" name="program_name"> <p>
+                    <label>Description</label>  <p>                         <textarea name="program_description" class="form-control" rows="3" placeholder="Descritpion (24 chartacters at least)... "></textarea> <p>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newCProgramModal').css('display','none')">Close</button>
+                <button id="newCProgramButton" value="" class="btn btn-primary" type="button" onclick="createNewCProgram()">Create</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="editCProgramModal" style="display: none;" class="modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Edit C Program</h4>
+            </div>
+            <div class="modal-body">
+                <form id="editCProgramForm">
+                    <label>TypeOfDevice ID</label>                          <input type="text" name="type_of_board_id"> <p>
+                    <label>Name</label>                                     <input type="text" name="program_name"> <p>
+                    <label>Description</label>  <p>                         <textarea name="program_description" class="form-control" rows="3"></textarea> <p>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editCProgramModal').css('display','none')">Close</button>
+                <button id="editCProgramButton" value="" class="btn btn-primary" type="button" onclick="editCProgram(this.value)">Update</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="newCProgramVersionModal" style="display: none;" class="modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">New C Program version</h4>
+            </div>
+            <div class="modal-body">
+                <form id="newCProgramVersionForm">
+                    <label>Version name</label>                 <input type="text" placeholder="1.0.5" name="version_name"> <p><p><p>
+                    <label>Version Description</label><p>       <textarea name="version_description" class="form-control" rows="3" placeholder="Description...."></textarea> <p><p>
+                    <label>Program</label>  <p>                 <textarea name="main" class="form-control" rows="3" placeholder="Code...."></textarea> <p>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newCProgramVersionModal').css('display','none')">Close</button>
+                <button id="newCProgramVersionButton" value="" class="btn btn-primary" type="button" onclick="createNewCProgramVersion(this.value)">Create</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="newFileModal" style="display: none;" class="modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Boot Loader File</h4>
+            </div>
+            <div class="modal-body">
+                <form id="newFileForm">
+                    <p></p>
+                    <label>Boot Loader bin file (.bin required)</label><p> <input type="file" id="file" name="file" />
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newFileModal').css('display','none')">Close</button>
+                <button id="uploadBootLoaderButton" value="" class="btn btn-primary" type="button" onclick="uploadBootLoaderFile(this.value)">Upload</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+	function openNewBootLoaderModal(type_of_board_id) {
+        $("#newBootLoaderModal").css("display", "block");
+        $('#newBootLoaderButton').val(type_of_board_id);
+    }
+
+    function openVersionCode(showCodeForm) {
+        $("#newBootLoaderModal").css("display", "block");
+        $("#showCodeForm textarea[name=showCodeForm]").val(showCodeForm);
+    }
+
+    function uploadBootLoaderFileModal(boot_loader_id) {
+        $("#newFileModal").css("display", "block");
+        $('#uploadBootLoaderButton').val(boot_loader_id);
+    }
+
+    function createCProgramModal(type_of_device_id) {
+        $("#newCProgramModal").css("display", "block");
+        $('#newCProgramButton').val(type_of_device_id);
+        $("#newCProgramForm input[name=type_of_board_id]").val(type_of_device_id);
+    }
+
+    function editCProgramModal(c_program_id, type_of_board_id, name, program_description) {
+        $("#editCProgramModal").css("display", "block");
+        $("#editCProgramForm input[name=type_of_board_id]").val(type_of_board_id);
+        $("#editCProgramForm input[name=program_name]").val(name);
+        $("#editCProgramForm textarea[name=program_description]").val(program_description);
+        $('#editCProgramButton').val(c_program_id);
+    }
+
+    function createCProgramVersionModal(boot_loader_id) {
+        $("#newCProgramVersionModal").css("display", "block");
+        $('#newCProgramVersionButton').val(boot_loader_id);
+    }
+
+    function setBootLoaderAsMain(boot_loader_id) {
+
+        $.ajax({
+            url: "@Server.tyrion_serverAddress" + "/bootloader/mark/bootloader/" + boot_loader_id,
+            type: 'PUT',
+            headers: {
+                "X-AUTH-TOKEN": getCookie("authToken"),
+                "Content-Type": "application/json"
+            },
+
+            success: function(data, status) {
+                $('#allBootloaderVersions').load(document.URL + ' #allBootloaderVersions');
+            },
+            error: function(data) {
+                BootstrapDialog.show({
+                    message: syntaxHighlight(data),
+                    type: BootstrapDialog.TYPE_DANGER,
+                    buttons: [{
+                        label: 'Close',
+                        action: function(dialogItself) {
+                            dialogItself.close();
+                        }
+                    }]
+
+                });
+            }
+        })
+    }
+
+    function setVersionAsMain(boot_loader_id, version_id) {
+
+        $.ajax({
+            url: "@Server.tyrion_serverAddress" + "/compilation/typeOfBoard/mark/c_version/" + boot_loader_id + "/" + version_id,
+            type: 'PUT',
+            headers: {
+                "X-AUTH-TOKEN": getCookie("authToken"),
+                "Content-Type": "application/json"
+            },
+
+            success: function(data, status) {
+                $('#allCProgramsVersions').load(document.URL + ' #allCProgramsVersions');
+            },
+            error: function(data) {
+                BootstrapDialog.show({
+                    message: syntaxHighlight(data),
+                    type: BootstrapDialog.TYPE_DANGER,
+                    buttons: [{
+                        label: 'Close',
+                        action: function(dialogItself) {
+                            dialogItself.close();
+                        }
+                    }]
+
+                });
+            }
+        })
+    }
+
+    function createNewBootLoaderRecord(boot_loader_id) {
+        model_data = $("#newBootLoaderForm").serializeObject();
+
+        $.ajax({
+            url: "@Server.tyrion_serverAddress" + "/bootloader/" + boot_loader_id,
+            type: 'POST',
+            contentType: 'application/json',
+            headers: {
+                "X-AUTH-TOKEN": getCookie("authToken"),
+                "Content-Type": "application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+
+            success: function(data, status) {
+
+                $("#newBootLoaderForm input[type=text]").val("");
+                $("#newBootLoaderModal").css("display", "none");
+                $('#allBootloaderVersions').load(document.URL + ' #allBootloaderVersions');
+
+            },
+            error: function(data) {
+
+                BootstrapDialog.show({
+                    message: syntaxHighlight(data),
+                    type: BootstrapDialog.TYPE_DANGER,
+                    buttons: [{
+                        label: 'Close',
+                        action: function(dialogItself) {
+                            dialogItself.close();
+                        }
+                    }]
+
+                });
+            }
+        })
+    }
+
+    function createNewCProgram() {
+
+        model_data = $("#newCProgramForm").serializeObject();
+
+        $.ajax({
+            url: "@Server.tyrion_serverAddress" + "/compilation/c_program/c_program",
+            type: 'POST',
+            contentType: 'application/json',
+            headers: {
+                "X-AUTH-TOKEN": getCookie("authToken"),
+                "Content-Type": "application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+
+            success: function(data, status) {
+
+                $("#newBootLoaderForm input[type=text]").val("");
+                $("#newCProgramModal").css("display", "none");
+                $('#firmware_summary').load(document.URL + ' #firmware_summary');
+
+            },
+            error: function(data) {
+
+                BootstrapDialog.show({
+                    message: syntaxHighlight(data),
+                    type: BootstrapDialog.TYPE_DANGER,
+                    buttons: [{
+                        label: 'Close',
+                        action: function(dialogItself) {
+                            dialogItself.close();
+                        }
+                    }]
+
+                });
+            }
+        })
+    }
+
+    function editCProgram(c_program_id) {
+
+        model_data = $("#editCProgramForm").serializeObject();
+
+        $.ajax({
+            url: "@Server.tyrion_serverAddress" + "/compilation/c_program/c_program/" + c_program_id,
+            type: 'PUT',
+            contentType: 'application/json',
+            headers: {
+                "X-AUTH-TOKEN": getCookie("authToken"),
+                "Content-Type": "application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+
+            success: function(data, status) {
+
+                $("#editCProgramForm input[type=text]").val("");
+                $("#editCProgramModal").css("display", "none");
+                $('#firmware_summary').load(document.URL + ' #firmware_summary');
+
+            },
+            error: function(data) {
+
+                BootstrapDialog.show({
+                    message: syntaxHighlight(data),
+                    type: BootstrapDialog.TYPE_DANGER,
+                    buttons: [{
+                        label: 'Close',
+                        action: function(dialogItself) {
+                            dialogItself.close();
+                        }
+                    }]
+
+                });
+            }
+        })
+    }
+
+    function createNewCProgramVersion(c_program_id) {
+
+        model_data = $("#newCProgramVersionForm").serializeObject();
+
+        $.ajax({
+            url: "@Server.tyrion_serverAddress" + "/compilation/c_program/version/create/" + c_program_id,
+            type: 'POST',
+            contentType: 'application/json',
+            headers: {
+                "X-AUTH-TOKEN": getCookie("authToken"),
+                "Content-Type": "application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+
+            success: function(data, status) {
+
+                $("#newCProgramVersionForm input[type=text]").val("");
+                $("#newCProgramVersionModal").css("display", "none");
+                $('#allCProgramsVersions').load(document.URL + ' #allCProgramsVersions');
+
+            },
+            error: function(data) {
+
+                BootstrapDialog.show({
+                    message: syntaxHighlight(data),
+                    type: BootstrapDialog.TYPE_DANGER,
+                    buttons: [{
+                        label: 'Close',
+                        action: function(dialogItself) {
+                            dialogItself.close();
+                        }
+                    }]
+
+                });
+            }
+        })
+    }
+
+    function uploadBootLoaderFile(boot_loader_id) {
+
+        event.preventDefault();
+
+        var file = $('#file').get(0).files[0];
+        var formData = new FormData();
+        formData.append('file', file);
+
+        $.ajax({
+
+            url: "@Server.tyrion_serverAddress" + "/bootloader/file/" + boot_loader_id,
+            type: 'PUT',
+            processData: false, // tell jQuery not to process the data
+            contentType: false, // tell jQuery not to set contentType
+            data: formData,
+
+            headers: {
+                "X-AUTH-TOKEN": getCookie("authToken"),
+            },
+
+            success: function(data, status) {
+
+                $("#newFileModal").css("display", "none");
+                $('#allBootloaderVersions').load(document.URL + ' #allBootloaderVersions');
+
+                BootstrapDialog.show({
+                    message: "SUCCESS",
+
+                    buttons: [{
+                        label: 'Close',
+                        action: function(dialogItself) {
+                            dialogItself.close();
+                        }
+                    }]
+                });
+
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+
+                BootstrapDialog.show({
+                    message: syntaxHighlight(data),
+                    type: BootstrapDialog.TYPE_DANGER,
+                    buttons: [{
+                        label: 'Close',
+                        action: function(dialogItself) {
+                            dialogItself.close();
+                        }
+                    }]
+
+                });
+            }
+
+        })
+    }
+
+</script>
+

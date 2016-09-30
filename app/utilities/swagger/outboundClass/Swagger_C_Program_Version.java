@@ -49,4 +49,7 @@ public class Swagger_C_Program_Version {
    @ApiModelProperty(required = true, readOnly = true)
     public List<String> runing_on_board = new ArrayList<>();
 
+    @ApiModelProperty(required = true, readOnly = true)
+    public boolean remove_permission;
+
 }

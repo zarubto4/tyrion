@@ -19,28 +19,30 @@ import models.project.b_program.Homer_Instance;
 import models.project.b_program.servers.Cloud_Homer_Server;
 import models.project.m_program.Grid_Terminal;
 import models.project.m_program.M_Project;
+import play.data.Form;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import play.mvc.WebSocket;
 import utilities.enums.Firmware_type;
-import utilities.enums.TypeOfCommand;
+import utilities.enums.Type_of_command;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_API;
 import utilities.loginEntities.TokenCache;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_Unauthorized;
+import utilities.swagger.documentationClass.Swagger_WebSocket_Yoda_connected;
 import utilities.swagger.outboundClass.Swagger_Instance_HW_Group;
 import utilities.swagger.outboundClass.Swagger_Websocket_Token;
 import utilities.webSocket.*;
 
-import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
-public class WebSocketController_Incoming extends Controller {
+public class WebSocketController extends Controller {
 
 // Loger
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
@@ -93,6 +95,7 @@ public class WebSocketController_Incoming extends Controller {
 
             tokenCache.put(web_socket_token, SecurityController.getPerson().id);
 
+
             Swagger_Websocket_Token swagger_websocket_token = new Swagger_Websocket_Token();
             swagger_websocket_token.websocket_token = web_socket_token;
 
@@ -101,7 +104,6 @@ public class WebSocketController_Incoming extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
     }
-
 
     // Připojení Homera (Cloud i Local)
     @ApiOperation(value = "Homer websocket Connection", hidden = true)
@@ -143,7 +145,7 @@ public class WebSocketController_Incoming extends Controller {
                         // V případě že tedy nějaké temrinály jsou připravené komunikovat, musím upozornit homera, že chci odebírat jeho změny. Takže ho u prvního oběratele budu informovat
                         if (homer.subscribers_grid.isEmpty()) {
 
-                            ask_for_receiving_for_Grid(homer);
+                            homer_instance_ask_for_receiving_for_Grid(homer);
                             homer.subscribers_grid.add(incomingConnections_terminals.get(terminal_name));
                             incomingConnections_terminals.get(terminal_name).subscribers_grid.add(homer);
 
@@ -182,7 +184,7 @@ public class WebSocketController_Incoming extends Controller {
                         if (homer.subscribers_becki.isEmpty()) {
 
                             logger.debug("Homer -> Lost Connection: Connection with Homer: " + becki_identificator + " was restored");
-                            homer_subscribe_blocko_instance(homer);
+                            homer_instance_subscribe_blocko_instance(homer);
 
                             homer.subscribers_becki.add(becki_website.get(becki_identificator));
                             becki_website.get(becki_identificator).subscribers_becki.add(homer);
@@ -204,7 +206,7 @@ public class WebSocketController_Incoming extends Controller {
                     }
                 }
 
-            } else homer_all_terminals_are_gone(homer);
+            } else homer_instance_all_terminals_are_gone(homer);
 
         }catch (Exception e){
             logger.error("Homer Connection Exception", e);
@@ -279,20 +281,20 @@ public class WebSocketController_Incoming extends Controller {
                     } else {
                         ArrayList<String> list = new ArrayList<>(4);
                         list.add(terminal_id);
-                        WebSocketController_Incoming.terminal_lost_connection_homer.put(homer_identificator, list);
+                        WebSocketController.terminal_lost_connection_homer.put(homer_identificator, list);
                     }
 
                     logger.debug("Tyrion: Sending to Terminal, that homer is nto connected yet");
-                    WebSocketController_Incoming.terminal_homer_is_not_connected_yet(terminal);
+                    WebSocketController.terminal_homer_is_not_connected_yet(terminal);
 
                     return ws;
                 }
 
                 logger.debug("Tyrion: Homer is online, so connection will be successful");
-                WebSCType homer = WebSocketController_Incoming.incomingConnections_homers.get(homer_identificator);
+                WebSCType homer = WebSocketController.incomingConnections_homers.get(homer_identificator);
 
-                terminal.subscribers_grid.add(WebSocketController_Incoming.incomingConnections_homers.get(homer_identificator));
-                if (homer.subscribers_grid.isEmpty()) WebSocketController_Incoming.ask_for_receiving_for_Grid(homer);
+                terminal.subscribers_grid.add(WebSocketController.incomingConnections_homers.get(homer_identificator));
+                if (homer.subscribers_grid.isEmpty()) WebSocketController.homer_instance_ask_for_receiving_for_Grid(homer);
 
                 homer.subscribers_grid.add(terminal);
                 return ws;
@@ -331,30 +333,30 @@ public class WebSocketController_Incoming extends Controller {
 
                   logger.debug("Tyrion: is Homer online?");
 
-                  if (!WebSocketController_Incoming.incomingConnections_homers.containsKey(homer_identificator)) {
+                  if (!WebSocketController.incomingConnections_homers.containsKey(homer_identificator)) {
 
                       logger.debug("Tyrion: No its not - So Server make procedure for archive this state");
 
-                      if (WebSocketController_Incoming.terminal_lost_connection_homer.containsKey(homer_identificator)) {
-                         WebSocketController_Incoming.terminal_lost_connection_homer.get(homer_identificator).add(terminal_id);
+                      if (WebSocketController.terminal_lost_connection_homer.containsKey(homer_identificator)) {
+                         WebSocketController.terminal_lost_connection_homer.get(homer_identificator).add(terminal_id);
 
                       } else {
                           ArrayList<String> list = new ArrayList<>(4);
                           list.add(terminal_id);
-                          WebSocketController_Incoming.terminal_lost_connection_homer.put(homer_identificator, list);
+                          WebSocketController.terminal_lost_connection_homer.put(homer_identificator, list);
                       }
 
                       logger.debug("Tyrion: Sending to Terminal, that homer is nto connected yet");
-                      WebSocketController_Incoming.terminal_homer_is_not_connected_yet(terminal);
+                      WebSocketController.terminal_homer_is_not_connected_yet(terminal);
 
                       return ws;
                   }
 
                   logger.debug("Tyrion: Homer is online, so connection will be successful");
-                  WebSCType homer = WebSocketController_Incoming.incomingConnections_homers.get(homer_identificator);
+                  WebSCType homer = WebSocketController.incomingConnections_homers.get(homer_identificator);
 
-                  terminal.subscribers_grid.add(WebSocketController_Incoming.incomingConnections_homers.get(homer_identificator));
-                  if (homer.subscribers_grid.isEmpty()) WebSocketController_Incoming.ask_for_receiving_for_Grid(homer);
+                  terminal.subscribers_grid.add(WebSocketController.incomingConnections_homers.get(homer_identificator));
+                  if (homer.subscribers_grid.isEmpty()) WebSocketController.homer_instance_ask_for_receiving_for_Grid(homer);
 
                   homer.subscribers_grid.add(terminal);
                   return ws;
@@ -396,7 +398,7 @@ public class WebSocketController_Incoming extends Controller {
                 try {
 
                     WS_BlockoServer ws_blockoServer = (WS_BlockoServer) blocko_servers.get(server_name);
-                    blocko_server_ping(ws_blockoServer);
+                    homer_server_ping(ws_blockoServer);
                 }catch (Exception e){
                     logger.warn("Ping Failed - Tyrion remove previous connection");
                     blocko_servers.get(server_name).onClose();
@@ -508,7 +510,7 @@ public class WebSocketController_Incoming extends Controller {
                                             try {
 
                                                  logger.debug("Instnace: " + instance.blocko_instance_name + " is not on homer server - it will be also uploaded to Homer server");
-                                                 WebSocketController_Incoming.blocko_server_add_instance(server, instance, true);
+                                                 WebSocketController.homer_server_add_instance(server, instance, true);
 
                                             } catch (Exception e) {
                                                 logger.warn("Instance " + instance.blocko_instance_name + "  failed to upload properly on the cloud_blocko_server Blocko");
@@ -525,7 +527,7 @@ public class WebSocketController_Incoming extends Controller {
                                             try {
 
                                                 logger.debug("Instance: " + instance.blocko_instance_name + " will be read to Tyrion Memmory");
-                                                WebSocketController_Incoming.blocko_server_add_instance(server, instance, false);
+                                                WebSocketController.homer_server_add_instance(server, instance, false);
 
                                             } catch (Exception e) {
                                                 logger.warn("Instance " + instance.blocko_instance_name + "  failed to upload properly on the cloud_blocko_server Blocko");
@@ -540,7 +542,7 @@ public class WebSocketController_Incoming extends Controller {
                                         for (String blocko_instance_name : instances_for_removing_from_homer) {
                                             try {
 
-                                                JsonNode remove_instance = blocko_server_remove_instance(server, blocko_instance_name);
+                                                JsonNode remove_instance = homer_server_remove_instance(server, blocko_instance_name);
                                                 if (remove_instance.get("status").asText().equals("error")) {
                                                     logger.debug("Blocko Server: Fail when Tyrion try to remove instance from Blocko cloud_blocko_server");
                                                 }
@@ -649,8 +651,10 @@ public class WebSocketController_Incoming extends Controller {
 
     }
 
+
+
 // PRIVATE Homer-Server ---------------------------------------------------------------------------------------------------------
-    public static void blocko_server_incoming_message(WS_BlockoServer blockoServer, ObjectNode json){
+    public static void homer_server_incoming_message(WS_BlockoServer blockoServer, ObjectNode json){
 
     logger.debug("BlockoServer: "+ blockoServer.identifikator + " Incoming message: " + json.toString());
 
@@ -664,12 +668,12 @@ public class WebSocketController_Incoming extends Controller {
 
                     case "yodaDisconnected" : {
                         logger.debug("yodaDisconnected");
-                        blocko_server_yodaDisconnected(blockoServer,json);
+                        homer_server_yodaDisconnected(blockoServer,json);
                         return;
                     }
                     case "yodaConnected" : {
                         logger.debug("yodaConnected");
-                        blocko_server_yodaConnected(blockoServer,json);
+                        homer_server_yodaConnected(blockoServer,json);
                         return;
                     }
                     default: {
@@ -694,7 +698,7 @@ public class WebSocketController_Incoming extends Controller {
     }
 }
 
-    public static JsonNode blocko_server_listOfInstance(WS_BlockoServer blockoServer)  throws ExecutionException, TimeoutException, InterruptedException{
+    public static JsonNode homer_server_listOfInstance(WS_BlockoServer blockoServer)  throws ExecutionException, TimeoutException, InterruptedException{
 
         logger.debug("Tyrion: Server want know instances on: " + blockoServer.identifikator);
 
@@ -705,7 +709,7 @@ public class WebSocketController_Incoming extends Controller {
         return blockoServer.write_with_confirmation(result, 1000*4, 0, 3);
     }
 
-    public static JsonNode blocko_server_isInstanceExist(WS_BlockoServer blockoServer, String instance_name)  throws ExecutionException, TimeoutException, InterruptedException{
+    public static JsonNode homer_server_isInstanceExist(WS_BlockoServer blockoServer, String instance_name)  throws ExecutionException, TimeoutException, InterruptedException{
 
 
         ObjectNode result = Json.newObject();
@@ -716,71 +720,86 @@ public class WebSocketController_Incoming extends Controller {
         return blockoServer.write_with_confirmation(result, 1000*4, 0, 3);
     }
 
-    public static WebSCType blocko_server_add_instance(WS_BlockoServer blockoServer, Homer_Instance instance, boolean with_uploud_to_server) throws Exception{
+    public static WebSCType homer_server_add_instance(WS_BlockoServer blockoServer, Homer_Instance instance, boolean with_uploud_to_server) throws Exception{
 
-            System.out.println("\n \n");
-            logger.debug("Tyrion uploud new instance to cloud_blocko_server" + blockoServer.identifikator);
+            try {
+                System.out.println("\n \n");
+                logger.debug("Tyrion uploud new instance to cloud_blocko_server: " + blockoServer.identifikator);
 
-            if (WebSocketController_Incoming.incomingConnections_homers.containsKey(instance.blocko_instance_name)) {
+                if (WebSocketController.incomingConnections_homers.containsKey(instance.blocko_instance_name)) {
 
-                logger.warn("Při přidávání instance do serveru: " + blockoServer.identifikator + " bylo zjištěno že v mapě už existuje jméno homera");
-                return WebSocketController_Incoming.incomingConnections_homers.get(instance.blocko_instance_name);
-            }
-
-            logger.debug("Creating new  Homer");
-            WS_Homer_Cloud homer = new WS_Homer_Cloud(instance.blocko_instance_name, instance.version_object != null ? instance.version_object.id : "null" , blockoServer);
-
-            ObjectNode result = Json.newObject();
-            result.put("messageType", "createInstance");
-            result.put("messageChannel", "homer-server");
-            result.put("instanceId", instance.blocko_instance_name);
-
-            List<Swagger_Instance_HW_Group> hw_groups = new ArrayList<>();
-            for(B_Program_Hw_Group b_program_hw_group : instance.version_object.b_program_hw_groups){
-
-               if(b_program_hw_group.main_board_pair != null ){
-                   Swagger_Instance_HW_Group group = new Swagger_Instance_HW_Group();
-                   group.yodaId = (b_program_hw_group.main_board_pair.board.id);
-
-                   for(B_Pair pair : b_program_hw_group.device_board_pairs){
-                       group.devicesId.add(pair.board.id);
-                   }
-                   hw_groups.add(group);
-               }
-            }
-
-            homer.group = hw_groups;
-
-            result.set("devices", Json.toJson(hw_groups));
-
-            if(with_uploud_to_server) {
-                logger.debug("Sending to cloud_blocko_server request for new instance ");
-                JsonNode result_instance = blockoServer.write_with_confirmation(result, 1000*5, 0, 3);
-
-
-                logger.debug("Sending Blocko Program if Exist");
-                if( instance.version_object != null) {
-
-                    FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", instance.version_object.id ).eq("file_name","program.js").findUnique();
-                    if(fileRecord != null) {
-                        JsonNode result_uploud = WebSocketController_Incoming.homer_upload_program(homer, instance.id, fileRecord.get_fileRecord_from_Azure_inString());
-                    }else {
-                        logger.warn("File program.js under server: " + blockoServer.identifikator + " instnace " + instance.id + " not found!" );
-                    }
-                }else {
-                    logger.debug("Blocko Version not exist under Homer_Instance");
+                    logger.warn("Při přidávání instance do serveru: " + blockoServer.identifikator + " bylo zjištěno že v mapě už existuje jméno homera");
+                    return WebSocketController.incomingConnections_homers.get(instance.blocko_instance_name);
                 }
+
+                logger.debug("Creating new  Homer");
+                WS_Homer_Cloud homer = new WS_Homer_Cloud(instance.blocko_instance_name, instance.version_object != null ? instance.version_object.id : "null", blockoServer);
+
+                ObjectNode result = Json.newObject();
+                result.put("messageType", "createInstance");
+                result.put("messageChannel", "homer-server");
+                result.put("instanceId", instance.blocko_instance_name);
+
+                List<Swagger_Instance_HW_Group> hw_groups = new ArrayList<>();
+
+                List<B_Program_Hw_Group> hw_group_for_checking = B_Program_Hw_Group.find.where().eq("b_program_version_groups.id", instance.version_object.id).findList();
+                if (hw_group_for_checking != null) {
+
+                    logger.debug("HW GROUP není nulová");
+
+                    for (B_Program_Hw_Group b_program_hw_group : hw_group_for_checking) {
+
+                        if (b_program_hw_group.main_board_pair != null) {
+
+                            Swagger_Instance_HW_Group group = new Swagger_Instance_HW_Group();
+                            group.yodaId = b_program_hw_group.main_board_pair.board.id;
+
+                            for (B_Pair pair : b_program_hw_group.device_board_pairs) {
+                                group.devicesId.add(pair.board.id);
+                            }
+                            hw_groups.add(group);
+                        }
+                    }
+                } else {
+                    logger.error("HW group je nulová!!!!!");
+                }
+
+                homer.group = hw_groups;
+
+                result.set("devices", Json.toJson(hw_groups));
+
+                if (with_uploud_to_server) {
+                    logger.debug("Sending to cloud_blocko_server request for new instance ");
+                    JsonNode result_instance = blockoServer.write_with_confirmation(result, 1000 * 5, 0, 3);
+
+
+                    logger.debug("Sending Blocko Program if Exist");
+                    if (instance.version_object != null) {
+
+                        FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", instance.version_object.id).eq("file_name", "program.js").findUnique();
+                        if (fileRecord != null) {
+                            JsonNode result_uploud = WebSocketController.homer_instance_upload_blocko_program(homer, instance.id, fileRecord.get_fileRecord_from_Azure_inString());
+                        } else {
+                            logger.warn("File program.js under server: " + blockoServer.identifikator + " instnace " + instance.id + " not found!");
+                        }
+                    } else {
+                        logger.debug("Blocko Version not exist under Homer_Instance");
+                    }
+                }
+
+                logger.debug("Adding a new virtual Homer in private cloud_blocko_server maps in Controller");
+                blockoServer.virtual_homers.put(instance.blocko_instance_name, homer);
+
+                logger.debug("Initiating connection procedures");
+                homer_connection_procedure(homer);
+
+                incomingConnections_homers.put(homer.identifikator, homer);
+
+                return homer;
+            }catch (Exception e){
+                e.printStackTrace();
+                return null;
             }
-
-            logger.debug("Adding a new virtual Homer in private cloud_blocko_server maps in Controller");
-            blockoServer.virtual_homers.put(instance.blocko_instance_name, homer);
-
-            logger.debug("Initiating connection procedures");
-            homer_connection_procedure(homer);
-
-            incomingConnections_homers.put(homer.identifikator, homer);
-
-            return homer;
 
     }
 
@@ -797,7 +816,7 @@ public class WebSocketController_Incoming extends Controller {
 
         logger.debug("Sending Blocko Program if Exist");
 
-        JsonNode result_uploud = WebSocketController_Incoming.homer_upload_program(homer, instance.id, instance.version_object.files.get(0).get_fileRecord_from_Azure_inString());
+        JsonNode result_uploud = WebSocketController.homer_instance_upload_blocko_program(homer, instance.id, instance.version_object.files.get(0).get_fileRecord_from_Azure_inString());
 
         if(result_uploud.get("status").asText().equals("success")){
 
@@ -811,7 +830,7 @@ public class WebSocketController_Incoming extends Controller {
         }
     }
 
-    public static JsonNode blocko_server_remove_instance( WS_BlockoServer blockoServer, String instance_name) throws  ExecutionException,  TimeoutException, InterruptedException{
+    public static JsonNode homer_server_remove_instance(WS_BlockoServer blockoServer, String instance_name) throws  ExecutionException,  TimeoutException, InterruptedException{
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "destroyInstance");
@@ -822,16 +841,16 @@ public class WebSocketController_Incoming extends Controller {
 
     }
 
-    public static void blocko_server_ping(WS_BlockoServer blockoServer){
+    public static JsonNode homer_server_ping(WS_BlockoServer blockoServer) throws  ExecutionException,  TimeoutException, InterruptedException{
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "ping");
         result.put("messageChannel", "homer-server");
 
-        blockoServer.write_without_confirmation( result);
+       return blockoServer.write_with_confirmation(result, 1000*2 , 0 , 2);
     }
 
-    public static void blocko_server_unregistered_board_are_connected(WS_BlockoServer blockoServer, String macAddress){
+    public static void homer_server_unregistered_board_are_connected(WS_BlockoServer blockoServer, String macAddress){
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "unregisteredHardware");
@@ -842,25 +861,35 @@ public class WebSocketController_Incoming extends Controller {
 
     }
 
-    public static void blocko_server_yodaConnected(WS_BlockoServer blockoServer, ObjectNode json){
+    public static void homer_server_yodaConnected(WS_BlockoServer blockoServer, ObjectNode json){
         try {
-            if(json.has("deviceId")) {
 
-                Board board = Board.find.byId(json.get("deviceId").asText());
+            // Zpracování Json
+            final Form<Swagger_WebSocket_Yoda_connected> form = Form.form(Swagger_WebSocket_Yoda_connected.class).bind(json);
+            if(form.hasErrors()){
+                logger.error("Incoming Json for Yoda has not right Form");
+                return;
+            }
 
-                if(board == null){
+            Swagger_WebSocket_Yoda_connected help = form.get();
+
+                Board master_device = Board.find.byId(help.deviceId);
+
+                if(master_device == null){
+
                     logger.warn("WARN! WARN! WARN! WARN!");
                     logger.warn("Unregistered Hardware connected to Blocko cloud_blocko_server - " + blockoServer.identifikator);
                     logger.warn("Unregistered Hardware: " +  json.get("macAddress").asText() );
                     logger.warn("WARN! WARN! WARN! WARN!");
 
-                    blocko_server_unregistered_board_are_connected(blockoServer, json.get("deviceId").asText());
+                    homer_server_unregistered_board_are_connected(blockoServer, help.deviceId);
                     return;
                 }
 
                 logger.debug("Board connected to Blocko cloud_blocko_server");
 
-                if(board.latest_know_server == null){
+                // Pokud se Yoda přihlásil poprvé - a nikdy neměl intanci a asi nemá ani klienta!
+                if(master_device.latest_know_server == null){
 
                     logger.debug("The Board is not yet matched the Server");
                     Cloud_Homer_Server server = Cloud_Homer_Server.find.where().eq("server_name", blockoServer.identifikator).findUnique();
@@ -870,38 +899,40 @@ public class WebSocketController_Incoming extends Controller {
                         return;
                     }
 
-
-                    server.boards.add(board);
+                    server.boards.add(master_device);
                     server.refresh();
                     server.update();
 
-                    board.refresh();
-                    board.latest_know_server = server;
-                    board.is_active = true;
-                    board.update();
+                    master_device.refresh();
+                    master_device.latest_know_server = server;
+                    master_device.is_active = true;
+                    master_device.update();
                 }
 
-                List<Person> persons = Person.find.where().eq("owningProjects.boards.id", board.id).findList();
+                // Odešlu notifikaci o připojení
+                List<Person> persons = Person.find.where().eq("owningProjects.boards.id", master_device.id).findList();
                 for(Person person : persons){
-
                     if( becki_website.containsKey(person.id)) {
-                        NotificationController.board_connect(person, board);
+                        NotificationController.board_connect(person, master_device);
                     }
-
                 }
 
-                ActualizationController.hardware_connected(board);
+
+                // Kontrola AutoBackupu
+
+                // Kontola
 
 
-            }else {
-                logger.error("Incoming message: Yoda Connected: has not macAddress!!!!");
-            }
+
+                // Požádám o kontrolu zda nečeká nějaká nová aktualizační procedura - pro Yodu nebo jeho device
+                ActualizationController.hardware_connected(master_device, help);
+
         }catch (Exception e){
             logger.error("Blocko Server - Yoda Connected ERROR", e);
         }
     }
 
-    public static void blocko_server_yodaDisconnected(WS_BlockoServer blockoServer, ObjectNode json){
+    public static void homer_server_yodaDisconnected(WS_BlockoServer blockoServer, ObjectNode json){
         try {
 
             if(json.has("deviceId")) {
@@ -932,10 +963,14 @@ public class WebSocketController_Incoming extends Controller {
         }
     }
 
-    public static void blocko_server_is_disconnect(WS_BlockoServer blockoServer){
+    public static void homer_server_is_disconnect(WS_BlockoServer blockoServer){
         logger.debug("Tyrion lost connection with blocko cloud_blocko_server: " + blockoServer.identifikator);
         blocko_servers.remove(blockoServer.identifikator);
     }
+
+
+
+
 
 // PRIVATE Compiler-Server --------------------------------------------------------------------------------------------------------
 
@@ -944,7 +979,7 @@ public class WebSocketController_Incoming extends Controller {
         logger.warn("Zatím není implementovaná žádná reakce na příchozá zprávu z Compilačního serveru !!");
     }
 
-    // Vytvoř kompilaci
+        // Vytvoř kompilaci
         public static JsonNode compiler_server_make_Compilation(Person compilator, ObjectNode request) throws  ExecutionException, TimeoutException, InterruptedException {
 
         List<String> keys      = new ArrayList<>(compiler_cloud_servers.keySet());
@@ -973,21 +1008,26 @@ public class WebSocketController_Incoming extends Controller {
 
     }
 
-    // Ping
-        public static void compiler_server_ping(WS_CompilerServer compilerServer) throws  ExecutionException, TimeoutException, InterruptedException {
+        // Ping
+        public static JsonNode compiler_server_ping(WS_CompilerServer compilerServer) throws  ExecutionException, TimeoutException, InterruptedException {
 
-        ObjectNode result = Json.newObject();
-        result.put("messageType", "ping");
-        result.put("messageChannel", "tyrion");
+            ObjectNode result = Json.newObject();
+            result.put("messageType", "ping");
+            result.put("messageChannel", "tyrion");
 
-        compilerServer.write_without_confirmation(result);
-    }
+            return compilerServer.write_with_confirmation(result, 1000 * 3, 0, 3);
 
-    // Reakce na odhlášení compilačního serveru
+        }
+
+        // Reakce na odhlášení compilačního serveru
         public static void compiler_server_is_disconnect(WS_CompilerServer compilerServer)  {
         logger.debug("Connection lost with compilation cloud_blocko_server!: " + compilerServer.identifikator);
         compiler_cloud_servers.remove(compilerServer.identifikator);
     }
+
+
+
+
 
 // PRIVATE Becki -----------------------------------------------------------------------------------------------------------------
 
@@ -1112,17 +1152,17 @@ public class WebSocketController_Incoming extends Controller {
 
             }
 
-    // Ping
-        public static void becki_ping(WebSCType webSCType) throws TimeoutException, InterruptedException {
+        // Ping
+        public static JsonNode becki_ping(WebSCType webSCType) throws TimeoutException, InterruptedException, ExecutionException {
  
-        ObjectNode result = Json.newObject();
-        result.put("messageType", "ping");
-        result.put("messageChannel", "tyrion");
+            ObjectNode result = Json.newObject();
+            result.put("messageType", "ping");
+            result.put("messageChannel", "tyrion");
 
-        webSCType.write_without_confirmation(result);
-    }
+            return webSCType.write_with_confirmation(result, 1000 * 3, 0, 3);
+        }
 
-    // Odebírání streamu aktualizací z Homer instance
+        // Odebírání streamu aktualizací z Homer instance
         public static void becki_subscribe_instance(WS_Becki_Website becki, ObjectNode json){
 
             try {
@@ -1145,7 +1185,7 @@ public class WebSocketController_Incoming extends Controller {
                 WS_BlockoServer server = (WS_BlockoServer) blocko_servers.get(version.homer_instance.cloud_homer_server.server_name);
 
                 // Zjistit jestli tam instance opravdu běží
-                JsonNode result_instance = blocko_server_isInstanceExist(server, version.homer_instance.blocko_instance_name);
+                JsonNode result_instance = homer_server_isInstanceExist(server, version.homer_instance.blocko_instance_name);
                 if(result_instance.get("status").asText().equals("error"))  {
                     becki_disapprove_subscription_instance_state(becki, json.get("messageId").asText(), result_instance.get("error").asText());
                     return;
@@ -1167,7 +1207,7 @@ public class WebSocketController_Incoming extends Controller {
                 WebSCType homer = incomingConnections_homers.get(version.homer_instance.blocko_instance_name);
 
                 // 2 - Požádat Homera o zasílání informací
-                JsonNode result_recive = homer_subscribe_blocko_instance(homer);
+                JsonNode result_recive = homer_instance_subscribe_blocko_instance(homer);
                 if(result_recive.get("status").textValue().equals("error")) becki_disapprove_subscription_instance_state(becki, json.get("messageId").asText(), result_recive.get("error").textValue());
 
                 // 1 - navázat propojení mezi instanci Homera a instancí Becki
@@ -1205,7 +1245,7 @@ public class WebSocketController_Incoming extends Controller {
                 WS_BlockoServer server = (WS_BlockoServer) blocko_servers.get(version.homer_instance.cloud_homer_server.server_name);
 
                 // Zjistit jestli tam instance opravdu běží
-                JsonNode result_instance = blocko_server_isInstanceExist(server, version.homer_instance.blocko_instance_name);
+                JsonNode result_instance = homer_server_isInstanceExist(server, version.homer_instance.blocko_instance_name);
                 if(result_instance.get("status").asText().equals("error"))  {
                     becki_disapprove_un_subscription_instance_state(becki, json.get("messageId").asText(), result_instance.get("error").asText());
                     return;
@@ -1292,9 +1332,12 @@ public class WebSocketController_Incoming extends Controller {
     }
 
 
+
+
+
 // PRIVATE Homer -----------------------------------------------------------------------------------------------------------------
 
-    public static void homer_incoming_message(WebSCType homer, ObjectNode json){
+    public static void homer_instance_incoming_message(WebSCType homer, ObjectNode json){
 
         logger.debug("Homer: "+ homer.identifikator + " Incoming message: " + json.toString());
 
@@ -1336,14 +1379,14 @@ public class WebSocketController_Incoming extends Controller {
                             WS_Homer_Cloud homer_cloud = (WS_Homer_Cloud) homer;
 
                             logger.debug("yodaDisconnected");
-                            blocko_server_yodaDisconnected(homer_cloud.blockoServer ,json);
+                            homer_server_yodaDisconnected(homer_cloud.blockoServer ,json);
                             return;
                         }
                         case "yodaConnected" : {
                             WS_Homer_Cloud homer_cloud = (WS_Homer_Cloud) homer;
 
                             logger.debug("yodaConnected");
-                            blocko_server_yodaConnected(homer_cloud.blockoServer ,json);
+                            homer_server_yodaConnected(homer_cloud.blockoServer ,json);
                             return;
                         }
                     }
@@ -1363,7 +1406,7 @@ public class WebSocketController_Incoming extends Controller {
         }
     }
 
-    public static JsonNode homer_getState(WebSCType homer) throws  ExecutionException, TimeoutException, InterruptedException {
+    public static JsonNode homer_instance_getState(WebSCType homer) throws  ExecutionException, TimeoutException, InterruptedException {
 
         logger.debug("Tyrion: want to know state of Homer: " + homer.identifikator);
 
@@ -1371,22 +1414,21 @@ public class WebSocketController_Incoming extends Controller {
         result.put("messageType", "getState");
         result.put("messageChannel", "tyrion");
 
-        return homer.write_with_confirmation(result, 1000*3, 0, 4);
+        return homer.write_with_confirmation(result, 1000*3, 0, 2);
     }
 
-    public static void homer_ping(WebSCType homer) throws  ExecutionException, TimeoutException, InterruptedException {
+    public static JsonNode homer_instance_ping_instance(WebSCType homer) throws  ExecutionException, TimeoutException, InterruptedException {
 
         logger.debug("Tyrion: Server want send ping to Homer: " + homer.identifikator);
 
         ObjectNode result = Json.newObject();
-        result.put("messageType", "ping");
+        result.put("messageType", "ping_instance");
         result.put("messageChannel", "homer-server");
 
-        homer.write_without_confirmation(result);
-
+        return homer.write_with_confirmation(result, 1000*3, 0, 2);
     }
 
-    public static JsonNode homer_devices_commands(WebSCType homer, String targetId, TypeOfCommand command) throws  ExecutionException, TimeoutException, InterruptedException {
+    public static JsonNode homer_instance_devices_commands(WebSCType homer, String targetId, Type_of_command command) throws  ExecutionException, TimeoutException, InterruptedException {
 
         logger.debug("Tyrion: Server want send command to Devices in Homer Instance: " + homer.identifikator);
 
@@ -1400,7 +1442,7 @@ public class WebSocketController_Incoming extends Controller {
 
     }
 
-    public static JsonNode homer_add_Yoda_to_instance(WebSCType homer, String yoda_id) throws  ExecutionException, TimeoutException, InterruptedException{
+    public static JsonNode homer_instance_add_Yoda_to_instance(WebSCType homer, String yoda_id) throws  ExecutionException, TimeoutException, InterruptedException{
 
         ObjectNode request = Json.newObject();
         request.put("messageType", "addYodaToInstance");
@@ -1420,7 +1462,7 @@ public class WebSocketController_Incoming extends Controller {
        return result;
     }
 
-    public static JsonNode homer_remove_Yoda_from_instance(WebSCType homer, String yoda_id) throws  ExecutionException, TimeoutException, InterruptedException{
+    public static JsonNode homer_instance_remove_Yoda_from_instance(WebSCType homer, String yoda_id) throws  ExecutionException, TimeoutException, InterruptedException{
 
         ObjectNode request = Json.newObject();
         request.put("messageType", "removeYodaFromInstance");
@@ -1445,7 +1487,7 @@ public class WebSocketController_Incoming extends Controller {
         return request;
     }
 
-    public static JsonNode homer_add_Device_to_instance(WebSCType homer, String yoda_id, String device_id) throws  ExecutionException, TimeoutException, InterruptedException{
+    public static JsonNode homer_instance_add_Device_to_instance(WebSCType homer, String yoda_id, String device_id) throws  ExecutionException, TimeoutException, InterruptedException{
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "addDeviceToInstance");
@@ -1456,7 +1498,7 @@ public class WebSocketController_Incoming extends Controller {
         return homer.write_with_confirmation(result, 1000*3, 0, 4);
     }
 
-    public static JsonNode homer_remove_Device_from_instance(WebSCType homer, String yoda_id, String device_id) throws  ExecutionException, TimeoutException, InterruptedException{
+    public static JsonNode homer_instance_remove_Device_from_instance(WebSCType homer, String yoda_id, String device_id) throws  ExecutionException, TimeoutException, InterruptedException{
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "removeDeviceFromInstance");
@@ -1467,10 +1509,7 @@ public class WebSocketController_Incoming extends Controller {
         return homer.write_with_confirmation(result, 1000*3, 0, 4);
     }
 
-
-
-
-    public static JsonNode homer_upload_program(WebSCType homer, String program_id, String program) throws  ExecutionException, TimeoutException, InterruptedException {
+    public static JsonNode homer_instance_upload_blocko_program(WebSCType homer, String program_id, String program) throws  ExecutionException, TimeoutException, InterruptedException {
 
             ObjectNode result = Json.newObject();
             result.put("messageType", "loadProgram");
@@ -1481,11 +1520,11 @@ public class WebSocketController_Incoming extends Controller {
           return homer.write_with_confirmation(result, 1000*3, 0, 4);
     }
 
-    public static boolean homer_online_state(String homer_name){
+    public static boolean homer__instance_online_state(String homer_name){
         return incomingConnections_homers.containsKey(homer_name);
     }
 
-    public static JsonNode homer_get_device_list(WebSCType homer) throws  ExecutionException, TimeoutException, InterruptedException{
+    public static JsonNode homer_instance_get_device_list(WebSCType homer) throws  ExecutionException, TimeoutException, InterruptedException{
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "getDeviceList");
@@ -1494,7 +1533,7 @@ public class WebSocketController_Incoming extends Controller {
         return homer.write_with_confirmation(result, 1000*3, 0, 4);
     }
 
-    public static void homer_is_disconnect(WebSCType homer) {
+    public static void homer_instance_is_disconnect(WebSCType homer) {
 
         logger.debug("Lost connection with Homer: " + homer.identifikator + " deleting that from connection map and add to lost connection map");
         incomingConnections_homers.remove(homer.identifikator);
@@ -1528,7 +1567,7 @@ public class WebSocketController_Incoming extends Controller {
 
     }
 
-    public static void homer_all_terminals_are_gone(WebSCType homer) throws  ExecutionException, TimeoutException, InterruptedException {
+    public static void homer_instance_all_terminals_are_gone(WebSCType homer) throws  ExecutionException, TimeoutException, InterruptedException {
 
         logger.debug("Homer: " + homer.identifikator + "  does not have any subscribers:");
 
@@ -1539,7 +1578,7 @@ public class WebSocketController_Incoming extends Controller {
         homer.write_with_confirmation(result, 1000*3, 0, 4);
     }
 
-    public static void ask_for_receiving_for_Grid(WebSCType homer) throws  ExecutionException, TimeoutException, InterruptedException {
+    public static void homer_instance_ask_for_receiving_for_Grid(WebSCType homer) throws  ExecutionException, TimeoutException, InterruptedException {
 
         logger.debug("Homer: " + homer.identifikator + ", cloud_blocko_server want send you request for receiving for Grid:");
 
@@ -1550,8 +1589,8 @@ public class WebSocketController_Incoming extends Controller {
         homer.write_with_confirmation(result, 1000*3, 0, 4);
     }
 
-    // Json Messages - Homer Odběr dat z Instaní blocka pro Becki
-        public static JsonNode homer_subscribe_blocko_instance(WebSCType homer) throws  ExecutionException, TimeoutException, InterruptedException {
+        // Json Messages - Homer Odběr dat z Instaní blocka pro Becki
+        public static JsonNode homer_instance_subscribe_blocko_instance(WebSCType homer) throws  ExecutionException, TimeoutException, InterruptedException {
 
             ObjectNode result = Json.newObject();
             result.put("messageType", "subscribeChannel");
@@ -1561,7 +1600,7 @@ public class WebSocketController_Incoming extends Controller {
             return homer.write_with_confirmation(result, 1000*3, 0, 4);
         }
 
-        public static void     homer_unsubscribe_blocko_instance(WS_Homer_Cloud homer){
+        public static void     homer_instance_unsubscribe_blocko_instance(WS_Homer_Cloud homer){
 
             ObjectNode result = Json.newObject();
             result.put("messageType",    "unSubscribeChannel");
@@ -1571,31 +1610,27 @@ public class WebSocketController_Incoming extends Controller {
             homer.write_without_confirmation(result);
         }
 
-    public static JsonNode homer_update_Yoda_firmware(WebSCType homer, String targetId, Firmware_type firmware_type, String code) throws  ExecutionException, TimeoutException, InterruptedException {
+    public static JsonNode homer_instance_update_devices_firmware(WebSCType homer, List<String> targetIds, Firmware_type firmware_type, FileRecord record) throws  ExecutionException, TimeoutException, InterruptedException {
 
         logger.debug("Homer: " + homer.identifikator + ", will update Yoda");
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "updateDevice");
-        result.put("firmwareType", firmware_type.get_firmwareType());
-        result.put("targetId",   targetId);
+        result.put("firmware_type", firmware_type.get_firmwareType());
+        result.set("targetId",  Json.toJson(targetIds));
+
+        // Nahrávám Bootloader
+        if(record.boot_loader != null) result.put("firmware_build_id", record.boot_loader.version_identificator);
+
+        // Nahrávám klasický Firmware
+        else result.put("firmware_build_id", record.c_compilations_binary_file.firmware_build_id);
+
         result.put("messageChannel", "tyrion");
-        result.put("program", code );
+        result.put("program", record.get_fileRecord_from_Azure_inString());
 
-        return homer.write_with_confirmation(result, 1000*15, 0, 3);
+        return homer.write_with_confirmation(result, 1000*30, 0, 3);
     }
 
-    public static JsonNode homer_update_embeddedHW(WebSCType homer, List<String> board_id_list, String string_code) throws  ExecutionException, TimeoutException, InterruptedException, IOException {
-
-        logger.debug("Tyrion: Sending to Hardware new Compilation of code");
-
-        ObjectNode result = Json.newObject();
-        result.put("messageType", "updateDevice");
-        result.set("hardwareId", Json.toJson(board_id_list));
-        result.put("base64Binary", string_code);
-
-        return homer.write_with_confirmation(result, 1000*3, 0, 4);
-    }
 
 // PRIVATE Terminal ---------------------------------------------------------------------------------------------------------
 
@@ -1634,13 +1669,13 @@ public class WebSocketController_Incoming extends Controller {
         }
     }
 
-    public static void terminal_ping(WebSCType terminal) throws TimeoutException, InterruptedException {
+    public static JsonNode terminal_ping(WebSCType terminal) throws TimeoutException, InterruptedException, ExecutionException {
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "ping");
         result.put("messageChannel", "tyrion");
 
-        terminal.write_without_confirmation(result);
+       return terminal.write_with_confirmation(result, 1000 * 3, 0, 3);
     }
 
     public static void terminal_is_disconnected(WebSCType terminal){
@@ -1654,7 +1689,7 @@ public class WebSocketController_Incoming extends Controller {
             if(subscriber.subscribers_grid.isEmpty()){
 
                 try {
-                    WebSocketController_Incoming.homer_all_terminals_are_gone(subscriber);
+                    WebSocketController.homer_instance_all_terminals_are_gone(subscriber);
                 }catch (Exception e){
                     logger.debug("When Tyrion try to send terminals, that homer is offline SHIT HAPPENS!!!", e);
                 }
@@ -1750,7 +1785,7 @@ public class WebSocketController_Incoming extends Controller {
 
         logger.warn("Tyrion is shutting down: Trying safety disconnect all connected Homer");
 
-        for (Map.Entry<String, WebSCType> entry :  WebSocketController_Incoming.incomingConnections_homers.entrySet())
+        for (Map.Entry<String, WebSCType> entry :  WebSocketController.incomingConnections_homers.entrySet())
         {
             server_violently_terminate_terminal(entry.getValue());
         }
@@ -1760,7 +1795,7 @@ public class WebSocketController_Incoming extends Controller {
 
         logger.warn("Tyrion is shutting down: Trying safety disconnect all connected Homer");
 
-        for (Map.Entry<String, WebSCType> entry :  WebSocketController_Incoming.incomingConnections_terminals.entrySet())
+        for (Map.Entry<String, WebSCType> entry :  WebSocketController.incomingConnections_terminals.entrySet())
         {
             server_violently_terminate_terminal(entry.getValue());
         }
@@ -1770,7 +1805,7 @@ public class WebSocketController_Incoming extends Controller {
 
         logger.warn("Tyrion is shutting down: Trying safety disconnect all connected Homer");
 
-        for (Map.Entry<String, WebSCType> entry :  WebSocketController_Incoming.blocko_servers.entrySet())
+        for (Map.Entry<String, WebSCType> entry :  WebSocketController.blocko_servers.entrySet())
         {
             server_violently_terminate_terminal(entry.getValue());
         }
@@ -1780,7 +1815,7 @@ public class WebSocketController_Incoming extends Controller {
 
         logger.warn("Tyrion is shutting down: Trying safety disconnect all connected Homer");
 
-        for (Map.Entry<String, WebSCType> entry :  WebSocketController_Incoming.compiler_cloud_servers.entrySet())
+        for (Map.Entry<String, WebSCType> entry :  WebSocketController.compiler_cloud_servers.entrySet())
         {
             server_violently_terminate_terminal(entry.getValue());
         }

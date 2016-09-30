@@ -22,7 +22,13 @@ public class C_Compilation extends Model {
 
     @ApiModelProperty(required = true, value = virtual_input_output_docu) @Column(columnDefinition = "TEXT")       public String virtual_input_output;
                                                             @JsonIgnore   @Column(columnDefinition = "TEXT")       public String c_comp_build_url;
-                                                            @JsonIgnore   @ManyToOne(cascade = CascadeType.ALL)    public FileRecord bin_compilation_file;
+    @JsonIgnore   @OneToOne(cascade = CascadeType.ALL) @JoinColumn(name="file_id")                                 public FileRecord bin_compilation_file;
+
+    @JsonIgnore  public String firmware_version_core;
+    @JsonIgnore  public String firmware_version_mbed;
+    @JsonIgnore  public String firmware_version_lib;
+    @JsonIgnore  public String firmware_build_id;
+    @JsonIgnore  public String firmware_build_datetime;   // Kdy bylo vybylděno
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
@@ -31,12 +37,18 @@ public class C_Compilation extends Model {
         return FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "compilation.bin").findUnique();
     }
 
+/* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient
+    public String get_path(){
+        return version_object.c_program.get_path() + version_object.get_path();
+    }
+
+
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String,C_Compilation> find = new Finder<>(C_Compilation.class);
 
-
-
-/* DESCRIPTION - DOCUMENTATION ---------------------------------------------------------------------------------------------------------*/
+    /* DESCRIPTION - DOCUMENTATION ---------------------------------------------------------------------------------------------------------*/
     @JsonIgnore @Transient public final static String virtual_input_output_docu = "dsafsdfsdf"; // TODO https://youtrack.byzance.cz/youtrack/issue/TYRION-304
 
 }

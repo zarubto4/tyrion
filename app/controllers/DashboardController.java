@@ -1,14 +1,19 @@
 package controllers;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.swagger.annotations.Api;
 import models.compiler.Cloud_Compilation_Server;
+import models.compiler.TypeOfBoard;
 import models.person.Person;
 import models.person.SecurityRole;
 import models.project.b_program.servers.Cloud_Homer_Server;
-import org.bouncycastle.asn1.x509.sigi.PersonalData;
 import org.pegdown.PegDownProcessor;
 import play.Application;
 import play.Routes;
 import play.libs.F;
+
+import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -21,12 +26,13 @@ import utilities.swagger.swagger_diff_tools.Swagger_diff_Controller;
 import utilities.swagger.swagger_diff_tools.servise_class.Swagger_Diff;
 import utilities.webSocket.*;
 import views.html.*;
-import views.html.super_general.main;
-import views.html.super_general.menu;
-import views.html.super_general.login;
 import views.html.permission.permissions_summary;
 import views.html.permission.role;
-import views.html.user_summary.*;
+import views.html.super_general.login;
+import views.html.super_general.main;
+import views.html.boards.*;
+import views.html.super_general.menu;
+import views.html.user_summary.user_summary;
 import views.html.websocket.instance_detail;
 import views.html.websocket.websocket;
 
@@ -46,8 +52,12 @@ import java.util.stream.Collectors;
 
 /**
  * CONTROLLER je určen pro jednoduchý frontend, který slouží pro zobrazení stavu backendu, základních informací,
- * ovládání websocketu a čtení readme. Dále podpora pro porovnávání změn nad dokumentací ze Swaggeru.
+ * ovládání websocketu a čtení readme. Dále podpora pro porovnávání změn nad dokumentací ze Swaggeru a další.
+ *
+ * Obsah tohoto controlleru není dovloeno vlákadt do dokumentace Swaggeru
+ *
  * */
+@Api(value = "Dashboard Private Api", hidden = true)
 public class DashboardController extends Controller {
 
     @Inject Application application;
@@ -55,15 +65,6 @@ public class DashboardController extends Controller {
     // Logger pro zaznamenávání chyb
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
-    Integer connectedHomers          =  WebSocketController_Incoming.incomingConnections_homers.size();
-    Integer connectedTerminals       =  WebSocketController_Incoming.incomingConnections_terminals.size();
-    Integer connectedBecki           =  WebSocketController_Incoming.becki_website.size();
-    Integer connectedBlocko_servers  =  WebSocketController_Incoming.blocko_servers.size();
-    Integer connectedCompile_servers =  WebSocketController_Incoming.compiler_cloud_servers.size();
-    Integer reported_bugs            =  Loggy.number_of_reported_errors();
-    Boolean server_mode              =  Server.server_mode;
-    String  server_version           =  Server.server_version;
-    String  link_api_swagger         =  "http://swagger.byzance.cz/?url="+ Server.tyrion_serverAddress +"/api-docs";
 
 
 // Index (úvod) ########################################################################################################
@@ -87,43 +88,32 @@ public class DashboardController extends Controller {
                         controllers.routes.javascript.CompilationLibrariesController.edit_Producer(),
                         controllers.routes.javascript.CompilationLibrariesController.get_Producers(),
                         controllers.routes.javascript.CompilationLibrariesController.get_Producer(),
-                        controllers.routes.javascript.CompilationLibrariesController.delete_Producer()
+                        controllers.routes.javascript.CompilationLibrariesController.delete_Producer(),
 
-
+                        controllers.routes.javascript.ProgramingPackageController.ping_instance()
                 )
         );
     }
 
+    // Pomocná metoda, která skládá jednotlivé stránky dohromady
     public Result return_page( Html content){
 
-      //  List<String> fileNames = new ArrayList<>();
-       // File[] files = new File(application.path() + "/conf/swagger_history").listFiles();
-
-     //   for (File file : files) { fileNames.add((file.getName().substring(0, file.getName().lastIndexOf('.'))).replace("_", "."));}
-
-        Html menu_html = menu.render(reported_bugs, connectedHomers, connectedBecki, connectedTerminals, connectedBlocko_servers, connectedCompile_servers, link_api_swagger);
-
-        return ok( main.render(menu_html,
-                content,
-                server_mode
-                )
-        );
+        return ok( main.render(content) );
     }
 
 // Index (úvod) ########################################################################################################
 
     // Úvodní zobrazení Dashboard
-
     @Security.Authenticated(Secured_Admin.class)
     public Result index() {
 
         Map<String, WS_BlockoServer> blockoServerMap = new HashMap<>();
 
-        Map<String, WebSCType> map_blocko =  WebSocketController_Incoming.blocko_servers;
+        Map<String, WebSCType> map_blocko =  WebSocketController.blocko_servers;
         for (Map.Entry<String, WebSCType> entry : map_blocko.entrySet()) blockoServerMap.put(entry.getKey(), (WS_BlockoServer) entry.getValue());
 
         Map<String, WS_CompilerServer> compilerServerMap = new HashMap<>();
-        Map<String, WebSCType> map_compile =  WebSocketController_Incoming.compiler_cloud_servers;
+        Map<String, WebSCType> map_compile =  WebSocketController.compiler_cloud_servers;
         for (Map.Entry<String, WebSCType> entry : map_compile.entrySet()) compilerServerMap.put(entry.getKey(), (WS_CompilerServer) entry.getValue());
 
         Html content_html = dashboard.render(
@@ -133,29 +123,36 @@ public class DashboardController extends Controller {
                 Cloud_Compilation_Server.find.all()
         );
 
-        return return_page(content_html);
+        return ok( main.render(content_html) );
     }
 
 // README ###############################################################################################################
 
     // Zobrazení readme podle MarkDown
+    @Security.Authenticated(Secured_Admin.class)
     public Result show_readme() throws IOException {
+        try {
 
-        logger.debug("Creating show_readme.html content");
+            logger.debug("Creating show_readme.html content");
 
-        String text = "";
-        for(String line : Files.readAllLines(Paths.get("README"), StandardCharsets.UTF_8) ) text += line + "\n";
+            String text = "";
+            for (String line : Files.readAllLines(Paths.get("README"), StandardCharsets.UTF_8)) text += line + "\n";
 
-        Html readme_html = readme.render( new Html( new PegDownProcessor().markdownToHtml(text) ));
+            Html readme_html = readme.render(new Html(new PegDownProcessor().markdownToHtml(text)));
 
-        logger.debug("Return show_readme.html content");
+            logger.debug("Return show_readme.html content");
 
-        return return_page(readme_html);
+            return return_page(readme_html);
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
     }
 
 // API DIFF ###############################################################################################################
 
     // Zobrazení rozdílu mezi verzemi
+    @Security.Authenticated(Secured_Admin.class)
     public Result show_diff_on_Api(String file_name_old, String file_name_new) throws IOException, NullPointerException {
         try {
 
@@ -170,111 +167,261 @@ public class DashboardController extends Controller {
 
 
             Swagger_Diff swagger_diff = Swagger_diff_Controller.set_API_Changes(file_name_old, file_name_new);
-            Html content = Api_Div.render(swagger_diff, link_api_swagger, fileNames);
+            Html content = Api_Div.render(swagger_diff, fileNames);
 
             logger.debug("Return Api_Div.html content");
             return return_page(content);
 
         }catch (Exception e){
-            return ok("Došlo k chybě");
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
 
 // WEBSOCKET STATS ######################################################################################################
 
-    public Result disconnect_homer_all(){
-        logger.debug("Trying to disconnect all homers");
-
-        for (Map.Entry<String, WebSCType> entry :    WebSocketController_Incoming.incomingConnections_homers.entrySet()) {
-            entry.getValue().onClose();
-        }
-        return GlobalResult.result_ok();
-    }
-
-    public Result disconnect_terminal_all(){
-        logger.debug("Trying to disconnect all terminals");
-
-        for (Map.Entry<String, WebSCType> entry :    WebSocketController_Incoming.incomingConnections_terminals.entrySet()) {
-            entry.getValue().onClose();
-        }
-
-        return GlobalResult.result_ok();
-    }
-
+    @Security.Authenticated(Secured_Admin.class)
     public Result disconnect_terminal(String terminal_id){
-        if(WebSocketController_Incoming.incomingConnections_terminals.containsKey(terminal_id) ) WebSocketController_Incoming.incomingConnections_terminals.get(terminal_id).onClose();
-        return GlobalResult.result_ok();
-    }
+        try {
 
-    public Result disconnect_becki(String person_id, String token){
-        if(WebSocketController_Incoming.becki_website.containsKey(person_id)){
-            WS_Becki_Website website = (WS_Becki_Website) WebSocketController_Incoming.becki_website.get(person_id);
-            if( website.all_person_Connections.containsKey(token))website.all_person_Connections.get(token).onClose();
+            if (WebSocketController.incomingConnections_terminals.containsKey(terminal_id)){
+
+                WebSocketController.incomingConnections_terminals.get(terminal_id).onClose();
+
+                ObjectNode result = Json.newObject();
+                result.put("status", "Terminal was disconnected successfully");
+
+                return GlobalResult.result_ok(result);
+
+            }else {
+
+                ObjectNode result = Json.newObject();
+                result.put("status", "Terminal ID is not connected now");
+                return GlobalResult.result_ok(result);
+            }
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
         }
-        return GlobalResult.result_ok();
     }
 
-    public Result disconnect_homer(String homer_id){
-        if(WebSocketController_Incoming.incomingConnections_homers.containsKey(homer_id))   WebSocketController_Incoming.incomingConnections_homers.get(homer_id).onClose();
-        return GlobalResult.result_ok();
+    @Security.Authenticated(Secured_Admin.class)
+    public Result disconnect_becki(String person_id, String token){
+        try {
+
+            if(WebSocketController.becki_website.containsKey(person_id)){
+
+                WS_Becki_Website website = (WS_Becki_Website) WebSocketController.becki_website.get(person_id);
+                if( website.all_person_Connections.containsKey(token))website.all_person_Connections.get(token).onClose();
+
+                ObjectNode result = Json.newObject();
+                result.put("status", "Becki was disconnected successfully");
+
+                return GlobalResult.result_ok(result);
+
+            }else {
+
+                ObjectNode result = Json.newObject();
+                result.put("status", "Becki ID is not connected now");
+                return GlobalResult.result_ok(result);
+
+            }
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
     }
 
-    public Result disconnect_Blocko_Server(String identificator){
-        if(WebSocketController_Incoming.blocko_servers.containsKey(identificator)) WebSocketController_Incoming.blocko_servers.get(identificator).onClose();
+    @Security.Authenticated(Secured_Admin.class)
+    public Result disconnect_homer_instance(String homer_id){
+        try {
 
-        return GlobalResult.result_ok();
+             if(WebSocketController.incomingConnections_homers.containsKey(homer_id)){
+
+                 WebSocketController.incomingConnections_homers.get(homer_id).onClose();
+
+                 ObjectNode result = Json.newObject();
+                 result.put("status", "Homer was disconnected successfully");
+
+                 return GlobalResult.result_ok(result);
+
+             }else {
+
+                 ObjectNode result = Json.newObject();
+                 result.put("status", "Homer ID is not connected now");
+                 return GlobalResult.result_ok(result);
+
+             }
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
     }
 
-    public Result disconnect_Compilation_Server(String identificator){
-        if(WebSocketController_Incoming.compiler_cloud_servers.containsKey(identificator)) WebSocketController_Incoming.compiler_cloud_servers.get(identificator).onClose();
+    @Security.Authenticated(Secured_Admin.class)
+    public Result disconnect_blocko_server(String identificator) {
+        try {
 
-        return GlobalResult.result_ok();
+            if (WebSocketController.blocko_servers.containsKey(identificator)) {
+                WebSocketController.blocko_servers.get(identificator).onClose();
+
+                ObjectNode result = Json.newObject();
+                result.put("status", "Blocko was disconnected successfully");
+
+                return GlobalResult.result_ok(result);
+
+            }else {
+
+                ObjectNode result = Json.newObject();
+                result.put("status", "Blocko ID is not connected now");
+                return GlobalResult.result_ok(result);
+            }
+
+        } catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
     }
 
+    @Security.Authenticated(Secured_Admin.class)
+    public Result disconnect_compilation_server(String identificator){
+        try {
+            if (WebSocketController.compiler_cloud_servers.containsKey(identificator)) {
+                WebSocketController.compiler_cloud_servers.get(identificator).onClose();
+
+                ObjectNode result = Json.newObject();
+                result.put("status", "\"Compilation Server was disconnected successfully");
+
+                return GlobalResult.result_ok(result);
+
+            }else {
+
+                ObjectNode result = Json.newObject();
+                result.put("status", "Compilation Server ID is not connected now");
+                return GlobalResult.result_ok(result);
+
+            }
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @Security.Authenticated(Secured_Admin.class)
     public Result ping_terminal(String terminal_id) throws TimeoutException, InterruptedException {
+        try {
 
-        WebSocketController_Incoming.terminal_ping( WebSocketController_Incoming.incomingConnections_terminals.get(terminal_id) ) ;
-        return GlobalResult.result_ok();
+            if (WebSocketController.incomingConnections_terminals.containsKey(terminal_id)) {
+
+                JsonNode result = WebSocketController.terminal_ping( WebSocketController.incomingConnections_terminals.get(terminal_id));
+                return GlobalResult.result_ok(result);
+            }
+            else {
+                ObjectNode result = Json.newObject();
+                result.put("status", "Terminalr ID is not connected now");
+
+                return GlobalResult.result_BadRequest(result);
+            }
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+
     }
 
+    @Security.Authenticated(Secured_Admin.class)
     public Result ping_becki(String person_id) throws TimeoutException, InterruptedException {
+        try {
 
-       if(WebSocketController_Incoming.becki_website.containsKey(person_id))  WebSocketController_Incoming.becki_ping( WebSocketController_Incoming.becki_website.get(person_id) );
-        return GlobalResult.result_ok();
+            if ( WebSocketController.becki_website.containsKey(person_id)) {
+
+                JsonNode result = WebSocketController.becki_ping( WebSocketController.becki_website.get(person_id) );
+                return GlobalResult.result_ok(result);
+
+            }else {
+
+                ObjectNode result = Json.newObject();
+                result.put("status", "Homer server ID is not connected now");
+
+                return GlobalResult.result_BadRequest(result);
+            }
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+
     }
 
-    public Result ping_homer(String homer_id) throws TimeoutException, InterruptedException, ExecutionException {
+    @Security.Authenticated(Secured_Admin.class)
+    public Result ping_homer_server(String identificator) throws TimeoutException, InterruptedException {
+        try {
 
-        if(WebSocketController_Incoming.incomingConnections_homers.containsKey(homer_id))
-        WebSocketController_Incoming.homer_ping( (WebSocketController_Incoming.incomingConnections_homers.get(homer_id)));
-        return GlobalResult.result_ok();
+            if (WebSocketController.blocko_servers.containsKey(identificator)) {
+
+                JsonNode result = WebSocketController.homer_server_ping((WS_BlockoServer) WebSocketController.blocko_servers.get(identificator));
+                return GlobalResult.result_ok(result);
+            }
+            else {
+
+                ObjectNode result = Json.newObject();
+                result.put("status", "Homer server ID is not connected now");
+
+                return GlobalResult.result_BadRequest(result);
+            }
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
     }
 
-    public Result ping_Blocko_Server(String identificator) throws TimeoutException, InterruptedException {
-        if(WebSocketController_Incoming.blocko_servers.containsKey(identificator))
-        WebSocketController_Incoming.blocko_server_ping( (WS_BlockoServer) WebSocketController_Incoming.blocko_servers.get(identificator) );
-        return GlobalResult.result_ok();
+    @Security.Authenticated(Secured_Admin.class)
+    public Result ping_homer_instance(String instance_id) throws TimeoutException, InterruptedException {
+        try {
+
+            if (WebSocketController.incomingConnections_homers.containsKey(instance_id)) {
+
+                JsonNode result = WebSocketController.homer_instance_ping_instance( (WS_Homer_Cloud) WebSocketController.incomingConnections_homers.get(instance_id));
+                return GlobalResult.result_ok(result);
+            }
+            else {
+
+                ObjectNode result = Json.newObject();
+                result.put("status", "Instance is not server ID is not connected now");
+
+                return GlobalResult.result_BadRequest(result);
+            }
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
     }
 
-    public Result ping_Compilation_Server(String identificator) throws TimeoutException, InterruptedException, ExecutionException {
-        if(WebSocketController_Incoming.compiler_cloud_servers.containsKey(identificator))
-        WebSocketController_Incoming.compiler_server_ping( (WS_CompilerServer) WebSocketController_Incoming.compiler_cloud_servers.get(identificator) );
-        return GlobalResult.result_ok();
+    @Security.Authenticated(Secured_Admin.class)
+    public Result ping_compilation_server(String identificator) throws TimeoutException, InterruptedException, ExecutionException {
+        try {
+
+            if (WebSocketController.compiler_cloud_servers.containsKey(identificator)) {
+
+                JsonNode result = WebSocketController.compiler_server_ping( (WS_CompilerServer) WebSocketController.compiler_cloud_servers.get(identificator) );
+                return GlobalResult.result_ok(result);
+            }
+            else {
+
+                ObjectNode result = Json.newObject();
+                result.put("status", "Compilation server ID is not connected now");
+
+                return GlobalResult.result_BadRequest(result);
+            }
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
     }
 
-    public Result log_out_Terminal_User(String identificator) {
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result log_out_terminal_user(String identificator) {
         System.out.println("Ještě neimplementováno");
         return GlobalResult.result_ok();
-    }
-
-
-    public Result send_commnad_to_instnace(String intance_id, String json_command){
-        return TODO;
-    }
-
-    public Result uploud_blocko_program_to_instance(String intance_id, String json_program){
-        return TODO;
     }
 
 // LOGGY ###############################################################################################################
@@ -318,12 +465,12 @@ public class DashboardController extends Controller {
     @Security.Authenticated(Secured_Admin.class)
     public Result show_web_socket_stats() {
 
-        List<WebSCType> homers = new ArrayList<>(WebSocketController_Incoming.incomingConnections_homers.values());
+        List<WebSCType> homers = new ArrayList<>(WebSocketController.incomingConnections_homers.values());
 
-        List<WS_Grid_Terminal>  grids                   = new ArrayList<>(WebSocketController_Incoming.incomingConnections_terminals.values()).stream().map(o -> (WS_Grid_Terminal) o).collect(Collectors.toList());
-        List<WS_Becki_Website>  becki_terminals         = new ArrayList<>(WebSocketController_Incoming.becki_website.values()).stream().map(o -> (WS_Becki_Website) o).collect(Collectors.toList());
-        List<WS_BlockoServer>   blocko_cloud_servers    = new ArrayList<>(WebSocketController_Incoming.blocko_servers.values()).stream().map(o -> (WS_BlockoServer) o).collect(Collectors.toList());
-        List<WS_CompilerServer> compilation_servers     = new ArrayList<>(WebSocketController_Incoming.compiler_cloud_servers.values()).stream().map(o -> (WS_CompilerServer) o).collect(Collectors.toList());
+        List<WS_Grid_Terminal>  grids                   = new ArrayList<>(WebSocketController.incomingConnections_terminals.values()).stream().map(o -> (WS_Grid_Terminal) o).collect(Collectors.toList());
+        List<WS_Becki_Website>  becki_terminals         = new ArrayList<>(WebSocketController.becki_website.values()).stream().map(o -> (WS_Becki_Website) o).collect(Collectors.toList());
+        List<WS_BlockoServer>   blocko_cloud_servers    = new ArrayList<>(WebSocketController.blocko_servers.values()).stream().map(o -> (WS_BlockoServer) o).collect(Collectors.toList());
+        List<WS_CompilerServer> compilation_servers     = new ArrayList<>(WebSocketController.compiler_cloud_servers.values()).stream().map(o -> (WS_CompilerServer) o).collect(Collectors.toList());
 
         Html content =   websocket.render(homers, grids, becki_terminals, blocko_cloud_servers , compilation_servers);
         return return_page(content);
@@ -332,29 +479,44 @@ public class DashboardController extends Controller {
     @Security.Authenticated(Secured_Admin.class)
     public Result  show_instance_detail(String instance_id) {
 
-        if(!WebSocketController_Incoming.incomingConnections_homers.containsKey(instance_id)) return show_web_socket_stats();
+        if(!WebSocketController.incomingConnections_homers.containsKey(instance_id)) return show_web_socket_stats();
 
-        WS_Homer_Cloud homers = (WS_Homer_Cloud) WebSocketController_Incoming.incomingConnections_homers.get(instance_id);
+        WS_Homer_Cloud homers = (WS_Homer_Cloud) WebSocketController.incomingConnections_homers.get(instance_id);
 
         Html content = instance_detail.render(homers);
         return return_page(content);
     }
 
-
-
-
     @Security.Authenticated(Secured_Admin.class)
-    public Result basic_object_management(){
+    public Result basic_board_management(){
         try {
 
-            Html content = basic_objects.render();
+            Html content = board_settings.render();
             return return_page ( content );
 
         }catch (Exception e){
-            e.printStackTrace();
-            return ok();
+            return Loggy.result_internalServerError(e, request());
         }
     }
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result bootloader_management(String type_of_board_id){
+        try {
+
+            TypeOfBoard type_of_board = TypeOfBoard.find.byId(type_of_board_id);
+            if(type_of_board == null) return GlobalResult.notFoundObject("Type of Board not found!");
+
+
+
+            Html content = bootloader_settings.render(type_of_board);
+            return return_page ( content );
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+
 
     @Security.Authenticated(Secured_Admin.class)
     public Result external_servers(){
@@ -364,8 +526,7 @@ public class DashboardController extends Controller {
             return return_page(external_servers_content);
 
         }catch (Exception e){
-            e.printStackTrace();
-            return ok();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -387,8 +548,7 @@ public class DashboardController extends Controller {
             return return_page(user_summary_content);
 
         }catch (Exception e){
-            e.printStackTrace();
-            return ok();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -400,8 +560,7 @@ public class DashboardController extends Controller {
             return return_page(permissions_content);
 
         }catch (Exception e){
-            e.printStackTrace();
-            return ok();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -416,8 +575,7 @@ public class DashboardController extends Controller {
             return return_page(permissions_content);
 
         }catch (Exception e){
-            e.printStackTrace();
-            return ok();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -429,8 +587,7 @@ public class DashboardController extends Controller {
             return return_page(blocko_objects_content);
 
         }catch (Exception e){
-            e.printStackTrace();
-            return ok();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -444,7 +601,7 @@ public class DashboardController extends Controller {
             return ok(login.render());
 
         }catch (Exception e){
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 

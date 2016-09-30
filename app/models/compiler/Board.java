@@ -36,17 +36,19 @@ public class Board extends Model {
                                                                             public String wifi_mac_address;
 
     @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)   public String personal_description;
-                                       @JsonIgnore  @ManyToOne              public TypeOfBoard type_of_board;  // Typ desky
+                                       @JsonIgnore  @ManyToOne              public TypeOfBoard type_of_board;
                                        @ApiModelProperty(required = true)   public boolean is_active;
-                                                            @JsonIgnore     public Date date_of_create;
+                                       @ApiModelProperty(required = true)   public boolean backup_mode;
+                                                              @JsonIgnore   public Date date_of_create;
 
-                                                   @JsonIgnore @ManyToOne   public Project project;
+                      @JsonIgnore @ManyToOne(cascade = CascadeType.MERGE)   public Project project;
 
                                                    @JsonIgnore @ManyToOne   public Version_Object actual_c_program_version;
                                                    @JsonIgnore              public String alternative_program_name;
+                                                   @JsonIgnore @ManyToOne   public BootLoader actual_boot_loader;
 
-                                                @JsonIgnore @ManyToOne()    public Cloud_Homer_Server latest_know_server;  // Pouze pokud je připojen přímo na blocko cloud_blocko_server!
-                                                @JsonIgnore @ManyToOne()    public Private_Homer_Server private_homer_servers;
+                                                   @JsonIgnore @ManyToOne   public Cloud_Homer_Server latest_know_server;  // Pouze pokud je připojen přímo na blocko cloud_blocko_server!
+                                                   @JsonIgnore @ManyToOne   public Private_Homer_Server private_homer_servers;
 
 
 
@@ -69,7 +71,6 @@ public class Board extends Model {
     @JsonProperty  @Transient @ApiModelProperty(required = true) public Swagger_Board_status status()       {
 
         // Složený SQL dotaz pro nalezení funkční běžící instance (B_Pair)
-
         Homer_Instance instance =  Homer_Instance.find.where().disjunction()
                 .add( Expr.eq("version_object.b_program_hw_groups.main_board_pair.board.id", id) )
                 .add( Expr.eq("version_object.b_program_hw_groups.device_board_pairs.board.id", id) )
@@ -126,8 +127,8 @@ public class Board extends Model {
     }
 
 
-
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public boolean up_to_date(){return (c_program_update_plans == null);}
+    @JsonProperty  @Transient @ApiModelProperty(required = true) public boolean up_to_date_firmware()        { return  (c_program_update_plans == null);    }
+    @JsonProperty  @Transient @ApiModelProperty(required = true) public boolean update_boot_loader_required(){ return (type_of_board.main_boot_loader == null || actual_boot_loader == null) ? true : !this.type_of_board.main_boot_loader.id.equals(this.actual_boot_loader.id);}
 
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
@@ -152,6 +153,8 @@ public class Board extends Model {
 
 
 /* ZVLÁŠTNÍ POMOCNÉ METODY ---------------------------------------------------------------------------------------------*/
+
+
 
     @Override
     public void update(){

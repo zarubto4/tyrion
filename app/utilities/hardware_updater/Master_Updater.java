@@ -1,7 +1,7 @@
 package utilities.hardware_updater;
 
 import com.avaje.ebean.Expr;
-import controllers.WebSocketController_Incoming;
+import controllers.WebSocketController;
 import models.compiler.Board;
 import models.compiler.FileRecord;
 import models.project.b_program.Homer_Instance;
@@ -68,7 +68,7 @@ public class Master_Updater{
 
                         logger.debug("Master updater Thread is running. Tasks to solve: " + procedures.size() );
                         Actualization_procedure procedure =  procedures.get(0);
-                        actualization_update_procedure( procedure );
+                        new Master_Updater().actualization_update_procedure( procedure );
                         procedures.remove(procedure);
 
                     }
@@ -91,127 +91,146 @@ public class Master_Updater{
 
 // ** Updater Thread -----------------------------------------------------------------------------------------------
 
-    public static void actualization_update_procedure(Actualization_procedure procedure){
+    /**
+     * Následující Tři třídy slouží k přehlednému roztřídění update procedury podle jendotlivých instancí, typů firmaru
+     * a další... I přesto že v 99% je updatován jeden objekt, nebo objekty pod jendou instancí (frontend vyloženě podporuje
+     * řízení updatů podle instnací podle obrazovek, přesto je toto řešení zvoleno záměrně, protože se dá používat globálně
+     * na update všech deviců napříč projekty atd... a i když je metoda složitější na počet dotazů, ve výsledku to sníží
+     * websocketovou zátěž v duplicitním zasílání stejných updatovacích požadavků.
+     */
+    class ActualizationStructure {
+        public HashMap<String, Instance> instances = new HashMap<>();
+    }
+
+    class Instance{
+
+        public Homer_Instance instance;
+        public WS_BlockoServer server;
+        public WebSCType homer;
+        public HashMap<String, Program> programs = new HashMap<>();
+    }
+
+    class Program{
+        public String program_identificator;
+        public Firmware_type firmware_type;
+        public FileRecord file_record;
+        public List<Board> boards = new ArrayList<>();
+    }
 
 
-           Map<String, String> files_codes = new HashMap<>(); // < c_program_version_id, code of program >
+    public void actualization_update_procedure(Actualization_procedure procedure){
 
-           logger.debug("Master Updater: actualization_update_procedure -> " + ( procedure.id == null ? "virtual procedure " : ("real procedure ID: " + procedure.id) ) );
+
+
+        Map<String, String> files_codes = new HashMap<>(); // < c_program_version_id, code of program >
+        ActualizationStructure structure = new ActualizationStructure();
+
+
+        logger.debug("Master Updater: actualization_update_procedure -> " + ( procedure.id == null ? "virtual procedure " : ("real procedure ID: " + procedure.id) ) );
 
            for (C_Program_Update_Plan plan : procedure.updates) {
                try {
 
-               // Desku kterou chci updatovat
+                   Board board  = plan.board;
 
-               Board board  = plan.board;
-               Firmware_type firmware_type = plan.firmware_type;
-               String id    = plan.c_program_version_for_update != null ? plan.c_program_version_for_update.id : ( plan.binary_file.file_name + "_" + plan.binary_file.id);
-               WS_BlockoServer server = null;
-               WebSCType actual_homer = null;
-
-               // Verze k updatu
-               //1
-               Homer_Instance homer_instance = Homer_Instance.find.where()
-                       .disjunction()
+                   // Najdu instanci - pod kterou deska běží
+                   Homer_Instance homer_instance = Homer_Instance.find.where()
+                           .disjunction()
                            .add(Expr.eq("version_object.b_program_hw_groups.main_board_pair.board.id", board.id))
                            .add(Expr.eq("version_object.b_program_hw_groups.device_board_pairs.board.id", board.id))
                            .add(Expr.eq("private_instance_board.id", board.id))
-                       .findUnique();
-
-               if (homer_instance != null) {
-
-                   logger.debug("Hardware (board) is running under cloud blocko program");
-                   logger.debug("Blocko Instance: " + homer_instance.blocko_instance_name);
-                   logger.debug("Server: " + homer_instance.cloud_homer_server.server_name) ;
+                   .findUnique();
 
 
-                   if(! WebSocketController_Incoming.blocko_servers.containsKey( homer_instance.cloud_homer_server.server_name )){
-                       logger.debug("Server is offline. Putting off the task for later ");
-                       plan.state = C_ProgramUpdater_State.homer_server_is_offline;
-                       plan.update();
-                       break;
-                   }
-                   server = (WS_BlockoServer) WebSocketController_Incoming.blocko_servers.get( homer_instance.cloud_homer_server.server_name );
-
-                   if (!WebSocketController_Incoming.incomingConnections_homers.containsKey(homer_instance.blocko_instance_name)) {
-                       logger.debug("Homer is offline. Putting off the task for later ");
+                   if (homer_instance == null) {
+                       logger.error("Device has not own instance!");
                        plan.state = C_ProgramUpdater_State.instance_inaccessible;
                        plan.update();
-                       break;
+                       continue;
+                   }
+
+
+                   logger.debug("Hardware (board) is running under cloud blocko program");
+                   logger.debug("Blocko Instance: ", homer_instance.blocko_instance_name);
+                   logger.debug("Server: ", homer_instance.cloud_homer_server.server_name) ;
+
+
+                   if(! WebSocketController.blocko_servers.containsKey( homer_instance.cloud_homer_server.server_name )){
+                      logger.warn("Server is offline. Putting off the task for later ");
+                      plan.state = C_ProgramUpdater_State.homer_server_is_offline;
+                      plan.update();
+                      continue;
+                   }
+
+                   if (!WebSocketController.incomingConnections_homers.containsKey(homer_instance.blocko_instance_name)) {
+                        logger.warn("Homer is offline. Putting off the task for later ");
+                        plan.state = C_ProgramUpdater_State.instance_inaccessible;
+                        plan.update();
+                        continue;
                    }
 
                    logger.debug("Instance of blocko program is online and connected with Tyrion");
-                   actual_homer = WebSocketController_Incoming.incomingConnections_homers.get(homer_instance.blocko_instance_name);
-
-               }
-
-               //2 Lokální Homer
-               // TODO Lokální homer
-
-               else if (board.latest_know_server != null) {
-
-                   logger.error("Hardware is not paired with any Blocko program in the cloud or locally with homer, but still connect to the cloud_blocko_server: " + board.latest_know_server.server_name);
 
 
-                    if(! WebSocketController_Incoming.blocko_servers.containsKey( board.latest_know_server.server_name )){
-                        logger.debug("Server is offline");
-                        plan.state = C_ProgramUpdater_State.homer_server_is_offline;
-                        plan.update();
-                        break;
-                    }
+                   // Založím ve Struktuře seznam instnací
+                  if (!structure.instances.containsKey(homer_instance.id)) {
+                      Instance instance = new Instance();
+                      instance.instance = homer_instance;
+                      instance.server = (WS_BlockoServer) WebSocketController.blocko_servers.get( homer_instance.cloud_homer_server.server_name );
+                      instance.homer = WebSocketController.incomingConnections_homers.get(homer_instance.blocko_instance_name);;
+                      structure.instances.put(homer_instance.id, instance);
+                  }
 
-                    server = (WS_BlockoServer) WebSocketController_Incoming.blocko_servers.get( board.latest_know_server.server_name );
-                }
-
-
-               // Zajištuji do paměti kod k nahrátí
-               if (!files_codes.containsKey(id)) {
-
-                   logger.debug("Actualization Bin file is not in buffer! Server must download that from Azure Blob cloud_blocko_server!");
-
-                   if(plan.binary_file != null) {
-                       logger.debug("User uploud own binary file to update");
-                       FileRecord  file_record = plan.binary_file;
-                       files_codes.put(  ( plan.binary_file.file_name + "_" + plan.binary_file.id) , file_record.get_fileRecord_from_Azure_inString() );
-                   }
-                   else if( plan.c_program_version_for_update != null){
-
-                       if(plan.c_program_version_for_update.c_compilation.bin_compilation_file != null) {
-                           logger.debug("User create own C_program and cloud_blocko_server has bin file of that");
+                  String program_identificator = null;
+                  FileRecord file_record = null;
 
 
-                           files_codes.put(plan.c_program_version_for_update.id, plan.c_program_version_for_update.c_compilation.bin_compilation_file.get_fileRecord_from_Azure_inString() );
-                       }
-                       else{
-                           System.out.println("..........V Blob serveru nebyla - musí se vytvořit");
-                           System.out.println("..........Spouštím proceduru dodatečné procedury protože kompilačku v azure nemám");
-                           System.out.println("..........Tato procedura chybí!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                           // TODO
-                           break;
-                       }
-                   }
-               }
+                  if(plan.c_program_version_for_update != null) {
+                            program_identificator = "firmware_" + plan.c_program_version_for_update.c_compilation.firmware_build_id;
 
-                   if(server == null) {
-                       logger.debug("The equipment has never entered into the system. Tyrion has no chance do anything! So Tyrion must wait for device!");
+                            if(plan.c_program_version_for_update.c_compilation.bin_compilation_file != null) {
+                                logger.debug("User create own C_program and cloud_blocko_server has bin file of that");
+                                file_record = plan.c_program_version_for_update.c_compilation.bin_compilation_file;
+                            }
+                            else{
+                                System.out.println("..........V Blob serveru nebyla - musí se vytvořit");
+                                System.out.println("..........Spouštím proceduru dodatečné procedury protože kompilačku v azure nemám");
+                                System.out.println("..........Tato procedura chybí!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                                // TODO
+                                continue;
+                            }
 
-                       plan.state = C_ProgramUpdater_State.waiting_for_device;
-                       plan.update();
-                       break;
+                  } else if(plan.firmware_type == Firmware_type.BOOTLOADER) {
+                            program_identificator = "boot_loader_" + plan.binary_file.boot_loader.version_identificator;
+                            file_record = plan.binary_file;
+
+                  }else if(plan.binary_file != null) {
+                            program_identificator = "file_" + plan.binary_file.id;
+                            file_record = plan.binary_file;
+                  }
+
+
+
+                   if(program_identificator == null){
+                       logger.error("C_program updateter has not any object for uploud! (Program, Bootloader, File) ");
+                       continue;
                    }
 
-                   // Aktualizační task, který budu posílat na cloud_blocko_server!
-                   Actualization_Task task = new Actualization_Task();
-                   task.homer = actual_homer;
-                   task.code = files_codes.get(id);
-                   task.board = board;
-                   task.firmware_type = firmware_type;
+
+                  // Pod instnací podle typu programu vytvořím program
+                  if(!structure.instances.get(homer_instance.id).programs.containsKey(program_identificator)){
+
+                      Program program = new Program();
+                      program.program_identificator = program_identificator;
+                      program.firmware_type  = plan.firmware_type;
+                      program.file_record = file_record;
+
+                      structure.instances.get(homer_instance.id).programs.get(program_identificator).boards.add(plan.board);
+
+                  }
 
                    plan.state = C_ProgramUpdater_State.in_progress;
                    plan.update();
-
-                   logger.debug("Actualization task is ready. Sending to Server object to cloud_blocko_server blocko independent Thread");
-                   server.add_task(task);
 
                }catch(Exception e) {
                    logger.error("Error while cloud_blocko_server tried compile version of C_program", e);
@@ -221,7 +240,20 @@ public class Master_Updater{
                }
            }
 
+        for (Instance instance : structure.instances.values()) {
+
+            for(Program program : instance.programs.values()){
+
+                Actualization_Task task = new Actualization_Task();
+                task.homer = instance.homer;
+                task.file_record = program.file_record;
+                task.boards = program.boards;
+                task.firmware_type = program.firmware_type;
+
+                logger.debug("Actualization task is ready. Sending to Server object to cloud_blocko_server blocko independent Thread");
+                instance.server.add_task(task);
+
+            }
+        }
     }
-
-
 }

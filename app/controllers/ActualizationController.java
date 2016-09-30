@@ -15,7 +15,6 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.UtilTools;
 import utilities.enums.Firmware_type;
 import utilities.hardware_updater.Master_Updater;
 import utilities.hardware_updater.States.Actual_procedure_State;
@@ -26,8 +25,9 @@ import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_NotFound;
 import utilities.response.response_objects.Result_PermissionRequired;
 import utilities.response.response_objects.Result_Unauthorized;
+import utilities.swagger.documentationClass.Swagger_WebSocket_Device_connected;
+import utilities.swagger.documentationClass.Swagger_WebSocket_Yoda_connected;
 
-import java.io.File;
 import java.util.*;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
@@ -38,7 +38,6 @@ public class ActualizationController extends Controller {
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
 // REST - API ----------------------------------------------------------------------------------------------------------
-
 
     @ApiOperation(value = "get actualization Procedure",
             tags = {"Actualization"},
@@ -81,7 +80,7 @@ public class ActualizationController extends Controller {
         }
     }
 
-
+    // TODO
     public Result get_Actualization_progress(@ApiParam(required = true)   String project_id) {
         try {
 
@@ -91,6 +90,7 @@ public class ActualizationController extends Controller {
         }
     }
 
+    // TODO
     public Result set_actualization_sheduling(@ApiParam(required = true)  String project_id) {
         try {
 
@@ -99,7 +99,6 @@ public class ActualizationController extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
     }
-
 
     @ApiOperation(value = "cancel actualization Procedure",
             tags = {"Actualization"},
@@ -146,23 +145,20 @@ public class ActualizationController extends Controller {
 
 // Private -------------------------------------------------------------------------------------------------------------
 
-    public static void add_new_actualization_request(Project project, Firmware_type command, Board board, File file, String file_name){
+    public static void add_new_actualization_request_with_user_file(Project project, Firmware_type command, Board board, FileRecord file_record){
 
-            NotificationController.new_actualization_request_with_file( SecurityController.getPerson(), board,  file_name );
+            NotificationController.new_actualization_request_with_file( SecurityController.getPerson(), board);
 
             List<Board> boards = new ArrayList<>();
             boards.add(board);
-            add_new_actualization_request(project, command, boards, file, file_name);
+            add_new_actualization_request_with_user_file(project, command, boards, file_record);
     }
 
-    public static void add_new_actualization_request(Project project, Firmware_type firmware_type, List<Board> boards, File file, String file_name){
+    public static void add_new_actualization_request_with_user_file(Project project, Firmware_type firmware_type, List<Board> boards, FileRecord file_record){
         try {
 
-
+            System.out.print("\n\n");
             logger.debug("Incoming new Actualization request with user bin file! ");
-
-            String binary_file = UtilTools.get_encoded_binary_string_from_File(file);
-            FileRecord fileRecord = UtilTools.create_Binary_file("byzance-private/binaryfiles", binary_file, file_name);
 
             logger.debug("Creating new actualization procedure");
             Actualization_procedure procedure = new Actualization_procedure();
@@ -212,7 +208,9 @@ public class ActualizationController extends Controller {
                 // Vytvářím nový aktualizační plán
                 C_Program_Update_Plan plan = new C_Program_Update_Plan();
                 plan.board = board;
-                plan.binary_file = fileRecord;
+
+                plan.binary_file = file_record;
+
                 plan.actualization_procedure = procedure;
                 plan.firmware_type = firmware_type;
                 plan.save();
@@ -235,18 +233,18 @@ public class ActualizationController extends Controller {
         }
     }
 
-    public static void add_new_actualization_request(Project project, Board board, Version_Object c_program_version){
+    public static void add_new_actualization_request_with_user_file(Project project, Board board, Version_Object c_program_version){
 
         NotificationController.new_actualization_request_on_version( SecurityController.getPerson(), c_program_version);
 
         List<Board> boards = new ArrayList<>();
         boards.add(board);
-        add_new_actualization_request(project, boards, c_program_version);
+        add_new_actualization_request_with_user_file(project, boards, c_program_version);
 
     }
 
-    public static void add_new_actualization_request(Project project, List<Board> boards, Version_Object c_program_version){
-
+    public static void add_new_actualization_request_with_user_file(Project project, List<Board> boards, Version_Object c_program_version){
+        System.out.print("\n\n");
         logger.debug("Incoming new Actualization request with version of C_program!! ");
 
         logger.debug("Creating new actualization procedure");
@@ -299,8 +297,7 @@ public class ActualizationController extends Controller {
             plan.c_program_version_for_update = c_program_version;
             plan.actualization_procedure = procedure;
 
-            if(board.main_board()) plan.firmware_type = Firmware_type.FIRMWARE_YODA_FIRMWARE;
-            else plan.firmware_type = Firmware_type.FIRMWARE_DEVICE_FIRMWARE;
+            plan.firmware_type = Firmware_type.FIRMWARE;
 
             plan.save();
             procedure.updates.add(plan);
@@ -321,6 +318,9 @@ public class ActualizationController extends Controller {
 
     public static void add_new_actualization_request_Checking_HW_Firmware(Project project, Homer_Instance program_cloud) {
 
+        System.out.print("\n\n");
+        logger.debug("New actualization request Checking HW Firmware!");
+
         try {
 
             NotificationController.new_actualization_request_homer_instance( SecurityController.getPerson(), program_cloud);
@@ -335,6 +335,7 @@ public class ActualizationController extends Controller {
             procedure.project = project;
             procedure.save();
 
+
             // - Uložení bych nechal nakonec??? Co když nemám  nic k aktualizaci????
 
 
@@ -348,7 +349,7 @@ public class ActualizationController extends Controller {
 
                 for (B_Pair p : list) {
 
-                    logger.debug("Checking Pair:" + p.id + " for actualization where is board: " + p.board.id);
+                    logger.debug("Checking Pair: " + p.id + " for actualization where is board: " + p.board.id);
 
                     // Tady chci zrušit všechny předchozí procedury vázající se na seznam příchozího hardwaru!
 
@@ -387,17 +388,24 @@ public class ActualizationController extends Controller {
                     plan.c_program_version_for_update = p.c_program_version;
                     plan.actualization_procedure = procedure;
 
-                    if(p.board.main_board()) plan.firmware_type = Firmware_type.FIRMWARE_YODA_FIRMWARE;
-                    else plan.firmware_type = Firmware_type.FIRMWARE_DEVICE_FIRMWARE;
+                    plan.firmware_type = Firmware_type.FIRMWARE;
 
-                    plan.save();
                     procedure.updates.add(plan);
 
                     logger.debug("Crating update procedure done");
                 }
             }
 
-
+            // Nakonci uložím
+            // Ale zkontroluji jestli tam jsou nějaké procedury před tím???
+            if(procedure.updates.size() > 0){
+                logger.debug("Procedura má co k práci a tak bude uložena");
+                procedure.save();
+            }
+            else{
+                logger.debug("Procedura nemá nic k práci a tak jí neuložím a ukončuji");
+                return;
+            }
 
             // Kontroluji a uzavírám stavy "složky" pro aktuazlizace hardwaru a to objektu Actualization_procedure
             logger.debug("Number of Actualization_procedures for update: " + actualization_procedures.size());
@@ -415,41 +423,184 @@ public class ActualizationController extends Controller {
 
 // ---------------------------------------------------------------------------------------------------------------------
 
-    public static void hardware_connected(Board board){
+    public static void hardware_connected(Board board, Swagger_WebSocket_Yoda_connected report){
 
-        logger.debug("Tyrion Checking actualization state of connected board:" + board.id);
+        logger.debug("Tyrion Checking summary information of connected master board: ", board.id);
 
+
+        // Kontrola nastavení Backup modu
+        logger.trace("Checking autobackup");
+        if(board.backup_mode != report.autobackup){
+            // TODO
+
+        }
+
+        // Pokusím se najít Aktualizační proceduru jestli existuje s následujícími stavy
+        logger.debug("Tyrion Checking actualization state of connected board: ", board.id);
         List<C_Program_Update_Plan> plans = C_Program_Update_Plan.find.where().eq("board.id", board.id).disjunction()
+                .add(   Expr.eq("state", C_ProgramUpdater_State.in_progress)         )
                 .add(   Expr.eq("state", C_ProgramUpdater_State.waiting_for_device)         )
                 .add(   Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible)      )
+                .add(   Expr.eq("state", C_ProgramUpdater_State.critical_error)      )
                 .add(   Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline)    ).order().asc("id").findList();
 
-        if(plans.size() == 1){
 
-            logger.debug("Found one actualization procedure on" + board.id);
-
-            Actualization_procedure procedure = new Actualization_procedure();
-            procedure.updates.add(plans.get(0));
-
-            logger.debug("Sending new actualization request to Master Updater Thread");
-            Master_Updater.add_new_Procedure(procedure);
-        }
         if(plans.size() > 1){
-            logger.error("Hardware: " + board.id + " connected into system, but we have mote than 2 update-plan!!!");
+            logger.error("Hardware Yoda: ", board.id, " connected into system, but we have mote than 2 update-plan!!!");
             logger.error("Earlier plans are terminate! Last one - by ID is used now!");
 
             for(int i = 1; i < plans.size(); i++ ){
                 plans.get(i).state = C_ProgramUpdater_State.overwritten;
                 plans.get(i).update();
+                plans.remove(i);
             }
+        }
 
-            Actualization_procedure procedure = new Actualization_procedure();
-            procedure.updates.add(plans.get(0));
-            Master_Updater.add_new_Procedure(procedure);
+        if(plans.size() == 1){
+
+            logger.debug("Found one actualization procedure on ", board.id);
+
+            C_Program_Update_Plan plan = plans.get(0);
+
+
+                  if(plan.firmware_type == Firmware_type.FIRMWARE){
+
+                      logger.debug("Checking Firmware");
+
+                      // Mám shodu oproti očekávánemů
+                      if(plan.c_program_version_for_update.c_compilation.firmware_build_id .equals( report.firmware_build_id )){
+
+                          plan.state = C_ProgramUpdater_State.complete;
+                          plan.update();
+
+                      }else {
+
+                          plan.state = C_ProgramUpdater_State.in_progress;
+                          plan.update();
+
+                          Master_Updater.add_new_Procedure(plan.actualization_procedure);
+
+                      }
+
+            }else if(plan.firmware_type == Firmware_type.BOOTLOADER){
+
+                      logger.debug("Checking Firmware");
+
+                      // Mám shodu oproti očekávánemů
+                      if(plan.binary_file.boot_loader.version_identificator.equals( report.bootloader_build_id )){
+
+                          plan.state = C_ProgramUpdater_State.complete;
+                          plan.update();
+
+                      }else {
+
+                          plan.state = C_ProgramUpdater_State.in_progress;
+                          plan.update();
+
+                          Master_Updater.add_new_Procedure(plan.actualization_procedure);
+                      }
+
+            }else if(plan.firmware_type == Firmware_type.BACKUP){
+
+                      logger.debug("Checking Backup");
+
+                      plan.state = C_ProgramUpdater_State.complete;
+                      plan.update();
+            }
+        }else {
+            logger.debug("No actualization plan found for Master Device: " + board.id);
+        }
+
+
+        for(Swagger_WebSocket_Device_connected device_report : report.devices_summary){
+
+            Board device = Board.find.byId(device_report.deviceId);
+
+            // Smazat device z instance a tím i z yody
+            if(device == null){
+                logger.error("Unauthorized device connected to Yoda!" + board.id);
+                //TODO
+
+            }else {
+                ActualizationController.hardware_connected(device, device_report);
+            }
 
         }
 
-        logger.debug("No actualization plan found for hardware: " + board.id);
+    }
+
+    public static void hardware_connected(Board board, Swagger_WebSocket_Device_connected report) {
+        logger.debug("Tyrion Checking summary information of connected padavan board: ", board.id);
+
+        // Pokusím se najít Aktualizační proceduru jestli existuje s následujícími stavy
+        logger.debug("Tyrion Checking actualization state of connected board: ", board.id);
+        List<C_Program_Update_Plan> plans = C_Program_Update_Plan.find.where().eq("board.id", board.id).disjunction()
+                .add(   Expr.eq("state", C_ProgramUpdater_State.in_progress)         )
+                .add(   Expr.eq("state", C_ProgramUpdater_State.waiting_for_device)         )
+                .add(   Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible)      )
+                .add(   Expr.eq("state", C_ProgramUpdater_State.critical_error)      )
+                .add(   Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline)    ).order().asc("id").findList();
+
+
+        if(plans.size() > 1){
+            logger.error("Hardware Board: ", board.id, " connected into system, but we have mote than 2 update-plan!!!");
+            logger.error("Earlier plans are terminate! Last one - by ID is used now!");
+
+            for(int i = 1; i < plans.size(); i++ ){
+                plans.get(i).state = C_ProgramUpdater_State.overwritten;
+                plans.get(i).update();
+                plans.remove(i);
+            }
+        }
+
+        if(plans.size() == 1){
+
+            logger.debug("Found one actualization procedure on ", board.id);
+
+            C_Program_Update_Plan plan = plans.get(0);
+
+            if(plan.firmware_type == Firmware_type.FIRMWARE){
+
+                logger.debug("Checking Firmware");
+
+                // Mám shodu oproti očekávánemů
+                if(plan.c_program_version_for_update.c_compilation.firmware_build_id .equals( report.firmware_build_id )){
+
+                    plan.state = C_ProgramUpdater_State.complete;
+                    plan.update();
+
+                }else {
+
+                    plan.state = C_ProgramUpdater_State.in_progress;
+                    plan.update();
+
+                    Master_Updater.add_new_Procedure(plan.actualization_procedure);
+
+                }
+
+            }else if(plan.firmware_type == Firmware_type.BOOTLOADER) {
+
+                logger.debug("Checking Firmware");
+
+                // Mám shodu oproti očekávánemů
+                if (plan.binary_file.boot_loader.version_identificator.equals(report.bootloader_build_id)) {
+
+                    plan.state = C_ProgramUpdater_State.complete;
+                    plan.update();
+
+                } else {
+
+                    plan.state = C_ProgramUpdater_State.in_progress;
+                    plan.update();
+
+                    Master_Updater.add_new_Procedure(plan.actualization_procedure);
+                }
+            }
+
+        }else {
+            logger.debug("No actualization plan found for Master Device: " + board.id);
+        }
+
 
     }
 

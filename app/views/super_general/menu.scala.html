@@ -1,7 +1,10 @@
 
 @import utilities.Server
 @import utilities.swagger.swagger_diff_tools.Swagger_diff_Controller
-@(bugs: Integer, homer_local  : Integer, becki_terminal: Integer, grid_terminal: Integer, homer_server : Integer, compiler_server: Integer, link_api_swagger : String)
+@import utilities.loggy.Loggy
+@import controllers.WebSocketController
+@import utilities.Server
+
 
     <aside class="main-sidebar">
     <!-- sidebar: style can be found in sidebar.less -->
@@ -20,7 +23,7 @@
                 <li>
                     <a href='@routes.DashboardController.show_all_logs()' >
                         <i class="fa  fa-bug"></i> <span>Bug Reporting</span>
-                        @if( bugs > 0) { <small class="label pull-right bg-red">@bugs</small>}
+                        @if( Loggy.number_of_reported_errors() > 0) { <small class="label pull-right bg-red">@Loggy.number_of_reported_errors()</small>}
                     </a>
                 </li>
 <!-------------------------------------------------------------------------- ------------------------>
@@ -34,7 +37,7 @@
                 <li>
                     <a href='@routes.DashboardController.show_web_socket_stats()' >
                         <i class="fa fa-heart"></i> <span>Websocket connections</span>
-                        <small class="label pull-right bg-yellow">  @( grid_terminal + homer_server + homer_local + compiler_server+ becki_terminal) </small>
+                        <small class="label pull-right bg-yellow">  @( WebSocketController.becki_website.size()  + WebSocketController.compiler_cloud_servers.size()  + WebSocketController.blocko_servers.size() + WebSocketController.incomingConnections_homers.size()  + WebSocketController.incomingConnections_terminals.size()) </small>
                     </a>
                 </li>
 <!-------------------------------------------------------------------------- ------------------------>
@@ -44,12 +47,12 @@
                         <i class="fa fa-angle-left pull-right"></i>
                     </a>
                     <ul class="treeview-menu">
-                        <li><a href='@link_api_swagger'><i class="fa fa-circle-o"></i>Api on latest version</a></li>
+                        <li><a href='@Server.link_api_swagger'><i class="fa fa-circle-o"></i>Api on latest version</a></li>
                         <li>
                             <a href="#"><i class="fa fa-circle-o"></i> Historical Version <i class="fa fa-angle-left pull-right"></i></a>
                             <ul class="treeview-menu">
                             @for(version <- Swagger_diff_Controller.json_docu_files() ) {
-                                <li><a href='@link_api_swagger/@version' ><i class="fa fa-circle-o"></i>@version</a></li>
+                                <li><a href='@Server.link_api_swagger/@Server.server_version' ><i class="fa fa-circle-o"></i>@Server.server_version</a></li>
                             }
                             </ul>
                         </li>
@@ -71,8 +74,6 @@
                 </li>
 <!-------------------------------------------------------------------------- ------------------------>
 
-<!-------------------------------------------------------------------------- ------------------------>
-
                 <li class="treeview">
                     <a href="#">
                         <i class="fa fa-share"></i> <span>Tyrion Object Management</span>
@@ -80,8 +81,8 @@
                     </a>
                     <ul class="treeview-menu">
                         <li>
-                             <a href='@routes.DashboardController.basic_object_management()'>
-                                <i class="fa fa-wrench"></i> <span>Basic Object</span>
+                             <a href='@routes.DashboardController.basic_board_management()'>
+                                <i class="fa fa-wrench"></i> <span>Hardware</span>
                             </a>
                         </li>
                         <li>
@@ -107,6 +108,7 @@
                     </ul>
                 </li>
 
+<!-------------------------------------------------------------------------- ------------------------>
                 <li>
                     <a href='@routes.DashboardController.blocko_objects()' >
                         <i class="fa fa-globe"></i> <span>Blocko Objects</span>

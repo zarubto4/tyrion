@@ -15,7 +15,7 @@ public class ChangePropertyToken extends Model {
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)     public String id;
     @OneToOne @JoinColumn(name = "person_id")                   public Person person;
                                                                 public String change_property_token;
-                                                                public Date time_of_creation;
+                                                                public Date   time_of_creation;
                                                                 public String property;
                                                                 public String value;
 

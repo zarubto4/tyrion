@@ -37,6 +37,8 @@ public class Swagger_Tariff {
         @ApiModelProperty(required = true, readOnly = true, value = "This value indicates that for creating new Product Tariff  User have to pay throw the Credit-Card Gateway or send money via Bank Account")
         public boolean required_payment_mode;
 
+        public String color;
+
         @ApiModelProperty(required = true, readOnly = true)
         public Price price = new Price();
 

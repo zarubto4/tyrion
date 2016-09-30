@@ -52,8 +52,8 @@ public class NotificationController extends Controller {
       notification.save_object();
 
     // Pokud je uživatel přihlášený pošlu notifikaci přes websocket
-    if (WebSocketController_Incoming.becki_website.containsKey(person.id) ) {
-      WebSocketController_Incoming.becki_sendNotification( (WS_Becki_Website) WebSocketController_Incoming.becki_website.get(person.id)  , notification );
+    if (WebSocketController.becki_website.containsKey(person.id) ) {
+      WebSocketController.becki_sendNotification( (WS_Becki_Website) WebSocketController.becki_website.get(person.id)  , notification );
     }
   }
 
@@ -155,12 +155,12 @@ public class NotificationController extends Controller {
     send_notification(person, notification);
   }
 
-  public static void new_actualization_request_with_file(Person person, Board board, String file_name){
+  public static void new_actualization_request_with_file(Person person, Board board){
 
     Notification notification = new Notification(Notification_importance.low, Notification_level.info, person)
             .setText("New actualization task was added to Task Queue on")
             .setObject(Board.class, board.id, "board", board.project_id())
-            .setText("with File " + file_name);
+            .setText("with user File ");
 
 
     send_notification(person, notification);

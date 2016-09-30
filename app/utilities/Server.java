@@ -97,6 +97,8 @@ public class Server {
 
     public static Scheduler scheduler;
 
+    public static String  link_api_swagger;
+
     static play.Logger.ALogger logger = play.Logger.of("Start-Procedures");
 
     public static void set_Server_address() throws Exception{
@@ -164,6 +166,8 @@ public class Server {
             GoPay_notification_url               = Configuration.root().getString("GOPay.localhost.notification_url");
 
             azureLink                            = Configuration.root().getString("Azure.developer.azureLink");
+
+            link_api_swagger                     = "http://swagger.byzance.cz/?url="+ tyrion_serverAddress +"/api-docs";
     }
         else   {
 
@@ -211,6 +215,8 @@ public class Server {
             GoPay_notification_url               = Configuration.root().getString("GOPay.production.notification_url");
 
             azureLink                            = Configuration.root().getString("Azure.production.azureLink");
+
+            link_api_swagger                     = "http://swagger.byzance.cz/?url="+ tyrion_serverAddress +"/api-docs";
         }
 
         /**
@@ -263,7 +269,7 @@ public class Server {
             // Blocko
                 for(Enum en : BlockoBlock.permissions.values())             permissions.add(en.name());
                 for(Enum en : BlockoBlockVersion.permissions.values())      permissions.add(en.name());
-                for(Enum en : Cloud_Homer_Server.permissions.values())     permissions.add(en.name());
+                for(Enum en : Cloud_Homer_Server.permissions.values())      permissions.add(en.name());
                 for(Enum en : TypeOfBlock.permissions.values())             permissions.add(en.name());
 
             // compiler
@@ -274,9 +280,10 @@ public class Server {
                 for(Enum en : Producer.permissions.values())                permissions.add(en.name());
                 for(Enum en : SingleLibrary.permissions.values())           permissions.add(en.name());
                 for(Enum en : TypeOfBoard.permissions.values())             permissions.add(en.name());
+                for(Enum en : BootLoader.permissions.values())              permissions.add(en.name());
 
             // grid
-                for(Enum en : Screen_Size_Type.permissions.values())           permissions.add(en.name());
+                for(Enum en : Screen_Size_Type.permissions.values())        permissions.add(en.name());
 
             // overflow
                 for(Enum en : FloatingPersonToken.permissions.values())     permissions.add(en.name());
@@ -297,7 +304,7 @@ public class Server {
                 // c_program
                     for(Enum en : C_Program.permissions.values())           permissions.add(en.name());
                 // global
-                    for(Enum en : Private_Homer_Server.permissions.values())               permissions.add(en.name());
+                    for(Enum en : Private_Homer_Server.permissions.values())permissions.add(en.name());
                     for(Enum en : Project.permissions.values())             permissions.add(en.name());
                 // m_project
                     for(Enum en : M_Project.permissions.values())           permissions.add(en.name());
