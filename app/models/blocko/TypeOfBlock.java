@@ -21,7 +21,6 @@ public class TypeOfBlock extends Model {
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true) public String id;
                                                             @ApiModelProperty(required = true) public String name;
                          @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true) public String general_description;
-                                                            @ApiModelProperty(required = true) public Approval_state approval_state;
 
 
                                     @JsonIgnore @ManyToOne  public Project project;

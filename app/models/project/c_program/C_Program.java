@@ -13,7 +13,9 @@ import models.compiler.TypeOfBoard;
 import models.compiler.Version_Object;
 import models.project.b_program.B_Pair;
 import models.project.global.Project;
+import org.omg.CosNaming.NamingContextExtPackage.StringNameHelper;
 import play.libs.Json;
+import utilities.enums.Approval_state;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_New;
 import utilities.swagger.outboundClass.Swagger_C_Program_Version;
 
@@ -44,7 +46,7 @@ public class C_Program extends Model {
             value = "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
             example = "1466163478925")                                                       public Date date_of_create;
 
-    @JsonIgnore @OneToMany(mappedBy="c_program", cascade = CascadeType.ALL, fetch = FetchType.EAGER) @OrderBy("id DESC")   public List<Version_Object> version_objects = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="c_program", cascade = CascadeType.ALL, fetch = FetchType.EAGER) @OrderBy("date_of_create DESC")   public List<Version_Object> version_objects = new ArrayList<>();
                                                                          @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)   public Version_Object first_default_version_object;
 
     @JsonIgnore @OneToOne() public TypeOfBoard defaul_program_type_of_board;   // Pro defaultní program na devicu a první verzi C_Programu při vytvoření  (Určeno výhradně pro Byzance)

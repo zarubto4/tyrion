@@ -117,6 +117,6 @@ public class FileRecord extends Model {
 
 
     /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Finder<String, FileRecord> find = new Finder<>(FileRecord.class);
+    public static Model.Finder<String, FileRecord> find = new Finder<>(FileRecord.class);
 
 }

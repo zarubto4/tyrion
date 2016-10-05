@@ -49,6 +49,7 @@
         <script>
 
         // Získání cookies z prohlížeče
+            $.ajaxSetup({ cache: false });
         function getCookie(name)
         {
             var re = new RegExp(name + "=([^;]+)");
@@ -79,6 +80,22 @@
             });
         }
 
+
+        function logout(){
+            $.ajax({
+                url: '@routes.SecurityController.logout()',
+                type: 'POST',
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken")
+                },
+                success:function(e){
+                    location.href = '@routes.DashboardController.login()';
+                },
+                error:function(e) {
+                    alert(e.responseText);
+                }
+            })}
+
         </script>
     </head>
 
@@ -108,6 +125,7 @@
                         </a>
 
                         <div class="navbar-custom-menu">
+                            <button style="margin: 5px 20px;" class="btn btn-default pull-left" type="button" onclick="logout()">Logout</button>
                             <ul class="nav navbar-nav">
                                 <h4 > <font color="white">  <b>Version:</b> @Server.server_version   &nbsp &nbsp &nbsp <b>Production mode: </b> @if(!Server.server_mode){Production}else{Developer}   &nbsp &nbsp &nbsp  </font> </h4>
 

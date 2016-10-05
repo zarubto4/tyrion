@@ -57,7 +57,7 @@ PUT             /notification/confirm/:notification_id      @controllers.Notific
 
 PUT             /notification/read                          @controllers.NotificationController.mark_as_read_notification()
 
-POST            /notification/test/:mail                    @controllers.NotificationController.test_notifications(mail)
+GET             /notification/test/:email/:level            @controllers.NotificationController.test_notifications(email, level)
 
 ### PERSON ############ PERSON ############### PERSON ################ PERSON ################# PERSON ############ PERSON ###########################################
 ######################################################################################################################################################################
@@ -250,6 +250,7 @@ DELETE         /project/blockoBlock/:blocko_block_id                            
 PUT            /project/blockoBlock/list/:page_number                                       @controllers.ProgramingPackageController.get_BlockoBlock_by_Filter(page_number: Integer)
 
 POST           /project/blockoBlock/version/:blocko_block_id                                @controllers.ProgramingPackageController.new_BlockoBlock_Version(blocko_block_id)
+PUT            /project/blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.edit_BlockoBlock_Version(blocko_block_version_id)
 GET            /project/blockoBlock/version/all/:blocko_block_id                            @controllers.ProgramingPackageController.get_BlockoBlock_all_versions(blocko_block_id)
 GET            /project/blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.get_BlockoBlock_Version(blocko_block_version_id)
 DELETE         /project/blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.delete_BlockoBlock_Version(blocko_block_version_id)
@@ -271,8 +272,8 @@ GET             /project/blocko/server                                          
 DELETE          /project/blocko/server/:server_id                                           @controllers.ProgramingPackageController.delete_Blocko_Server(server_id)
 
 #Blocko General
-PUT             /project/blocko/approval                                                    @controllers.ProgramingPackageController.changeApprovalState()
-PUT             /project/blocko/approve_with_changes                                        @controllers.ProgramingPackageController.approveWithChanges()
+PUT             /project/blocko/disapprove                                                  @controllers.ProgramingPackageController.blockoDisapprove()
+PUT             /project/blocko/approval                                                    @controllers.ProgramingPackageController.blockoApproval()
 
 ### ACTUALIZATION PROCEDURE ############ ACTUALIZATION PROCEDURE ############### ACTUALIZATION PROCEDURE ################ ACTUALIZATION PROCEDURE ##############################
 ################################################################################################################################################################################
@@ -302,6 +303,12 @@ DELETE          /compilation/c_program/version/:version_id                      
 GET             /compilation/c_program/version/:version_id                                  @controllers.CompilationLibrariesController.get_C_Program_Version(version_id)
 POST            /compilation/c_program/version/compile                                      @controllers.CompilationLibrariesController.compile_C_Program_code()
 PUT             /compilation/c_program/version/compile/:version_id                          @controllers.CompilationLibrariesController.compile_C_Program_version(version_id)
+
+PUT             /compilation/c_program/version/make_public/:version_id                      @controllers.CompilationLibrariesController.make_C_Program_Version_public(version_id)
+GET             /compilation/c_program/version/public/list/:page_number                     @controllers.CompilationLibrariesController.get_C_Program_public_list(page_number: Integer)
+
+PUT             /compilation/c_program/version/approval                                     @controllers.CompilationLibrariesController.changeApprovalState()
+PUT             /compilation/c_program/version/approve_with_changes                         @controllers.CompilationLibrariesController.approveWithChanges()
 
 #Actualization
 PUT             /compilation/c_program/version/upload/:version_id                           @controllers.CompilationLibrariesController.uploadCompilationToBoard(version_id)
@@ -453,6 +460,8 @@ GET             /admin/user_summary/:mail                       @controllers.Das
 GET             /admin/permission/permission_summary            @controllers.DashboardController.permissions_summary()
 GET             /admin/permission/role/:role_id                 @controllers.DashboardController.role(role_id)
 GET             /admin/blocko_objects                           @controllers.DashboardController.blocko_objects()
+GET             /admin/blocko_management                        @controllers.DashboardController.blocko_management()
+GET             /admin/public_code                              @controllers.DashboardController.public_code()
 
 
 GET             /javascriptRoutes                               @controllers.DashboardController.javascriptRoutes()

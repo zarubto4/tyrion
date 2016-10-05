@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
 import io.swagger.annotations.*;
 import models.compiler.*;
+import models.person.Person;
 import models.project.c_program.C_Compilation;
 import models.project.c_program.C_Program;
 import models.project.global.Product;
@@ -24,13 +25,11 @@ import utilities.UtilTools;
 import utilities.enums.Firmware_type;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_API;
+import utilities.loginEntities.Secured_Admin;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
-import utilities.swagger.outboundClass.Filter_List.Swagger_Board_List;
-import utilities.swagger.outboundClass.Filter_List.Swagger_C_Program_List;
-import utilities.swagger.outboundClass.Filter_List.Swagger_LibraryGroup_List;
-import utilities.swagger.outboundClass.Filter_List.Swagger_Single_Library_List;
+import utilities.swagger.outboundClass.Filter_List.*;
 import utilities.swagger.outboundClass.*;
 
 import java.io.File;
@@ -48,8 +47,7 @@ import java.util.*;
 public class CompilationLibrariesController extends Controller {
 
     // Rest Api call client
-    @Inject
-    WSClient ws;
+    @Inject WSClient ws;
 
     // Loger
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
@@ -58,20 +56,20 @@ public class CompilationLibrariesController extends Controller {
 // C_ Program && Version ###############################################################################################*/
 
     @ApiOperation(value = "Create new C_Program",
-            tags = {"C_Program"},
-            notes = "If you want create new C_program in project.id = {project_id}. Send required json values and cloud_compilation_server respond with new object",
-            produces = "application/json",
-            protocols = "https",
-            code = 201,
-            extensions = {
-                    @Extension(name = "permission_description", properties = {
-                            @ExtensionProperty(name = "C_program.create_permission", value = C_Program.create_permission_docs),
-                    }),
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Project.update_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "C_program_create"),
-                    })
-            }
+                  tags = {"C_Program"},
+                  notes = "If you want create new C_program in project.id = {project_id}. Send required json values and cloud_compilation_server respond with new object",
+                  produces = "application/json",
+                  protocols = "https",
+                  code = 201,
+                  extensions = {
+                        @Extension( name = "permission_description", properties = {
+                                @ExtensionProperty(name = "C_program.create_permission", value = C_Program.create_permission_docs ),
+                        }),
+                        @Extension( name = "permission_required", properties = {
+                                @ExtensionProperty(name = "Project.update_permission", value = "true"),
+                                @ExtensionProperty(name = "Static Permission key", value =  "C_program_create" ),
+                        })
+                  }
     )
     @ApiImplicitParams(
             {
@@ -109,11 +107,11 @@ public class CompilationLibrariesController extends Controller {
             if (typeOfBoard == null) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
 
             // Tvorba programu
-            C_Program c_program = new C_Program();
-            c_program.program_name = help.program_name;
-            c_program.program_description = help.program_description;
-            c_program.date_of_create = new Date();
-            c_program.type_of_board = typeOfBoard;
+            C_Program c_program             = new C_Program();
+            c_program.program_name          = help.program_name;
+            c_program.program_description   = help.program_description;
+            c_program.date_of_create        = new Date();
+            c_program.type_of_board         = typeOfBoard;
 
 
             if(help.project_id != null){
@@ -163,10 +161,10 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = C_Program.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = C_Program.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result get_C_Program(@ApiParam(value = "c_program_id String query", required = true) String c_program_id) {
@@ -174,10 +172,10 @@ public class CompilationLibrariesController extends Controller {
 
             // Vyhledám Objekt
             C_Program c_program = C_Program.find.byId(c_program_id);
-            if (c_program == null) return GlobalResult.notFoundObject("C_Program c_program not found");
+            if(c_program == null) return GlobalResult.notFoundObject("C_Program c_program not found");
 
             // Zkontroluji oprávnění
-            if (!c_program.read_permission()) return GlobalResult.forbidden_Permission();
+            if(! c_program.read_permission())  return GlobalResult.forbidden_Permission();
 
             // Vracím Objekt
             return GlobalResult.result_ok(Json.toJson(c_program));
@@ -211,20 +209,18 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Swagger_C_Program_List.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_C_Program_List.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result get_C_Program_by_Filter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) Integer page_number) {
+    public Result get_C_Program_by_Filter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true)  Integer page_number){
 
         try {
 
             // Získání JSON
             final Form<Swagger_C_Program_Filter> form = Form.form(Swagger_C_Program_Filter.class).bindFromRequest();
-            if (form.hasErrors()) {
-                return GlobalResult.formExcepting(form.errorsAsJson());
-            }
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_C_Program_Filter help = form.get();
 
             // Získání všech objektů a následné filtrování podle vlastníka
@@ -232,18 +228,18 @@ public class CompilationLibrariesController extends Controller {
             query.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id);
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
-            if (help.project_id != null) {
+            if(help.project_id != null){
 
                 query.where().eq("project.id", help.project_id);
             }
 
             // Vyvoření odchozího JSON
-            Swagger_C_Program_List result = new Swagger_C_Program_List(query, page_number);
+            Swagger_C_Program_List result = new Swagger_C_Program_List(query,page_number);
 
             // Vrácení výsledku
             return GlobalResult.result_ok(Json.toJson(result));
 
-        } catch (Exception e) {
+        }catch (Exception e){
             return GlobalResult.internalServerError();
         }
     }
@@ -261,22 +257,22 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Swagger_C_Program_List.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_C_Program_List.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_C_Program_List_by_Project(@ApiParam(value = "project_id String query", required = true) String project_id, @ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) Integer page_number) {
+    public Result get_C_Program_List_by_Project(@ApiParam(value = "project_id String query", required = true) String project_id, @ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) Integer page_number){
 
         try {
 
             Query<C_Program> query = Ebean.find(C_Program.class);
-            query.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).eq("project.id", project_id);
+            query.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).eq("project.id",project_id);
 
-            Swagger_C_Program_List result = new Swagger_C_Program_List(query, page_number);
+            Swagger_C_Program_List result = new Swagger_C_Program_List(query,page_number);
 
             return GlobalResult.result_ok(Json.toJson(result));
 
-        } catch (Exception e) {
+        }catch (Exception e){
             return GlobalResult.internalServerError();
         }
     }
@@ -299,26 +295,25 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Swagger_C_Program_Version.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ", response = Result_BadRequest.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_C_Program_Version.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_C_Program_Version(@ApiParam(value = "version_id String query", required = true) String version_id) {
+    public Result  get_C_Program_Version (@ApiParam(value = "version_id String query", required = true)  String version_id) {
         try {
 
             // Vyhledám Objekt
             Version_Object version_object = Version_Object.find.byId(version_id);
-            if (version_object == null) return GlobalResult.notFoundObject("Version_Object version_object not found");
+            if(version_object == null) return GlobalResult.notFoundObject("Version_Object version_object not found");
 
             //Zkontroluji validitu Verze zda sedí k C_Programu
-            if (version_object.c_program == null)
-                return GlobalResult.result_BadRequest("Version_Object its not version of C_Program");
+            if(version_object.c_program == null) return GlobalResult.result_BadRequest("Version_Object its not version of C_Program");
 
             // Zkontroluji oprávnění
-            if (!version_object.c_program.read_permission()) return GlobalResult.forbidden_Permission();
+            if(! version_object.c_program.read_permission())  return GlobalResult.forbidden_Permission();
 
             // Vracím Objekt
             return GlobalResult.result_ok(Json.toJson(version_object.c_program.program_version(version_object)));
@@ -342,11 +337,11 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = C_Program.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message", response = Result_NotFound.class),
+            @ApiResponse(code = 200, message = "Ok Result",    response = C_Program.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @ApiImplicitParams(
@@ -361,23 +356,21 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_C_Program_Description(@ApiParam(value = "c_program_id String query", required = true) String c_program_id) {
+    public Result edit_C_Program_Description(@ApiParam(value = "c_program_id String query", required = true)  String c_program_id) {
         try {
 
             // Zpracování Json
             final Form<Swagger_C_program_New> form = Form.form(Swagger_C_program_New.class).bindFromRequest();
-            if (form.hasErrors()) {
-                return GlobalResult.formExcepting(form.errorsAsJson());
-            }
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_C_program_New help = form.get();
 
             // Ověření objektu
             C_Program c_program = C_Program.find.byId(c_program_id);
-            if (c_program == null) return GlobalResult.notFoundObject("C_Program c_program_id not found");
+            if(c_program == null ) return GlobalResult.notFoundObject("C_Program c_program_id not found");
 
             // Ověření objektu
             TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(help.type_of_board_id);
-            if (typeOfBoard == null) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
+            if(typeOfBoard == null) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
 
             // úprava objektu
             c_program.program_name = help.program_name;
@@ -385,7 +378,7 @@ public class CompilationLibrariesController extends Controller {
             c_program.type_of_board = typeOfBoard;
 
             // Zkontroluji oprávnění
-            if (!c_program.edit_permission()) return GlobalResult.forbidden_Permission();
+            if(!c_program.edit_permission())  return GlobalResult.forbidden_Permission();
 
             // Uložení změn
             c_program.update();
@@ -423,50 +416,52 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful created", response = Swagger_C_Program_Version.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Something is wrong", response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 201, message = "Successful created",        response = Swagger_C_Program_Version.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing",   response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result new_C_Program_Version(@ApiParam(value = "version_id String query", required = true) String c_program_id) {
-        try {
+    public Result new_C_Program_Version(@ApiParam(value = "version_id String query", required = true)  String c_program_id){
+        try{
 
             // Zpracování Json
             Form<Swagger_C_Program_Version_New> form = Form.form(Swagger_C_Program_Version_New.class).bindFromRequest();
-            if (form.hasErrors()){return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_C_Program_Version_New help = form.get();
 
             // Ověření objektu
             C_Program c_program = C_Program.find.byId(c_program_id);
-            if (c_program == null) return GlobalResult.notFoundObject("C_Program c_program_id not found");
+            if(c_program == null) return GlobalResult.notFoundObject("C_Program c_program_id not found");
 
             // Zkontroluji oprávnění
-            if (!c_program.update_permission()) return GlobalResult.forbidden_Permission();
+            if(!c_program.update_permission()) return GlobalResult.forbidden_Permission();
 
             // První nová Verze
-            Version_Object version_object = new Version_Object();
-            version_object.version_name = help.version_name;
+            Version_Object version_object      = new Version_Object();
+            version_object.version_name        = help.version_name;
             version_object.version_description = help.version_description;
             version_object.date_of_create = new Date();
             version_object.c_program = c_program;
+            version_object.public_version = false;
 
             // Zkontroluji oprávnění
-            if (!version_object.c_program.update_permission()) return GlobalResult.forbidden_Permission();
+            if(!version_object.c_program.update_permission()) return GlobalResult.forbidden_Permission();
 
             version_object.save();
 
             // Nahraje do Azure a připojí do verze soubor
-            ObjectNode content = Json.newObject();
-            content.put("main", help.main);
-            content.set("user_files", Json.toJson(help.user_files));
-            content.set("external_libraries", Json.toJson(help.external_libraries));
+            ObjectNode  content = Json.newObject();
+                        content.put("main", help.main );
+                        content.set("user_files", Json.toJson( help.user_files) );
+                        content.set("external_libraries", Json.toJson( help.external_libraries) );
 
             // Content se nahraje na Azure
-            UtilTools.uploadAzure_Version(content.toString(), "code.json", c_program.get_path(), version_object);
+
+            UtilTools.uploadAzure_Version(content.toString(), "code.json" , c_program.get_path() ,  version_object);
 
 
             String token = request().getHeader("X-AUTH-TOKEN"); // Určen pro exetrní vlákno zpracování
@@ -479,7 +474,7 @@ public class CompilationLibrariesController extends Controller {
                 public void run() {
                     try {
 
-                        F.Promise<WSResponse> responsePromise = ws.url(Server.tyrion_serverAddress + "/compilation/c_program/version/compile/" + version_object.id)
+                       F.Promise<WSResponse> responsePromise = ws.url(Server.tyrion_serverAddress + "/compilation/c_program/version/compile/" + version_object.id)
                                 .setContentType("undefined")
                                 .setMethod("PUT")
                                 .setHeader("X-AUTH-TOKEN", token)
@@ -488,15 +483,15 @@ public class CompilationLibrariesController extends Controller {
 
                         JsonNode result = responsePromise.get(50000).asJson();
 
-                        // At se deje co se deje nakonci stejnak musím změnit stav compilation_in_progress = false.
-                        // A objekt hledám znovu protože na druhe strane ho nekdo mohl updatovat o nove iformace a ty bych updatem na puvodnim objeektu přemazal
-                        Version_Object update_version = Version_Object.find.byId(version_object.id);
-                        update_version.compilation_in_progress = false;
-                        update_version.update();
-                        return;
+                         // At se deje co se deje nakonci stejnak musím změnit stav compilation_in_progress = false.
+                         // A objekt hledám znovu protože na druhe strane ho nekdo mohl updatovat o nove iformace a ty bych updatem na puvodnim objeektu přemazal
+                         Version_Object update_version = Version_Object.find.byId(version_object.id);
+                         update_version.compilation_in_progress = false;
+                         update_version.update();
+                         return;
 
 
-                    } catch (Exception e) {
+                    }catch (Exception e){
                         logger.error("Error while cloud_compilation_server tried compile version of C_program", e);
                     }
 
@@ -528,35 +523,29 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 200, message = "Ok Result", response =  Result_ok.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result delete_C_Program_Version(@ApiParam(value = "version_id String query", required = true) String version_id) {
-        try {
+    public Result delete_C_Program_Version(@ApiParam(value = "version_id String query",   required = true)    String version_id){
+        try{
 
             // Ověření objektu
             Version_Object version_object = Version_Object.find.byId(version_id);
             if (version_object == null) return GlobalResult.notFoundObject("Version version_id not found");
 
-            // Musím zkontorlovat jestli uživatel nechce smazat první defaultní verzi!
-
             // Zkontroluji validitu Verze zda sedí k C_Programu
-            if (version_object.c_program == null){
-                //POKUD CHYBÍ C_Program dá se předpokládat že se maže Verze z jiného typu Verzí (třeba B_Program) nebo jde užvatelem o snahu objekt smazat
-                return GlobalResult.result_BadRequest("Version_Object its not version of C_Program");
-            }
-
+            if(version_object.c_program == null) return GlobalResult.result_BadRequest("Version_Object its not version of C_Program");
 
             // Kontrola oprávnění
-            if (!version_object.c_program.delete_permission()) return GlobalResult.forbidden_Permission();
+            if(!version_object.c_program.delete_permission()) return GlobalResult.forbidden_Permission();
 
             // Smažu obsah konkrétní verze
             Product product = Product.find.where().eq("projects.c_programs.version_objects.id", version_id).findUnique();
 
-            UtilTools.azureDelete(product.get_Container(), version_object.blob_version_link);
+            UtilTools.azureDelete( product.get_Container(), version_object.blob_version_link);
 
             version_object.c_program = null;
 
@@ -597,29 +586,27 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Version_Object.class),
-            @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Version_Object.class),
+            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_C_Program_version(@ApiParam(value = "version_id String query", required = true) String version_id) {
-        try {
+    public Result edit_C_Program_version( @ApiParam(value = "version_id String query",   required = true)  String version_id){
+        try{
 
             // Zpracování Json
             final Form<Swagger_C_Program_Version_Edit> form = Form.form(Swagger_C_Program_Version_Edit.class).bindFromRequest();
-            if (form.hasErrors()) {
-                return GlobalResult.formExcepting(form.errorsAsJson());
-            }
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_C_Program_Version_Edit help = form.get();
 
             // Ověření objektu
-            Version_Object version_object = Version_Object.find.byId(version_id);
+            Version_Object version_object= Version_Object.find.byId(version_id);
             if (version_object == null) return GlobalResult.notFoundObject("Version version_id not found");
 
             // Kontrola oprávnění
-            if (!version_object.c_program.edit_permission()) return GlobalResult.forbidden_Permission();
+            if(!version_object.c_program.edit_permission()) return GlobalResult.forbidden_Permission();
 
             //Uprava objektu
             version_object.version_name = help.version_name;
@@ -651,21 +638,21 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result delete_C_Program(@ApiParam(value = "c_program_id String query", required = true) String c_program_id) {
-        try {
+    public Result delete_C_Program(@ApiParam(value = "c_program_id String query", required = true)  String c_program_id){
+        try{
 
             // Ověření objektu
             C_Program c_program = C_Program.find.byId(c_program_id);
-            if (c_program == null) return GlobalResult.notFoundObject("C_Program c_program_id not found");
+            if(c_program == null ) return GlobalResult.notFoundObject("C_Program c_program_id not found");
 
             // Kontrola oprávnění
-            if (!c_program.delete_permission()) return GlobalResult.forbidden_Permission();
+            if(!c_program.delete_permission()) return GlobalResult.forbidden_Permission();
 
             // Vyhledání PRoduct pro získání kontejneru
             Product product = Product.find.where().eq("projects.c_programs.id", c_program_id).findUnique();
@@ -680,6 +667,253 @@ public class CompilationLibrariesController extends Controller {
 
             // Vrácení potvrzení
             return GlobalResult.result_ok();
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "make C_program_Version public",
+            tags = {"C_Program"},
+            notes = "make C_program public, so other users can see it and use it",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension(name = "permission_required", properties = {
+                            @ExtensionProperty(name = "C_Program.edit_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value = "C_program_edit"),
+                    })
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result make_C_Program_Version_public(@ApiParam(value = "version_id String query", required = true)  String version_id){
+        try {
+
+            // Kontrola objektu
+            Version_Object version = Version_Object.find.byId(version_id);
+            if(version == null) return GlobalResult.notFoundObject("Version not found");
+
+            // Úprava objektu
+            version.approval_state = Approval_state.pending;
+
+            // Kontrola oprávnění
+            if(!(version.c_program.edit_permission())) return GlobalResult.forbidden_Permission();
+
+            // Uložení změn
+            version.update();
+
+            // Vrácení potvrzení
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "get C_program_Version public",
+            tags = {"C_Program"},
+            notes = "get approved or edited C_program public Versions ",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_C_Program_Version_Public_List.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result get_C_Program_public_list(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true)  Integer page_number){
+        try {
+
+            // Vytřídění objektů
+            Query<Version_Object> query = Ebean.find(Version_Object.class);
+            query.where().isNotNull("c_program").eq("public_version", true).ne("approval_state", Approval_state.pending).ne("approval_state", Approval_state.disapproved);
+
+            // Vytvoření výsledku a stránkování
+            Swagger_C_Program_Version_Public_List result = new Swagger_C_Program_Version_Public_List(query,page_number);
+
+            // Vrácení výsledku
+            return GlobalResult.result_ok(Json.toJson(result));
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result changeApprovalState(){
+        try {
+
+            // Získání Json
+            final Form<Swagger_C_Program_Version_Approval> form = Form.form(Swagger_C_Program_Version_Approval.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_C_Program_Version_Approval help = form.get();
+
+            // Kontrola objektu
+            Version_Object version_object = Version_Object.find.byId(help.id);
+            if(version_object == null) return GlobalResult.notFoundObject("Version not found.");
+
+            // Úprava objektu na základě rozhodnutí
+            if(help.decision){
+
+                // Schválení objektu
+                version_object.approval_state = Approval_state.approved;
+                version_object.public_version = true;
+
+            }else {
+
+                // Neschválení objektu
+                version_object.approval_state = Approval_state.disapproved;
+
+                if ((help.reason == null)||(help.reason.equals(""))) return GlobalResult.result_BadRequest("Fill in the reason");
+
+                // Odeslání emailu s důvodem
+                try {
+                    new EmailTool()
+                            .addEmptyLineSpace()
+                            .startParagraph("13")
+                            .addText("Your code: ")
+                            .addBoldText(version_object.version_name)
+                            .addText(" was disapproved for this reason: ")
+                            .endParagraph()
+                            .startParagraph("13")
+                            .addText( help.reason)
+                            .endParagraph()
+                            .addEmptyLineSpace()
+                            .sendEmail(version_object.author.mail, "Code disapproved" );
+
+                } catch (Exception e) {
+                    logger.error ("Sending mail -> critical error", e);
+                    e.printStackTrace();
+                }
+            }
+
+            // Uložení změn
+            version_object.update();
+
+            // Potvrzení
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result approveWithChanges(){
+        try {
+
+            // Získání Json
+            final Form<Swagger_C_Program_Version_Approve_WithChanges> form = Form.form(Swagger_C_Program_Version_Approve_WithChanges.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_C_Program_Version_Approve_WithChanges help = form.get();
+
+            // Kontrola objektu
+            Version_Object version_old = Version_Object.find.byId(help.id);
+            if(version_old == null) return GlobalResult.notFoundObject("Version not found");
+
+            // Ověření objektu
+            C_Program c_program = C_Program.find.byId(version_old.c_program.id);
+            if(c_program == null) return GlobalResult.notFoundObject("C_Program c_program_id not found");
+
+            // Zkontroluji oprávnění
+            if(!c_program.update_permission()) return GlobalResult.forbidden_Permission();
+
+            // První nová Verze
+            Version_Object version_object      = new Version_Object();
+            version_object.version_name        = help.name;
+            version_object.version_description = help.description;
+            version_object.date_of_create      = new Date();
+            version_object.c_program           = c_program;
+            version_object.public_version      = true;
+            version_object.author              = version_old.author;
+
+            // Zkontroluji oprávnění
+            if(!version_object.c_program.update_permission()) return GlobalResult.forbidden_Permission();
+
+            version_object.save();
+
+            // Nahraje do Azure a připojí do verze soubor
+            ObjectNode  content = Json.newObject();
+            content.put("main", help.main );
+            content.set("user_files", Json.toJson( help.user_files) );
+            content.set("external_libraries", Json.toJson( help.external_libraries) );
+
+            // Content se nahraje na Azure
+
+            UtilTools.uploadAzure_Version(content.toString(), "code.json" , c_program.get_path() ,  version_object);
+
+
+            String token = request().getHeader("X-AUTH-TOKEN"); // Určen pro exetrní vlákno zpracování
+            version_object.compilation_in_progress = true;
+            version_object.compilable = true;
+            version_object.update();
+
+            Thread compile_that = new Thread() {
+                @Override
+                public void run() {
+                    try {
+
+                        F.Promise<WSResponse> responsePromise = ws.url(Server.tyrion_serverAddress + "/compilation/c_program/version/compile/" + version_object.id)
+                                .setContentType("undefined")
+                                .setMethod("PUT")
+                                .setHeader("X-AUTH-TOKEN", token)
+                                .setRequestTimeout(50000)
+                                .put("");
+
+                        JsonNode result = responsePromise.get(50000).asJson();
+
+                        // At se deje co se deje nakonci stejnak musím změnit stav compilation_in_progress = false.
+                        // A objekt hledám znovu protože na druhe strane ho nekdo mohl updatovat o nove iformace a ty bych updatem na puvodnim objeektu přemazal
+                        Version_Object update_version = Version_Object.find.byId(version_object.id);
+                        update_version.compilation_in_progress = false;
+                        update_version.update();
+                        return;
+
+
+                    }catch (Exception e){
+                        logger.error("Error while cloud_compilation_server tried compile version of C_program", e);
+                    }
+
+                }
+            };
+
+            compile_that.start();
+
+            // Odeslání emailu s důvodem
+            try {
+                new EmailTool()
+                        .addEmptyLineSpace()
+                        .startParagraph("13")
+                        .addText("Your code: ")
+                        .addBoldText(version_object.version_name)
+                        .addText(" was edited for this reason: ")
+                        .endParagraph()
+                        .startParagraph("13")
+                        .addText( help.reason)
+                        .endParagraph()
+                        .addEmptyLineSpace()
+                        .sendEmail(version_object.c_program.project.product.payment_details.person.mail, "Code edited" );
+
+            } catch (Exception e) {
+                logger.error ("Sending mail -> critical error", e);
+                e.printStackTrace();
+            }
+
+            // Uložení změn
+            version_object.update();
+
+            // Potvrzení
+            return  GlobalResult.result_ok();
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -706,64 +940,61 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Compilation successful", response = Swagger_Compilation_Ok.class),
-            @ApiResponse(code = 477, message = "External server is offline", response = Result_BadRequest.class),
-            @ApiResponse(code = 422, message = "Compilation unsuccessful", response = Swagger_Compilation_Build_Error.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 478, message = "External server side Error", response = Result_BadRequest.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 200, message = "Compilation successful",    response = Swagger_Compilation_Ok.class),
+            @ApiResponse(code = 477, message = "External server is offline",response = Result_BadRequest.class),
+            @ApiResponse(code = 422, message = "Compilation unsuccessful",  response = Swagger_Compilation_Build_Error.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 478, message = "External server side Error",response = Result_BadRequest.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result compile_C_Program_version(@ApiParam(value = "version_id String query", required = true) String version_id) {
-        try {
+    public Result compile_C_Program_version( @ApiParam(value = "version_id String query", required = true) String version_id ){
+        try{
 
             logger.debug("Starting compilation on version_id = " + version_id);
 
             // Ověření objektu
             Version_Object version_object = Version_Object.find.byId(version_id);
-            if (version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
+            if(version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
 
             FileRecord file = FileRecord.find.where().eq("file_name", "code.json").eq("version_object.id", version_id).findUnique();
-            if (file == null) return GlobalResult.notFoundObject("Server has no contenct from version");
+            if(file == null) return GlobalResult.notFoundObject("Server has no contenct from version");
 
             // Smažu předchozí kompilaci
-            if (version_object.c_program == null)
-                return GlobalResult.result_BadRequest("Version is not version of C_Program");
+            if(version_object.c_program == null) return GlobalResult.result_BadRequest("Version is not version of C_Program");
 
             // Kontrola oprávnění
-            if (!version_object.c_program.read_permission()) return GlobalResult.forbidden_Permission();
+            if(!version_object.c_program.read_permission()) return GlobalResult.forbidden_Permission();
 
             // Smažu předchozí kompilaci
-            if (version_object.c_compilation != null)
-                return GlobalResult.result_ok(Json.toJson(new Swagger_Compilation_Ok()));
+            if(version_object.c_compilation != null) return GlobalResult.result_ok(Json.toJson( new Swagger_Compilation_Ok()));
 
             // Zpracování Json
-            JsonNode json = Json.parse(file.get_fileRecord_from_Azure_inString());
+            JsonNode json = Json.parse( file.get_fileRecord_from_Azure_inString() );
             Form<Swagger_C_Program_Version_Update> form = Form.form(Swagger_C_Program_Version_Update.class).bind(json);
             Swagger_C_Program_Version_Update help = form.get();
 
 
             TypeOfBoard typeOfBoard = TypeOfBoard.find.where().eq("c_programs.id", version_object.c_program.id).findUnique();
-            if (typeOfBoard == null) return GlobalResult.result_BadRequest("Version is not version of C_Program");
+            if(typeOfBoard == null) return GlobalResult.result_BadRequest("Version is not version of C_Program");
 
 
             logger.debug("Server has all the information it needs ");
 
             // Vytvářím objekt, jež se zašle přes websocket ke kompilaci
             ObjectNode result = Json.newObject();
-            result.put("messageType", "build");
-            result.put("target", typeOfBoard.compiler_target_name);
-            result.put("libVersion", "v0");
-            result.put("versionId", version_id);
-            result.put("code", help.main);
-            result.set("includes", help.includes() == null ? Json.newObject() : help.includes());
+                       result.put("messageType", "build");
+                       result.put("target", typeOfBoard.compiler_target_name);
+                       result.put("libVersion", "v0");
+                       result.put("versionId", version_id);
+                       result.put("code", help.main);
+                       result.set("includes", help.includes() == null ? Json.newObject() : help.includes() );
 
             logger.debug("Server checks compilation cloud_compilation_server");
             // Kontroluji zda je nějaký kompilační cloud_compilation_server připojený
-            if (WebSocketController.compiler_cloud_servers.isEmpty()) {
-                logger.error("All compilation servers are offline!!!!!!!!!!!");
+            if(WebSocketController_Incoming.compiler_cloud_servers.isEmpty()) {
                 return GlobalResult.result_external_server_is_offline("Compilation cloud_compilation_server is offline!");
             }
 
@@ -772,95 +1003,93 @@ public class CompilationLibrariesController extends Controller {
 
             NotificationController.starting_of_compilation(SecurityController.getPerson(), version_object);
 
-            JsonNode compilation_result = WebSocketController.compiler_server_make_Compilation(SecurityController.getPerson(), result);
+            JsonNode compilation_result = WebSocketController_Incoming.compiler_server_make_Compilation(SecurityController.getPerson(), result);
 
-            logger.debug("Kompletní zprýva z kompilačního serveru: " + compilation_result.toString());
 
             // V případě úspěšného buildu obsahuje příchozí JsonNode buildUrl
-            if (compilation_result.has("buildUrl")) {
+           if( compilation_result.has("buildUrl") ){
 
-                NotificationController.successful_compilation(SecurityController.getPerson(), version_object);
+               NotificationController.successful_compilation(SecurityController.getPerson(), version_object);
 
-                logger.debug("Build was succesfull");
-                // Updatuji verzi - protože vše proběhlo v pořádku
-                version_object.compilation_in_progress = false;
-                version_object.compilable = true;
-                version_object.update();
+               logger.debug("Build was succesfull");
+               // Updatuji verzi - protože vše proběhlo v pořádku
+               version_object.compilation_in_progress = false;
+               version_object.compilable = true;
+               version_object.update();
 
-                // Vytvářím objekt hotové kompilace
-                C_Compilation c_compilation = new C_Compilation();
-                c_compilation.c_comp_build_url = compilation_result.get("buildUrl").asText();
-                c_compilation.virtual_input_output = compilation_result.get("interface").toString();
-                c_compilation.version_object = version_object;
-                c_compilation.date_of_create = new Date();
+               // Vytvářím objekt hotové kompilace
+               C_Compilation c_compilation        = new C_Compilation();
+               c_compilation.c_comp_build_url     = compilation_result.get("buildUrl").asText();
+               c_compilation.virtual_input_output = compilation_result.get("interface").toString();
+               c_compilation.version_object       = version_object;
+               c_compilation.dateOfCreate         = new Date();
 
-                // Ukládám kompilační objekt
+               // Ukládám kompilační objekt
 
 
                 logger.debug("Trying download bin file");
-                try {
+               try{
 
-                    logger.debug("Sending request to Compilatin server for downloading");
-                    F.Promise<WSResponse> responsePromise = ws.url(c_compilation.c_comp_build_url)
-                            .setContentType("undefined")
-                            .setRequestTimeout(2500)
-                            .get();
+                   logger.debug("Sending request to Compilatin server for downloading");
+                   F.Promise<WSResponse> responsePromise = ws.url(c_compilation.c_comp_build_url)
+                           .setContentType("undefined")
+                           .setRequestTimeout(2500)
+                           .get();
 
 
-                    byte[] body = responsePromise.get(2500).asByteArray();
+                   byte[] body = responsePromise.get(2500).asByteArray();
 
-                    logger.debug("Compilatin server respond successfuly WITH File");
-                    if (body != null) {
+                   logger.debug("Compilatin server respond successfuly WITH File");
+                   if( body != null) {
                         // Daný soubor potřebuji dostat na Azure a Propojit s verzí
 
-                        String binary_file_in_string = UtilTools.get_encoded_binary_string_from_body(body);
-                        c_compilation.bin_compilation_file = UtilTools.create_Binary_file( c_compilation.get_path() , binary_file_in_string, "compilation.bin");
+                          String binary_file_in_string = UtilTools.get_encoded_binary_string_from_body(body);
+                          c_compilation.bin_compilation_file =  UtilTools.create_Binary_file( binary_file_in_string, "compilation.bin");
+                          logger.debug("File succesfuly restored in Azure!");
+                   }
+               }catch (Exception e){
+                   logger.warn("Došlo k chybě při stahování souboru", e);
+               }
 
-                        logger.debug("File succesfuly restored in Azure!");
-                    }
-                } catch (Exception e) {
-                    logger.warn("Došlo k chybě při stahování souboru", e);
-                }
+               c_compilation.save();
 
-                c_compilation.save();
-
-                return GlobalResult.result_ok(Json.toJson(new Swagger_Compilation_Ok()));
-            }
+               return GlobalResult.result_ok(Json.toJson(new Swagger_Compilation_Ok() ));
+           }
             // Kompilace nebyla úspěšná a tak vracím obsah neuspěšné kompilace
-            else if (compilation_result.has("buildErrors")) {
+           else if(compilation_result.has("buildErrors")){
 
-                NotificationController.unsuccessful_compilation_warn(SecurityController.getPerson(), version_object, compilation_result.get("buildErrors").asText());
+               NotificationController.unsuccessful_compilation_warn( SecurityController.getPerson(), version_object, compilation_result.get("buildErrors").asText() );
 
-                logger.debug("Build wasn't succesfull - buildErrors");
-                version_object.compilable = false;
-                version_object.update();
+               logger.debug("Build wasn't succesfull - buildErrors");
+               version_object.compilable = false;
+               version_object.update();
 
-                Form<Swagger_Compilation_Build_Error> form_compilation = Form.form(Swagger_Compilation_Build_Error.class).bind(compilation_result.get("buildErrors").get(0));
-                Swagger_Compilation_Build_Error swagger_compilation_build_error = form_compilation.get();
+               Form< Swagger_Compilation_Build_Error> form_compilation =  Form.form(Swagger_Compilation_Build_Error.class).bind(compilation_result.get("buildErrors").get(0) );
+               Swagger_Compilation_Build_Error swagger_compilation_build_error = form_compilation.get();
 
 
-                return GlobalResult.result_buildErrors(Json.toJson(swagger_compilation_build_error));
+               return GlobalResult.result_buildErrors(Json.toJson( swagger_compilation_build_error ));
 
-                // Nebylo úspěšné ani odeslání reqestu - Chyba v konfiguraci a tak vracím defaulní chybz
-            } else if (compilation_result.has("error")) {
+            // Nebylo úspěšné ani odeslání reqestu - Chyba v konfiguraci a tak vracím defaulní chybz
+           }else if(compilation_result.has("error") ){
 
-                NotificationController.unsuccessful_compilation_error(SecurityController.getPerson(), version_object, compilation_result.get("error").asText());
+               NotificationController.unsuccessful_compilation_error( SecurityController.getPerson(), version_object,  compilation_result.get("error").asText());
 
-                logger.debug("Build wasn't successful - error in communication");
-                version_object.compilable = false;
-                version_object.update();
+               logger.debug("Build wasn't successful - error in communication");
+               version_object.compilable = false;
+               version_object.update();
 
-                return GlobalResult.result_external_server_error(Json.toJson(compilation_result.get("error")));
-            }
+               return GlobalResult.result_external_server_error(Json.toJson(compilation_result.get("error")));
+           }
 
             logger.error("Build wasn't successful - unknown error!!");
             version_object.compilable = false;
             version_object.update();
 
-            // Neznámá chyba se kterou nebylo počítání
-            return GlobalResult.result_BadRequest("unknown_error");
+           // Neznámá chyba se kterou nebylo počítání
+           return GlobalResult.result_BadRequest("unknown_error");
 
-        } catch (Exception e) {
+        }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
         }
 
@@ -873,8 +1102,8 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension(name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!"),
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
                     }),
             }
     )
@@ -890,73 +1119,71 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Compilation successful", response = Result_ok.class),
-            @ApiResponse(code = 477, message = "External server is offline", response = Result_BadRequest.class),
-            @ApiResponse(code = 422, message = "Compilation unsuccessful", response = Swagger_Compilation_Build_Error.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
-            @ApiResponse(code = 478, message = "External server side Error", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 200, message = "Compilation successful",    response = Result_ok.class),
+            @ApiResponse(code = 477, message = "External server is offline",response = Result_BadRequest.class),
+            @ApiResponse(code = 422, message = "Compilation unsuccessful",  response = Swagger_Compilation_Build_Error.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 478, message = "External server side Error",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result compile_C_Program_code() {
-        try {
+    public Result compile_C_Program_code(){
+        try{
 
             // Zpracování Json
             Form<Swagger_C_Program_Version_Update> form = Form.form(Swagger_C_Program_Version_Update.class).bindFromRequest();
-            if (form.hasErrors()) {
-                return GlobalResult.formExcepting(form.errorsAsJson());
-            }
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_C_Program_Version_Update help = form.get();
 
             // Ověření objektu
-            if (help.type_of_board_id.isEmpty()) return GlobalResult.result_BadRequest("type_of_board_id is missing!");
+            if(help.type_of_board_id.isEmpty()) return GlobalResult.result_BadRequest("type_of_board_id is missing!");
 
             // Ověření objektu
             TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(help.type_of_board_id);
-            if (typeOfBoard == null) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
+            if(typeOfBoard == null) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
 
             // Vytvářím objekt, jež se zašle přes websocket ke kompilaci
             ObjectNode result = Json.newObject();
-            result.put("messageType", "build");
-            result.put("target", typeOfBoard.compiler_target_name);
-            result.put("libVersion", "v0");
-            result.put("code", help.main);
-            result.set("includes", help.includes() == null ? Json.newObject() : help.includes());
+                       result.put("messageType", "build");
+                       result.put("target", typeOfBoard.compiler_target_name);
+                       result.put("libVersion", "v0");
+                       result.put("code", help.main);
+                       result.set("includes", help.includes() == null ? Json.newObject() : help.includes() );
 
 
-            if (WebSocketController.compiler_cloud_servers.isEmpty()) {
+            if(WebSocketController_Incoming.compiler_cloud_servers.isEmpty()){
                 return GlobalResult.result_external_server_is_offline("Compilation cloud_compilation_server is offline!");
             }
 
 
             // Odesílám na compilační cloud_compilation_server
-            JsonNode compilation_result = WebSocketController.compiler_server_make_Compilation(SecurityController.getPerson(), result);
+            JsonNode compilation_result = WebSocketController_Incoming.compiler_server_make_Compilation(SecurityController.getPerson(), result);
             ObjectMapper mapper = new ObjectMapper();
 
             // V případě úspěšného buildu obsahuje příchozí JsonNode buildUrl
-            if (compilation_result.has("buildUrl")) {
+            if(compilation_result.has("buildUrl")){
                 return GlobalResult.result_ok();
             }
 
             // Kompilace nebyla úspěšná a tak vracím obsah neuspěšné kompilace
-            if (compilation_result.has("buildErrors") && !compilation_result.get("buildErrors").toString().equals("[]")) {
+            if(compilation_result.has("buildErrors") && ! compilation_result.get("buildErrors").toString().equals("[]")  ){
 
                 return GlobalResult.result_buildErrors(Json.toJson(compilation_result.get("buildErrors")));
             }
 
             // Nebylo úspěšné ani odeslání reqestu - Chyba v konfiguraci a tak vracím defaulní chybz
-            if (compilation_result.has("error")) {
+             if(compilation_result.has("error") ){
 
-                ObjectNode result_json = Json.newObject();
-                result_json.put("error", compilation_result.get("error").asText());
+                 ObjectNode result_json = Json.newObject();
+                 result_json.put("error", compilation_result.get("error").asText() );
 
                 return GlobalResult.result_external_server_error(result_json);
             }
 
             // Neznámá chyba se kterou nebylo počítání
             return GlobalResult.result_BadRequest("Unknown error");
-        } catch (Exception e) {
+        }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
         }
 
@@ -978,53 +1205,50 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Result_ok.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_ok.class),
             @ApiResponse(code = 477, message = "External Cloud_Homer_server where is hardware is offline", response = Result_serverIsOffline.class),
-            @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result uploadBinaryFileToBoard(@ApiParam(value = "version_id ", required = true) String board_id, @ApiParam(value = "version_id ", required = true) String firmware_type_string) {
-        try {
+        try{
 
-            System.out.println("Body " + request().body().asText());
+            System.out.println("Body " + request().body().asText() );
 
             // Vyhledání objektů
             Board board = Board.find.byId(board_id);
-            if (board == null) return GlobalResult.notFoundObject("Board board_id object not found");
+            if(board == null) return GlobalResult.notFoundObject("Board board_id object not found");
 
-            if (!board.update_permission()) return GlobalResult.forbidden_Permission();
+            if(!board.update_permission())  return GlobalResult.forbidden_Permission();
 
-            Firmware_type firmware_type = Firmware_type.getFirmwareType(firmware_type_string);
-            if (firmware_type == null) return GlobalResult.notFoundObject("FirmwareType not found!");
+            FirmwareType firmware_type = FirmwareType.getFirmwareType(firmware_type_string);
+            if(firmware_type == null) return GlobalResult.notFoundObject("FirmwareType not found!");
 
             // Přijmu soubor
             Http.MultipartFormData body = request().body().asMultipartFormData();
 
             List<Http.MultipartFormData.FilePart> files_from_request = body.getFiles();
 
-            if (files_from_request == null || files_from_request.isEmpty())return GlobalResult.notFoundObject("Bin File not found!");
-            if (files_from_request.size() > 1)return GlobalResult.result_BadRequest("More than one File is not allowed!");
+            if (files_from_request == null || files_from_request.isEmpty()) return GlobalResult.notFoundObject("Bin File not found!");
+            if(files_from_request.size() > 1)return GlobalResult.result_BadRequest("More than one File is not allowed!");
 
             File file = files_from_request.get(0).getFile();
-            if (file == null) return GlobalResult.result_BadRequest("File not found!");
-            if (file.length() < 1) return GlobalResult.result_BadRequest("File is Empty!");
+            if(file == null) return GlobalResult.result_BadRequest("File not found!");
+            if(file.length() < 1) return GlobalResult.result_BadRequest("File is Empty!");
 
 
             int dot = files_from_request.get(0).getFilename().lastIndexOf(".");
             String file_type = files_from_request.get(0).getFilename().substring(dot);
-            String file_name = files_from_request.get(0).getFilename().substring(0, dot);
+            String file_name = files_from_request.get(0).getFilename().substring(0,dot);
 
             // Zkontroluji soubor
-            if (!file_type.equals(".bin"))return GlobalResult.result_BadRequest("Wrong type of File - \"Bin\" required! ");
-            if ((file.length() / 1024) > 500)return GlobalResult.result_BadRequest("File is bigger than 500K b");
+            if(!file_type.equals(".bin")) return GlobalResult.result_BadRequest("Wrong type of File - \"Bin\" required! ");
+            if( (file.length() / 1024) > 500) return GlobalResult.result_BadRequest("File is bigger than 500K b");
 
             // Existuje Homer?
-
-             String binary_file = UtilTools.get_encoded_binary_string_from_File(file);
-             FileRecord fileRecord = UtilTools.create_Binary_file("byzance-private/binaryfiles", binary_file, file_name);
-             ActualizationController.add_new_actualization_request_with_user_file(board.project, firmware_type, board, fileRecord);
+            ActualizationController.add_new_actualization_request(board.project, firmware_type, board, file, file_name);
 
             return GlobalResult.result_ok();
 
@@ -1034,7 +1258,7 @@ public class CompilationLibrariesController extends Controller {
     }
 
     @ApiOperation(value = "update Embedded Hardware with C_program compilation",
-            tags = {"C_Program", "Actualization"},
+            tags = {"C_Program", "Actualization" },
             notes = "Upload compilation to list of hardware. Compilation is on Version oc C_program. And before uplouding compilation, you must succesfuly compile required version before! " +
                     "Result (HTML code) will be every time 200. - Its because upload, restart, etc.. operation need more than ++30 second " +
                     "There is also problem / chance that Tyrion didn't find where Embedded hardware is. So you have to listening Server Sent Events (SSE) and show \"future\" message to the user!",
@@ -1062,46 +1286,41 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result uploadCompilationToBoard(@ApiParam(value = "version_id ", required = true) String version_id) {
+    public Result uploadCompilationToBoard( @ApiParam(value = "version_id ", required = true) String version_id) {
         try {
 
             // Zpracování Json
             Form<Swagger_UploadBinaryFileToBoard> form = Form.form(Swagger_UploadBinaryFileToBoard.class).bindFromRequest();
-            if (form.hasErrors()) {
-                return GlobalResult.formExcepting(form.errorsAsJson());
-            }
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_UploadBinaryFileToBoard help = form.get();
 
 
             // Ověření objektu
             Version_Object c_program_version = Version_Object.find.byId(version_id);
-            if (c_program_version == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
+            if(c_program_version == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
             // Zkontroluji oprávnění
-            if (!c_program_version.c_program.read_permission()) return GlobalResult.forbidden_Permission();
+            if(! c_program_version.c_program.read_permission())  return GlobalResult.forbidden_Permission();
 
             // Ověření zda je kompilovatelná verze a nebo zda kompilace stále neběží
-            if (!c_program_version.compilable || c_program_version.compilation_in_progress)
-                return GlobalResult.result_BadRequest("You cannot upload uncompilable version or compilation in progress");
+            if(!c_program_version.compilable || c_program_version.compilation_in_progress) return GlobalResult.result_BadRequest("You cannot upload uncompilable version or compilation in progress");
 
             //Zkontroluji validitu Verze zda sedí k C_Programu
-            if (c_program_version.c_program == null)
-                return GlobalResult.result_BadRequest("Version_Object its not version of C_Program");
+            if(c_program_version.c_program == null) return GlobalResult.result_BadRequest("Version_Object its not version of C_Program");
 
 
             //Zkontroluji zda byla verze už zkompilována
-            if (c_program_version.c_compilation == null)
-                return GlobalResult.result_BadRequest("The program is not yet compiled");
+            if(c_program_version.c_compilation == null) return GlobalResult.result_BadRequest("The program is not yet compiled");
 
             // Pokud nemám kompilaci a zároveň je kompilační cloud_compilation_server offline - oznámím nemožnost pokračovat
-            if (c_program_version.c_compilation.bin_compilation_file == null && WebSocketController.compiler_cloud_servers.isEmpty()) {
+            if(c_program_version.c_compilation.bin_compilation_file == null && WebSocketController_Incoming.compiler_cloud_servers.isEmpty()){
                 return GlobalResult.result_BadRequest("We have not your historic compilation and int the same time compilation cloud_compilation_server for compile your code is offline! So we cannot do anything now :((( ");
             }
 
@@ -1109,20 +1328,18 @@ public class CompilationLibrariesController extends Controller {
 
             // Vyhledání objektů
             List<Board> board_from_request = Board.find.where().idIn(help.board_id).findList();
-            if (board_from_request.size() == 0)
-                return GlobalResult.result_BadRequest("no device is available. Does not exist or is decommissioned.");
+            if(board_from_request.size() == 0) return GlobalResult.result_BadRequest("no device is available. Does not exist or is decommissioned.");
 
             // Vyseparované desky nad který lze provádět nějaké operace
             List<Board> board_for_update = Board.find.where().idIn(help.board_id).findList();
             // Kontrola oprávnění
-            for (Board board : board_from_request) {
+            for(Board board : board_from_request){
                 // Kontrola oprávnění
-                if (board.update_permission() && board.type_of_board_id().equals(typeOfBoard_id))
-                    board_for_update.add(board);
+                if(board.update_permission() && board.type_of_board_id().equals(typeOfBoard_id)) board_for_update.add(board);
             }
 
 
-            ActualizationController.add_new_actualization_request_with_user_file(c_program_version.c_program.project, board_for_update, c_program_version);
+            ActualizationController.add_new_actualization_request(c_program_version.c_program.project, board_for_update, c_program_version );
 
             // Vracím odpověď
             return GlobalResult.result_ok("Procedura byla spuštěna - uživatel bude informován!");
@@ -1142,8 +1359,8 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 201,
             extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Static Permission key", value = "Cloud_Compilation_Server_create"),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Static Permission key", value =  "Cloud_Compilation_Server_create" ),
                     })
             }
     )
@@ -1159,21 +1376,19 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful created", response = Cloud_Compilation_Server.class),
+            @ApiResponse(code = 201, message = "Successful created",      response = Cloud_Compilation_Server.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result create_Compilation_Server() {
-        try {
+    public Result create_Compilation_Server(){
+        try{
 
             // Zpracování Json
             Form<Swagger_Cloud_Compilation_Server_New> form = Form.form(Swagger_Cloud_Compilation_Server_New.class).bindFromRequest();
-            if (form.hasErrors()) {
-                return GlobalResult.formExcepting(form.errorsAsJson());
-            }
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Cloud_Compilation_Server_New help = form.get();
 
 
@@ -1184,7 +1399,7 @@ public class CompilationLibrariesController extends Controller {
             server.set_hash_certificate();
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if (!server.create_permission()) return GlobalResult.forbidden_Permission();
+            if(! server.create_permission())  return GlobalResult.forbidden_Permission();
 
             // Ukládám objekt
             server.save();
@@ -1204,8 +1419,8 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Static Permission key", value = "Cloud_Compilation_Server_edit"),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Static Permission key", value =  "Cloud_Compilation_Server_edit" ),
                     })
             }
     )
@@ -1221,21 +1436,19 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Update successfuly", response = Cloud_Compilation_Server.class),
-            @ApiResponse(code = 400, message = "Objects not found", response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 200, message = "Update successfuly",        response = Cloud_Compilation_Server.class),
+            @ApiResponse(code = 400, message = "Objects not found",         response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing",   response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_Compilation_Server(@ApiParam(value = "server_id ", required = true) String server_id) {
-        try {
+    public Result edit_Compilation_Server( @ApiParam(value = "server_id ", required = true) String server_id ){
+        try{
 
             // Zpracování Json
             Form<Swagger_Cloud_Compilation_Server_New> form = Form.form(Swagger_Cloud_Compilation_Server_New.class).bindFromRequest();
-            if (form.hasErrors()) {
-                return GlobalResult.formExcepting(form.errorsAsJson());
-            }
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Cloud_Compilation_Server_New help = form.get();
 
             //Zkontroluji validitu
@@ -1243,7 +1456,7 @@ public class CompilationLibrariesController extends Controller {
             if (server == null) return GlobalResult.notFoundObject("Cloud_Compilation_Server server_id not found");
 
             // Zkontroluji oprávnění
-            if (!server.edit_permission()) return GlobalResult.forbidden_Permission();
+            if(!server.edit_permission()) return GlobalResult.forbidden_Permission();
 
             // Upravím objekt
             server.server_name = help.server_name;
@@ -1267,17 +1480,17 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension(name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!"),
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
                     }),
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Cloud_Compilation_Server.class, responseContainer = "List "),
+            @ApiResponse(code = 200, message = "Ok Result",      response = Cloud_Compilation_Server.class, responseContainer = "List "),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_All_Compilation_Server() {
-        try {
+    public Result get_All_Compilation_Server(){
+        try{
 
             // Vyhledám všechny objekty
             List<Cloud_Compilation_Server> servers = Cloud_Compilation_Server.find.all();
@@ -1298,27 +1511,27 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Static Permission key", value = "Cloud_Compilation_Server_delete"),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Static Permission key", value =  "Cloud_Compilation_Server_delete" ),
                     })
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Objects not found", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Objects not found",         response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result delete_Compilation_Server(@ApiParam(value = "server_id ", required = true) String server_id) {
-        try {
+    public Result delete_Compilation_Server( @ApiParam(value = "server_id ", required = true) String server_id ){
+        try{
 
             //Zkontroluji validitu
             Cloud_Compilation_Server server = Cloud_Compilation_Server.find.byId(server_id);
             if (server == null) return GlobalResult.notFoundObject("Cloud_Compilation_Server server_id not found");
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if (!server.delete_permission()) return GlobalResult.forbidden_Permission();
+            if(! server.delete_permission())  return GlobalResult.forbidden_Permission();
 
             // Smažu objekt
             server.delete();
@@ -1341,8 +1554,8 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 201,
             extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Static Permission key", value = "Processor_create"),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Static Permission key", value =  "Processor_create" ),
                     })
             }
     )
@@ -1358,10 +1571,10 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful created", response = Processor.class),
+            @ApiResponse(code = 201, message = "Successful created",      response = Processor.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -1370,20 +1583,18 @@ public class CompilationLibrariesController extends Controller {
 
             // Zpracování Json
             final Form<Swagger_Processor_New> form = Form.form(Swagger_Processor_New.class).bindFromRequest();
-            if (form.hasErrors()) {
-                return GlobalResult.formExcepting(form.errorsAsJson());
-            }
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Processor_New help = form.get();
 
             // Vytvářím objekt
             Processor processor = new Processor();
-            processor.description = help.description;
+            processor.description    = help.description;
             processor.processor_code = help.processor_code;
             processor.processor_name = help.processor_name;
-            processor.speed = help.speed;
+            processor.speed          = help.speed;
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if (!processor.create_permission()) return GlobalResult.forbidden_Permission();
+            if(! processor.create_permission())  return GlobalResult.forbidden_Permission();
 
             // Ukládám objekt
             processor.save();
@@ -1403,14 +1614,14 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension(name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!"),
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
                     }),
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Processor.class),
-            @ApiResponse(code = 400, message = "Objects not found", response = Result_NotFound.class),
+            @ApiResponse(code = 200, message = "Ok Result",             response = Processor.class),
+            @ApiResponse(code = 400, message = "Objects not found",     response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result get_Processor(@ApiParam(value = "processor_id String query", required = true) String processor_id) {
@@ -1418,7 +1629,7 @@ public class CompilationLibrariesController extends Controller {
 
             //Zkontroluji validitu
             Processor processor = Processor.find.byId(processor_id);
-            if (processor == null) return GlobalResult.notFoundObject("Processor processor_id not found");
+            if(processor == null ) return GlobalResult.notFoundObject("Processor processor_id not found");
 
             // Vracím objekt
             return GlobalResult.result_ok(Json.toJson(processor));
@@ -1435,23 +1646,23 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension(name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!"),
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
                     }),
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Processor.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Processor.class, responseContainer = "List"),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result get_Processor_All() {
         try {
 
             //Vyhledám objekty
-            List<Processor> processors = Processor.find.all();
+           List<Processor> processors = Processor.find.all();
 
             // Vracím seznam objektů
-            return GlobalResult.result_ok(Json.toJson(processors));
+           return GlobalResult.result_ok(Json.toJson(processors));
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -1465,8 +1676,8 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Static Permission key", value = "Processor_edit"),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Static Permission key", value =  "Processor_edit" ),
                     })
             }
     )
@@ -1482,11 +1693,11 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Processor.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 400, message = "Objects not found", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Processor.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing",   response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Objects not found",         response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -1495,23 +1706,21 @@ public class CompilationLibrariesController extends Controller {
 
             // Zpracování Json
             Form<Swagger_Processor_New> form = Form.form(Swagger_Processor_New.class).bindFromRequest();
-            if (form.hasErrors()) {
-                return GlobalResult.formExcepting(form.errorsAsJson());
-            }
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Processor_New help = form.get();
 
             // Kontroluji validitu
             Processor processor = Processor.find.byId(processor_id);
-            if (processor == null) return GlobalResult.notFoundObject("Processor processor_id not found");
+            if(processor == null ) return GlobalResult.notFoundObject("Processor processor_id not found");
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if (!processor.edit_permission()) return GlobalResult.forbidden_Permission();
+            if(! processor.edit_permission())  return GlobalResult.forbidden_Permission();
 
             // Upravuji objekt
-            processor.description = help.description;
+            processor.description    = help.description;
             processor.processor_code = help.processor_code;
             processor.processor_name = help.processor_name;
-            processor.speed = help.speed;
+            processor.speed          = help.speed;
 
             // Ukládám do databáze
             processor.update();
@@ -1533,16 +1742,16 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Static Permission key", value = "Processor_delete"),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Static Permission key", value =  "Processor_delete" ),
                     })
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result delete_Processor(@ApiParam(value = "processor_id String query", required = true) String processor_id) {
@@ -1550,10 +1759,10 @@ public class CompilationLibrariesController extends Controller {
 
             // Kontroluji validitu
             Processor processor = Processor.find.byId(processor_id);
-            if (processor == null) return GlobalResult.notFoundObject("Processor processor_id not found");
+            if(processor == null ) return GlobalResult.notFoundObject("Processor processor_id not found");
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if (!processor.delete_permission()) return GlobalResult.forbidden_Permission();
+            if(! processor.delete_permission())  return GlobalResult.forbidden_Permission();
 
             // Mažu z databáze
             processor.delete();
@@ -1575,8 +1784,8 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 201,
             extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Static Permission key", value = "LibraryGroup_create"),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Static Permission key", value =  "LibraryGroup_create" ),
                     })
             }
     )
@@ -1592,10 +1801,10 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful created", response = LibraryGroup.class),
+            @ApiResponse(code = 201, message = "Successful created",      response = LibraryGroup.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -1604,9 +1813,7 @@ public class CompilationLibrariesController extends Controller {
 
             // Zpracování Json
             Form<Swagger_LibraryGroup_New> form = Form.form(Swagger_LibraryGroup_New.class).bindFromRequest();
-            if (form.hasErrors()) {
-                return GlobalResult.formExcepting(form.errorsAsJson());
-            }
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_LibraryGroup_New help = form.get();
 
             // Vytvářím objekt
@@ -1615,7 +1822,7 @@ public class CompilationLibrariesController extends Controller {
             library_Group.group_name = help.group_name;
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if (!library_Group.create_permission()) return GlobalResult.forbidden_Permission();
+            if(! library_Group.create_permission())  return GlobalResult.forbidden_Permission();
 
             // Ukládám objekt
             library_Group.save();
@@ -1623,7 +1830,7 @@ public class CompilationLibrariesController extends Controller {
             // Vracím Objekt
             return GlobalResult.created(Json.toJson(library_Group));
 
-        } catch (Exception e) {
+        }catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }
     }
@@ -1635,8 +1842,8 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 201,
             extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Static Permission key", value = "LibraryGroup_update"),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Static Permission key", value =  "LibraryGroup_update" ),
                     })
             }
     )
@@ -1652,35 +1859,33 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successfully created", response = Version_Object.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 201, message = "Successfully created",      response = Version_Object.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing",   response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result new_LibraryGroup_Version(@ApiParam(value = "libraryGroup_id String query", required = true) String libraryGroup_id) {
+    public Result new_LibraryGroup_Version(@ApiParam(value = "libraryGroup_id String query", required = true) String libraryGroup_id){
         try {
 
             // Zpracování Json
             Form<Swagger_LibraryGroup_Version> form = Form.form(Swagger_LibraryGroup_Version.class).bindFromRequest();
-            if (form.hasErrors()) {
-                return GlobalResult.formExcepting(form.errorsAsJson());
-            }
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_LibraryGroup_Version help = form.get();
 
             // Kontrola Validity
             LibraryGroup library_group = LibraryGroup.find.byId(libraryGroup_id);
-            if (library_group == null) return GlobalResult.notFoundObject("LibraryGroup library_group_id not found");
+            if(library_group == null) return GlobalResult.notFoundObject("LibraryGroup library_group_id not found");
 
             // Kontrola oprávnění
-            if (!library_group.update_permission()) return GlobalResult.forbidden_Permission();
+            if(! library_group.update_permission())  return GlobalResult.forbidden_Permission();
 
             // Tvorba Verze
-            Version_Object version_object = new Version_Object();
-            version_object.date_of_create = new Date();
-            version_object.version_name = help.version_name;
+            Version_Object version_object      = new Version_Object();
+            version_object.date_of_create      = new Date();
+            version_object.version_name        = help.version_name;
             version_object.version_description = help.version_description;
             version_object.library_group = library_group;
 
@@ -1710,20 +1915,20 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Static Permission key", value = "Processor_delete"),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Static Permission key", value =  "Processor_delete" ),
                     })
             }
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok result"),
-            @ApiResponse(code = 400, message = "Objects not found", response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Something is wrong", response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 400, message = "Objects not found",       response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result upload_Library_To_LibraryGroup(@ApiParam(required = true) String version_id) {
+    public Result upload_Library_To_LibraryGroup(@ApiParam(required = true)  String version_id) {
         try {
 
             // Přijmu soubor
@@ -1735,23 +1940,21 @@ public class CompilationLibrariesController extends Controller {
             if (version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
             // Kontrola validity
-            if (version_object.library_group == null)
-                return GlobalResult.result_BadRequest("Version object is not version of Library Group");
+            if (version_object.library_group == null) return GlobalResult.result_BadRequest("Version object is not version of Library Group");
             LibraryGroup library_group = version_object.library_group;
 
             // Kontrola oprávnění
-            if (!library_group.update_permission()) return GlobalResult.forbidden_Permission();
+            if(! library_group.update_permission())  return GlobalResult.forbidden_Permission();
 
-            for (Http.MultipartFormData.FilePart file : files) {
+            for( Http.MultipartFormData.FilePart file :  files ) {
 
                 // Control lenght of name
                 String fileName = file.getFilename();
-                if (fileName.length() < 5) return GlobalResult.result_BadRequest("Too short file name");
+                if (fileName.length() < 5) return  GlobalResult.result_BadRequest("Too short file name");
 
                 // Ještě kontrola souboru zda už tam není - > Version_Object a knihovny
                 FileRecord fileRecord = FileRecord.find.where().in("version_object.id", version_object.id).ieq("file_name", fileName).findUnique();
-                if (fileRecord != null)
-                    return GlobalResult.result_BadRequest("File exist in this version -> " + fileName + " please, create new version!");
+                if (fileRecord != null) return GlobalResult.result_BadRequest("File exist in this version -> " + fileName + " please, create new version!");
 
                 // Mám soubor
                 File libraryFile = file.getFile();
@@ -1777,24 +1980,24 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension(name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!"),
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
                     }),
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result", response = LibraryGroup.class),
-            @ApiResponse(code = 400, message = "Objects not found", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 200, message = "Ok result",                 response = LibraryGroup.class),
+            @ApiResponse(code = 400, message = "Objects not found",         response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_LibraryGroup(@ApiParam(value = "libraryGroup_id String query", required = true) String libraryGroup_id) {
+    public Result get_LibraryGroup(@ApiParam(value = "libraryGroup_id String query", required = true)  String libraryGroup_id) {
         try {
 
             // Vyhledání knihovny
             LibraryGroup libraryGroup = LibraryGroup.find.byId(libraryGroup_id);
-            if (libraryGroup == null) return GlobalResult.notFoundObject("LibraryGroup libraryGroup_id not found");
+            if(libraryGroup == null) return GlobalResult.notFoundObject("LibraryGroup libraryGroup_id not found");
 
             // Vracím Objekt
             return GlobalResult.result_ok(Json.toJson(libraryGroup));
@@ -1812,16 +2015,16 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Static Permission key", value = "LibraryGroup_delete"),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Static Permission key", value =  "LibraryGroup_delete" ),
                     })
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result", response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 200, message = "Ok result",               response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result delete_LibraryGroup(@ApiParam(value = "libraryGroup_id String query", required = true) String libraryGroup_id) {
@@ -1829,13 +2032,13 @@ public class CompilationLibrariesController extends Controller {
 
             // Kontrola validity
             LibraryGroup library_group = LibraryGroup.find.byId(libraryGroup_id);
-            if (library_group == null) return GlobalResult.notFoundObject("LibraryGroup libraryGroup_id not found");
+            if(library_group == null) return GlobalResult.notFoundObject("LibraryGroup libraryGroup_id not found");
 
             // Kontrola oprávnění
-            if (!library_group.delete_permission()) return GlobalResult.forbidden_Permission();
+            if(! library_group.delete_permission())  return GlobalResult.forbidden_Permission();
 
             // Smazání z Azure
-            UtilTools.azureDelete(library_group.get_Container(), library_group.get_path());
+            UtilTools.azureDelete(library_group.get_Container(),library_group.get_path());
 
             // Smazání objektu z DB
             library_group.delete();
@@ -1855,8 +2058,8 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Static Permission key", value = "LibraryGroup_edit"),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Static Permission key", value =  "LibraryGroup_edit" ),
                     })
             }
     )
@@ -1872,30 +2075,28 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successful created", response = LibraryGroup.class),
-            @ApiResponse(code = 400, message = "Objects not found", response = Result_NotFound.class),
+            @ApiResponse(code = 200, message = "Successful created",      response = LibraryGroup.class),
+            @ApiResponse(code = 400, message = "Objects not found",       response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result editLibraryGroup(@ApiParam(value = "libraryGroup_id String query", required = true) String libraryGroup_id) {
+    public Result editLibraryGroup(@ApiParam(value = "libraryGroup_id String query", required = true)  String libraryGroup_id) {
         try {
 
             // Zpracování Json
             final Form<Swagger_LibraryGroup_New> form = Form.form(Swagger_LibraryGroup_New.class).bindFromRequest();
-            if (form.hasErrors()) {
-                return GlobalResult.formExcepting(form.errorsAsJson());
-            }
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_LibraryGroup_New help = form.get();
 
             // Kontrola validity
             LibraryGroup library_group = LibraryGroup.find.byId(libraryGroup_id);
-            if (library_group == null) return GlobalResult.notFoundObject("LibraryGroup libraryGroup_id not found");
+            if(library_group == null) return GlobalResult.notFoundObject("LibraryGroup libraryGroup_id not found");
 
             // Kontrola oprávnění
-            if (!library_group.edit_permission()) return GlobalResult.forbidden_Permission();
+            if(! library_group.edit_permission())  return GlobalResult.forbidden_Permission();
 
             // Úprava objektu
             library_group.description = help.description;
@@ -1920,29 +2121,28 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension(name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!"),
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
                     }),
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result", response = Version_Object.class),
-            @ApiResponse(code = 400, message = "Something is wrong", response = Result_BadRequest.class),
-            @ApiResponse(code = 400, message = "Objects not found", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 200, message = "Ok result",                 response = Version_Object.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 400, message = "Objects not found",         response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_LibraryGroup_Version_Libraries(@ApiParam(required = true) String version_id) {
+    public Result get_LibraryGroup_Version_Libraries(@ApiParam(required = true)  String version_id){
         try {
 
             // Kontrola validity
             Version_Object versionObject = Version_Object.find.byId(version_id);
-            if (versionObject == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
+            if(versionObject == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
             // Kontrola zda se jendá o Lib
-            if (versionObject.library_group == null)
-                return GlobalResult.notFoundObject(("Version is not version of Library Group"));
+            if(versionObject.library_group == null ) return GlobalResult.notFoundObject(("Version is not version of Library Group"));
 
             // Vracím Objekt
             return GlobalResult.result_ok(Json.toJson(versionObject));
@@ -1960,8 +2160,8 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension(name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!"),
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
                     }),
             }
     )
@@ -1977,18 +2177,16 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result", response = Swagger_LibraryGroup_List.class),
+            @ApiResponse(code = 200, message = "Ok result",               response = Swagger_LibraryGroup_List.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result get_LibraryGroup_Filter(@ApiParam(value = "page_number is Integer. 1,2,3...n For first call, use 1 (first page of list) ", required = true) Integer page_number) {
+    public Result get_LibraryGroup_Filter( @ApiParam(value = "page_number is Integer. 1,2,3...n For first call, use 1 (first page of list) ",required = true)Integer page_number)  {
         try {
 
             // Zpracování Json
             Form<Swagger_LibraryGroup_Filter> form = Form.form(Swagger_LibraryGroup_Filter.class).bindFromRequest();
-            if (form.hasErrors()) {
-                return GlobalResult.formExcepting(form.errorsAsJson());
-            }
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_LibraryGroup_Filter help = form.get();
 
             //Vytvářím Query parametr (definuji ORM objekt)
@@ -2034,22 +2232,22 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension(name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!"),
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
                     }),
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result", response = Version_Object.class),
+            @ApiResponse(code = 200, message = "Ok result",      response = Version_Object.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_LibraryGroup_Version(@ApiParam(value = "version_id String query", required = true) String version_id) {
+    public Result get_LibraryGroup_Version(@ApiParam(value = "version_id String query", required = true) String version_id){
         try {
 
             // Kontroluji validitu
             Version_Object version = Version_Object.find.byId(version_id);
-            if (version == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
+            if(version == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
             // Vracím Objekt
             return GlobalResult.result_ok(Json.toJson(version));
@@ -2071,13 +2269,13 @@ public class CompilationLibrariesController extends Controller {
             hidden = true
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Swagger_File_Content.class),
-            @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_File_Content.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result fileRecord(@ApiParam(value = "file_record_id String query", required = true) String file_record_id) {
+    public Result fileRecord(@ApiParam(value = "file_record_id String query", required = true)  String file_record_id){
         try {
 
             // Kontrola validity objektu
@@ -2087,7 +2285,7 @@ public class CompilationLibrariesController extends Controller {
             // Swagger_File_Content - Zástupný dokumentační objekt
 
             // Vracím content
-            return GlobalResult.result_ok(Json.toJson(fileRecord.get_fileRecord_from_Azure_inString()));
+            return GlobalResult.result_ok(Json.toJson( fileRecord.get_fileRecord_from_Azure_inString()));
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -2104,8 +2302,8 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 201,
             extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Static Permission key", value = "SingleLibrary_create"),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Static Permission key", value =  "SingleLibrary_create" ),
                     })
             }
     )
@@ -2121,10 +2319,10 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful created", response = SingleLibrary.class),
+            @ApiResponse(code = 201, message = "Successful created",      response = SingleLibrary.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -2133,9 +2331,7 @@ public class CompilationLibrariesController extends Controller {
 
             // Zpracování Json
             final Form<Swagger_SingleLibrary_New> form = Form.form(Swagger_SingleLibrary_New.class).bindFromRequest();
-            if (form.hasErrors()) {
-                return GlobalResult.formExcepting(form.errorsAsJson());
-            }
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_SingleLibrary_New help = form.get();
 
             // Vytvářím objekt
@@ -2144,7 +2340,7 @@ public class CompilationLibrariesController extends Controller {
             singleLibrary.description = help.description;
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if (!singleLibrary.create_permission()) return GlobalResult.forbidden_Permission();
+            if(! singleLibrary.create_permission())  return GlobalResult.forbidden_Permission();
 
             // Ukládám objekt
             singleLibrary.save();
@@ -2164,9 +2360,9 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 201,
             extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "SingleLibrary.update_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "SingleLibrary_update"),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "SingleLibrary.update_permission", value =  "true" ),
+                            @ExtensionProperty(name = "Static Permission key", value =  "SingleLibrary_update" ),
                     })
             }
     )
@@ -2183,29 +2379,27 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
 
-            @ApiResponse(code = 201, message = "Successfully created", response = Version_Object.class),
-            @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 201, message = "Successfully created",    response = Version_Object.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result new_SingleLibrary_Version(@ApiParam(value = "library_id String query", required = true) String library_id) {
+    public Result new_SingleLibrary_Version(@ApiParam(value = "library_id String query", required = true)  String library_id){
         try {
 
             // Zpracování Json
             final Form<Swagger_SingleLibrary_Version> form = Form.form(Swagger_SingleLibrary_Version.class).bindFromRequest();
-            if (form.hasErrors()) {
-                return GlobalResult.formExcepting(form.errorsAsJson());
-            }
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_SingleLibrary_Version help = form.get();
 
             // Vyhledám Objekt
             SingleLibrary singleLibrary = SingleLibrary.find.byId(library_id);
-            if (singleLibrary == null) return GlobalResult.notFoundObject("SingleLibrary library_id not found");
+            if(singleLibrary == null)  return GlobalResult.notFoundObject("SingleLibrary library_id not found");
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if (!singleLibrary.update_permission()) return GlobalResult.forbidden_Permission();
+            if(! singleLibrary.update_permission())  return GlobalResult.forbidden_Permission();
 
             // Vytvářím novou verzi
             Version_Object version_object = new Version_Object();
@@ -2234,9 +2428,9 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "SingleLibrary.update_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "SingleLibrary_update"),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "SingleLibrary.update_permission", value =  "true" ),
+                            @ExtensionProperty(name = "Static Permission key", value =  "SingleLibrary_update" ),
                     })
             }
     )
@@ -2252,14 +2446,14 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
 
-            @ApiResponse(code = 200, message = "Successfully uploaded", response = Result_ok.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 200, message = "Successfully uploaded",   response = Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.MultipartFormData.class)
-    public Result upload_SingleLibrary_Version(@ApiParam(required = true) String version_id) {
-        try {
+    public Result upload_SingleLibrary_Version( @ApiParam(required = true)  String version_id){
+        try{
 
             Http.MultipartFormData body = request().body().asMultipartFormData();
             Http.MultipartFormData.FilePart file = body.getFile("file");
@@ -2267,29 +2461,26 @@ public class CompilationLibrariesController extends Controller {
 
             // If fileRecord group is not null
             Version_Object version_object = Version_Object.find.byId(version_id);
-            if (version_object == null)
-                return GlobalResult.result_BadRequest("Version_Object with version_id not exist");
+            if(version_object == null ) return GlobalResult.result_BadRequest("Version_Object with version_id not exist");
 
             // Kontrola zda je verze verzí single library
-            if (version_object.single_library == null)
-                return GlobalResult.result_BadRequest("Version is not version of SingleLibrary");
+            if(version_object.single_library == null ) return GlobalResult.result_BadRequest("Version is not version of SingleLibrary");
 
             // ZDa už neobsahuje soubor
-            if (version_object.files.size() > 0)
-                return GlobalResult.result_BadRequest("Version_Object has file already.. Create new Version_Object ");
+            if (version_object.files.size() > 0) return GlobalResult.result_BadRequest("Version_Object has file already.. Create new Version_Object ");
             version_object.date_of_create = new Date();
             version_object.update();
 
             // Kontrola jména
             String fileName = file.getFilename();
-            if (fileName.length() < 5) return GlobalResult.result_BadRequest("Too short FileName -> " + fileName);
+            if(fileName.length()< 5 )return GlobalResult.result_BadRequest("Too short FileName -> " + fileName);
 
             // Tvorba souboru
             File libraryFile = file.getFile();
 
             // Nahraji soubor na Azure
 
-            UtilTools.uploadAzure_Version(libraryFile, "library.txt", version_object.single_library.get_path(), version_object);
+            UtilTools.uploadAzure_Version(libraryFile, "library.txt",  version_object.single_library.get_path() ,version_object);
 
             // Vrácení verze
             return GlobalResult.result_ok(Json.toJson(version_object));
@@ -2307,27 +2498,27 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension(name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!"),
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
                     }),
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result", response = SingleLibrary.class),
-            @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
+            @ApiResponse(code = 200, message = "Ok result",                response = SingleLibrary.class),
+            @ApiResponse(code = 400, message = "Object not found",         response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",     response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_SingleLibrary(@ApiParam(value = "library_id String query", required = true) String library_id) {
+    public Result get_SingleLibrary(@ApiParam(value = "library_id String query", required = true)  String library_id) {
         try {
 
             // Kontrola objektu
             SingleLibrary singleLibrary = SingleLibrary.find.byId(library_id);
-            if (singleLibrary == null) return GlobalResult.notFoundObject("SingleLibrary library_id not found");
+            if(singleLibrary == null) return GlobalResult.notFoundObject("SingleLibrary library_id not found" );
 
             // Kontrola oprávnění
-            if (!singleLibrary.read_permission()) return GlobalResult.forbidden_Permission();
+            if(!singleLibrary.read_permission()) return GlobalResult.forbidden_Permission();
 
             // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(singleLibrary));
@@ -2346,8 +2537,8 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension(name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!"),
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
                     }),
             }
     )
@@ -2363,20 +2554,18 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result", response = Swagger_Single_Library_List.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 200, message = "Ok result",               response = Swagger_Single_Library_List.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result get_SingleLibrary_Filter(@ApiParam(value = "page_number is Integer. 1,2,3...n For first call, use 1", required = true) Integer page_number) {
+    public Result get_SingleLibrary_Filter( @ApiParam(value = "page_number is Integer. 1,2,3...n For first call, use 1",required = true) Integer page_number) {
         try {
 
             // Zpracování Json
             final Form<Swagger_SingleLibrary_Filter> form = Form.form(Swagger_SingleLibrary_Filter.class).bindFromRequest();
-            if (form.hasErrors()) {
-                return GlobalResult.formExcepting(form.errorsAsJson());
-            }
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_SingleLibrary_Filter help = form.get();
 
             Query<SingleLibrary> query = Ebean.find(SingleLibrary.class);
@@ -2418,9 +2607,9 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "SingleLibrary.edit_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "SingleLibrary_edit"),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "SingleLibrary.edit_permission", value =  "true" ),
+                            @ExtensionProperty(name = "Static Permission key", value =  "SingleLibrary_edit" ),
                     })
             }
     )
@@ -2436,31 +2625,29 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result", response = SingleLibrary.class),
+            @ApiResponse(code = 200, message = "Ok result",               response = SingleLibrary.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_SingleLibrary(@ApiParam(value = "library_id String query", required = true) String library_id) {
+    public Result edit_SingleLibrary(@ApiParam(value = "library_id String query", required = true)  String library_id) {
         try {
 
             // Zpracování Json
             final Form<Swagger_SingleLibrary_New> form = Form.form(Swagger_SingleLibrary_New.class).bindFromRequest();
-            if (form.hasErrors()) {
-                return GlobalResult.formExcepting(form.errorsAsJson());
-            }
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_SingleLibrary_New help = form.get();
 
             // Vyhledám Objekt
             SingleLibrary singleLibrary = SingleLibrary.find.byId(library_id);
-            if (singleLibrary == null) return GlobalResult.notFoundObject("SingleLibrary library_id not found");
+            if(singleLibrary == null) return GlobalResult.notFoundObject("SingleLibrary library_id not found" );
 
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if (!singleLibrary.edit_permission()) return GlobalResult.forbidden_Permission();
+            if(! singleLibrary.edit_permission())  return GlobalResult.forbidden_Permission();
 
             // Uprava objektu
             singleLibrary.library_name = help.library_name;
@@ -2485,28 +2672,28 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "SingleLibrary.delete_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "SingleLibrary_delete"),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "SingleLibrary.delete_permission", value =  "true" ),
+                            @ExtensionProperty(name = "Static Permission key", value =  "SingleLibrary_delete" ),
                     })
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result", response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Objects not found", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 200, message = "Ok result",               response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Objects not found",       response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result delete_SingleLibrary(@ApiParam(value = "library_id String query", required = true) String library_id) {
+    public Result delete_SingleLibrary(@ApiParam(value = "library_id String query", required = true)  String library_id) {
         try {
 
             // Vyhledám Objekt
             SingleLibrary singleLibrary = SingleLibrary.find.byId(library_id);
-            if (singleLibrary == null) return GlobalResult.notFoundObject("SingleLibrary library_id not found");
+            if(singleLibrary == null) return GlobalResult.notFoundObject("SingleLibrary library_id not found" );
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if (!singleLibrary.delete_permission()) return GlobalResult.forbidden_Permission();
+            if(! singleLibrary.delete_permission())  return GlobalResult.forbidden_Permission();
 
             // Smažu z Azure
             UtilTools.azureDelete(singleLibrary.get_Container(), singleLibrary.get_path());
@@ -2532,8 +2719,8 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 201,
             extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Static Permission key", value = "Producer_create"),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Static Permission key", value =  "Producer_create" ),
                     })
             }
     )
@@ -2549,10 +2736,10 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successfully created", response = Producer.class),
+            @ApiResponse(code = 201, message = "Successfully created",    response = Producer.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -2561,9 +2748,7 @@ public class CompilationLibrariesController extends Controller {
 
             // Zpracování Json
             final Form<Swagger_Producer_New> form = Form.form(Swagger_Producer_New.class).bindFromRequest();
-            if (form.hasErrors()) {
-                return GlobalResult.formExcepting(form.errorsAsJson());
-            }
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Producer_New help = form.get();
 
             //Vytvářím objekt
@@ -2572,7 +2757,7 @@ public class CompilationLibrariesController extends Controller {
             producer.description = help.description;
 
             // Kontorluji oprávnění těsně před uložením
-            if (!producer.create_permission()) return GlobalResult.forbidden_Permission();
+            if(! producer.create_permission()) return GlobalResult.forbidden_Permission();
 
             //Ukládám objekt
             producer.save();
@@ -2593,9 +2778,9 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Producer.edit_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "Producer_edit"),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Producer.edit_permission", value =  "true" ),
+                            @ExtensionProperty(name = "Static Permission key", value =  "Producer_edit" ),
                     })
             }
     )
@@ -2611,11 +2796,11 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Producer.class),
-            @ApiResponse(code = 400, message = "Objects not found", response = Result_NotFound.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Producer.class),
+            @ApiResponse(code = 400, message = "Objects not found",       response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -2624,17 +2809,15 @@ public class CompilationLibrariesController extends Controller {
 
             // Zpracování Json
             final Form<Swagger_Producer_New> form = Form.form(Swagger_Producer_New.class).bindFromRequest();
-            if (form.hasErrors()) {
-                return GlobalResult.formExcepting(form.errorsAsJson());
-            }
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Producer_New help = form.get();
 
             // Kontrola objektu
             Producer producer = Producer.find.byId(producer_id);
-            if (producer == null) return GlobalResult.notFoundObject("Producer producer_id not found");
+            if(producer == null ) return GlobalResult.notFoundObject("Producer producer_id not found");
 
             // Kontorluji oprávnění těsně před uložením
-            if (!producer.edit_permission()) return GlobalResult.forbidden_Permission();
+            if(! producer.edit_permission()) return GlobalResult.forbidden_Permission();
 
             // Úprava objektu
             producer.name = help.name;
@@ -2659,16 +2842,16 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension(name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!"),
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
                     }),
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Producer.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Objects not found", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Producer.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Objects not found",         response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result get_Producers() {
@@ -2693,24 +2876,24 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension(name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!"),
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
                     }),
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Producer.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Producer.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_Producer(@ApiParam(required = true) String producer_id) {
+    public Result get_Producer(@ApiParam(required = true)  String producer_id) {
         try {
 
             // Kontrola objektu
             Producer producer = Producer.find.byId(producer_id);
-            if (producer == null) return GlobalResult.notFoundObject("Producer producer_id not found");
+            if(producer == null ) return GlobalResult.notFoundObject("Producer producer_id not found");
 
             // Vrácneí objektu
             return GlobalResult.result_ok(Json.toJson(producer));
@@ -2729,17 +2912,17 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Producer.delete_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "Producer_delete"),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Producer.delete_permission", value =  "true" ),
+                            @ExtensionProperty(name = "Static Permission key", value =  "Producer_delete" ),
                     })
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result delete_Producer(@ApiParam(required = true) String producer_id) {
@@ -2747,10 +2930,10 @@ public class CompilationLibrariesController extends Controller {
 
             // Kontrola objektu
             Producer producer = Producer.find.byId(producer_id);
-            if (producer == null) return GlobalResult.notFoundObject("Producer producer_id not found");
+            if(producer == null ) return GlobalResult.notFoundObject("Producer producer_id not found");
 
             // Kontorluji oprávnění
-            if (!producer.delete_permission()) return GlobalResult.forbidden_Permission();
+            if(! producer.delete_permission()) return GlobalResult.forbidden_Permission();
 
             // Smazání objektu
             producer.delete();
@@ -2766,7 +2949,7 @@ public class CompilationLibrariesController extends Controller {
 ///###################################################################################################################*/
 
     @ApiOperation(value = "create TypeOfBoard",
-            tags = {"Type-Of-Board"},
+            tags = { "Type-Of-Board"},
             notes = "The TypeOfBoard is category for IoT. Like Raspberry2, Arduino-Uno etc. \n\n" +
                     "We using that for compilation, sorting libraries, filtres and more..",
             produces = "application/json",
@@ -2790,11 +2973,11 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successfully created", response = TypeOfBoard.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message", response = Result_NotFound.class),
+            @ApiResponse(code = 201, message = "Successfully created",    response = TypeOfBoard.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -2803,16 +2986,16 @@ public class CompilationLibrariesController extends Controller {
 
             // Zpracování Json
             final Form<Swagger_TypeOfBoard_New> form = Form.form(Swagger_TypeOfBoard_New.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_TypeOfBoard_New help = form.get();
 
             // Kontrola objektu
             Producer producer = Producer.find.byId(help.producer_id);
-            if (producer == null) return GlobalResult.notFoundObject("Producer producer_id not found");
+            if(producer == null ) return GlobalResult.notFoundObject("Producer producer_id not found");
 
             // Kontrola objektu
             Processor processor = Processor.find.byId(help.processor_id);
-            if (processor == null) return GlobalResult.notFoundObject("Processor processor_id not found");
+            if(processor == null ) return GlobalResult.notFoundObject("Processor processor_id not found");
 
             // Tvorba objektu
             TypeOfBoard typeOfBoard = new TypeOfBoard();
@@ -2823,7 +3006,7 @@ public class CompilationLibrariesController extends Controller {
             typeOfBoard.connectible_to_internet = help.connectible_to_internet;
 
             // Kontorluji oprávnění
-            if (!typeOfBoard.create_permission()) return GlobalResult.forbidden_Permission();
+            if(!typeOfBoard.create_permission()) return GlobalResult.forbidden_Permission();
 
             // Uložení objektu do DB
             typeOfBoard.save();
@@ -2836,7 +3019,7 @@ public class CompilationLibrariesController extends Controller {
     }
 
     @ApiOperation(value = "edit TypeOfBoard",
-            tags = {"Type-Of-Board"},
+            tags = { "Type-Of-Board"},
             notes = "if you want edit base TypeOfBoard information",
             produces = "application/json",
             protocols = "https",
@@ -2860,20 +3043,20 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = TypeOfBoard.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message", response = Result_NotFound.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = TypeOfBoard.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_TypeOfBoard(@ApiParam(required = true) String type_of_board_id) {
+    public Result edit_TypeOfBoard(@ApiParam(required = true)  String type_of_board_id) {
         try {
 
             // Zpracování Json
             final Form<Swagger_TypeOfBoard_New> form = Form.form(Swagger_TypeOfBoard_New.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_TypeOfBoard_New help = form.get();
 
             // Kontrola objektu
@@ -2882,14 +3065,14 @@ public class CompilationLibrariesController extends Controller {
 
             // Kontrola objektu
             Producer producer = Producer.find.byId(help.producer_id);
-            if (producer == null) return GlobalResult.notFoundObject("Producer producer_id not found");
+            if(producer == null ) return GlobalResult.notFoundObject("Producer producer_id not found");
 
             // Kontrola objektu
             Processor processor = Processor.find.byId(help.processor_id);
-            if (processor == null) return GlobalResult.notFoundObject("Processor processor_id not found");
+            if(processor == null ) return GlobalResult.notFoundObject("Processor processor_id not found");
 
             // Kontorluji oprávnění
-            if (!typeOfBoard.edit_permission()) return GlobalResult.forbidden_Permission();
+            if(! typeOfBoard.edit_permission()) return GlobalResult.forbidden_Permission();
 
             // Uprava objektu
             typeOfBoard.name = help.name;
@@ -2912,7 +3095,7 @@ public class CompilationLibrariesController extends Controller {
     }
 
     @ApiOperation(value = "delete TypeOfBoard",
-            tags = {"Type-Of-Board"},
+            tags = { "Type-Of-Board"},
             notes = "if you want delete TypeOfBoard object by query = type_of_board_id",
             produces = "application/json",
             consumes = "text/html",
@@ -2926,21 +3109,21 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result delete_TypeOfBoard(@ApiParam(required = true) String type_of_board_id) {
+    public Result delete_TypeOfBoard(@ApiParam(required = true)  String type_of_board_id) {
         try {
 
             // Kontrola objektu
             TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(type_of_board_id);
-            if (typeOfBoard == null) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
+            if(typeOfBoard == null ) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found") ;
 
             // Kontorluji oprávnění
-            if (!typeOfBoard.delete_permission()) return GlobalResult.forbidden_Permission();
+            if(! typeOfBoard.delete_permission()) return GlobalResult.forbidden_Permission();
 
             // Smazání objektu
             typeOfBoard.delete();
@@ -2954,33 +3137,33 @@ public class CompilationLibrariesController extends Controller {
     }
 
     @ApiOperation(value = "get list of all TypeOfBoard",
-            tags = {"Type-Of-Board"},
+            tags = { "Type-Of-Board"},
             notes = "if you want get all TypeOfBoard objects",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension(name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!"),
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
                     }),
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = TypeOfBoard.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Objects not found - details in message", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = TypeOfBoard.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result get_TypeOfBoard_all() {
         try {
 
             // Získání seznamu
-            List<TypeOfBoard> type_of_boards = TypeOfBoard.find.all();
+            List<TypeOfBoard> typeOfBoards = TypeOfBoard.find.all();
 
             // Vrácení seznamu
-            return GlobalResult.result_ok(Json.toJson(type_of_boards));
+            return  GlobalResult.result_ok(Json.toJson(typeOfBoards));
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -2988,34 +3171,34 @@ public class CompilationLibrariesController extends Controller {
     }
 
     @ApiOperation(value = "get TypeOfBoard",
-            tags = {"Type-Of-Board"},
+            tags = { "Type-Of-Board"},
             notes = "if you want get TypeOfBoard object by query = type_of_board_id",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension(name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!"),
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
                     }),
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = TypeOfBoard.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = TypeOfBoard.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_TypeOfBoard(@ApiParam(required = true) String type_of_board_id) {
+    public Result get_TypeOfBoard(@ApiParam(required = true)  String type_of_board_id) {
         try {
 
             // Kontrola validity objektu
             TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(type_of_board_id);
-            if (typeOfBoard == null) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
+            if(typeOfBoard == null ) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
 
             // Kontorluji oprávnění
-            if (!typeOfBoard.read_permission()) return GlobalResult.forbidden_Permission();
+            if(! typeOfBoard.read_permission()) return GlobalResult.forbidden_Permission();
 
             // Vrácení validity objektu
             return GlobalResult.result_ok(Json.toJson(typeOfBoard));
@@ -3243,7 +3426,7 @@ public class CompilationLibrariesController extends Controller {
     ///###################################################################################################################*/
 
     @ApiOperation(value = "create Board",
-            tags = {"Board"},
+            tags = { "Board"},
             notes = "This Api is using only for developing mode, for registration of our Board - in future it will be used only by machine in factory or " +
                     "boards themselves with \"registration procedure\". Its not allowed to delete that! Only deactivate. Classic User can registed that to own " +
                     "project or own account",
@@ -3251,10 +3434,10 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 201,
             extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "TypeOfBoard.register_new_device_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "Board_create"),
-                    }),
+                 @Extension( name = "permission_required", properties = {
+                         @ExtensionProperty(name = "TypeOfBoard.register_new_device_permission", value = "true"),
+                         @ExtensionProperty(name = "Static Permission key", value = "Board_create"),
+                 }),
             }
     )
     @ApiImplicitParams(
@@ -3269,11 +3452,11 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful created", response = Board.class, responseContainer = "List"),
+            @ApiResponse(code = 201, message = "Successful created",      response = Board.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -3282,17 +3465,15 @@ public class CompilationLibrariesController extends Controller {
 
             // Zpracování Json
             final Form<Swagger_Board_New> form = Form.form(Swagger_Board_New.class).bindFromRequest();
-            if (form.hasErrors()) {
-                return GlobalResult.formExcepting(form.errorsAsJson());
-            }
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Board_New help = form.get();
 
             // Kotrola objektu
-            TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(help.type_of_board_id);
-            if (typeOfBoard == null) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
+            TypeOfBoard typeOfBoard = TypeOfBoard.find.byId( help.type_of_board_id  );
+            if(typeOfBoard == null ) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
 
             // Kontorluji oprávnění
-            if (!typeOfBoard.register_new_device_permission()) return GlobalResult.forbidden_Permission();
+            if(! typeOfBoard.register_new_device_permission()) return GlobalResult.forbidden_Permission();
 
             // Odstraním duplikáty ze seznamu
             Set<String> hs = new HashSet<>();
@@ -3300,18 +3481,18 @@ public class CompilationLibrariesController extends Controller {
             help.hardware_unique_ids.clear();
             help.hardware_unique_ids.addAll(hs);
 
-            List<Board> exist_boards = Board.find.where().in("id", help.hardware_unique_ids).findList();
+            List<Board> exist_boards = Board.find.where().in( "id", help.hardware_unique_ids).findList();
 
-            for (Board board : exist_boards) help.hardware_unique_ids.remove(board.id);
+            for(Board board : exist_boards)  help.hardware_unique_ids.remove( board.id );
 
             // Seznam vytvořené
             List<Board> created_board = new ArrayList<>();
 
             // Vytvoření desky
-            for (String hw_id : help.hardware_unique_ids) {
+            for(String hw_id : help.hardware_unique_ids) {
                 Board board = new Board();
                 board.id = hw_id;
-                board.is_active = false;
+                board.isActive = false;
                 board.date_of_create = new Date();
                 board.type_of_board = typeOfBoard;
 
@@ -3331,13 +3512,13 @@ public class CompilationLibrariesController extends Controller {
     }
 
     @ApiOperation(value = "edit Board - update personal description",
-            tags = {"Board"},
+            tags = { "Board"},
             notes = "Used for add descriptions by owners. \"Persons\" who registred \"Board\" to own \"Projec\" ",
             produces = "application/json",
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension(name = "permission_required", properties = {
+                    @Extension( name = "permission_required", properties = {
                             @ExtensionProperty(name = "Board.edit_permission", value = "true"),
                             @ExtensionProperty(name = "Static Permission key", value = "Board_edit"),
                     }),
@@ -3355,30 +3536,28 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Board.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message", response = Result_NotFound.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Board.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_Board_User_Description(@ApiParam(required = true) String board_id) {
+    public Result edit_Board_User_Description(@ApiParam(required = true)  String board_id){
         try {
 
             // Zpracování Json
             final Form<Swagger_Board_Personal> form = Form.form(Swagger_Board_Personal.class).bindFromRequest();
-            if (form.hasErrors()) {
-                return GlobalResult.formExcepting(form.errorsAsJson());
-            }
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Board_Personal help = form.get();
 
             // Kotrola objektu
             Board board = Board.find.byId(board_id);
-            if (board == null) return GlobalResult.notFoundObject("Board board_id not found");
+            if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
 
             // Kontrola oprávnění
-            if (board.edit_permission()) return GlobalResult.forbidden_Permission();
+            if(board.edit_permission()) return GlobalResult.forbidden_Permission();
 
             // Uprava desky
             board.personal_description = help.personal_description;
@@ -3395,14 +3574,14 @@ public class CompilationLibrariesController extends Controller {
     }
 
     @ApiOperation(value = "get Boards with filter parameters",
-            tags = {"Board"},
+            tags = { "Board"},
             notes = "Get List of boards. Acording by permission - system return only hardware from project, where is user owner or" +
                     " all boards if user have static Permission key",
             produces = "application/json",
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension(name = "permission_required", properties = {
+                    @Extension( name = "permission_required", properties = {
                             @ExtensionProperty(name = "Project.read_permission", value = "true"),
                             @ExtensionProperty(name = "Static Permission key", value = "Board_read"),
                     }),
@@ -3420,46 +3599,44 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Swagger_Board_List.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Board_List.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result get_Board_Filter(@ApiParam(value = "page_number is Integer. Contain  1,2...n. For first call, use 1", required = false) Integer page_number) {
+    public Result get_Board_Filter(@ApiParam(value = "page_number is Integer. Contain  1,2...n. For first call, use 1", required = false)  Integer page_number) {
         try {
 
             // Zpracování Json
             final Form<Swagger_Board_Filter> form = Form.form(Swagger_Board_Filter.class).bindFromRequest();
-            if (form.hasErrors()) {
-                return GlobalResult.formExcepting(form.errorsAsJson());
-            }
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Board_Filter help = form.get();
 
             // Tvorba parametru dotazu
             Query<Board> query = Ebean.find(Board.class);
 
             // If Json contains TypeOfBoards list of id's
-            if (help.type_of_boards != null) {
-                query.where().in("type_of_board.id", help.type_of_boards);
+            if(help.typeOfBoards != null ){
+                query.where().in("type_of_board.id", help.typeOfBoards);
             }
 
             // If contains confirms
-            if (help.active != null) {
+            if(help.active != null){
                 Boolean isActive = help.active.equals("true");
-                query.where().eq("is_active", isActive);
+                query.where().eq("isActive", isActive);
             }
 
             // From date
-            if (help.projects != null) {
+            if(help.projects != null){
                 query.where().in("projects.id", help.projects);
             }
 
-            if (help.producers != null) {
+            if(help.producers != null){
                 query.where().in("type_of_board.producer.id", help.producers);
             }
 
-            if (help.processors != null) {
+            if(help.processors != null){
                 query.where().in("type_of_board.processor.id", help.processors);
             }
 
@@ -3469,43 +3646,43 @@ public class CompilationLibrariesController extends Controller {
             // Vracím seznam
             return GlobalResult.result_ok(Json.toJson(result));
 
-        } catch (Exception e) {
+        } catch (Exception e){
             return Loggy.result_internalServerError(e, request());
         }
     }
 
     @ApiOperation(value = "deactivate Board",
-            tags = {"Board"},
+            tags = { "Board"},
             notes = "Permanent exclusion from the system - for some reason it is not allowed to remove the Board from database",
             produces = "application/json",
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension(name = "permission_required", properties = {
+                    @Extension( name = "permission_required", properties = {
                             @ExtensionProperty(name = "Project.update_permission", value = "true"),
                             @ExtensionProperty(name = "Static Permission key", value = "Board_update"),
                     }),
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Board.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Board.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result deactivate_Board(@ApiParam(required = true) String board_id) {
+    public Result deactivate_Board(@ApiParam(required = true)  String board_id) {
         try {
 
             // Kotrola objektu
             Board board = Board.find.byId(board_id);
-            if (board == null) return GlobalResult.notFoundObject("Board board_id not found");
+            if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
 
             // Kontrola oprávnění
-            if (board.update_permission()) return GlobalResult.forbidden_Permission();
+            if(board.update_permission()) return GlobalResult.forbidden_Permission();
 
             // Úprava stavu
-            board.is_active = false;
+            board.isActive = false;
 
             // Uložení do databáze
             board.update();
@@ -3520,7 +3697,7 @@ public class CompilationLibrariesController extends Controller {
     }
 
     @ApiOperation(value = "get Board",
-            tags = {"Board"},
+            tags = { "Board"},
             notes = "if you want get Board object by query = board_id. User can get only boards from project, whitch " +
                     "user owning or user need Permission key \"Board_rea\".",
             produces = "application/json",
@@ -3528,17 +3705,17 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension(name = "permission_required", properties = {
+                    @Extension( name = "permission_required", properties = {
                             @ExtensionProperty(name = "Project.read_permission", value = "true"),
                             @ExtensionProperty(name = "Static Permission key", value = "Board_read"),
                     }),
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Board.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Board.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result get_Board(@ApiParam(required = true) String board_id) {
@@ -3546,10 +3723,10 @@ public class CompilationLibrariesController extends Controller {
 
             // Kotrola objektu
             Board board = Board.find.byId(board_id);
-            if (board == null) return GlobalResult.notFoundObject("Board board_id not found");
+            if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
 
             // Kontrola oprávnění
-            if (!board.read_permission()) return GlobalResult.forbidden_Permission();
+            if(!board.read_permission()) return GlobalResult.forbidden_Permission();
 
             // vrácení objektu
             return GlobalResult.result_ok(Json.toJson(board));
@@ -3560,17 +3737,17 @@ public class CompilationLibrariesController extends Controller {
     }
 
     @ApiOperation(value = "connect Board with Project",
-            tags = {"Board"},
+            tags = { "Board"},
             notes = "This Api is used by Users for connection of Board with their Project",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension(name = "permission_description", properties = {
+                    @Extension( name = "permission_description", properties = {
                             @ExtensionProperty(name = "Board_Connection", value = Board.connection_permission_docs),
                     }),
-                    @Extension(name = "permission_required", properties = {
+                    @Extension( name = "permission_required", properties = {
                             @ExtensionProperty(name = "Board.first_connect_permission", value = "true"),
                             @ExtensionProperty(name = "Project.update_permission", value = "true"),
                             @ExtensionProperty(name = "Static Permission key", value = "Board_update"),
@@ -3578,28 +3755,28 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Board.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Board.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result connect_Board_with_Project(@ApiParam(required = true) String board_id, @ApiParam(required = true) String project_id) {
+    public Result connect_Board_with_Project(@ApiParam(required = true)   String board_id, @ApiParam(required = true) String project_id){
         try {
 
             // Kotrola objektu
             Board board = Board.find.byId(board_id);
-            if (board == null) return GlobalResult.notFoundObject("Board board_id not found");
+            if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
 
             // Kotrola objektu
             Project project = Project.find.byId(project_id);
-            if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
+            if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
             // Kontrola oprávnění
-            if (!board.first_connect_permission()) return GlobalResult.result_BadRequest("Board is already registered");
+            if(!board.first_connect_permission()) return GlobalResult.result_BadRequest("Board is already registered");
 
             // Kontrola oprávnění
-            if (!project.update_permission()) return GlobalResult.forbidden_Permission();
+            if(!project.update_permission()) return GlobalResult.forbidden_Permission();
 
             // uprava desky
             board.project = project;
@@ -3609,8 +3786,8 @@ public class CompilationLibrariesController extends Controller {
             project.update();
             board.update();
 
-            // vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(board));
+             // vrácení objektu
+             return GlobalResult.result_ok(Json.toJson(board));
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -3618,7 +3795,7 @@ public class CompilationLibrariesController extends Controller {
     }
 
     @ApiOperation(value = "disconnect Board from Project",
-            tags = {"Board"},
+            tags = { "Board"},
             notes = "This Api is used by Users for disconnection of Board from their Project, its not meaning that Board is removed from system, only disconnect " +
                     "and another user can registred that (connect that with different account/project etc..)",
             produces = "application/json",
@@ -3626,31 +3803,31 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension(name = "permission_description", properties = {
+                    @Extension( name = "permission_description", properties = {
                             @ExtensionProperty(name = "Board_Disconnection", value = Board.disconnection_permission_docs),
                     }),
-                    @Extension(name = "permission_required", properties = {
+                    @Extension( name = "permission_required", properties = {
                             @ExtensionProperty(name = "Project.update_permission", value = "true"),
                             @ExtensionProperty(name = "Static Permission key", value = "Board_update"),
                     }),
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Board.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Board.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result disconnect_Board_from_Project(@ApiParam(required = true) String board_id) {
+    public Result disconnect_Board_from_Project(@ApiParam(required = true)   String board_id){
         try {
 
             // Kontrola objektu
             Board board = Board.find.byId(board_id);
-            if (board == null) return GlobalResult.notFoundObject("Board board_id not found");
+            if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
 
             // Kontrola oprávnění
-            if (!board.update_permission()) return GlobalResult.forbidden_Permission();
+            if(!board.update_permission()) return GlobalResult.forbidden_Permission();
 
             // Odstraním vazbu
             board.project = null;
@@ -3674,20 +3851,20 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension(name = "permission_required", properties = {
+                    @Extension( name = "permission_required", properties = {
                             @ExtensionProperty(name = "project.read_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "Project_read_permission")
+                            @ExtensionProperty(name = "Static Permission key", value =  "Project_read_permission")
                     })
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Swagger_Boards_for_blocko.class),
-            @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response =  Swagger_Boards_For_Blocko.class),
+            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result board_all_details_for_blocko(@ApiParam(required = true) String project_id) {
+    public Result board_all_details_for_blocko(@ApiParam(required = true)   String project_id){
         try {
 
             // Kontrola objektu
@@ -3695,12 +3872,12 @@ public class CompilationLibrariesController extends Controller {
             if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
             // Kontrola oprávnění
-            if (!project.read_permission()) return GlobalResult.forbidden_Permission();
+            if (! project.read_permission()) return GlobalResult.forbidden_Permission();
 
             // Získání objektu
-            Swagger_Boards_for_blocko boards_for_blocko = new Swagger_Boards_for_blocko();
+            Swagger_Boards_For_Blocko boards_for_blocko = new Swagger_Boards_For_Blocko();
             boards_for_blocko.boards = project.boards;
-            boards_for_blocko.type_of_boards = TypeOfBoard.find.where().eq("boards.project.id", project.id).findList();
+            boards_for_blocko.typeOfBoards = TypeOfBoard.find.where().eq("boards.project.id", project.id ).findList();
             boards_for_blocko.c_programs = project.c_programs;
 
             // Vrácení objektu
@@ -3710,7 +3887,4 @@ public class CompilationLibrariesController extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
     }
-
-
-
 }

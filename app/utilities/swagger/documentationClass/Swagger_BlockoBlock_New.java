@@ -20,12 +20,9 @@ public class Swagger_BlockoBlock_New {
     @ApiModelProperty(required = true, value = "Length must be between 24 and 255 characters.")
     public String general_description;
 
-    @Constraints.Required
-    @ApiModelProperty(required = true, value = "Must be true, if user want his BlockoBlock in new TypeOfBlock group.")
-    public boolean new_type_of_block;
 
     @Constraints.Required
-    @ApiModelProperty(value = "Can be null, if user do not know, admin will decide which type", required = false)
+    @ApiModelProperty(value = "Required valid type_of_block id", required = true)
     public String type_of_block_id;
 
     @Constraints.MinLength(value = 8,  message = "The name must have at least 8 characters.")

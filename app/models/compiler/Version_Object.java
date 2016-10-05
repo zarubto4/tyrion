@@ -2,7 +2,9 @@ package models.compiler;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
+import models.person.Person;
 import models.project.b_program.B_Pair;
 import models.project.b_program.B_Program;
 import models.project.b_program.B_Program_Hw_Group;
@@ -12,6 +14,7 @@ import models.project.c_program.C_Program;
 import models.project.c_program.actualization.Actualization_procedure;
 import models.project.c_program.actualization.C_Program_Update_Plan;
 import models.project.m_program.M_Project;
+import utilities.enums.Approval_state;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -23,9 +26,14 @@ import java.util.UUID;
 public class Version_Object extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
-    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true)  public String  id;
+    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true)  public String id;
                                                             @ApiModelProperty(required = true)  public String version_name;
                      @Column(columnDefinition = "TEXT")     @ApiModelProperty(required = true)  public String version_description;
+
+                                                 @ManyToOne @ApiModelProperty(required = true)  public Person author;
+
+                                                            @ApiModelProperty(required = true)  public Approval_state approval_state;
+                                                            @ApiModelProperty(required = true)  public boolean public_version;
 
 
 
@@ -94,6 +102,13 @@ public class Version_Object extends Model {
         while(true){ // I need Unique Value
             this.blob_version_link = "/versions/" + UUID.randomUUID().toString();
             if (Version_Object.find.where().eq("blob_version_link", blob_version_link ).findUnique() == null) break;
+        }
+
+        try {
+            if(this.author == null)
+            this.author = SecurityController.getPerson();
+        }catch (Exception e){
+            this.author = Person.find.byId("1");
         }
 
         super.save();
