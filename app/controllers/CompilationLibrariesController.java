@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
 import io.swagger.annotations.*;
 import models.compiler.*;
-import models.person.Person;
 import models.project.c_program.C_Compilation;
 import models.project.c_program.C_Program;
 import models.project.global.Product;
@@ -22,6 +21,8 @@ import play.libs.ws.WSResponse;
 import play.mvc.*;
 import utilities.Server;
 import utilities.UtilTools;
+import utilities.emails.EmailTool;
+import utilities.enums.Approval_state;
 import utilities.enums.Firmware_type;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_API;
@@ -994,7 +995,8 @@ public class CompilationLibrariesController extends Controller {
 
             logger.debug("Server checks compilation cloud_compilation_server");
             // Kontroluji zda je nějaký kompilační cloud_compilation_server připojený
-            if(WebSocketController_Incoming.compiler_cloud_servers.isEmpty()) {
+            if (WebSocketController.compiler_cloud_servers.isEmpty()) {
+                logger.error("All compilation servers are offline!!!!!!!!!!!");
                 return GlobalResult.result_external_server_is_offline("Compilation cloud_compilation_server is offline!");
             }
 
@@ -1003,7 +1005,7 @@ public class CompilationLibrariesController extends Controller {
 
             NotificationController.starting_of_compilation(SecurityController.getPerson(), version_object);
 
-            JsonNode compilation_result = WebSocketController_Incoming.compiler_server_make_Compilation(SecurityController.getPerson(), result);
+            JsonNode compilation_result = WebSocketController.compiler_server_make_Compilation(SecurityController.getPerson(), result);
 
 
             // V případě úspěšného buildu obsahuje příchozí JsonNode buildUrl
@@ -1017,12 +1019,12 @@ public class CompilationLibrariesController extends Controller {
                version_object.compilable = true;
                version_object.update();
 
-               // Vytvářím objekt hotové kompilace
-               C_Compilation c_compilation        = new C_Compilation();
-               c_compilation.c_comp_build_url     = compilation_result.get("buildUrl").asText();
-               c_compilation.virtual_input_output = compilation_result.get("interface").toString();
-               c_compilation.version_object       = version_object;
-               c_compilation.dateOfCreate         = new Date();
+                // Vytvářím objekt hotové kompilace
+                C_Compilation c_compilation = new C_Compilation();
+                c_compilation.c_comp_build_url = compilation_result.get("buildUrl").asText();
+                c_compilation.virtual_input_output = compilation_result.get("interface").toString();
+                c_compilation.version_object = version_object;
+                c_compilation.date_of_create = new Date();
 
                // Ukládám kompilační objekt
 
@@ -1043,13 +1045,14 @@ public class CompilationLibrariesController extends Controller {
                    if( body != null) {
                         // Daný soubor potřebuji dostat na Azure a Propojit s verzí
 
-                          String binary_file_in_string = UtilTools.get_encoded_binary_string_from_body(body);
-                          c_compilation.bin_compilation_file =  UtilTools.create_Binary_file( binary_file_in_string, "compilation.bin");
-                          logger.debug("File succesfuly restored in Azure!");
-                   }
-               }catch (Exception e){
-                   logger.warn("Došlo k chybě při stahování souboru", e);
-               }
+                        String binary_file_in_string = UtilTools.get_encoded_binary_string_from_body(body);
+                        c_compilation.bin_compilation_file = UtilTools.create_Binary_file( c_compilation.get_path() , binary_file_in_string, "compilation.bin");
+
+                        logger.debug("File succesfuly restored in Azure!");
+                    }
+                } catch (Exception e) {
+                    logger.warn("Došlo k chybě při stahování souboru", e);
+                }
 
                c_compilation.save();
 
@@ -1102,8 +1105,8 @@ public class CompilationLibrariesController extends Controller {
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
+                    @Extension(name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!"),
                     }),
             }
     )
@@ -1128,62 +1131,64 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 478, message = "External server side Error",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result compile_C_Program_code(){
-        try{
+    public Result compile_C_Program_code() {
+        try {
 
             // Zpracování Json
             Form<Swagger_C_Program_Version_Update> form = Form.form(Swagger_C_Program_Version_Update.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if (form.hasErrors()) {
+                return GlobalResult.formExcepting(form.errorsAsJson());
+            }
             Swagger_C_Program_Version_Update help = form.get();
 
             // Ověření objektu
-            if(help.type_of_board_id.isEmpty()) return GlobalResult.result_BadRequest("type_of_board_id is missing!");
+            if (help.type_of_board_id.isEmpty()) return GlobalResult.result_BadRequest("type_of_board_id is missing!");
 
             // Ověření objektu
             TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(help.type_of_board_id);
-            if(typeOfBoard == null) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
+            if (typeOfBoard == null) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
 
             // Vytvářím objekt, jež se zašle přes websocket ke kompilaci
             ObjectNode result = Json.newObject();
-                       result.put("messageType", "build");
-                       result.put("target", typeOfBoard.compiler_target_name);
-                       result.put("libVersion", "v0");
-                       result.put("code", help.main);
-                       result.set("includes", help.includes() == null ? Json.newObject() : help.includes() );
+            result.put("messageType", "build");
+            result.put("target", typeOfBoard.compiler_target_name);
+            result.put("libVersion", "v0");
+            result.put("code", help.main);
+            result.set("includes", help.includes() == null ? Json.newObject() : help.includes());
 
 
-            if(WebSocketController_Incoming.compiler_cloud_servers.isEmpty()){
+            if (WebSocketController.compiler_cloud_servers.isEmpty()) {
                 return GlobalResult.result_external_server_is_offline("Compilation cloud_compilation_server is offline!");
             }
 
 
             // Odesílám na compilační cloud_compilation_server
-            JsonNode compilation_result = WebSocketController_Incoming.compiler_server_make_Compilation(SecurityController.getPerson(), result);
+            JsonNode compilation_result = WebSocketController.compiler_server_make_Compilation(SecurityController.getPerson(), result);
             ObjectMapper mapper = new ObjectMapper();
 
             // V případě úspěšného buildu obsahuje příchozí JsonNode buildUrl
-            if(compilation_result.has("buildUrl")){
+            if (compilation_result.has("buildUrl")) {
                 return GlobalResult.result_ok();
             }
 
             // Kompilace nebyla úspěšná a tak vracím obsah neuspěšné kompilace
-            if(compilation_result.has("buildErrors") && ! compilation_result.get("buildErrors").toString().equals("[]")  ){
+            if (compilation_result.has("buildErrors") && !compilation_result.get("buildErrors").toString().equals("[]")) {
 
                 return GlobalResult.result_buildErrors(Json.toJson(compilation_result.get("buildErrors")));
             }
 
             // Nebylo úspěšné ani odeslání reqestu - Chyba v konfiguraci a tak vracím defaulní chybz
-             if(compilation_result.has("error") ){
+            if (compilation_result.has("error")) {
 
-                 ObjectNode result_json = Json.newObject();
-                 result_json.put("error", compilation_result.get("error").asText() );
+                ObjectNode result_json = Json.newObject();
+                result_json.put("error", compilation_result.get("error").asText());
 
                 return GlobalResult.result_external_server_error(result_json);
             }
 
             // Neznámá chyba se kterou nebylo počítání
             return GlobalResult.result_BadRequest("Unknown error");
-        }catch (Exception e){
+        } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }
 
@@ -1205,50 +1210,53 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_ok.class),
+            @ApiResponse(code = 200, message = "Ok Result", response = Result_ok.class),
             @ApiResponse(code = 477, message = "External Cloud_Homer_server where is hardware is offline", response = Result_serverIsOffline.class),
-            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result uploadBinaryFileToBoard(@ApiParam(value = "version_id ", required = true) String board_id, @ApiParam(value = "version_id ", required = true) String firmware_type_string) {
-        try{
+        try {
 
-            System.out.println("Body " + request().body().asText() );
+            System.out.println("Body " + request().body().asText());
 
             // Vyhledání objektů
             Board board = Board.find.byId(board_id);
-            if(board == null) return GlobalResult.notFoundObject("Board board_id object not found");
+            if (board == null) return GlobalResult.notFoundObject("Board board_id object not found");
 
-            if(!board.update_permission())  return GlobalResult.forbidden_Permission();
+            if (!board.update_permission()) return GlobalResult.forbidden_Permission();
 
-            FirmwareType firmware_type = FirmwareType.getFirmwareType(firmware_type_string);
-            if(firmware_type == null) return GlobalResult.notFoundObject("FirmwareType not found!");
+            Firmware_type firmware_type = Firmware_type.getFirmwareType(firmware_type_string);
+            if (firmware_type == null) return GlobalResult.notFoundObject("FirmwareType not found!");
 
             // Přijmu soubor
             Http.MultipartFormData body = request().body().asMultipartFormData();
 
             List<Http.MultipartFormData.FilePart> files_from_request = body.getFiles();
 
-            if (files_from_request == null || files_from_request.isEmpty()) return GlobalResult.notFoundObject("Bin File not found!");
-            if(files_from_request.size() > 1)return GlobalResult.result_BadRequest("More than one File is not allowed!");
+            if (files_from_request == null || files_from_request.isEmpty())return GlobalResult.notFoundObject("Bin File not found!");
+            if (files_from_request.size() > 1)return GlobalResult.result_BadRequest("More than one File is not allowed!");
 
             File file = files_from_request.get(0).getFile();
-            if(file == null) return GlobalResult.result_BadRequest("File not found!");
-            if(file.length() < 1) return GlobalResult.result_BadRequest("File is Empty!");
+            if (file == null) return GlobalResult.result_BadRequest("File not found!");
+            if (file.length() < 1) return GlobalResult.result_BadRequest("File is Empty!");
 
 
             int dot = files_from_request.get(0).getFilename().lastIndexOf(".");
             String file_type = files_from_request.get(0).getFilename().substring(dot);
-            String file_name = files_from_request.get(0).getFilename().substring(0,dot);
+            String file_name = files_from_request.get(0).getFilename().substring(0, dot);
 
             // Zkontroluji soubor
-            if(!file_type.equals(".bin")) return GlobalResult.result_BadRequest("Wrong type of File - \"Bin\" required! ");
-            if( (file.length() / 1024) > 500) return GlobalResult.result_BadRequest("File is bigger than 500K b");
+            if (!file_type.equals(".bin"))return GlobalResult.result_BadRequest("Wrong type of File - \"Bin\" required! ");
+            if ((file.length() / 1024) > 500)return GlobalResult.result_BadRequest("File is bigger than 500K b");
 
             // Existuje Homer?
-            ActualizationController.add_new_actualization_request(board.project, firmware_type, board, file, file_name);
+
+             String binary_file = UtilTools.get_encoded_binary_string_from_File(file);
+             FileRecord fileRecord = UtilTools.create_Binary_file("byzance-private/binaryfiles", binary_file, file_name);
+             ActualizationController.add_new_actualization_request_with_user_file(board.project, firmware_type, board, fileRecord);
 
             return GlobalResult.result_ok();
 
@@ -1258,7 +1266,7 @@ public class CompilationLibrariesController extends Controller {
     }
 
     @ApiOperation(value = "update Embedded Hardware with C_program compilation",
-            tags = {"C_Program", "Actualization" },
+            tags = {"C_Program", "Actualization"},
             notes = "Upload compilation to list of hardware. Compilation is on Version oc C_program. And before uplouding compilation, you must succesfuly compile required version before! " +
                     "Result (HTML code) will be every time 200. - Its because upload, restart, etc.. operation need more than ++30 second " +
                     "There is also problem / chance that Tyrion didn't find where Embedded hardware is. So you have to listening Server Sent Events (SSE) and show \"future\" message to the user!",
@@ -1320,7 +1328,7 @@ public class CompilationLibrariesController extends Controller {
             if(c_program_version.c_compilation == null) return GlobalResult.result_BadRequest("The program is not yet compiled");
 
             // Pokud nemám kompilaci a zároveň je kompilační cloud_compilation_server offline - oznámím nemožnost pokračovat
-            if(c_program_version.c_compilation.bin_compilation_file == null && WebSocketController_Incoming.compiler_cloud_servers.isEmpty()){
+            if(c_program_version.c_compilation.bin_compilation_file == null && WebSocketController.compiler_cloud_servers.isEmpty()){
                 return GlobalResult.result_BadRequest("We have not your historic compilation and int the same time compilation cloud_compilation_server for compile your code is offline! So we cannot do anything now :((( ");
             }
 
@@ -1328,18 +1336,20 @@ public class CompilationLibrariesController extends Controller {
 
             // Vyhledání objektů
             List<Board> board_from_request = Board.find.where().idIn(help.board_id).findList();
-            if(board_from_request.size() == 0) return GlobalResult.result_BadRequest("no device is available. Does not exist or is decommissioned.");
+            if (board_from_request.size() == 0)
+                return GlobalResult.result_BadRequest("no device is available. Does not exist or is decommissioned.");
 
             // Vyseparované desky nad který lze provádět nějaké operace
             List<Board> board_for_update = Board.find.where().idIn(help.board_id).findList();
             // Kontrola oprávnění
-            for(Board board : board_from_request){
+            for (Board board : board_from_request) {
                 // Kontrola oprávnění
-                if(board.update_permission() && board.type_of_board_id().equals(typeOfBoard_id)) board_for_update.add(board);
+                if (board.update_permission() && board.type_of_board_id().equals(typeOfBoard_id))
+                    board_for_update.add(board);
             }
 
 
-            ActualizationController.add_new_actualization_request(c_program_version.c_program.project, board_for_update, c_program_version );
+            ActualizationController.add_new_actualization_request_with_user_file(c_program_version.c_program.project, board_for_update, c_program_version);
 
             // Vracím odpověď
             return GlobalResult.result_ok("Procedura byla spuštěna - uživatel bude informován!");
@@ -3492,7 +3502,7 @@ public class CompilationLibrariesController extends Controller {
             for(String hw_id : help.hardware_unique_ids) {
                 Board board = new Board();
                 board.id = hw_id;
-                board.isActive = false;
+                board.is_active = false;
                 board.date_of_create = new Date();
                 board.type_of_board = typeOfBoard;
 
@@ -3617,8 +3627,8 @@ public class CompilationLibrariesController extends Controller {
             Query<Board> query = Ebean.find(Board.class);
 
             // If Json contains TypeOfBoards list of id's
-            if(help.typeOfBoards != null ){
-                query.where().in("type_of_board.id", help.typeOfBoards);
+            if(help.type_of_boards != null ){
+                query.where().in("type_of_board.id", help.type_of_boards);
             }
 
             // If contains confirms
@@ -3682,7 +3692,7 @@ public class CompilationLibrariesController extends Controller {
             if(board.update_permission()) return GlobalResult.forbidden_Permission();
 
             // Úprava stavu
-            board.isActive = false;
+            board.is_active = false;
 
             // Uložení do databáze
             board.update();
@@ -3858,7 +3868,7 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response =  Swagger_Boards_For_Blocko.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response =  Swagger_Boards_for_blocko.class),
             @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
@@ -3875,9 +3885,9 @@ public class CompilationLibrariesController extends Controller {
             if (! project.read_permission()) return GlobalResult.forbidden_Permission();
 
             // Získání objektu
-            Swagger_Boards_For_Blocko boards_for_blocko = new Swagger_Boards_For_Blocko();
+            Swagger_Boards_for_blocko boards_for_blocko = new Swagger_Boards_for_blocko();
             boards_for_blocko.boards = project.boards;
-            boards_for_blocko.typeOfBoards = TypeOfBoard.find.where().eq("boards.project.id", project.id ).findList();
+            boards_for_blocko.type_of_boards = TypeOfBoard.find.where().eq("boards.project.id", project.id ).findList();
             boards_for_blocko.c_programs = project.c_programs;
 
             // Vrácení objektu

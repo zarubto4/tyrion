@@ -6,8 +6,8 @@ import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 
 @ApiModel(description = "Json Model if user want create new Tariff for projects",
-        value = "Tariff_Register")
-public class Swagger_Tariff_Register {
+        value = "Tariff_register")
+public class Swagger_Tariff_User_Register {
 
 
     @Constraints.Required
@@ -61,8 +61,6 @@ public class Swagger_Tariff_Register {
     @ApiModelProperty(required = true, value =  "Required: always" +
                                                 "The country must have at least 4 characters")
     public String country;
-
-
 
 
     @ApiModelProperty(required = false, value =  "Required: only if account is business" +

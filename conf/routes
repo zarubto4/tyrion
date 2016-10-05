@@ -57,7 +57,7 @@ PUT             /notification/confirm/:notification_id      @controllers.Notific
 
 PUT             /notification/read                          @controllers.NotificationController.mark_as_read_notification()
 
-GET             /notification/test/:email/:level            @controllers.NotificationController.test_notifications(email, level)
+GET             /notification/test/:mail            @controllers.NotificationController.test_notifications(mail)
 
 ### PERSON ############ PERSON ############### PERSON ################ PERSON ################# PERSON ############ PERSON ###########################################
 ######################################################################################################################################################################
@@ -424,6 +424,7 @@ PUT             /websocket/terminal/identificator                               
 PUT             /websocket/terminal/identificator/:terminal_id                              @controllers.GridController.check_identifiactor(terminal_id)
 
 
+
 ### TOOLS ############ TOOLS ############### TOOLS ################ TOOLS ######################################################################################################
 ################################################################################################################################################################################
 
@@ -441,8 +442,8 @@ GET           /assets/*file                                 controllers.Assets.v
 
 
 
-### PUBLIC ############ PUBLIC ############### PUBLIC ################ PUBLIC #######################################################################################
-###################################################################################f#################################################################################
+### PUBLIC - ADMIN ############ PUBLIC  - ADMIN ############### PUBLIC  - ADMIN ################ PUBLIC  - ADMIN ################################################################
+###################################################################################f#############################################################################################
 
 # Basic Page Requests
 GET             /                                               @controllers.DashboardController.index()
@@ -462,6 +463,14 @@ GET             /admin/permission/role/:role_id                 @controllers.Das
 GET             /admin/blocko_objects                           @controllers.DashboardController.blocko_objects()
 GET             /admin/blocko_management                        @controllers.DashboardController.blocko_management()
 GET             /admin/public_code                              @controllers.DashboardController.public_code()
+
+
+# Tariff
+POST            /admin/tariff                                   @controllers.Finance_Controller.tariff_general_create()
+PUT             /admin/tariff/:tariff_id                        @controllers.Finance_Controller.tariff_general_edit(tariff_id)
+POST            /admin/label                                    @controllers.Finance_Controller.tariff_general_add_label()
+DELETE          /admin/label/:label_id                          @controllers.Finance_Controller.tariff_general_remove_label(label_id)
+
 
 
 GET             /javascriptRoutes                               @controllers.DashboardController.javascriptRoutes()

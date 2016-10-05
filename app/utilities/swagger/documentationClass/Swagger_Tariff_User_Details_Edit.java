@@ -1,9 +1,12 @@
 package utilities.swagger.documentationClass;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 
-public class Swagger_Tariff_Details_Edit {
+@ApiModel(description = "Json Model with List of Board ID",
+          value = "Tariff_details_edit")
+public class Swagger_Tariff_User_Details_Edit {
 
     @Constraints.Required
     @Constraints.MinLength(value = 5, message = "The street must have at least 4 characters")

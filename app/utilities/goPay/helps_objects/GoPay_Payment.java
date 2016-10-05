@@ -4,7 +4,7 @@ package utilities.goPay.helps_objects;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import models.project.global.financial.Invoice_item;
 import utilities.Server;
-import utilities.goPay.helps_objects.enums.Currency;
+import utilities.enums.Currency;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,8 +1,11 @@
-package utilities.goPay.helps_objects.enums;
+package utilities.enums;
+
+import com.avaje.ebean.annotation.EnumValue;
 
 public enum Currency {
-    CZK(203),
-    EUR(978);
+
+    @EnumValue("alpha") CZK(203),
+    @EnumValue("alpha") EUR(978);
 
     public static final String CODE_CZK = String.valueOf(CZK);
     public static final String CODE_EUR = String.valueOf(EUR);

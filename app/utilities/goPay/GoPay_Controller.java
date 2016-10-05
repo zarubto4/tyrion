@@ -14,6 +14,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import utilities.Server;
 import utilities.enums.Payment_mode;
+import utilities.enums.Payment_status;
 import utilities.enums.Recurrence_cycle;
 import utilities.fakturoid.Fakturoid_Controller;
 import utilities.goPay.helps_objects.*;
@@ -172,7 +173,7 @@ public class GoPay_Controller  extends Controller {
 
             invoice.invoice_items.add(invoice_item_1);
             invoice.proforma = true;
-            invoice.status = Invoice.Payment_status.sent;
+            invoice.status = Payment_status.sent;
             invoice.date_of_create = new Date();
             invoice.method = product.method;
 

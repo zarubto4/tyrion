@@ -1,4 +1,4 @@
-package utilities.goPay.helps_objects.enums;
+package utilities.enums;
 
 public enum Payment_method{
     bank,

@@ -1612,20 +1612,21 @@ public class WebSocketController extends Controller {
 
     public static JsonNode homer_instance_update_devices_firmware(WebSCType homer, List<String> targetIds, Firmware_type firmware_type, FileRecord record) throws  ExecutionException, TimeoutException, InterruptedException {
 
-        logger.debug("Homer: " + homer.identifikator + ", will update Yoda");
+        logger.debug("Homer: " + homer.identifikator + ", will update Yodas or Devices");
 
         ObjectNode result = Json.newObject();
+        result.put("messageChannel", "tyrion");
         result.put("messageType", "updateDevice");
+
         result.put("firmware_type", firmware_type.get_firmwareType());
-        result.set("targetId",  Json.toJson(targetIds));
+        result.set("targetIds",  Json.toJson(targetIds));
 
         // Nahrávám Bootloader
-        if(record.boot_loader != null) result.put("firmware_build_id", record.boot_loader.version_identificator);
+        if(record.boot_loader != null) result.put("build_id", record.boot_loader.version_identificator);
 
         // Nahrávám klasický Firmware
-        else result.put("firmware_build_id", record.c_compilations_binary_file.firmware_build_id);
+        else result.put("build_id", record.c_compilations_binary_file.firmware_build_id);
 
-        result.put("messageChannel", "tyrion");
         result.put("program", record.get_fileRecord_from_Azure_inString());
 
         return homer.write_with_confirmation(result, 1000*30, 0, 3);

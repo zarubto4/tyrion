@@ -15,9 +15,9 @@ import play.Configuration;
 import play.libs.Json;
 import utilities.Server;
 import utilities.enums.Payment_mode;
-import utilities.enums.Product_Type;
-import utilities.goPay.helps_objects.enums.Currency;
-import utilities.goPay.helps_objects.enums.Payment_method;
+import utilities.enums.Product_type;
+import utilities.enums.Currency;
+import utilities.enums.Payment_method;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -35,7 +35,7 @@ public class Product extends Model {
                                                                             public String product_individual_name;
 
 
-    @JsonIgnore    @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)    public Product_Type type;
+    @JsonIgnore    @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)    public Product_type type;
     @JsonIgnore    @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)    public Payment_mode mode;
     @JsonIgnore    @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)    public Payment_method method;
 

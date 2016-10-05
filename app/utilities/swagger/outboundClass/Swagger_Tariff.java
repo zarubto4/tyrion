@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import models.project.global.financial.GeneralTariff;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,35 +17,12 @@ import java.util.List;
 public class Swagger_Tariff {
 
     @ApiModelProperty(required = true, readOnly = true, value = "List of Individual Tariffs")
-    public List<Individuals_Tariff> tariffs = new ArrayList<>();
+    public List<GeneralTariff> tariffs = new ArrayList<>();
 
     @ApiModelProperty(required = true, readOnly = true, value = "List of Additional Packages - More Slots for IoT, Projects etc..")
     public List<Additional_package> packages = new ArrayList<>();
 
 
-
-    public class Individuals_Tariff {
-
-        @ApiModelProperty(required = true, readOnly = true)
-        public String tariff_name;
-
-        @ApiModelProperty(required = true, readOnly = true, value = "return this value for registration new Product Tariff")
-        public String identificator;
-
-        @ApiModelProperty(required = true, readOnly = true, value = "This value indicates that for creating new Product Tariff, you have to send all value with \"company_\"  ")
-        public boolean company_details_required;
-
-        @ApiModelProperty(required = true, readOnly = true, value = "This value indicates that for creating new Product Tariff  User have to pay throw the Credit-Card Gateway or send money via Bank Account")
-        public boolean required_payment_mode;
-
-        public String color;
-
-        @ApiModelProperty(required = true, readOnly = true)
-        public Price price = new Price();
-
-        @ApiModelProperty(required = true, readOnly = true, value = "Show each record in Product Tariff Object")
-        public List<Swagger_Tariff_Label> labels = new ArrayList<>();
-    }
 
 
     public class Additional_package {
@@ -81,10 +59,6 @@ public class Swagger_Tariff {
 
 
 // Pomocné metody
-
-    @JsonIgnore public Individuals_Tariff get_new_Tariff(){
-        return new Individuals_Tariff();
-    }
     @JsonIgnore public Additional_package get_new_Additional_package(){
         return new Additional_package();
     }

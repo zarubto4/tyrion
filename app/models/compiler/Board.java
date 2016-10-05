@@ -56,6 +56,7 @@ public class Board extends Model {
     @JsonIgnore  @OneToMany(mappedBy="board", cascade=CascadeType.ALL, fetch = FetchType.EAGER)     public List<C_Program_Update_Plan> c_program_update_plans;
 
 
+                                                                 // reference na Fake Instanci
                  @JsonIgnore @OneToOne(fetch = FetchType.EAGER)  public Homer_Instance private_instance;      // Vlastní instance pouze pro HW - V Případě že nebude aktivní instance s Blocko Programem.
 
 /* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/

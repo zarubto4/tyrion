@@ -7,7 +7,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import models.project.global.Product;
 import utilities.Server;
-import utilities.goPay.helps_objects.enums.Payment_method;
+import utilities.enums.Payment_status;
+import utilities.enums.Payment_method;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -96,15 +97,5 @@ public class Invoice extends Model {
     public static Model.Finder<Long,Invoice> find = new Finder<>(Invoice.class);
 
 /* ENUM values ---------------------------------------------------------------------------------------------------------*/
-
-
-    public enum Payment_status{
-        paid,   // Uhrazeno
-        sent,   // Zasláno u uhrazené
-
-        created_waited,
-
-        cancelled // Zrušeno
-    }
 
 }

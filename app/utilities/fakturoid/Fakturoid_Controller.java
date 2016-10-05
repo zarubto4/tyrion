@@ -14,8 +14,9 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import utilities.Server;
 import utilities.emails.EmailTool;
+import utilities.enums.Payment_method;
+import utilities.enums.Payment_status;
 import utilities.fakturoid.helps_objects.Fakturoid_Invoice;
-import utilities.goPay.helps_objects.enums.Payment_method;
 import utilities.loggy.Loggy;
 import utilities.response.GlobalResult;
 
@@ -109,7 +110,7 @@ public class Fakturoid_Controller extends Controller {
         invoice.facturoid_invoice_id = result.get("id").asLong();
         invoice.facturoid_pdf_url    = result.get("pdf_url").asText();
         invoice.invoice_number       = result.get("number").asText();
-        invoice.status               = Invoice.Payment_status.paid;
+        invoice.status               = Payment_status.paid;
         invoice.update();
 
         return invoice;

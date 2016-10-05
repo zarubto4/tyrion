@@ -1,7 +1,7 @@
 package utilities.fakturoid.helps_objects;
 
 import models.project.global.financial.Invoice_item;
-import utilities.goPay.helps_objects.enums.Currency;
+import utilities.enums.Currency;
 
 import java.util.List;
 

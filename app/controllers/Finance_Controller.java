@@ -4,9 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.*;
 import models.person.Person;
 import models.project.global.Product;
-import models.project.global.financial.Invoice;
-import models.project.global.financial.Invoice_item;
-import models.project.global.financial.Payment_Details;
+import models.project.global.financial.*;
 import play.Configuration;
 import play.data.Form;
 import play.libs.Json;
@@ -14,12 +12,9 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.UtilTools;
-import utilities.enums.Payment_mode;
-import utilities.enums.Product_Type;
+import utilities.enums.*;
 import utilities.fakturoid.Fakturoid_Controller;
 import utilities.goPay.GoPay_Controller;
-import utilities.goPay.helps_objects.enums.Currency;
-import utilities.goPay.helps_objects.enums.Payment_method;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_API;
 import utilities.response.GlobalResult;
@@ -27,9 +22,7 @@ import utilities.response.response_objects.Result_BadRequest;
 import utilities.response.response_objects.Result_PermissionRequired;
 import utilities.response.response_objects.Result_Unauthorized;
 import utilities.response.response_objects.Result_ok;
-import utilities.swagger.documentationClass.Swagger_Tariff_Details_Edit;
-import utilities.swagger.documentationClass.Swagger_Tariff_General_Edit;
-import utilities.swagger.documentationClass.Swagger_Tariff_Register;
+import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Swagged_Applicable_Product;
 import utilities.swagger.outboundClass.Swagger_Financial_Summary;
 import utilities.swagger.outboundClass.Swagger_GoPay_Url;
@@ -48,7 +41,124 @@ public class Finance_Controller extends Controller {
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
     static Swagger_Tariff swagger_tariff;
 
-    // GENERAL PRODUCT_TARIFF ##########################################################################################
+    // ADMIN - GENERA PRODUCT TARIFF SETTINGS ##########################################################################
+
+    @ApiOperation(value = "create gewneral Tariffs", hidden = true)
+    public Result tariff_general_create(){
+        try {
+            final Form<Swagger_Tariff_General_Create> form = Form.form(Swagger_Tariff_General_Create.class).bindFromRequest();
+            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Tariff_General_Create help = form.get();
+
+            GeneralTariff general_tariff = new GeneralTariff();
+
+            general_tariff.tariff_name      = help.tariff_name;
+            general_tariff.identificator    = help.identificator;
+
+            general_tariff.color            = help.color;
+
+            general_tariff.company_details_required  = help.company_details_required;
+            general_tariff.required_payment_mode     = help.required_payment_mode;
+            general_tariff.required_payment_method   = help.required_payment_method;
+
+            general_tariff.credit_card_support      = help.credit_card_support;
+            general_tariff.bank_transfer_support    = help.bank_transfer_support;
+
+            general_tariff.mode_annually    = help.mode_annually;
+            general_tariff.mode_credit      = help.mode_credit;
+
+            general_tariff.usd = help.usd;
+            general_tariff.eur = help.eur;
+            general_tariff.czk = help.czk;
+
+            general_tariff.save();
+
+            return GlobalResult.result_ok(Json.toJson(general_tariff));
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "create gewneral Tariffs", hidden = true)
+    public Result tariff_general_edit(String tariff_id){
+        try {
+
+            final Form<Swagger_Tariff_General_Create> form = Form.form(Swagger_Tariff_General_Create.class).bindFromRequest();
+            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Tariff_General_Create help = form.get();
+
+            GeneralTariff general_tariff = GeneralTariff.find.byId(tariff_id);
+            if(general_tariff == null) return GlobalResult.notFoundObject("Object not found");
+
+            general_tariff.tariff_name      = help.tariff_name;
+            general_tariff.identificator    = help.identificator;
+
+            general_tariff.color            = help.color;
+
+            general_tariff.company_details_required  = help.company_details_required;
+            general_tariff.required_payment_mode     = help.required_payment_mode;
+
+            general_tariff.credit_card_support      = help.credit_card_support;
+            general_tariff.bank_transfer_support    = help.bank_transfer_support;
+
+            general_tariff.mode_annually        = help.mode_annually;
+            general_tariff.mode_credit          = help.mode_credit;
+
+            general_tariff.usd = help.usd;
+            general_tariff.eur = help.eur;
+            general_tariff.czk = help.czk;
+
+            general_tariff.update();
+
+            return GlobalResult.result_ok(Json.toJson(general_tariff));
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "add new Label zo general Tariffs", hidden = true)
+    public Result tariff_general_add_label(){
+        try {
+
+            final Form<Swagger_Tariff_General_Label> form = Form.form(Swagger_Tariff_General_Label.class).bindFromRequest();
+            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Tariff_General_Label help = form.get();
+
+            GeneralTariff tariff = GeneralTariff.find.byId(help.general_tariff_id);
+            if(tariff == null) return GlobalResult.notFoundObject("Tariff not found");
+
+            GeneralTariffLabel label = new GeneralTariffLabel();
+            label.general_tariff = tariff;
+            label.description = help.description;
+            label.icon = help.icon;
+            label.save();
+
+            return GlobalResult.result_ok(Json.toJson(label));
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "remove label from general Tariffs", hidden = true)
+    public Result tariff_general_remove_label(String label_id){
+        try{
+
+            GeneralTariffLabel label =  GeneralTariffLabel.find.byId(label_id);
+            if(label == null) return GlobalResult.notFoundObject("Label not found");
+
+            label.delete();
+
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+
+    // USER PRODUCT_TARIFF #############################################################################################
 
     @ApiOperation(value = "get all Product Tariffs",
             tags = {"Price & Invoice & Tariffs"},
@@ -69,42 +179,17 @@ public class Finance_Controller extends Controller {
 
            // if(swagger_tariff != null ) return GlobalResult.result_ok(Json.toJson(swagger_tariff));
            // else
-            swagger_tariff = new Swagger_Tariff();
+            Swagger_Tariff swagger_tariff = new Swagger_Tariff();
 
             // Vytvořím seznam tarifu
-            List<String> product_tariffs = Configuration.root().getStringList("Byzance.tariff.tariffs");
+            List<GeneralTariff> general_tariffs = GeneralTariff.find.all();
+            swagger_tariff.tariffs = general_tariffs;
 
 
              //Tak beru a načítám z konfiguračního souboru application.conf
-            for (String tariff_name : product_tariffs) {
-               try {
-
-                   Swagger_Tariff.Individuals_Tariff tariff = swagger_tariff.get_new_Tariff();
-
-
-                   tariff.identificator = tariff_name;
-                   tariff.tariff_name = Configuration.root().getString("Byzance.tariff." + tariff_name + ".name");
-                   tariff.color         =  Configuration.root().getString("Byzance.tariff." + tariff_name + ".color");
-
-                   tariff.company_details_required = Configuration.root().getBoolean("Byzance.tariff." + tariff_name + ".company_details_required");
-                   tariff.required_payment_mode    = Configuration.root().getBoolean("Byzance.tariff." + tariff_name + ".required_payment_mode");
-                   tariff.price                    = swagger_tariff.get_new_Price( Configuration.root().getDouble("Byzance.tariff." + tariff_name + ".price_list.general_fee.monthly.CZK"),
-                                                                                   Configuration.root().getDouble("Byzance.tariff." + tariff_name + ".price_list.general_fee.monthly.EUR"));
-
-                   tariff.labels                   = swagger_tariff.get_new_Label( Configuration.root().getString("Byzance.tariff." + tariff_name + ".public_labels"));
-
-                   swagger_tariff.tariffs.add(tariff);
-
-               } catch (Exception e) {
-                        e.printStackTrace();
-                        logger.error("Tyrion try to get Tariffs from Configuration file. But probably enum value (\"enums\") \"" + product_tariffs + "\" do not correspond or missing some value in configuration");
-                        e.printStackTrace();
-                    }
-               }
-
-
             List<String> product_packages = Configuration.root().getStringList("Byzance.tariff.packages");
             for (String packages_identificator : product_packages) {
+
                 try {
 
                     Swagger_Tariff.Additional_package aditional_package = swagger_tariff.get_new_Additional_package();
@@ -125,6 +210,7 @@ public class Finance_Controller extends Controller {
                     logger.error("Tyrion try to get Additional Packages from Configuration file. But probably enum value (\"enums\") \"" + packages_identificator + "\" do not correspond or missing some value in configuration");
                     e.printStackTrace();
                 }
+
             }
 
 
@@ -149,7 +235,7 @@ public class Finance_Controller extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Tariff_Register",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Tariff_User_Register",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -168,9 +254,9 @@ public class Finance_Controller extends Controller {
         try{
 
             // Zpracování Json
-            final Form<Swagger_Tariff_Register> form = Form.form(Swagger_Tariff_Register.class).bindFromRequest();
+            final Form<Swagger_Tariff_User_Register> form = Form.form(Swagger_Tariff_User_Register.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-            Swagger_Tariff_Register help = form.get();
+            Swagger_Tariff_User_Register help = form.get();
 
             Product product = new Product();
 
@@ -180,9 +266,9 @@ public class Finance_Controller extends Controller {
 
 
 
-            if(help.tariff_type.equals( Product_Type.alpha.name() )){
+            if(help.tariff_type.equals( Product_type.alpha.name() )){
 
-                product.type =  Product_Type.alpha;
+                product.type =  Product_type.alpha;
                 product.product_individual_name = help.product_individual_name;
                 product.active = true;  // Produkt jelikož je Aplha je aktivní - Alpha nebo Trial dojedou kvuli omezení času
 
@@ -213,8 +299,8 @@ public class Finance_Controller extends Controller {
             }
 
 
-            if(help.tariff_type.equals( Product_Type.free.name() )){
-                product.type =  Product_Type.free;
+            if(help.tariff_type.equals( Product_type.free.name() )){
+                product.type =  Product_type.free;
                 product.product_individual_name = help.product_individual_name;
                 product.active = true;  // Produkt jelikož je free je aktivní - Alpha nebo Trial dojedou kvuli omezení času
                 product.mode = Payment_mode.free;
@@ -242,7 +328,7 @@ public class Finance_Controller extends Controller {
             }
 
 
-            if(help.tariff_type.equals( Product_Type.business.name() )){
+            if(help.tariff_type.equals( Product_type.business.name() )){
                 product.active = true; // Produkt se aktivuje okamžitě ale nenastaví se tam jeho čas do kdy je funkční
                 product.product_individual_name = help.product_individual_name;
 
@@ -263,7 +349,7 @@ public class Finance_Controller extends Controller {
                 else { return GlobalResult.result_BadRequest("payment_mode is invalid. Use only (bank, credit_card)");}
 
 
-                product.type  =  Product_Type.business;
+                product.type  =  Product_type.business;
 
                 Payment_Details payment_details = new Payment_Details();
                 payment_details.person = SecurityController.getPerson();
@@ -301,7 +387,7 @@ public class Finance_Controller extends Controller {
                 Invoice invoice = new Invoice();
                 invoice.date_of_create = new Date();
                 invoice.proforma = true;
-                invoice.status = Invoice.Payment_status.sent;
+                invoice.status = Payment_status.sent;
 
 
                 Invoice_item invoice_item_1 = new Invoice_item();
@@ -417,7 +503,7 @@ public class Finance_Controller extends Controller {
             if(invoice == null) return GlobalResult.notFoundObject("Invoice invoice_id not found");
 
             if(!invoice.read_permission()) return GlobalResult.forbidden_Permission();
-            if(!invoice.status.equals(Invoice.Payment_status.sent)) return GlobalResult.result_BadRequest("Invoice is already paid");
+            if(!invoice.status.equals(Payment_status.sent)) return GlobalResult.result_BadRequest("Invoice is already paid");
 
 
             // vyvolání nové platby ale bez vytváření faktury nebo promofaktury
@@ -489,9 +575,9 @@ public class Finance_Controller extends Controller {
         try{
 
             // Vytvoření pomocného Objektu
-            final Form<Swagger_Tariff_General_Edit> form = Form.form(Swagger_Tariff_General_Edit.class).bindFromRequest();
+            final Form<Swagger_Tariff_User_Edit> form = Form.form(Swagger_Tariff_User_Edit.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-            Swagger_Tariff_General_Edit help = form.get();
+            Swagger_Tariff_User_Edit help = form.get();
 
             // Kontrola Objektu
             Product product = Product.find.byId(product_id);
@@ -530,7 +616,7 @@ public class Finance_Controller extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Tariff_Details_Edit",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Tariff_User_Details_Edit",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -548,9 +634,9 @@ public class Finance_Controller extends Controller {
         try{
 
             // Vytvoření pomocného Objektu
-            final Form<Swagger_Tariff_Details_Edit> form = Form.form(Swagger_Tariff_Details_Edit.class).bindFromRequest();
+            final Form<Swagger_Tariff_User_Details_Edit> form = Form.form(Swagger_Tariff_User_Details_Edit.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-            Swagger_Tariff_Details_Edit help = form.get();
+            Swagger_Tariff_User_Details_Edit help = form.get();
 
             // Kontrola Objektu
             Payment_Details payment_details = Payment_Details.find.byId(payment_details_id);

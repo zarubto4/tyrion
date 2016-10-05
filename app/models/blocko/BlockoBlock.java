@@ -24,7 +24,7 @@ public class BlockoBlock extends Model {
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true)   public String id;
                                                             @ApiModelProperty(required = true)   public String name;
                          @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)   public String general_description;
-
+                                                            @ApiModelProperty(required = true)   public Approval_state approval_state;
                                     @JsonIgnore @ManyToOne                                       public Person author;
                                     @JsonIgnore @ManyToOne                                       public TypeOfBlock type_of_block;
                                     @JsonIgnore @ManyToOne()                                     public Producer producer;

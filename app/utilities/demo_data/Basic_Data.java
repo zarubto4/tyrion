@@ -25,7 +25,7 @@ import utilities.Server;
 import utilities.UtilTools;
 import utilities.enums.Approval_state;
 import utilities.enums.Payment_mode;
-import utilities.enums.Product_Type;
+import utilities.enums.Product_type;
 
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -670,7 +670,7 @@ public class Basic_Data {
 
             // Vytvoří tarif
             Product product = new Product();
-            product.type = Product_Type.alpha;
+            product.type = Product_type.alpha;
             product.product_individual_name = "Pepkova velkolepá Alfa";
             product.active = true;  // Produkt jelikož je Aplha je aktivní - Alpha nebo Trial dojedou kvuli omezení času
             product.mode = Payment_mode.free;
