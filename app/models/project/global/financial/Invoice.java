@@ -62,7 +62,7 @@ public class Invoice extends Model {
         switch (status) {
             case paid: {return  "Invoice is paid.";}
             case sent: {return  "Please pay this invoices.";}
-            case created_waited: {return  "Sent to your accounting officer we are waiting for confirmation from the bank.";}
+            case created_waited: {return  "Sent to your accounting officer we are waiting for confirmation from the bank_transfer.";}
             case cancelled: {return  "Invoice is canceled.";}
             default: return  "Undefined state";
         }
@@ -73,7 +73,7 @@ public class Invoice extends Model {
     public String payment_method(){
 
         switch (method) {
-            case bank:        {return  "Bank transfer."; }
+            case bank_transfer:        {return  "Bank transfer."; }
             case credit_card: {return  "Credit Card Payment."; }
             default: return   "Undefined state";
         }

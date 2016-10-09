@@ -3381,7 +3381,7 @@ public class CompilationLibrariesController extends Controller {
             // Vyzískám seznam podle IDs
             List<Board> boards = Board.find.where().idIn(help.device_ids).findList();
 
-            HashMap<String, HashMap<String, ArrayList<Board> >  > update_list = new HashMap<>();
+            HashMap<String, HashMap<String, ArrayList<Board> >  > update_list = new HashMap<>();    // Podle Projektu
 
             // Skontroluji oprávnění a zároveň roztřídím
             for(Board board : boards){
@@ -3417,6 +3417,7 @@ public class CompilationLibrariesController extends Controller {
 
                     TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(type_of_board.getKey());
 
+                    logger.debug("Vytvářím aktualizační proceduru nad projektem: ", Project.find.byId(project.getKey()) ," na Počtu desek: " , type_of_board.getValue().size());
                     ActualizationController.add_new_actualization_request_with_user_file(Project.find.byId(project.getKey()),
                                                                           Firmware_type.BOOTLOADER ,
                                                                           type_of_board.getValue(),

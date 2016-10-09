@@ -9,13 +9,13 @@ import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import io.swagger.annotations.ApiModelProperty;
 import models.compiler.LibraryGroup;
 import models.compiler.SingleLibrary;
+import models.project.global.financial.GeneralTariff;
 import models.project.global.financial.Invoice;
 import models.project.global.financial.Payment_Details;
 import play.Configuration;
 import play.libs.Json;
 import utilities.Server;
 import utilities.enums.Payment_mode;
-import utilities.enums.Product_type;
 import utilities.enums.Currency;
 import utilities.enums.Payment_method;
 
@@ -35,7 +35,7 @@ public class Product extends Model {
                                                                             public String product_individual_name;
 
 
-    @JsonIgnore    @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)    public Product_type type;
+    @JsonIgnore                                                      @ManyToOne        public GeneralTariff general_tariff;
     @JsonIgnore    @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)    public Payment_mode mode;
     @JsonIgnore    @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)    public Payment_method method;
 
@@ -70,14 +70,9 @@ public class Product extends Model {
    // @JsonProperty public Long product_detail_id(){return  payment_details.id;}
    @JsonProperty
    @Transient  @ApiModelProperty(required = true, readOnly = true)
-   public String product_type(){
-       switch ( type.toString() ) {
-           case "alpha":       {return  "Alpha - Temporal limitation";}
-           case "free":        {return  "Free Account ";}
-           case "business":    {return  "Enterprise account";}
-           default: return  "Undefined state";
-       }
-   }
+   public String product_type(){ return general_tariff.tariff_name; }
+
+
 
     @JsonProperty @Transient  @ApiModelProperty(required = true, readOnly = true)
     public String payment_mode(){
@@ -92,8 +87,9 @@ public class Product extends Model {
     public String payment_method(){
         try{
             switch (method) {
-                case bank:        {return  "Bank transfer payment."; }
-                case credit_card: {return  "Credit-Card payment."; }
+                case bank_transfer:        {return  "Bank transfer payment."; }
+                case credit_card:          {return  "Credit-Card payment."; }
+                case free:                 {return  "Free Account"; }
                 default: return   "Undefined state";
             }
         }catch (NullPointerException e) {
@@ -153,9 +149,9 @@ public class Product extends Model {
     }
     @JsonIgnore   @Transient @ApiModelProperty(required = true) public JsonNode create_new_project_if_not()     {
         ObjectNode result = Json.newObject();
-        result.put("tariff", String.valueOf(type));
+            result.put("tariff", general_tariff.tariff_name);
 
-        if(! active) result.put("message", Configuration.root().getInt("Your Product is not Paid for this momen"));
+        if(! active) result.put("message", Configuration.root().getInt("Your Product is not Paid for this moment"));
         return  result;
     }
 
@@ -184,7 +180,15 @@ public class Product extends Model {
 
     @JsonIgnore @Transient public Long get_days_to_blocation(){ return Math.round(  (paid_until_the_day.getTime() - new Date().getTime() ) / (double) 86400000); }
 
-    @JsonIgnore @Transient public Double get_price_general_fee()  {return (Configuration.root().getDouble("Byzance.tariff."+type.name()+".price_list."+  "general_fee.monthly"      +"." + currency.name() )) ;}
+    @JsonIgnore @Transient public Double get_price_general_fee()  {
+        switch (currency) {
+            case EUR:     {return  general_tariff.eur;  }
+            case USD:     {return  general_tariff.usd;  }
+            case CZK:     {return  general_tariff.czk;  }
+            default: return null;
+        }
+
+    }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 

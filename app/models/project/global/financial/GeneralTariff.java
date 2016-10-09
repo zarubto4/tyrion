@@ -4,6 +4,9 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
+import models.project.global.Product;
+import utilities.enums.Payment_method;
+import utilities.enums.Payment_mode;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -14,14 +17,19 @@ public class GeneralTariff extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public String id;
+    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public String id;
 
-    public String tariff_name;
-    public String identificator;
+                            public String tariff_name;
+                            public String tariff_description;
+    @Column(unique = true)  public String identificator;
 
     public boolean company_details_required;
     public boolean required_payment_mode;
     public boolean required_payment_method;
+
+    @JsonIgnore  public boolean required_paid_that; // Říká, zda se po zaregistrování okamžitě vytvoří faktura a další procedury pro zaplacení
+    @JsonIgnore  public Integer number_of_free_months;
+
 
     @JsonIgnore  public Double usd;
     @JsonIgnore  public Double eur;
@@ -32,32 +40,36 @@ public class GeneralTariff extends Model {
     @JsonIgnore public boolean bank_transfer_support;
     @JsonIgnore public boolean credit_card_support;
 
+
     @JsonIgnore public boolean mode_annually;
     @JsonIgnore public boolean mode_credit;
+    @JsonIgnore public boolean free;
 
 
     @OneToMany(mappedBy="general_tariff", cascade = CascadeType.ALL) public List<GeneralTariffLabel> labels = new ArrayList<>();
-
+    @OneToMany(mappedBy="general_tariff", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Product> product = new ArrayList<>();
 
 /* JSON PROPERTY METHOD -----------------------------------------------------------------------------------------------*/
 
-    @JsonProperty public List<String> payment_methods(){
+    @JsonProperty public List<Pair> payment_methods(){
 
-        List<String> methods = new ArrayList<>();
+        List<Pair> methods = new ArrayList<>();
 
-        if(bank_transfer_support) methods.add("bank_transfer");
-        if(credit_card_support)   methods.add("credit_card");
+        if(bank_transfer_support) methods.add( new Pair( Payment_method.bank_transfer.name(), "Bank transfers") );
+        if(credit_card_support)   methods.add( new Pair( Payment_method.credit_card.name()  , "Credit Card Payment"));
+        if(free)                  methods.add( new Pair( Payment_method.free.name()         , "I want it free"));
 
         return methods;
     }
 
 
-    @JsonProperty public List<String> payment_modes(){
+    @JsonProperty public List<Pair> payment_modes(){
 
-        List<String> modes = new ArrayList<>();
+        List<Pair> modes = new ArrayList<>();
 
-        if(mode_annually)  modes.add("mode_annually");
-        if(mode_credit)    modes.add("mode_credit");
+        if(mode_annually)  modes.add( new Pair( Payment_mode.monthly.name()   , "Annual monthly / yearly payment"));
+        if(mode_credit)    modes.add( new Pair( Payment_mode.per_credit.name(), "Pre-paid credit"));
+        if(free)           modes.add( new Pair(Payment_mode.free.name()       , "I want it free"));
 
         return modes;
     }
@@ -89,6 +101,21 @@ public class GeneralTariff extends Model {
 
         @ApiModelProperty(required = true, readOnly = true,  value = "in Double - show $")
         public Double USD;
+    }
+
+    public class Pair {
+
+        public Pair(String json_identificator, String user_description){
+            this.json_identificator = json_identificator;
+            this.user_description = user_description;
+        }
+
+        @ApiModelProperty(required = true, readOnly = true)
+        public String json_identificator;
+
+        @ApiModelProperty(required = true, readOnly = true)
+        public String user_description;
+
     }
 
 

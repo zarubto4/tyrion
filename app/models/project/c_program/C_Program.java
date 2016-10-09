@@ -13,9 +13,7 @@ import models.compiler.TypeOfBoard;
 import models.compiler.Version_Object;
 import models.project.b_program.B_Pair;
 import models.project.global.Project;
-import org.omg.CosNaming.NamingContextExtPackage.StringNameHelper;
 import play.libs.Json;
-import utilities.enums.Approval_state;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_New;
 import utilities.swagger.outboundClass.Swagger_C_Program_Version;
 
@@ -47,7 +45,7 @@ public class C_Program extends Model {
             example = "1466163478925")                                                       public Date date_of_create;
 
     @JsonIgnore @OneToMany(mappedBy="c_program", cascade = CascadeType.ALL, fetch = FetchType.EAGER) @OrderBy("date_of_create DESC")   public List<Version_Object> version_objects = new ArrayList<>();
-                                                                         @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)   public Version_Object first_default_version_object;
+                                                                                     @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)   public Version_Object first_default_version_object;
 
     @JsonIgnore @OneToOne() public TypeOfBoard defaul_program_type_of_board;   // Pro defaultní program na devicu a první verzi C_Programu při vytvoření  (Určeno výhradně pro Byzance)
     @JsonIgnore @OneToOne() public Version_Object default_main_version;        // Defualtní verze programu, konkrétního typu desky  (Určeno výhradně pro Byzance)
@@ -77,43 +75,49 @@ public class C_Program extends Model {
     // Objekt určený k vracení verze
     @JsonIgnore @Transient
     public Swagger_C_Program_Version program_version(Version_Object version_object){
+        try {
 
-        Swagger_C_Program_Version c_program_versions= new Swagger_C_Program_Version();
+            Swagger_C_Program_Version c_program_versions = new Swagger_C_Program_Version();
 
-        c_program_versions.compilation_in_progress  = version_object.compilation_in_progress;
-        c_program_versions.compilable               = version_object.compilable;
-        c_program_versions.version_object           = version_object;
-        c_program_versions.successfully_compiled    = version_object.c_compilation != null;
-        c_program_versions.compilation_restored     = FileRecord.find.where().disjunction()
-                                                                .add( Expr.eq("c_compilations_binary_file.version_object.c_program.id", id) )
-                                                                .add( Expr.eq("c_compilations_binary_file.version_object.c_program.id", id) )
-                                                                .where().eq("file_name", "compilation.bin").findRowCount() > 0;
-        c_program_versions.remove_permission        = version_object.c_program.delete_permission();
+            c_program_versions.compilation_in_progress = version_object.compilation_in_progress;
+            c_program_versions.compilable = version_object.compilable;
+            c_program_versions.version_object = version_object;
+            c_program_versions.successfully_compiled = version_object.c_compilation != null;
+            c_program_versions.compilation_restored = FileRecord.find.where().disjunction()
+                    .add(Expr.eq("c_compilations_binary_file.version_object.c_program.id", id))
+                    .add(Expr.eq("c_compilations_binary_file.version_object.c_program.id", id))
+                    .where().eq("file_name", "compilation.bin").findRowCount() > 0;
+            c_program_versions.remove_permission = version_object.c_program.delete_permission();
 
 
-        FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "code.json").findUnique();
+            FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "code.json").findUnique();
 
-        if(fileRecord != null) {
+            if (fileRecord != null) {
 
-            JsonNode json = Json.parse( fileRecord.get_fileRecord_from_Azure_inString() ) ;
+                JsonNode json = Json.parse(fileRecord.get_fileRecord_from_Azure_inString());
 
-            Swagger_C_Program_Version_New version_new = Json.fromJson(json, Swagger_C_Program_Version_New.class);
+                Swagger_C_Program_Version_New version_new = Json.fromJson(json, Swagger_C_Program_Version_New.class);
 
-            c_program_versions.main = version_new.main;
-            c_program_versions.user_files = version_new.user_files;
-            c_program_versions.external_libraries = version_new.external_libraries;
+                c_program_versions.main = version_new.main;
+                c_program_versions.user_files = version_new.user_files;
+                c_program_versions.external_libraries = version_new.external_libraries;
 
+            }
+
+            if (version_object.c_compilation != null) {
+                c_program_versions.virtual_input_output = version_object.c_compilation.virtual_input_output;
+            }
+
+            for (B_Pair b_pair : version_object.b_pairs_c_program) {
+                c_program_versions.runing_on_board.add(b_pair.board.id);
+            }
+
+            return c_program_versions;
+
+        }catch (Exception e){
+          e.printStackTrace();
+          return null;
         }
-
-        if(version_object.c_compilation != null ) {
-            c_program_versions.virtual_input_output = version_object.c_compilation.virtual_input_output;
-        }
-
-        for(B_Pair b_pair : version_object.b_pairs_c_program){
-            c_program_versions.runing_on_board.add(b_pair.board.id);
-        }
-
-        return c_program_versions;
     }
 
 

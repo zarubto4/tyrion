@@ -1,3 +1,4 @@
+
 @import models.compiler.TypeOfBoard
 @import models.compiler.BootLoader
 @import models.compiler.Version_Object
@@ -70,7 +71,7 @@
 
                             <td>
                                 @if(boot_loader.main_type_of_board != null && boot_loader.file != null) {
-                                    <p class="lead text-red">(ITS Main)</p>
+                                    <p class="lead text-green">(ITS Main)</p>
                                 }
                                 @if(boot_loader.main_type_of_board == null && boot_loader.type_of_board != null && boot_loader.file != null){
                                     <button class="btn btn-block btn-warning" type="button" onclick="setBootLoaderAsMain(@boot_loader.id)">SET as Main</button>

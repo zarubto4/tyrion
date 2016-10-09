@@ -32,7 +32,7 @@ public class Actualization_procedure extends Model {
                            @JsonIgnore     @ManyToOne()     public Version_Object b_program_version_procedure;
 
 
-    @ApiModelProperty(required = true, value = "Can be empty")  @OneToMany(mappedBy="actualization_procedure", cascade = CascadeType.ALL, fetch = FetchType.LAZY)   public List<C_Program_Update_Plan> updates = new ArrayList<>();
+    @ApiModelProperty(required = true, value = "Can be empty")  @OneToMany(mappedBy="actualization_procedure", cascade = CascadeType.ALL)   public List<C_Program_Update_Plan> updates = new ArrayList<>();
 
     @ApiModelProperty(required = true, value = "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
                                                 example = "1466163478925")   public Date date_of_create;
@@ -165,8 +165,6 @@ public class Actualization_procedure extends Model {
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String,Actualization_procedure> find = new Model.Finder<>(Actualization_procedure.class);
-
-
 
 
 /* POMOCNÉ TŘÍDY -------------------------------------------------------------------------------------------------------*/

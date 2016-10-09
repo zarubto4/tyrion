@@ -26,14 +26,14 @@ public class C_Program_Update_Plan extends Model {
 
     @Id  @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true) public String id;
 
-              @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                    public Actualization_procedure actualization_procedure;
+              @JsonIgnore @ManyToOne()                                          public Actualization_procedure actualization_procedure;
 
-              @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                    public Board board; // Deska k aktualizaci
+              @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)                   public Board board; // Deska k aktualizaci
               @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)  public Firmware_type firmware_type;
 
                                                                                 // Aktualizace je vázána buď na verzi C++ kodu nebo na soubor, nahraný uživatelem
     /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)                 public Version_Object c_program_version_for_update; // C_program k aktualizaci
-    /** OR **/  @JsonIgnore @ManyToOne()                                        public FileRecord binary_file; // Soubor, když firmware nahrává uživatel sám mimo flow
+    /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                  public FileRecord binary_file; // Soubor, když firmware nahrává uživatel sám mimo flow
 
     @ApiModelProperty(required = true, value = "Description on Model C_ProgramUpdater_State")  @Enumerated(EnumType.STRING)    public C_ProgramUpdater_State state;
 

@@ -1423,7 +1423,7 @@ public class WebSocketController extends Controller {
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "ping_instance");
-        result.put("messageChannel", "homer-server");
+        result.put("messageChannel", "tyrion");
 
         return homer.write_with_confirmation(result, 1000*3, 0, 2);
     }
@@ -1437,6 +1437,7 @@ public class WebSocketController extends Controller {
         result.put("messageType", "basicCommand");
         result.put("commandType", command.get_command());
         result.put("targetId", targetId);
+        // Instnace ID se přibalí
 
         return  homer.write_with_confirmation(result, 1000*10, 0, 4);
 

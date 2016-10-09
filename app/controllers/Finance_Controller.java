@@ -57,6 +57,9 @@ public class Finance_Controller extends Controller {
 
             general_tariff.color            = help.color;
 
+            general_tariff.required_paid_that = help.required_paid_that;
+            general_tariff.number_of_free_months    = help.number_of_free_months;
+
             general_tariff.company_details_required  = help.company_details_required;
             general_tariff.required_payment_mode     = help.required_payment_mode;
             general_tariff.required_payment_method   = help.required_payment_method;
@@ -66,6 +69,7 @@ public class Finance_Controller extends Controller {
 
             general_tariff.mode_annually    = help.mode_annually;
             general_tariff.mode_credit      = help.mode_credit;
+            general_tariff.free             = help.free;
 
             general_tariff.usd = help.usd;
             general_tariff.eur = help.eur;
@@ -95,14 +99,18 @@ public class Finance_Controller extends Controller {
 
             general_tariff.color            = help.color;
 
+            general_tariff.required_paid_that = help.required_paid_that;
+
             general_tariff.company_details_required  = help.company_details_required;
             general_tariff.required_payment_mode     = help.required_payment_mode;
+            general_tariff.required_payment_method   = help.required_payment_method;
 
             general_tariff.credit_card_support      = help.credit_card_support;
             general_tariff.bank_transfer_support    = help.bank_transfer_support;
 
-            general_tariff.mode_annually        = help.mode_annually;
-            general_tariff.mode_credit          = help.mode_credit;
+            general_tariff.mode_annually    = help.mode_annually;
+            general_tariff.mode_credit      = help.mode_credit;
+            general_tariff.free             = help.free;
 
             general_tariff.usd = help.usd;
             general_tariff.eur = help.eur;
@@ -131,6 +139,7 @@ public class Finance_Controller extends Controller {
             GeneralTariffLabel label = new GeneralTariffLabel();
             label.general_tariff = tariff;
             label.description = help.description;
+            label.label = help.label;
             label.icon = help.icon;
             label.save();
 
@@ -258,17 +267,18 @@ public class Finance_Controller extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Tariff_User_Register help = form.get();
 
+            GeneralTariff tariff = GeneralTariff.find.where().eq("identificator", help.tariff_type).findUnique();
+            if(tariff == null) return GlobalResult.result_BadRequest("Tariff identificator: {" + help.tariff_type  + "} not found or not supported now! Use only supported");
+
             Product product = new Product();
 
-            if(help.currency_type.equals( Currency.EUR.name())) product.currency = Currency.EUR;
-            else if(help.currency_type.equals( Currency.CZK.name())) product.currency = Currency.CZK;
-            else { return GlobalResult.result_BadRequest("currency is invalid. Use only (EUR, CZK)");}
+                if(help.currency_type.equals( Currency.EUR.name())) product.currency = Currency.EUR;
+                else if(help.currency_type.equals( Currency.CZK.name())) product.currency = Currency.CZK;
+                else if(help.currency_type.equals( Currency.USD.name())) product.currency = Currency.USD;
+                else { return GlobalResult.result_BadRequest("currency is invalid. Use only (EUR, USD, CZK)");}
 
 
-
-            if(help.tariff_type.equals( Product_type.alpha.name() )){
-
-                product.type =  Product_type.alpha;
+                product.general_tariff =  tariff;
                 product.product_individual_name = help.product_individual_name;
                 product.active = true;  // Produkt jelikož je Aplha je aktivní - Alpha nebo Trial dojedou kvuli omezení času
 
@@ -278,111 +288,75 @@ public class Finance_Controller extends Controller {
                 Person person = SecurityController.getPerson();
 
                 Payment_Details payment_details = new Payment_Details();
-                payment_details.person = person;
-                payment_details.company_account = false;
+                    payment_details.person = person;
+                    payment_details.company_account = false;
 
 
-                payment_details.street = help.street;
-                payment_details.street_number = help.street_number;
-                payment_details.city = help.city;
-                payment_details.zip_code = help.zip_code;
-                payment_details.country = help.country;
+                    payment_details.street = help.street;
+                    payment_details.street_number = help.street_number;
+                    payment_details.city = help.city;
+                    payment_details.zip_code = help.zip_code;
+                    payment_details.country = help.country;
+                    payment_details.product = product;
 
-                payment_details.product = product;
-                product.payment_details = payment_details;
+                    if(tariff.company_details_required){
 
-                // V oprávnění proběhne kontrola
-                if(!product.create_permission()) return GlobalResult.forbidden_Permission();
-                product.save();
+                        if(help.registration_no == null)            return GlobalResult.result_BadRequest("company_registration_no is required with this tariff");
+                        if(help.company_name == null)               return GlobalResult.result_BadRequest("company_name is required with this tariff");
 
-                return GlobalResult.created( Json.toJson(product));
-            }
+                        if(help.company_authorized_email == null)   return GlobalResult.result_BadRequest("company_authorized_email is required with this tariff");
+                        if(help.company_authorized_phone == null)   return GlobalResult.result_BadRequest("company_authorized_phone is required with this tariff");
+                        if(help.company_web == null)                return GlobalResult.result_BadRequest("company_web is required with this tariff");
+                        if(help.company_invoice_email == null)      return GlobalResult.result_BadRequest("company_invoice_email is required with this tariff");
 
+                        if(help.vat_number != null) {
+                            if (!UtilTools.controll_vat_number(help.vat_number))return GlobalResult.badRequest("Prefix code in VatNumber is not valid");
+                            payment_details.company_vat_number = help.vat_number;
+                        }
 
-            if(help.tariff_type.equals( Product_type.free.name() )){
-                product.type =  Product_type.free;
-                product.product_individual_name = help.product_individual_name;
-                product.active = true;  // Produkt jelikož je free je aktivní - Alpha nebo Trial dojedou kvuli omezení času
-                product.mode = Payment_mode.free;
+                        payment_details.company_registration_no = help.registration_no;
+                        payment_details.company_name             = help.company_name;
+                        payment_details.company_authorized_email = help.company_authorized_email;
+                        payment_details.company_authorized_phone = help.company_authorized_phone;
+                        payment_details.company_web              = help.company_web;
+                        payment_details.company_invoice_email    = help.company_invoice_email;
+                    }
 
-
-                product.paid_until_the_day = new GregorianCalendar(2025, 12, 30).getTime();
-
-                Payment_Details payment_details = new Payment_Details();
-                payment_details.person = SecurityController.getPerson();
-                payment_details.company_account = false;
-                payment_details.street = help.street;
-                payment_details.street_number = help.street_number;
-                payment_details.city = help.city;
-                payment_details.zip_code = help.zip_code;
-                payment_details.country = help.country;
-
-                payment_details.product = product;
-                product.payment_details = payment_details;
-
-                // V oprávnění proběhne kontrola
-                if(!product.create_permission()) return GlobalResult.forbidden_Permission();
-                product.save();
-
-                return GlobalResult.created( Json.toJson(product));
-            }
+                    product.payment_details = payment_details;
 
 
-            if(help.tariff_type.equals( Product_type.business.name() )){
-                product.active = true; // Produkt se aktivuje okamžitě ale nenastaví se tam jeho čas do kdy je funkční
-                product.product_individual_name = help.product_individual_name;
 
                 // payment_mode
-                if(help.payment_mode == null) return GlobalResult.result_BadRequest("payment_mode is required with this tariff");
+                if(tariff.required_payment_method) {
 
-                if(help.payment_mode.equals( Payment_mode.monthly.name()))           product.mode = Payment_mode.monthly;
-                else if(help.payment_mode.equals( Payment_mode.annual.name()))       product.mode = Payment_mode.annual;
-                else if(help.payment_mode.equals( Payment_mode.per_credit.name()))   product.mode = Payment_mode.per_credit;
-                else { return GlobalResult.result_BadRequest("payment_mode is invalid. Use only (monthly, annual, per_credit)");}
+                    if(help.payment_mode == null) return GlobalResult.result_BadRequest("Payment_mode is required!");
 
+                         if(help.payment_mode.equals( Payment_mode.monthly.name()))      product.mode = Payment_mode.monthly;
+                    else if(help.payment_mode.equals( Payment_mode.per_credit.name()))   product.mode = Payment_mode.per_credit;
+                    else { return GlobalResult.result_BadRequest("payment_mode is invalid. Use only (monthly, annual, per_credit)");}
 
-                // payment_method
-                if(help.payment_method == null) return GlobalResult.result_BadRequest("payment_method is required with this tariff");
-
-                if(help.payment_method.equals( Payment_method.bank.name()))                product.method = Payment_method.bank;
-                else if(help.payment_method.equals( Payment_method.credit_card.name()))    product.method = Payment_method.credit_card;
-                else { return GlobalResult.result_BadRequest("payment_mode is invalid. Use only (bank, credit_card)");}
-
-
-                product.type  =  Product_type.business;
-
-                Payment_Details payment_details = new Payment_Details();
-                payment_details.person = SecurityController.getPerson();
-                payment_details.company_account = true;
-
-                payment_details.street        = help.street;
-                payment_details.street_number = help.street_number;
-                payment_details.city          = help.city;
-                payment_details.zip_code      = help.zip_code;
-                payment_details.country       = help.country;
-
-                if(help.registration_no == null)            return GlobalResult.result_BadRequest("company_registration_no is required with this tariff");
-
-                if(help.company_name == null)               return GlobalResult.result_BadRequest("company_name is required with this tariff");
-                if(help.company_authorized_email == null)   return GlobalResult.result_BadRequest("company_authorized_email is required with this tariff");
-                if(help.company_authorized_phone == null)   return GlobalResult.result_BadRequest("company_authorized_phone is required with this tariff");
-                if(help.company_web == null)                return GlobalResult.result_BadRequest("company_web is required with this tariff");
-                if(help.company_invoice_email == null)      return GlobalResult.result_BadRequest("company_invoice_email is required with this tariff");
-
-                if(help.vat_number != null) {
-                    if (!UtilTools.controll_vat_number(help.vat_number))return GlobalResult.badRequest("Prefix code in VatNumber is not valid");
-                     payment_details.company_vat_number = help.vat_number;
                 }
 
 
-                payment_details.company_registration_no = help.registration_no;
-                payment_details.company_name             = help.company_name;
-                payment_details.company_authorized_email = help.company_authorized_email;
-                payment_details.company_authorized_phone = help.company_authorized_phone;
-                payment_details.company_web              = help.company_web;
-                payment_details.company_invoice_email    = help.company_invoice_email;
+                if(tariff.required_payment_mode) {
 
-                product.payment_details = payment_details;
+                    if(help.payment_method == null) return GlobalResult.result_BadRequest("payment_method is required with this tariff");
+
+
+                         if(help.payment_method.equals( Payment_method.bank_transfer.name()))  product.method = Payment_method.bank_transfer;
+                    else if(help.payment_method.equals( Payment_method.credit_card.name()))    product.method = Payment_method.credit_card;
+                    else if(help.payment_method.equals( Payment_method.free.name()))           product.method = Payment_method.free;
+                    else { return GlobalResult.result_BadRequest("payment_mode is invalid. Use only (bank_transfer, credit_card, free)");}
+
+                }
+
+
+
+                if(!tariff.required_paid_that) {
+                    product.save();
+                    return GlobalResult.result_ok(Json.toJson(product));
+                }
+
 
                 Invoice invoice = new Invoice();
                 invoice.date_of_create = new Date();
@@ -391,10 +365,10 @@ public class Finance_Controller extends Controller {
 
 
                 Invoice_item invoice_item_1 = new Invoice_item();
-                    invoice_item_1.name = product.type.name() + " Mode(" +  product.mode.name() + ")";
-                    invoice_item_1.unit_price = product.get_price_general_fee();
-                    invoice_item_1.quantity = (long) 1;
-                    invoice_item_1.unit_name = "Service";
+                invoice_item_1.name = product.general_tariff.tariff_name + " in Mode(" + product.mode.name() + ")";
+                invoice_item_1.unit_price = product.get_price_general_fee();
+                invoice_item_1.quantity = (long) 1;
+                invoice_item_1.unit_name = "Service";
 
                 invoice.invoice_items.add(invoice_item_1);
                 invoice.method = product.method;
@@ -408,6 +382,8 @@ public class Finance_Controller extends Controller {
                 Fakturoid_Controller.create_proforma(product, invoice);
 
                 JsonNode result = GoPay_Controller.provide_payment("First Payment", product, invoice);
+
+                System.out.println(result.toString());
 
                 if(result.has("id")){
 
@@ -435,10 +411,12 @@ public class Finance_Controller extends Controller {
                 swager_goPay_url.gw_url = result.get("gw_url").asText();
 
                 return GlobalResult.result_ok(Json.toJson(swager_goPay_url));
-            }
 
-            // Vrácení objektu
-            return GlobalResult.result_BadRequest("Tariff_name {" + help.tariff_type  + "} not found or not supported now! Use only " + Configuration.root().getStringList("Byzance.tariff.tariffs").toString() );
+
+
+
+
+
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());

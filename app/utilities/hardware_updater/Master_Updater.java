@@ -7,6 +7,7 @@ import models.compiler.FileRecord;
 import models.project.b_program.Homer_Instance;
 import models.project.c_program.actualization.Actualization_procedure;
 import models.project.c_program.actualization.C_Program_Update_Plan;
+import play.libs.Json;
 import utilities.enums.Firmware_type;
 import utilities.hardware_updater.States.C_ProgramUpdater_State;
 import utilities.webSocket.WS_BlockoServer;
@@ -41,7 +42,7 @@ public class Master_Updater{
 
         logger.debug("Master Updater - new incoming procedure");
 
-        procedures.add(procedure);
+        procedures.add(procedure.id);
 
         if(comprimator_thread.getState() == Thread.State.TIMED_WAITING) {
             logger.debug("Thread is sleeping - wait for interrupt!");
@@ -51,7 +52,7 @@ public class Master_Updater{
 
 // ** Comprimator Thread -----------------------------------------------------------------------------------------------
 
-   public static List<Actualization_procedure> procedures = new ArrayList<>();
+   public static List<String> procedures = new ArrayList<>();
 
     static Thread comprimator_thread = new Thread() {
 
@@ -67,9 +68,9 @@ public class Master_Updater{
                     if(!procedures.isEmpty()) {
 
                         logger.debug("Master updater Thread is running. Tasks to solve: " + procedures.size() );
-                        Actualization_procedure procedure =  procedures.get(0);
-                        new Master_Updater().actualization_update_procedure( procedure );
-                        procedures.remove(procedure);
+
+                        new Master_Updater().actualization_update_procedure( procedures.get(0) );
+                        procedures.remove( procedures.get(0) );
 
                     }
 
@@ -118,29 +119,34 @@ public class Master_Updater{
     }
 
 
-    public void actualization_update_procedure(Actualization_procedure procedure){
+    public void actualization_update_procedure(String procedure_id){
 
 
 
         Map<String, String> files_codes = new HashMap<>(); // < c_program_version_id, code of program >
         ActualizationStructure structure = new ActualizationStructure();
 
+        List<C_Program_Update_Plan> plans = C_Program_Update_Plan.find.where().eq("actualization_procedure.id", procedure_id).findList();
 
-        logger.debug("Master Updater: actualization_update_procedure -> " + ( procedure.id == null ? "virtual procedure " : ("real procedure ID: " + procedure.id) ) );
-
-           for (C_Program_Update_Plan plan : procedure.updates) {
+           for (C_Program_Update_Plan plan : plans) {
                try {
 
+                   System.err.println("Json: " + Json.toJson(plan));
+
+                   logger.debug("Zkoumaná plan id: " + plan.id);
+
+
                    Board board  = plan.board;
+
+                   logger.debug("Zkoumaná Boar id: "+ board.id);
 
                    // Najdu instanci - pod kterou deska běží
                    Homer_Instance homer_instance = Homer_Instance.find.where()
                            .disjunction()
-                           .add(Expr.eq("version_object.b_program_hw_groups.main_board_pair.board.id", board.id))
-                           .add(Expr.eq("version_object.b_program_hw_groups.device_board_pairs.board.id", board.id))
-                           .add(Expr.eq("private_instance_board.id", board.id))
+                            .add(Expr.eq("version_object.b_program_hw_groups.main_board_pair.board.id", board.id))
+                            .add(Expr.eq("version_object.b_program_hw_groups.device_board_pairs.board.id", board.id))
+                            .add(Expr.eq("private_instance_board.id", board.id))
                    .findUnique();
-
 
                    if (homer_instance == null) {
                        logger.error("Device has not own instance!");
@@ -149,10 +155,12 @@ public class Master_Updater{
                        continue;
                    }
 
+                   logger.debug("Homer_instance id: "+ homer_instance.id);
+
 
                    logger.debug("Hardware (board) is running under cloud blocko program");
-                   logger.debug("Blocko Instance: ", homer_instance.blocko_instance_name);
-                   logger.debug("Server: ", homer_instance.cloud_homer_server.server_name) ;
+                   logger.debug("Blocko Instance: "+ homer_instance.blocko_instance_name);
+                   logger.debug("Server: "+ homer_instance.cloud_homer_server.server_name) ;
 
 
                    if(! WebSocketController.blocko_servers.containsKey( homer_instance.cloud_homer_server.server_name )){
@@ -225,9 +233,11 @@ public class Master_Updater{
                       program.firmware_type  = plan.firmware_type;
                       program.file_record = file_record;
 
-                      structure.instances.get(homer_instance.id).programs.get(program_identificator).boards.add(plan.board);
+                      structure.instances.get(homer_instance.id).programs.put(program_identificator, program);
 
                   }
+
+                   structure.instances.get(homer_instance.id).programs.get(program_identificator).boards.add(board);
 
                    plan.state = C_ProgramUpdater_State.in_progress;
                    plan.update();

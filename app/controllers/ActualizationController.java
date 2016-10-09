@@ -170,7 +170,6 @@ public class ActualizationController extends Controller {
             // Sem sesbírám aktualizační procedury, kterých se týkají změny v old_plans
             Map<String, Actualization_procedure> actualization_procedures = new HashMap<>();
 
-
             for (Board board : boards) {
 
                 logger.debug("Checking boar:" + board.id + " for actualization");
@@ -181,9 +180,9 @@ public class ActualizationController extends Controller {
                     List<C_Program_Update_Plan> old_plans = C_Program_Update_Plan.find.where()
                             .eq("board.id", board.id).where()
                                 .disjunction()
-                                    .add(Expr.eq("state",C_ProgramUpdater_State.waiting_for_device     ))
-                                    .add(Expr.eq("state",C_ProgramUpdater_State.instance_inaccessible))
-                                    .add(Expr.eq("state",C_ProgramUpdater_State.homer_server_is_offline))
+                                    .add(Expr.eq("state", C_ProgramUpdater_State.waiting_for_device     ))
+                                    .add(Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible  ))
+                                    .add(Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline))
                                     .add(Expr.isNull("state"))
                             .findList();
 

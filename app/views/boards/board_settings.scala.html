@@ -112,7 +112,7 @@
                   </td>
 
                   <td>
-                  @if(typeOfBoard.default_program == null){
+                  @if(typeOfBoard.default_program == null || typeOfBoard.default_program.default_main_version == null){
                     <p class="lead text-red">(MAIN FIRMWARE NOT SET!!!)</p>
                   }else{
                     <p class="lead text-green">(FIRMWARE set)</p>
@@ -238,7 +238,7 @@
 
 <section class="content">
   <div id="editProducerModal" style="display: none;" class="modal">
-    <div style="margin-top: 15%;" class="modal-dialog">
+    <div class="modal-dialog">
       <div class="modal-content">
 
         <div class="modal-header">
@@ -271,14 +271,14 @@
         <div class="box-body">
           <label style="font-size: 13pt;">New Producer</label>
           <form id="newProducer")>
-            <div style="width: 16%; display: inline-block"><label>Name</label>       <input type="text" name="name" ></div>
-            <div style="width: 16%; display: inline-block;"><label>Description</label><input type="text" name="description" ></div>
+            <div style="display: inline-block"><label>Name</label>       <input type="text" name="name" ></div>
+            <div style="display: inline-block;"><label>Description</label><input type="text" name="description" ></div>
 
             <button style="width: 16%; display: inline-block;" class="btn btn-block btn-success" type="button" onclick="newProducer()">New producer</button>
           </form>
         </div>
         <div class="box-body">
-          <label style="font-size: 13pt;">All Producer</label>
+          <label >All Producer</label>
           <table id="allProducers" class="table table-bordered">
             <tr>
               <th>ID</th>

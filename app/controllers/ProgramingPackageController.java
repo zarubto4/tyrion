@@ -2037,8 +2037,6 @@ public class ProgramingPackageController extends Controller {
 
 
             // Seznam povolených
-
-
             if(!homer_instance.is_online()) return GlobalResult.result_BadRequest("Instance is offline");
 
             // Updajtuju sice kod ? Ale nikoliv HW?

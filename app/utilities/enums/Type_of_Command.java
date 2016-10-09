@@ -6,6 +6,7 @@ public enum Type_of_command {
     INFO_BOOTLOADER("INFO_BOOTLOADER"),
     INFO_DATETIME("INFO_DATETIME"),
     INFO_DEVICE_COUNTER("INFO_DEVICE_COUNTER"),
+    INFO_INSTANCE_SUMMARY_INFO("INFO_INSTANCE_SUMMARY_INFO"),
     INFO_AUTO_BACKUP("INFO_AUTO_BACKUP"),
     INFO_STATE("INFO_STATE"),
 
@@ -33,7 +34,7 @@ public enum Type_of_command {
     COMMAND_PING_DEVICE("COMMAND_PING_DEVICE"),
 
     COMMAND_PING_INSTANCE("COMMAND_PING_INSTANCE"),
-    COMMAND_DISCONECT_INSTANCE("COMMAND_DISCONECT_INSTANCE");
+    COMMAND_DISCONNECT_INSTANCE("COMMAND_DISCONNECT_INSTANCE");
 
     private String command;
 
@@ -44,12 +45,14 @@ public enum Type_of_command {
 
     public static Type_of_command getTypeCommand(String value){
 
-        if(value.equalsIgnoreCase(INFO_FIRMWARE.toString()         ))   return Type_of_command.INFO_FIRMWARE;
+             if(value.equalsIgnoreCase(INFO_FIRMWARE.toString()         ))   return Type_of_command.INFO_FIRMWARE;
         else if(value.equalsIgnoreCase(INFO_BOOTLOADER.toString()       ))   return Type_of_command.INFO_BOOTLOADER;
         else if(value.equalsIgnoreCase(INFO_DATETIME.toString()         ))   return Type_of_command.INFO_DATETIME;
         else if(value.equalsIgnoreCase(INFO_DEVICE_COUNTER.toString()   ))   return Type_of_command.INFO_DEVICE_COUNTER;
         else if(value.equalsIgnoreCase(INFO_AUTO_BACKUP.toString()      ))   return Type_of_command.INFO_AUTO_BACKUP;
         else if(value.equalsIgnoreCase(INFO_STATE.toString()            ))   return Type_of_command.INFO_STATE;
+        else if(value.equalsIgnoreCase(INFO_INSTANCE_SUMMARY_INFO.toString()  ))   return Type_of_command.INFO_INSTANCE_SUMMARY_INFO;
+
 
         // Device
         else if(value.equalsIgnoreCase(COMMAND_ADD_DEVICE.toString()            ))   return Type_of_command.COMMAND_ADD_DEVICE;

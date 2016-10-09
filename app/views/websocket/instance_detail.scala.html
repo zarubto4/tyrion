@@ -85,7 +85,7 @@
                                                     <a  onclick="updateBootLoader('@x.yodaId')" class="btn btn-primary btn-sm" ><b>Update Firmware</b></a>
                                                 }else {
                                                     <p class="lead text-green">(Actual)</p>
-                                                    <a  onclick="executeCommand( '','')" class="btn btn-success btn-sm disabled" ><b> Bootloader Up To date </b></a>
+                                                    <a class="btn btn-success btn-sm disabled" ><b> Bootloader Up To date </b></a>
                                                 }
                                             }else{
                                                 <a  onclick="executeCommand( '' ,'')" class="btn btn-danger btn-sm disabled" ><b>Missing bootloader</b></a>
@@ -269,10 +269,10 @@
                     <table class="table table-bordered">
 
                         <tr>
-                            <th>Common Commands </th>
-                            <th>Yoda Commands   </th>
-                            <th>----------------</th>
-                            <th>Special Commands</th>
+                            <th> Common Commands  </th>
+                            <th> Yoda Commands    </th>
+                            <th> Instance Commands</th>
+                            <th>Special Commands  </th>
                         </tr>
 
 
@@ -284,7 +284,7 @@
                                  <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="executeCommand(  this.value ,'@Type_of_command.INFO_DEVICE_COUNTER.get_command')"> Get Device Counter Info </button>
                              </td>
                              <td>
-
+                                 <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="executeCommand(  this.value ,'@Type_of_command.INFO_INSTANCE_SUMMARY_INFO.get_command')"> Complete cummary information </button>
                              </td>
                              <td>
                                  <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="executeCommand(  this.value,'@Type_of_command.COMMAND_PING_DEVICE.get_command')"> Ping Device</button>
@@ -326,7 +326,7 @@
                         <tr>
                             <td><button  type="button" class="commandButton btn btn-primary   btn-sm"  onclick="executeCommand( this.value ,'@Type_of_command.INFO_AUTO_BACKUP.get_command')"> Get BackUp info </button></td>
                             <td></td>
-                            <td></td>
+                            <td> </td>
                             <td></td>
                         </tr>
 

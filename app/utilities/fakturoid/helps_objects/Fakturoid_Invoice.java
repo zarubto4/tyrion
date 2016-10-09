@@ -1,5 +1,6 @@
 package utilities.fakturoid.helps_objects;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import models.project.global.financial.Invoice_item;
 import utilities.enums.Currency;
 
@@ -7,7 +8,7 @@ import java.util.List;
 
 public class Fakturoid_Invoice {
 
-    public Long custom_id;
+    @JsonIgnore  public Long custom_id;
     public String client_name;
     public String subject_id;
     public Currency currency;

@@ -15,6 +15,8 @@ import models.project.b_program.servers.Cloud_Homer_Server;
 import models.project.c_program.C_Program;
 import models.project.global.Product;
 import models.project.global.Project;
+import models.project.global.financial.GeneralTariff;
+import models.project.global.financial.GeneralTariffLabel;
 import models.project.global.financial.Payment_Details;
 import play.api.Play;
 import play.libs.F;
@@ -25,7 +27,6 @@ import utilities.Server;
 import utilities.UtilTools;
 import utilities.enums.Approval_state;
 import utilities.enums.Payment_mode;
-import utilities.enums.Product_type;
 
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -41,6 +42,7 @@ public class Basic_Data {
         }
 
         set_default_object_PRODUCER_AND_BOARDS();
+        set_default_object_GENERAL_TARIFF();
         set_default_object_EXTERNAL_SERVERS();
         set_default_object_BLOCKO();
         set_default_object_BOARD();
@@ -146,6 +148,270 @@ public class Basic_Data {
         compilation_server_2.destination_address = Server.tyrion_webSocketAddress + "/websocket/compilation_server/" + compilation_server_2.server_name;
         compilation_server_2.set_hash_certificate();
         compilation_server_2.save();
+
+    }
+
+    public static void set_default_object_GENERAL_TARIFF(){
+
+        // Alfa
+
+        GeneralTariff tariff_1 = new GeneralTariff();
+        tariff_1.tariff_name = "Alfa account";
+        tariff_1.tariff_description = "Temporary account only for next 3 months";
+        tariff_1.identificator = "alpha";
+
+        tariff_1.color            = "blue";
+        tariff_1.number_of_free_months = 0;
+
+        tariff_1.required_paid_that = false;
+
+        tariff_1.company_details_required  = false;
+        tariff_1.required_payment_mode     = true;
+        tariff_1.required_payment_method   = false;
+
+        tariff_1.credit_card_support      = false;
+        tariff_1.bank_transfer_support    = false;
+
+        tariff_1.mode_annually    = false;
+        tariff_1.mode_credit      = false;
+        tariff_1.free             = true;
+
+        tariff_1.usd = 0.0;
+        tariff_1.eur = 0.0;
+        tariff_1.czk = 0.0;
+
+
+        GeneralTariffLabel label_1 = new GeneralTariffLabel();
+        label_1.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
+        label_1.icon = "fa-bullhorn";
+        label_1.label = "Super koment bla bla bla";
+        tariff_1.labels.add(label_1);
+
+        GeneralTariffLabel label_2 = new GeneralTariffLabel();
+        label_2.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
+        label_2.icon = "fa-bullhorn";
+        label_2.label = "Super koment 2";
+        tariff_1.labels.add(label_2);
+
+
+        GeneralTariffLabel label_3 = new GeneralTariffLabel();
+        label_3.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
+        label_3.icon = "fa-bullhorn";
+        label_3.label = "Super koment 3 ";
+        tariff_1.labels.add(label_3);
+
+
+        GeneralTariffLabel label_4 = new GeneralTariffLabel();
+        label_4.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
+        label_4.icon = "fa-bullhorn";
+        label_4.label = "Super koment 4";
+        tariff_1.labels.add(label_4);
+
+        tariff_1.save();
+
+
+        // Pro geeky
+
+        GeneralTariff geek_tariff = new GeneralTariff();
+        geek_tariff.tariff_name = "For true Geeks";
+        geek_tariff.tariff_description = "Temporary account only for next 3 months";
+        geek_tariff.identificator = "geek";
+
+        geek_tariff.color            = "green";
+
+        geek_tariff.required_paid_that = false;
+        geek_tariff.number_of_free_months = 1;
+
+        geek_tariff.company_details_required  = false;
+        geek_tariff.required_payment_mode     = true;
+        geek_tariff.required_payment_method   = false;
+
+        geek_tariff.credit_card_support      = true;
+        geek_tariff.bank_transfer_support    = true;
+
+        geek_tariff.mode_annually    = false;
+        geek_tariff.mode_credit      = false;
+        geek_tariff.free             = true;
+
+        geek_tariff.usd = 4.99;
+        geek_tariff.eur = 4.99;
+        geek_tariff.czk = 129.99;
+
+
+        GeneralTariffLabel label_5 = new GeneralTariffLabel();
+        label_5.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
+        label_5.icon = "fa-bullhorn";
+        label_5.label = "Super koment bla bla bla";
+        geek_tariff.labels.add(label_5);
+
+        GeneralTariffLabel label_6 = new GeneralTariffLabel();
+        label_6.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
+        label_6.icon = "fa-bullhorn";
+        label_6.label = "Super koment 2ln ljhljk ljk hllkjhlkj";
+        geek_tariff.labels.add(label_6);
+
+
+        GeneralTariffLabel label_7 = new GeneralTariffLabel();
+        label_7.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
+        label_7.icon = "fa-bullhorn";
+        label_7.label = "Super koment 3 ";
+        geek_tariff.labels.add(label_7);
+
+
+        GeneralTariffLabel label_8 = new GeneralTariffLabel();
+        label_8.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
+        label_8.icon = "fa-bullhorn";
+        label_8.label = "Super koment 4";
+        geek_tariff.labels.add(label_8);
+
+        geek_tariff.save();
+
+
+        // Placená
+
+
+        GeneralTariff business_tariff = new GeneralTariff();
+        business_tariff.tariff_name = "For true Business";
+        business_tariff.tariff_description = "Best for true business";
+        business_tariff.identificator = "business_1";
+
+        business_tariff.color            = "yellow";
+
+        business_tariff.required_paid_that = false;
+        business_tariff.number_of_free_months = 1;
+
+        business_tariff.company_details_required  = true;
+        business_tariff.required_payment_mode     = true;
+        business_tariff.required_payment_method   = true;
+
+        business_tariff.credit_card_support      = true;
+        business_tariff.bank_transfer_support    = true;
+
+        business_tariff.mode_annually    = true;
+        business_tariff.mode_credit      = true;
+        business_tariff.free             = false;
+
+        business_tariff.usd = 39.99;
+        business_tariff.eur = 35.99;
+        business_tariff.czk = 3399.99;
+
+
+        GeneralTariffLabel label_9 = new GeneralTariffLabel();
+        label_9.description = "První měsíc zdarma";
+        label_9.icon = "fa-bullhorn";
+        label_9.label = "Super koment bla bla bla";
+        business_tariff.labels.add(label_9);
+
+        GeneralTariffLabel label_10 = new GeneralTariffLabel();
+        label_10.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
+        label_10.icon = "fa-bullhorn";
+        label_10.label = "Super koment 2ln ljhljk ljk hllkjhlkj";
+        business_tariff.labels.add(label_10);
+
+
+        GeneralTariffLabel label_11 = new GeneralTariffLabel();
+        label_11.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
+        label_11.icon = "fa-bullhorn";
+        label_11.label = "Super koment 3 ";
+        business_tariff.labels.add(label_11);
+
+        GeneralTariffLabel label_12 = new GeneralTariffLabel();
+        label_12.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
+        label_12.icon = "fa-bullhorn";
+        label_12.label = "Super koment 4";
+        business_tariff.labels.add(label_12);
+
+        GeneralTariffLabel label_13 = new GeneralTariffLabel();
+        label_13.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
+        label_13.icon = "fa-bullhorn";
+        label_13.label = "Super koment 4";
+        business_tariff.labels.add(label_13);
+
+        GeneralTariffLabel label_14 = new GeneralTariffLabel();
+        label_14.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
+        label_14.icon = "fa-bullhorn";
+        label_14.label = "Super koment 4";
+        business_tariff.labels.add(label_14);
+
+        GeneralTariffLabel label_15 = new GeneralTariffLabel();
+        label_15.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
+        label_15.icon = "fa-bullhorn";
+        label_15.label = "Super koment 4";
+        business_tariff.labels.add(label_15);
+
+        business_tariff.save();
+
+        GeneralTariff business_tariff_2 = new GeneralTariff();
+        business_tariff_2.tariff_name = "Enterprise";
+        business_tariff_2.tariff_description = "You know what you need!";
+        business_tariff_2.identificator = "business_2";
+
+        business_tariff_2.color            = "red";
+
+        business_tariff_2.required_paid_that = true;
+        business_tariff_2.number_of_free_months = 0;
+
+        business_tariff_2.company_details_required  = true;
+        business_tariff_2.required_payment_mode     = true;
+        business_tariff_2.required_payment_method   = true;
+
+        business_tariff_2.credit_card_support      = true;
+        business_tariff_2.bank_transfer_support    = true;
+
+        business_tariff_2.mode_annually    = true;
+        business_tariff_2.mode_credit      = true;
+        business_tariff_2.free             = false;
+
+        business_tariff_2.usd = 1399.99;
+        business_tariff_2.eur = 1199.99;
+        business_tariff_2.czk = 29999.99;
+
+
+        GeneralTariffLabel label_16 = new GeneralTariffLabel();
+        label_16.description = "Už prvního měsíce je to placený";
+        label_16.icon = "fa-bullhorn";
+        label_16.label = "Super koment bla bla bla";
+        business_tariff_2.labels.add(label_16);
+
+        GeneralTariffLabel label_17 = new GeneralTariffLabel();
+        label_17.description = "Tento tarif je na odzkoušení kreditky";
+        label_17.icon = "fa-bullhorn";
+        label_17.label = "Super koment 2ln ljhljk ljk hllkjhlkj";
+        business_tariff_2.labels.add(label_17);
+
+
+        GeneralTariffLabel label_18 = new GeneralTariffLabel();
+        label_18.description = "kreditkaaa!!!";
+        label_18.icon = "fa-bullhorn";
+        label_18.label = "Super koment 3 ";
+        business_tariff_2.labels.add(label_18);
+
+        GeneralTariffLabel label_19 = new GeneralTariffLabel();
+        label_19.description = "Kreditkaaaaa";
+        label_19.icon = "fa-bullhorn";
+        label_19.label = "Super koment 4";
+        business_tariff.labels.add(label_19);
+
+        GeneralTariffLabel label_20 = new GeneralTariffLabel();
+        label_20.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
+        label_20.icon = "fa-bullhorn";
+        label_20.label = "Super koment 4";
+        business_tariff_2.labels.add(label_20);
+
+        GeneralTariffLabel label_21 = new GeneralTariffLabel();
+        label_21.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
+        label_21.icon = "fa-bullhorn";
+        label_21.label = "Super koment 4";
+        business_tariff_2.labels.add(label_21);
+
+        GeneralTariffLabel label_22 = new GeneralTariffLabel();
+        label_22.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
+        label_22.icon = "fa-bullhorn";
+        label_22.label = "Super koment 4";
+        business_tariff_2.labels.add(label_22);
+
+        business_tariff_2.save();
+
 
     }
 
@@ -670,7 +936,7 @@ public class Basic_Data {
 
             // Vytvoří tarif
             Product product = new Product();
-            product.type = Product_type.alpha;
+            product.general_tariff = GeneralTariff.find.where().eq("identificator","alfa").findUnique();
             product.product_individual_name = "Pepkova velkolepá Alfa";
             product.active = true;  // Produkt jelikož je Aplha je aktivní - Alpha nebo Trial dojedou kvuli omezení času
             product.mode = Payment_mode.free;

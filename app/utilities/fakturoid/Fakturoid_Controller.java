@@ -57,7 +57,7 @@ public class Fakturoid_Controller extends Controller {
         fakturoid_invoice.custom_id         = product.id;
         fakturoid_invoice.client_name       = product.payment_details.company_account ? product.payment_details.company_name : product.payment_details.person.full_name;
         fakturoid_invoice.currency          = product.currency;
-        fakturoid_invoice.payment_method    = Payment_method.bank.name();
+        fakturoid_invoice.payment_method    = Payment_method.bank_transfer.name();
         fakturoid_invoice.lines             = invoice.invoice_items;
         fakturoid_invoice.proforma          = true;
         fakturoid_invoice.partial_proforma  = true;
@@ -95,7 +95,7 @@ public class Fakturoid_Controller extends Controller {
         fakturoid_invoice.custom_id         = product.id;
         fakturoid_invoice.client_name       = product.payment_details.company_account ? product.payment_details.company_name : product.payment_details.person.full_name;
         fakturoid_invoice.currency          = product.currency;
-        fakturoid_invoice.payment_method    = Payment_method.bank.name();
+        fakturoid_invoice.payment_method    = Payment_method.bank_transfer.name();
         fakturoid_invoice.lines             = invoice.invoice_items;
         fakturoid_invoice.proforma          = false;
         fakturoid_invoice.partial_proforma  = false;
@@ -275,21 +275,39 @@ public class Fakturoid_Controller extends Controller {
 
             WSResponse response = responsePromise.get(5000);
 
+
+            logger.debug("Incoming status: " + response.getStatus());
+            logger.debug("Incoming message: " + Json.toJson(response.getBody()).toString());
+
+
             if( response.getStatus() == 201) {
                 JsonNode json = response.asJson();
                 logger.debug("Fakturoid controller: POST: Result: " + json.toString());
                 return json;
+
+            }else if( response.getStatus() == 401){
+                logger.error("Fakturoid!!!!!!!!!!!!!");
+                logger.error("Fakturoid Unauthorized");
+                logger.error("Fakturoid!!!!!!!!!!!!!");
+
+                throw new NullPointerException();
+
             }else if( response.getStatus() == 403){
                 logger.error("Fakturoid!!!!!!!!!!!!!");
                 logger.error("Fakturoid you have maximum of customers!!!");
                 logger.error("Fakturoid!!!!!!!!!!!!!");
 
+                throw new NullPointerException();
             }else if( response.getStatus() == 422 ){
 
                 logger.error("Fakturoid!!!!!!!!!!!!!");
                 logger.error("Customer s Id je již vytvořen!");
                 logger.error("Fakturoid!!!!!!!!!!!!!");
+
+                throw new NullPointerException();
             }
+
+
 
             throw new NullPointerException();
 

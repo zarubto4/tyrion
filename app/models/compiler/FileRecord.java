@@ -32,11 +32,11 @@ public class FileRecord extends Model {
     @ApiModelProperty(required = true)                          public String file_name;
                                                  @JsonIgnore    public String file_path;
 
-                                    @JsonIgnore @OneToOne()     public Person person;   // personal_picture
-                                    @JsonIgnore @OneToOne()     public BootLoader boot_loader;
-                                   @JsonIgnore @ManyToOne()     public Version_Object version_object;
-             @JsonIgnore @OneToMany(mappedBy="binary_file")     public List<C_Program_Update_Plan> c_program_update_plen  = new ArrayList<>();
-    @JsonIgnore @OneToOne(mappedBy="bin_compilation_file")      public C_Compilation c_compilations_binary_file;
+                                    @JsonIgnore @OneToOne(fetch = FetchType.LAZY)       public Person person;   // personal_picture
+                                    @JsonIgnore @OneToOne()                             public BootLoader boot_loader;
+                                   @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)       public Version_Object version_object;
+             @JsonIgnore @OneToMany(mappedBy="binary_file",fetch = FetchType.LAZY)      public List<C_Program_Update_Plan> c_program_update_plen  = new ArrayList<>();
+    @JsonIgnore @OneToOne(mappedBy="bin_compilation_file")                              public C_Compilation c_compilations_binary_file;
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
