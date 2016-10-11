@@ -520,6 +520,17 @@ public class Basic_Data {
         //**************************************************************************************************************
 
 
+        // Version scheme
+
+        BlockoBlockVersion scheme = new BlockoBlockVersion();
+            scheme.version_name = "version_scheme";
+            scheme.version_description = "This is a BlockoBlockVersion scheme. When BlockoBlock is made, its first version will look like this.";
+            scheme.approval_state = Approval_state.approved;
+            scheme.date_of_create = new Date();
+            scheme.design_json = "{ This is a design JSON scheme. }";
+            scheme.logic_json = "{ This is a logic JSON scheme. }";
+        scheme.save();
+
         // 1_1
         BlockoBlockVersion version_1_1_1 = new BlockoBlockVersion();
             version_1_1_1.blocko_block = blockoBlock_1_1;

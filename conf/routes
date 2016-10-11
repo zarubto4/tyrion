@@ -251,10 +251,13 @@ PUT            /project/blockoBlock/list/:page_number                           
 
 POST           /project/blockoBlock/version/:blocko_block_id                                @controllers.ProgramingPackageController.new_BlockoBlock_Version(blocko_block_id)
 PUT            /project/blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.edit_BlockoBlock_Version(blocko_block_version_id)
+PUT            /project/blockoBlock/version/make_public/:blocko_block_version_id            @controllers.ProgramingPackageController.make_BlockoBlock_Version_public(blocko_block_version_id)
 GET            /project/blockoBlock/version/all/:blocko_block_id                            @controllers.ProgramingPackageController.get_BlockoBlock_all_versions(blocko_block_id)
 GET            /project/blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.get_BlockoBlock_Version(blocko_block_version_id)
 DELETE         /project/blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.delete_BlockoBlock_Version(blocko_block_version_id)
 
+GET            /project/blockoBlock/scheme/version                                          @controllers.ProgramingPackageController.get_BlockoBlock_Version_scheme()
+PUT            /project/blockoBlock/scheme/version                                          @controllers.ProgramingPackageController.edit_BlockoBlock_Version_scheme()
 
 #TypeOfBlocko
 POST           /project/typeOfBlock                                                         @controllers.ProgramingPackageController.newTypeOfBlock()
