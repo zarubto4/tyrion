@@ -40,6 +40,10 @@ libraryDependencies ++= Seq(
 
   "com.github.nkzawa" % "socket.io-client" % "0.1.2",
 
+  "com.novocode" % "junit-interface" % "0.11",
+
+  "junit" % "junit" % "4.12" ,
+
   javaJdbc,
   filters,
   cache,
