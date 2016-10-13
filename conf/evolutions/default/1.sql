@@ -44,11 +44,9 @@ create table blocko_block (
   id                        varchar(255) not null,
   name                      varchar(255),
   general_description       TEXT,
-  approval_state            integer,
   author_id                 varchar(255),
   type_of_block_id          varchar(255),
   producer_id               varchar(255),
-  constraint ck_blocko_block_approval_state check (approval_state in (0,1,2,3)),
   constraint pk_blocko_block primary key (id))
 ;
 

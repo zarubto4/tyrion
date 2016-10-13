@@ -599,12 +599,12 @@ public class Basic_Data {
         version_2_1_1.save();
 
         BlockoBlockVersion version_2_1_2 = new BlockoBlockVersion();
-            version_2_1_1.blocko_block = blockoBlock_2_1;
-            version_2_1_1.date_of_create = new Date();
-            version_2_1_1.logic_json = "{}";
-            version_2_1_1.version_description = "Prvnsafd -a.kshm fn.,mbs gjknbm akdfsm,.cxy ndfam,nkvxclůavcx namxyklnvdfsam ,cvklůdfsmv.lyům ,klnvyůmc,.í update";
-            version_2_1_1.version_name = "1.0.2";
-            version_2_1_1.approval_state = Approval_state.approved;
+            version_2_1_2.blocko_block = blockoBlock_2_1;
+            version_2_1_2.date_of_create = new Date();
+            version_2_1_2.logic_json = "{}";
+            version_2_1_2.version_description = "Prvnsafd -a.kshm fn.,mbs gjknbm akdfsm,.cxy ndfam,nkvxclůavcx namxyklnvdfsam ,cvklůdfsmv.lyům ,klnvyůmc,.í update";
+            version_2_1_2.version_name = "1.0.2";
+            version_2_1_2.approval_state = Approval_state.approved;
         version_2_1_2.save();
 
         // 2_2
@@ -1180,6 +1180,7 @@ public class Basic_Data {
                 version_c_program_2.version_name = "Verze 0.0.1";
                 version_c_program_2.version_name = "Trala la tra lalala";
                 version_c_program_2.c_program = c_program_2;
+                version_c_program_2.approval_state = Approval_state.pending;
                 version_c_program_2.save();
 
             // Nahraje do Azure a připojí do verze soubor
