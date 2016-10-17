@@ -16,6 +16,14 @@
         </encoder>
     </appender>
 
+    <appender name="testLog" class="ch.qos.logback.core.FileAppender">
+        <file>${user.dir}/logs/test.log</file>
+        <append>true</append>
+        <encoder>
+            <pattern>%date{yyyy-MM-dd HH:mm:ss ZZZZ} [%-5level] %message%n</pattern>
+        </encoder>
+    </appender>
+
     <!--
       The logger name is typically the Java/Scala package name.
       This configures the log level to log at for a package and its children packages.
@@ -31,8 +39,14 @@
     <logger name="application" level="DEBUG" />
     <logger name="com.jolbox.bonecp" level="INFO" additivity = "false"/>
 
+
     <logger name="Loggy" level="DEBUG" additivity = "false">
         <appender-ref ref="STDOUT" />
+        <appender-ref ref="allLog" />
+    </logger>
+
+    <logger name="junit.framework.TestCase" level="ERROR" additivity = "false">
+        <appender-ref ref="testLog" />
         <appender-ref ref="allLog" />
     </logger>
 
