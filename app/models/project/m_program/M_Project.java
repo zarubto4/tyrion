@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
 import models.compiler.Version_Object;
-import models.project.b_program.B_Program;
 import models.project.global.Project;
 
 import javax.persistence.*;
@@ -20,15 +19,16 @@ public class M_Project extends Model {
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true)      public String  id;
-    @ApiModelProperty(required = true)                                                              public String  program_name;
-    @Column(columnDefinition = "TEXT") @ApiModelProperty(required = false, value = "can be empty")  public String  program_description;
+    @ApiModelProperty(required = true)                                                              public String  name;
+    @Column(columnDefinition = "TEXT") @ApiModelProperty(required = false, value = "can be empty")  public String  description;
     @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp in millis", example = "14618543121234") public Date    date_of_create;
 
 
-    @JsonIgnore @ManyToOne                                      public Project project;
-    @JsonIgnore @OneToOne   @JoinColumn(name="b_program_id")    public B_Program b_program; // TODO asi časem předělat na MayToMany!
-    @JsonIgnore @OneToOne   @JoinColumn(name="vrs_obj_id")      public Version_Object b_program_version;
-                          @ApiModelProperty(required = true)    public boolean auto_incrementing;
+    @JsonIgnore @ManyToOne                                                                                         public Project project;
+    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "m_projects")  @JoinTable(name = "b_program_id") public List<Version_Object> b_program_version;
+
+
+    @ApiModelProperty(required = true)  public boolean auto_incrementing;
 
     @ApiModelProperty(required = true)
     @OneToMany(mappedBy="m_project", cascade = CascadeType.ALL) public List<M_Program> m_programs = new ArrayList<>();
@@ -38,9 +38,16 @@ public class M_Project extends Model {
 /* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/
 
 
-    @JsonProperty @Transient  @ApiModelProperty(required = true) public String project_id()                    {  return project.id; }
-    @JsonProperty @Transient  @ApiModelProperty(required = true, value = "can be empty") public String b_progam_connected_version_id() {  return b_program_version == null ? null : b_program_version.id;   }
-    @JsonProperty @Transient  @ApiModelProperty(required = true, value = "can be empty") public String b_program_id()                  {  return b_program         == null ? null : b_program.id; }
+
+    @JsonProperty @Transient  @ApiModelProperty(required = true)                         public List<String> virtual_input_output(){
+
+        // TODO doplnit seznam virtuálních inputoutů na jednotlivá zařízení
+        return null;
+    }
+
+    @JsonProperty @Transient  @ApiModelProperty(required = true)                         public String project_id()                          {  return project.id; }
+    @JsonProperty @Transient  @ApiModelProperty(required = true, value = "can be empty") public List<String> b_progam_connected_version_id() { List<String> l = new ArrayList<>();  for( Version_Object m    : b_program_version)   l.add(m.id); return l;}
+
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 

@@ -26,11 +26,6 @@ public class Swagger_M_Program_New {
     public String  program_name;
 
     @Constraints.Required
-    @ApiModelProperty(required = true, value = "Code in converted to String")
-    public String  m_code;
-
-
-    @Constraints.Required
     @ApiModelProperty(required = true, value = "If true - its possible turn on that on height")
     public boolean  height_lock;
 

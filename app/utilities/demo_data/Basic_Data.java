@@ -6,6 +6,7 @@ import models.blocko.BlockoBlock;
 import models.blocko.BlockoBlockVersion;
 import models.blocko.TypeOfBlock;
 import models.compiler.*;
+import models.grid.Screen_Size_Type;
 import models.person.FloatingPersonToken;
 import models.person.Person;
 import models.project.b_program.B_Pair;
@@ -18,6 +19,8 @@ import models.project.global.Project;
 import models.project.global.financial.GeneralTariff;
 import models.project.global.financial.GeneralTariffLabel;
 import models.project.global.financial.Payment_Details;
+import models.project.m_program.M_Program;
+import models.project.m_program.M_Project;
 import play.api.Play;
 import play.libs.F;
 import play.libs.Json;
@@ -26,6 +29,7 @@ import play.libs.ws.WSResponse;
 import utilities.Server;
 import utilities.UtilTools;
 import utilities.enums.Approval_state;
+import utilities.enums.Currency;
 import utilities.enums.Payment_mode;
 
 import java.util.Date;
@@ -46,6 +50,7 @@ public class Basic_Data {
         set_default_object_EXTERNAL_SERVERS();
         set_default_object_BLOCKO();
         set_default_object_BOARD();
+        set_default_object_TYPE_OF_SCREEN();
     }
 
     public static void set_default_object_PRODUCER_AND_BOARDS() {
@@ -909,7 +914,53 @@ public class Basic_Data {
 
     }
 
+    public static void set_default_object_TYPE_OF_SCREEN(){
 
+        Screen_Size_Type screen_size_type = new Screen_Size_Type();
+        screen_size_type.name = "iPhone6";
+        screen_size_type.landscape_height = 375;
+        screen_size_type.landscape_width = 667;
+        screen_size_type.landscape_square_height = 6;
+        screen_size_type.landscape_square_width = 11;
+        screen_size_type.landscape_max_screens = 10;
+        screen_size_type.landscape_min_screens = 1;
+
+        screen_size_type.portrait_height = 667;
+        screen_size_type.portrait_width = 375;
+        screen_size_type.portrait_square_height = 11;
+        screen_size_type.portrait_square_width = 6;
+        screen_size_type.portrait_max_screens = 10;
+        screen_size_type.portrait_min_screens = 1;
+
+        screen_size_type.height_lock  = true;
+        screen_size_type.width_lock   = true;
+        screen_size_type.touch_screen = true;
+
+        screen_size_type.save();
+
+        Screen_Size_Type screen_size_type_2 = new Screen_Size_Type();
+        screen_size_type_2.name = "Samsung Edge7 - Bang! Bang Bang!";
+        screen_size_type_2.landscape_height = 375;
+        screen_size_type_2.landscape_width = 667;
+        screen_size_type_2.landscape_square_height = 5;
+        screen_size_type_2.landscape_square_width = 14;
+        screen_size_type_2.landscape_max_screens = 5;
+        screen_size_type_2.landscape_min_screens = 1;
+
+        screen_size_type_2.portrait_height = 667;
+        screen_size_type_2.portrait_width = 375;
+        screen_size_type_2.portrait_square_height = 11;
+        screen_size_type_2.portrait_square_width = 6;
+        screen_size_type_2.portrait_max_screens = 10;
+        screen_size_type_2.portrait_min_screens = 1;
+
+        screen_size_type_2.height_lock  = true;
+        screen_size_type_2.width_lock   = true;
+        screen_size_type_2.touch_screen = true;
+
+        screen_size_type_2.save();
+
+    }
 
 
     public static void set_basic_demo_data(){
@@ -947,11 +998,12 @@ public class Basic_Data {
 
             // Vytvoří tarif
             Product product = new Product();
-            product.general_tariff = GeneralTariff.find.where().eq("identificator","alfa").findUnique();
+            product.general_tariff = GeneralTariff.find.where().eq("identificator","alpha").findUnique();
             product.product_individual_name = "Pepkova velkolepá Alfa";
             product.active = true;  // Produkt jelikož je Aplha je aktivní - Alpha nebo Trial dojedou kvuli omezení času
             product.mode = Payment_mode.free;
             product.paid_until_the_day = new GregorianCalendar(2016, 12, 30).getTime();
+            product.currency = Currency.CZK;
             Payment_Details payment_details = new Payment_Details();
             payment_details.person = person;
             payment_details.company_account = false;
@@ -1588,6 +1640,33 @@ public class Basic_Data {
             System.err.println("Nahrávám instnace na server");
             uploud_instances.start();
 
+
+            M_Project m_project = new M_Project();
+            m_project.project = project_1;
+            m_project.name = "Velkolepá kolekce terminálových přístupů";
+            m_project.description = "Tak tady si pepa dělá všechny svoje super cool apky!!! Je to fakt mazec!! a V připadě updatu je autoincrement true - což znamená že systém v případě updatu lidem na teminálech updatuje verzi";
+            m_project.auto_incrementing = true;
+            m_project.date_of_create = new Date();
+            m_project.save();
+
+            M_Program m_program_main_1 = new M_Program();
+            m_program_main_1.m_project = m_project;
+            m_program_main_1.date_of_create = new Date();
+            m_program_main_1.program_name = "Tohle je super mega program";
+            m_program_main_1.screen_size_type = Screen_Size_Type.find.where().eq("name", "iPhone6").findUnique();
+            m_program_main_1.height_lock = true;
+            m_program_main_1.width_lock = true;
+            m_program_main_1.save();
+
+
+            M_Program m_program_version_1 = new M_Program();
+            m_program_version_1.version_description = "PRvní verze se snad zdařila!!! Yahoooo!!!!";
+            m_program_version_1.version_name = "1.0.1";
+            m_program_version_1.date_of_create = new Date();
+            m_program_version_1.m_code = "toooooto je dlouuuuuhý m_code!!";
+            m_program_version_1.virtual_input_output = "toooooto je IO jako u blocka!!!";
+            m_program_version_1.parent_program = m_program_main_1;
+            m_program_version_1.save();
 
         }catch (Exception e){
             e.printStackTrace();

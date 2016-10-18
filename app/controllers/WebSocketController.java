@@ -13,12 +13,9 @@ import models.compiler.Version_Object;
 import models.notification.Notification;
 import models.person.Person;
 import models.project.b_program.B_Pair;
-import models.project.b_program.B_Program;
 import models.project.b_program.B_Program_Hw_Group;
 import models.project.b_program.Homer_Instance;
 import models.project.b_program.servers.Cloud_Homer_Server;
-import models.project.m_program.Grid_Terminal;
-import models.project.m_program.M_Project;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.Controller;
@@ -214,10 +211,10 @@ public class WebSocketController extends Controller {
     }
 
     @ApiOperation(value = "Terminal connection", tags = {"WebSocket"})
-    public  WebSocket<String>  mobile_connection(String m_project_id, String terminal_id) {
+    public  WebSocket<String>  mobile_connection(String m_program_id, String terminal_id) {
         try {
 
-            logger.debug("Terminal: Incoming connection on terminal: " + terminal_id + " on project " + m_project_id);
+       /*     logger.debug("Terminal: Incoming connection on terminal: " + terminal_id + " on m_program " + m_program_id);
 
             if (incomingConnections_terminals.containsKey(terminal_id)) {
                 logger.debug("Terminal: Incoming connection on terminal: " + terminal_id + " is already used");
@@ -228,27 +225,29 @@ public class WebSocketController extends Controller {
                 return WebSocket.reject(forbidden());
             }
 
-            M_Project m_project = M_Project.find.byId(m_project_id);
+            M_Program m_program = M_Program.find.byId(m_program_id);
 
-            if (m_project == null) {
-                logger.debug("Terminal: Incoming connection on terminal: " + terminal_id + " where "+ m_project_id +" is not registered in database");
+            Version_Object version_object = m_program.get_m_project().b_program_version.get(0);
+
+            if (m_program.get_m_project().b_program_version == null) {
+                logger.debug("Terminal: Incoming connection on terminal: " + terminal_id + " where "+ m_program_id +" is not registered in database");
                 return WebSocket.reject(forbidden());
             }
-            if (m_project.b_program_version == null) {
-                logger.debug("Terminal: Incoming connection on terminal: " + terminal_id + " where "+ m_project_id +" where M_Project is not connected with B_program");
+            if (m_program.versions == null) {
+                logger.debug("Terminal: Incoming connection on terminal: " + terminal_id + " where "+ m_program_id +" where M_Project is not connected with B_program");
                 return WebSocket.reject(forbidden());
             }
 
             //----------------------------------------------------------------------------------------------------------------------
 
-            WS_Grid_Terminal terminal = new WS_Grid_Terminal(terminal_id, m_project_id, incomingConnections_terminals);
+            WS_Grid_Terminal terminal = new WS_Grid_Terminal(terminal_id, m_program_id, incomingConnections_terminals);
             WebSocket<String> ws = terminal.connection();
 
             // Tohle je cloudové nasazení B programu
             //-----------------------------------------------------------------------------------------------------------
 
             // POKUD JE B_PROGRAM V CLOUDU ale shodná verze neexistuje ale je povoleno auto increment
-            if (m_project.b_program_version.homer_instance == null &&  m_project.auto_incrementing &&  B_Program.find.where().isNotNull("version_objects.b_program_cloud").findUnique() != null) {
+            if (version_object.homer_instance == null &&  m_program.get_m_project().auto_incrementing &&  B_Program.find.where().isNotNull("version_objects.b_program_cloud").findUnique() != null) {
                 logger.debug("Terminal: Program on Cloud win but system have to iterate to new version: ");
 
                 m_project.b_program_version = m_project.b_program.where_program_run();
@@ -378,12 +377,16 @@ public class WebSocketController extends Controller {
                  terminal_blocko_program_not_running_anywhere(terminal);
                  return ws;
 
+            */
+
+            return null;
 
         }catch (Exception e){
             logger.error("Mobile / terminal Web Socket connection", e);
             return WebSocket.reject(forbidden());
         }
     }
+
     @ApiOperation(value = "Homer Server Connection", tags = {"WebSocket"})
     public  WebSocket<String>  homer_cloud_server_connection(String server_name){
         try{
@@ -579,6 +582,7 @@ public class WebSocketController extends Controller {
             return WebSocket.reject(forbidden());
         }
     }
+
     @ApiOperation(value = "Compilation Server Conection", tags = {"WebSocket"})
     public  WebSocket<String>  compilator_server_connection (String server_name){
         try{
@@ -605,6 +609,7 @@ public class WebSocketController extends Controller {
             return WebSocket.reject(forbidden("Server side error"));
         }
     }
+
     @ApiOperation(value = "FrontEnd Becki Connection", tags = {"WebSocket"})
     public  WebSocket<String>  becki_website_connection (String security_token){
         try{

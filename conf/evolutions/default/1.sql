@@ -337,28 +337,27 @@ create table m_program (
   id                        varchar(255) not null,
   program_name              varchar(255),
   program_description       TEXT,
-  program_in_string         TEXT,
+  version_name              varchar(255),
+  version_description       TEXT,
   height_lock               boolean,
   width_lock                boolean,
   qr_token                  varchar(255),
   m_project_id              varchar(255),
   screen_size_type_id       varchar(255),
   date_of_create            timestamp,
-  last_update               timestamp,
+  parent_program_id         varchar(255),
+  m_code                    TEXT,
+  virtual_input_output      TEXT,
   constraint pk_m_program primary key (id))
 ;
 
 create table m_project (
   id                        varchar(255) not null,
-  program_name              varchar(255),
-  program_description       TEXT,
+  name                      varchar(255),
+  description               TEXT,
   date_of_create            timestamp,
   project_id                varchar(255),
-  b_program_id              varchar(255),
-  vrs_obj_id                varchar(255),
   auto_incrementing         boolean,
-  constraint uq_m_project_b_program_id unique (b_program_id),
-  constraint uq_m_project_vrs_obj_id unique (vrs_obj_id),
   constraint pk_m_project primary key (id))
 ;
 
@@ -525,6 +524,7 @@ create table screen_size_type (
   width_lock                boolean,
   touch_screen              boolean,
   project_id                varchar(255),
+  constraint uq_screen_size_type_name unique (name),
   constraint pk_screen_size_type primary key (id))
 ;
 
@@ -668,6 +668,12 @@ create table version_object_program_hw_group (
   version_object_id              varchar(255) not null,
   b_program_hw_group_id          bigint not null,
   constraint pk_version_object_program_hw_group primary key (version_object_id, b_program_hw_group_id))
+;
+
+create table version_object_project (
+  version_object_id              varchar(255) not null,
+  m_project_id                   varchar(255) not null,
+  constraint pk_version_object_project primary key (version_object_id, m_project_id))
 ;
 create sequence actualization_procedure_seq;
 
@@ -857,56 +863,54 @@ alter table m_program add constraint fk_m_program_m_project_50 foreign key (m_pr
 create index ix_m_program_m_project_50 on m_program (m_project_id);
 alter table m_program add constraint fk_m_program_screen_size_type_51 foreign key (screen_size_type_id) references screen_size_type (id);
 create index ix_m_program_screen_size_type_51 on m_program (screen_size_type_id);
-alter table m_project add constraint fk_m_project_project_52 foreign key (project_id) references project (id);
-create index ix_m_project_project_52 on m_project (project_id);
-alter table m_project add constraint fk_m_project_b_program_53 foreign key (b_program_id) references b_program (id);
-create index ix_m_project_b_program_53 on m_project (b_program_id);
-alter table m_project add constraint fk_m_project_b_program_versio_54 foreign key (vrs_obj_id) references version_object (id);
-create index ix_m_project_b_program_versio_54 on m_project (vrs_obj_id);
-alter table notification add constraint fk_notification_person_55 foreign key (person_id) references person (id);
-create index ix_notification_person_55 on notification (person_id);
-alter table password_recovery_token add constraint fk_password_recovery_token_pe_56 foreign key (person_id) references person (id);
-create index ix_password_recovery_token_pe_56 on password_recovery_token (person_id);
-alter table payment_details add constraint fk_payment_details_person_57 foreign key (person_id) references person (id);
-create index ix_payment_details_person_57 on payment_details (person_id);
-alter table payment_details add constraint fk_payment_details_product_58 foreign key (productidpaymentdetails) references product (id);
-create index ix_payment_details_product_58 on payment_details (productidpaymentdetails);
-alter table post add constraint fk_post_postParentComment_59 foreign key (post_parent_comment_id) references post (id);
-create index ix_post_postParentComment_59 on post (post_parent_comment_id);
-alter table post add constraint fk_post_postParentAnswer_60 foreign key (post_parent_answer_id) references post (id);
-create index ix_post_postParentAnswer_60 on post (post_parent_answer_id);
-alter table post add constraint fk_post_type_61 foreign key (type_id) references type_of_post (id);
-create index ix_post_type_61 on post (type_id);
-alter table post add constraint fk_post_author_62 foreign key (author_id) references person (id);
-create index ix_post_author_62 on post (author_id);
-alter table private_homer_server add constraint fk_private_homer_server_proje_63 foreign key (project_id) references project (id);
-create index ix_private_homer_server_proje_63 on private_homer_server (project_id);
-alter table private_homer_server add constraint fk_private_homer_server_b_pro_64 foreign key (private_server_id) references homer_instance (id);
-create index ix_private_homer_server_b_pro_64 on private_homer_server (private_server_id);
-alter table product add constraint fk_product_general_tariff_65 foreign key (general_tariff_id) references general_tariff (id);
-create index ix_product_general_tariff_65 on product (general_tariff_id);
-alter table project add constraint fk_project_product_66 foreign key (product_id) references product (id);
-create index ix_project_product_66 on project (product_id);
-alter table screen_size_type add constraint fk_screen_size_type_project_67 foreign key (project_id) references project (id);
-create index ix_screen_size_type_project_67 on screen_size_type (project_id);
-alter table single_library add constraint fk_single_library_product_68 foreign key (product_id) references product (id);
-create index ix_single_library_product_68 on single_library (product_id);
-alter table type_of_block add constraint fk_type_of_block_project_69 foreign key (project_id) references project (id);
-create index ix_type_of_block_project_69 on type_of_block (project_id);
-alter table type_of_board add constraint fk_type_of_board_producer_70 foreign key (producer_id) references producer (id);
-create index ix_type_of_board_producer_70 on type_of_board (producer_id);
-alter table type_of_board add constraint fk_type_of_board_processor_71 foreign key (processor_id) references processor (id);
-create index ix_type_of_board_processor_71 on type_of_board (processor_id);
-alter table version_object add constraint fk_version_object_author_72 foreign key (author_id) references person (id);
-create index ix_version_object_author_72 on version_object (author_id);
-alter table version_object add constraint fk_version_object_library_gro_73 foreign key (library_group_id) references library_group (id);
-create index ix_version_object_library_gro_73 on version_object (library_group_id);
-alter table version_object add constraint fk_version_object_single_libr_74 foreign key (single_library_id) references single_library (id);
-create index ix_version_object_single_libr_74 on version_object (single_library_id);
-alter table version_object add constraint fk_version_object_c_program_75 foreign key (c_program_id) references c_program (id);
-create index ix_version_object_c_program_75 on version_object (c_program_id);
-alter table version_object add constraint fk_version_object_b_program_76 foreign key (b_program_id) references b_program (id);
-create index ix_version_object_b_program_76 on version_object (b_program_id);
+alter table m_program add constraint fk_m_program_parent_program_52 foreign key (parent_program_id) references m_program (id);
+create index ix_m_program_parent_program_52 on m_program (parent_program_id);
+alter table m_project add constraint fk_m_project_project_53 foreign key (project_id) references project (id);
+create index ix_m_project_project_53 on m_project (project_id);
+alter table notification add constraint fk_notification_person_54 foreign key (person_id) references person (id);
+create index ix_notification_person_54 on notification (person_id);
+alter table password_recovery_token add constraint fk_password_recovery_token_pe_55 foreign key (person_id) references person (id);
+create index ix_password_recovery_token_pe_55 on password_recovery_token (person_id);
+alter table payment_details add constraint fk_payment_details_person_56 foreign key (person_id) references person (id);
+create index ix_payment_details_person_56 on payment_details (person_id);
+alter table payment_details add constraint fk_payment_details_product_57 foreign key (productidpaymentdetails) references product (id);
+create index ix_payment_details_product_57 on payment_details (productidpaymentdetails);
+alter table post add constraint fk_post_postParentComment_58 foreign key (post_parent_comment_id) references post (id);
+create index ix_post_postParentComment_58 on post (post_parent_comment_id);
+alter table post add constraint fk_post_postParentAnswer_59 foreign key (post_parent_answer_id) references post (id);
+create index ix_post_postParentAnswer_59 on post (post_parent_answer_id);
+alter table post add constraint fk_post_type_60 foreign key (type_id) references type_of_post (id);
+create index ix_post_type_60 on post (type_id);
+alter table post add constraint fk_post_author_61 foreign key (author_id) references person (id);
+create index ix_post_author_61 on post (author_id);
+alter table private_homer_server add constraint fk_private_homer_server_proje_62 foreign key (project_id) references project (id);
+create index ix_private_homer_server_proje_62 on private_homer_server (project_id);
+alter table private_homer_server add constraint fk_private_homer_server_b_pro_63 foreign key (private_server_id) references homer_instance (id);
+create index ix_private_homer_server_b_pro_63 on private_homer_server (private_server_id);
+alter table product add constraint fk_product_general_tariff_64 foreign key (general_tariff_id) references general_tariff (id);
+create index ix_product_general_tariff_64 on product (general_tariff_id);
+alter table project add constraint fk_project_product_65 foreign key (product_id) references product (id);
+create index ix_project_product_65 on project (product_id);
+alter table screen_size_type add constraint fk_screen_size_type_project_66 foreign key (project_id) references project (id);
+create index ix_screen_size_type_project_66 on screen_size_type (project_id);
+alter table single_library add constraint fk_single_library_product_67 foreign key (product_id) references product (id);
+create index ix_single_library_product_67 on single_library (product_id);
+alter table type_of_block add constraint fk_type_of_block_project_68 foreign key (project_id) references project (id);
+create index ix_type_of_block_project_68 on type_of_block (project_id);
+alter table type_of_board add constraint fk_type_of_board_producer_69 foreign key (producer_id) references producer (id);
+create index ix_type_of_board_producer_69 on type_of_board (producer_id);
+alter table type_of_board add constraint fk_type_of_board_processor_70 foreign key (processor_id) references processor (id);
+create index ix_type_of_board_processor_70 on type_of_board (processor_id);
+alter table version_object add constraint fk_version_object_author_71 foreign key (author_id) references person (id);
+create index ix_version_object_author_71 on version_object (author_id);
+alter table version_object add constraint fk_version_object_library_gro_72 foreign key (library_group_id) references library_group (id);
+create index ix_version_object_library_gro_72 on version_object (library_group_id);
+alter table version_object add constraint fk_version_object_single_libr_73 foreign key (single_library_id) references single_library (id);
+create index ix_version_object_single_libr_73 on version_object (single_library_id);
+alter table version_object add constraint fk_version_object_c_program_74 foreign key (c_program_id) references c_program (id);
+create index ix_version_object_c_program_74 on version_object (c_program_id);
+alter table version_object add constraint fk_version_object_b_program_75 foreign key (b_program_id) references b_program (id);
+create index ix_version_object_b_program_75 on version_object (b_program_id);
 
 
 
@@ -953,6 +957,10 @@ alter table type_of_confirms_post add constraint fk_type_of_confirms_post_post_0
 alter table version_object_program_hw_group add constraint fk_version_object_program_hw__01 foreign key (version_object_id) references version_object (id);
 
 alter table version_object_program_hw_group add constraint fk_version_object_program_hw__02 foreign key (b_program_hw_group_id) references b_program_hw_group (id);
+
+alter table version_object_project add constraint fk_version_object_project_ver_01 foreign key (version_object_id) references version_object (id);
+
+alter table version_object_project add constraint fk_version_object_project_m_p_02 foreign key (m_project_id) references m_project (id);
 
 # --- !Downs
 
@@ -1019,6 +1027,8 @@ drop table if exists loggy_error cascade;
 drop table if exists m_program cascade;
 
 drop table if exists m_project cascade;
+
+drop table if exists version_object_project cascade;
 
 drop table if exists notification cascade;
 

@@ -74,7 +74,7 @@ public class Version_Object extends Model {
 
 
     // M_Project --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    @JsonIgnore  @OneToOne(mappedBy="b_program_version", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)   public M_Project m_project;
+    @JsonIgnore  @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)   public List<M_Project> m_projects = new ArrayList<>();
 
 
 

@@ -11,7 +11,6 @@ import models.compiler.Board;
 import models.compiler.FileRecord;
 import models.compiler.Version_Object;
 import models.project.global.Project;
-import models.project.m_program.M_Project;
 import play.data.Form;
 import utilities.swagger.documentationClass.Swagger_Homer_DeviceList_Result;
 import utilities.swagger.outboundClass.B_Program_State;
@@ -44,8 +43,6 @@ public class B_Program extends Model {
             example = "1466163478925")                       public Date date_of_create;
                                     @JsonIgnore @ManyToOne   public Project project;
 
-    @JsonIgnore   @OneToOne(mappedBy="b_program",cascade=CascadeType.ALL) public M_Project m_project;
-
     @JsonIgnore   @OneToMany(mappedBy="b_program", cascade=CascadeType.ALL) @OrderBy("id DESC") public List<Version_Object> version_objects = new ArrayList<>();
                                                                     @JsonProperty @Transient     public String   project_id() {  return project.id; }
 
@@ -75,7 +72,6 @@ public class B_Program extends Model {
     @JsonProperty @Transient public B_Program_State program_state(){
 
         B_Program_State state = new B_Program_State();
-        state.m_project_id = m_project != null ? m_project.id : null;
 
         Version_Object version_object = where_program_run();
 
@@ -106,11 +102,7 @@ public class B_Program extends Model {
                 }catch (Exception e){
                     e.printStackTrace();
                 }
-
             }
-
-
-
         }
         else {
             state.where = "homer";

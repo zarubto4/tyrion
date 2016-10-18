@@ -405,10 +405,9 @@ GET             /grid/m_project/:m_project_id                                   
 PUT             /grid/m_project/:m_project_id                                               @controllers.GridController.edit_M_Project(m_project_id)
 DELETE          /grid/m_project/:m_project_id                                               @controllers.GridController.remove_M_Project(m_project_id)
 
-PUT             /grid/m_project/connect/:m_project_id/:version_id/:auto_incrementing        @controllers.GridController.connect_M_Program_with_B_Program(m_project_id, version_id, auto_incrementing: Boolean)
-PUT             /grid/m_project/disconnect/:m_project_id                                    @controllers.GridController.disconnect_M_Program_from_B_Program(m_project_id)
 #M Program
 POST            /grid/m_program/:m_project_id                                               @controllers.GridController.new_M_Program(m_project_id)
+POST            /grid/m_program_version/:m_program_id                                       @controllers.GridController.new_M_Program_version(m_program_id)
 GET             /grid/m_program/app/token/:qr_token                                         @controllers.GridController.get_M_Program_byQR_Token_forMobile(qr_token)
 GET             /grid/m_program/app/m_programs                                              @controllers.GridController.get_M_Program_all_forMobile()
 

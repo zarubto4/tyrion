@@ -17,7 +17,7 @@ public class Screen_Size_Type extends Model {
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true) public String id;
-                                                            @ApiModelProperty(required = true) public String name;
+    @Column(unique=true)                                    @ApiModelProperty(required = true) public String name;
 
 
                                                             @ApiModelProperty(required = true) public Integer portrait_height;

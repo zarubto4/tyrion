@@ -1,7 +1,6 @@
 package controllers;
 
 import io.swagger.annotations.*;
-import models.compiler.Version_Object;
 import models.grid.Screen_Size_Type;
 import models.person.Person;
 import models.project.global.Project;
@@ -15,10 +14,7 @@ import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
-import utilities.swagger.documentationClass.Swagger_Grid_Terminal_Identf;
-import utilities.swagger.documentationClass.Swagger_M_Program_New;
-import utilities.swagger.documentationClass.Swagger_M_Project_New;
-import utilities.swagger.documentationClass.Swagger_ScreeSizeType_New;
+import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Swagger_Screen_Size_Type_Combination;
 
 import java.util.ArrayList;
@@ -79,9 +75,10 @@ public class GridController extends Controller {
             if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
 
             M_Project m_project = new M_Project();
-            m_project.program_description = help.program_description;
-            m_project.program_name = help.program_name;
+            m_project.description = help.description;
+            m_project.name = help.name;
             m_project.date_of_create = new Date();
+            m_project.auto_incrementing = help.auto_incrementing;
             m_project.project = project;
 
             if (!m_project.create_permission())  return GlobalResult.forbidden_Permission();
@@ -178,8 +175,8 @@ public class GridController extends Controller {
 
             if (!m_project.edit_permission())  return GlobalResult.forbidden_Permission();
 
-            m_project.program_description = help.program_description;
-            m_project.program_name = help.program_name;
+            m_project.description = help.description;
+            m_project.name = help.name;
 
             m_project.update();
             return GlobalResult.result_ok( Json.toJson(m_project));
@@ -263,96 +260,6 @@ public class GridController extends Controller {
 
     }
 
-    @ApiOperation(value = "connect M_Project with B_program",
-            tags = {"M_Program"},
-            notes = "connect M_project with B_program ( respectively with version of B_program - where is Blocko-Code)",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "M_Project.update_permission", value = "true"),
-                            @ExtensionProperty(name = "B_Program.update_permission", value = "true"),
-
-                    })
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = M_Project.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @Security.Authenticated(Secured_API.class)
-    public Result connect_M_Program_with_B_Program(@ApiParam(value = "m_project_id String", required = true)String m_project_id,
-                                                   @ApiParam(value = "version_id String", required = true)    String version_id,
-                                                   @ApiParam(value = "auto_incrementing Boolean value", required = true)  Boolean auto_incrementing ){
-        try {
-
-            M_Project m_project = M_Project.find.byId(m_project_id);
-            if (m_project == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
-
-            Version_Object version_object = Version_Object.find.byId(version_id);
-            if (version_object == null) return GlobalResult.notFoundObject("Project project_id not found");
-
-
-            if (!m_project.update_permission())                 return GlobalResult.forbidden_Permission();
-            if (!version_object.b_program.update_permission())  return GlobalResult.forbidden_Permission();
-
-
-            m_project.b_program_version = version_object;
-            m_project.auto_incrementing = auto_incrementing;
-            m_project.b_program = version_object.b_program;
-            m_project.update();
-
-            return GlobalResult.result_ok();
-
-        }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "disconnect M_Project from B_program",
-            tags = {"M_Program"},
-            notes = "disconnect M_project from B_program ( respectively with version of B_program - where is Blocko-Code)",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "M_Project.update_permission", value = "true"),
-                            @ExtensionProperty(name = "B_Program.update_permission", value = "true"),
-                    })
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = M_Project.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @Security.Authenticated(Secured_API.class)
-    public Result disconnect_M_Program_from_B_Program(@ApiParam(value = "m_project_id String", required = true)  String m_project_id){
-        try {
-
-            M_Project m_project = M_Project.find.byId(m_project_id);
-            if (m_project == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
-
-            if (!m_project.update_permission())  return GlobalResult.forbidden_Permission();
-
-            m_project.b_program_version = null;
-            m_project.auto_incrementing = false;
-            m_project.b_program = null;
-            m_project.update();
-
-            return GlobalResult.result_ok();
-
-        }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
 
 //######################################################################################################################
 
@@ -393,8 +300,9 @@ public class GridController extends Controller {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Secured_API.class)
-    public Result new_M_Program( @ApiParam(value = "m_project_id", required = true) String m_project_id ) {
+    public Result new_M_Program( @ApiParam(value = "m_project_id", required = true) String m_project_id) {
         try {
+
             final Form<Swagger_M_Program_New> form = Form.form(Swagger_M_Program_New.class).bindFromRequest();
             if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_M_Program_New help = form.get();
@@ -410,18 +318,89 @@ public class GridController extends Controller {
             m_program.date_of_create      = new Date();
             m_program.program_description = help.program_description;
             m_program.program_name        = help.program_name;
+
             m_program.m_project           = m_project;
-            m_program.programInString     = help.m_code;
+
             m_program.screen_size_type    = screen_size_type;
             m_program.height_lock         = help.height_lock;
             m_program.width_lock          = help.width_lock;
 
             m_program.set_QR_Token();
 
-            if (!m_program.create_permission())  return GlobalResult.forbidden_Permission();
+            if (!m_program.create_permission()) return GlobalResult.forbidden_Permission();
             m_program.save();
 
             return GlobalResult.created(Json.toJson(m_program));
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+
+    }
+
+    @ApiOperation(value = "Create new Version of M_Program",
+            tags = {"M_Program"},
+            notes = "creating new Version M_Program",
+            produces = "application/json",
+            protocols = "https",
+            code = 201,
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "M_Program.create_permission", value = M_Program.create_permission_docs),
+                    }),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "M_Project.update_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "M_Program_create" )
+                    })
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_M_Program_Version_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successfully created",    response = M_Program.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    @Security.Authenticated(Secured_API.class)
+    public Result new_M_Program_version( @ApiParam(value = "m_project_id", required = true) String m_program_id) {
+        try {
+
+            final Form<Swagger_M_Program_Version_New> form = Form.form(Swagger_M_Program_Version_New.class).bindFromRequest();
+            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_M_Program_Version_New help = form.get();
+
+            M_Program main_m_program = M_Program.find.byId( m_program_id );
+            if(main_m_program == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
+
+
+            M_Program new_version = new M_Program();
+
+            new_version.parent_program      = main_m_program;
+            new_version.date_of_create      = new Date();
+            new_version.version_description = help.version_description;
+            new_version.version_name        = help.version_name;
+            new_version.m_code              = help.m_code;
+            new_version.virtual_input_output= help.virtual_input_output;
+
+            new_version.set_QR_Token();
+
+
+            if (!new_version.create_permission()) return GlobalResult.forbidden_Permission();
+            new_version.save();
+
+            return GlobalResult.created(Json.toJson(new_version));
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }
@@ -457,7 +436,6 @@ public class GridController extends Controller {
 
            M_Program m_program = M_Program.find.where().eq("qr_token", qr_token).findUnique();
            if(m_program == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
-           m_program.m_code = m_program.programInString;
 
            if (!m_program.read_qr_token_permission())  return GlobalResult.forbidden_Permission();
            return GlobalResult.result_ok(Json.toJson(m_program));
@@ -519,14 +497,12 @@ public class GridController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_API.class)
-    public Result  get_M_Program(@ApiParam(value = "m_program_id String query", required = true)  String m_program_id) {
+    public Result get_M_Program(@ApiParam(value = "m_program_id String query", required = true)  String m_program_id) {
         try {
             M_Program m_program = M_Program.find.byId(m_program_id);
             if (m_program == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
 
             if (!m_program.read_permission())  return GlobalResult.forbidden_Permission();
-
-            m_program.m_code = m_program.programInString;
 
             return GlobalResult.result_ok(Json.toJson(m_program));
         } catch (Exception e) {
@@ -577,22 +553,17 @@ public class GridController extends Controller {
             Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId(help.screen_type_id);
             if(screen_size_type == null) return GlobalResult.notFoundObject("Screen_Size_Type screen_type_id not found");
 
-
-
-
             M_Program m_program = M_Program.find.byId(m_program_id);
             if (!m_program.edit_permission())  return GlobalResult.forbidden_Permission();
 
-            m_program.date_of_create      = new Date();
+            if(m_program.m_project == null)  return GlobalResult.result_BadRequest("You cannot change program on version");
+
+
             m_program.program_description = help.program_description;
             m_program.program_name        = help.program_name;
-            m_program.programInString     = help.m_code;
             m_program.screen_size_type    = screen_size_type;
             m_program.height_lock         = help.height_lock;
             m_program.width_lock          = help.width_lock;
-            m_program.last_update         = new Date();
-
-
 
             m_program.update();
 

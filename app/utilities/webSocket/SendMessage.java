@@ -47,7 +47,7 @@ public class SendMessage{
 
         logger.trace("Sending message: " + messageId + " insert result " + result.toString());
 
-        // Pokud zpráva obsahuje subMessage - znamená to - že přišla Zpráva neukončující zprávu - ale s detailem - nap
+        // Pokud zpráva obsahuje subMessage - znamená to - že přišla Zpráva neukončující zprávu - ale s detailem - například o prodloužení
         if(result.has("messageType") && result.get("messageType").asText().equals("subMessage")){
 
             logger.trace("Incoming Result contains Sub-Message:" + result.toString());
@@ -59,6 +59,22 @@ public class SendMessage{
                         logger.trace("typeOfSubMessage: Await");
                         awaiting_time = result.get("time").asInt();
                         return;
+                    }
+
+                    case "device_update_progress" : {
+
+                        Notification_level level = Notification_level.fromString(result.get("notificationLevel").asText());
+                        if(level == null) return;
+
+                        if(notification_subscribers != null && !notification_subscribers.isEmpty()) {
+
+                            for (WebSCType ws :notification_subscribers){
+                                WS_Becki_Website subscriber = (WS_Becki_Website) ws;
+                                NotificationController.upload_firmare_progress( subscriber.person, result.get("message").asText());
+                            }
+                        }
+                        return;
+
                     }
 
                     case "notification" : {
@@ -74,6 +90,8 @@ public class SendMessage{
                         }
                         return;
                     }
+
+
 
                     default: {
                         logger.error("typeOfSubMessage není shodný s žádným očekávaným výsledkem");

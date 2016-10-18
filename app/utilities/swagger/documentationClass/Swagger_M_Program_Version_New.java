@@ -1,0 +1,26 @@
+package utilities.swagger.documentationClass;
+
+import io.swagger.annotations.ApiModelProperty;
+import play.data.validation.Constraints;
+
+public class Swagger_M_Program_Version_New {
+
+
+    @Constraints.Required
+    @ApiModelProperty(required = true, value = "Required valid screen_type_id")
+    public String version_name;
+
+    @ApiModelProperty(required = false, value = "program_description can be null or maximum length of 255 characters.")
+    @Constraints.MaxLength(value = 255, message = "The description must not have more than 255 characters.")
+    public String version_description;
+
+    @Constraints.Required
+    @ApiModelProperty(required = true)
+    public String m_code;
+
+    @Constraints.Required
+    @ApiModelProperty(required = true)
+    public String virtual_input_output;
+
+
+}

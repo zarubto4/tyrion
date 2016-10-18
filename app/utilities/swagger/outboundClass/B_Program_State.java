@@ -18,9 +18,6 @@ public class B_Program_State {
     @ApiModelProperty(required = true, readOnly = true)
     public boolean uploaded;
 
-    @ApiModelProperty(required = true, readOnly = true)
-    public String m_project_id;
-
     @ApiModelProperty(required = false, readOnly = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String version_id;

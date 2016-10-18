@@ -6,16 +6,17 @@ import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import com.microsoft.azure.storage.blob.ListBlobItem;
 import models.compiler.FileRecord;
 import models.compiler.Version_Object;
-import models.grid.Screen_Size_Type;
 import models.overflow.HashTag;
 import models.overflow.Post;
 import models.person.Person;
 import models.person.PersonPermission;
 import models.person.SecurityRole;
-import play.Logger;
 import play.mvc.Controller;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.*;
 
 /**
@@ -276,37 +277,6 @@ public class UtilTools extends Controller {
 
             for(PersonPermission personPermission :  personPermissions) if(!person.person_permissions.contains(personPermission)) person.person_permissions.add(personPermission);
             person.update();
-        }
-
-
-        // TODO - vložit do Defualt Objektů
-        if( Screen_Size_Type.find.where().eq("name","iPhone6").findUnique() == null){
-
-            Logger.warn("Creating screen size type for developers iPhone`s");
-            Screen_Size_Type screen_size_type = new Screen_Size_Type();
-
-            screen_size_type.name = "iPhone6";
-
-            screen_size_type.landscape_height = 375;
-            screen_size_type.landscape_width = 667;
-            screen_size_type.landscape_square_height = 6;
-            screen_size_type.landscape_square_width = 11;
-            screen_size_type.landscape_max_screens = 10;
-            screen_size_type.landscape_min_screens = 1;
-
-            screen_size_type.portrait_height = 667;
-            screen_size_type.portrait_width = 375;
-            screen_size_type.portrait_square_height = 11;
-            screen_size_type.portrait_square_width = 6;
-            screen_size_type.portrait_max_screens = 10;
-            screen_size_type.portrait_min_screens = 1;
-
-            screen_size_type.height_lock  = true;
-            screen_size_type.width_lock   = true;
-            screen_size_type.touch_screen = true;
-
-            screen_size_type.save();
-
         }
 
     }

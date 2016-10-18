@@ -70,7 +70,9 @@ public class Product extends Model {
    // @JsonProperty public Long product_detail_id(){return  payment_details.id;}
    @JsonProperty
    @Transient  @ApiModelProperty(required = true, readOnly = true)
-   public String product_type(){ return general_tariff.tariff_name; }
+   public String product_type(){
+       return general_tariff.tariff_name;
+   }
 
 
 
