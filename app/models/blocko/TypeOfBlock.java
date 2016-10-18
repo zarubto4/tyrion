@@ -38,14 +38,7 @@ public class TypeOfBlock extends Model {
 /* JSON PROPERTY -------------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true)
-    @JsonProperty @Transient public List<BlockoBlock> blocko_blocks(){
-        List<BlockoBlock> approvedBlocks = new ArrayList<>();
-        for(BlockoBlock blockoBlock : this.blocko_blocks){
-            if((blockoBlock.approval_state == Approval_state.approved)||(blockoBlock.approval_state == Approval_state.edited)||(blockoBlock.author.id.equals(SecurityController.getPerson().id)))
-                approvedBlocks.add(blockoBlock);
-        }
-        return approvedBlocks;
-    }
+    @JsonProperty @Transient public List<BlockoBlock> blockoBlocks(){ return this.blocko_blocks; }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
