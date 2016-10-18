@@ -36,7 +36,7 @@ public class ProgramingPackageTest extends WithApplication{
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
                 .uri("/compilation/producer/1")
-                .header("X-AUTH-TOKEN", FloatingPersonToken.find.where().eq("person.mail", "admin@byzance.cz").findUnique().authToken);
+                .header("X-AUTH-TOKEN", FloatingPersonToken.find.where().eq("person.mail", "admin@byzance.cz").findList().get(0).authToken);
 
         Result result = route(request);
         assertEquals(OK, result.status());

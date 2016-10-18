@@ -43,6 +43,7 @@ libraryDependencies ++= Seq(
   "com.novocode" % "junit-interface" % "0.11",
 
   "junit" % "junit" % "4.12" ,
+  "org.mockito" % "mockito-core" % "1.10.19" % "test",
 
   javaJdbc,
   filters,

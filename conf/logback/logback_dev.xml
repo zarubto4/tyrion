@@ -50,6 +50,11 @@
         <appender-ref ref="allLog" />
     </logger>
 
+    <logger name="junit.framework.TestCase" level="INFO" additivity = "false">
+        <appender-ref ref="testLog" />
+        <appender-ref ref="allLog" />
+    </logger>
+
     <root level="INFO">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="allLog" />
