@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
 import models.project.global.Project;
-import utilities.enums.Approval_state;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -26,7 +25,7 @@ public class TypeOfBlock extends Model {
                                     @JsonIgnore @ManyToOne  public Project project;
 
     @OneToMany(mappedBy="type_of_block", cascade = CascadeType.ALL)
-    @JsonIgnore                                                                                public List<BlockoBlock> blocko_blocks = new ArrayList<>();
+    @JsonIgnore  @ApiModelProperty(required = true)                                                                              public List<BlockoBlock> blocko_blocks = new ArrayList<>();
 
 
     @ApiModelProperty(value = "This value will be in Json only if TypeOfBlock is private!",readOnly =true, required = false)
@@ -36,10 +35,7 @@ public class TypeOfBlock extends Model {
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
 /* JSON PROPERTY -------------------------------------------------------------------------------------------------------*/
-
-    @ApiModelProperty(required = true)
-    @JsonProperty @Transient public List<BlockoBlock> blockoBlocks(){ return this.blocko_blocks; }
-
+    
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     // Floating shared documentation for Swagger
