@@ -984,8 +984,8 @@ public class ProgramingPackageController extends Controller {
 
             // Tvorba programu
             B_Program b_program             = new B_Program();
-            b_program.date_of_create = new Date();
-            b_program.program_description   = help.program_description;
+            b_program.date_of_create        = new Date();
+            b_program.description           = help.description;
             b_program.name                  = help.name;
             b_program.project               = project;
 
@@ -1128,7 +1128,7 @@ public class ProgramingPackageController extends Controller {
             if (! b_program.edit_permission() ) return GlobalResult.forbidden_Permission();
 
             // Úprava objektu
-            b_program.program_description = help.program_description;
+            b_program.description           = help.description;
             b_program.name                  = help.name;
 
             // Uložení objektu

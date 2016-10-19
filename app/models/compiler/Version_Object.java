@@ -13,6 +13,7 @@ import models.project.c_program.C_Compilation;
 import models.project.c_program.C_Program;
 import models.project.c_program.actualization.Actualization_procedure;
 import models.project.c_program.actualization.C_Program_Update_Plan;
+import models.project.m_program.M_Program;
 import models.project.m_program.M_Project;
 import utilities.enums.Approval_state;
 
@@ -30,10 +31,10 @@ public class Version_Object extends Model {
                                                             @ApiModelProperty(required = true)  public String version_name;
                      @Column(columnDefinition = "TEXT")     @ApiModelProperty(required = true)  public String version_description;
 
-                                                 @ManyToOne @ApiModelProperty(required = true)  public Person author;
+                         @ManyToOne(fetch = FetchType.LAZY) @ApiModelProperty(required = true)  public Person author;
 
-                                                            @ApiModelProperty(required = true)  public Approval_state approval_state;
-                                                            @ApiModelProperty(required = true)  public boolean public_version;
+                                                @JsonIgnore @ApiModelProperty(required = true)  public Approval_state approval_state;
+                                                @JsonIgnore @ApiModelProperty(required = true)  public boolean public_version;
 
 
 
@@ -51,15 +52,15 @@ public class Version_Object extends Model {
 
 
     // C_Programs --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-                                         @JsonIgnore  @ManyToOne(cascade = CascadeType.ALL)     public C_Program      c_program;
-               @JsonIgnore  @OneToOne(mappedBy="version_object", cascade = CascadeType.ALL)     public C_Compilation  c_compilation;
-                                                                                @JsonIgnore     public boolean compilation_in_progress; // Používáme jako flag pro mezičas kdy se verze kompiluje a uživatel vyvolá get Version
-                                                                                @JsonIgnore     public boolean compilable;
-                                @JsonIgnore @OneToMany(mappedBy="actual_c_program_version")     public List<Board>  c_program_version_boards  = new ArrayList<>(); // Používám pro zachycení, která verze C_programu na desce běží
-    @JsonIgnore @OneToMany(mappedBy="c_program_version_for_update",cascade=CascadeType.ALL)     public List<C_Program_Update_Plan> c_program_update_plans = new ArrayList<>();
+    @JsonIgnore @ManyToOne(cascade = CascadeType.ALL)                                                           public C_Program c_program;
+    @JsonIgnore @OneToOne(mappedBy="version_object", cascade = CascadeType.ALL)                                 public C_Compilation c_compilation;
+    @JsonIgnore                                                                                                 public boolean compilation_in_progress; // Používáme jako flag pro mezičas kdy se verze kompiluje a uživatel vyvolá get Version
+    @JsonIgnore                                                                                                 public boolean compilable;
+    @JsonIgnore @OneToMany(mappedBy="actual_c_program_version")                                                 public List<Board>  c_program_version_boards  = new ArrayList<>(); // Používám pro zachycení, která verze C_programu na desce běží
+    @JsonIgnore @OneToMany(mappedBy="c_program_version_for_update",cascade=CascadeType.ALL)                     public List<C_Program_Update_Plan> c_program_update_plans = new ArrayList<>();
 
-    @JsonIgnore @OneToOne(mappedBy="default_main_version")                                                     public C_Program default_version_program;    // Použito pro defaulntí program vázaný na TypeOfBoard hlavní verze určená k aktivitám - typu hardwaru a taktéž firmware, který se nahrává na devices
-    @JsonIgnore @OneToMany(mappedBy="first_default_version_object",fetch = FetchType.LAZY) @OrderBy("id DESC") public List<C_Program> first_version_of_c_programs = new ArrayList<>(); // Vazba na prnví verzi uživateli vytvořenými C_Programi - tak aby nebylo první verzi nutné kopírovat
+    @JsonIgnore @OneToOne(mappedBy="default_main_version")                                                      public C_Program default_version_program;    // Použito pro defaulntí program vázaný na TypeOfBoard hlavní verze určená k aktivitám - typu hardwaru a taktéž firmware, který se nahrává na devices
+    @JsonIgnore @OneToMany(mappedBy="first_default_version_object",fetch = FetchType.LAZY) @OrderBy("id DESC")  public List<C_Program> first_version_of_c_programs = new ArrayList<>(); // Vazba na prnví verzi uživateli vytvořenými C_Programi - tak aby nebylo první verzi nutné kopírovat
 
 
 
@@ -74,8 +75,9 @@ public class Version_Object extends Model {
 
 
     // M_Project --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    @JsonIgnore  @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)   public List<M_Project> m_projects = new ArrayList<>();
 
+    @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)    public M_Program m_program;
+    @JsonIgnore  @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)   public List<M_Project> m_projects = new ArrayList<>();    // Bazba kvůli puštěným B_programům
 
 
     // Actual Procedure --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -108,7 +110,7 @@ public class Version_Object extends Model {
             if(this.author == null)
             this.author = SecurityController.getPerson();
         }catch (Exception e){
-            this.author = Person.find.byId("1");
+            this.author = null;
         }
 
         super.save();

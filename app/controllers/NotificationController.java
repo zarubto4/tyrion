@@ -173,7 +173,7 @@ public class NotificationController extends Controller {
             .setText("New actualization task was added to Task Queue on ")
             .setObject(Swagger_C_Program_Version.class, version_object.id, "Version " + version_object.version_name, version_object.c_program.project_id() )
             .setText("from Program ")
-            .setObject(C_Program.class, version_object.c_program.id, "Program " + version_object.c_program.program_name, version_object.c_program.project_id() );
+            .setObject(C_Program.class, version_object.c_program.id, "Program " + version_object.c_program.name, version_object.c_program.project_id() );
 
 
     send_notification(person, notification);

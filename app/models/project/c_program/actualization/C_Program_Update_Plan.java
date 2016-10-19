@@ -49,7 +49,7 @@ public class C_Program_Update_Plan extends Model {
 
             C_Program_Update_program c_program_detail   = new  C_Program_Update_program();
             c_program_detail.c_program_id               = c_program_version_for_update.c_program.id;
-            c_program_detail.c_program_program_name     = c_program_version_for_update.c_program.program_name;
+            c_program_detail.c_program_program_name     = c_program_version_for_update.c_program.name;
             c_program_detail.c_program_version_id       = c_program_version_for_update.id;
             c_program_detail.c_program_version_name     = c_program_version_for_update.version_name;
 

@@ -1071,8 +1071,6 @@ public class Basic_Data {
 
 
 
-
-
             // Bezdráty a Bezdráty
             project_1.boards.add( Board.find.where().eq("personal_description","[1]").findUnique());
             project_1.boards.add( Board.find.where().eq("personal_description","[2]").findUnique());
@@ -1159,9 +1157,9 @@ public class Basic_Data {
             // Vytvořím C_Programy YODA
             C_Program c_program_1 = new C_Program();
             c_program_1.date_of_create = new Date();
-            c_program_1.program_name = "Defaultní program";
+            c_program_1.name = "Defaultní program";
             c_program_1.type_of_board = TypeOfBoard.find.where().eq("name", "Yoda G2").findUnique();
-            c_program_1.program_description = "Tento program je určen na blikání s ledkou";
+            c_program_1.description = "Tento program je určen na blikání s ledkou";
             c_program_1.project = project_1;
             c_program_1.save();
 
@@ -1169,9 +1167,9 @@ public class Basic_Data {
             // Vytvořím C_Programy YODA
             C_Program c_program_2 = new C_Program();
             c_program_2.date_of_create = new Date();
-            c_program_2.program_name = "Hraní si s tlačítkem Pro Yodu";
+            c_program_2.name = "Hraní si s tlačítkem Pro Yodu";
             c_program_2.type_of_board = TypeOfBoard.find.where().eq("name", "Yoda G2").findUnique();
-            c_program_2.program_description = "Tento program je určen na testování tlačítka na yodovi";
+            c_program_2.description = "Tento program je určen na testování tlačítka na yodovi";
             c_program_2.project = project_1;
             c_program_2.save();
 
@@ -1179,9 +1177,9 @@ public class Basic_Data {
             // Vytvořím C_Programy Bezdrát
             C_Program c_program_3 = new C_Program();
             c_program_3.date_of_create = new Date();
-            c_program_3.program_name = "Tlačítko s ledkou na Bezdrátu";
+            c_program_3.name = "Tlačítko s ledkou na Bezdrátu";
             c_program_3.type_of_board = TypeOfBoard.find.where().eq("name", "Wireless G2").findUnique();
-            c_program_3.program_description = "Tento program je určen na testování tlačítka na bezdrátovém modulu";
+            c_program_3.description = "Tento program je určen na testování tlačítka na bezdrátovém modulu";
             c_program_3.project = project_1;
             c_program_3.save();
 
@@ -1189,9 +1187,9 @@ public class Basic_Data {
             // Vytvořím C_Programy Drát
             C_Program c_program_4 = new C_Program();
             c_program_4.date_of_create = new Date();
-            c_program_4.program_name = "Tlačítko s ledkou na BUS kitu";
+            c_program_4.name = "Tlačítko s ledkou na BUS kitu";
             c_program_4.type_of_board = TypeOfBoard.find.where().eq("name", "BUS G2").findUnique();
-            c_program_4.program_description = "Tento program je určen na testování tlačítka na BUS modulu";
+            c_program_4.description = "Tento program je určen na testování tlačítka na BUS modulu";
             c_program_4.project = project_1;
             c_program_4.save();
 
@@ -1364,7 +1362,7 @@ public class Basic_Data {
      // První verze B_Programu - Pro instanc Yoda E a Ci!
             B_Program b_program_1 = new B_Program();
             b_program_1.name = "První blocko program";
-            b_program_1.program_description = "Blocko program je úžasná věc když funguje... a tady v tomto progtramu už je připravený i HW!!!!";
+            b_program_1.description = "Blocko program je úžasná věc když funguje... a tady v tomto progtramu už je připravený i HW!!!!";
             b_program_1.date_of_create = new Date();
             b_program_1.project = project_1;
             b_program_1.save();
@@ -1437,7 +1435,7 @@ public class Basic_Data {
             // Instance 2 - Martinův Yoda
             B_Program b_program_2 = new B_Program();
             b_program_2.name = "Druhý blocko program - Určený pro Yodu B ";
-            b_program_2.program_description = "Tento program má sloužit Martinovi";
+            b_program_2.description = "Tento program má sloužit Martinovi";
             b_program_2.date_of_create = new Date();
             b_program_2.project = project_1;
             b_program_2.save();
@@ -1466,7 +1464,7 @@ public class Basic_Data {
             // Instance 3 - Voktorův Yoda
             B_Program b_program_3 = new B_Program();
             b_program_3.name = "Druhý blocko program - Určený pro Yodu A ";
-            b_program_3.program_description = "Tento program má sloužit Viktorovi";
+            b_program_3.description = "Tento program má sloužit Viktorovi";
             b_program_3.date_of_create = new Date();
             b_program_3.project = project_1;
             b_program_3.save();
@@ -1551,7 +1549,7 @@ public class Basic_Data {
             // Instance 3 - Voktorův Yoda
             B_Program b_program_4 = new B_Program();
                 b_program_4.name = "Čtvrtý blocko program - Určený pro Yodu D";
-                b_program_4.program_description = "Tento program má sloužit Davidovi";
+                b_program_4.description = "Tento program má sloužit Davidovi";
                 b_program_4.date_of_create = new Date();
                 b_program_4.project = project_1;
                 b_program_4.save();
@@ -1653,21 +1651,33 @@ public class Basic_Data {
             M_Program m_program_main_1 = new M_Program();
             m_program_main_1.m_project = m_project;
             m_program_main_1.date_of_create = new Date();
-            m_program_main_1.program_name = "Tohle je super mega program";
+            m_program_main_1.name = "Tohle je super mega program";
             m_program_main_1.screen_size_type = Screen_Size_Type.find.where().eq("name", "iPhone6").findUnique();
             m_program_main_1.height_lock = true;
             m_program_main_1.width_lock = true;
             m_program_main_1.save();
 
 
-            M_Program m_program_version_1 = new M_Program();
-            m_program_version_1.version_description = "PRvní verze se snad zdařila!!! Yahoooo!!!!";
-            m_program_version_1.version_name = "1.0.1";
-            m_program_version_1.date_of_create = new Date();
-            m_program_version_1.m_code = "toooooto je dlouuuuuhý m_code!!";
-            m_program_version_1.virtual_input_output = "toooooto je IO jako u blocka!!!";
-            m_program_version_1.parent_program = m_program_main_1;
-            m_program_version_1.save();
+            M_Program m_program_1 = new M_Program();
+            m_program_1.description = "První verze se snad zdařila!!! Yahoooo!!!!";
+            m_program_1.name = "1.0.1";
+            m_program_1.date_of_create = new Date();
+            m_program_1.save();
+
+
+            Version_Object m_program_version_object_1 = new Version_Object();
+            m_program_version_object_1.version_description = "Toto je první verze!";
+            m_program_version_object_1.version_name = "1.0.0";
+            m_program_version_object_1.save();
+
+            ObjectNode content = Json.newObject();
+            content.put("m_code", "dlouuuhy m_code");
+            content.put("virtual_input_output", " virtual input output");
+
+            UtilTools.uploadAzure_Version(content.toString(), "m_program.json" , m_program_1.get_path() ,  m_program_version_object_1);
+            m_program_version_object_1.save();
+
+
 
         }catch (Exception e){
             e.printStackTrace();

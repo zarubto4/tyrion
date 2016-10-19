@@ -31,7 +31,7 @@ public class B_Program extends Model {
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public String id;
                                                              public String name;
-                        @Column(columnDefinition = "TEXT")   public String program_description;
+                        @Column(columnDefinition = "TEXT")   public String description;
 
     @ApiModelProperty(required = true,
                      dataType = "integer", readOnly = true,

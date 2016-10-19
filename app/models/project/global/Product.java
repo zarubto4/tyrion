@@ -35,7 +35,7 @@ public class Product extends Model {
                                                                             public String product_individual_name;
 
 
-    @JsonIgnore                                                      @ManyToOne        public GeneralTariff general_tariff;
+    @JsonIgnore                                                    @ManyToOne()        public GeneralTariff general_tariff;
     @JsonIgnore    @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)    public Payment_mode mode;
     @JsonIgnore    @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)    public Payment_method method;
 

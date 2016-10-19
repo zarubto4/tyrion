@@ -4,11 +4,16 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
+import models.compiler.FileRecord;
+import models.compiler.Version_Object;
 import models.grid.Screen_Size_Type;
 import models.project.global.Project;
+import play.libs.Json;
 import utilities.Server;
+import utilities.swagger.documentationClass.Swagger_M_Program_Version;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -25,41 +30,35 @@ public class M_Program extends Model{
 
 
     //# Název a popis Programu
-    @JsonInclude(JsonInclude.Include.NON_NULL)                                      public String program_name;
-    @JsonInclude(JsonInclude.Include.NON_NULL)  @Column(columnDefinition = "TEXT")  public String program_description;
+    @JsonInclude(JsonInclude.Include.NON_NULL)                                      public String name;
+    @JsonInclude(JsonInclude.Include.NON_NULL)  @Column(columnDefinition = "TEXT")  public String description;
+
+                                            //# NAstavení Programu
+                                            public boolean height_lock;
+                                            public boolean width_lock;
 
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)                                     public String version_name;
-    @JsonInclude(JsonInclude.Include.NON_NULL) @Column(columnDefinition = "TEXT")  public String version_description;
-
-    //# NAstavení Programu
-    @JsonIgnore     public boolean height_lock;
-    @JsonIgnore     public boolean width_lock;
     @ApiModelProperty(required = true)      public String qr_token;
 
-
     //# Vazby Programu
-    @JsonIgnore @ManyToOne      public M_Project m_project;                 // Jen u Main (prvního prvku) - ostatní se dotazují viz metody níže
-    @JsonIgnore @ManyToOne      public Screen_Size_Type screen_size_type;   // Jen u Main (prvního prvku) - ostatní se dotazují viz metody níže
-
+    @JsonIgnore @ManyToOne      public M_Project m_project;
+    @JsonIgnore @ManyToOne      public Screen_Size_Type screen_size_type;
 
     // Každá verze má datum vytvoření
     @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp in millis", example = "1458315085338") public Date date_of_create;
 
 
-    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public M_Program parent_program;    // Zvolen jiný spůsob verzování - a asi do budoucna ten správný - kdy je verze vázána na verzi první. Verze první nejde smazat.
-    @JsonIgnore @OneToMany(mappedBy="parent_program", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  @OrderBy("date_of_create asc") public List<M_Program> versions = new ArrayList<>();   // Hlavní verze má na sobě napojené všechny další
 
-    @JsonInclude(JsonInclude.Include.NON_NULL) @Column(columnDefinition = "TEXT")  public String m_code;                // TODO do Azure!      // Pokud nastavím M_Code (Slouží k zobrazení celého m_code v případě že vracím konkrétní objekt a né pole objektů kde je jen odkaz na získání codu
-    @JsonInclude(JsonInclude.Include.NON_NULL) @Column(columnDefinition = "TEXT")  public String virtual_input_output;
+    @JsonIgnore @OneToMany(mappedBy="m_program", cascade = CascadeType.ALL, fetch = FetchType.EAGER) @OrderBy("date_of_create DESC") public List<Version_Object> version_objects = new ArrayList<>();
+
+
 
 
 /* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/
 
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  String m_project_id()             {  return m_project != null           ? m_project.id : parent_program.m_project_id();}
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  String screen_size_type_id()      {  return screen_size_type != null    ? screen_size_type.id : parent_program.screen_size_type_id();}
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  boolean height_lock()             {  return m_project != null           ? height_lock: parent_program.height_lock();}
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  boolean width_lock()              {  return m_project != null           ? width_lock : parent_program.width_lock();}
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  String m_project_id()             {  return m_project.id;}
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  String screen_size_type_id()      {  return screen_size_type.id;}
+
 
 
     @ApiModelProperty(required = false, value = "Its here only if its possible to connect to B_Program") @Transient
@@ -68,20 +67,46 @@ public class M_Program extends Model{
     }
 
 
-    @JsonIgnore
-    public List<M_Program> get_m_program_versions() {
-        if(m_project != null ) {
-            this.versions.add(0, this);
-            return this.versions;
-        }else {
-           return null;
-        }
+    @JsonProperty @Transient public List<Swagger_M_Program_Version> program_versions() {
+        List<Swagger_M_Program_Version> versions;
+        versions = new ArrayList<>();
+
+        for(Version_Object v : version_objects) versions.add(program_version(v));
+        return versions;
     }
 
 
-
-
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+    /* Private Documentation Class -------------------------------------------------------------------------------------*/
+
+    // Objekt určený k vracení verze
+    @JsonIgnore @Transient
+    public Swagger_M_Program_Version program_version(Version_Object version_object){
+        try {
+
+            Swagger_M_Program_Version m_program_versions = new Swagger_M_Program_Version();
+
+            m_program_versions.version_object = version_object;
+
+            FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "m_program.json").findUnique();
+
+            if (fileRecord != null) {
+
+                JsonNode json = Json.parse(fileRecord.get_fileRecord_from_Azure_inString());
+                m_program_versions.m_code = json.get("m_code").asText();
+                m_program_versions.virtual_input_output = json.get("virtual_input_output").asText();
+
+            }
+
+            return m_program_versions;
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 
     @Transient @JsonIgnore
     public void set_QR_Token() {
@@ -91,9 +116,23 @@ public class M_Program extends Model{
         }
     }
 
-    @Transient @JsonIgnore
-    public M_Project get_m_project(){
-        return m_project != null ? m_project : parent_program.m_project;
+/* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/
+    @JsonIgnore            private String azure_m_program_link;
+
+
+    @JsonIgnore @Override public void save() {
+
+         while(true){ // I need Unique Value
+                this.azure_m_program_link = m_project.get_path()  + "/m-programs/"  + UUID.randomUUID().toString();
+                if (M_Program.find.where().eq("azure_m_program_link", azure_m_program_link ).findUnique() == null) break;
+         }
+
+        super.save();
+    }
+
+    @JsonIgnore @Transient
+    public String get_path(){
+        return  azure_m_program_link;
     }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
@@ -104,7 +143,7 @@ public class M_Program extends Model{
     @JsonIgnore @Transient public static final String read_qr_token_permission_docs     = "read: Private settings for M_Program";
 
 
-    @JsonIgnore   @Transient public boolean create_permission(){  return ( Project.find.where().where().eq("ownersOfProject.id", SecurityController.getPerson().id ).eq("m_projects.id", m_project == null ? parent_program.m_project.id : m_project.id).findUnique().create_permission() ) || SecurityController.getPerson().has_permission("M_Program_create");      }
+    @JsonIgnore   @Transient public boolean create_permission(){  return ( Project.find.where().where().eq("ownersOfProject.id", SecurityController.getPerson().id ).eq("m_projects.id", m_project.id).findUnique().create_permission() ) || SecurityController.getPerson().has_permission("M_Program_create");      }
     @JsonIgnore   @Transient public boolean read_permission()  {  return ( M_Program.find.where().eq("m_project.project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("M_Program_read"); }
     @JsonProperty @Transient public boolean read_qr_token_permission() { return  true; } // TODO pokud uživatel vyloženě nebude chtít zakázat public přístup
     @JsonProperty @Transient public boolean edit_permission() {return SecurityController.getPerson() != null && ((M_Program.find.where().eq("m_project.project.ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("M_Program_edit"));}

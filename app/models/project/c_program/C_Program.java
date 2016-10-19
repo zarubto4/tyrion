@@ -33,8 +33,8 @@ public class C_Program extends Model {
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)     public String id;
 
 
-    @ApiModelProperty(required = true, value = "minimal length is 8 characters")                        public String program_name;
-    @ApiModelProperty(required = false, value = "can be empty")  @Column(columnDefinition = "TEXT")     public String program_description;
+    @ApiModelProperty(required = true, value = "minimal length is 8 characters")                        public String name;
+    @ApiModelProperty(required = false, value = "can be empty")  @Column(columnDefinition = "TEXT")     public String description;
                                               @JsonIgnore @ManyToOne(cascade = CascadeType.PERSIST)     public Project project;
 
                                 @JsonIgnore  @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)            public TypeOfBoard type_of_board;  // Typ desky
@@ -68,9 +68,10 @@ public class C_Program extends Model {
         return versions;
     }
 
-/* Private Documentation Class -----------------------------------------------------------------------------------------*/
 
-    // Určeno pro metodu program_versions tohoto objektu
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+    /* Private Documentation Class -------------------------------------------------------------------------------------*/
 
     // Objekt určený k vracení verze
     @JsonIgnore @Transient
@@ -121,11 +122,8 @@ public class C_Program extends Model {
     }
 
 
-    @JsonIgnore @Transient public TypeOfBoard getType_of_board(){
-        return type_of_board;
-    }
 
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
 
 
 

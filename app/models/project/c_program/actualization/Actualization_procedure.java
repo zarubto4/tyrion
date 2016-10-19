@@ -46,12 +46,12 @@ public class Actualization_procedure extends Model {
     @JsonProperty @Transient @ApiModelProperty(required = true ) public Program_Actualization b_program_actualization(){
 
         if(b_program_version_procedure != null ) {
+
             Program_Actualization program_actualization = new  Program_Actualization();
             program_actualization.b_program_id = b_program_version_procedure.b_program.id;
             program_actualization.b_program_name = b_program_version_procedure.b_program.name;
             program_actualization.b_program_version_id = b_program_version_procedure.id;
             program_actualization.b_program_version_name = b_program_version_procedure.version_name;
-
             return program_actualization;
         }
 

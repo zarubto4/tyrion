@@ -109,8 +109,8 @@ public class CompilationLibrariesController extends Controller {
 
             // Tvorba programu
             C_Program c_program             = new C_Program();
-            c_program.program_name          = help.program_name;
-            c_program.program_description   = help.program_description;
+            c_program.name                  = help.name;
+            c_program.description           = help.description;
             c_program.date_of_create        = new Date();
             c_program.type_of_board         = typeOfBoard;
 
@@ -374,8 +374,8 @@ public class CompilationLibrariesController extends Controller {
             if(typeOfBoard == null) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
 
             // úprava objektu
-            c_program.program_name = help.program_name;
-            c_program.program_description = help.program_description;
+            c_program.name = help.name;
+            c_program.description = help.description;
             c_program.type_of_board = typeOfBoard;
 
             // Zkontroluji oprávnění

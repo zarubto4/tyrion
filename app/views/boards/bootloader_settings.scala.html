@@ -104,7 +104,7 @@
                         </div>
                     }else{
                         <div class="btn-group">
-                            <a onclick="editCProgramModal( '@typeOfBoard.default_program.id' , '@typeOfBoard.id', '@typeOfBoard.default_program.program_name', '@typeOfBoard.default_program.program_description' )" class="btn btn-warning btn-sm"><b> Update Information </b></a>
+                            <a onclick="editCProgramModal( '@typeOfBoard.default_program.id' , '@typeOfBoard.id', '@typeOfBoard.default_program.name', '@typeOfBoard.default_program.description' )" class="btn btn-warning btn-sm"><b> Update Information </b></a>
                             <a onclick="createCProgramVersionModal(@typeOfBoard.default_program.id)" class="btn btn-info btn-sm"><b>New Version </b></a>
                         </div>
                     }
@@ -117,14 +117,14 @@
                     <div class="row invoice-info">
                         <div class="col-sm-4 invoice-col">
                             <address>
-                                <strong>Name: </strong>  @typeOfBoard.default_program.program_name<br>
+                                <strong>Name: </strong>  @typeOfBoard.default_program.name<br>
                                 <strong>ID:   </strong>  @typeOfBoard.default_program.id<br>
                                 <strong>Date: </strong>  @typeOfBoard.default_program.date_of_create<br>
                             </address>
                         </div>
                         <div class="col-sm-4 invoice-col">
                             <address>
-                                <strong>Description: </strong>  @typeOfBoard.default_program.program_description
+                                <strong>Description: </strong>  @typeOfBoard.default_program.description
                             </address>
                         </div>
                     </div>
@@ -213,8 +213,8 @@
             <div class="modal-body">
                 <form id="newCProgramForm">
                     <label>TypeOfDevice ID</label>                          <input type="text" name="type_of_board_id"> <p>
-                    <label>Name</label>                                     <input type="text" name="program_name"> <p>
-                    <label>Description</label>  <p>                         <textarea name="program_description" class="form-control" rows="3" placeholder="Descritpion (24 chartacters at least)... "></textarea> <p>
+                    <label>Name</label>                                     <input type="text" name="name"> <p>
+                    <label>Description</label>  <p>                         <textarea name="description" class="form-control" rows="3" placeholder="Descritpion (24 chartacters at least)... "></textarea> <p>
                 </form>
             </div>
             <div class="modal-footer">
@@ -234,8 +234,8 @@
             <div class="modal-body">
                 <form id="editCProgramForm">
                     <label>TypeOfDevice ID</label>                          <input type="text" name="type_of_board_id"> <p>
-                    <label>Name</label>                                     <input type="text" name="program_name"> <p>
-                    <label>Description</label>  <p>                         <textarea name="program_description" class="form-control" rows="3"></textarea> <p>
+                    <label>Name</label>                                     <input type="text" name="name"> <p>
+                    <label>Description</label>  <p>                         <textarea name="description" class="form-control" rows="3"></textarea> <p>
                 </form>
             </div>
             <div class="modal-footer">
@@ -310,11 +310,11 @@
         $("#newCProgramForm input[name=type_of_board_id]").val(type_of_device_id);
     }
 
-    function editCProgramModal(c_program_id, type_of_board_id, name, program_description) {
+    function editCProgramModal(c_program_id, type_of_board_id, name, description) {
         $("#editCProgramModal").css("display", "block");
         $("#editCProgramForm input[name=type_of_board_id]").val(type_of_board_id);
-        $("#editCProgramForm input[name=program_name]").val(name);
-        $("#editCProgramForm textarea[name=program_description]").val(program_description);
+        $("#editCProgramForm input[name=name]").val(name);
+        $("#editCProgramForm textarea[name=description]").val(description);
         $('#editCProgramButton').val(c_program_id);
     }
 

@@ -106,7 +106,7 @@ public class Board extends Model {
 
         if(actual_c_program_version != null){
                     board_status.actual_c_program_id = actual_c_program_version.c_program.id;
-                    board_status.actual_c_program_name = actual_c_program_version.c_program.program_name;
+                    board_status.actual_c_program_name = actual_c_program_version.c_program.name;
                     board_status.actual_c_program_version_id = actual_c_program_version.id;
                     board_status.actual_c_program_version_name = actual_c_program_version.version_name;
         }
@@ -117,7 +117,7 @@ public class Board extends Model {
             C_Program_Update_Plan plan = C_Program_Update_Plan.find.where().eq("board.id", id).order().asc("actualization_procedure.date_of_create").setMaxRows(1).findUnique();
 
             board_status.required_c_program_id = plan.c_program_version_for_update.c_program.id;
-            board_status.required_c_program_name = plan.c_program_version_for_update.c_program.program_name;
+            board_status.required_c_program_name = plan.c_program_version_for_update.c_program.name;
 
             board_status.required_c_program_version_id = plan.c_program_version_for_update.id;
             board_status.required_c_program_version_name = plan.c_program_version_for_update.version_name;

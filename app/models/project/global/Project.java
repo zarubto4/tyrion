@@ -45,27 +45,27 @@ public class Project extends Model {
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Invitation>               invitations       = new ArrayList<>();
 
 
-    @JsonIgnore @ManyToOne() public Product product;
+    @JsonIgnore @ManyToOne( cascade = CascadeType.ALL) public Product product;
 
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "owningProjects")  @JoinTable(name = "connected_projects") public List<Person> ownersOfProject = new ArrayList<>();
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> homers_id()           { List<String> l = new ArrayList<>();  for( Private_Homer_Server m    : privateHomerServerList)   l.add(m.id); return l;  }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> boards_id()           { List<String> l = new ArrayList<>();  for( Board m                   : boards)                   l.add(m.id); return l;  }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Object_detail> b_programs()   { List<Swagger_Object_detail> l = new ArrayList<>();  for( B_Program m        : b_programs)               l.add(new Swagger_Object_detail(m.name, m.id)); return l;  }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Object_detail> c_programs()   { List<Swagger_Object_detail> l = new ArrayList<>();  for( C_Program m        : c_programs)               l.add(new Swagger_Object_detail(m.program_name, m.id)); return l;  }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> m_projects_id()       { List<String> l = new ArrayList<>();  for( M_Project m               : m_projects)               l.add(m.id); return l;  }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> type_of_blocks_id()   { List<String> l = new ArrayList<>();  for( TypeOfBlock m             : type_of_blocks)           l.add(m.id); return l;  }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> screen_size_types_id(){ List<String> l = new ArrayList<>();  for( Screen_Size_Type m        : screen_size_types)        l.add(m.id); return l;  }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> actual_procedures_id(){ List<String> l = new ArrayList<>();  for( Actualization_procedure m : procedures)               l.add(m.id); return l;  }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> homers_id()                     { List<String> l = new ArrayList<>();                   for( Private_Homer_Server m    : privateHomerServerList)   l.add(m.id); return l;  }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> boards_id()                     { List<String> l = new ArrayList<>();                   for( Board m                   : boards)                   l.add(m.id); return l;  }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Object_detail> b_programs()     { List<Swagger_Object_detail> l = new ArrayList<>();    for( B_Program m               : b_programs)               l.add(new Swagger_Object_detail(m.name, m.id)); return l;  }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Object_detail> c_programs()     { List<Swagger_Object_detail> l = new ArrayList<>();    for( C_Program m               : c_programs)               l.add(new Swagger_Object_detail(m.name, m.id)); return l;  }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> m_projects_id()                 { List<String> l = new ArrayList<>();                   for( M_Project m               : m_projects)               l.add(m.id); return l;  }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> type_of_blocks_id()             { List<String> l = new ArrayList<>();                   for( TypeOfBlock m             : type_of_blocks)           l.add(m.id); return l;  }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> screen_size_types_id()          { List<String> l = new ArrayList<>();                   for( Screen_Size_Type m        : screen_size_types)        l.add(m.id); return l;  }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> actual_procedures_id()          { List<String> l = new ArrayList<>();                   for( Actualization_procedure m : procedures)               l.add(m.id); return l;  }
 
 
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public String product_individual_name() { return product.product_individual_name;}
     @JsonProperty @Transient @ApiModelProperty(required = true) public Long   product_id() { return product.id;}
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public String tier_name() {return product.product_type();}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public String tier_name()  { return product.product_type();}
 
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public Integer errors() { return 0;}

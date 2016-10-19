@@ -3,7 +3,6 @@ package utilities.swagger.outboundClass.Filter_List;
 import com.avaje.ebean.Query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.project.b_program.servers.Private_Homer_Server;
 import models.project.c_program.C_Program;
 import utilities.swagger.outboundClass.Swagger_C_Program_Light;
 
@@ -45,7 +44,7 @@ public class Swagger_C_Program_List {
             Swagger_C_Program_Light help = new Swagger_C_Program_Light();
 
             help.c_program_id = c_program.id;
-            help.c_program_name = c_program.program_name;
+            help.c_program_name = c_program.name;
             help.c_program_version_id = c_program.version_objects.get(0).id;
             help.c_program_version_name = c_program.version_objects.get(0).version_name;
             help.type_of_board_id = c_program.type_of_board.id;

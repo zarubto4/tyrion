@@ -15,7 +15,7 @@
 
 <section class="content">
     <div id="codeModal" style="display: none;" class="modal">
-        <div style="margin-top: 10%;" class="modal-dialog">
+        <div style="" class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <h4 class="modal-title">Code</h4>
@@ -39,7 +39,7 @@
                 </div>
                 <div class="modal-body">
                     <label style="display: block;">Tell author why you disapproved this Code.</label>
-                    <label style="color: #2e6da4;">Reason:</label>
+                    <label style="">Reason:</label>
                     <textarea id="disapprove_code_reason" rows="10" style="width: 100%;"></textarea>
                 </div>
                 <div class="modal-footer">
@@ -59,18 +59,18 @@
                 </div>
                 <div class="modal-body">
                     <label id="codeId" style="display: block; font-size: 15pt;">ID</label>
-                    <div style="float: left; width: 30%;">
-                        <label style="color: #2e6da4">Version name:</label>
+                    <div style="float: left;">
+                        <label style="">Version name:</label>
                         <input type="text" id="code_name" style="display: block;">
                     </div>
-                    <div style="width:100%;">
-                        <label style="color: #2e6da4">Version description:</label>
-                        <input type="text" id="code_description" style="display: block; width: 70%;">
+                    <div style="">
+                        <label style="">Version description:</label>
+                        <input type="text" id="code_description" style="display: block;">
                     </div>
-                    <label style="color: #2e6da4">Code:</label>
-                    <textarea id="code_edit" style="display: block; width: 100%; height: auto;" rows="6"></textarea>
-                    <label style="color: #2e6da4">Message to user:</label>
-                    <textarea id="edit_code_reason" style="display: block; width: 100%; height: auto;" rows="2"></textarea>
+                    <label style="">Code:</label>
+                    <textarea id="code_edit" style="display: block;" rows="6"></textarea>
+                    <label style="">Message to user:</label>
+                    <textarea id="edit_code_reason" style="display: block;" rows="2"></textarea>
                     <div style="display: none;" id="user_files"></div>
                     <div style="display: none;" id="external_libraries"></div>
                 </div>
@@ -90,7 +90,7 @@
                     <h3 class="box-title">C_Program</h3>
                 </div>
                 <div class="box-body">
-                    <label style="font-size: 13pt;">Pending C_Program</label>
+                    <label style="">Pending C_Program</label>
                     <table id="pendingCode" class="table table-bordered">
                         <tr>
                             <th>ID</th>
@@ -109,15 +109,15 @@
                                 <td>@version.id</td>
                                 <td>@version.version_name</td>
                                 <td>@version.version_description</td>
-                                <td>@version.c_program.program_name</td>
-                                <td>@version.c_program.program_description</td>
+                                <td>@version.c_program.name</td>
+                                <td>@version.c_program.description</td>
                                 <td>@version.author.mail</td>
                                 <td>@version.compilable</td>
                                 <td><button class="btn btn-block btn-primary" type="button" onclick="showCode('@version.id')">Show Code</button></td>
                                 <td><button class="btn btn-block btn-info" type="button" onclick="showEditForm('@version.id')">Edit</button></td>
                                 <td>
-                                    <button style="width: 48%; margin-right: 2%; display: inline-block; float: left;" class="btn btn-block btn-success" type="button" onclick="approveCode(@version.id)">Approve</button>
-                                    <button style="width: 48%; margin-left: 2%; margin-top: 0; display: inline-block; float: left;" class="btn btn-block btn-danger" type="button" onclick="showDisapproveCodeForm(@version.id)">Disapprove</button>
+                                    <button style="display: inline-block; float: left;" class="btn btn-block btn-success" type="button" onclick="approveCode(@version.id)">Approve</button>
+                                    <button style="display: inline-block; float: left;" class="btn btn-block btn-danger" type="button" onclick="showDisapproveCodeForm(@version.id)">Disapprove</button>
                                 </td>
                             </tr>
                         }

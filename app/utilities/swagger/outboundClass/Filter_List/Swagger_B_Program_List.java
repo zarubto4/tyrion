@@ -3,12 +3,8 @@ package utilities.swagger.outboundClass.Filter_List;
 import com.avaje.ebean.Query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.blocko.BlockoBlock;
-import models.blocko.TypeOfBlock;
 import models.project.b_program.B_Program;
 import utilities.swagger.outboundClass.Swagger_B_Program_Light;
-import utilities.swagger.outboundClass.Swagger_Blocko_Block_Light;
-import utilities.swagger.outboundClass.Swagger_Type_Of_Block_Light;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +48,7 @@ public class Swagger_B_Program_List {
 
             help.b_program_id = b_program.id;
             help.b_program_name = b_program.name;
-            help.b_program_description = b_program.program_description;
+            help.b_program_description = b_program.description;
             help.b_program_version_id = b_program.version_objects.get(0).id;
             help.b_program_version_name = b_program.version_objects.get(0).version_name;
             help.b_program_version_description = b_program.version_objects.get(0).version_description;

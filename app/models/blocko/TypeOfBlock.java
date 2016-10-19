@@ -24,18 +24,17 @@ public class TypeOfBlock extends Model {
 
                                     @JsonIgnore @ManyToOne  public Project project;
 
-    @OneToMany(mappedBy="type_of_block", cascade = CascadeType.ALL)
-    @JsonIgnore  @ApiModelProperty(required = true)                                                                              public List<BlockoBlock> blocko_blocks = new ArrayList<>();
+    @OneToMany(mappedBy="type_of_block", cascade = CascadeType.ALL) @JsonIgnore  @ApiModelProperty(required = true)         public List<BlockoBlock> blocko_blocks = new ArrayList<>();
 
 
-    @ApiModelProperty(value = "This value will be in Json only if TypeOfBlock is private!",readOnly =true, required = false)
+    @ApiModelProperty(value = "This value will be in Json only if TypeOfBlock is private!", readOnly = true, required = false)
     @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty @Transient public String project_id() {  return project == null ? null : this.project.id; }
 
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
 /* JSON PROPERTY -------------------------------------------------------------------------------------------------------*/
-    
+
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     // Floating shared documentation for Swagger
@@ -54,4 +53,5 @@ public class TypeOfBlock extends Model {
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String,TypeOfBlock> find = new Finder<>(TypeOfBlock.class);
+
 }

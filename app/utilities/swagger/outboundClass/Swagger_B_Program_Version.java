@@ -16,13 +16,10 @@ public class Swagger_B_Program_Version {
     @ApiModelProperty(required = true, readOnly = true)
     public Version_Object version_object;
 
-
     @ApiModelProperty(required = true, readOnly = true)
     public List<B_Program_Hw_Group> hardware_group = new ArrayList<>();
 
-
     @ApiModelProperty(required = true, readOnly = true)
     public String program;
-
 
 }

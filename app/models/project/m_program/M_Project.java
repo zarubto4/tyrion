@@ -12,6 +12,7 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 public class M_Project extends Model {
@@ -36,22 +37,30 @@ public class M_Project extends Model {
 
 
 /* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/
-
-
-
-    @JsonProperty @Transient  @ApiModelProperty(required = true)                         public List<String> virtual_input_output(){
-
-        // TODO doplnit seznam virtuálních inputoutů na jednotlivá zařízení
-        return null;
-    }
-
+    
     @JsonProperty @Transient  @ApiModelProperty(required = true)                         public String project_id()                          {  return project.id; }
-    @JsonProperty @Transient  @ApiModelProperty(required = true, value = "can be empty") public List<String> b_progam_connected_version_id() { List<String> l = new ArrayList<>();  for( Version_Object m    : b_program_version)   l.add(m.id); return l;}
-
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
 
+    /* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/
+    @JsonIgnore            private String azure_m_project_link;
+
+
+    @JsonIgnore @Override public void save() {
+
+        while(true){ // I need Unique Value
+            this.azure_m_project_link = project.get_path()  + "/m-projects/"  + UUID.randomUUID().toString();
+            if (M_Project.find.where().eq("azure_m_project_link", azure_m_project_link ).findUnique() == null) break;
+        }
+
+        super.save();
+    }
+
+    @JsonIgnore @Transient
+    public String get_path(){
+        return  azure_m_project_link;
+    }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 

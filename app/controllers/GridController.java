@@ -1,6 +1,8 @@
 package controllers;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.*;
+import models.compiler.Version_Object;
 import models.grid.Screen_Size_Type;
 import models.person.Person;
 import models.project.global.Project;
@@ -10,6 +12,7 @@ import models.project.m_program.M_Project;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.*;
+import utilities.UtilTools;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_API;
 import utilities.response.GlobalResult;
@@ -316,8 +319,8 @@ public class GridController extends Controller {
             M_Program m_program = new M_Program();
 
             m_program.date_of_create      = new Date();
-            m_program.program_description = help.program_description;
-            m_program.program_name        = help.program_name;
+            m_program.description = help.description;
+            m_program.name        = help.name;
 
             m_program.m_project           = m_project;
 
@@ -365,7 +368,7 @@ public class GridController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successfully created",    response = M_Program.class),
+            @ApiResponse(code = 201, message = "Successfully created",    response = Swagger_M_Program_Version.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -384,27 +387,28 @@ public class GridController extends Controller {
             M_Program main_m_program = M_Program.find.byId( m_program_id );
             if(main_m_program == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
 
+            if (!main_m_program.create_permission()) return GlobalResult.forbidden_Permission();
 
-            M_Program new_version = new M_Program();
+            Version_Object version_object = new Version_Object();
+            version_object.date_of_create = new Date();
+            version_object.version_description = help.version_description;
+            version_object.version_name        = help.version_name;
+            version_object.m_program           = main_m_program;
+            version_object.save();
 
-            new_version.parent_program      = main_m_program;
-            new_version.date_of_create      = new Date();
-            new_version.version_description = help.version_description;
-            new_version.version_name        = help.version_name;
-            new_version.m_code              = help.m_code;
-            new_version.virtual_input_output= help.virtual_input_output;
+            main_m_program.version_objects.add(version_object);
 
-            new_version.set_QR_Token();
+            ObjectNode content = Json.newObject();
+            content.put("m_code", help.m_code);
+            content.put("virtual_input_output", help.virtual_input_output);
 
+            UtilTools.uploadAzure_Version(content.toString(), "m_program.json" , main_m_program.get_path() ,  version_object);
 
-            if (!new_version.create_permission()) return GlobalResult.forbidden_Permission();
-            new_version.save();
+            return GlobalResult.created( Json.toJson(  main_m_program.program_version(version_object) ) );
 
-            return GlobalResult.created(Json.toJson(new_version));
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }
-
     }
 
     @ApiOperation(value = "get M_Program by generated token",
@@ -559,8 +563,8 @@ public class GridController extends Controller {
             if(m_program.m_project == null)  return GlobalResult.result_BadRequest("You cannot change program on version");
 
 
-            m_program.program_description = help.program_description;
-            m_program.program_name        = help.program_name;
+            m_program.description = help.description;
+            m_program.name        = help.name;
             m_program.screen_size_type    = screen_size_type;
             m_program.height_lock         = help.height_lock;
             m_program.width_lock          = help.width_lock;
