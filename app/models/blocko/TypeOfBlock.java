@@ -24,7 +24,7 @@ public class TypeOfBlock extends Model {
 
                                     @JsonIgnore @ManyToOne  public Project project;
 
-    @OneToMany(mappedBy="type_of_block", cascade = CascadeType.ALL) @JsonIgnore  @ApiModelProperty(required = true)         public List<BlockoBlock> blocko_blocks = new ArrayList<>();
+    @OneToMany(mappedBy="type_of_block", cascade = CascadeType.ALL) @ApiModelProperty(required = true)  public List<BlockoBlock> blocko_blocks = new ArrayList<>();
 
 
     @ApiModelProperty(value = "This value will be in Json only if TypeOfBlock is private!", readOnly = true, required = false)
