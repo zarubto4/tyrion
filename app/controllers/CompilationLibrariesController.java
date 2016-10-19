@@ -1363,6 +1363,7 @@ public class CompilationLibrariesController extends Controller {
 ///###################################################################################################################*/
 
     @ApiOperation(value = "Create new Compilation Server",
+            hidden = true,
             tags = {"External Server"},
             notes = "Create new Gate for Compilation Server",
             produces = "application/json",
@@ -1423,6 +1424,7 @@ public class CompilationLibrariesController extends Controller {
     }
 
     @ApiOperation(value = "edit Compilation Server",
+            hidden = true,
             tags = {"External Server"},
             notes = "Edit basic information Compilation Server",
             produces = "application/json",
@@ -1483,6 +1485,7 @@ public class CompilationLibrariesController extends Controller {
     }
 
     @ApiOperation(value = "get all Compilation Servers",
+            hidden = true,
             tags = {"External Server"},
             notes = "get Compilation Servers",
             produces = "application/json",
@@ -1514,6 +1517,7 @@ public class CompilationLibrariesController extends Controller {
     }
 
     @ApiOperation(value = "remove Compilation Servers",
+            hidden = true,
             tags = {"External Server"},
             notes = "remove Compilation Servers",
             produces = "application/json",

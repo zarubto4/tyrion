@@ -319,11 +319,11 @@ POST            /compilation/c_program/binary/:board_id/:command                
 
 
 #Processor
-POST            /compilation/processor                                                      @controllers.CompilationLibrariesController.new_Processor()
-GET             /compilation/processor/:processor_id                                        @controllers.CompilationLibrariesController.get_Processor(processor_id)
-GET             /compilation/processor                                                      @controllers.CompilationLibrariesController.get_Processor_All()
-PUT             /compilation/processor/:processor_id                                        @controllers.CompilationLibrariesController.update_Processor(processor_id)
-DELETE          /compilation/processor/:processor_id                                        @controllers.CompilationLibrariesController.delete_Processor(processor_id)
+POST            /processor                                                                  @controllers.CompilationLibrariesController.new_Processor()
+GET             /processor/:processor_id                                                    @controllers.CompilationLibrariesController.get_Processor(processor_id)
+GET             /processor                                                                  @controllers.CompilationLibrariesController.get_Processor_All()
+PUT             /processor/:processor_id                                                    @controllers.CompilationLibrariesController.update_Processor(processor_id)
+DELETE          /processor/:processor_id                                                    @controllers.CompilationLibrariesController.delete_Processor(processor_id)
 
 #Board
 POST            /compilation/board                                                          @controllers.CompilationLibrariesController.new_Board()
@@ -388,6 +388,7 @@ POST            /compilation/library/upload/:version_id                         
 #File // Skryto ve swaggeru
 GET             /file/fileRecord/:file_record_id                                            @controllers.CompilationLibrariesController.fileRecord(file_record_id)
 
+
 #Compilation Server
 POST            /compilation/server                                                         @controllers.CompilationLibrariesController.create_Compilation_Server()
 PUT             /compilation/server/:server_id                                              @controllers.CompilationLibrariesController.edit_Compilation_Server(server_id)
@@ -399,31 +400,35 @@ DELETE          /compilation/server/:server_id                                  
 ################################################################################################################################################################################
 
 #M Project
-POST            /grid/m_project/:project_id                                                 @controllers.GridController.new_M_Project(project_id)
-GET             /grid/m_project/person                                                      @controllers.GridController.get_M_Projects_ByLoggedPerson()
-GET             /grid/m_project/:m_project_id                                               @controllers.GridController.get_M_Project(m_project_id)
-PUT             /grid/m_project/:m_project_id                                               @controllers.GridController.edit_M_Project(m_project_id)
-DELETE          /grid/m_project/:m_project_id                                               @controllers.GridController.remove_M_Project(m_project_id)
+GET             /m_project/person                                                      @controllers.GridController.get_M_Projects_ByLoggedPerson()
+
+POST            /m_project/:project_id                                                 @controllers.GridController.new_M_Project(project_id)
+GET             /m_project/:m_project_id                                               @controllers.GridController.get_M_Project(m_project_id)
+PUT             /m_project/:m_project_id                                               @controllers.GridController.edit_M_Project(m_project_id)
+DELETE          /m_project/:m_project_id                                               @controllers.GridController.remove_M_Project(m_project_id)
 
 #M Program
-POST            /grid/m_program/:m_project_id                                               @controllers.GridController.new_M_Program(m_project_id)
-POST            /grid/m_program_version/:m_program_id                                       @controllers.GridController.new_M_Program_version(m_program_id)
-GET             /grid/m_program/app/token/:qr_token                                         @controllers.GridController.get_M_Program_byQR_Token_forMobile(qr_token)
-GET             /grid/m_program/app/m_programs                                              @controllers.GridController.get_M_Program_all_forMobile()
+POST            /m_program/:m_project_id                                               @controllers.GridController.new_M_Program(m_project_id)
+GET             /m_program/:m_progrm_id                                                @controllers.GridController.get_M_Program(m_progrm_id)
+PUT             /m_program/:m_progrm_id                                                @controllers.GridController.edit_M_Program(m_progrm_id)
+DELETE          /m_program/:m_progrm_id                                                @controllers.GridController.remove_M_Program(m_progrm_id)
 
-GET             /grid/m_program/:m_progrm_id                                                @controllers.GridController.get_M_Program(m_progrm_id)
-PUT             /grid/m_program/:m_progrm_id                                                @controllers.GridController.edit_M_Program(m_progrm_id)
-DELETE          /grid/m_program/:m_progrm_id                                                @controllers.GridController.remove_M_Program(m_progrm_id)
+POST            /m_program_version/:m_program_id                                       @controllers.GridController.new_M_Program_version(m_program_id)
+DELETE          /m_program_version/:m_program_id                                       @controllers.GridController.remove_M_Program_version(m_program_id)
+
+GET             /m_program/app/token/:qr_token                                         @controllers.GridController.get_M_Program_byQR_Token_forMobile(qr_token)
+GET             /m_program/app/m_programs                                              @controllers.GridController.get_M_Program_all_forMobile()
+
 
 #M Screen Type
-POST            /grid/screen_type                                                           @controllers.GridController.new_Screen_Size_Type()
-GET             /grid/screen_type/all                                                       @controllers.GridController.get_Screen_Size_Type_Combination()
-GET             /grid/screen_type/:screen_size_type_id                                      @controllers.GridController.get_Screen_Size_Type(screen_size_type_id)
-PUT             /grid/screen_type/:screen_size_type_id                                      @controllers.GridController.edit_Screen_Size_Type(screen_size_type_id)
-DELETE          /grid/screen_type/:screen_size_type_id                                      @controllers.GridController.remove_Screen_Size_Type(screen_size_type_id)
+POST            /screen_type                                                           @controllers.GridController.new_Screen_Size_Type()
+GET             /screen_type/all                                                       @controllers.GridController.get_Screen_Size_Type_Combination()
+GET             /screen_type/:screen_size_type_id                                      @controllers.GridController.get_Screen_Size_Type(screen_size_type_id)
+PUT             /screen_type/:screen_size_type_id                                      @controllers.GridController.edit_Screen_Size_Type(screen_size_type_id)
+DELETE          /screen_type/:screen_size_type_id                                      @controllers.GridController.remove_Screen_Size_Type(screen_size_type_id)
 
-PUT             /websocket/terminal/identificator                                           @controllers.GridController.get_identificator()
-PUT             /websocket/terminal/identificator/:terminal_id                              @controllers.GridController.check_identifiactor(terminal_id)
+PUT             /websocket/terminal/identificator                                      @controllers.GridController.get_identificator()
+PUT             /websocket/terminal/identificator/:terminal_id                         @controllers.GridController.check_identifiactor(terminal_id)
 
 
 

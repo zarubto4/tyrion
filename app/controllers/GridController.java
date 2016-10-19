@@ -377,7 +377,7 @@ public class GridController extends Controller {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Secured_API.class)
-    public Result new_M_Program_version( @ApiParam(value = "m_project_id", required = true) String m_program_id) {
+    public Result new_M_Program_version( @ApiParam(value = "m_program_id", required = true) String m_program_id) {
         try {
 
             final Form<Swagger_M_Program_Version_New> form = Form.form(Swagger_M_Program_Version_New.class).bindFromRequest();
@@ -405,6 +405,46 @@ public class GridController extends Controller {
             UtilTools.uploadAzure_Version(content.toString(), "m_program.json" , main_m_program.get_path() ,  version_object);
 
             return GlobalResult.created( Json.toJson(  main_m_program.program_version(version_object) ) );
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "Remove  Version of M_Program",
+            tags = {"M_Program"},
+            notes = "remove bersion of M_Program",
+            produces = "application/json",
+            protocols = "https",
+            code = 201,
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "M_Program.remove_permission", value = M_Program.read_permission_docs),
+                    }),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "M_Project.update_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "M_Program_remove" )
+                    })
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successfully created",    response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Empty.class)
+    public Result remove_M_Program_version( @ApiParam(value = "m_program_id", required = true) String m_program_id) {
+        try {
+
+            M_Program main_m_program = M_Program.find.byId( m_program_id );
+            if(main_m_program == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
+
+            if (!main_m_program.delete_permission()) return GlobalResult.forbidden_Permission();
+
+            return GlobalResult.result_ok( );
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
