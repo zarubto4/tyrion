@@ -446,7 +446,7 @@
                                                             <td>Project ID</td>
                                                             <td>@project.id</td>
                                                             <td>Project name</td>
-                                                            <td>@project.project_name</td>
+                                                            <td>@project.name</td>
                                                             <td rowspan="2">
                                                                <button class="btn btn-block btn-info" type="button" onclick="">Project Details</button>
                                                                 <button class="btn btn-block btn-danger" type="button" onclick="">Remove</button>
@@ -608,7 +608,7 @@
                            <td>@board.id</td>
                            <td>@board.type_of_board.name</td>
                            <td>@board.date_of_create</td>
-                           <td>@board.project.project_name  <button id="show_project_detail" value="" class="btn btn-default.btn-xs" type="button" onclick="editHomerServer(@board.project.id)">Details</button> </td>
+                           <td>@board.project.name  <button id="show_project_detail" value="" class="btn btn-default.btn-xs" type="button" onclick="editHomerServer(@board.project.id)">Details</button> </td>
 
                            <td> @if( board.latest_know_server != null) {
                                     board.latest_know_server.server_name  <button id="show_project_detail" value="" class="btn btn-default.btn-xs" type="button" onclick="editHomerServer(@board.project.id)">Details</button>

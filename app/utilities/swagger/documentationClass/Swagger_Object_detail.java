@@ -10,10 +10,15 @@ import javax.persistence.Transient;
           value = "Object_detail")
 public class Swagger_Object_detail {
 
-    public Swagger_Object_detail(String name, String id){this.name = name;this.id = id;}
+    public Swagger_Object_detail(String name, String description, String id){this.name = name; this.description = description; this.id = id;}
     @JsonProperty @Transient
     @ApiModelProperty(required = true, value = "Name of object for users")
     public String name;
+
+
+    @JsonProperty @Transient
+    @ApiModelProperty(required = true, value = "Description of object for users")
+    public String description;
 
     @JsonProperty @Transient @ApiModelProperty(required = true, value = "ID of object for CRUD operations")
     public String id;

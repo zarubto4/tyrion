@@ -233,7 +233,7 @@ public class NotificationController extends Controller {
             .setText("User")
             .setObject(Person.class, owner.id, owner.full_name, "")
             .setText("wants to invite you into the project ")
-            .setObject(Project.class, project.id, project.project_name, project.id)
+            .setObject(Project.class, project.id, project.name, project.id)
             .setText(".")
             .setText("Do you agree?")
             .setLink_ToTyrion("Yes", Server.tyrion_serverAddress + "/project/project/addParticipant/" + invitation.id + "/true")
@@ -255,7 +255,7 @@ public class NotificationController extends Controller {
             .setText("User ")
             .setObject(Person.class, person.id, person.full_name, "")
             .setText("did not accept your invitation to the project ")
-            .setObject(Project.class, project.id, project.project_name, project.id)
+            .setObject(Project.class, project.id, project.name, project.id)
             .setText(".");
 
     send_notification(owner,notification);
@@ -268,7 +268,7 @@ public class NotificationController extends Controller {
             .setText("User ")
             .setObject(Person.class, person.id, person.full_name, "")
             .setText("accepted your invitation to the project ")
-            .setObject(Project.class, project.id, project.project_name, project.id)
+            .setObject(Project.class, project.id, project.name, project.id)
             .setText(".");
 
     send_notification(owner,notification);

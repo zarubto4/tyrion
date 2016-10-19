@@ -488,8 +488,8 @@ create table product (
 
 create table project (
   id                        varchar(255) not null,
-  project_name              varchar(255),
-  project_description       varchar(255),
+  name                      varchar(255),
+  description               varchar(255),
   product_id                bigint,
   blob_project_link         varchar(255),
   constraint pk_project primary key (id))

@@ -1022,22 +1022,22 @@ public class Basic_Data {
             Project project_1 = new Project();
             project_1.product = product;
             project_1.ownersOfProject.add(person);
-            project_1.project_name = "První velkolepý projekt";
-            project_1.project_description = "Toto je Pepkův velkolepý testovací projekt primárně určen pro testování Blocko Programu, kde už má zaregistrovaný testovací HW";
+            project_1.name = "První velkolepý projekt";
+            project_1.description = "Toto je Pepkův velkolepý testovací projekt primárně určen pro testování Blocko Programu, kde už má zaregistrovaný testovací HW";
             project_1.save();
 
             Project project_2 = new Project();
             project_2.product = product;
             project_2.ownersOfProject.add(person);
-            project_2.project_name = "Druhý prázdný testovací projekt";
-            project_2.project_description = "Toto je Pepkův testovací projekt, kde nic ještě není";
+            project_2.name = "Druhý prázdný testovací projekt";
+            project_2.description = "Toto je Pepkův testovací projekt, kde nic ještě není";
             project_2.save();
 
             Project project_3 = new Project();
             project_3.product = product;
             project_3.ownersOfProject.add(person);
-            project_3.project_name = "Třetí prázdný testovací projekt";
-            project_3.project_description = "Toto je Pepkův třetí super testovací projekt, kde nic ještě není a ten blázen se musel dlouhosáhle rozepsat v description??? To jako vážně? Jste na to připravený v designu???? ?";
+            project_3.name = "Třetí prázdný testovací projekt";
+            project_3.description = "Toto je Pepkův třetí super testovací projekt, kde nic ještě není a ten blázen se musel dlouhosáhle rozepsat v description??? To jako vážně? Jste na to připravený v designu???? ?";
             project_3.save();
 
             // Zaregistruji pod ně Yody

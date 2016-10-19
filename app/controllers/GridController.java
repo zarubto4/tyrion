@@ -180,6 +180,7 @@ public class GridController extends Controller {
 
             m_project.description = help.description;
             m_project.name = help.name;
+            m_project.auto_incrementing = help.auto_incrementing;
 
             m_project.update();
             return GlobalResult.result_ok( Json.toJson(m_project));
@@ -611,7 +612,7 @@ public class GridController extends Controller {
 
             m_program.update();
 
-            return GlobalResult.created(Json.toJson(m_program));
+            return GlobalResult.result_ok(Json.toJson(m_program));
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }

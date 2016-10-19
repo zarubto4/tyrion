@@ -67,7 +67,7 @@ public class Board extends Model {
     @JsonProperty  @Transient @ApiModelProperty(required = true) public boolean main_board()        { return type_of_board.connectible_to_internet; }
 
     @JsonProperty  @Transient @ApiModelProperty(required = true) public String project_id()         { return       project == null ? null : project.id; }
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public String project_name()       { return       project == null ? null : project.project_name; }
+    @JsonProperty  @Transient @ApiModelProperty(required = true) public String project_name()       { return       project == null ? null : project.name; }
 
     @JsonProperty  @Transient @ApiModelProperty(required = true) public Swagger_Board_status status()       {
 

@@ -53,7 +53,7 @@ public class C_Program extends Model {
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty  @Transient public String project_id()           { return project != null ? project.id : null; }
-    @JsonProperty  @Transient public String project_name()         { return project != null ? project.project_name : null;}
+    @JsonProperty  @Transient public String project_name()         { return project != null ? project.name : null;}
     @JsonProperty  @Transient public String type_of_board_id()     { return type_of_board == null ? null : type_of_board.id;}
     @JsonProperty  @Transient public String type_of_board_name()   { return type_of_board == null ? null : type_of_board.name;}
 

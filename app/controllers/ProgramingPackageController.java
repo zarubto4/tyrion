@@ -109,8 +109,8 @@ public class ProgramingPackageController extends Controller {
 
             // Vytvoření objektu
             Project project  = new Project();
-            project.project_name = help.project_name;
-            project.project_description = help.project_description;
+            project.name = help.project_name;
+            project.description = help.project_description;
             project.product = product;
 
             project.ownersOfProject.add( SecurityController.getPerson() );
@@ -297,8 +297,8 @@ public class ProgramingPackageController extends Controller {
             if (!project.edit_permission() )   return GlobalResult.forbidden_Permission();
 
             // Úprava objektu
-            project.project_name = help.project_name;
-            project.project_description = help.project_description;
+            project.name = help.project_name;
+            project.description = help.project_description;
 
             // Uložení do DB
             project.update();
@@ -400,7 +400,7 @@ public class ProgramingPackageController extends Controller {
                             .addText("User ")
                             .addBoldText(SecurityController.getPerson().full_name)
                             .addText(" invites you to collaborate on the project ")
-                            .addBoldText(project.project_name + ". ")
+                            .addBoldText(project.name + ". ")
                             .addText("If you would like to participate in it, please click on the link below and register yourself. ")
                             .endParagraph()
                             .addEmptyLineSpace()
