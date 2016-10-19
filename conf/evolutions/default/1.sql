@@ -335,8 +335,6 @@ create table m_program (
   id                        varchar(255) not null,
   name                      varchar(255),
   description               TEXT,
-  height_lock               boolean,
-  width_lock                boolean,
   qr_token                  varchar(255),
   m_project_id              varchar(255),
   screen_size_type_id       varchar(255),

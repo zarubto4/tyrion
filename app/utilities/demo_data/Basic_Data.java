@@ -1653,8 +1653,6 @@ public class Basic_Data {
             m_program_main_1.date_of_create = new Date();
             m_program_main_1.name = "Tohle je super mega program";
             m_program_main_1.screen_size_type = Screen_Size_Type.find.where().eq("name", "iPhone6").findUnique();
-            m_program_main_1.height_lock = true;
-            m_program_main_1.width_lock = true;
             m_program_main_1.save();
 
 

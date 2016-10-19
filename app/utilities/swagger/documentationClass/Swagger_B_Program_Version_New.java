@@ -28,6 +28,10 @@ public class Swagger_B_Program_Version_New {
     public String program;
 
 
+    @ApiModelProperty(value = "List of M_project Id", required = false)
+    public List<String> m_project_ids  = new ArrayList<>();
+
+
     @Valid
     @ApiModelProperty(value = "Connected groups of hardware - User can create Blocko program without hardware.", required = false)
     public List<Hardware_group> hardware_group  = new ArrayList<>();

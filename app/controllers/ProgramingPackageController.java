@@ -23,6 +23,7 @@ import models.project.b_program.servers.Private_Homer_Server;
 import models.project.c_program.C_Program;
 import models.project.global.Product;
 import models.project.global.Project;
+import models.project.m_program.M_Project;
 import play.api.libs.mailer.MailerClient;
 import play.data.Form;
 import play.libs.Json;
@@ -1200,6 +1201,12 @@ public class ProgramingPackageController extends Controller {
             version_object.b_program               = b_program;
 
 
+            List<M_Project> m_projects = M_Project.find.where().idIn(help.m_project_ids).findList();
+            for(M_Project m_project : m_projects){
+                if(!m_project.update_permission()) return GlobalResult.forbidden_Permission();
+            }
+
+            version_object.m_projects.addAll(m_projects);
 
             // Definování main Board
             for( Swagger_B_Program_Version_New.Hardware_group group : help.hardware_group) {

@@ -14,6 +14,7 @@ import models.project.global.Project;
 import play.libs.Json;
 import utilities.Server;
 import utilities.swagger.documentationClass.Swagger_M_Program_Version;
+import utilities.swagger.documentationClass.Swagger_M_Program_Version_Interface;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -33,11 +34,6 @@ public class M_Program extends Model{
     @JsonInclude(JsonInclude.Include.NON_NULL)                                      public String name;
     @JsonInclude(JsonInclude.Include.NON_NULL)  @Column(columnDefinition = "TEXT")  public String description;
 
-                                            //# NAstavení Programu
-                                            public boolean height_lock;
-                                            public boolean width_lock;
-
-
     @ApiModelProperty(required = true)      public String qr_token;
 
     //# Vazby Programu
@@ -49,7 +45,7 @@ public class M_Program extends Model{
 
 
 
-    @JsonIgnore @OneToMany(mappedBy="m_program", cascade = CascadeType.ALL, fetch = FetchType.EAGER) @OrderBy("date_of_create DESC") public List<Version_Object> version_objects = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="m_program", cascade = CascadeType.ALL, fetch = FetchType.LAZY) @OrderBy("date_of_create DESC") public List<Version_Object> version_objects = new ArrayList<>();
 
 
 
@@ -68,19 +64,27 @@ public class M_Program extends Model{
 
 
     @JsonProperty @Transient public List<Swagger_M_Program_Version> program_versions() {
-        List<Swagger_M_Program_Version> versions;
-        versions = new ArrayList<>();
+        List<Swagger_M_Program_Version> versions = new ArrayList<>();
 
-        for(Version_Object v : version_objects) versions.add(program_version(v));
+        for(Version_Object v : getVersion_objects()) versions.add(program_version(v));
         return versions;
     }
 
 
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+
+
+
+    /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     /* Private Documentation Class -------------------------------------------------------------------------------------*/
 
     // Objekt určený k vracení verze
+    public List<Version_Object> getVersion_objects() {
+        return version_objects;
+    }
+
+
     @JsonIgnore @Transient
     public Swagger_M_Program_Version program_version(Version_Object version_object){
         try {
@@ -95,6 +99,39 @@ public class M_Program extends Model{
 
                 JsonNode json = Json.parse(fileRecord.get_fileRecord_from_Azure_inString());
                 m_program_versions.m_code = json.get("m_code").asText();
+                m_program_versions.virtual_input_output = json.get("virtual_input_output").asText();
+
+            }
+
+            return m_program_versions;
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
+    @JsonIgnore @Transient public List<Swagger_M_Program_Version_Interface> program_versions_interface() {
+        List<Swagger_M_Program_Version_Interface> versions = new ArrayList<>();
+
+        for(Version_Object v : getVersion_objects()) versions.add(program_version_interface(v));
+        return versions;
+    }
+
+
+    @JsonIgnore @Transient
+    public Swagger_M_Program_Version_Interface program_version_interface(Version_Object version_object){
+        try {
+
+            Swagger_M_Program_Version_Interface m_program_versions = new Swagger_M_Program_Version_Interface();
+            m_program_versions.version_object = version_object;
+
+            FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "m_program.json").findUnique();
+
+            if (fileRecord != null) {
+
+                JsonNode json = Json.parse(fileRecord.get_fileRecord_from_Azure_inString());
                 m_program_versions.virtual_input_output = json.get("virtual_input_output").asText();
 
             }

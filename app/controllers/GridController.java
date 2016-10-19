@@ -18,6 +18,8 @@ import utilities.loginEntities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
+import utilities.swagger.outboundClass.Swagger_M_Program_Interface;
+import utilities.swagger.outboundClass.Swagger_M_Project_Interface;
 import utilities.swagger.outboundClass.Swagger_Screen_Size_Type_Combination;
 
 import java.util.ArrayList;
@@ -214,13 +216,13 @@ public class GridController extends Controller {
         try{
 
             M_Project m_project = M_Project.find.byId(m_project_id);
-            if(m_project == null) return GlobalResult.notFoundObject("SecurityRole role_id not found");
-
+            if(m_project == null) return GlobalResult.notFoundObject("M_project m_project_id not found");
 
             if (!m_project.delete_permission())  return GlobalResult.forbidden_Permission();
             m_project.delete();
 
             return GlobalResult.result_ok();
+
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }
@@ -262,6 +264,82 @@ public class GridController extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
 
+    }
+
+    @ApiOperation(value = "get accessible interface from M_Project",
+            tags = {"M_Program"},
+            notes = "get accessible interface from M_Project",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "M_Project.read_permission", value = M_Project.read_permission_docs ),
+                    }),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "M_Project.remove_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key"      , value = "M_Project_read" ),
+                            @ExtensionProperty(name = "Dynamic Permission key"     , value = "M_Project_read.{project_id}"),
+                    })
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_M_Project_Interface.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Empty.class)
+    @Security.Authenticated(Secured_API.class)
+    public Result get_M_Project_Interface_collection(@ApiParam(value = "m_project_id String query", required = true)  String m_project_id) {
+        try{
+
+            M_Project m_project = M_Project.find.byId(m_project_id);
+            if(m_project == null) return GlobalResult.notFoundObject("M_project m_project_id not found");
+
+            if (!m_project.read_permission())  return GlobalResult.forbidden_Permission();
+
+
+            Swagger_M_Project_Interface m_project_interface = new Swagger_M_Project_Interface();
+            m_project_interface.name = m_project.name;
+            m_project_interface.description = m_project.description;
+            m_project_interface.id = m_project.id;
+            m_project_interface.auto_incrementing = m_project.auto_incrementing;
+
+
+            if(m_project.auto_incrementing){
+
+                for(M_Program m_program : m_project.m_programs) {
+
+                    Swagger_M_Program_Interface m_program_interface = new Swagger_M_Program_Interface();
+                    m_program_interface.description = m_program.description;
+                    m_program_interface.name        = m_program.name;
+                    m_program_interface.id          = m_program.id;
+
+                    m_program_interface.accessible_versions.add( m_program.program_version_interface(Version_Object.find.where().eq("m_program.id", m_program.id).orderBy("date_of_create").setMaxRows(1).findUnique()));
+                    m_project_interface.accessible_interface.add(m_program_interface);
+                }
+
+            }else {
+
+                for(M_Program m_program : m_project.m_programs) {
+
+                    Swagger_M_Program_Interface m_program_interface = new Swagger_M_Program_Interface();
+                    m_program_interface.description = m_program.description;
+                    m_program_interface.name        = m_program.name;
+                    m_program_interface.id          = m_program.id;
+
+                    m_program_interface.accessible_versions = m_program.program_versions_interface();
+                    m_project_interface.accessible_interface.add(m_program_interface);
+                }
+
+            }
+
+            return GlobalResult.result_ok(Json.toJson(m_project_interface));
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
     }
 
 
@@ -326,8 +404,6 @@ public class GridController extends Controller {
             m_program.m_project           = m_project;
 
             m_program.screen_size_type    = screen_size_type;
-            m_program.height_lock         = help.height_lock;
-            m_program.width_lock          = help.width_lock;
 
             m_program.set_QR_Token();
 
@@ -607,8 +683,6 @@ public class GridController extends Controller {
             m_program.description = help.description;
             m_program.name        = help.name;
             m_program.screen_size_type    = screen_size_type;
-            m_program.height_lock         = help.height_lock;
-            m_program.width_lock          = help.width_lock;
 
             m_program.update();
 

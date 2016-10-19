@@ -25,12 +25,4 @@ public class Swagger_M_Program_New {
     @ApiModelProperty(required = true, value = "Length must be between 8 and 60 characters.")
     public String  name;
 
-    @Constraints.Required
-    @ApiModelProperty(required = true, value = "If true - its possible turn on that on height")
-    public boolean  height_lock;
-
-    @Constraints.Required
-    @ApiModelProperty(required = true, value = "If true - its possible turn on that on width")
-    public boolean  width_lock;
-
 }

@@ -401,6 +401,7 @@ DELETE          /compilation/server/:server_id                                  
 
 #M Project
 GET             /m_project/person                                                      @controllers.GridController.get_M_Projects_ByLoggedPerson()
+GET             /m_project/interface_collection/:m_project_id                          @controllers.GridController.get_M_Project_Interface_collection(m_project_id)
 
 POST            /m_project/:project_id                                                 @controllers.GridController.new_M_Project(project_id)
 GET             /m_project/:m_project_id                                               @controllers.GridController.get_M_Project(m_project_id)
