@@ -12,6 +12,9 @@ public class Swagger_BlockoBlock_ShortVersion {
 
     @ApiModelProperty(required = true, readOnly = true)    public String id;
     @ApiModelProperty(required = true, readOnly = true)    public String name;
+    @ApiModelProperty(required = true, readOnly = true)    public String description;
     @ApiModelProperty(required = true, readOnly = true)    public Date date_of_create;
+
+    @ApiModelProperty(required = true, readOnly = true)     public String design_json;
 
 }

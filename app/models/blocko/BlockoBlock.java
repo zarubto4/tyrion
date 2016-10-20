@@ -64,8 +64,10 @@ public class BlockoBlock extends Model {
 
                 Swagger_BlockoBlock_ShortVersion short_version = new Swagger_BlockoBlock_ShortVersion();
                 short_version.id = m.id;
+                short_version.description = m.version_description;
                 short_version.name = m.version_name;
                 short_version.date_of_create = m.date_of_create;
+                short_version.design_json = m.design_json;
 
                 list.add(short_version);
             }
