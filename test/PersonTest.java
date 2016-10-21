@@ -4,38 +4,53 @@ import models.person.FloatingPersonToken;
 import models.person.Person;
 import models.person.ValidationToken;
 import org.junit.*;
-import org.junit.rules.MethodRule;
-import org.junit.rules.TestWatchman;
+import org.junit.rules.TestRule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 import org.junit.runners.MethodSorters;
-import org.junit.runners.model.FrameworkMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.libs.Json;
-import play.mvc.Http;
 import play.mvc.Http.RequestBuilder;
 import play.mvc.Result;
-import play.test.*;
-
-import java.util.Collections;
-import java.util.Map;
+import play.test.FakeApplication;
+import play.test.Helpers;
 
 import static org.junit.Assert.*;
 import static play.test.Helpers.*;
-import static org.mockito.Mockito.*;
+
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class PersonTest extends WithApplication{
+public class PersonTest{
+
+    public static FakeApplication app;
+    public static String adminToken;
+
+    @BeforeClass
+    public static void startApp() throws Exception{
+        app = Helpers.fakeApplication();
+        Helpers.start(app);
+        adminToken = FloatingPersonToken.find.where().eq("person.mail", "admin@byzance.cz").findList().get(0).authToken;
+    }
+
+    @AfterClass
+    public static void stopApp() throws Exception{
+        Helpers.stop(app);
+    }
 
     Logger logger = LoggerFactory.getLogger(TestCase.class);
+
     @Rule
-    public MethodRule watchman = new TestWatchman() {
-        public void starting(FrameworkMethod method) {
-            logger.info("Test {} is running.", method.getName());
+    public TestRule watchman = new TestWatcher() {
+        public void starting(Description description) {
+            logger.info("Test {} is running.", description.getMethodName());
         }
-        public void succeeded(FrameworkMethod method) {
-            logger.info("Test {} successfully run.", method.getName());
+        public void succeeded(Description description) {
+            logger.info("Test {} successfully run.", description.getMethodName());
         }
-        public void failed(Throwable e, FrameworkMethod method) { logger.error("Test {} failed! Reason: {} a.", method.getName(), e.getMessage()); }
+        public void failed(Throwable e, Description description) {
+            logger.error("Test {} failed! Reason: {} a.", description.getMethodName(), e.getMessage());
+        }
     };
 
     @Test  
@@ -81,7 +96,7 @@ public class PersonTest extends WithApplication{
                 .method(POST)
                 .uri("/coreClient/person/validate_entity")
                 .bodyJson(body)
-                .header("X-AUTH-TOKEN", FloatingPersonToken.find.where().eq("person.mail", "admin@byzance.cz").findList().get(0).authToken);
+                .header("X-AUTH-TOKEN", adminToken);
 
         Result result = route(request);
         assertEquals(OK, result.status());
@@ -99,7 +114,7 @@ public class PersonTest extends WithApplication{
                 .method(POST)
                 .uri("/coreClient/person/validate_entity")
                 .bodyJson(body)
-                .header("X-AUTH-TOKEN", FloatingPersonToken.find.where().eq("person.mail", "admin@byzance.cz").findList().get(0).authToken);
+                .header("X-AUTH-TOKEN", adminToken);
 
         Result result = route(request);
         assertEquals(OK, result.status());
@@ -119,7 +134,7 @@ public class PersonTest extends WithApplication{
                 .method(PUT)
                 .uri("/coreClient/person/person/" + id)
                 .bodyJson(body)
-                .header("X-AUTH-TOKEN", FloatingPersonToken.find.where().eq("person.mail", "admin@byzance.cz").findList().get(0).authToken);
+                .header("X-AUTH-TOKEN", adminToken);
 
         Result result = route(request);
         assertEquals(OK, result.status());
@@ -133,7 +148,7 @@ public class PersonTest extends WithApplication{
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
                 .uri("/coreClient/person/person/" + id)
-                .header("X-AUTH-TOKEN", FloatingPersonToken.find.where().eq("person.mail", "admin@byzance.cz").findList().get(0).authToken);
+                .header("X-AUTH-TOKEN", adminToken);
 
         Result result = route(request);
         assertEquals(OK, result.status());
@@ -147,7 +162,7 @@ public class PersonTest extends WithApplication{
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
                 .uri("/coreClient/person/person/deactivate/" + id)
-                .header("X-AUTH-TOKEN", FloatingPersonToken.find.where().eq("person.mail", "admin@byzance.cz").findList().get(0).authToken);
+                .header("X-AUTH-TOKEN", adminToken);
 
         Result result = route(request);
         assertEquals(OK, result.status());
@@ -161,7 +176,7 @@ public class PersonTest extends WithApplication{
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
                 .uri("/coreClient/person/person/activate/" + id)
-                .header("X-AUTH-TOKEN", FloatingPersonToken.find.where().eq("person.mail", "admin@byzance.cz").findList().get(0).authToken);
+                .header("X-AUTH-TOKEN", adminToken);
 
         Result result = route(request);
         assertEquals(OK, result.status());
@@ -173,23 +188,11 @@ public class PersonTest extends WithApplication{
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
                 .uri("/coreClient/person/person/all")
-                .header("X-AUTH-TOKEN", FloatingPersonToken.find.where().eq("person.mail", "admin@byzance.cz").findList().get(0).authToken);
+                .header("X-AUTH-TOKEN", adminToken);
 
         Result result = route(request);
         assertEquals(OK, result.status());
     }
-/*
-    @BeforeClass
-    public static void setUpContext() {
-        Map<String, String> flashData = Collections.emptyMap();
-        Map<String, Object> argData = Collections.emptyMap();
-        Long id = 2L;
-        play.api.mvc.RequestHeader header = mock(play.api.mvc.RequestHeader.class);
-        Http.Context context = new Http.Context(id, header, fakeRequest().build(), flashData, flashData, argData);
-        Http.Context.current.set(context);
-        System.out.println("00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000");
-    }
-*/
 
     @Test   
     public void N0010_login() {
@@ -202,11 +205,12 @@ public class PersonTest extends WithApplication{
         RequestBuilder request = new RequestBuilder()
                 .method(POST)
                 .uri("/coreClient/person/permission/login")
-                .bodyJson(body);
+                .bodyJson(body)
+                .header(USER_AGENT, "foo");
 
-        //route(request);
-        //route(request);
-        //route(request);
+        route(request);
+        route(request);
+        route(request);
 
         Result result = route(request);
         assertEquals(OK, result.status());
@@ -232,7 +236,7 @@ public class PersonTest extends WithApplication{
         RequestBuilder request = new RequestBuilder()
                 .method(DELETE)
                 .uri("/coreClient/person/person/remove/" + id)
-                .header("X-AUTH-TOKEN", FloatingPersonToken.find.where().eq("person.mail", "admin@byzance.cz").findList().get(0).authToken);
+                .header("X-AUTH-TOKEN", adminToken);
 
         Result result = route(request);
         assertEquals(OK, result.status());

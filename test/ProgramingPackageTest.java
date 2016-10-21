@@ -33,6 +33,7 @@ public class ProgramingPackageTest extends WithApplication{
 
     @Test
     public void testRequest() {
+        System.out.println("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000");
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
                 .uri("/compilation/producer/1")
