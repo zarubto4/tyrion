@@ -591,7 +591,6 @@
                 }
             })}
         function test_notification(data){
-            level = document.getElementById('level').value;
             model_data = $("#testNotification").serializeObject();
             $.ajax({
                 url: '/notification/test/' + data,
@@ -601,7 +600,7 @@
                 dataType: 'json',
                 success:function(e){
                 },
-                error:function(e) {
+                error:function(json.responseText) {
                     alert("Unsuccessful.");
                 }
             })}

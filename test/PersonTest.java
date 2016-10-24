@@ -7,7 +7,6 @@ import org.junit.*;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
-import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.libs.Json;
@@ -16,25 +15,29 @@ import play.mvc.Result;
 import play.test.FakeApplication;
 import play.test.Helpers;
 
+
+import java.util.UUID;
+
 import static org.junit.Assert.*;
 import static play.test.Helpers.*;
 
-
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class PersonTest{
+public class PersonTest extends TestHelper{
 
     public static FakeApplication app;
     public static String adminToken;
+    public static Person person;
 
     @BeforeClass
     public static void startApp() throws Exception{
         app = Helpers.fakeApplication();
         Helpers.start(app);
         adminToken = FloatingPersonToken.find.where().eq("person.mail", "admin@byzance.cz").findList().get(0).authToken;
+        person = person_create();
     }
 
     @AfterClass
     public static void stopApp() throws Exception{
+        person_delete(person);
         Helpers.stop(app);
     }
 
@@ -53,13 +56,13 @@ public class PersonTest{
         }
     };
 
-    @Test  
-    public void N0001_register_person() {
+    @Test
+    public void register_person() {
 
         ObjectNode body = Json.newObject();
 
-        body.put("mail", "test@mail.com");
-        body.put("nick_name", "Test_user_nickname");
+        body.put("mail", UUID.randomUUID().toString() + "@mail.com");
+        body.put("nick_name", UUID.randomUUID().toString());
         body.put("password", "password123");
 
         RequestBuilder request = new RequestBuilder()
@@ -72,20 +75,20 @@ public class PersonTest{
     }
 
     @Test () 
-    public void N0002_email_authentication() {
+    public void email_authentication() {
 
-        String token = ValidationToken.find.where().eq("personEmail", "test@mail.com").findList().get(0).authToken;
+        String token = ValidationToken.find.where().eq("personEmail", person.mail).findUnique().authToken;
 
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
-                .uri("/mail_person_authentication/test@mail.com/" + token);
+                .uri("/mail_person_authentication/" + person.mail + "/" + token);
 
         Result result = route(request);
         assertEquals(SEE_OTHER, result.status());
     }
 
     @Test   
-    public void N0003_mail_validation() {
+    public void mail_validation() {
 
         ObjectNode body = Json.newObject();
 
@@ -103,7 +106,7 @@ public class PersonTest{
     }
 
     @Test   
-    public void N0004_nick_name_validation() {
+    public void nick_name_validation() {
 
         ObjectNode body = Json.newObject();
 
@@ -121,9 +124,7 @@ public class PersonTest{
     }
 
     @Test   
-    public void N0005_edit_person_information() {
-
-        String id = Person.find.where().eq("mail", "test@mail.com").findUnique().id;
+    public void edit_person_information() {
 
         ObjectNode body = Json.newObject();
 
@@ -132,7 +133,7 @@ public class PersonTest{
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri("/coreClient/person/person/" + id)
+                .uri("/coreClient/person/person/" + person.id)
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", adminToken);
 
@@ -141,13 +142,11 @@ public class PersonTest{
     }
 
     @Test   
-    public void N0006_get_person() {
-
-        String id = Person.find.where().eq("mail", "test@mail.com").findUnique().id;
+    public void get_person() {
 
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
-                .uri("/coreClient/person/person/" + id)
+                .uri("/coreClient/person/person/" + person.id)
                 .header("X-AUTH-TOKEN", adminToken);
 
         Result result = route(request);
@@ -155,13 +154,11 @@ public class PersonTest{
     }
 
     @Test   
-    public void N0007_deactivate_person() {
-
-        String id = Person.find.where().eq("mail", "test@mail.com").findUnique().id;
+    public void deactivate_person() {
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri("/coreClient/person/person/deactivate/" + id)
+                .uri("/coreClient/person/person/deactivate/" + person.id)
                 .header("X-AUTH-TOKEN", adminToken);
 
         Result result = route(request);
@@ -169,13 +166,11 @@ public class PersonTest{
     }
 
     @Test   
-    public void N0008_activate_person() {
-
-        String id = Person.find.where().eq("mail", "test@mail.com").findUnique().id;
+    public void activate_person() {
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri("/coreClient/person/person/activate/" + id)
+                .uri("/coreClient/person/person/activate/" + person.id)
                 .header("X-AUTH-TOKEN", adminToken);
 
         Result result = route(request);
@@ -183,59 +178,11 @@ public class PersonTest{
     }
 
     @Test   
-    public void N0009_get_person_all() {
+    public void get_person_all() {
 
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
                 .uri("/coreClient/person/person/all")
-                .header("X-AUTH-TOKEN", adminToken);
-
-        Result result = route(request);
-        assertEquals(OK, result.status());
-    }
-
-    @Test   
-    public void N0010_login() {
-
-        ObjectNode body = Json.newObject();
-
-        body.put("mail", "test@mail.com");
-        body.put("password", "password123");
-
-        RequestBuilder request = new RequestBuilder()
-                .method(POST)
-                .uri("/coreClient/person/permission/login")
-                .bodyJson(body)
-                .header(USER_AGENT, "foo");
-
-        route(request);
-        route(request);
-        route(request);
-
-        Result result = route(request);
-        assertEquals(OK, result.status());
-    }
-
-    @Test   
-    public void N0011_logout() {
-
-        RequestBuilder request = new RequestBuilder()
-                .method(POST)
-                .uri("/coreClient/person/permission/logout")
-                .header("X-AUTH-TOKEN", FloatingPersonToken.find.where().eq("person.mail", "test@mail.com").findList().get(0).authToken);
-
-        Result result = route(request);
-        assertEquals(OK, result.status());
-    }
-
-    @Test   
-    public void N0012_delete_person() {
-
-        String id = Person.find.where().eq("mail", "test@mail.com").findUnique().id;
-
-        RequestBuilder request = new RequestBuilder()
-                .method(DELETE)
-                .uri("/coreClient/person/person/remove/" + id)
                 .header("X-AUTH-TOKEN", adminToken);
 
         Result result = route(request);
