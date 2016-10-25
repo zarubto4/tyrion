@@ -2,6 +2,7 @@ import junit.framework.TestCase;
 import models.person.FloatingPersonToken;
 import models.person.Person;
 import models.person.ValidationToken;
+import models.project.global.financial.GeneralTariff;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +19,7 @@ public class TestHelper {
             Person person = new Person();
 
             person.nick_name = UUID.randomUUID().toString();
-            person.mail = UUID.randomUUID().toString();
+            person.mail = UUID.randomUUID().toString() + "@mail.com";
             person.mailValidated = false;
             person.full_name = UUID.randomUUID().toString();
 
@@ -69,6 +70,65 @@ public class TestHelper {
         try {
 
             person.delete();
+
+        }catch (Exception e){
+            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+        }
+    }
+
+    public static GeneralTariff tariff_create(){
+        try {
+
+            GeneralTariff general_tariff = new GeneralTariff();
+
+            general_tariff.tariff_name      = UUID.randomUUID().toString();
+            general_tariff.identificator    = UUID.randomUUID().toString();
+
+            general_tariff.color            = UUID.randomUUID().toString();
+
+            general_tariff.required_paid_that = true;
+            general_tariff.number_of_free_months    = 3;
+
+            general_tariff.company_details_required  = false;
+            general_tariff.required_payment_mode     = false;
+            general_tariff.required_payment_method   = false;
+
+            general_tariff.credit_card_support      = true;
+            general_tariff.bank_transfer_support    = true;
+
+            general_tariff.mode_annually    = true;
+            general_tariff.mode_credit      = true;
+            general_tariff.free             = true;
+
+            general_tariff.usd = 3.8;
+            general_tariff.eur = 3.4;
+            general_tariff.czk = 3.0;
+
+            general_tariff.save();
+            general_tariff.refresh();
+
+            return general_tariff;
+
+        }catch (Exception e){
+            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+            return null;
+        }
+    }
+
+    public static void method(){
+        try {
+
+
+
+        }catch (Exception e){
+            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+        }
+    }
+
+    public static void method2(){
+        try {
+
+
 
         }catch (Exception e){
             logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());

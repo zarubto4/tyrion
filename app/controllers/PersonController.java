@@ -791,6 +791,9 @@ public class PersonController extends Controller {
         if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
         Swagger_Person_ChangeProperty help = form.get();
 
+        if(ChangePropertyToken.find.where().eq("person.id", SecurityController.getPerson().id).findUnique() != null)
+            return GlobalResult.result_BadRequest("You can request only one change at this time.");
+
         // Proměnné mailu
         String subject;
         String text;

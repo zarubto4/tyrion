@@ -24,20 +24,36 @@ import static play.test.Helpers.*;
 public class PersonTest extends TestHelper{
 
     public static FakeApplication app;
+
     public static String adminToken;
+
     public static Person person;
+    public static String userToken;
+
+    public static Person randomPerson;
+    public static String randomUserToken;
 
     @BeforeClass
     public static void startApp() throws Exception{
+
         app = Helpers.fakeApplication();
         Helpers.start(app);
+
         adminToken = FloatingPersonToken.find.where().eq("person.mail", "admin@byzance.cz").findList().get(0).authToken;
+
         person = person_create();
+        person_authenticate(person);
+        userToken = person_login(person);
+
+        randomPerson = person_create();
+        person_authenticate(randomPerson);
+        randomUserToken = person_login(randomPerson);
     }
 
     @AfterClass
     public static void stopApp() throws Exception{
         person_delete(person);
+        person_delete(randomPerson);
         Helpers.stop(app);
     }
 
@@ -74,7 +90,7 @@ public class PersonTest extends TestHelper{
         assertEquals(OK, result.status());
     }
 
-    @Test () 
+    @Test
     public void email_authentication() {
 
         String token = ValidationToken.find.where().eq("personEmail", person.mail).findUnique().authToken;
@@ -85,6 +101,30 @@ public class PersonTest extends TestHelper{
 
         Result result = route(request);
         assertEquals(SEE_OTHER, result.status());
+    }
+
+    @Test
+    public void admin_email_admin_authentication() {
+
+        RequestBuilder request = new RequestBuilder()
+                .method(PUT)
+                .uri("/coreClient/person/person/valid_email/" + person.id)
+                .header("X-AUTH-TOKEN", adminToken);
+
+        Result result = route(request);
+        assertEquals(OK, result.status());
+    }
+
+    @Test
+    public void user_email_admin_authentication() {
+
+        RequestBuilder request = new RequestBuilder()
+                .method(PUT)
+                .uri("/coreClient/person/person/valid_email/" + person.id)
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+        assertEquals(FORBIDDEN, result.status());
     }
 
     @Test   
@@ -98,8 +138,7 @@ public class PersonTest extends TestHelper{
         RequestBuilder request = new RequestBuilder()
                 .method(POST)
                 .uri("/coreClient/person/validate_entity")
-                .bodyJson(body)
-                .header("X-AUTH-TOKEN", adminToken);
+                .bodyJson(body);
 
         Result result = route(request);
         assertEquals(OK, result.status());
@@ -116,15 +155,14 @@ public class PersonTest extends TestHelper{
         RequestBuilder request = new RequestBuilder()
                 .method(POST)
                 .uri("/coreClient/person/validate_entity")
-                .bodyJson(body)
-                .header("X-AUTH-TOKEN", adminToken);
+                .bodyJson(body);
 
         Result result = route(request);
         assertEquals(OK, result.status());
     }
 
     @Test   
-    public void edit_person_information() {
+    public void user_edit_person_information() {
 
         ObjectNode body = Json.newObject();
 
@@ -135,10 +173,28 @@ public class PersonTest extends TestHelper{
                 .method(PUT)
                 .uri("/coreClient/person/person/" + person.id)
                 .bodyJson(body)
-                .header("X-AUTH-TOKEN", adminToken);
+                .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
         assertEquals(OK, result.status());
+    }
+
+    @Test
+    public void random_user_edit_person_information() {
+
+        ObjectNode body = Json.newObject();
+
+        body.put("nick_name", "Test_user_nickname_random_change");
+        body.put("full_name", "Test Byzance User");
+
+        RequestBuilder request = new RequestBuilder()
+                .method(PUT)
+                .uri("/coreClient/person/person/" + person.id)
+                .bodyJson(body)
+                .header("X-AUTH-TOKEN", randomUserToken);
+
+        Result result = route(request);
+        assertEquals(FORBIDDEN, result.status());
     }
 
     @Test   
@@ -147,31 +203,7 @@ public class PersonTest extends TestHelper{
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
                 .uri("/coreClient/person/person/" + person.id)
-                .header("X-AUTH-TOKEN", adminToken);
-
-        Result result = route(request);
-        assertEquals(OK, result.status());
-    }
-
-    @Test   
-    public void deactivate_person() {
-
-        RequestBuilder request = new RequestBuilder()
-                .method(PUT)
-                .uri("/coreClient/person/person/deactivate/" + person.id)
-                .header("X-AUTH-TOKEN", adminToken);
-
-        Result result = route(request);
-        assertEquals(OK, result.status());
-    }
-
-    @Test   
-    public void activate_person() {
-
-        RequestBuilder request = new RequestBuilder()
-                .method(PUT)
-                .uri("/coreClient/person/person/activate/" + person.id)
-                .header("X-AUTH-TOKEN", adminToken);
+                .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
         assertEquals(OK, result.status());
@@ -187,5 +219,33 @@ public class PersonTest extends TestHelper{
 
         Result result = route(request);
         assertEquals(OK, result.status());
+    }
+
+    @Test
+    public void admin_delete_person() {
+
+        Person p = person_create();
+
+        RequestBuilder request = new RequestBuilder()
+                .method(DELETE)
+                .uri("/coreClient/person/person/remove/" + p.id)
+                .header("X-AUTH-TOKEN", adminToken);
+
+        Result result = route(request);
+        assertEquals(OK, result.status());
+    }
+
+    @Test
+    public void user_delete_person() {
+
+        Person p = person_create();
+
+        RequestBuilder request = new RequestBuilder()
+                .method(DELETE)
+                .uri("/coreClient/person/person/remove/" + p.id)
+                .header("X-AUTH-TOKEN", person_login(p));
+
+        Result result = route(request);
+        assertEquals(FORBIDDEN, result.status());
     }
 }

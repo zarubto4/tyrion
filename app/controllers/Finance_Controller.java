@@ -43,7 +43,7 @@ public class Finance_Controller extends Controller {
 
     // ADMIN - GENERA PRODUCT TARIFF SETTINGS ##########################################################################
 
-    @ApiOperation(value = "create gewneral Tariffs", hidden = true)
+    @ApiOperation(value = "create general Tariffs", hidden = true)
     public Result tariff_general_create(){
         try {
             final Form<Swagger_Tariff_General_Create> form = Form.form(Swagger_Tariff_General_Create.class).bindFromRequest();
@@ -83,7 +83,7 @@ public class Finance_Controller extends Controller {
         }
     }
 
-    @ApiOperation(value = "create gewneral Tariffs", hidden = true)
+    @ApiOperation(value = "edit general Tariffs", hidden = true)
     public Result tariff_general_edit(String tariff_id){
         try {
 
