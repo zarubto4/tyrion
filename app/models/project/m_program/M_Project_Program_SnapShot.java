@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@ApiModel(value = "M_Project_SnapShot_Detail")
 public class M_Project_Program_SnapShot extends Model {
 
 /* DATABASE VALUE  ----------------------------------------------------------------------------------------------------*/
@@ -29,14 +30,13 @@ public class M_Project_Program_SnapShot extends Model {
 
     @JsonProperty @Transient  @ApiModelProperty(required = true, readOnly = true) public String m_project_id() { return m_project.id;}
 
-    @JsonProperty @Transient  @ApiModelProperty(required = true, readOnly = true) public List<M_Program_SnapShot_Oncoming> m_project_snapshots() {
-        List<M_Program_SnapShot_Oncoming> list = new ArrayList<>();
+    @JsonProperty @Transient  @ApiModelProperty(required = true, readOnly = true) public List<M_Program_SnapShot_Detail> m_program_snapshots() {
+        List<M_Program_SnapShot_Detail> list = new ArrayList<>();
         try {
-
 
             if (version_objects != null)
                 for (Version_Object version_object : version_objects) {
-                    M_Program_SnapShot_Oncoming s = new M_Program_SnapShot_Oncoming();
+                    M_Program_SnapShot_Detail s = new M_Program_SnapShot_Detail();
                     s.m_program_id = version_object.m_program.id;
                     s.m_program_name = version_object.m_program.name;
                     s.m_program_description = version_object.m_program.description;
@@ -57,9 +57,10 @@ public class M_Project_Program_SnapShot extends Model {
 
 /* Private Documentation Class -----------------------------------------------------------------------------------------*/
 
-    @ApiModel(value = "M_Program_SnapShot_Oncoming")
-    public class M_Program_SnapShot_Oncoming {
-        public M_Program_SnapShot_Oncoming(){}
+    public class M_Program_SnapShot_Detail {
+
+        public M_Program_SnapShot_Detail(){}
+
         @Constraints.Required @ApiModelProperty(required = true, readOnly = true) public String m_program_id;
         @Constraints.Required @ApiModelProperty(required = true, readOnly = true) public String m_program_name;
         @Constraints.Required @ApiModelProperty(required = true, readOnly = true) public String m_program_description;

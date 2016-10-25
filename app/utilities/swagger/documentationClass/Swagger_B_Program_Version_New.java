@@ -64,7 +64,7 @@ public class Swagger_B_Program_Version_New {
     }
 
 
-    @ApiModel(value = "M_Project_Program_SnapShot")
+
     public static class M_Project_SnapShot {
 
         public M_Project_SnapShot(){}
@@ -76,9 +76,7 @@ public class Swagger_B_Program_Version_New {
         public List<M_Program_SnapShot> m_program_snapshots = new ArrayList<>();
 
     }
-
-
-    @ApiModel(value = "M_Program_SnapShot")
+    
     public static class M_Program_SnapShot {
 
         public M_Program_SnapShot(){}
