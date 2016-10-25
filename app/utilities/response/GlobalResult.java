@@ -116,6 +116,7 @@ public class GlobalResult extends Controller {
 
 //**********************************************************************************************************************
 
+    // 400
     // Různé varianty, když se něco nepovede
     public static Result notFoundObject(String message){
         CoreResponse.cors();

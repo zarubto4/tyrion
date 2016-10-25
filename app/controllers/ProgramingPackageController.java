@@ -1607,7 +1607,7 @@ public class ProgramingPackageController extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_B_Program_Uploud_Instance",
+                            dataType = "utilities.swagger.documentationClass.Swagger_B_Program_Upload_Instance",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
