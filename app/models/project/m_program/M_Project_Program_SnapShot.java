@@ -29,7 +29,7 @@ public class M_Project_Program_SnapShot extends Model {
 
     @JsonProperty @Transient  @ApiModelProperty(required = true, readOnly = true) public String m_project_id() { return m_project.id;}
 
-    @JsonProperty @Transient  @ApiModelProperty(required = true, readOnly = true) public List<M_Program_SnapShot_Oncoming> program_versions() {
+    @JsonProperty @Transient  @ApiModelProperty(required = true, readOnly = true) public List<M_Program_SnapShot_Oncoming> m_project_snapshots() {
         List<M_Program_SnapShot_Oncoming> list = new ArrayList<>();
         try {
 
