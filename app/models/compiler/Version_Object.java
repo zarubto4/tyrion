@@ -14,7 +14,7 @@ import models.project.c_program.C_Program;
 import models.project.c_program.actualization.Actualization_procedure;
 import models.project.c_program.actualization.C_Program_Update_Plan;
 import models.project.m_program.M_Program;
-import models.project.m_program.M_Project;
+import models.project.m_program.M_Project_Program_SnapShot;
 import utilities.enums.Approval_state;
 
 import javax.persistence.*;
@@ -33,7 +33,7 @@ public class Version_Object extends Model {
 
                          @ManyToOne(fetch = FetchType.LAZY) @ApiModelProperty(required = true)  public Person author;
 
-                                                @JsonIgnore @ApiModelProperty(required = true)  public Approval_state approval_state;
+
                                                 @JsonIgnore @ApiModelProperty(required = true)  public boolean public_version;
 
 
@@ -63,21 +63,27 @@ public class Version_Object extends Model {
     @JsonIgnore @OneToMany(mappedBy="first_default_version_object",fetch = FetchType.LAZY) @OrderBy("id DESC")  public List<C_Program> first_version_of_c_programs = new ArrayList<>(); // Vazba na prnví verzi uživateli vytvořenými C_Programi - tak aby nebylo první verzi nutné kopírovat
 
 
+                                                                                                   @JsonIgnore  public Approval_state approval_state; // Zda je program schválený veřejný program
 
     // B_Programs --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST)                          public B_Program      b_program;
+    @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST)                           public B_Program      b_program;
 
-    @JsonIgnore  @OneToMany(mappedBy="c_program_version", cascade=CascadeType.ALL)  public List<B_Pair>   b_pairs_c_program = new ArrayList<>(); // Určeno pro aktualizaci
+    @JsonIgnore  @OneToMany(mappedBy="c_program_version", cascade=CascadeType.ALL)   public List<B_Pair>   b_pairs_c_program = new ArrayList<>(); // Určeno pro aktualizaci
 
-    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)    public List<B_Program_Hw_Group> b_program_hw_groups = new ArrayList<>();
+    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)     public List<B_Program_Hw_Group> b_program_hw_groups = new ArrayList<>();
 
-    @JsonIgnore  @OneToOne(mappedBy="version_object", cascade = CascadeType.PERSIST)public Homer_Instance homer_instance;
+
+    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)                              public List<M_Project_Program_SnapShot> m_project_program_snapShots = new ArrayList<>();    // Bazba kvůli puštěným B_programům
+
+        // B_Program - Instance
+        @JsonIgnore  @OneToOne(mappedBy="version_object", cascade = CascadeType.PERSIST) public Homer_Instance homer_instance;
+
 
 
     // M_Project --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)    public M_Program m_program;
-    @JsonIgnore  @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)   public List<M_Project> m_projects = new ArrayList<>();    // Bazba kvůli puštěným B_programům
+
 
 
     // Actual Procedure --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

@@ -445,6 +445,7 @@ public class CompilationLibrariesController extends Controller {
             Version_Object version_object      = new Version_Object();
             version_object.version_name        = help.version_name;
             version_object.version_description = help.version_description;
+            version_object.author              = SecurityController.getPerson();
             version_object.date_of_create = new Date();
             version_object.c_program = c_program;
             version_object.public_version = false;

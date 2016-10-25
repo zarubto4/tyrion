@@ -20,8 +20,4 @@ public class Swagger_M_Project_New {
     public String name;
 
 
-    @Constraints.Required
-    @ApiModelProperty(required = true, value = "Length must be between 8 and 60 characters.")
-    public boolean auto_incrementing;
-
 }

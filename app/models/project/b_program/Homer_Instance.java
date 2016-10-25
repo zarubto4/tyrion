@@ -3,7 +3,6 @@ package models.project.b_program;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import controllers.WebSocketController;
-import io.swagger.annotations.ApiModelProperty;
 import models.compiler.Board;
 import models.compiler.Version_Object;
 import models.project.b_program.servers.Cloud_Homer_Server;
@@ -12,7 +11,9 @@ import models.project.global.Project;
 import utilities.webSocket.WebSCType;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -23,20 +24,33 @@ public class Homer_Instance extends Model {
         @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)     public String id;
 
                                          @JsonIgnore @ManyToOne     public Cloud_Homer_Server cloud_homer_server;
-                                         @JsonIgnore @OneToOne      public Private_Homer_Server private_server;
+                                         @JsonIgnore @OneToOne      public Private_Homer_Server private_server; // Nevyužívané
 
                                                     @JsonIgnore     public String blocko_instance_name;
-        @JsonIgnore @OneToOne   @JoinColumn(name="vrs_obj_id")      public Version_Object version_object;
-                                         @JsonIgnore @ManyToOne()   public Project project;
+
+        @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)              public Project project;
 
 
-    @ApiModelProperty(required = true, dataType = "integer", readOnly = true,  value = "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970", example = "1466163478925")         public Date running_from;
+    @JsonIgnore  public Date running_from;
+    @JsonIgnore  public Date running_to;
+    @JsonIgnore  public Date planed_when;
+    @JsonIgnore @OneToOne   @JoinColumn(name="vrs_obj_id")   public Version_Object version_object;
+    @JsonIgnore @OneToMany(mappedBy="main_instance_history", cascade=CascadeType.ALL) @OrderBy("id DESC") public List<Homer_Instance> instance_history = new ArrayList<>();
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Homer_Instance main_instance_history;
 
 
 
+    // Pomocný objekt pro "Fiktivní instnaci pro připojenej devicE" - TODO asi to odstraníme
     @OneToOne(mappedBy="private_instance",  cascade = CascadeType.MERGE, fetch = FetchType.LAZY)   public Board private_instance_board;
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
+
+   // Přehled instance
+   // @ApiModelProperty(required = true, dataType = "integer", readOnly = true,  value = "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970", example = "1466163478925")
+
+
+
+
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
@@ -77,13 +91,6 @@ public class Homer_Instance extends Model {
 
 /* ENUMS PARAMETERS ----------------------------------------------------------------------------------------------------*/
 
-    /**
-     Definuje typy commandů - které se dají přes tyrion zaslat do Homer serveru na konkrétní instanci.
-     Homer server má terminálové příkazy pro vývojáře HW. Tak aby si mohli zkoušet svůj HW. Jelikož vzniklo grafické
-     rozhraní pod tyrionem, je nutné ty samé příkazy co chodí z konzole zasílat i z tyriona. A aby jako v Homer serveru
-     nebylo třeba mít pro každý příkaz metodu - zasílá se to definovanými Enum objekty,. (Na Homer serveru se udržuje
-     identická struktura)
-    */
 
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

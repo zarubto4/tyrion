@@ -27,14 +27,14 @@ public class Swagger_B_Program_Version_New {
     @ApiModelProperty(required = true)
     public String program;
 
-
-    @ApiModelProperty(value = "List of M_project Id", required = false)
-    public List<String> m_project_ids  = new ArrayList<>();
-
-
     @Valid
     @ApiModelProperty(value = "Connected groups of hardware - User can create Blocko program without hardware.", required = false)
     public List<Hardware_group> hardware_group  = new ArrayList<>();
+
+
+    @Valid
+    @ApiModelProperty(value = "Connected groups of m_programs.versions under imported m_programs", required = false)
+    public List<M_Project_SnapShot> m_project_snapshots  = new ArrayList<>();
 
 // ---------------------------------------------------------------------------------------------------------------------
 
@@ -42,24 +42,53 @@ public class Swagger_B_Program_Version_New {
 
         public Hardware_group(){}
 
-        @ApiModelProperty(value = "This board must be connectible_to_internet = true! User can create new B_Program version without Main Board, but its not possible to upload that to cloud like new Instance" +
-                                  "",
-                          required = true)
-        @Valid
+        @Valid @ApiModelProperty(value = "This board must be connectible_to_internet = true! User can create new B_Program version without Main Board, but its not possible to upload that to cloud like new Instance", required = true)
         public Connected_Board main_board_pair;
 
-        @Valid
-        @ApiModelProperty(value = "Connected boards (padavans)", required = false)
+        @Valid @ApiModelProperty(value = "Connected boards (padavans)", required = false)
         public List<Connected_Board> device_board_pairs = new ArrayList<>();
-
 
     }
 
+
     @ApiModel(value = "B_Pair")
     public static class Connected_Board {
+
         public Connected_Board(){}
-        @Constraints.Required @ApiModelProperty(required = true) public String board_id;
-        @Constraints.Required @ApiModelProperty(required = true) public String c_program_version_id;
+
+        @Constraints.Required @ApiModelProperty(required = true)
+        public String board_id;
+
+        @Constraints.Required @ApiModelProperty(required = true)
+        public String c_program_version_id;
+    }
+
+
+    @ApiModel(value = "M_Project_Program_SnapShot")
+    public static class M_Project_SnapShot {
+
+        public M_Project_SnapShot(){}
+
+        @Constraints.Required @ApiModelProperty(required = true)
+        public String m_project_id;
+
+        @Valid @ApiModelProperty(value = "Connected boards (padavans)", required = true)
+        public List<M_Program_SnapShot> m_program_snapshots = new ArrayList<>();
+
+    }
+
+
+    @ApiModel(value = "M_Program_SnapShot")
+    public static class M_Program_SnapShot {
+
+        public M_Program_SnapShot(){}
+
+        @Constraints.Required @ApiModelProperty(required = true)
+        public String m_program_id;
+
+        @Constraints.Required @ApiModelProperty(required = true)
+        public String version_object_id;
+
     }
 
 }

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
-import models.compiler.Version_Object;
 import models.project.global.Project;
 
 import javax.persistence.*;
@@ -24,15 +23,10 @@ public class M_Project extends Model {
     @Column(columnDefinition = "TEXT") @ApiModelProperty(required = false, value = "can be empty")  public String  description;
     @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp in millis", example = "14618543121234") public Date    date_of_create;
 
+    @JsonIgnore @ManyToOne  public Project project;
 
-    @JsonIgnore @ManyToOne                                                                                         public Project project;
-    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "m_projects")  @JoinTable(name = "b_program_id") public List<Version_Object> b_program_version;
-
-
-    @ApiModelProperty(required = true)  public boolean auto_incrementing;
-
-    @ApiModelProperty(required = true)
-    @OneToMany(mappedBy="m_project", cascade = CascadeType.ALL) public List<M_Program> m_programs = new ArrayList<>();
+    @JsonIgnore @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "m_project")  public List<M_Project_Program_SnapShot> snapShots = new ArrayList<>();
+    @ApiModelProperty(required = true) @OneToMany(mappedBy="m_project", cascade = CascadeType.ALL) public List<M_Program> m_programs = new ArrayList<>();
 
 
 

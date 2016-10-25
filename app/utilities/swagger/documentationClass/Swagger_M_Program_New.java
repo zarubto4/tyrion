@@ -10,8 +10,8 @@ public class Swagger_M_Program_New {
 
 
     @Constraints.Required
-    @ApiModelProperty(required = true, value = "Required valid screen_type_id")
-    public String  screen_type_id;
+    @ApiModelProperty(required = true, value = "Required valid screen_size_type_id")
+    public String  screen_size_type_id;
 
 
     @ApiModelProperty(required = false, value = "program_description can be null or maximum length of 255 characters.")

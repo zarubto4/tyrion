@@ -224,7 +224,7 @@ DELETE         /project/b_program/version/:version_id                           
 PUT            /project/b_program/uploadToHomer/:b_program_id/:version_id/:homer_id         @controllers.ProgramingPackageController.uploadProgramToHomer_Immediately(b_program_id, version_id,homer_id)
 PUT            /project/b_program/uploadToCloud/:version_id                                 @controllers.ProgramingPackageController.upload_b_Program_ToCloud(version_id)
 
-PUT            /project/b_program/instance/update_blocko/version/:instance_id/:version_id   @controllers.ProgramingPackageController.update_blocko_code_in_instance_verison(instance_id, version_id)
+PUT            /project/b_program/instance/update_blocko/version/:instance_id/:version_id   @controllers.ProgramingPackageController.update_blocko_code_in_instance_version(instance_id, version_id)
 
 
 PUT            /project/b_program/instance/master_device/:instance_id/:yoda_id              @controllers.ProgramingPackageController.add_Yoda_To_Instance(instance_id, yoda_id)

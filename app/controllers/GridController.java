@@ -83,7 +83,6 @@ public class GridController extends Controller {
             m_project.description = help.description;
             m_project.name = help.name;
             m_project.date_of_create = new Date();
-            m_project.auto_incrementing = help.auto_incrementing;
             m_project.project = project;
 
             if (!m_project.create_permission())  return GlobalResult.forbidden_Permission();
@@ -182,7 +181,6 @@ public class GridController extends Controller {
 
             m_project.description = help.description;
             m_project.name = help.name;
-            m_project.auto_incrementing = help.auto_incrementing;
 
             m_project.update();
             return GlobalResult.result_ok( Json.toJson(m_project));
@@ -304,35 +302,16 @@ public class GridController extends Controller {
             m_project_interface.name = m_project.name;
             m_project_interface.description = m_project.description;
             m_project_interface.id = m_project.id;
-            m_project_interface.auto_incrementing = m_project.auto_incrementing;
 
+            for(M_Program m_program : m_project.m_programs) {
 
-            if(m_project.auto_incrementing){
+                Swagger_M_Program_Interface m_program_interface = new Swagger_M_Program_Interface();
+                m_program_interface.description = m_program.description;
+                m_program_interface.name        = m_program.name;
+                m_program_interface.id          = m_program.id;
 
-                for(M_Program m_program : m_project.m_programs) {
-
-                    Swagger_M_Program_Interface m_program_interface = new Swagger_M_Program_Interface();
-                    m_program_interface.description = m_program.description;
-                    m_program_interface.name        = m_program.name;
-                    m_program_interface.id          = m_program.id;
-
-                    m_program_interface.accessible_versions.add( m_program.program_version_interface(Version_Object.find.where().eq("m_program.id", m_program.id).orderBy("date_of_create").setMaxRows(1).findUnique()));
-                    m_project_interface.accessible_interface.add(m_program_interface);
-                }
-
-            }else {
-
-                for(M_Program m_program : m_project.m_programs) {
-
-                    Swagger_M_Program_Interface m_program_interface = new Swagger_M_Program_Interface();
-                    m_program_interface.description = m_program.description;
-                    m_program_interface.name        = m_program.name;
-                    m_program_interface.id          = m_program.id;
-
-                    m_program_interface.accessible_versions = m_program.program_versions_interface();
-                    m_project_interface.accessible_interface.add(m_program_interface);
-                }
-
+                m_program_interface.accessible_versions = m_program.program_versions_interface();
+                m_project_interface.accessible_interface.add(m_program_interface);
             }
 
             return GlobalResult.result_ok(Json.toJson(m_project_interface));
@@ -392,14 +371,14 @@ public class GridController extends Controller {
             M_Project m_project = M_Project.find.byId( m_project_id );
             if(m_project == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
 
-            Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId( help.screen_type_id);
-            if(screen_size_type == null) return GlobalResult.notFoundObject("Screen_Size_Type screen_type_id not found");
+            Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId( help.screen_size_type_id);
+            if(screen_size_type == null) return GlobalResult.notFoundObject("Screen_Size_Type screen_size_type_id not found");
 
             M_Program m_program = new M_Program();
 
             m_program.date_of_create      = new Date();
-            m_program.description = help.description;
-            m_program.name        = help.name;
+            m_program.description         = help.description;
+            m_program.name                = help.name;
 
             m_program.m_project           = m_project;
 
@@ -466,11 +445,12 @@ public class GridController extends Controller {
 
             if (!main_m_program.create_permission()) return GlobalResult.forbidden_Permission();
 
-            Version_Object version_object = new Version_Object();
-            version_object.date_of_create = new Date();
+            Version_Object version_object      = new Version_Object();
+            version_object.date_of_create      = new Date();
             version_object.version_description = help.version_description;
             version_object.version_name        = help.version_name;
             version_object.m_program           = main_m_program;
+            version_object.author              = SecurityController.getPerson();
             version_object.save();
 
             main_m_program.version_objects.add(version_object);
@@ -671,8 +651,8 @@ public class GridController extends Controller {
             if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_M_Program_New help = form.get();
 
-            Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId(help.screen_type_id);
-            if(screen_size_type == null) return GlobalResult.notFoundObject("Screen_Size_Type screen_type_id not found");
+            Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId(help.screen_size_type_id);
+            if(screen_size_type == null) return GlobalResult.notFoundObject("Screen_Size_Type screen_size_type_id not found");
 
             M_Program m_program = M_Program.find.byId(m_program_id);
             if (!m_program.edit_permission())  return GlobalResult.forbidden_Permission();
@@ -844,7 +824,7 @@ public class GridController extends Controller {
     public Result get_Screen_Size_Type(@ApiParam(value = "screen_size_type_id String query", required = true) String screen_size_type_id){
         try {
             Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId(screen_size_type_id);
-            if (screen_size_type == null) return GlobalResult.notFoundObject("Screen_Size_Type screen_type_id not found");
+            if (screen_size_type == null) return GlobalResult.notFoundObject("Screen_Size_Type screen_size_type_id not found");
 
             if (!screen_size_type.read_permission())  return GlobalResult.forbidden_Permission();
 
@@ -939,7 +919,7 @@ public class GridController extends Controller {
             Swagger_ScreeSizeType_New help = form.get();
 
             Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId(screen_size_type_id);
-            if(screen_size_type == null) return GlobalResult.notFoundObject("Screen_Size_Type screen_type_id not found");
+            if(screen_size_type == null) return GlobalResult.notFoundObject("Screen_Size_Type screen_size_type_id not found");
 
             if (!screen_size_type.edit_permission())  return GlobalResult.forbidden_Permission();
 
@@ -1004,7 +984,7 @@ public class GridController extends Controller {
     public Result remove_Screen_Size_Type(@ApiParam(value = "screen_size_type_id String query", required = true)  String screen_size_type_id){
         try {
             Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId(screen_size_type_id);
-            if(screen_size_type == null) return GlobalResult.notFoundObject("Screen_Size_Type screen_type_id not found");
+            if(screen_size_type == null) return GlobalResult.notFoundObject("Screen_Size_Type screen_size_type_id not found");
 
             if (!screen_size_type.delete_permission())  return GlobalResult.forbidden_Permission();
 

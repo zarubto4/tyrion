@@ -36,6 +36,7 @@ import views.html.super_general.menu;
 import views.html.user_summary.user_summary;
 import views.html.websocket.instance_detail;
 import views.html.websocket.websocket;
+import scala.collection.JavaConversions;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -505,12 +506,15 @@ public class DashboardController extends Controller {
         try {
 
             TypeOfBoard type_of_board = TypeOfBoard.find.byId(type_of_board_id);
-            if(type_of_board == null) return GlobalResult.notFoundObject("Type of Board not found!");
 
+            if(type_of_board == null) {
 
+                return GlobalResult.notFoundObject("Type of Board not found!");
 
-            Html content = bootloader_settings.render(type_of_board);
-            return return_page ( content );
+            }else {
+                Html content = bootloader_settings.render(type_of_board);
+                return return_page(content);
+            }
 
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
@@ -608,6 +612,7 @@ public class DashboardController extends Controller {
     @Security.Authenticated(Secured_Admin.class)
     public Result public_code(){
         try {
+            System.err.println("Snažím se vytisknout public code");
 
             Html public_code_content = public_code.render();
             return return_page(public_code_content);

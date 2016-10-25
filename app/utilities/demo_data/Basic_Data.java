@@ -1644,7 +1644,6 @@ public class Basic_Data {
             m_project.project = project_1;
             m_project.name = "Velkolepá kolekce terminálových přístupů";
             m_project.description = "Tak tady si pepa dělá všechny svoje super cool apky!!! Je to fakt mazec!! a V připadě updatu je autoincrement true - což znamená že systém v případě updatu lidem na teminálech updatuje verzi";
-            m_project.auto_incrementing = true;
             m_project.date_of_create = new Date();
             m_project.save();
 

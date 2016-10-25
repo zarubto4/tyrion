@@ -24,6 +24,7 @@ import models.project.c_program.C_Program;
 import models.project.global.Product;
 import models.project.global.Project;
 import models.project.m_program.M_Project;
+import models.project.m_program.M_Project_Program_SnapShot;
 import play.api.libs.mailer.MailerClient;
 import play.data.Form;
 import play.libs.Json;
@@ -1199,14 +1200,33 @@ public class ProgramingPackageController extends Controller {
             version_object.version_description     = help.version_description;
             version_object.date_of_create          = new Date();
             version_object.b_program               = b_program;
+            version_object.author                  = SecurityController.getPerson();
 
 
-            List<M_Project> m_projects = M_Project.find.where().idIn(help.m_project_ids).findList();
-            for(M_Project m_project : m_projects){
+
+            if(help.m_project_snapshots != null)
+            for(Swagger_B_Program_Version_New.M_Project_SnapShot help_m_project_snap : help.m_project_snapshots){
+
+                M_Project m_project = M_Project.find.byId(help_m_project_snap.m_project_id);
+                if(m_project == null) return GlobalResult.notFoundObject("M_Project id not found");
                 if(!m_project.update_permission()) return GlobalResult.forbidden_Permission();
+
+
+                M_Project_Program_SnapShot snap = new M_Project_Program_SnapShot();
+                snap.m_project = m_project;
+
+
+                for(Swagger_B_Program_Version_New.M_Program_SnapShot help_m_program_snap : help_m_project_snap.m_program_snapshots){
+                    Version_Object m_program_version = Version_Object.find.where().eq("id", help_m_program_snap.version_object_id ).eq("m_program.id", help_m_program_snap.m_program_id).eq("m_program.m_project.id", m_project.id).findUnique();
+                    if(m_program_version == null) return GlobalResult.notFoundObject("M_Program Verison id not found");
+                    snap.version_objects.add(m_program_version);
+                }
+
+                version_object.m_project_program_snapShots.add(snap);
             }
 
-            version_object.m_projects.addAll(m_projects);
+
+
 
             // Definování main Board
             for( Swagger_B_Program_Version_New.Hardware_group group : help.hardware_group) {
@@ -1466,6 +1486,7 @@ public class ProgramingPackageController extends Controller {
     }
 
     @ApiOperation(value = "upload B_Program (version) to Homer",
+            hidden = true,
             tags = {"B_Program", "Homer"},
             notes = "If you want upload program (!Immediately!) to Homer -> Homer must be online and connect to Cloud Server, " +
                     "you are uploading B_program version. And if connected M_Project is set to \"Auto_update\", it will automatically update all Grid Terminals.",
@@ -1532,8 +1553,9 @@ public class ProgramingPackageController extends Controller {
                     program_homer.version_object = version_object;
                     program_homer.save();
 
-
+                    //
                     version_object.homer_instance = program_homer;
+
                     // Uložení objektu
                     version_object.update();
 
@@ -1581,6 +1603,17 @@ public class ProgramingPackageController extends Controller {
                     })
             }
     )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_B_Program_Uploud_Instance",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successful Uploaded",                       response = Homer_Instance.class),
             @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
@@ -1592,45 +1625,78 @@ public class ProgramingPackageController extends Controller {
     public  Result upload_b_Program_ToCloud(@ApiParam(value = "version_id String path", required = true) String version_id){
         try {
 
+            // Získání JSON
+            final Form<Swagger_B_Program_Uploud_Instance> form = Form.form(Swagger_B_Program_Uploud_Instance.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_B_Program_Uploud_Instance help = form.get();
+
             // Kontrola objektu: Verze B programu kterou budu nahrávat do cloudu
             Version_Object version_object = Version_Object.find.byId(version_id);
             if (version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
-
             // Kontrola objektu: B program, který chci nahrát do Cloudu na Blocko cloud_blocko_server
             if (version_object.b_program == null) return GlobalResult.result_BadRequest("Version_Object is not version of B_Program");
             B_Program b_program = version_object.b_program;
-
-            logger.debug("User want uploud new instance under version: " + version_id);
 
             // Kontrola oprávnění
             if (! b_program.update_permission() ) return GlobalResult.forbidden_Permission();
 
 
 
-            // Kontroluji přítomnost Yody - Dovolím nahrát instnaci bez HW
-            // if(version_object.b_program_hw_groups == null || version_object.yoda_board_pair.board == null) return GlobalResult.result_BadRequest("Version needs Main Board connectible to internet!");
+            Homer_Instance program_cloud = Homer_Instance.find.where().eq("version_object.b_program.id", b_program.id).findUnique();
 
-            // Pokud už nějaká instance běžela, tak na ní budu nahrávat nový program a odstraním vazbu na běžící instanci b programu
-            if(version_object.b_program_hw_groups!= null) {
-                logger.trace("Uploud version to cloud contains Hardware!");
+            if(program_cloud != null && program_cloud.version_object.id.equals(version_object.id)) return GlobalResult.result_BadRequest("This Version is already in Cloud!");
 
+            if(program_cloud == null){
+
+                // TODO Chytré dělení na servery - kam se blocko program nahraje?? Zatím je podporovaná jenom alfa
+                Cloud_Homer_Server destination_server = Cloud_Homer_Server.find.where().eq("server_name", "Alfa").findUnique();
+
+                program_cloud                       = new Homer_Instance();
+                program_cloud.project               = b_program.project;
+                program_cloud.running_from          = new Date();
+                program_cloud.cloud_homer_server    = destination_server;
+                program_cloud.setUnique_blocko_instance_name();
+
+            }
+
+            Homer_Instance program_cloud_version = new Homer_Instance();
+            program_cloud_version.main_instance_history = program_cloud;
+            program_cloud_version.version_object = version_object;
+
+
+            if(help.upload_time != null) {
+
+
+                // Zkontroluji smysluplnost časvé známky
+                if (!help.upload_time.after(new Date()))  return GlobalResult.result_BadRequest("time must be set in the future");
+                program_cloud_version.planed_when = help.upload_time;
+
+            } else program_cloud_version.running_from = new Date();
+
+
+            program_cloud_version.save();
+
+            // Kontrola HW
+            if(version_object.b_program_hw_groups != null) {
+
+                logger.trace("Upload version to cloud contains Hardware!");
                 for(B_Program_Hw_Group group : version_object.b_program_hw_groups){
 
                     // Kontrola Yody
-                   if(group.main_board_pair != null ) {
+                    if(group.main_board_pair != null ) {
 
-                       Board yoda = group.main_board_pair.board;
+                        Board yoda = group.main_board_pair.board;
 
-                       //1. Pokud už běží v jiné instanci mimo vlastní dočasnou instnaci
-                       if (yoda.private_instance != null) {
-                           logger.debug("Yoda měl už vlastní historickou instanci! Proto jí musím smazat a to i z Homer serveru");
-                           yoda.private_instance.delete();
-                       }
+                        //1. Pokud už běží v jiné instanci mimo vlastní dočasnou instnaci
+                        if (yoda.private_instance != null) {
+                            logger.debug("Yoda měl už vlastní historickou instanci! Proto jí musím smazat a to i z Homer serveru");
+                            yoda.private_instance.delete();
+                        }
 
-                       if(Homer_Instance.find.where().eq("version_object.b_program_hw_groups.main_board_pair.board.id", yoda.id ).findUnique() != null  ){
-                           return GlobalResult.result_BadRequest("Master Device is used in another working instance, you cannoct create two instance with same Master Device");
-                       }
+                        if(Homer_Instance.find.where().eq("version_object.b_program_hw_groups.main_board_pair.board.id", yoda.id ).findUnique() != null  ){
+                            return GlobalResult.result_BadRequest("Master Device is used in another working instance, you cannoct create two instance with same Master Device");
+                        }
 
 
 
@@ -1646,47 +1712,55 @@ public class ProgramingPackageController extends Controller {
 
                             //2.
                         }
-                   }else {
-                       logger.debug("Instance neobsahovala žádný HW - respektive neobsahovala Yodu!!");
-                   }
+                    }else {
+                        logger.debug("Instance neobsahovala žádný HW - respektive neobsahovala Yodu!!");
+                    }
                 }
-
             }
 
-            // TODO Chytré dělení na servery - kam se blocko program nahraje?? Zatím je podporovaná jenom alfa
-            Cloud_Homer_Server destination_server = Cloud_Homer_Server.find.where().eq("server_name", "Alfa").findUnique();
+            //Určím podle časové konstanty zda nahraju hned nebo až za chvíli
+            //TODO
 
-            // Vytvářím nový záznam v databázi pro běžící instanci b programu na blocko serveru
-            Homer_Instance program_cloud        = new Homer_Instance();
-            program_cloud.project               = b_program.project;
-            program_cloud.running_from          = new Date();
-            program_cloud.version_object        = version_object;
-            program_cloud.cloud_homer_server    = destination_server;
-            program_cloud.setUnique_blocko_instance_name();
+            if(program_cloud_version.planed_when == null) return GlobalResult.result_ok();
 
-            // Uložení objektu
-            program_cloud.save();
-
-
-
-
-            if(! WebSocketController.blocko_servers.containsKey( destination_server.server_name) ) {
-
+            // Ověřím připojený server
+            if(! WebSocketController.blocko_servers.containsKey( program_cloud.cloud_homer_server.server_name) ) {
                 NotificationController.upload_Instance_was_unsuccessfull(SecurityController.getPerson(), program_cloud, "Server is offline now. It will be uploaded as soon as possible");
                 return GlobalResult.result_ok();
             }
 
+            // Server je připojený
             try {
-
                 // Vytvářím instanci na serveru
-                WS_BlockoServer server = (WS_BlockoServer) WebSocketController.blocko_servers.get(destination_server.server_name);
-                WebSCType homer = WebSocketController.homer_server_add_instance(server, program_cloud, true);
+                WS_BlockoServer server = (WS_BlockoServer) WebSocketController.blocko_servers.get(program_cloud.cloud_homer_server.server_name);
+
+                WebSCType homer;
+                if(!WebSocketController.incomingConnections_homers.containsKey(program_cloud.blocko_instance_name)) {
+
+                    // Založím instanci a nahraji do ní první informace
+                    homer = WebSocketController.homer_server_add_instance(server, program_cloud, true);
+
+                }else {
+
+                    // Najdu Instanci Homera
+                    homer = WebSocketController.incomingConnections_homers.get(program_cloud.blocko_instance_name);
+
+                    // Najdu soubor s kodem pro Blocko
+                    FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "program.js").findUnique();
+
+                    // Updajtuji instanci Blocka s novým kodem
+                    WebSocketController.homer_instance_upload_blocko_program(homer, program_cloud.version_object.id, fileRecord.get_fileRecord_from_Azure_inString());
+
+                }
+
+                // Zpouštím aktualizační proceduru na sesynchronizování HW a verzí
                 ActualizationController.add_new_actualization_request_Checking_HW_Firmware(b_program.project, program_cloud);
+
                 return GlobalResult.result_ok();
 
             }catch (Exception e){
                 // Neproběhlo to úspěšně smažu zástupný objekt!!!
-                return GlobalResult.result_BadRequest("Došlo k chybě");
+                return GlobalResult.result_BadRequest("Something is wrong!!!");
             }
 
         } catch (Exception e) {
@@ -1695,8 +1769,11 @@ public class ProgramingPackageController extends Controller {
     }
 
 
+
+
+
     // TODO
-    public Result update_blocko_code_in_instance_verison(String instance_name, String version_id){
+    public Result update_blocko_code_in_instance_version(String instance_name, String version_id){
         try{
 
             // Kontrola objektu
@@ -2091,6 +2168,9 @@ public class ProgramingPackageController extends Controller {
         //Na id B_Program vezmu všechny Houmry na které jsem program ještě nenahrál
         return TODO;
     }
+
+
+
 
 
 // B PROGRAM / HOMER / BLOCKO CLOUD SERVER #############################################################################

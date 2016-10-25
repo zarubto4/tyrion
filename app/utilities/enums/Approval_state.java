@@ -1,12 +1,17 @@
 package utilities.enums;
 
+import com.avaje.ebean.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 public enum Approval_state {
 
+    @EnumValue("pending")
     pending,
+    @EnumValue("approved")
     approved,
+    @EnumValue("disapproved")
     disapproved,
+    @EnumValue("edited")
     edited;
 
     @JsonCreator

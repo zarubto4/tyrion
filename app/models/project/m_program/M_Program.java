@@ -12,7 +12,6 @@ import models.compiler.Version_Object;
 import models.grid.Screen_Size_Type;
 import models.project.global.Project;
 import play.libs.Json;
-import utilities.Server;
 import utilities.swagger.documentationClass.Swagger_M_Program_Version;
 import utilities.swagger.documentationClass.Swagger_M_Program_Version_Interface;
 
@@ -56,11 +55,13 @@ public class M_Program extends Model{
     @Transient @JsonProperty @ApiModelProperty(required = true) public  String screen_size_type_id()      {  return screen_size_type.id;}
 
 
-
+    /*
     @ApiModelProperty(required = false, value = "Its here only if its possible to connect to B_Program") @Transient
+
+
     @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty public String websocket_address(){
         return (m_project == null || m_project.b_program_version == null) ? null :  Server.tyrion_webSocketAddress + "/websocket/mobile/" + m_project.id + "/{terminal_id}";
-    }
+    }*/
 
 
     @JsonProperty @Transient public List<Swagger_M_Program_Version> program_versions() {
