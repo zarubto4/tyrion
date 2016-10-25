@@ -1626,9 +1626,9 @@ public class ProgramingPackageController extends Controller {
         try {
 
             // Získání JSON
-            final Form<Swagger_B_Program_Uploud_Instance> form = Form.form(Swagger_B_Program_Uploud_Instance.class).bindFromRequest();
+            final Form<Swagger_B_Program_Upload_Instance> form = Form.form(Swagger_B_Program_Upload_Instance.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-            Swagger_B_Program_Uploud_Instance help = form.get();
+            Swagger_B_Program_Upload_Instance help = form.get();
 
             // Kontrola objektu: Verze B programu kterou budu nahrávat do cloudu
             Version_Object version_object = Version_Object.find.byId(version_id);
