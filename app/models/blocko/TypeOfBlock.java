@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
 import models.project.global.Project;
-import utilities.enums.Approval_state;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -38,7 +37,7 @@ public class TypeOfBlock extends Model {
 /* JSON PROPERTY -------------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true)
-    @JsonProperty @Transient public List<BlockoBlock> blockoBlocks(){ return this.blocko_blocks; }
+    @JsonProperty @Transient public List<BlockoBlock> blocko_blocks(){ return this.blocko_blocks; }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
