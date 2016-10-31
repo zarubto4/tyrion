@@ -185,7 +185,7 @@ public class Finance_Controller extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_poducts_tariffs(){
+    public Result get_products_tariffs(){
         try{
 
            // if(swagger_tariff != null ) return GlobalResult.result_ok(Json.toJson(swagger_tariff));
@@ -269,9 +269,10 @@ public class Finance_Controller extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Tariff_User_Register help = form.get();
 
+            System.out.println("JSem tu1");
             GeneralTariff tariff = GeneralTariff.find.where().eq("identificator", help.tariff_type).findUnique();
             if(tariff == null) return GlobalResult.result_BadRequest("Tariff identificator: {" + help.tariff_type  + "} not found or not supported now! Use only supported");
-
+            System.out.println("JSem tu2");
             Product product = new Product();
 
                 if(help.currency_type.equals( Currency.EUR.name())) product.currency = Currency.EUR;
@@ -279,7 +280,7 @@ public class Finance_Controller extends Controller {
                 else if(help.currency_type.equals( Currency.USD.name())) product.currency = Currency.USD;
                 else { return GlobalResult.result_BadRequest("currency is invalid. Use only (EUR, USD, CZK)");}
 
-
+            System.out.println("JSem tu3");
                 product.general_tariff =  tariff;
                 product.product_individual_name = help.product_individual_name;
                 product.active = true;  // Produkt jelikož je Aplha je aktivní - Alpha nebo Trial dojedou kvuli omezení času

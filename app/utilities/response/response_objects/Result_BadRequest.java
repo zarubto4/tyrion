@@ -8,7 +8,7 @@ import io.swagger.annotations.ApiModelProperty;
 public class Result_BadRequest {
 
     @ApiModelProperty(value = "state", allowableValues = "error", required = true, readOnly = true)
-    public String state;
+    public String state = "error";
 
     @ApiModelProperty(value = "code", allowableValues = "400", required = true, readOnly = true)
     public Integer code = 400;

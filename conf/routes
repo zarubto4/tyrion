@@ -163,7 +163,7 @@ DELETE         /overflow/hashTag/:post_id/:hashTag                              
 ################################################################################################################################################################################
 
 #Tarrifs
-GET            /product/tarifs/for_registration                                             @controllers.Finance_Controller.get_poducts_tariffs()
+GET            /product/tarifs/for_registration                                             @controllers.Finance_Controller.get_products_tariffs()
 GET            /product/tarifs/user_applicable                                              @controllers.Finance_Controller.get_applicable_products_for_creating_new_project()
 
 #CRUD Tarrifs

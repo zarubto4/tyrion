@@ -36,7 +36,7 @@ import play.mvc.Security;
 import utilities.Server;
 import utilities.UtilTools;
 import utilities.becki_widgets.Becki_Widget_Generator;
-import utilities.becki_widgets.Becki_color;
+import utilities.becki_widgets.Becki_Color;
 import utilities.emails.EmailTool;
 import utilities.enums.Approval_state;
 import utilities.enums.Type_of_command;
@@ -160,8 +160,8 @@ public class ProgramingPackageController extends Controller {
             list.projects = projects;
 
             // TODO doplnovat Widgety de libosti!!
-            list.widget.add( Becki_Widget_Generator.create_A_Type_Widget("My Projects", "Total", projects.size(), Becki_color.byzance_blue, "fa-linode" ));
-            list.widget.add( Becki_Widget_Generator.create_A_Type_Widget("Instances in cloud", "Total", Homer_Instance.find.where().eq("b_program.project.ownersOfProject.id", SecurityController.getPerson().id).isNull("actual_instance").findRowCount(), Becki_color.byzance_pink, "fa-cloud-upload"));
+            list.widget.add( Becki_Widget_Generator.create_A_Type_Widget("My Projects", "Total", projects.size(), Becki_Color.byzance_blue, "fa-linode" ));
+            list.widget.add( Becki_Widget_Generator.create_A_Type_Widget("Instances in cloud", "Total", Homer_Instance.find.where().eq("b_program.project.ownersOfProject.id", SecurityController.getPerson().id).isNull("actual_instance").findRowCount(), Becki_Color.byzance_pink, "fa-cloud-upload"));
 
 
 
@@ -214,8 +214,8 @@ public class ProgramingPackageController extends Controller {
             object.project = project;
 
             // TODO doplňovat Widgety dle libosti!!
-            object.widget.add( Becki_Widget_Generator.create_A_Type_Widget("Total Participants", null, project.participants().size(), Becki_color.byzance_blue, "fa-users" ));
-            object.widget.add( Becki_Widget_Generator.create_A_Type_Widget("Instances in cloud", null, Homer_Instance.find.where().eq("b_program.project.id", project.id).isNotNull("actual_instance").findRowCount(), Becki_color.byzance_pink, "fa-cloud-upload"));
+            object.widget.add( Becki_Widget_Generator.create_A_Type_Widget("Total Participants", null, project.participants().size(), Becki_Color.byzance_blue, "fa-users" ));
+            object.widget.add( Becki_Widget_Generator.create_A_Type_Widget("Instances in cloud", null, Homer_Instance.find.where().eq("b_program.project.id", project.id).isNotNull("actual_instance").findRowCount(), Becki_Color.byzance_pink, "fa-cloud-upload"));
 
             // Vraácení objektu
             return GlobalResult.result_ok(Json.toJson(object));

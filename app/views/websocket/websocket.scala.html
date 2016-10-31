@@ -404,7 +404,7 @@
 
         function disconnect_instance(instance_id){
             $.ajax({
-                url: '/project/b_program/instance/shut_down/' + instance_id,
+                url: '/instance/shut_down/' + instance_id,
                 type: 'GET',
 
                 headers: {
@@ -485,7 +485,7 @@
                 type: 'GET',
 
                 headers: {
-                    "X-AUTH-TOKEN":getCookie("authToken"),
+                    "X-AUTH-TOKEN":getCookie("authToken")
                 },
 
                 success:function(e){
@@ -522,7 +522,7 @@
                 type: 'GET',
 
                 headers: {
-                    "X-AUTH-TOKEN":getCookie("authToken"),
+                    "X-AUTH-TOKEN":getCookie("authToken")
                 },
 
                 success:function(data){
@@ -559,7 +559,7 @@
                 type: 'GET',
 
                 headers: {
-                    "X-AUTH-TOKEN":getCookie("authToken"),
+                    "X-AUTH-TOKEN":getCookie("authToken")
                 },
 
                 success:function(data){
@@ -590,23 +590,25 @@
                     });
                 }
             })}
-        function test_notification(data){
+
+        function test_notification(mail){
             model_data = $("#testNotification").serializeObject();
             $.ajax({
-                url: '/notification/test/' + data,
+                url: '/notification/test/' + mail,
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(model_data),
                 dataType: 'json',
                 success:function(e){
                 },
-                error:function(json.responseText) {
-                    alert("Unsuccessful.");
+                error:function(json){
+                    alert(json.responseText);
                 }
             })}
+
         function disconnect_becki(data , k){
             $.ajax({
-                url: '/public/becki/disconnect/' + data +"/" + k,
+                url: '/public/becki/disconnect/' + data + "/" + k,
                 type: 'GET',
                 success:function(e){
                     $('#becki').load(document.URL +  ' #becki');
@@ -632,7 +634,7 @@
                 type: 'GET',
 
                 headers: {
-                    "X-AUTH-TOKEN":getCookie("authToken"),
+                    "X-AUTH-TOKEN":getCookie("authToken")
                 },
 
                 success:function(data){
@@ -670,7 +672,7 @@
                 type: 'GET',
 
                 headers: {
-                    "X-AUTH-TOKEN":getCookie("authToken"),
+                    "X-AUTH-TOKEN":getCookie("authToken")
                 },
 
                 success:function(data){
