@@ -216,7 +216,7 @@ PUT            /b_program/:b_program_id                                         
 DELETE         /b_program/:b_program_id                                                     @controllers.ProgramingPackageController.remove_b_Program(b_program_id)
 PUT            /b_program/list/:page_number                                                 @controllers.ProgramingPackageController.get_b_Program_by_Filter(page_number: Integer)
         
-PUT            /b_program/update/:b_program_id                                              @controllers.ProgramingPackageController.update_b_program(b_program_id)
+PUT            /b_program/version/:b_program_id                                             @controllers.ProgramingPackageController.update_b_program_new_version(b_program_id)
 GET            /b_program/version/:version_id                                               @controllers.ProgramingPackageController.get_b_Program_version(version_id)
 DELETE         /b_program/version/:version_id                                               @controllers.ProgramingPackageController.remove_b_Program_version(version_id)
 

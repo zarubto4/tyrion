@@ -1166,7 +1166,7 @@ public class ProgramingPackageController extends Controller {
 
     @ApiOperation(value = "create new Version of B Program",
             tags = {"B_Program"},
-            notes = "edit basic information in B_Program object",
+            notes = "edit Blocko proram / new Version in B_Program object",
             produces = "application/json",
             protocols = "https",
             code = 200,
@@ -1196,7 +1196,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public  Result update_b_program(@ApiParam(value = "b_program_id String path", required = true)  String b_program_id){
+    public  Result update_b_program_new_version(@ApiParam(value = "b_program_id String path", required = true)  String b_program_id){
         try{
 
             // Zpracování Json
