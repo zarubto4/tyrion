@@ -3,6 +3,7 @@ import models.person.FloatingPersonToken;
 import models.person.Person;
 import models.person.ValidationToken;
 import models.project.global.financial.GeneralTariff;
+import models.project.global.financial.GeneralTariffLabel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,6 +84,7 @@ public class TestHelper {
 
             general_tariff.tariff_name      = UUID.randomUUID().toString();
             general_tariff.identificator    = UUID.randomUUID().toString();
+            general_tariff.tariff_description = UUID.randomUUID().toString();
 
             general_tariff.color            = UUID.randomUUID().toString();
 
@@ -115,6 +117,36 @@ public class TestHelper {
         }
     }
 
+    public static void tariff_delete(GeneralTariff tariff){
+        try {
+
+            tariff.delete();
+
+        }catch (Exception e){
+            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+        }
+    }
+
+    public static GeneralTariffLabel tariff_add_label(GeneralTariff tariff){
+        try {
+
+            GeneralTariffLabel label = new GeneralTariffLabel();
+            label.general_tariff = tariff;
+            label.description = UUID.randomUUID().toString();
+            label.label = UUID.randomUUID().toString();;
+            label.icon = UUID.randomUUID().toString();;
+
+            label.save();
+            label.refresh();
+
+            return label;
+
+        }catch (Exception e){
+            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+            return null;
+        }
+    }
+
     public static void method(){
         try {
 
@@ -124,8 +156,25 @@ public class TestHelper {
             logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
         }
     }
+    public static void method1(){
+        try {
 
+
+
+        }catch (Exception e){
+            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+        }
+    }
     public static void method2(){
+        try {
+
+
+
+        }catch (Exception e){
+            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+        }
+    }
+    public static void method3(){
         try {
 
 
