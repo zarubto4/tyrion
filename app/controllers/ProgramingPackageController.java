@@ -35,8 +35,6 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utilities.Server;
 import utilities.UtilTools;
-import utilities.becki_widgets.Becki_Widget_Generator;
-import utilities.becki_widgets.Becki_color;
 import utilities.emails.EmailTool;
 import utilities.enums.Approval_state;
 import utilities.enums.Type_of_command;
@@ -52,8 +50,6 @@ import utilities.swagger.outboundClass.Filter_List.Swagger_Homer_List;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Type_Of_Block_List;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Swagger_BlockoBlock_Version_scheme;
-import utilities.swagger.outboundClass.Swagger_Project_Individual_DashBoard;
-import utilities.swagger.outboundClass.Swagger_Project_List_DashBoard;
 import utilities.webSocket.WS_BlockoServer;
 import utilities.webSocket.WS_Homer_Cloud;
 import utilities.webSocket.WebSCType;
@@ -144,7 +140,7 @@ public class ProgramingPackageController extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Swagger_Project_List_DashBoard.class),
+            @ApiResponse(code = 200, message = "Ok Result", response =  Project.class, responseContainer = "list"),
             @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -156,6 +152,9 @@ public class ProgramingPackageController extends Controller {
 
             // Získání seznamu
             List<Project> projects = SecurityController.getPerson().owningProjects;
+
+            /*
+
             Swagger_Project_List_DashBoard list = new Swagger_Project_List_DashBoard();
             list.projects = projects;
 
@@ -163,10 +162,11 @@ public class ProgramingPackageController extends Controller {
             list.widget.add( Becki_Widget_Generator.create_A_Type_Widget("My Projects", "Total", projects.size(), Becki_color.byzance_blue, "fa-linode" ));
             list.widget.add( Becki_Widget_Generator.create_A_Type_Widget("Instances in cloud", "Total", Homer_Instance.find.where().eq("b_program.project.ownersOfProject.id", SecurityController.getPerson().id).isNull("actual_instance").findRowCount(), Becki_color.byzance_pink, "fa-cloud-upload"));
 
+            */
 
 
             // Vrácení seznamu
-            return GlobalResult.result_ok(Json.toJson( list ));
+            return GlobalResult.result_ok(Json.toJson( projects ));
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -192,7 +192,7 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Swagger_Project_Individual_DashBoard.class),
+            @ApiResponse(code = 200, message = "Ok Result", response =  Project.class),
             @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -209,7 +209,7 @@ public class ProgramingPackageController extends Controller {
             // Kontrola oprávnění
             if (!project.read_permission())   return GlobalResult.forbidden_Permission();
 
-
+            /*
             Swagger_Project_Individual_DashBoard object = new Swagger_Project_Individual_DashBoard();
             object.project = project;
 
@@ -217,8 +217,10 @@ public class ProgramingPackageController extends Controller {
             object.widget.add( Becki_Widget_Generator.create_A_Type_Widget("Total Participants", null, project.participants().size(), Becki_color.byzance_blue, "fa-users" ));
             object.widget.add( Becki_Widget_Generator.create_A_Type_Widget("Instances in cloud", null, Homer_Instance.find.where().eq("b_program.project.id", project.id).isNotNull("actual_instance").findRowCount(), Becki_color.byzance_pink, "fa-cloud-upload"));
 
+            */
+
             // Vraácení objektu
-            return GlobalResult.result_ok(Json.toJson(object));
+            return GlobalResult.result_ok(Json.toJson(project));
 
          } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());

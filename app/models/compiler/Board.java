@@ -73,8 +73,8 @@ public class Board extends Model {
 
         // Složený SQL dotaz pro nalezení funkční běžící instance (B_Pair)
         Homer_Instance instance =  Homer_Instance.find.where().disjunction()
-                .add( Expr.eq("version_object.b_program_hw_groups.main_board_pair.board.id", id) )
-                .add( Expr.eq("version_object.b_program_hw_groups.device_board_pairs.board.id", id) )
+                .add( Expr.eq("actual_instance.version_object.b_program_hw_groups.main_board_pair.board.id", id) )
+                .add( Expr.eq("actual_instance.version_object.b_program_hw_groups.device_board_pairs.board.id", id) )
                 .findUnique();
 
 
@@ -110,7 +110,6 @@ public class Board extends Model {
                     board_status.actual_c_program_version_id = actual_c_program_version.id;
                     board_status.actual_c_program_version_name = actual_c_program_version.version_name;
         }
-
 
         if(!c_program_update_plans.isEmpty()){
 
