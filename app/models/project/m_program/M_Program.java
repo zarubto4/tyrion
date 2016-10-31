@@ -193,5 +193,5 @@ public class M_Program extends Model{
     public enum permissions{ M_Program_create, M_Program_read, M_Program_edit, M_Program_delete }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Finder<String,M_Program> find = new Finder<>(M_Program.class);
+    public static Model.Finder<String,M_Program> find = new Finder<>(M_Program.class);
 }

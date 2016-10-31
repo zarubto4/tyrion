@@ -3565,7 +3565,7 @@ public class CompilationLibrariesController extends Controller {
             if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
 
             // Kontrola oprávnění
-            if(board.edit_permission()) return GlobalResult.forbidden_Permission();
+            if(!board.edit_permission()) return GlobalResult.forbidden_Permission();
 
             // Uprava desky
             board.personal_description = help.personal_description;

@@ -79,6 +79,6 @@ public class LibraryGroup extends Model {
     public enum permissions{LibraryGroup_create, LibraryGroup_edit, LibraryGroup_delete, LibraryGroup_update}
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Finder<String, LibraryGroup> find = new Finder<>(LibraryGroup.class);
+    public static Model.Finder<String, LibraryGroup> find = new Finder<>(LibraryGroup.class);
 
 }

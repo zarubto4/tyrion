@@ -41,9 +41,9 @@ public class Finance_Controller extends Controller {
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
     static Swagger_Tariff swagger_tariff;
 
-    // ADMIN - GENERA PRODUCT TARIFF SETTINGS ##########################################################################
+    // ADMIN - GENERAL PRODUCT TARIFF SETTINGS ##########################################################################
 
-    @ApiOperation(value = "create gewneral Tariffs", hidden = true)
+    @ApiOperation(value = "create general Tariffs", hidden = true)
     public Result tariff_general_create(){
         try {
             final Form<Swagger_Tariff_General_Create> form = Form.form(Swagger_Tariff_General_Create.class).bindFromRequest();
@@ -54,6 +54,7 @@ public class Finance_Controller extends Controller {
 
             general_tariff.tariff_name      = help.tariff_name;
             general_tariff.identificator    = help.identificator;
+            general_tariff.tariff_description = help.tariff_description;
 
             general_tariff.color            = help.color;
 
@@ -83,7 +84,7 @@ public class Finance_Controller extends Controller {
         }
     }
 
-    @ApiOperation(value = "create gewneral Tariffs", hidden = true)
+    @ApiOperation(value = "edit general Tariffs", hidden = true)
     public Result tariff_general_edit(String tariff_id){
         try {
 
@@ -96,6 +97,7 @@ public class Finance_Controller extends Controller {
 
             general_tariff.tariff_name      = help.tariff_name;
             general_tariff.identificator    = help.identificator;
+            general_tariff.tariff_description = help.tariff_description;
 
             general_tariff.color            = help.color;
 
@@ -125,7 +127,7 @@ public class Finance_Controller extends Controller {
         }
     }
 
-    @ApiOperation(value = "add new Label zo general Tariffs", hidden = true)
+    @ApiOperation(value = "add new Label to general Tariffs", hidden = true)
     public Result tariff_general_add_label(){
         try {
 
