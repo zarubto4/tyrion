@@ -1531,7 +1531,7 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successful Uploaded",                       response = Homer_Instance.class),
+            @ApiResponse(code = 200, message = "Successful Uploaded",                       response = Result_ok.class),
             @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",                      response = Result_Unauthorized.class),
@@ -1681,7 +1681,27 @@ public class ProgramingPackageController extends Controller {
 
 
 
-
+    @ApiOperation(value = "get Instance",
+            tags = {"B_Program", "Instance"},
+            notes = "get unique instance under Blocko program (now its 1:1) we are not supporting multi-instnace schema yet",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "B_program.update_permission", value = "true"),
+                    })
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successful Uploaded",                       response = Homer_Instance.class),
+            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",                      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",                  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     public Result get_b_program_instance(String instance_id){
         try{
 
@@ -1696,16 +1716,6 @@ public class ProgramingPackageController extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
     }
-
-
-
-
-
-
-
-
-
-
 
 
 
