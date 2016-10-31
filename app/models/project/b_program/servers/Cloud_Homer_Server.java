@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
 import controllers.WebSocketController;
 import models.compiler.Board;
-import models.project.b_program.Homer_Instance;
+import models.project.b_program.instnace.Homer_Instance;
 import utilities.webSocket.WS_BlockoServer;
 
 import javax.persistence.*;
@@ -25,9 +25,9 @@ public class Cloud_Homer_Server extends Model{
                                        @JsonIgnore              public String hash_certificate;
 
                                        @Column(unique=true)     public String server_name;
-                                       @Column(unique=true)     public String destination_address;
+             @JsonIgnore               @Column(unique=true)     public String destination_address;
 
-                                                                public boolean is_private = false;  // Todo navázat na produkt
+    @JsonIgnore                                                 public boolean is_private = false;  // Todo navázat na produkt
 
     @JsonIgnore @OneToMany(mappedBy="cloud_homer_server", cascade = CascadeType.ALL) public List<Homer_Instance> cloud_instances  = new ArrayList<>();
 

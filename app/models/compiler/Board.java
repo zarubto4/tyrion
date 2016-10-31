@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
 import models.project.b_program.B_Pair;
-import models.project.b_program.Homer_Instance;
+import models.project.b_program.instnace.Homer_Instance;
 import models.project.b_program.servers.Cloud_Homer_Server;
 import models.project.b_program.servers.Private_Homer_Server;
 import models.project.c_program.actualization.C_Program_Update_Plan;
@@ -95,11 +95,11 @@ public class Board extends Model {
                 board_status.where = "local";
             }
 
-            board_status.b_program_id = instance.version_object.b_program.id;
-            board_status.b_program_name = instance.version_object.b_program.name;
+            board_status.b_program_id = instance.b_program.id;
+            board_status.b_program_name = instance.b_program.name;
 
-            board_status.b_program_version_id = instance.version_object.id;
-            board_status.b_program_version_name = instance.version_object.version_name;
+            board_status.b_program_version_id = instance.actual_instance != null ? instance.actual_instance.version_object.id : null;
+            board_status.b_program_version_name =instance.actual_instance != null ? instance.actual_instance.version_object.version_name : null;
         }
 
         if(alternative_program_name != null ) board_status.actual_program = alternative_program_name;

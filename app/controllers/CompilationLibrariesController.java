@@ -547,7 +547,7 @@ public class CompilationLibrariesController extends Controller {
             // Smažu obsah konkrétní verze
             Product product = Product.find.where().eq("projects.c_programs.version_objects.id", version_id).findUnique();
 
-            UtilTools.azureDelete( product.get_Container(), version_object.blob_version_link);
+            for(FileRecord fileRecord : version_object.files)fileRecord.delete();
 
             version_object.c_program = null;
 
@@ -659,10 +659,6 @@ public class CompilationLibrariesController extends Controller {
             // Vyhledání PRoduct pro získání kontejneru
             Product product = Product.find.where().eq("projects.c_programs.id", c_program_id).findUnique();
 
-            // Smazání z Azure
-            UtilTools.azureDelete(product.get_Container(), c_program.get_path());
-
-            System.out.println("budu mazat");
 
             // Smazání objektu
             c_program.delete();
@@ -2052,9 +2048,7 @@ public class CompilationLibrariesController extends Controller {
             // Kontrola oprávnění
             if(! library_group.delete_permission())  return GlobalResult.forbidden_Permission();
 
-            // Smazání z Azure
-            UtilTools.azureDelete(library_group.get_Container(),library_group.get_path());
-
+;
             // Smazání objektu z DB
             library_group.delete();
 
@@ -2710,8 +2704,6 @@ public class CompilationLibrariesController extends Controller {
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
             if(! singleLibrary.delete_permission())  return GlobalResult.forbidden_Permission();
 
-            // Smažu z Azure
-            UtilTools.azureDelete(singleLibrary.get_Container(), singleLibrary.get_path());
 
             // Smažu z databáze
             singleLibrary.delete();

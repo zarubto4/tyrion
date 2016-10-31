@@ -3,19 +3,15 @@ package models.project.b_program;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
 import controllers.SecurityController;
-import controllers.WebSocketController;
 import io.swagger.annotations.ApiModelProperty;
-import models.compiler.Board;
 import models.compiler.FileRecord;
 import models.compiler.Version_Object;
+import models.project.b_program.instnace.Homer_Instance;
+import models.project.b_program.servers.Cloud_Homer_Server;
 import models.project.global.Project;
-import play.data.Form;
-import utilities.swagger.documentationClass.Swagger_Homer_DeviceList_Result;
-import utilities.swagger.outboundClass.B_Program_State;
+import utilities.swagger.outboundClass.Swagger_B_Program_State;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
-import utilities.webSocket.WS_Homer_Cloud;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -32,6 +28,7 @@ public class B_Program extends Model {
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public String id;
                                                              public String name;
                         @Column(columnDefinition = "TEXT")   public String description;
+    @JsonIgnore @OneToOne(cascade = CascadeType.ALL)         public Homer_Instance instance; // TODO - do budoucna více instnací!!!!
 
     @ApiModelProperty(required = true,
                      dataType = "integer", readOnly = true,
@@ -70,48 +67,27 @@ public class B_Program extends Model {
     }
 
 
-    @JsonProperty @Transient public B_Program_State program_state(){
+    @JsonProperty @Transient public Swagger_B_Program_State program_state(){
 
-        B_Program_State state = new B_Program_State();
+        Swagger_B_Program_State state = new Swagger_B_Program_State();
 
-        Version_Object version_object = where_program_run();
-
-        if(version_object == null){
+        if(instance.actual_instance == null) {
             state.uploaded = false;
-            return state;
+            return  state;
         }
 
+        // Je nahrán
         state.uploaded = true;
-        state.version_id = version_object.id;
 
-        if( version_object.homer_instance.cloud_homer_server != null ) {
-            state.where = "cloud";
-            state.set_Cloud_State(version_object.homer_instance, version_object.homer_instance.cloud_homer_server, WebSocketController.incomingConnections_homers.containsKey( version_object.homer_instance.blocko_instance_name )  );
+        // Jaká verze Blocko Programu?
+        state.version_id = instance.actual_instance.id;
 
-            if(WebSocketController.incomingConnections_homers.containsKey( version_object.homer_instance.blocko_instance_name ) ){
-                WS_Homer_Cloud homer = (WS_Homer_Cloud) WebSocketController.incomingConnections_homers.get( version_object.homer_instance.blocko_instance_name );
-                try {
-                    JsonNode result = WebSocketController.homer_instance_get_device_list(homer);
+        // Instnace ID
+        state.instance_id = instance.id;
 
-                    Form<Swagger_Homer_DeviceList_Result> form = Form.form(Swagger_Homer_DeviceList_Result.class).bind(result);
-                    Swagger_Homer_DeviceList_Result help = form.get();
-
-                    if(help != null &&  help.status.equals("success")){
-                       List<Board> boardList = Board.find.where().idIn(help.deviceList).findList();
-                        state.online_boards.addAll(boardList);
-                    }
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
-            }
-        }
-        else {
-            state.where = "homer";
-            state.set_Local_State(version_object.homer_instance, version_object.homer_instance.private_server, WebSocketController.incomingConnections_homers.containsKey( version_object.homer_instance.blocko_instance_name ) );
-            // Tady doplnit dotaz na HW který tam běží
-            System.out.println("------------------------NApiču dopiš co je u cloudu");
-
-        }
+        // Informace o Serveru
+        state.server_id = instance.cloud_homer_server.id;
+        state.server_name = instance.cloud_homer_server.server_name;
 
         return state;
     }
@@ -157,6 +133,17 @@ public class B_Program extends Model {
         while(true){ // I need Unique Value
             this.azure_b_program_link = project.get_path() + "/b-programs/"  + UUID.randomUUID().toString();
             if (B_Program.find.where().eq("azure_b_program_link", azure_b_program_link ).findUnique() == null) break;
+        }
+
+
+        if(instance == null){
+            Cloud_Homer_Server destination_server = Cloud_Homer_Server.find.where().eq("server_name", "Alfa").findUnique();
+
+            Homer_Instance instance = new Homer_Instance();
+            instance.cloud_homer_server = destination_server;
+            instance.save();
+            this.instance = instance;
+
         }
         super.save();
     }

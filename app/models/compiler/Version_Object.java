@@ -8,7 +8,7 @@ import models.person.Person;
 import models.project.b_program.B_Pair;
 import models.project.b_program.B_Program;
 import models.project.b_program.B_Program_Hw_Group;
-import models.project.b_program.Homer_Instance;
+import models.project.b_program.instnace.Homer_Instance_Record;
 import models.project.c_program.C_Compilation;
 import models.project.c_program.C_Program;
 import models.project.c_program.actualization.Actualization_procedure;
@@ -76,7 +76,7 @@ public class Version_Object extends Model {
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)                              public List<M_Project_Program_SnapShot> m_project_program_snapShots = new ArrayList<>();    // Bazba kvůli puštěným B_programům
 
         // B_Program - Instance
-        @JsonIgnore  @OneToOne(mappedBy="version_object", cascade = CascadeType.PERSIST) public Homer_Instance homer_instance;
+        @JsonIgnore  @OneToMany(mappedBy="version_object") public List<Homer_Instance_Record> instance_record;
 
 
 

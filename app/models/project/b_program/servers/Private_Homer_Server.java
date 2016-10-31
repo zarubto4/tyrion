@@ -4,7 +4,7 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
-import models.project.b_program.Homer_Instance;
+import models.project.b_program.instnace.Homer_Instance;
 import models.project.global.Project;
 
 import javax.persistence.*;

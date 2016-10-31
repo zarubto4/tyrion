@@ -14,7 +14,7 @@ import models.notification.Notification;
 import models.person.Person;
 import models.project.b_program.B_Pair;
 import models.project.b_program.B_Program_Hw_Group;
-import models.project.b_program.Homer_Instance;
+import models.project.b_program.instnace.Homer_Instance;
 import models.project.b_program.servers.Cloud_Homer_Server;
 import play.data.Form;
 import play.libs.Json;
@@ -256,12 +256,12 @@ public class WebSocketController extends Controller {
             }
 
             // POKUD JE B_PROGRAM V CLOUDU a má shodnou verzi
-            if (m_project.b_program_version.homer_instance != null) {
+            if (m_project.b_program_version_object.instance_record  != null) {
 
 
                 logger.debug("Terminal: Program on Cloud win");
 
-                String homer_identificator = m_project.b_program_version.homer_instance.blocko_instance_name;
+                String homer_identificator = m_project.b_program_version_object.instance_record .blocko_instance_name;
                 String server_name =  Cloud_Homer_Server.find.where().eq("cloud_programs.version_object.m_project.id", m_project.id ).findUnique().server_name;
 
                 logger.debug("Terminal: Connection with Server " + server_name);
@@ -314,7 +314,7 @@ public class WebSocketController extends Controller {
             //-----------------------------------------------------------------------------------------------------------
 
              // POKUD JE B_PROGRAM NA PC ale shodná verze neexistuje a povolil jsem auto inkrementaci
-              if( m_project.b_program_version.homer_instance.private_server == null && m_project.auto_incrementing  && B_Program.find.where().isNotNull("version_objects.b_program_homer").findUnique() != null) {
+              if( m_project.b_program_version_object.instance_record .private_server == null && m_project.auto_incrementing  && B_Program.find.where().isNotNull("version_objects.b_program_homer").findUnique() != null) {
 
                   logger.debug("Tyrion: Homer is on local computer, but Tyrion have to repair versions");
                   m_project.b_program_version = m_project.b_program.where_program_run();
@@ -322,11 +322,11 @@ public class WebSocketController extends Controller {
 
               }
               // POKUD JE B_PROGRAM NA PC a má shodnou verzi
-              if (m_project.b_program_version.homer_instance.private_server != null) {
+              if (m_project.b_program_version_object.instance_record .private_server != null) {
 
                   logger.debug("Tyrion: Homer is on local computer");
 
-                  String homer_identificator = m_project.b_program_version.homer_instance.private_server.id;
+                  String homer_identificator = m_project.b_program_version_object.instance_record .private_server.id;
 
                   logger.debug("Tyrion: Connection will be on Homer: " + homer_identificator);
 
@@ -738,7 +738,7 @@ public class WebSocketController extends Controller {
                 }
 
                 logger.debug("Creating new  Homer");
-                WS_Homer_Cloud homer = new WS_Homer_Cloud(instance.blocko_instance_name, instance.version_object != null ? instance.version_object.id : "null", blockoServer);
+                WS_Homer_Cloud homer = new WS_Homer_Cloud(instance.blocko_instance_name, instance.actual_instance.version_object != null ? instance.actual_instance.version_object.id : "null", blockoServer);
 
                 ObjectNode result = Json.newObject();
                 result.put("messageType", "createInstance");
@@ -747,7 +747,7 @@ public class WebSocketController extends Controller {
 
                 List<Swagger_Instance_HW_Group> hw_groups = new ArrayList<>();
 
-                List<B_Program_Hw_Group> hw_group_for_checking = B_Program_Hw_Group.find.where().eq("b_program_version_groups.id", instance.version_object.id).findList();
+                List<B_Program_Hw_Group> hw_group_for_checking = B_Program_Hw_Group.find.where().eq("b_program_version_groups.id", instance.actual_instance.version_object.id).findList();
                 if (hw_group_for_checking != null) {
 
                     logger.debug("HW GROUP není nulová");
@@ -779,9 +779,9 @@ public class WebSocketController extends Controller {
 
 
                     logger.debug("Sending Blocko Program if Exist");
-                    if (instance.version_object != null) {
+                    if (instance.actual_instance.version_object != null) {
 
-                        FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", instance.version_object.id).eq("file_name", "program.js").findUnique();
+                        FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", instance.actual_instance.version_object.id).eq("file_name", "program.js").findUnique();
                         if (fileRecord != null) {
                             JsonNode result_uploud = WebSocketController.homer_instance_upload_blocko_program(homer, instance.id, fileRecord.get_fileRecord_from_Azure_inString());
                         } else {
@@ -816,12 +816,12 @@ public class WebSocketController extends Controller {
         WS_Homer_Cloud cloud_homer = (WS_Homer_Cloud) homer;
 
         logger.debug("Upravuji Version Id in Homer");
-        if(instance.version_object != null) cloud_homer.version_id = instance.version_object.id;
+        if(instance.actual_instance.version_object != null) cloud_homer.version_id = instance.actual_instance.version_object.id;
 
 
         logger.debug("Sending Blocko Program if Exist");
 
-        JsonNode result_uploud = WebSocketController.homer_instance_upload_blocko_program(homer, instance.id, instance.version_object.files.get(0).get_fileRecord_from_Azure_inString());
+        JsonNode result_uploud = WebSocketController.homer_instance_upload_blocko_program(homer, instance.id, instance.actual_instance.version_object.files.get(0).get_fileRecord_from_Azure_inString());
 
         if(result_uploud.get("status").asText().equals("success")){
 
@@ -1175,22 +1175,23 @@ public class WebSocketController extends Controller {
                 System.out.println("Ze serveru budu chtít dostávat všechny informace z blocko serveru na verzi" + version_id);
 
                 // Najdu Version
-                Version_Object version = Version_Object.find.byId(version_id);
-                if (version == null) {
+                Version_Object version_object = Version_Object.find.byId(version_id);
+                if (version_object == null) {
                     becki_disapprove_subscription_instance_state(becki, json.get("messageId").asText(), "Version not Exist");
                     return;
                 }
+                Homer_Instance instance = Homer_Instance.find.where().eq("b_program.version_objects.id", version_id).findUnique();
 
                 // Zjistím kde běží
-                if (!blocko_servers.containsKey(version.homer_instance.cloud_homer_server.server_name)) {
+                if (!blocko_servers.containsKey(instance.cloud_homer_server.server_name)) {
                     becki_disapprove_subscription_instance_state(becki, json.get("messageId").asText(), "Server is not connected");
                     return;
                 }
 
-                WS_BlockoServer server = (WS_BlockoServer) blocko_servers.get(version.homer_instance.cloud_homer_server.server_name);
+                WS_BlockoServer server = (WS_BlockoServer) blocko_servers.get(instance.cloud_homer_server.server_name);
 
                 // Zjistit jestli tam instance opravdu běží
-                JsonNode result_instance = homer_server_isInstanceExist(server, version.homer_instance.blocko_instance_name);
+                JsonNode result_instance = homer_server_isInstanceExist(server, instance.blocko_instance_name);
                 if(result_instance.get("status").asText().equals("error"))  {
                     becki_disapprove_subscription_instance_state(becki, json.get("messageId").asText(), result_instance.get("error").asText());
                     return;
@@ -1203,13 +1204,13 @@ public class WebSocketController extends Controller {
 
                 // Zjistím jestli existuje virtuální homer
                 System.out.println("Zjištuji jestli existuje virtuální homer");
-                if(!incomingConnections_homers.containsKey(version.homer_instance.blocko_instance_name) ) {
+                if(!incomingConnections_homers.containsKey(instance.blocko_instance_name) ) {
                     System.out.println("Virtuální Homer neexistuje!!!");
                     becki_disapprove_subscription_instance_state(becki, json.get("messageId").asText(), "FATAL ERROR!!! Virtual Homer for this instance not exist!");
                     return;
                 }
 
-                WebSCType homer = incomingConnections_homers.get(version.homer_instance.blocko_instance_name);
+                WebSCType homer = incomingConnections_homers.get(instance.blocko_instance_name);
 
                 // 2 - Požádat Homera o zasílání informací
                 JsonNode result_recive = homer_instance_subscribe_blocko_instance(homer);
@@ -1235,22 +1236,24 @@ public class WebSocketController extends Controller {
                 System.out.println("Becki nechce nadále příjmat požadavky z instance" + version_id);
 
                 // Najdu Version
-                Version_Object version = Version_Object.find.byId(version_id);
-                if (version == null) {
+                Version_Object version_object = Version_Object.find.byId(version_id);
+                if (version_object == null) {
                     becki_disapprove_un_subscription_instance_state(becki, json.get("messageId").asText(), "Version not Exist");
                     return;
                 }
+                Homer_Instance instance = Homer_Instance.find.where().eq("b_program.version_objects.id", version_id).findUnique();
+
 
                 // Zjistím kde běží
-                if (!blocko_servers.containsKey(version.homer_instance.cloud_homer_server.server_name)) {
+                if (!blocko_servers.containsKey(instance.cloud_homer_server.server_name)) {
                     becki_disapprove_un_subscription_instance_state(becki, json.get("messageId").asText(), "Server is not connected");
                     return;
                 }
 
-                WS_BlockoServer server = (WS_BlockoServer) blocko_servers.get(version.homer_instance.cloud_homer_server.server_name);
+                WS_BlockoServer server = (WS_BlockoServer) blocko_servers.get(instance.cloud_homer_server.server_name);
 
                 // Zjistit jestli tam instance opravdu běží
-                JsonNode result_instance = homer_server_isInstanceExist(server, version.homer_instance.blocko_instance_name);
+                JsonNode result_instance = homer_server_isInstanceExist(server, instance.blocko_instance_name);
                 if(result_instance.get("status").asText().equals("error"))  {
                     becki_disapprove_un_subscription_instance_state(becki, json.get("messageId").asText(), result_instance.get("error").asText());
                     return;
@@ -1263,13 +1266,13 @@ public class WebSocketController extends Controller {
 
                 // Zjistím jestli existuje virtuální homer
                 System.out.println("Zjištuji jestli existuje virtuální homer");
-                if(!incomingConnections_homers.containsKey(version.homer_instance.blocko_instance_name) ) {
+                if(!incomingConnections_homers.containsKey(instance.blocko_instance_name) ) {
                     System.out.println("Virtuální Homer neexistuje!!!");
                     becki_disapprove_un_subscription_instance_state(becki, json.get("messageId").asText(), "FATAL ERROR!!! Virtual Homer for this instance not exist!");
                     return;
                 }
 
-                WebSCType homer = incomingConnections_homers.get(version.homer_instance.blocko_instance_name);
+                WebSCType homer = incomingConnections_homers.get(instance.blocko_instance_name);
 
                 if(! becki.subscribers_becki.contains( homer) ) becki_disapprove_un_subscription_instance_state(becki, json.get("messageId").asText(), "Homer is not listening Becki");
 

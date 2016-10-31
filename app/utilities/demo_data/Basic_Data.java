@@ -1552,6 +1552,7 @@ public class Basic_Data {
                 b_program_4.description = "Tento program má sloužit Davidovi";
                 b_program_4.date_of_create = new Date();
                 b_program_4.project = project_1;
+                b_program_4.instance = new Homer_Instance();
                 b_program_4.save();
 
             // První verze B_Programu - Pro instanci!
@@ -1647,32 +1648,29 @@ public class Basic_Data {
             m_project.date_of_create = new Date();
             m_project.save();
 
-            M_Program m_program_main_1 = new M_Program();
-            m_program_main_1.m_project = m_project;
-            m_program_main_1.date_of_create = new Date();
-            m_program_main_1.name = "Tohle je super mega program";
-            m_program_main_1.screen_size_type = Screen_Size_Type.find.where().eq("name", "iPhone6").findUnique();
-            m_program_main_1.save();
-
-
             M_Program m_program_1 = new M_Program();
-            m_program_1.description = "První verze se snad zdařila!!! Yahoooo!!!!";
-            m_program_1.name = "1.0.1";
+            m_program_1.m_project = m_project;
             m_program_1.date_of_create = new Date();
+            m_program_1.description = "První verze se snad zdařila!!! Yahoooo!!!!";
+            m_program_1.name = "Velký M PRogram";
+            m_program_1.screen_size_type = Screen_Size_Type.find.where().eq("name", "iPhone6").findUnique();
             m_program_1.save();
 
 
             Version_Object m_program_version_object_1 = new Version_Object();
             m_program_version_object_1.version_description = "Toto je první verze!";
             m_program_version_object_1.version_name = "1.0.0";
+            m_program_version_object_1.m_program = m_program_1;
             m_program_version_object_1.save();
 
             ObjectNode content = Json.newObject();
-            content.put("m_code", "dlouuuhy m_code");
-            content.put("virtual_input_output", " virtual input output");
+            content.put("m_code", "{}");
+            content.put("virtual_input_output", "{}");
 
             UtilTools.uploadAzure_Version(content.toString(), "m_program.json" , m_program_1.get_path() ,  m_program_version_object_1);
             m_program_version_object_1.save();
+
+
 
 
 

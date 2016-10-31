@@ -188,101 +188,89 @@ PUT             /product/invoice/send_remainder/:invoice_id                     
 DELETE          /product/invoice/remove/:invoice_id                                         @controllers.Finance_Controller.remove_invoice(invoice_id: Long)
 
 #Project
-POST           /project/project                                                             @controllers.ProgramingPackageController.postNewProject()
-PUT            /project/project/:project_id                                                 @controllers.ProgramingPackageController.edit_Project(project_id)
-GET            /project/project/:project_id                                                 @controllers.ProgramingPackageController.getProject(project_id)
-GET            /project/project                                                             @controllers.ProgramingPackageController.getProjectsByUserAccount
-DELETE         /project/project/:project_id                                                 @controllers.ProgramingPackageController.deleteProject(project_id)
-PUT            /project/project/shareProject/:project_id                                    @controllers.ProgramingPackageController.shareProjectWithUsers(project_id)
-PUT            /project/project/unshareProject/:project_id                                  @controllers.ProgramingPackageController.unshareProjectWithUsers(project_id)
-PUT            /project/project/addParticipant/:invitation_id/:decision                     @controllers.ProgramingPackageController.addParticipantToProject(invitation_id, decision: Boolean)
-DELETE         /project/project/deleteInvitation/:invitation_id                             @controllers.ProgramingPackageController.deleteProjectInvitation(invitation_id)
+POST           /project                                                                     @controllers.ProgramingPackageController.postNewProject()
+PUT            /project/:project_id                                                         @controllers.ProgramingPackageController.edit_Project(project_id)
+GET            /project/:project_id                                                         @controllers.ProgramingPackageController.getProject(project_id)
+GET            /project                                                                     @controllers.ProgramingPackageController.getProjectsByUserAccount
+DELETE         /project/:project_id                                                         @controllers.ProgramingPackageController.deleteProject(project_id)
+PUT            /project/shareProject/:project_id                                            @controllers.ProgramingPackageController.shareProjectWithUsers(project_id)
+PUT            /project/unshareProject/:project_id                                          @controllers.ProgramingPackageController.unshareProjectWithUsers(project_id)
+PUT            /project/addParticipant/:invitation_id/:decision                             @controllers.ProgramingPackageController.addParticipantToProject(invitation_id, decision: Boolean)
+DELETE         /project/deleteInvitation/:invitation_id                                     @controllers.ProgramingPackageController.deleteProjectInvitation(invitation_id)
 
 #Homer
-POST           /project/homer                                                               @controllers.ProgramingPackageController.newHomer()
-PUT            /project/homer/filter/:page_number                                           @controllers.ProgramingPackageController.get_Homers_by_Filter(page_number: Integer)
-DELETE         /project/homer/:homer_id                                                     @controllers.ProgramingPackageController.removeHomer(homer_id)
-GET            /project/homer/:homer_id                                                     @controllers.ProgramingPackageController.getHomer(homer_id)
+POST           /homer                                                                       @controllers.ProgramingPackageController.newHomer()
+PUT            /homer/filter/:page_number                                                   @controllers.ProgramingPackageController.get_Homers_by_Filter(page_number: Integer)
+DELETE         /homer/:homer_id                                                             @controllers.ProgramingPackageController.removeHomer(homer_id)
+GET            /homer/:homer_id                                                             @controllers.ProgramingPackageController.getHomer(homer_id)
 
 #Project - connection
-PUT            /project/homer/:project_id/:homer_id                                         @controllers.ProgramingPackageController.connectHomerWithProject(project_id, homer_id)
-DELETE         /project/homer/:project_id/:homer_id                                         @controllers.ProgramingPackageController.disconnectHomerWithProject(project_id, homer_id)
+PUT            /homer/:project_id/:homer_id                                                 @controllers.ProgramingPackageController.connectHomerWithProject(project_id, homer_id)
+DELETE         /homer/:project_id/:homer_id                                                 @controllers.ProgramingPackageController.disconnectHomerWithProject(project_id, homer_id)
 
 
 #Program
-POST           /project/b_program/:project_id                                               @controllers.ProgramingPackageController.new_b_Program(project_id)
-GET            /project/b_program/:b_program_id                                             @controllers.ProgramingPackageController.get_b_Program(b_program_id)
-PUT            /project/b_program/:b_program_id                                             @controllers.ProgramingPackageController.edit_b_Program(b_program_id)
-DELETE         /project/b_program/:b_program_id                                             @controllers.ProgramingPackageController.remove_b_Program(b_program_id)
-PUT            /project/b_program/list/:page_number                                         @controllers.ProgramingPackageController.get_b_Program_by_Filter(page_number: Integer)
-
-PUT            /project/b_program/update/:b_program_id                                      @controllers.ProgramingPackageController.update_b_program(b_program_id)
-GET            /project/b_program/version/:version_id                                       @controllers.ProgramingPackageController.get_b_Program_version(version_id)
-DELETE         /project/b_program/version/:version_id                                       @controllers.ProgramingPackageController.remove_b_Program_version(version_id)
+POST           /b_program/:project_id                                                       @controllers.ProgramingPackageController.new_b_Program(project_id)
+GET            /b_program/:b_program_id                                                     @controllers.ProgramingPackageController.get_b_Program(b_program_id)
+PUT            /b_program/:b_program_id                                                     @controllers.ProgramingPackageController.edit_b_Program(b_program_id)
+DELETE         /b_program/:b_program_id                                                     @controllers.ProgramingPackageController.remove_b_Program(b_program_id)
+PUT            /b_program/list/:page_number                                                 @controllers.ProgramingPackageController.get_b_Program_by_Filter(page_number: Integer)
+        
+PUT            /b_program/update/:b_program_id                                              @controllers.ProgramingPackageController.update_b_program(b_program_id)
+GET            /b_program/version/:version_id                                               @controllers.ProgramingPackageController.get_b_Program_version(version_id)
+DELETE         /b_program/version/:version_id                                               @controllers.ProgramingPackageController.remove_b_Program_version(version_id)
 
 #Instance
-PUT            /project/b_program/uploadToHomer/:b_program_id/:version_id/:homer_id         @controllers.ProgramingPackageController.uploadProgramToHomer_Immediately(b_program_id, version_id,homer_id)
-PUT            /project/b_program/uploadToCloud/:version_id                                 @controllers.ProgramingPackageController.upload_b_Program_ToCloud(version_id)
+PUT            /b_program/uploadToCloud/:version_id                                         @controllers.ProgramingPackageController.upload_b_Program_ToCloud(version_id)
 
-PUT            /project/b_program/instance/update_blocko/version/:instance_id/:version_id   @controllers.ProgramingPackageController.update_blocko_code_in_instance_version(instance_id, version_id)
-
-
-PUT            /project/b_program/instance/master_device/:instance_id/:yoda_id              @controllers.ProgramingPackageController.add_Yoda_To_Instance(instance_id, yoda_id)
-DELETE         /project/b_program/instance/master_device/:instance_id/:yoda_id              @controllers.ProgramingPackageController.remove_Yoda_from_Instance(instance_id, yoda_id)
-
-PUT            /project/b_program/instance/device/:yoda_id/:device_id                       @controllers.ProgramingPackageController.add_Device_To_Instance(yoda_id, device_id)
-DELETE         /project/b_program/instance/device/:yoda_id/:device_id                       @controllers.ProgramingPackageController.remove_Device_From_Instance(yoda_id, device_id)
-
-GET            /project/b_program/instance/listOfUploadedHomers/:id                         @controllers.ProgramingPackageController.listOfUploadedHomers(id: String)
-GET            /project/b_program/instance/listOfHomersWaitingForUpload/:id                 @controllers.ProgramingPackageController.listOfHomersWaitingForUpload(id: String)
-
-PUT            /project/b_program/instance/command/:instance_id/:target_id/:command         @controllers.ProgramingPackageController.send_command_to_instnace(instance_id, target_id, command)
-PUT            /project/b_program/instance/program/:instance_id                             @controllers.ProgramingPackageController.update_blocko_code_in_instance_with_code(instance_id)
-PUT            /project/b_program/instance/ping/:instance_id                                @controllers.ProgramingPackageController.ping_instance(instance_id)
-PUT            /project/b_program/instance/shut_down/:instance_id                           @controllers.ProgramingPackageController.instance_shut_down(instance_id)
+GET            /instance/:instance_id                                                       @controllers.ProgramingPackageController.get_b_program_instance(instance_id)
+PUT            /instance/command/:instance_id/:target_id/:command                           @controllers.ProgramingPackageController.send_command_to_instance(instance_id, target_id, command)
+PUT            /instance/program/:instance_id                                               @controllers.ProgramingPackageController.update_blocko_code_in_instance_with_code(instance_id)
+PUT            /instance/ping/:instance_id                                                  @controllers.ProgramingPackageController.ping_instance(instance_id)
+PUT            /instance/shut_down/:instance_id                                             @controllers.ProgramingPackageController.instance_shut_down(instance_id)
 
 
 #Blocks
-POST           /project/blockoBlock                                                         @controllers.ProgramingPackageController.new_Block()
-PUT            /project/blockoBlock/:blocko_block_id                                        @controllers.ProgramingPackageController.edit_Block(blocko_block_id)
-GET            /project/blockoBlock/:blocko_block_id                                        @controllers.ProgramingPackageController.getBlockoBlock(blocko_block_id)
-DELETE         /project/blockoBlock/:blocko_block_id                                        @controllers.ProgramingPackageController.deleteBlock(blocko_block_id)
-PUT            /project/blockoBlock/list/:page_number                                       @controllers.ProgramingPackageController.get_BlockoBlock_by_Filter(page_number: Integer)
+POST           /blockoBlock                                                         @controllers.ProgramingPackageController.new_Block()
+PUT            /blockoBlock/:blocko_block_id                                        @controllers.ProgramingPackageController.edit_Block(blocko_block_id)
+GET            /blockoBlock/:blocko_block_id                                        @controllers.ProgramingPackageController.getBlockoBlock(blocko_block_id)
+DELETE         /blockoBlock/:blocko_block_id                                        @controllers.ProgramingPackageController.deleteBlock(blocko_block_id)
+PUT            /blockoBlock/list/:page_number                                       @controllers.ProgramingPackageController.get_BlockoBlock_by_Filter(page_number: Integer)
 
-POST           /project/blockoBlock/version/:blocko_block_id                                @controllers.ProgramingPackageController.new_BlockoBlock_Version(blocko_block_id)
-PUT            /project/blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.edit_BlockoBlock_Version(blocko_block_version_id)
-PUT            /project/blockoBlock/version/make_public/:blocko_block_version_id            @controllers.ProgramingPackageController.make_BlockoBlock_Version_public(blocko_block_version_id)
-GET            /project/blockoBlock/version/all/:blocko_block_id                            @controllers.ProgramingPackageController.get_BlockoBlock_all_versions(blocko_block_id)
-GET            /project/blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.get_BlockoBlock_Version(blocko_block_version_id)
-DELETE         /project/blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.delete_BlockoBlock_Version(blocko_block_version_id)
+POST           /blockoBlock/version/:blocko_block_id                                @controllers.ProgramingPackageController.new_BlockoBlock_Version(blocko_block_id)
+PUT            /blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.edit_BlockoBlock_Version(blocko_block_version_id)
+PUT            /blockoBlock/version/make_public/:blocko_block_version_id            @controllers.ProgramingPackageController.make_BlockoBlock_Version_public(blocko_block_version_id)
+GET            /blockoBlock/version/all/:blocko_block_id                            @controllers.ProgramingPackageController.get_BlockoBlock_all_versions(blocko_block_id)
+GET            /blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.get_BlockoBlock_Version(blocko_block_version_id)
+DELETE         /blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.delete_BlockoBlock_Version(blocko_block_version_id)
 
-GET            /project/blockoBlock/scheme/version                                          @controllers.ProgramingPackageController.get_BlockoBlock_Version_scheme()
-PUT            /project/blockoBlock/scheme/version                                          @controllers.ProgramingPackageController.edit_BlockoBlock_Version_scheme()
+GET            /blockoBlock/scheme/version                                          @controllers.ProgramingPackageController.get_BlockoBlock_Version_scheme()
+PUT            /blockoBlock/scheme/version                                          @controllers.ProgramingPackageController.edit_BlockoBlock_Version_scheme()
 
 #TypeOfBlocko
-POST           /project/typeOfBlock                                                         @controllers.ProgramingPackageController.newTypeOfBlock()
-GET            /project/typeOfBlock                                                         @controllers.ProgramingPackageController.getAllTypeOfBlocks
-GET            /project/typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.get_TypeOfBlock(type_of_block_id)
-PUT            /project/typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.editTypeOfBlock(type_of_block_id)
-DELETE         /project/typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.deleteTypeOfBlock(type_of_block_id)
-PUT            /project/typeOfBlock/list/:page_number                                       @controllers.ProgramingPackageController.get_TypeOfBlock_by_Filter(page_number: Integer)
+POST           /typeOfBlock                                                         @controllers.ProgramingPackageController.newTypeOfBlock()
+GET            /typeOfBlock                                                         @controllers.ProgramingPackageController.getAllTypeOfBlocks
+GET            /typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.get_TypeOfBlock(type_of_block_id)
+PUT            /typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.editTypeOfBlock(type_of_block_id)
+DELETE         /typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.deleteTypeOfBlock(type_of_block_id)
+PUT            /typeOfBlock/list/:page_number                                       @controllers.ProgramingPackageController.get_TypeOfBlock_by_Filter(page_number: Integer)
 
 
 #BLocko Server
-POST            /project/blocko/server                                                      @controllers.ProgramingPackageController.create_Blocko_Server()
-PUT             /project/blocko/server/:server_id                                           @controllers.ProgramingPackageController.edit_Blocko_Server(server_id)
-GET             /project/blocko/server                                                      @controllers.ProgramingPackageController.get_All_Blocko_Server()
-DELETE          /project/blocko/server/:server_id                                           @controllers.ProgramingPackageController.delete_Blocko_Server(server_id)
+POST            /blocko_server                                                      @controllers.ProgramingPackageController.create_Blocko_Server()
+PUT             /blocko_server/:server_id                                           @controllers.ProgramingPackageController.edit_Blocko_Server(server_id)
+GET             /blocko_server                                                      @controllers.ProgramingPackageController.get_All_Blocko_Server()
+DELETE          /blocko_server/:server_id                                           @controllers.ProgramingPackageController.delete_Blocko_Server(server_id)
 
 #Blocko General
-PUT             /project/blocko/disapprove                                                  @controllers.ProgramingPackageController.blockoDisapprove()
-PUT             /project/blocko/approval                                                    @controllers.ProgramingPackageController.blockoApproval()
+PUT             /blocko/disapprove                                                  @controllers.ProgramingPackageController.blockoDisapprove()
+PUT             /blocko/approval                                                    @controllers.ProgramingPackageController.blockoApproval()
 
 ### ACTUALIZATION PROCEDURE ############ ACTUALIZATION PROCEDURE ############### ACTUALIZATION PROCEDURE ################ ACTUALIZATION PROCEDURE ##############################
 ################################################################################################################################################################################
 
 #Actualization Procedure
-GET             /project/actualization_procedure/:actualization_procedure_id                @controllers.ActualizationController.get_Actualization_Procedure(actualization_procedure_id)
+GET             /actualization_procedure/:actualization_procedure_id                @controllers.ActualizationController.get_Actualization_Procedure(actualization_procedure_id)
 
 
 

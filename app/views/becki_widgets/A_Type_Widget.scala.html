@@ -1,0 +1,13 @@
+@(main_text: String, after_number: String, number : Integer, color : String, icon_code: String)
+<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+    <a class="dashboard-stat dashboard-stat-v2 @color " href="#">
+        <div class="visual">
+            <i class="fa @icon_code"></i>
+        </div>
+        <div class="details">
+            <div class="number">
+                <span data-counter="counterup" data-value="@number">0</span>@after_number</div>
+            <div class="desc">@main_text</div>
+        </div>
+    </a>
+</div>

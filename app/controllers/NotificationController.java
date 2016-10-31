@@ -8,7 +8,7 @@ import models.notification.Notification;
 import models.person.Invitation;
 import models.person.Person;
 import models.project.b_program.B_Program;
-import models.project.b_program.Homer_Instance;
+import models.project.b_program.instnace.Homer_Instance;
 import models.project.c_program.C_Program;
 import models.project.c_program.actualization.Actualization_procedure;
 import models.project.c_program.actualization.C_Program_Update_Plan;
@@ -110,10 +110,10 @@ public class NotificationController extends Controller {
   public static void upload_Instance_start(Person person, Homer_Instance instance){
 
     Notification notification = new Notification(Notification_importance.low,  Notification_level.info, person)
-                                  .setText("Server start creating new Blocko Instance on Blocko Version  <b>" + instance.version_object.b_program.name + "</b>")
-                                  .setObject(Swagger_B_Program_Version.class, instance.version_object.id, instance.version_object.version_name, instance.version_object.b_program.project_id() )
+                                  .setText("Server start creating new Blocko Instance on Blocko Version  <b>" + instance.actual_instance.version_object.b_program.name + "</b>")
+                                  .setObject(Swagger_B_Program_Version.class, instance.actual_instance.version_object.id, instance.actual_instance.version_object.version_name, instance.actual_instance.version_object.b_program.project_id() )
                                   .setText("from Blocko program")
-                                  .setObject(B_Program.class, instance.version_object.b_program.id, instance.version_object.b_program.name + ".", instance.version_object.b_program.project_id());
+                                  .setObject(B_Program.class, instance.actual_instance.version_object.b_program.id, instance.actual_instance.version_object.b_program.name + ".", instance.actual_instance.version_object.b_program.project_id());
 
     send_notification(person, notification);
   }
@@ -122,9 +122,9 @@ public class NotificationController extends Controller {
 
     Notification notification = new Notification(Notification_importance.low, Notification_level.success, person)
                                     .setText("Server created successfully instance in cloud on Blocko Version")
-                                    .setObject(Swagger_B_Program_Version.class, instance.version_object.id, instance.version_object.version_name, instance.version_object.b_program.project_id() )
+                                    .setObject(Swagger_B_Program_Version.class, instance.actual_instance.version_object.id, instance.actual_instance.version_object.version_name, instance.actual_instance.version_object.b_program.project_id() )
                                     .setText("from Blocko program")
-                                    .setObject(B_Program.class, instance.version_object.b_program.id, instance.version_object.b_program.name + ".", instance.version_object.b_program.project_id());
+                                    .setObject(B_Program.class, instance.actual_instance.version_object.b_program.id, instance.actual_instance.version_object.b_program.name + ".", instance.actual_instance.version_object.b_program.project_id());
 
     send_notification(person, notification);
   }
@@ -132,11 +132,15 @@ public class NotificationController extends Controller {
 
   public static void upload_Instance_was_unsuccessfull(Person person, Homer_Instance instance, String reason){
 
+
+    String s = instance.actual_instance.version_object.version_name;
+    String k = instance.b_program.name;
+
     Notification notification = new Notification(Notification_importance.normal, Notification_level.warning, person)
-                                    .setText("Server not upload instance to cloud on Blocko Version <b>" + instance.version_object.version_name + "</b> from Blocko program <b>" + instance.version_object.b_program.name + "</b> for <b> reason:\"" +  reason + "\" </b> ")
-                                    .setObject(Swagger_B_Program_Version.class, instance.version_object.id, instance.version_object.version_name, instance.version_object.b_program.project_id() )
+                                    .setText("Server not upload instance to cloud on Blocko Version <b>" + instance.actual_instance.version_object.version_name + "</b> from Blocko program <b>" + instance.b_program.name + "</b> for <b> reason:\"" +  reason + "\" </b> ")
+                                    .setObject(Swagger_B_Program_Version.class, instance.actual_instance.version_object.id, instance.actual_instance.version_object.version_name, instance.b_program.project_id() )
                                     .setText("from Blocko program")
-                                    .setObject(B_Program.class, instance.version_object.b_program.id, instance.version_object.b_program.name, instance.version_object.b_program.project_id() )
+                                    .setObject(B_Program.class, instance.b_program.id, instance.b_program.name, instance.b_program.project_id() )
                                     .setText("Server will try to do that as soon as possible.");
 
     send_notification(person, notification);
@@ -184,7 +188,7 @@ public class NotificationController extends Controller {
 
     Notification notification = new Notification(Notification_importance.low, Notification_level.info, person)
             .setText("New actualization task was added to Task Queue on ")
-            .setObject(Swagger_B_Program_Version_New.class, homer_instance.version_object.id, "Version " + homer_instance.version_object.version_name, homer_instance.version_object.b_program.project_id()  );
+            .setObject(Swagger_B_Program_Version_New.class, homer_instance.actual_instance.version_object.id, "Version " + homer_instance.actual_instance.version_object.version_name, homer_instance.actual_instance.version_object.b_program.project_id()  );
 
 
     send_notification(person, notification);

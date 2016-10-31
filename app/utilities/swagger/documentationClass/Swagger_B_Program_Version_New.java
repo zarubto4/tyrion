@@ -13,7 +13,7 @@ import java.util.List;
 public class Swagger_B_Program_Version_New {
 
     @Constraints.Required
-    @Constraints.MinLength(value = 8, message = "The name must have at least 8 characters")
+    @Constraints.MinLength(value = 4, message = "The name must have at least 4 characters")
     @Constraints.MaxLength(value = 60, message = "The name must not have more than 60 characters")
     @ApiModelProperty(required = true, value = "Length must be between 8 and 60 characters.")
     public String version_name;
@@ -64,7 +64,6 @@ public class Swagger_B_Program_Version_New {
     }
 
 
-
     public static class M_Project_SnapShot {
 
         public M_Project_SnapShot(){}
@@ -76,7 +75,7 @@ public class Swagger_B_Program_Version_New {
         public List<M_Program_SnapShot> m_program_snapshots = new ArrayList<>();
 
     }
-    
+
     public static class M_Program_SnapShot {
 
         public M_Program_SnapShot(){}

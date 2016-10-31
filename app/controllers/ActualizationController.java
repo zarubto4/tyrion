@@ -7,7 +7,7 @@ import models.compiler.FileRecord;
 import models.compiler.Version_Object;
 import models.project.b_program.B_Pair;
 import models.project.b_program.B_Program_Hw_Group;
-import models.project.b_program.Homer_Instance;
+import models.project.b_program.instnace.Homer_Instance;
 import models.project.c_program.actualization.Actualization_procedure;
 import models.project.c_program.actualization.C_Program_Update_Plan;
 import models.project.global.Project;
@@ -328,7 +328,7 @@ public class ActualizationController extends Controller {
 
             logger.debug("Creating new actualization procedure");
             Actualization_procedure procedure = new Actualization_procedure();
-            procedure.b_program_version_procedure = program_cloud.version_object;
+            procedure.b_program_version_procedure = program_cloud.actual_instance.version_object;
             procedure.date_of_create = new Date();
             procedure.state = Actual_procedure_State.in_progress;
             procedure.project = project;
@@ -341,7 +341,7 @@ public class ActualizationController extends Controller {
             // Sem sesbírám aktualizační procedury, kterých se týkají změny v old_plans
             Map<String, Actualization_procedure> actualization_procedures = new HashMap<>();
 
-            for(B_Program_Hw_Group group : program_cloud.version_object.b_program_hw_groups) {
+            for(B_Program_Hw_Group group : program_cloud.actual_instance.version_object.b_program_hw_groups) {
 
                 List<B_Pair> list = group.device_board_pairs;
                 list.add(group.main_board_pair);

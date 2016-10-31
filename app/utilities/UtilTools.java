@@ -227,7 +227,6 @@ public class UtilTools extends Controller {
         fileRecord.file_path = file_path + "/" + file_name;
         fileRecord.save();
 
-
         return fileRecord;
     }
 
