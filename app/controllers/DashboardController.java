@@ -443,7 +443,7 @@ public class DashboardController extends Controller {
         logger.debug("Trying to upload bug to youtrack");
 
         F.Promise<Result> p = Loggy.upload_to_youtrack(bug_id);
-        return p.map((result) -> redirect("/public/bugs"));
+        return p.map((result) -> redirect("/admin/bugs"));
     }
 
     // Odstraní konkrétní bug ze seznamu (souboru)
@@ -451,7 +451,7 @@ public class DashboardController extends Controller {
         logger.debug("Trying to upload bug to youtrack");
 
         Loggy.remove_error(bug_id);
-        return redirect("/public/bugs");
+        return redirect("/admin/bugs");
     }
 
     // Vyprázdní soubory se záznamem chyb
@@ -459,7 +459,7 @@ public class DashboardController extends Controller {
         logger.debug("Trying to remove all bugs");
         Loggy.remove_all_errors();
 
-        return redirect("/public/bugs");
+        return redirect("/admin/bugs");
     }
 
 // ADMIN ###############################################################################################################

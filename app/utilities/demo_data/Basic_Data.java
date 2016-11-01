@@ -1586,7 +1586,7 @@ public class Basic_Data {
 
                         try{
 
-                            F.Promise<WSResponse> responsePromise_1 = Play.current().injector().instanceOf(WSClient.class).url(Server.tyrion_serverAddress + "/project/b_program/uploadToCloud/" + version_b_program_1.id)
+                            F.Promise<WSResponse> responsePromise_1 = Play.current().injector().instanceOf(WSClient.class).url(Server.tyrion_serverAddress + "/b_program/uploadToCloud/" + version_b_program_1.id)
                                     .setContentType("undefined").setMethod("PUT").setHeader("X-AUTH-TOKEN", token.authToken).setRequestTimeout(5000).put("");
                             JsonNode result_1 = responsePromise_1.get(5000).asJson();
 
@@ -1598,7 +1598,7 @@ public class Basic_Data {
 
                         try{
 
-                            F.Promise<WSResponse> responsePromise_2 = Play.current().injector().instanceOf(WSClient.class).url(Server.tyrion_serverAddress + "/project/b_program/uploadToCloud/" + version_b_program_2.id)
+                            F.Promise<WSResponse> responsePromise_2 = Play.current().injector().instanceOf(WSClient.class).url(Server.tyrion_serverAddress + "/b_program/uploadToCloud/" + version_b_program_2.id)
                                     .setContentType("undefined").setMethod("PUT").setHeader("X-AUTH-TOKEN", token.authToken).setRequestTimeout(5000).put("");
                             JsonNode result_2 = responsePromise_2.get(5000).asJson();
 
@@ -1610,7 +1610,7 @@ public class Basic_Data {
 
                         try{
 
-                            F.Promise<WSResponse> responsePromise_3 = Play.current().injector().instanceOf(WSClient.class).url(Server.tyrion_serverAddress + "/project/b_program/uploadToCloud/" + version_b_program_3.id)
+                            F.Promise<WSResponse> responsePromise_3 = Play.current().injector().instanceOf(WSClient.class).url(Server.tyrion_serverAddress + "/b_program/uploadToCloud/" + version_b_program_3.id)
                                     .setContentType("undefined").setMethod("PUT").setHeader("X-AUTH-TOKEN", token.authToken).setRequestTimeout(5000).put("");
                             JsonNode result_3 = responsePromise_3.get(5000).asJson();
 

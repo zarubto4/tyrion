@@ -25,10 +25,10 @@ public class Swagger_Tariff_User_Register {
     public String currency_type;
 
 
-    @ApiModelProperty(required = true, value =  "Required: only in if required_payment_mode is true")
+    @ApiModelProperty(required = false, value =  "Required: only in if required_payment_mode is true")
     public String payment_mode;
 
-    @ApiModelProperty(required = true, value =  "Required: only in if required_payment_mode is true  values =>[bank_transfer, credit_card]")
+    @ApiModelProperty(required = false, value =  "Required: only in if required_payment_mode is true  values =>[bank_transfer, credit_card]")
     public String payment_method;
 
 
