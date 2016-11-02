@@ -5,14 +5,16 @@ import io.swagger.annotations.*;
 import models.person.Person;
 import models.project.global.Product;
 import models.project.global.financial.*;
-import play.Configuration;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.UtilTools;
-import utilities.enums.*;
+import utilities.enums.Currency;
+import utilities.enums.Payment_method;
+import utilities.enums.Payment_mode;
+import utilities.enums.Payment_status;
 import utilities.fakturoid.Fakturoid_Controller;
 import utilities.goPay.GoPay_Controller;
 import utilities.loggy.Loggy;
@@ -26,7 +28,6 @@ import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Swagged_Applicable_Product;
 import utilities.swagger.outboundClass.Swagger_Financial_Summary;
 import utilities.swagger.outboundClass.Swagger_GoPay_Url;
-import utilities.swagger.outboundClass.Swagger_Tariff;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -39,9 +40,9 @@ public class Finance_Controller extends Controller {
 
     // Loger
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
-    static Swagger_Tariff swagger_tariff;
 
     // ADMIN - GENERAL PRODUCT TARIFF SETTINGS ##########################################################################
+
 
     @ApiOperation(value = "create general Tariffs", hidden = true)
     public Result tariff_general_create(){
@@ -85,15 +86,15 @@ public class Finance_Controller extends Controller {
     }
 
     @ApiOperation(value = "edit general Tariffs", hidden = true)
-    public Result tariff_general_edit(String tariff_id){
+    public Result tariff_general_edit(){
         try {
 
             final Form<Swagger_Tariff_General_Create> form = Form.form(Swagger_Tariff_General_Create.class).bindFromRequest();
             if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Tariff_General_Create help = form.get();
 
-            GeneralTariff general_tariff = GeneralTariff.find.byId(tariff_id);
-            if(general_tariff == null) return GlobalResult.notFoundObject("Object not found");
+            GeneralTariff general_tariff = GeneralTariff.find.byId(help.id);
+            if(general_tariff == null) return GlobalResult.notFoundObject("GeneralTariff general_tariff_id not found");
 
             general_tariff.tariff_name      = help.tariff_name;
             general_tariff.identificator    = help.identificator;
@@ -127,15 +128,56 @@ public class Finance_Controller extends Controller {
         }
     }
 
+
+    @ApiOperation(value = "Deactivate general Tariffs", hidden = true)
+    public Result tariff_general_deactivate(String general_tariff_id){
+        try {
+
+            GeneralTariff tariff = GeneralTariff.find.byId(general_tariff_id);
+            if(tariff == null) return GlobalResult.notFoundObject("Tariff not found");
+
+            tariff.active = false;
+
+            tariff.update();
+
+            return GlobalResult.result_ok(Json.toJson(tariff));
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "Activate general Tariffs", hidden = true)
+    public Result tariff_general_activate(String general_tariff_id){
+        try {
+
+            GeneralTariff tariff = GeneralTariff.find.byId(general_tariff_id);
+            if(tariff == null) return GlobalResult.notFoundObject("Tariff not found");
+
+            tariff.active = true;
+
+            tariff.update();
+
+            return GlobalResult.result_ok(Json.toJson(tariff));
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+
+    // USER GENERAL_TARIFF LABEL #######################################################################################
+
+
     @ApiOperation(value = "add new Label to general Tariffs", hidden = true)
-    public Result tariff_general_add_label(){
+    public Result tariff_general_label_tariff_create(){
         try {
 
             final Form<Swagger_Tariff_General_Label> form = Form.form(Swagger_Tariff_General_Label.class).bindFromRequest();
             if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Tariff_General_Label help = form.get();
 
-            GeneralTariff tariff = GeneralTariff.find.byId(help.general_tariff_id);
+            GeneralTariff tariff = GeneralTariff.find.byId(help.id);
             if(tariff == null) return GlobalResult.notFoundObject("Tariff not found");
 
             GeneralTariffLabel label = new GeneralTariffLabel();
@@ -152,8 +194,88 @@ public class Finance_Controller extends Controller {
         }
     }
 
+    @ApiOperation(value = "add new Label to general Tariffs", hidden = true)
+    public Result tariff_general_label_extension_create(){
+        try {
+
+            final Form<Swagger_Tariff_General_Label> form = Form.form(Swagger_Tariff_General_Label.class).bindFromRequest();
+            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Tariff_General_Label help = form.get();
+
+            GeneralTariff_Extensions extensions = GeneralTariff_Extensions.find.byId(help.id);
+            if(extensions == null) return GlobalResult.notFoundObject("Tariff not found");
+
+            GeneralTariffLabel label = new GeneralTariffLabel();
+            label.general_tariff_extension = extensions;
+            label.description = help.description;
+            label.label = help.label;
+            label.icon = help.icon;
+            label.save();
+
+            return GlobalResult.result_ok(Json.toJson(label));
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "add new Label to general Tariffs", hidden = true)
+    public Result tariff_general_label_edit(){
+        try {
+
+            final Form<Swagger_Tariff_General_Label> form = Form.form(Swagger_Tariff_General_Label.class).bindFromRequest();
+            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Tariff_General_Label help = form.get();
+
+            GeneralTariffLabel label = GeneralTariffLabel.find.byId(help.id);
+            if(label == null) return GlobalResult.notFoundObject("GeneralTariffLabel label not found");
+
+            label.description = help.description;
+            label.label = help.label;
+            label.icon = help.icon;
+            label.update();
+
+            return GlobalResult.result_ok(Json.toJson(label));
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "up label from general Tariffs", hidden = true)
+    public Result tariff_general_label_edit_up(String label_id){
+        try{
+
+            GeneralTariffLabel label =  GeneralTariffLabel.find.byId(label_id);
+            if(label == null) return GlobalResult.notFoundObject("Label not found");
+
+            label.up();
+
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "down label from general Tariffs", hidden = true)
+    public Result tariff_general_label_edit_down(String label_id){
+        try{
+
+            GeneralTariffLabel label =  GeneralTariffLabel.find.byId(label_id);
+            if(label == null) return GlobalResult.notFoundObject("Label not found");
+
+            label.down();
+
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
     @ApiOperation(value = "remove label from general Tariffs", hidden = true)
-    public Result tariff_general_remove_label(String label_id){
+    public Result tariff_general_label_remove(String label_id){
         try{
 
             GeneralTariffLabel label =  GeneralTariffLabel.find.byId(label_id);
@@ -169,6 +291,140 @@ public class Finance_Controller extends Controller {
     }
 
 
+    // USER GENERAL_TARIFF EXSTENSION PACKAGES #########################################################################
+
+
+    @ApiOperation(value = "down label from general Tariffs", hidden = true)
+    public Result tariff_general_extension_create(){
+        try{
+
+            final Form<Swagger_Tariff_General_Extension_Create> form = Form.form(Swagger_Tariff_General_Extension_Create.class).bindFromRequest();
+            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Tariff_General_Extension_Create help = form.get();
+
+            GeneralTariff tariff = GeneralTariff.find.byId(help.id);
+            if(tariff == null) return GlobalResult.notFoundObject("Tariff not found");
+
+            GeneralTariff_Extensions extensions = new  GeneralTariff_Extensions();
+            extensions.general_tariff = tariff;
+            extensions.description = help.description;
+            extensions.name = help.name;
+            extensions.color = help.color;
+            extensions.save();
+
+            return GlobalResult.result_ok(Json.toJson(extensions));
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "down label from general Tariffs", hidden = true)
+    public Result tariff_general_extension_edit(){
+        try{
+
+            final Form<Swagger_Tariff_General_Extension_Create> form = Form.form(Swagger_Tariff_General_Extension_Create.class).bindFromRequest();
+            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Tariff_General_Extension_Create help = form.get();
+
+            GeneralTariff_Extensions extensions = GeneralTariff_Extensions.find.byId(help.id);
+            if(extensions == null) return GlobalResult.notFoundObject("Extensions not found");
+
+            extensions.description = help.description;
+            extensions.name = help.name;
+            extensions.color = help.color;
+            extensions.update();
+
+            return GlobalResult.result_ok(Json.toJson(extensions));
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "up label from general Tariffs", hidden = true)
+    public Result tariff_general_extension_edit_up(String extension_id){
+        try{
+
+            GeneralTariff_Extensions extensions = GeneralTariff_Extensions.find.byId(extension_id);
+            if(extensions == null) return GlobalResult.notFoundObject("Extensions not found");
+            extensions.up();
+
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "down label from general Tariffs", hidden = true)
+    public Result tariff_general_extension_edit_down(String extension_id){
+        try{
+
+            GeneralTariff_Extensions extensions = GeneralTariff_Extensions.find.byId(extension_id);
+            if(extensions == null) return GlobalResult.notFoundObject("Extensions not found");
+
+            extensions.down();
+
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "down label from general Tariffs", hidden = true)
+    public Result tariff_general_extension_delete(String extension_id){
+        try{
+
+            GeneralTariff_Extensions extensions = GeneralTariff_Extensions.find.byId(extension_id);
+            if(extensions == null) return GlobalResult.notFoundObject("Extensions not found");
+
+            extensions.delete();
+
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "down label from general Tariffs", hidden = true)
+    public Result tariff_general_extension_deactivate(String extension_id){
+        try{
+
+            GeneralTariff_Extensions extensions = GeneralTariff_Extensions.find.byId(extension_id);
+            if(extensions == null) return GlobalResult.notFoundObject("Extensions not found");
+
+            extensions.active = false;
+            extensions.update();
+
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "down label from general Tariffs", hidden = true)
+    public Result tariff_general_extension_activate(String extension_id){
+        try{
+
+            GeneralTariff_Extensions extensions = GeneralTariff_Extensions.find.byId(extension_id);
+            if(extensions == null) return GlobalResult.notFoundObject("Extensions not found");
+
+            extensions.active = true;
+            extensions.update();
+
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+
+
     // USER PRODUCT_TARIFF #############################################################################################
 
     @ApiOperation(value = "get all Product Tariffs",
@@ -179,7 +435,7 @@ public class Finance_Controller extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Swagger_Tariff.class),
+            @ApiResponse(code = 200, message = "Ok Result", response =  GeneralTariff.class, responseContainer = "list"),
             @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
@@ -188,45 +444,11 @@ public class Finance_Controller extends Controller {
     public Result get_products_tariffs(){
         try{
 
-           // if(swagger_tariff != null ) return GlobalResult.result_ok(Json.toJson(swagger_tariff));
-           // else
-            Swagger_Tariff swagger_tariff = new Swagger_Tariff();
-
             // Vytvořím seznam tarifu
-            List<GeneralTariff> general_tariffs = GeneralTariff.find.all();
-            swagger_tariff.tariffs = general_tariffs;
-
-
-             //Tak beru a načítám z konfiguračního souboru application.conf
-            List<String> product_packages = Configuration.root().getStringList("Byzance.tariff.packages");
-            for (String packages_identificator : product_packages) {
-
-                try {
-
-                    Swagger_Tariff.Additional_package aditional_package = swagger_tariff.get_new_Additional_package();
-
-                    // Defaultní hodnoty služeb
-                    aditional_package.identificator = packages_identificator;
-                    aditional_package.package_name  = Configuration.root().getString("Byzance.tariff.package." + packages_identificator + ".name");
-
-                    aditional_package.price = swagger_tariff.get_new_Price( Configuration.root().getDouble("Byzance.tariff.package." + packages_identificator + ".CZK"),
-                                                                            Configuration.root().getDouble("Byzance.tariff.package." + packages_identificator + ".EUR"));
-
-                    aditional_package.labels = swagger_tariff.get_new_Label( Configuration.root().getString("Byzance.tariff.package." + packages_identificator + ".public_labels")  );
-
-                    swagger_tariff.packages.add(aditional_package);
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    logger.error("Tyrion try to get Additional Packages from Configuration file. But probably enum value (\"enums\") \"" + packages_identificator + "\" do not correspond or missing some value in configuration");
-                    e.printStackTrace();
-                }
-
-            }
-
+            List<GeneralTariff> general_tariffs = GeneralTariff.find.where().eq("active", true).findList();
 
             // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(swagger_tariff));
+            return GlobalResult.result_ok(Json.toJson(general_tariffs));
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());

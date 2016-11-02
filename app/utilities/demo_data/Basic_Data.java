@@ -161,6 +161,7 @@ public class Basic_Data {
         // Alfa
 
         GeneralTariff tariff_1 = new GeneralTariff();
+        tariff_1.active = true;
         tariff_1.tariff_name = "Alfa account";
         tariff_1.tariff_description = "Temporary account only for next 3 months";
         tariff_1.identificator = "alpha";
@@ -190,12 +191,14 @@ public class Basic_Data {
         label_1.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
         label_1.icon = "fa-bullhorn";
         label_1.label = "Super koment bla bla bla";
+        label_1.order_position = 1;
         tariff_1.labels.add(label_1);
 
         GeneralTariffLabel label_2 = new GeneralTariffLabel();
         label_2.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
         label_2.icon = "fa-bullhorn";
         label_2.label = "Super koment 2";
+        label_2.order_position = 2;
         tariff_1.labels.add(label_2);
 
 
@@ -203,6 +206,7 @@ public class Basic_Data {
         label_3.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
         label_3.icon = "fa-bullhorn";
         label_3.label = "Super koment 3 ";
+        label_3.order_position = 3;
         tariff_1.labels.add(label_3);
 
 
@@ -210,6 +214,7 @@ public class Basic_Data {
         label_4.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
         label_4.icon = "fa-bullhorn";
         label_4.label = "Super koment 4";
+        label_4.order_position = 4;
         tariff_1.labels.add(label_4);
 
         tariff_1.save();
@@ -218,6 +223,7 @@ public class Basic_Data {
         // Pro geeky
 
         GeneralTariff geek_tariff = new GeneralTariff();
+        geek_tariff.active = true;
         geek_tariff.tariff_name = "For true Geeks";
         geek_tariff.tariff_description = "Temporary account only for next 3 months";
         geek_tariff.identificator = "geek";
@@ -247,12 +253,14 @@ public class Basic_Data {
         label_5.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
         label_5.icon = "fa-bullhorn";
         label_5.label = "Super koment bla bla bla";
+        label_5.order_position = 1;
         geek_tariff.labels.add(label_5);
 
         GeneralTariffLabel label_6 = new GeneralTariffLabel();
         label_6.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
         label_6.icon = "fa-bullhorn";
         label_6.label = "Super koment 2ln ljhljk ljk hllkjhlkj";
+        label_6.order_position = 2;
         geek_tariff.labels.add(label_6);
 
 
@@ -260,6 +268,7 @@ public class Basic_Data {
         label_7.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
         label_7.icon = "fa-bullhorn";
         label_7.label = "Super koment 3 ";
+        label_7.order_position = 3;
         geek_tariff.labels.add(label_7);
 
 
@@ -267,6 +276,7 @@ public class Basic_Data {
         label_8.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
         label_8.icon = "fa-bullhorn";
         label_8.label = "Super koment 4";
+        label_8.order_position = 4;
         geek_tariff.labels.add(label_8);
 
         geek_tariff.save();
@@ -276,6 +286,7 @@ public class Basic_Data {
 
 
         GeneralTariff business_tariff = new GeneralTariff();
+        business_tariff.active = true;
         business_tariff.tariff_name = "For true Business";
         business_tariff.tariff_description = "Best for true business";
         business_tariff.identificator = "business_1";
@@ -305,12 +316,14 @@ public class Basic_Data {
         label_9.description = "První měsíc zdarma";
         label_9.icon = "fa-bullhorn";
         label_9.label = "Super koment bla bla bla";
+        label_9.order_position = 1;
         business_tariff.labels.add(label_9);
 
         GeneralTariffLabel label_10 = new GeneralTariffLabel();
         label_10.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
         label_10.icon = "fa-bullhorn";
         label_10.label = "Super koment 2ln ljhljk ljk hllkjhlkj";
+        label_10.order_position = 2;
         business_tariff.labels.add(label_10);
 
 
@@ -318,35 +331,41 @@ public class Basic_Data {
         label_11.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
         label_11.icon = "fa-bullhorn";
         label_11.label = "Super koment 3 ";
+        label_11.order_position = 31;
         business_tariff.labels.add(label_11);
 
         GeneralTariffLabel label_12 = new GeneralTariffLabel();
         label_12.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
         label_12.icon = "fa-bullhorn";
         label_12.label = "Super koment 4";
+        label_12.order_position = 4;
         business_tariff.labels.add(label_12);
 
         GeneralTariffLabel label_13 = new GeneralTariffLabel();
         label_13.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
         label_13.icon = "fa-bullhorn";
         label_13.label = "Super koment 4";
+        label_13.order_position = 5;
         business_tariff.labels.add(label_13);
 
         GeneralTariffLabel label_14 = new GeneralTariffLabel();
         label_14.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
         label_14.icon = "fa-bullhorn";
         label_14.label = "Super koment 4";
+        label_14.order_position = 6;
         business_tariff.labels.add(label_14);
 
         GeneralTariffLabel label_15 = new GeneralTariffLabel();
         label_15.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
         label_15.icon = "fa-bullhorn";
         label_15.label = "Super koment 4";
+        label_15.order_position = 7;
         business_tariff.labels.add(label_15);
 
         business_tariff.save();
 
         GeneralTariff business_tariff_2 = new GeneralTariff();
+        business_tariff_2.active = true;
         business_tariff_2.tariff_name = "Enterprise";
         business_tariff_2.tariff_description = "You know what you need!";
         business_tariff_2.identificator = "business_2";
@@ -376,12 +395,14 @@ public class Basic_Data {
         label_16.description = "Už prvního měsíce je to placený";
         label_16.icon = "fa-bullhorn";
         label_16.label = "Super koment bla bla bla";
+        label_16.order_position = 1;
         business_tariff_2.labels.add(label_16);
 
         GeneralTariffLabel label_17 = new GeneralTariffLabel();
         label_17.description = "Tento tarif je na odzkoušení kreditky";
         label_17.icon = "fa-bullhorn";
         label_17.label = "Super koment 2ln ljhljk ljk hllkjhlkj";
+        label_16.order_position = 2;
         business_tariff_2.labels.add(label_17);
 
 
@@ -389,35 +410,43 @@ public class Basic_Data {
         label_18.description = "kreditkaaa!!!";
         label_18.icon = "fa-bullhorn";
         label_18.label = "Super koment 3 ";
+        label_18.order_position = 3;
         business_tariff_2.labels.add(label_18);
 
         GeneralTariffLabel label_19 = new GeneralTariffLabel();
         label_19.description = "Kreditkaaaaa";
         label_19.icon = "fa-bullhorn";
         label_19.label = "Super koment 4";
+        label_19.order_position = 4;
         business_tariff.labels.add(label_19);
 
         GeneralTariffLabel label_20 = new GeneralTariffLabel();
         label_20.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
         label_20.icon = "fa-bullhorn";
         label_20.label = "Super koment 4";
+        label_20.order_position = 5;
         business_tariff_2.labels.add(label_20);
 
         GeneralTariffLabel label_21 = new GeneralTariffLabel();
         label_21.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
         label_21.icon = "fa-bullhorn";
         label_21.label = "Super koment 4";
+        label_21.order_position = 6;
         business_tariff_2.labels.add(label_21);
 
         GeneralTariffLabel label_22 = new GeneralTariffLabel();
         label_22.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
         label_22.icon = "fa-bullhorn";
         label_22.label = "Super koment 4";
+        label_22.order_position = 7;
         business_tariff_2.labels.add(label_22);
 
         business_tariff_2.save();
 
 
+        GeneralTariff ilegal_tariff = new GeneralTariff();
+        ilegal_tariff.active = false;
+        ilegal_tariff.save();
     }
 
     public static void set_default_object_BLOCKO(){

@@ -442,6 +442,7 @@ GET           /assets/*file                                 controllers.Assets.v
 ###################################################################################f#############################################################################################
 
 # Basic Page Requests
+
 GET             /                                               @controllers.DashboardController.index()
 GET             /admin/login                                    @controllers.DashboardController.login()
 GET             /admin/bugs                                     @controllers.DashboardController.show_all_logs()
@@ -459,14 +460,31 @@ GET             /admin/permission/role/:role_id                 @controllers.Das
 GET             /admin/blocko_objects                           @controllers.DashboardController.blocko_objects()
 GET             /admin/blocko_management                        @controllers.DashboardController.blocko_management()
 GET             /admin/public_code                              @controllers.DashboardController.public_code()
-
+GET             /admin/general_tariffs                          @controllers.DashboardController.general_tariffs_list()
+GET             /admin/general_tariffs/:general_tariff_id       @controllers.DashboardController.general_tariff_edit(general_tariff_id)
+GET             /admin/general_tariff_extension/:extension_id   @controllers.DashboardController.general_tariff_extension_edit(extension_id)
 
 # Tariff
 POST            /admin/tariff                                   @controllers.Finance_Controller.tariff_general_create()
-PUT             /admin/tariff/:tariff_id                        @controllers.Finance_Controller.tariff_general_edit(tariff_id)
-POST            /admin/label                                    @controllers.Finance_Controller.tariff_general_add_label()
-DELETE          /admin/label/:label_id                          @controllers.Finance_Controller.tariff_general_remove_label(label_id)
+PUT             /admin/tariff                                   @controllers.Finance_Controller.tariff_general_edit()
+PUT             /admin/tariff/deactive/:general_tariff_id       @controllers.Finance_Controller.tariff_general_deactivate(general_tariff_id)
+PUT             /admin/tariff/active/:general_tariff_id         @controllers.Finance_Controller.tariff_general_activate(general_tariff_id)
 
+
+POST            /admin/label/tariff                             @controllers.Finance_Controller.tariff_general_label_tariff_create()
+POST            /admin/label/extension                          @controllers.Finance_Controller.tariff_general_label_extension_create()
+PUT             /admin/label                                    @controllers.Finance_Controller.tariff_general_label_edit()
+PUT             /admin/label/up/:label_id                       @controllers.Finance_Controller.tariff_general_label_edit_up(label_id)
+PUT             /admin/label/down/:label_id                     @controllers.Finance_Controller.tariff_general_label_edit_down(label_id)
+DELETE          /admin/label/:label_id                          @controllers.Finance_Controller.tariff_general_label_remove(label_id)
+
+POST            /admin/extension                                @controllers.Finance_Controller.tariff_general_extension_create()
+PUT             /admin/extension                                @controllers.Finance_Controller.tariff_general_extension_edit()
+PUT             /admin/extension/up/:extension_id               @controllers.Finance_Controller.tariff_general_extension_edit_up(extension_id)
+PUT             /admin/extension/down/:extension_id             @controllers.Finance_Controller.tariff_general_extension_edit_down(extension_id)
+PUT             /admin/extension/deactive/:extension_id         @controllers.Finance_Controller.tariff_general_extension_deactivate(extension_id)
+PUT             /admin/extension/active/:extension_id           @controllers.Finance_Controller.tariff_general_extension_activate(extension_id)
+DELETE          /admin/extension/:extension_id                  @controllers.Finance_Controller.tariff_general_extension_delete(extension_id)
 
 
 GET             /javascriptRoutes                               @controllers.DashboardController.javascriptRoutes()
@@ -480,24 +498,21 @@ GET             /public/bug/report/:id                      @controllers.Dashboa
 # WEBSOCKET SERVISE PAGE
 GET             /public/instance/ping/:id                   @controllers.DashboardController.ping_homer_instance(id: String)
 GET             /public/instance/disconnect/:id             @controllers.DashboardController.disconnect_homer_instance(id: String)
-GET             /public/instance/get_status/:id             @controllers.DashboardController.loggy_remove_bug(id: String)
 
 GET             /public/homer_server/ping/:id               @controllers.DashboardController.ping_homer_server(id)
 GET             /public/homer_server/disconnect/:id         @controllers.DashboardController.disconnect_blocko_server(id)
-GET             /public/homer_server/get_status/:id         @controllers.DashboardController.loggy_remove_bug(id)
 
 GET             /public/compilator_server/ping/:id          @controllers.DashboardController.ping_compilation_server(id)
 GET             /public/compilator_server/disconnect/:id    @controllers.DashboardController.disconnect_compilation_server(id)
-GET             /public/compilator_server/get_status/:id    @controllers.DashboardController.loggy_remove_bug(id)
 
 GET             /public/terminal/ping/:id                   @controllers.DashboardController.ping_terminal(id)
 GET             /public/terminal/disconnect/:id             @controllers.DashboardController.disconnect_terminal(id)
-GET             /public/terminal/get_status/:id             @controllers.DashboardController.loggy_remove_bug(id)
 
 GET             /public/becki/ping/:id                      @controllers.DashboardController.ping_becki(id)
 GET             /public/becki/disconnect/:id/:token         @controllers.DashboardController.disconnect_becki(id, token)
 
 GET             /public/terminal/log_out/:id                @controllers.DashboardController.log_out_terminal_user(id)
+
 
 
 GET             /public/*file                               @controllers.Assets.versioned(path="/public", file: Asset)

@@ -6,6 +6,7 @@ import play.data.validation.Constraints;
 @Api(hidden = true)
 public class Swagger_Tariff_General_Create {
 
+    @Constraints.Required public String id;
     @Constraints.Required public String tariff_name;
     @Constraints.Required public String identificator;
     @Constraints.Required public String tariff_description;

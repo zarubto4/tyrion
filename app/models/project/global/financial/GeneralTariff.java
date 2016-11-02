@@ -23,6 +23,9 @@ public class GeneralTariff extends Model {
                             public String tariff_description;
     @Column(unique = true)  public String identificator;
 
+    @JsonIgnore             public boolean active; // Tarify nejdou mazat ale jdou Hidnout!!!
+
+
     public boolean company_details_required;
     public boolean required_payment_mode;
     public boolean required_payment_method;
@@ -46,8 +49,8 @@ public class GeneralTariff extends Model {
     @JsonIgnore public boolean free;
 
 
-                @OneToMany(mappedBy="general_tariff", cascade = CascadeType.ALL) public List<GeneralTariffLabel> labels = new ArrayList<>();
-
+                @OneToMany(mappedBy="general_tariff", cascade = CascadeType.ALL) @OrderBy("order_position ASC") public List<GeneralTariffLabel> labels = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="general_tariff", cascade = CascadeType.ALL, fetch = FetchType.LAZY) @OrderBy("order_position ASC") public List<GeneralTariff_Extensions> extensionses = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="general_tariff", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Product> product = new ArrayList<>(); //Vazba na uživateli zaregistrované produkty
 
 /* JSON PROPERTY METHOD -----------------------------------------------------------------------------------------------*/
@@ -86,6 +89,17 @@ public class GeneralTariff extends Model {
     }
 
 
+    @JsonProperty public List<GeneralTariff_Extensions> extensionses(){
+        return  GeneralTariff_Extensions.find.where().eq("general_tariff.id", id).eq("active", true).findList();
+    }
+
+
+/* JSON ignor method ---------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient @Override
+    public void delete(){
+        throw new IllegalAccessError("Delete is not supported under General Tariff");
+    }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String,GeneralTariff> find = new Finder<>(GeneralTariff.class);

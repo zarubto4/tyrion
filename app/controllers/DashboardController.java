@@ -8,6 +8,8 @@ import models.compiler.TypeOfBoard;
 import models.person.Person;
 import models.person.SecurityRole;
 import models.project.b_program.servers.Cloud_Homer_Server;
+import models.project.global.financial.GeneralTariff;
+import models.project.global.financial.GeneralTariff_Extensions;
 import org.pegdown.PegDownProcessor;
 import play.Application;
 import play.Routes;
@@ -32,6 +34,9 @@ import views.html.super_general.login;
 import views.html.super_general.main;
 import views.html.boards.bootloader_settings;
 import views.html.boards.board_settings;
+import views.html.tariffs.tariffs;
+import views.html.tariffs.tariff_edit;
+import views.html.tariffs.extension_edit;
 import views.html.super_general.menu;
 import views.html.user_summary.user_summary;
 import views.html.websocket.instance_detail;
@@ -612,7 +617,6 @@ public class DashboardController extends Controller {
     @Security.Authenticated(Secured_Admin.class)
     public Result public_code(){
         try {
-            System.err.println("Snažím se vytisknout public code");
 
             Html public_code_content = public_code.render();
             return return_page(public_code_content);
@@ -622,6 +626,56 @@ public class DashboardController extends Controller {
             return ok();
         }
     }
+
+
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result general_tariffs_list(){
+        try {
+
+            Html list_of_tariffs = tariffs.render();
+            return return_page(list_of_tariffs);
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return ok();
+        }
+    }
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result general_tariff_edit(String general_tariff_id){
+        try {
+
+            GeneralTariff tariff = GeneralTariff.find.byId(general_tariff_id);
+
+            Html list_of_tariffs = tariff_edit.render(tariff);
+            return return_page(list_of_tariffs);
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return ok();
+        }
+    }
+
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result general_tariff_extension_edit(String extension_id){
+        try {
+
+            GeneralTariff_Extensions extensions = GeneralTariff_Extensions.find.byId(extension_id);
+
+            Html extension_page = extension_edit.render(extensions);
+            return return_page(extension_page);
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return ok();
+        }
+    }
+
+
+
+
 
 
 // LOGIN ###############################################################################################################
@@ -638,4 +692,6 @@ public class DashboardController extends Controller {
     }
 
 }
+
+
 
