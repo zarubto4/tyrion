@@ -2,6 +2,9 @@ package models.project.global.financial;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModelProperty;
+import models.project.global.Product;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -16,14 +19,32 @@ public class GeneralTariff_Extensions extends Model {
     public String name;
     public String description;
 
-    public Integer order_position;
+    @JsonIgnore public Integer order_position;
 
     @JsonIgnore  public boolean active; // Tarify nejdou mazat ale jdou Hidnout!!!
 
     public String color;
 
+
+    @JsonIgnore  public Double usd;
+    @JsonIgnore  public Double eur;
+    @JsonIgnore  public Double czk;
+
     @OneToMany(mappedBy="general_tariff_extension", cascade = CascadeType.ALL) @OrderBy("order_position ASC")  public List<GeneralTariffLabel> labels = new ArrayList<>();
-    @JsonIgnore @ManyToOne public GeneralTariff general_tariff;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public GeneralTariff general_tariff;
+
+    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Product> products = new ArrayList<>();
+
+
+    @JsonProperty public Price price(){
+
+        Price price = new Price();
+        price.CZK = czk;
+        price.EUR = eur;
+        price.USD = usd;
+        return price;
+
+    }
 
 
 /* Special Method -------------------------------------------------------------------------------------------------------*/
@@ -57,9 +78,24 @@ public class GeneralTariff_Extensions extends Model {
 
     }
 
+
+
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String,GeneralTariff_Extensions> find = new Finder<>(GeneralTariff_Extensions.class);
 
+
+/*  Class --------------------------------------------------------------------------------------------------------------*/
+
+    public class Price {
+        @ApiModelProperty(required = true, readOnly = true, value = "in Double - show CZK")
+        public Double CZK;
+
+        @ApiModelProperty(required = true, readOnly = true,  value = "in Double - show €")
+        public Double EUR;
+
+        @ApiModelProperty(required = true, readOnly = true,  value = "in Double - show $")
+        public Double USD;
+    }
 
 
 }

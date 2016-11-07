@@ -1,14 +1,10 @@
 
 @import models.person.Person
 @import utilities.enums.{Firmware_type, Type_of_command}
-@import utilities.webSocket.{WS_Grid_Terminal, WebSCType, WS_BlockoServer, WS_CompilerServer, WS_Becki_Website}
-@import controllers.DashboardController
-@import controllers.WikyController
-@import controllers.WebSocketController
-@import utilities.Server
-@import utilities.webSocket.{WS_Homer_Cloud, WebSCType}
+@import utilities.webSocket.{WS_Grid_Terminal, WS_Homer_Cloud, WS_BlockoServer, WS_CompilerServer, WS_Becki_Website}
 
-@(homers: List[WebSCType], grids: List[WS_Grid_Terminal], becki_Terminal: List[WS_Becki_Website], cloud_blocko_server: List[WS_BlockoServer], compilation_server: List[WS_CompilerServer])
+
+@(homers: List[WS_Homer_Cloud], grids: List[WS_Grid_Terminal], becki_Terminal: List[WS_Becki_Website], cloud_blocko_server: List[WS_BlockoServer], compilation_server: List[WS_CompilerServer])
 
 <section class="content-header">
     <h1> Websocket <small> connections </small> </h1>
@@ -29,13 +25,13 @@
                     <h3 class="box-title">Connected Homers (PC/RPI..)</h3>
                     <div class="pull-right">
                         <div class="btn-group">
-                            <button type="button" class="btn btn-success  btn-sm ">  ADD TEMPORARY INSTANCE</button>
+                            <button id="addDeviceButton" value="" class="btn btn-success" type="button" onclick="showAddTemporaryInstance()">ADD TEMPORARY INSTANCE</button>
                         </div><!-- /.btn-group -->
                     </div><!-- /.pull-right -->
                 </div>
 
                 <div class="box-body table-responsive no-padding">
-                    <table id="homer" class="table table-bordered">
+                    <table id="homer_table" class="table table-bordered">
 
                         <tr>
                             <th>Instance ID</th>
@@ -46,15 +42,18 @@
                             <th>Disconnect</th>
                         </tr>
 
-
-
-                        @for(s <- WebSocketController.incomingConnections_homers){
-
-                        }
-
                         @for( x <- homers){
                             <tr>
-                                <td> @x.identifikator</td>
+
+                                <td>
+                                @if(x.virtual_instance){
+                                    <p class="small text-red"> @x.identifikator</p>
+                                }else{
+                                    <p class="small text-green"> @x.identifikator</p>
+                                }
+                                </td>
+
+
 
                                 <td> @if( !x.subscribers_grid.isEmpty) {
                                     @for( y <- x.subscribers_grid){
@@ -112,7 +111,7 @@
                     </div><!-- /.pull-right -->
                 </div>
                 <div class="box-body table-responsive no-padding">
-                    <table id="terminal" class="table table-bordered">
+                    <table id="terminal_table" class="table table-bordered">
 
                         <tr>
                             <th class="col-xs-1">Identificator</th>
@@ -189,7 +188,7 @@
                 </div>
 
                 <div class="box-body table-responsive no-padding">
-                    <table id="becki" class="table table-bordered">
+                    <table id="becki_table" class="table table-bordered">
 
                         <tr>
                             <th>Person email</th>
@@ -267,7 +266,7 @@
                     </div><!-- /.pull-right -->
                 </div>
                 <div class="box-body table-responsive no-padding">
-                    <table id="blocko" class="table table-bordered">
+                    <table id="homer_server_table" class="table table-bordered">
 
                         <tr>
                             <th align="center" >Server</th>
@@ -316,7 +315,7 @@
                     </div><!-- /.pull-right -->
                 </div>
                 <div class="box-body table-responsive no-padding">
-                    <table id="compilation" class="table table-bordered">
+                    <table id="compilation_server_table" class="table table-bordered">
 
                         <tr>
                             <th>Server</th>
@@ -353,17 +352,107 @@
         </div>
     </div>
 
-</section><!-- /.content -->
+</section>
 
+
+
+
+<!-- /. MODALS---------------------------------------------------------------------------------------------------------->
+<div id="addTemporaryInstanceModal" style="display: none;" class="modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Device</h4>
+            </div>
+
+            <div class="modal-body">
+                <form id="addTemporaryInstanceForm">
+
+                    <label>Instnace ID: (Min 5 znaků) </label>
+                    <input style="display: block" type="text" id="instance_name" name="instance_name" >
+
+
+                    <select class="selectpicker" name="server_name">
+
+                        @for(server <- cloud_blocko_server){
+                            <option name="server_name" id="server_name" value="@server.identifikator"> Public Server: @server.identifikator</option>
+                        }
+
+                    </select>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger pull-left" type="button" data-dismiss="modal" onclick="$('#addTemporaryInstanceModal').css('display','none')">Close</button>
+                <button id="addTemporaryInstanceButton" value="" class="btn btn-primary" type="button" onclick="add_TemporaryInstance()">Create temporary instance</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- /. SCRIPT --------------------------------------------------------------------------------------------------------->
 
 <script>
         $.ajaxSetup({ cache: false });
 
+        function showAddTemporaryInstance(){
+            $("#addTemporaryInstanceModal").css("display","block");
+        }
+
+        function add_TemporaryInstance(){
+
+            model_data = $("#addTemporaryInstanceForm").serializeObject();
+
+            $.ajax({
+                url: '@routes.ProgramingPackageController.instance_add_temporary_instance()',
+                type: 'PUT',
+                contentType: 'application/json',
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken"),
+                    "Content-Type":"application/json"
+                },
+                data: JSON.stringify(model_data),
+                dataType: 'json',
+                success:function(data, status){
+
+                    console.log(data);
+                    console.log(status);
+
+                    $('#addTemporaryInstanceModal').css('display','none');
+                    $("#addTemporaryInstanceForm input[type=text]").val("");
+                    $('#homer_table').load(document.URL +  ' #homer_table');
+
+                    BootstrapDialog.show({
+                        message:  syntaxHighlight(data),
+
+                        buttons: [{
+                            label: 'Close',
+                            action: function(dialogItself){
+                                dialogItself.close();
+                            }
+                        }]
+
+                    });
+                },
+                error:function(data) {
+
+                    BootstrapDialog.show({
+                        message:  syntaxHighlight(data),
+                        type: BootstrapDialog.TYPE_DANGER,
+                        buttons: [{
+                            label: 'Close',
+                            action: function(dialogItself){
+                                dialogItself.close();
+                            }
+                        }]
+                    });
+                }
+            })}
+
         function ping_instance(instance_id){
 
             $.ajax({
-
-                url: '/public/instance/ping/' + instance_id,
+                url: '@routes.DashboardController.ping_homer_instance("")' + instance_id,
                 data : {
                     instance_id: instance_id
                 },
@@ -404,7 +493,7 @@
 
         function disconnect_instance(instance_id){
             $.ajax({
-                url: '/instance/shut_down/' + instance_id,
+                url: '@routes.ProgramingPackageController.instance_shut_down("")' + instance_id,
                 type: 'GET',
 
                 headers: {
@@ -442,7 +531,8 @@
 
         function ping_terminal(data){
             $.ajax({
-                url: '/public/homer/get_status/' + data,
+
+                url: '@routes.DashboardController.ping_terminal("")' + id,
                 type: 'GET',
 
                 headers: {
@@ -478,10 +568,10 @@
                 }
             })}
 
-
-        function log_out_Terminal_User(data){
+        function log_out_Terminal_User(id){
             $.ajax({
-                url: '/public/terminal/log_out/' + data,
+
+                url: '@routes.DashboardController.terminal_log_out_user("")' + id,
                 type: 'GET',
 
                 headers: {
@@ -516,9 +606,10 @@
                     });
                 }
             })}
-        function disconnect_terminal(data){
+        function disconnect_terminal(id){
             $.ajax({
-                url: '/public/terminal/disconnect/' + data,
+
+                url: '@routes.DashboardController.disconnect_terminal("")' + id,
                 type: 'GET',
 
                 headers: {
@@ -553,9 +644,9 @@
                     });
                 }
             })}
-        function ping_becki(data){
+        function ping_becki(id){
             $.ajax({
-                url: '/public/becki/ping/' + data,
+                url: '@routes.DashboardController.ping_becki("")' + id,
                 type: 'GET',
 
                 headers: {
@@ -594,7 +685,7 @@
         function test_notification(mail){
             model_data = $("#testNotification").serializeObject();
             $.ajax({
-                url: '/notification/test/' + mail,
+                url: '@routes.NotificationController.test_notifications("")' + mail,
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(model_data),
@@ -606,9 +697,9 @@
                 }
             })}
 
-        function disconnect_becki(data , k){
+        function disconnect_becki(id , token){
             $.ajax({
-                url: '/public/becki/disconnect/' + data + "/" + k,
+                url: '@routes.DashboardController.disconnect_becki("","")' + id + "/" + token,
                 type: 'GET',
                 success:function(e){
                     $('#becki').load(document.URL +  ' #becki');
@@ -617,6 +708,7 @@
                     alert("Unsuccessful.");
                 }
             })}
+
         function show_all_logs(){
             $.ajax({
                 url: '@routes.DashboardController.show_all_logs()',
@@ -628,9 +720,10 @@
                 }
             })}
 
-        function ping_Blocko_Server(data){
+        function ping_Blocko_Server(id){
             $.ajax({
-                url: '/public/blocko_server/ping/' + data,
+
+                url: '@routes.DashboardController.ping_homer_server("")' + id,
                 type: 'GET',
 
                 headers: {
@@ -666,9 +759,9 @@
                 }
             })}
 
-        function disconnect_Blocko_Server(data){
+        function disconnect_Blocko_Server(id){
             $.ajax({
-                url: '/public/blocko_server/disconnect/' + data,
+                url: '@routes.DashboardController.disconnect_blocko_server("")' + id,
                 type: 'GET',
 
                 headers: {
@@ -704,9 +797,9 @@
                 }
             })}
 
-        function ping_Compilation_Server(data){
+        function ping_Compilation_Server(id){
             $.ajax({
-                url: '/public/compilator_server/ping/' + data ,
+                url: '@routes.DashboardController.ping_compilation_server("")' + id,
                 type: 'GET',
 
                 headers: {
@@ -743,9 +836,9 @@
                 }
             })}
 
-        function disconnect_Compilation_Server(data){
+        function disconnect_Compilation_Server(id){
             $.ajax({
-                url: '/public/compilator_server/disconnect/' + data,
+                url: '@routes.DashboardController.disconnect_compilation_server("")' + id,
                 type: 'GET',
 
                 headers: {

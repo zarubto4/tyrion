@@ -21,20 +21,20 @@ public class Swagger_B_Program_Instance {
     @ApiModelProperty(required = false, readOnly = true, value = "can be null")     public Date planed_when;
 
 
-    @ApiModelProperty(required = true, readOnly = true)  public String b_program_name;
-    @ApiModelProperty(required = true, readOnly = true)  public String b_program_id;
+    @ApiModelProperty(required = false, readOnly = true)  public String b_program_name;
+    @ApiModelProperty(required = false, readOnly = true)  public String b_program_id;
 
-    @ApiModelProperty(required = true, readOnly = true)  public String b_program_version_name;
-    @ApiModelProperty(required = true, readOnly = true)  public String b_program_version_id;
+    @ApiModelProperty(required = false, readOnly = true)  public String b_program_version_name;
+    @ApiModelProperty(required = false, readOnly = true)  public String b_program_version_id;
 
-    public boolean server_is_online;
-    public String server_name;
-    public String server_id;
+    @ApiModelProperty(required = false, readOnly = true)   public boolean server_is_online;
+    @ApiModelProperty(required = false, readOnly = true)   public String server_name;
+    @ApiModelProperty(required = false, readOnly = true)   public String server_id;
 
-    @ApiModelProperty(required = true, readOnly = true)
+    @ApiModelProperty(required = true, readOnly = true, value = "can be empty")
     public List<B_Program_Hw_Group> hardware_group = new ArrayList<>();
 
-    @ApiModelProperty(required = true, readOnly = true)
+    @ApiModelProperty(required = true, readOnly = true, value = "can be empty")
     public List<M_Project_Program_SnapShot> m_project_program_snapshots = new ArrayList<>();
 
 }

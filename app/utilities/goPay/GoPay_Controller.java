@@ -1,6 +1,7 @@
 package utilities.goPay;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.swagger.annotations.Api;
 import models.project.global.Product;
 import models.project.global.financial.Invoice;
 import models.project.global.financial.Invoice_item;
@@ -24,6 +25,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+@Api(value = "Not Documented API - InProgress or Stuck", hidden = true)
 public class GoPay_Controller  extends Controller {
 
      // Loger
@@ -166,10 +168,11 @@ public class GoPay_Controller  extends Controller {
             logger.debug("Creating Invoice in Database");
             Invoice_item invoice_item_1 = new Invoice_item();
 
-                invoice_item_1.name = "Services for " + monthNames_en[ cal.get(Calendar.MONTH) ];
-                invoice_item_1.unit_price = product.get_price_general_fee();
-                invoice_item_1.quantity = (long) 1;
+            invoice_item_1.name = "Services for " + monthNames_en[ cal.get(Calendar.MONTH) ];
+            invoice_item_1.unit_price = product.get_price_general_fee();
+            invoice_item_1.quantity = (long) 1;
             invoice_item_1.unit_name = "Service";
+            invoice_item_1.currency = product.currency;
 
             invoice.invoice_items.add(invoice_item_1);
             invoice.proforma = true;

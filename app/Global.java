@@ -38,11 +38,11 @@ public class Global extends GlobalSettings {
 
            //5
            logger.warn("Starting actualization threads");
-           Server.startThreads();
+           // Server.startThreads();
 
            //6
            logger.warn("Starting all scheduler threads");
-           Server.startScheduling_procedures();
+           // Server.startScheduling_procedures();
 
            //7
            logger.warn("Creating default system data in database");

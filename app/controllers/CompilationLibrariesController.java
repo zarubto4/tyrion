@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
 import io.swagger.annotations.*;
 import models.compiler.*;
+import models.project.b_program.instnace.Homer_Instance;
 import models.project.c_program.C_Compilation;
 import models.project.c_program.C_Program;
 import models.project.global.Product;
@@ -950,7 +951,7 @@ public class CompilationLibrariesController extends Controller {
     public Result compile_C_Program_version( @ApiParam(value = "version_id String query", required = true) String version_id ){
         try{
 
-            logger.debug("Starting compilation on version_id = " + version_id);
+            logger.debug("CompilationControler:: Starting compilation on version_id = " + version_id);
 
             // Ověření objektu
             Version_Object version_object = Version_Object.find.byId(version_id);
@@ -979,7 +980,7 @@ public class CompilationLibrariesController extends Controller {
             if(typeOfBoard == null) return GlobalResult.result_BadRequest("Version is not version of C_Program");
 
 
-            logger.debug("Server has all the information it needs ");
+            logger.debug("CompilationControler:: Server has all the information it needs ");
 
             // Vytvářím objekt, jež se zašle přes websocket ke kompilaci
             ObjectNode result = Json.newObject();
@@ -990,14 +991,14 @@ public class CompilationLibrariesController extends Controller {
                        result.put("code", help.main);
                        result.set("includes", help.includes() == null ? Json.newObject() : help.includes() );
 
-            logger.debug("Server checks compilation cloud_compilation_server");
+            logger.debug("CompilationControler:: Server checks compilation cloud_compilation_server");
             // Kontroluji zda je nějaký kompilační cloud_compilation_server připojený
             if (WebSocketController.compiler_cloud_servers.isEmpty()) {
                 logger.error("All compilation servers are offline!!!!!!!!!!!");
                 return GlobalResult.result_external_server_is_offline("Compilation cloud_compilation_server is offline!");
             }
 
-            logger.debug("Server send c++ program for compilation");
+            logger.debug("CompilationControler:: Server send c++ program for compilation");
             // Odesílám na compilační cloud_compilation_server
 
             NotificationController.starting_of_compilation(SecurityController.getPerson(), version_object);
@@ -1010,7 +1011,7 @@ public class CompilationLibrariesController extends Controller {
 
                NotificationController.successful_compilation(SecurityController.getPerson(), version_object);
 
-               logger.debug("Build was succesfull");
+               logger.debug("CompilationControler:: Build was succesfull");
                // Updatuji verzi - protože vše proběhlo v pořádku
                version_object.compilation_in_progress = false;
                version_object.compilable = true;
@@ -1026,10 +1027,10 @@ public class CompilationLibrariesController extends Controller {
                // Ukládám kompilační objekt
 
 
-                logger.debug("Trying download bin file");
+                logger.debug("CompilationControler:: Trying download bin file");
                try{
 
-                   logger.debug("Sending request to Compilatin server for downloading");
+                   logger.debug("CompilationControler:: Sending request to Compilatin server for downloading");
                    F.Promise<WSResponse> responsePromise = ws.url(c_compilation.c_comp_build_url)
                            .setContentType("undefined")
                            .setRequestTimeout(2500)
@@ -1038,14 +1039,14 @@ public class CompilationLibrariesController extends Controller {
 
                    byte[] body = responsePromise.get(2500).asByteArray();
 
-                   logger.debug("Compilatin server respond successfuly WITH File");
+                   logger.debug("CompilationControler:: Compilatin server respond successfuly WITH File");
                    if( body != null) {
                         // Daný soubor potřebuji dostat na Azure a Propojit s verzí
 
                         String binary_file_in_string = UtilTools.get_encoded_binary_string_from_body(body);
                         c_compilation.bin_compilation_file = UtilTools.create_Binary_file( c_compilation.get_path() , binary_file_in_string, "compilation.bin");
 
-                        logger.debug("File succesfuly restored in Azure!");
+                        logger.debug("CompilationControler:: File succesfuly restored in Azure!");
                     }
                 } catch (Exception e) {
                     logger.warn("Došlo k chybě při stahování souboru", e);
@@ -1060,7 +1061,7 @@ public class CompilationLibrariesController extends Controller {
 
                NotificationController.unsuccessful_compilation_warn( SecurityController.getPerson(), version_object, compilation_result.get("buildErrors").asText() );
 
-               logger.debug("Build wasn't succesfull - buildErrors");
+               logger.debug("CompilationControler:: Build wasn't succesfull - buildErrors");
                version_object.compilable = false;
                version_object.update();
 
@@ -1075,7 +1076,7 @@ public class CompilationLibrariesController extends Controller {
 
                NotificationController.unsuccessful_compilation_error( SecurityController.getPerson(), version_object,  compilation_result.get("error").asText());
 
-               logger.debug("Build wasn't successful - error in communication");
+               logger.debug("CompilationControler:: Build wasn't successful - error in communication");
                version_object.compilable = false;
                version_object.update();
 
@@ -2048,7 +2049,6 @@ public class CompilationLibrariesController extends Controller {
             // Kontrola oprávnění
             if(! library_group.delete_permission())  return GlobalResult.forbidden_Permission();
 
-;
             // Smazání objektu z DB
             library_group.delete();
 
@@ -3401,7 +3401,7 @@ public class CompilationLibrariesController extends Controller {
 
                 // Roztřídím podle typů desek
                 if(!update_list.get(board.project.id).containsKey(board.type_of_board.id)) {
-                    update_list.get(board.project.id).put(board.type_of_board.id, new ArrayList<Board>());
+                    update_list.get(board.project.id).put(board.type_of_board.id, new ArrayList<>());
                 }
 
                 // Zatřídím do Listu
@@ -3414,7 +3414,7 @@ public class CompilationLibrariesController extends Controller {
 
                     TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(type_of_board.getKey());
 
-                    logger.debug("Vytvářím aktualizační proceduru nad projektem: ", Project.find.byId(project.getKey()) ," na Počtu desek: " , type_of_board.getValue().size());
+                    logger.debug("CompilationControler:: Vytvářím aktualizační proceduru nad projektem: ", Project.find.byId(project.getKey()) ," na Počtu desek: " , type_of_board.getValue().size());
                     ActualizationController.add_new_actualization_request_with_user_file(Project.find.byId(project.getKey()),
                                                                           Firmware_type.BOOTLOADER ,
                                                                           type_of_board.getValue(),
@@ -3769,9 +3769,10 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result connect_Board_with_Project(@ApiParam(required = true)   String board_id, @ApiParam(required = true) String project_id){
+    public Result connect_Board_with_Project(@ApiParam(required = true) String board_id, @ApiParam(required = true) String project_id){
         try {
 
+            logger.debug("CompilationControler:: Registrace nového zařízení ");
             // Kotrola objektu
             Board board = Board.find.byId(board_id);
             if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
@@ -3789,6 +3790,36 @@ public class CompilationLibrariesController extends Controller {
             // uprava desky
             board.project = project;
             project.boards.add(board);
+
+            if(board.type_of_board.connectible_to_internet){
+
+                logger.debug("CompilationControler:: Deska je připojitelná k internetu");
+
+                Homer_Instance instance = project.private_instance;
+                instance.boards_in_virtual_instance.add(board);
+                instance.update();
+
+                if(instance.boards_in_virtual_instance.size() == 1){
+
+                    //Nahraji instnaci do Homer Serveru WS_BlockoServer blockoServer, Homer_Instance instance, boolean with_uploud_to_server
+                    // Je server kde by to mělo běžet online?
+                    if(instance.cloud_homer_server.server_is_online()) {
+                        WebSocketController.homer_server_add_instance( instance.cloud_homer_server.get_websocketServer() ,instance);
+
+                    }else {
+                        logger.debug("CompilationControler:: Server s instnací pro přidání instance byl ofline");
+                    }
+
+                }
+
+                if(instance.instance_online()) {
+                    WebSocketController.homer_instance_add_Yoda_to_instance( instance.get_instance(), board.id);
+                }
+
+
+
+
+            }
 
             // Update databáze -> propojení
             project.update();

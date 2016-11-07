@@ -3,7 +3,6 @@ package models.compiler;
 import com.avaje.ebean.Expr;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
@@ -56,8 +55,8 @@ public class Board extends Model {
     @JsonIgnore  @OneToMany(mappedBy="board", cascade=CascadeType.ALL, fetch = FetchType.EAGER)     public List<C_Program_Update_Plan> c_program_update_plans;
 
 
-                                                                 // reference na Fake Instanci
-                 @JsonIgnore @OneToOne(fetch = FetchType.EAGER)  public Homer_Instance private_instance;      // Vlastní instance pouze pro HW - V Případě že nebude aktivní instance s Blocko Programem.
+
+    @JsonIgnore @ManyToOne( cascade = CascadeType.ALL, fetch = FetchType.LAZY) public Homer_Instance virtual_instance_under_project; // Propojení pokud HW není připojen do intnace - ale potřebuji na něj referenci - je ve vrituální instanci
 
 /* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/
 
@@ -144,9 +143,9 @@ public class Board extends Model {
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return  (project != null && project.update_permission())|| SecurityController.getPerson().has_permission("Board_delete");}
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission(){  return  (project != null && project.update_permission())|| SecurityController.getPerson().has_permission("Board_update");}
 
-    @ApiModelProperty(required = false, reference = "boolean", value = "It will be visible in Json object, only if value is true. This is an extraordinary value")
 
-    @JsonProperty  @JsonInclude(JsonInclude.Include.NON_NULL) @Transient public Boolean first_connect_permission(){  return   project != null ? null : true;}
+
+
 
 
     public enum permissions {Board_read, Board_Create, Board_edit, Board_delete, Board_update}
@@ -154,7 +153,7 @@ public class Board extends Model {
 
 /* ZVLÁŠTNÍ POMOCNÉ METODY ---------------------------------------------------------------------------------------------*/
 
-
+    @JsonIgnore @Transient public boolean first_connect_permission(){  return  project != null ? false : true;}
 
     @Override
     public void update(){

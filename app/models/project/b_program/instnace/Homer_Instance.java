@@ -9,6 +9,7 @@ import models.compiler.Board;
 import models.project.b_program.B_Program;
 import models.project.b_program.servers.Cloud_Homer_Server;
 import models.project.b_program.servers.Private_Homer_Server;
+import models.project.global.Project;
 import utilities.swagger.outboundClass.Swagger_B_Program_Instance;
 import utilities.webSocket.WebSCType;
 
@@ -36,11 +37,9 @@ public class Homer_Instance extends Model {
                 @OneToMany(mappedBy="main_instance_history", cascade=CascadeType.ALL) @OrderBy("id ASC") public List<Homer_Instance_Record> instance_history = new ArrayList<>(); // Setříděné pořadí různě nasazovaných verzí Blocko programu
 
 
-
-    // Pomocný objekt pro "Fiktivní instnaci pro připojenej device" - TODO asi to odstraníme
-    @JsonIgnore @OneToOne(mappedBy="private_instance",  cascade = CascadeType.MERGE, fetch = FetchType.LAZY)   public Board private_instance_board;
-
-
+                                                                                                                        public boolean virtual_instance;
+    @JsonIgnore @OneToOne(mappedBy="private_instance",  cascade = CascadeType.MERGE, fetch = FetchType.LAZY)            public Project project;
+    @JsonIgnore @OneToMany(mappedBy="virtual_instance_under_project", cascade=CascadeType.ALL, fetch = FetchType.LAZY)  public List<Board> boards_in_virtual_instance = new ArrayList<>();
 
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
@@ -54,34 +53,37 @@ public class Homer_Instance extends Model {
     @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_id()               {  return cloud_homer_server.id;}
 
 
+    @Transient @JsonProperty @ApiModelProperty(required = false, value = "Only if instance is upload in Homer - can be null") public Swagger_B_Program_Instance actual_summary() {
+        try {
 
+            Swagger_B_Program_Instance instance = new Swagger_B_Program_Instance();
 
+            if(actual_instance != null) {
+                instance.instance_record_id = actual_instance.id;
+                instance.date_of_created = actual_instance.date_of_created;
+                instance.running_from = actual_instance.running_from;
+                instance.running_to = actual_instance.running_to;
+                instance.planed_when = actual_instance.planed_when;
 
-    @Transient @JsonProperty @ApiModelProperty(required = false, value = "Only if instance is upload in Homer") public Swagger_B_Program_Instance actual_summary() {
+                instance.b_program_id = actual_instance.version_object.b_program.id;
+                instance.b_program_name = actual_instance.version_object.b_program.name;
+                instance.b_program_version_name = actual_instance.b_program_version_name();
+                instance.b_program_version_id = actual_instance.b_program_version_id();
 
+                instance.hardware_group = actual_instance.version_object.b_program_hw_groups;
+                instance.m_project_program_snapshots = actual_instance.version_object.m_project_program_snapShots;
+            }
 
-        Swagger_B_Program_Instance instance = new Swagger_B_Program_Instance();
+            instance.server_is_online = cloud_homer_server.server_is_online();
+            instance.server_name = cloud_homer_server.server_name;
+            instance.server_id = cloud_homer_server.id;
 
-        instance.instance_record_id = actual_instance.id;
-        instance.date_of_created    = actual_instance.date_of_created;
-        instance.running_from       = actual_instance.running_from;
-        instance.running_to         = actual_instance.running_to;
-        instance.planed_when        = actual_instance.planed_when;
+            return instance;
 
-
-        instance.b_program_id           = actual_instance.version_object.b_program.id;
-        instance.b_program_name         = actual_instance.version_object.b_program.name;
-        instance.b_program_version_name = actual_instance.b_program_version_name();
-        instance.b_program_version_id   = actual_instance.b_program_version_id();
-
-        instance.server_is_online       = cloud_homer_server.server_is_online();
-        instance.server_name            = cloud_homer_server.server_name;
-        instance.server_id              = cloud_homer_server.id;
-
-        instance.hardware_group                 = actual_instance.version_object.b_program_hw_groups;
-        instance.m_project_program_snapshots    = actual_instance.version_object.m_project_program_snapShots;
-
-        return instance;
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
     }
 
 

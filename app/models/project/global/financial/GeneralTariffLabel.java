@@ -18,7 +18,9 @@ public class GeneralTariffLabel extends Model {
     public String label;
     public String description;
     public String icon;
-    public Integer order_position;
+    @JsonIgnore public Integer order_position;
+
+
 
 
 /* Special Method -------------------------------------------------------------------------------------------------------*/

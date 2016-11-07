@@ -5,13 +5,16 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @ApiModel(description = "Json Model if user want create new Tariff for projects",
         value = "Tariff_register")
 public class Swagger_Tariff_User_Register {
 
 
     @Constraints.Required
-    public String tariff_type;
+    public String tariff_id;
 
     @Constraints.Required
     @Constraints.MinLength(value = 5, message = "The tariff_individual_name must have at least 4 characters")
@@ -67,7 +70,6 @@ public class Swagger_Tariff_User_Register {
                                                  "The company_registration_no must have at least 4 characters")
     public String registration_no;
 
-
     @ApiModelProperty(required = false, value =  "Required: only if account is business & from EU!!! CZ28496639 " +
                                                  "The VAT_number must have at least 4 characters")
     public String vat_number;
@@ -93,5 +95,10 @@ public class Swagger_Tariff_User_Register {
     @ApiModelProperty(required = false, value =  "Required: only if account is business" +
                                                  "Email must be valid")
     public String company_invoice_email;
+
+
+    @ApiModelProperty(required = false, value = "List of Ids of Extends packages")
+    public List<String> extensions_ids = new ArrayList<>();
+
 
 }

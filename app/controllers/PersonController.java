@@ -750,7 +750,7 @@ public class PersonController extends Controller {
                     break;
                 }
 
-                default:return GlobalResult.badRequest("Key does not exist");
+                default:return GlobalResult.result_BadRequest("Key does not exist");
             }
 
             return GlobalResult.result_ok(Json.toJson(validation));
@@ -805,7 +805,7 @@ public class PersonController extends Controller {
 
                 case "password":{
 
-                    if (help.password == null) return GlobalResult.badRequest("You must fill in the password");
+                    if (help.password == null) return GlobalResult.result_BadRequest("You must fill in the password");
 
                     // Vytvoření tokenu pro podržení hesla
                     ChangePropertyToken changePropertyToken = new ChangePropertyToken();
@@ -825,7 +825,7 @@ public class PersonController extends Controller {
 
                 case "email":{
 
-                    if (help.email == null) return GlobalResult.badRequest("You must fill in the email");
+                    if (help.email == null) return GlobalResult.result_BadRequest("You must fill in the email");
 
                     // Vytvoření tokenu pro podržení emailu
                     ChangePropertyToken changePropertyToken = new ChangePropertyToken();
@@ -843,7 +843,7 @@ public class PersonController extends Controller {
 
                     break;}
 
-                default: return GlobalResult.badRequest("No such property");
+                default: return GlobalResult.result_BadRequest("No such property");
             }
 
             // Odeslání emailu

@@ -67,14 +67,17 @@
                             </div>
                         </div><br><br>
 
-
                         <div class="form-group">
-                            <label for="tariff_main_form" class="col-sm-2 control-label">Color</label>
+
+                            <label for="tariff_main_form" class="col-sm-2 control-label">Color (<a href="http://keenthemes.com/preview/metronic/theme/admin_4/ui_colors.html">Výběr barev zde</a>)</label>
 
                             <div class="col-sm-10">
                                 <input type="text" class="form-control" id="tariff_name" value="@tariff.color"  name="color">
                             </div>
-                        </div><br><br>
+
+                        </div>
+
+                        <br><br>
 
                         <div class="form-group">
                             <label for="tariff_main_form" class="col-sm-2 control-label">Number of free months</label>
@@ -285,10 +288,10 @@
 
                                 <td><a href='@routes.DashboardController.general_tariff_extension_edit(tariff.id)'><button class="btn btn-block btn-info" type="button">Settings</button></a></td>
                                 <td>
-                                    @if(extension.active) {
-                                        <button class="btn btn-block btn-danger" type="button" onclick="deactivateGeneralTariffExtension(@extension.id)">Deactivate</button>
+                                    @if(!extension.active) {
+                                        <button class="btn btn-block btn-danger" type="button" onclick="activateGeneralTariffExtension(@extension.id)">Deactivate</button>
                                     }else{
-                                        <button class="btn btn-block btn-success" type="button" onclick="activateGeneralTariffExtension(@extension.id)">Activate</button>
+                                        <button class="btn btn-block btn-success" type="button" onclick="deactivateGeneralTariffExtension(@extension.id)">Activate</button>
                                     }
                                 </td>
                             </tr>
@@ -320,9 +323,10 @@
                         <input type="text" class="form-control" id="label"  name="label">
 
                         <label ass="control-label">Description:</label>
-                        <input type="text" class="form-control" id="desription"  name="description">
+                        <input type="text" class="form-control" id="desription"  name="description"><br>
 
-                        <label class="control-label">Icon Code:</label>
+
+                        <label class="control-label">Icon Code: (<a href="http://keenthemes.com/preview/metronic/theme/admin_4/ui_icons.html">Výběr barev zde</a>) </label>
                         <input type="text" class="form-control" placeholder="Font icon" id="label"  name="icon">
 
                     </form>
@@ -354,7 +358,7 @@
                         <label ass="control-label">Description:</label>
                         <input type="text" class="form-control" id="editGeneralTariffLabelModal_description"  name="description">
 
-                        <label class="control-label">Icon Code:</label>
+                        <label class="control-label">Icon Code: (<a href="http://keenthemes.com/preview/metronic/theme/admin_4/ui_icons.html">Výběr barev zde</a>) </label>
                         <input type="text" class="form-control" id="editGeneralTariffLabelModal_icon"  name="icon">
 
                     </form>
@@ -387,6 +391,18 @@
 
                         <label class="control-label">Color:</label>
                         <input type="text" class="form-control" id="createtGeneralTariffExtensionModal_color"  name="color">
+
+
+
+                        <label class="control-label">Price in CZK:</label>
+                        <input type="text" class="form-control" id="czk"  name="czk">
+
+                        <label class="control-label">Price in EUR:</label>
+                        <input type="text" class="form-control" id="eur"  name="eur">
+
+                        <label class="control-label">Price in USD:</label>
+                        <input type="text" class="form-control" id="usd"  name="usd">
+
 
                     </form>
                 </div>

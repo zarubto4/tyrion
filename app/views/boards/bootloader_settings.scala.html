@@ -4,7 +4,6 @@
 @import com.avaje.ebean.Expr
 @import utilities.Server
 
-
 @(typeOfBoard: TypeOfBoard)
 
 
@@ -39,7 +38,6 @@
             <div class="box-body">
 
                 <table id="allBootloaderVersions" class="table table-bordered">
-
                     <tr>
                         <th>ID</th>
                         <th>Name</th>
@@ -325,7 +323,7 @@
     function setBootLoaderAsMain(boot_loader_id) {
 
         $.ajax({
-            url: "@Server.tyrion_serverAddress" + "/bootloader/mark/bootloader/" + boot_loader_id,
+            url: '@routes.CompilationLibrariesController.boot_loader_mark_as_main("") +  boot_loader_id',
             type: 'PUT',
             headers: {
                 "X-AUTH-TOKEN": getCookie("authToken"),
@@ -354,7 +352,7 @@
     function setVersionAsMain(boot_loader_id, version_id) {
 
         $.ajax({
-            url: "@Server.tyrion_serverAddress" + "/compilation/typeOfBoard/mark/c_version/" + boot_loader_id + "/" + version_id,
+            url: '@routes.CompilationLibrariesController.typeOfBoard_mark_C_program_Version_as_main("","")' + boot_loader_id + "/" + version_id,
             type: 'PUT',
             headers: {
                 "X-AUTH-TOKEN": getCookie("authToken"),
@@ -384,7 +382,7 @@
         model_data = $("#newBootLoaderForm").serializeObject();
 
         $.ajax({
-            url: "@Server.tyrion_serverAddress" + "/bootloader/" + boot_loader_id,
+            url: '@routes.CompilationLibrariesController.new_Boot_loader("") +  boot_loader_id',
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -423,7 +421,7 @@
         model_data = $("#newCProgramForm").serializeObject();
 
         $.ajax({
-            url: "@Server.tyrion_serverAddress" + "/compilation/c_program/c_program",
+            url: '@routes.CompilationLibrariesController.create_C_Program()',
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -462,7 +460,7 @@
         model_data = $("#editCProgramForm").serializeObject();
 
         $.ajax({
-            url: "@Server.tyrion_serverAddress" + "/compilation/c_program/c_program/" + c_program_id,
+            url: '@routes.CompilationLibrariesController.edit_C_Program_Description("")' + c_program_id,
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -501,7 +499,7 @@
         model_data = $("#newCProgramVersionForm").serializeObject();
 
         $.ajax({
-            url: "@Server.tyrion_serverAddress" + "/compilation/c_program/version/create/" + c_program_id,
+            url: '@routes.CompilationLibrariesController.new_C_Program_Version("")' + c_program_id ,
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -544,8 +542,7 @@
         formData.append('file', file);
 
         $.ajax({
-
-            url: "@Server.tyrion_serverAddress" + "/bootloader/file/" + boot_loader_id,
+            url: '@routes.CompilationLibrariesController.boot_loader_uploud_file("")' + boot_loader_id ,
             type: 'PUT',
             processData: false, // tell jQuery not to process the data
             contentType: false, // tell jQuery not to set contentType

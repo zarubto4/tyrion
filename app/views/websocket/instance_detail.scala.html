@@ -34,15 +34,21 @@
 
                     <p class="text-muted text-center"> @homer.identifikator</p>
 
-                    @if(homer.temporary){
-                        <p class="text-red text-center">  Temporary </p>
+                    @if( Homer_Instance.find.where().eq("blocko_instance_name", homer.identifikator).findRowCount() == 0){
+                        <p class="text-red text-center"> Temporary Instance </p>
                     }else{
-                        <p class="text-green text-center">    Databased </p>
+                        <p class="text-green text-center"> Databased </p>
                     }
 
                     <ul class="list-group list-group-unbordered">
                         <li class="list-group-item">
-                            <b>Owner</b> <a class="pull-right">Pepa</a>
+                            <b>Owner</b> <a class="pull-right">
+                                @if( Homer_Instance.find.where().eq("blocko_instance_name", homer.identifikator).findRowCount() == 0){
+                                    <p class="text-red text-center"> Byzance Developer </p>
+                                }else{
+                                    <p class="text-green text-center"> TODO!!!!!!!</p>
+                                }
+                            </a>
                         </li>
 
                         @if( B_Program.find.where().eq("version_objects.id", homer.version_id ).findUnique() != null) {
@@ -67,8 +73,8 @@
                         </li>
                     </ul>
 
-                    <a onclick="showAddMasterDeviceModal('@homer.identifikator')"  class="btn btn-warning btn-block"> <b>Add Master board to Instance</b> </a>
-                    <a onclick="showUploadBlockoProgram('@homer.identifikator')"   class="btn btn-primary btn-block"> <b>Uploud Blocko Program</b>        </a>
+                    <a onclick="showAddMasterDeviceModal()" class="btn btn-warning btn-block"> <b>Add Master board to Instance</b> </a>
+                    <a onclick="showUploadBlockoProgram('@homer.identifikator')"  class="btn btn-primary btn-block"> <b>Uploud Blocko Program</b>        </a>
                 </div>
             </div>
         </div>
@@ -89,7 +95,7 @@
                                                     <a class="btn btn-success btn-sm disabled" ><b> Bootloader Up To date </b></a>
                                                 }
                                             }else{
-                                                <a  onclick="executeCommand( '' ,'')" class="btn btn-danger btn-sm disabled" ><b>Missing bootloader</b></a>
+                                                <a  onclick="executeCommand('' ,'')" class="btn btn-danger btn-sm disabled" ><b>Missing bootloader</b></a>
                                             }
 
                                             <a onclick="executeCommand('@x.yodaId','@Type_of_command.INFO_STATE.get_command')" class="btn btn-info btn-sm"><b>Ping Yoda</b></a>
@@ -389,7 +395,7 @@
 
 
 
-    <script>
+<script>
 
             function showCommandDeviceModal(id, deviceType){
                 $("#commandDeviceModal").css("display","block");
@@ -397,7 +403,8 @@
                 $('.commandButton').val(id);
                 $('#deviceType').text("Device Type = " + deviceType);
             }
-
+</script>
+<script>
             function showUploadModal(target_id, command){
 
                 console.log("Command: " + command );
@@ -409,7 +416,8 @@
                 $('#command_uploadFileModal').text(command);
             }
 
-
+</script>
+<script>
             function uploadFile(target_id, firmwareType){
 
                 event.preventDefault();
@@ -419,8 +427,7 @@
                 formData.append('file', file);
 
                 $.ajax({
-
-                    url: "@Server.tyrion_serverAddress" + "/compilation/c_program/binary/"+ target_id + "/" +  firmwareType ,
+                    url: '@routes.CompilationLibrariesController.uploadBinaryFileToBoard("","")' + target_id + "/" +  firmwareType,
                     type: 'POST',
                     processData: false,  // tell jQuery not to process the data
                     contentType: false,  // tell jQuery not to set contentType
@@ -459,12 +466,14 @@
 
                 })
             }
+</script>
+<script>
 
             function updateBootLoader(target_id){
                 var obj = '{' +'"device_ids":' + '["' + target_id + '"]' + '}';
 
                 $.ajax({
-                    url: "@Server.tyrion_serverAddress" + "/bootloader/update_device_list",
+                    url: '@routes.CompilationLibrariesController.boot_loader_update_device_list()',
                     type: 'PUT',
                     contentType: 'application/json',
                     headers: {
@@ -508,11 +517,12 @@
 
                 })
             }
-
+</script>
+<script>
             function executeCommand(target_id, command){
 
                 $.ajax({
-                    url: "@Server.tyrion_serverAddress" + "/project/b_program/instance/command/"+ '@homer.identifikator' + "/" + target_id + "/" +  command ,
+                    url: '/instance/command/' + '@homer.identifikator' +"/" + target_id + "/" + command,
                     type: 'PUT',
                     contentType: 'application/json',
                     headers: {
@@ -580,6 +590,9 @@
             }
     </script>
 
+
+
+
 <div id="addMasterDeviceModal" style="display: none;" class="modal">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -597,7 +610,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-danger pull-left" type="button" data-dismiss="modal" onclick="$('#addMasterDeviceModal').css('display','none')">Close</button>
-                <button id="addMasterDeviceButton" value="" class="btn btn-primary" type="button" onclick="addMasterDevice(this.value)">Update code in instance</button>
+                <button id="addMasterDeviceButton" value="" class="btn btn-primary" type="button" onclick="addMasterDevice()">Add Yoda to instnace</button>
             </div>
         </div>
     </div>
@@ -620,29 +633,30 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-danger pull-left" type="button" data-dismiss="modal" onclick="$('#addDeviceModal').css('display','none')">Close</button>
-                <button id="addDeviceButton" value="" class="btn btn-primary" type="button" onclick="addDevice(this.value)">Update code in instance</button>
+                <button id="addDeviceButton" value="" class="btn btn-primary" type="button" onclick="addDevice()">Add Device Under Yoda</button>
             </div>
         </div>
     </div>
 </div>
 
 
-
-
-
-  <script>
-
+<script>
           function showAddDeviceModal(id){
               $("#addDeviceModal").css("display","block");
               $('#addDeviceButton').val(id);
               $('#yodaId').text("ID = " + id);
           }
 
-          function addDevice(master_board_Id){
+          function showAddMasterDeviceModal(){
+              $("#addMasterDeviceModal").css("display","block");
+          }
+
+
+          function addDevice(master_board_id){
               var device_id = document.getElementById("addDeviceForm").elements.namedItem("device_id").value;
 
               $.ajax({
-                  url: " @Server.tyrion_serverAddress" + "/project/b_program/instance/device/" + master_board_Id + "/" + device_id,
+                  url: '/instance/add_device/' +  '@homer.identifikator' + "/" + master_board_id + "/" + device_id,
                   type: 'PUT',
                   headers: {
                       "X-AUTH-TOKEN":getCookie("authToken"),
@@ -653,19 +667,33 @@
                   error:function(e) {
                       alert("Unsuccessful.");
                   }
-              })}
-
-          function showAddMasterDeviceModal(instanceId){
-              $("#addMasterDeviceModal").css("display","block");
-              $('#addMasterDeviceButton').val(instanceId);
-              $('#yodaId').text("ID = " + instanceId);
+              })
           }
 
-          function addMasterDevice(id){
+          function removeDevice(master_board_id, device_id ){
+
+              $.ajax({
+                  url: '/instance/remove_device/' + '@homer.identifikator' + "/" + master_board_id + "/" + device_id,
+                  type: 'PUT',
+                  headers: {
+                      "X-AUTH-TOKEN":getCookie("authToken"),
+                  },
+                  success:function(e){
+                      $("#addDeviceModal").css("display","none");
+                  },
+                  error:function(e) {
+                      alert("Unsuccessful.");
+                  }
+              })
+          }
+</script>
+<script>
+          function addMasterDevice(){
+
               var master_device_id = document.getElementById("addMasterDeviceForm").elements.namedItem("master_device_id").value;
 
               $.ajax({
-                  url: " @Server.tyrion_serverAddress" + "/project/b_program/instance/master_device/" + id + "/" + master_device_id,
+                  url: '@routes.ProgramingPackageController.instance_add_yoda(homer.identifikator, "")' + master_device_id,
                   type: 'PUT',
                   headers: {
                       "X-AUTH-TOKEN":getCookie("authToken"),
@@ -676,7 +704,29 @@
                   error:function(e) {
                       alert("Unsuccessful.");
                   }
-              })}
+              })
+          }
+</script>
+<script>
+          function removeMasterDevice(id){
+
+              $.ajax({
+                  url: '@routes.ProgramingPackageController.instance_remove_yoda("","")'  @homer.identifikator + "/" + id,
+                  type: 'PUT',
+                  headers: {
+                      "X-AUTH-TOKEN":getCookie("authToken"),
+                  },
+                  success:function(e){
+                      $("#addMasterDevice").css("display","none");
+                  },
+                  error:function(e) {
+                      alert("Unsuccessful.");
+                  }
+              })
+          }
+
+</script>
+<script>
 
           function showUploadBlockoProgram(id){
               $("#uploadBlockoProgramModal").css("display","block");
@@ -684,6 +734,8 @@
               $('#instanceId').text("ID = " + id);
           }
 
+</script>
+<script>
           function uploadBlockoProgram(instanceId){
               model_data = $("#uploadBlockoProgram").serializeObject();
               json = JSON.stringify(model_data);
@@ -692,7 +744,7 @@
 
 
               $.ajax({
-                  url: "@Server.tyrion_serverAddress" + "/project/b_program/instance/program/" + instanceId,
+                  url: '@routes.ProgramingPackageController.update_blocko_code_in_instance_with_code("")' + instanceId,
                   type: 'PUT',
                   contentType: 'application/json',
                   headers: {

@@ -37,9 +37,10 @@ public class GlobalResult extends Controller {
 
 //**********************************************************************************************************************
 
-    public static Result result_pdf_file(byte[] byte_array){
+    public static Result result_pdf_file(byte[] byte_array, String  file_name){
 
         CoreResponse.cors_pdf_file();
+        response().setHeader("filename", file_name);
 
         return ok(byte_array);
     }

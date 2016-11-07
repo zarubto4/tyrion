@@ -35,7 +35,7 @@ public class Invoice extends Model {
 
 
 
-    @JsonIgnore @OneToMany(mappedBy="invoice", cascade = CascadeType.ALL) public List<Invoice_item> invoice_items = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="invoice", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Invoice_item> invoice_items = new ArrayList<>();
 
     @JsonIgnore @ManyToOne(cascade = CascadeType.ALL) public Product product;
 
@@ -66,18 +66,15 @@ public class Invoice extends Model {
             case cancelled: {return  "Invoice is canceled.";}
             default: return  "Undefined state";
         }
-
     }
 
     @JsonProperty @Transient  @ApiModelProperty(required = true, readOnly = true)
     public String payment_method(){
-
         switch (method) {
             case bank_transfer:        {return  "Bank transfer."; }
             case credit_card: {return  "Credit Card Payment."; }
             default: return   "Undefined state";
         }
-
     }
 
 
@@ -93,6 +90,7 @@ public class Invoice extends Model {
     @JsonIgnore @Transient public boolean send_reminder()     {  return true;  }
     @JsonIgnore @Transient public boolean edit_permission()   {  return true;  }
     @JsonIgnore @Transient public boolean delete_permission() {  return true;  }
+
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<Long,Invoice> find = new Finder<>(Invoice.class);
 

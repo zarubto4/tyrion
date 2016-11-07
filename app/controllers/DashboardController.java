@@ -239,31 +239,6 @@ public class DashboardController extends Controller {
         }
     }
 
-    @Security.Authenticated(Secured_Admin.class)
-    public Result disconnect_homer_instance(String homer_id){
-        try {
-
-             if(WebSocketController.incomingConnections_homers.containsKey(homer_id)){
-
-                 WebSocketController.incomingConnections_homers.get(homer_id).onClose();
-
-                 ObjectNode result = Json.newObject();
-                 result.put("status", "Homer was disconnected successfully");
-
-                 return GlobalResult.result_ok(result);
-
-             }else {
-
-                 ObjectNode result = Json.newObject();
-                 result.put("status", "Homer ID is not connected now");
-                 return GlobalResult.result_ok(result);
-
-             }
-
-        }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
 
     @Security.Authenticated(Secured_Admin.class)
     public Result disconnect_blocko_server(String identificator) {
@@ -426,7 +401,7 @@ public class DashboardController extends Controller {
 
 
     @Security.Authenticated(Secured_Admin.class)
-    public Result log_out_terminal_user(String identificator) {
+    public Result terminal_log_out_user(String identificator) {
         System.out.println("Ještě neimplementováno");
         return GlobalResult.result_ok();
     }
@@ -472,8 +447,7 @@ public class DashboardController extends Controller {
     @Security.Authenticated(Secured_Admin.class)
     public Result show_web_socket_stats() {
 
-        List<WebSCType> homers = new ArrayList<>(WebSocketController.incomingConnections_homers.values());
-
+        List<WS_Homer_Cloud>    homers                  = new ArrayList<>(WebSocketController.incomingConnections_homers.values()).stream().map(o -> (WS_Homer_Cloud) o).collect(Collectors.toList());
         List<WS_Grid_Terminal>  grids                   = new ArrayList<>(WebSocketController.incomingConnections_terminals.values()).stream().map(o -> (WS_Grid_Terminal) o).collect(Collectors.toList());
         List<WS_Becki_Website>  becki_terminals         = new ArrayList<>(WebSocketController.becki_website.values()).stream().map(o -> (WS_Becki_Website) o).collect(Collectors.toList());
         List<WS_BlockoServer>   blocko_cloud_servers    = new ArrayList<>(WebSocketController.blocko_servers.values()).stream().map(o -> (WS_BlockoServer) o).collect(Collectors.toList());

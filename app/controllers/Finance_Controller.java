@@ -25,11 +25,10 @@ import utilities.response.response_objects.Result_PermissionRequired;
 import utilities.response.response_objects.Result_Unauthorized;
 import utilities.response.response_objects.Result_ok;
 import utilities.swagger.documentationClass.*;
-import utilities.swagger.outboundClass.Swagged_Applicable_Product;
-import utilities.swagger.outboundClass.Swagger_Financial_Summary;
 import utilities.swagger.outboundClass.Swagger_GoPay_Url;
+import utilities.swagger.outboundClass.Swagger_Invoice_FullDetails;
+import utilities.swagger.outboundClass.Swagger_Product_Applicable;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -43,8 +42,7 @@ public class Finance_Controller extends Controller {
 
     // ADMIN - GENERAL PRODUCT TARIFF SETTINGS ##########################################################################
 
-
-    @ApiOperation(value = "create general Tariffs", hidden = true)
+    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
     public Result tariff_general_create(){
         try {
             final Form<Swagger_Tariff_General_Create> form = Form.form(Swagger_Tariff_General_Create.class).bindFromRequest();
@@ -85,7 +83,7 @@ public class Finance_Controller extends Controller {
         }
     }
 
-    @ApiOperation(value = "edit general Tariffs", hidden = true)
+    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
     public Result tariff_general_edit(){
         try {
 
@@ -128,8 +126,7 @@ public class Finance_Controller extends Controller {
         }
     }
 
-
-    @ApiOperation(value = "Deactivate general Tariffs", hidden = true)
+    @ApiOperation(value = "Only for Tyrion frontend ", hidden = true)
     public Result tariff_general_deactivate(String general_tariff_id){
         try {
 
@@ -147,7 +144,7 @@ public class Finance_Controller extends Controller {
         }
     }
 
-    @ApiOperation(value = "Activate general Tariffs", hidden = true)
+    @ApiOperation(value = "Only for Tyrion frontend ", hidden = true)
     public Result tariff_general_activate(String general_tariff_id){
         try {
 
@@ -168,8 +165,7 @@ public class Finance_Controller extends Controller {
 
     // USER GENERAL_TARIFF LABEL #######################################################################################
 
-
-    @ApiOperation(value = "add new Label to general Tariffs", hidden = true)
+    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
     public Result tariff_general_label_tariff_create(){
         try {
 
@@ -194,7 +190,7 @@ public class Finance_Controller extends Controller {
         }
     }
 
-    @ApiOperation(value = "add new Label to general Tariffs", hidden = true)
+    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
     public Result tariff_general_label_extension_create(){
         try {
 
@@ -219,7 +215,7 @@ public class Finance_Controller extends Controller {
         }
     }
 
-    @ApiOperation(value = "add new Label to general Tariffs", hidden = true)
+    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
     public Result tariff_general_label_edit(){
         try {
 
@@ -242,7 +238,7 @@ public class Finance_Controller extends Controller {
         }
     }
 
-    @ApiOperation(value = "up label from general Tariffs", hidden = true)
+    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
     public Result tariff_general_label_edit_up(String label_id){
         try{
 
@@ -258,7 +254,7 @@ public class Finance_Controller extends Controller {
         }
     }
 
-    @ApiOperation(value = "down label from general Tariffs", hidden = true)
+    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
     public Result tariff_general_label_edit_down(String label_id){
         try{
 
@@ -294,7 +290,7 @@ public class Finance_Controller extends Controller {
     // USER GENERAL_TARIFF EXSTENSION PACKAGES #########################################################################
 
 
-    @ApiOperation(value = "down label from general Tariffs", hidden = true)
+    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
     public Result tariff_general_extension_create(){
         try{
 
@@ -319,7 +315,7 @@ public class Finance_Controller extends Controller {
         }
     }
 
-    @ApiOperation(value = "down label from general Tariffs", hidden = true)
+    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
     public Result tariff_general_extension_edit(){
         try{
 
@@ -333,6 +329,11 @@ public class Finance_Controller extends Controller {
             extensions.description = help.description;
             extensions.name = help.name;
             extensions.color = help.color;
+
+            extensions.czk = help.czk;
+            extensions.eur = help.eur;
+            extensions.usd = help.usd;
+
             extensions.update();
 
             return GlobalResult.result_ok(Json.toJson(extensions));
@@ -357,7 +358,7 @@ public class Finance_Controller extends Controller {
         }
     }
 
-    @ApiOperation(value = "down label from general Tariffs", hidden = true)
+    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
     public Result tariff_general_extension_edit_down(String extension_id){
         try{
 
@@ -373,7 +374,7 @@ public class Finance_Controller extends Controller {
         }
     }
 
-    @ApiOperation(value = "down label from general Tariffs", hidden = true)
+    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
     public Result tariff_general_extension_delete(String extension_id){
         try{
 
@@ -389,7 +390,7 @@ public class Finance_Controller extends Controller {
         }
     }
 
-    @ApiOperation(value = "down label from general Tariffs", hidden = true)
+    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
     public Result tariff_general_extension_deactivate(String extension_id){
         try{
 
@@ -406,7 +407,7 @@ public class Finance_Controller extends Controller {
         }
     }
 
-    @ApiOperation(value = "down label from general Tariffs", hidden = true)
+    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
     public Result tariff_general_extension_activate(String extension_id){
         try{
 
@@ -483,7 +484,7 @@ public class Finance_Controller extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result set_tariff_with_account(){
+    public Result product_create(){
         try{
 
             // Zpracování Json
@@ -491,10 +492,11 @@ public class Finance_Controller extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Tariff_User_Register help = form.get();
 
-            System.out.println("JSem tu1");
-            GeneralTariff tariff = GeneralTariff.find.where().eq("identificator", help.tariff_type).findUnique();
-            if(tariff == null) return GlobalResult.result_BadRequest("Tariff identificator: {" + help.tariff_type  + "} not found or not supported now! Use only supported");
-            System.out.println("JSem tu2");
+            GeneralTariff tariff = GeneralTariff.find.byId(help.tariff_id);
+            if(tariff == null) return GlobalResult.result_BadRequest("Tariff identificator iD: {" + help.tariff_id  + "} not found or not supported now! Use only supported");
+
+            if(Product.find.where().eq("product_individual_name", help.product_individual_name).eq("payment_details.person.id", SecurityController.getPerson().id).findRowCount() > 0) return GlobalResult.result_BadRequest("You cannot use same Product name twice!");
+
             Product product = new Product();
 
                 if(help.currency_type.equals( Currency.EUR.name())) product.currency = Currency.EUR;
@@ -502,7 +504,6 @@ public class Finance_Controller extends Controller {
                 else if(help.currency_type.equals( Currency.USD.name())) product.currency = Currency.USD;
                 else { return GlobalResult.result_BadRequest("currency is invalid. Use only (EUR, USD, CZK)");}
 
-            System.out.println("JSem tu3");
                 product.general_tariff =  tariff;
                 product.product_individual_name = help.product_individual_name;
                 product.active = true;  // Produkt jelikož je Aplha je aktivní - Alpha nebo Trial dojedou kvuli omezení času
@@ -535,7 +536,7 @@ public class Finance_Controller extends Controller {
                         if(help.company_invoice_email == null)      return GlobalResult.result_BadRequest("company_invoice_email is required with this tariff");
 
                         if(help.vat_number != null) {
-                            if (!UtilTools.controll_vat_number(help.vat_number))return GlobalResult.badRequest("Prefix code in VatNumber is not valid");
+                            if (!UtilTools.controll_vat_number(help.vat_number))return GlobalResult.result_BadRequest("Prefix code in VatNumber is not valid");
                             payment_details.company_vat_number = help.vat_number;
                         }
 
@@ -575,7 +576,10 @@ public class Finance_Controller extends Controller {
 
                 }
 
-
+                if(help.extensions_ids.size() > 0){
+                    List<GeneralTariff_Extensions> list = GeneralTariff_Extensions.find.where().in("id", help.extensions_ids ).eq("general_tariff.id",tariff.id).findList();
+                    product.extensionses = list;
+                }
 
                 if(!tariff.required_paid_that) {
                     product.save();
@@ -594,6 +598,7 @@ public class Finance_Controller extends Controller {
                 invoice_item_1.unit_price = product.get_price_general_fee();
                 invoice_item_1.quantity = (long) 1;
                 invoice_item_1.unit_name = "Service";
+                invoice_item_1.currency = product.currency;
 
                 invoice.invoice_items.add(invoice_item_1);
                 invoice.method = product.method;
@@ -649,21 +654,50 @@ public class Finance_Controller extends Controller {
 
     }
 
-    @ApiOperation(value = "delete Product Tariff",
+    @ApiOperation(value = "get all Products with all informations",
             tags = {"Price & Invoice & Tariffs"},
-            notes = "delete product and deactivate all staff around that",
+            notes = "",
             produces = "application/json",
             protocols = "https",
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Deleting was successful",  response =  Result_ok.class),
+            @ApiResponse(code = 200, message = "Created successfully - payment not required",    response =  Product.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "Created successfully - but payment is required", response =  Swagger_GoPay_Url.class),
             @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result deactivate_product(Long product_id){
+    public Result product_get_all(){
+        try{
+
+            // Kontrola objektu
+            List<Product> products = Product.find.where().eq("payment_details.person.id", SecurityController.getPerson().id).findList();
+
+            // Vrácení seznamu
+            return GlobalResult.result_ok(Json.toJson(products));
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "deactivate Product Tariff",
+            tags = {"Price & Invoice & Tariffs"},
+            notes = "deactivate product and deactivate all staff around that",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Deactivating was successful",  response =  Product.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result product_deactivate(Long product_id){
         try{
 
             // Kontrola objektu
@@ -671,11 +705,73 @@ public class Finance_Controller extends Controller {
             if(product == null) return GlobalResult.notFoundObject("Product product_id not found");
 
             // Kontorla oprávnění
-            if(!product.read_permission()) return GlobalResult.forbidden_Permission();
+            if(!product.act_deactivate_permission()) return GlobalResult.forbidden_Permission();
 
             // Deaktivování (vyřazení všech funkcionalit produktu
             product.active = false;
             product.update();
+
+            // Vrácení potvrzení
+            return GlobalResult.result_ok(Json.toJson(product));
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "activate Product Tariff",
+            tags = {"Price & Invoice & Tariffs"},
+            notes = "activate product and deactivate all staff around that",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Activateing was successful",  response =  Product.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result product_activate(Long product_id){
+        try{
+
+            // Kontrola objektu
+            Product product = Product.find.byId(product_id);
+            if(product == null) return GlobalResult.notFoundObject("Product product_id not found");
+
+            // Kontorla oprávnění
+            if(!product.act_deactivate_permission()) return GlobalResult.forbidden_Permission();
+
+            // Deaktivování (vyřazení všech funkcionalit produktu
+            product.active = true;
+            product.update();
+
+            // Vrácení potvrzení
+            return GlobalResult.result_ok(Json.toJson(product));
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "delete Product Tariff",
+           hidden = true
+    )
+    public Result product_delete(Long product_id){
+        try{
+
+            // URČENO POUZE PRO ADMINISTRÁTORY S OPRÁVNĚNÍM MAZAT!
+
+            // Kontrola objektu
+            Product product = Product.find.byId(product_id);
+            if(product == null) return GlobalResult.notFoundObject("Product product_id not found");
+
+            // Kontorla oprávnění
+            if(!product.delete_permission()) return GlobalResult.forbidden_Permission();
+
+            // Trvalé odstranění produktu!
+            product.delete();
 
             // Vrácení potvrzení
             return GlobalResult.result_ok();
@@ -883,7 +979,7 @@ public class Finance_Controller extends Controller {
 
                 if (help.vat_number != null) {
                     if (!UtilTools.controll_vat_number(help.vat_number))
-                        return GlobalResult.badRequest("Prefix code in VatNumber is not valid");
+                        return GlobalResult.result_BadRequest("Prefix code in VatNumber is not valid");
                     payment_details.company_vat_number = help.vat_number;
                 }
 
@@ -915,7 +1011,7 @@ public class Finance_Controller extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Swagged_Applicable_Product.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "Ok Result", response =  Swagger_Product_Applicable.class),
             @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
@@ -925,62 +1021,21 @@ public class Finance_Controller extends Controller {
         try{
             // Slouží k získání možností pod jaký produkt lze vytvořit nějaký projekt
 
-
             // Vyhledání všech objektů, které se týkají přihlášeného uživatele
-            List<Product> list = Product.find.where().eq("payment_details.person.id",SecurityController.getPerson().id).findList();
+            List<Product> list = Product.find.where().eq("active",true).eq("payment_details.person.id", SecurityController.getPerson().id).select("id").select("product_individual_name").select("general_tariff.tariff_name").findList();
 
-            // Zjednodušení objektů, aby se nezasílalo tolik informací
-            List<Swagged_Applicable_Product> applicable_products = new ArrayList<>();
-            for(Product product : list) {
+            Swagger_Product_Applicable product_applicable = new Swagger_Product_Applicable();
 
-                Swagged_Applicable_Product applicable_product = new Swagged_Applicable_Product();
-
-                    applicable_product.product_id = product.id;
-                    applicable_product.product_individual_name = product.product_individual_name;
-                    applicable_product.product_type = product.product_type();
-
-                applicable_products.add(applicable_product);
+            for(Product product : list){
+              product_applicable.add(product.id, product.product_individual_name, product.general_tariff.tariff_name);
             }
 
             // Vrácení objektu
-            return GlobalResult.result_ok( Json.toJson(applicable_products));
+            return GlobalResult.result_ok( Json.toJson(product_applicable));
 
         }catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }
-    }
-
-    @ApiOperation(value = "get all Financial Summary for logged User",
-            tags = {"Price & Invoice & Tariffs"},
-            notes = "get all Financial Summary for logged User",
-            produces = "application/json",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully updated",    response =  Swagger_Financial_Summary.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public Result get_financial_summary(){
-        try {
-
-            // Kompletní datový přehled pro stránku finančního přehledu
-            List<Product> products = Product.find.where().eq("payment_details.person.id", SecurityController.getPerson().id).findList();
-
-            // Pomocný objekt, který pomůže zabalit další informace (třeba i do budoucna)
-            Swagger_Financial_Summary summary = new Swagger_Financial_Summary();
-            summary.products = products;
-
-            // Vrácení objetu
-            return GlobalResult.result_ok(Json.toJson(summary));
-
-        }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
-        }
-
     }
 
     @ApiOperation(value = "cancel automatic payments in Tariff",
@@ -1020,15 +1075,42 @@ public class Finance_Controller extends Controller {
     }
 
 
-    public Result add_new_package(Long product_id){
-        return TODO;
+// INVOICE #############################################################################################
+
+    @ApiOperation(value = "get Invoice with all details",
+            tags = {"Price & Invoice & Tariffs"},
+            notes = "get summary information from invoice",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  Swagger_Invoice_FullDetails.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result invoice_get(Long invoice_id){
+        try{
+
+            // Kontrola objektu
+            Invoice invoice = Invoice.find.byId(invoice_id);
+            if(invoice == null) return GlobalResult.notFoundObject("Invoice invoice_id not found");
+
+            if(!invoice.read_permission()) return GlobalResult.forbidden_Permission();
+            Swagger_Invoice_FullDetails help = new Swagger_Invoice_FullDetails();
+            help.invoice = invoice;
+            help.invoice_items = Invoice_item.find.where().eq("invoice.id", invoice_id).findList();
+
+            return GlobalResult.result_ok(Json.toJson(help));
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
     }
 
-    public Result change_tariff(Long product_id){
-        return TODO;
-    }
-
-
+    // TODO
     public Result send_remainder_to_custumer(Long invoice_id){
         try{
 
@@ -1046,22 +1128,8 @@ public class Finance_Controller extends Controller {
         }
     }
 
-    @ApiOperation(value = "remove Invoice permanently ",
-            hidden = true,
-            tags = {"Price & Invoice & Tariffs"},
-            notes = "remove invoice permanently and also from Fakturoid",
-            produces = "application/json",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully updated",    response =  Result_ok.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public Result remove_invoice(Long invoice_id){
+    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
+    public Result invoice_remove(Long invoice_id){
         try{
 
             // Kontrola objektu
@@ -1083,18 +1151,21 @@ public class Finance_Controller extends Controller {
         }
     }
 
+    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
     public Result connect_invoice_manualy_to_product(Long product_id, String fakturoid_reference_number){
         return TODO;
     }
 
+    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
     public Result synchonize_invoice_with_fakutoid(Long invoice_id){
         return TODO;
     }
 
-
-    public Result set_invoice_as_Paid(Long invoice_id){
+    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
+    public Result invoice_set_as_paid(Long invoice_id){
         try{
 
+            //TODO
             List<Invoice> invoices = Invoice.find.all();
             return GlobalResult.result_ok(Json.toJson(invoices) );
 

@@ -17,18 +17,18 @@ public class WS_Homer_Cloud extends WebSCType{
     // Obslužné objekty pro tym Websocketu
     public WS_BlockoServer blockoServer;
     public String version_id = "ERROR"; // Pro první inicializaci a pro případ, že se version_id nedosadí a aby to bylo v komunikaci všude jasně vidět
-
-    public boolean temporary = false; // Instance je dočasně testovacím způsobem vytvořená - tyrion k ní není tak přísný. (Má zvýšené logování)
+    public boolean virtual_instance;
 
     public List<Swagger_Instance_HW_Group> group = new ArrayList<>(); // Seznam HW - Který by měl na instanci běžet!
 
 
     // Kontstruktor sloužící pro vytvoření objektu
-    public WS_Homer_Cloud (String identificator,  String version_id,  WS_BlockoServer blockoServer) {
+    public WS_Homer_Cloud (String identificator, boolean virtual_instance, String version_id,  WS_BlockoServer blockoServer) {
         super();
         this.version_id = version_id;
         super.identifikator = identificator;
         this.blockoServer = blockoServer;
+        this.virtual_instance = virtual_instance;
         super.webSCtype = this;
     }
 

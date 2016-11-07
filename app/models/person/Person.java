@@ -45,21 +45,21 @@ public class Person extends Model {
     @JsonIgnore  @Column(length = 64)                           public byte[] shaPassword;
     @JsonIgnore  @OneToOne(mappedBy = "person")                 public PasswordRecoveryToken passwordRecoveryToken;
 
-    @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL) public List<Payment_Details>     payment_details = new ArrayList<>();
+    @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Payment_Details>     payment_details = new ArrayList<>();
 
-    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<Project>              owningProjects            = new ArrayList<>();
-    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<Post>                 postLiker                 = new ArrayList<>();    // Propojení, které byly uživatelem hodnoceny (jak negativně, tak pozitivně)
-    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<SecurityRole>         roles                     = new ArrayList<>();
-    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)     public List<PersonPermission>     person_permissions = new ArrayList<>();
+    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<Project>              owningProjects            = new ArrayList<>();
+    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<Post>                 postLiker                 = new ArrayList<>();    // Propojení, které byly uživatelem hodnoceny (jak negativně, tak pozitivně)
+    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<SecurityRole>         roles                     = new ArrayList<>();
+    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<PersonPermission>     person_permissions = new ArrayList<>();
 
 
-    @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<BlockoBlock>          blocksAuthor         = new ArrayList<>(); // Propojení, které bločky uživatel vytvořil
-    @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<Version_Object>       version_objects      = new ArrayList<>(); // Propojení, které verze uživatel vytvořil
-    @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<Post>                 personPosts          = new ArrayList<>(); // Propojení, které uživatel napsal
-    @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL)     public List<LinkedPost>           linkedPosts          = new ArrayList<>(); // Propojení, které uživatel nalinkoval
-    @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL)     public List<FloatingPersonToken>  floatingPersonTokens = new ArrayList<>(); // Propojení, které uživatel napsal
-    @JsonIgnore  @OneToMany(mappedBy="owner",  cascade = CascadeType.ALL)     public List<Invitation>           invitations          = new ArrayList<>(); // Pozvánky, které uživatel rozeslal
-    @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL)     public List<Notification>         notifications        = new ArrayList<>();
+    @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<BlockoBlock>          blocksAuthor         = new ArrayList<>(); // Propojení, které bločky uživatel vytvořil
+    @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<Version_Object>       version_objects      = new ArrayList<>(); // Propojení, které verze uživatel vytvořil
+    @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<Post>                 personPosts          = new ArrayList<>(); // Propojení, které uživatel napsal
+    @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<LinkedPost>           linkedPosts          = new ArrayList<>(); // Propojení, které uživatel nalinkoval
+    @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<FloatingPersonToken>  floatingPersonTokens = new ArrayList<>(); // Propojení, které uživatel napsal
+    @JsonIgnore  @OneToMany(mappedBy="owner",  cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<Invitation>           invitations          = new ArrayList<>(); // Pozvánky, které uživatel rozeslal
+    @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<Notification>         notifications        = new ArrayList<>();
 
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/

@@ -47,15 +47,14 @@
                                 <td>@tariff.tariff_description</td>
                                 <td><a href='@routes.DashboardController.general_tariff_edit(tariff.id)'><button class="btn btn-block btn-info"   type="button"> Settings </button></a></td>
                                 <td>
-                                    @if(tariff.active) {
-                                        <button class="btn btn-block btn-danger" type="button" onclick="deactivateGeneralTariff(@tariff.id)">Deactivate</button>
+                                    @if(!tariff.active) {
+                                        <button class="btn btn-block btn-danger" type="button" onclick="activateGeneralTariff(@tariff.id)">Deactivated</button>
                                     }else{
-                                        <button class="btn btn-block btn-success" type="button" onclick="activateGeneralTariff(@tariff.id)">Activate</button>
+                                        <button class="btn btn-block btn-success" type="button" onclick="deactivateGeneralTariff(@tariff.id)">Active</button>
                                     }
                                 </td>
                             </tr>
                         }
-
                     </table>
                 </div>
                 <div class="box-footer">

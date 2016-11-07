@@ -14,7 +14,6 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import utilities.Server;
 import utilities.emails.EmailTool;
-import utilities.enums.Payment_method;
 import utilities.enums.Payment_status;
 import utilities.fakturoid.helps_objects.Fakturoid_Invoice;
 import utilities.loggy.Loggy;
@@ -33,15 +32,17 @@ public class Fakturoid_Controller extends Controller {
 // PUBLIC CONTROLLERS METHODS ##########################################################################################
 
 
-    public Result get_PDF_Invoice(Long invoice_id){
+    public Result invoice_get_pdf(Long invoice_id){
 
         try {
 
             Invoice invoice = Invoice.find.byId(invoice_id);
             if(invoice == null) return GlobalResult.notFoundObject("Invoice invoice_id not found");
 
+
             byte[] pdf_in_array = download_PDF_invoice(invoice);
-            return GlobalResult.result_pdf_file(pdf_in_array);
+
+            return GlobalResult.result_pdf_file(pdf_in_array, invoice.invoice_number + ".pdf");
 
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
@@ -57,7 +58,6 @@ public class Fakturoid_Controller extends Controller {
         fakturoid_invoice.custom_id         = product.id;
         fakturoid_invoice.client_name       = product.payment_details.company_account ? product.payment_details.company_name : product.payment_details.person.full_name;
         fakturoid_invoice.currency          = product.currency;
-        fakturoid_invoice.payment_method    = Payment_method.bank_transfer.name();
         fakturoid_invoice.lines             = invoice.invoice_items;
         fakturoid_invoice.proforma          = true;
         fakturoid_invoice.partial_proforma  = true;
@@ -76,17 +76,54 @@ public class Fakturoid_Controller extends Controller {
         }
 
         logger.debug("Sending Proforma to Fakturoid");
-        JsonNode result = fakturoid_post("/invoices.json", Json.toJson(fakturoid_invoice));
 
-        if(!result.has("id")) throw new NullPointerException("Invoice From fakturoid does not contains ID");
+        F.Promise<WSResponse> responsePromise = Play.current().injector().instanceOf(WSClient.class).url(Server.Fakturoid_url + "/invoices.json")
+                .setAuth(Server.Fakturoid_secret_combo)
+                .setContentType("application/json")
+                .setHeader("User-Agent", Server.Fakturoid_user_agent)
+                .setRequestTimeout(5000)
+                .post(Json.toJson(fakturoid_invoice));
+
+            WSResponse response = responsePromise.get(5000);
+
+            logger.debug("Incoming status: " + response.getStatus());
+            logger.debug("Incoming message: " + Json.toJson(response.getBody()).toString());
 
 
-        invoice.facturoid_invoice_id = result.get("id").asLong();
-        invoice.facturoid_pdf_url    = result.get("pdf_url").asText();
-        invoice.invoice_number       = result.get("number").asText();
-        invoice.update();
 
-        return invoice;
+            if( response.getStatus() == 201) {
+                JsonNode result = response.asJson();
+                logger.debug("Fakturoid controller: POST: Result: " + result.toString());
+
+                if(!result.has("id")){
+                    logger.error("Invoice From fakturoid does not contains ID");
+                    throw new NullPointerException("Invoice From fakturoid does not contains ID");
+                }
+
+                invoice.facturoid_invoice_id = result.get("id").asLong();
+                invoice.facturoid_pdf_url    = result.get("pdf_url").asText();
+                invoice.invoice_number       = result.get("number").asText();
+                invoice.update();
+
+                return invoice;
+
+            }else if( response.getStatus() == 401){
+                logger.error("Fakturoid Unauthorized");
+                throw new NullPointerException();
+            }else if( response.getStatus() == 403){
+                logger.error("Fakturoid you have maximum of customers!!!");
+                throw new NullPointerException();
+
+            }else if( response.getStatus() == 422 ){
+
+                logger.error("Fakturoid!!!!!!!!!!!!!");
+                logger.error("Response"+ response.asJson().toString());
+                logger.error("Fakturoid!!!!!!!!!!!!!");
+
+                throw new NullPointerException();
+            }
+
+        throw new NullPointerException();
     }
 
     public static Invoice create_paid_invoice(Product product, Invoice invoice){
@@ -95,7 +132,6 @@ public class Fakturoid_Controller extends Controller {
         fakturoid_invoice.custom_id         = product.id;
         fakturoid_invoice.client_name       = product.payment_details.company_account ? product.payment_details.company_name : product.payment_details.person.full_name;
         fakturoid_invoice.currency          = product.currency;
-        fakturoid_invoice.payment_method    = Payment_method.bank_transfer.name();
         fakturoid_invoice.lines             = invoice.invoice_items;
         fakturoid_invoice.proforma          = false;
         fakturoid_invoice.partial_proforma  = false;
@@ -275,7 +311,6 @@ public class Fakturoid_Controller extends Controller {
 
             WSResponse response = responsePromise.get(5000);
 
-
             logger.debug("Incoming status: " + response.getStatus());
             logger.debug("Incoming message: " + Json.toJson(response.getBody()).toString());
 
@@ -298,6 +333,7 @@ public class Fakturoid_Controller extends Controller {
                 logger.error("Fakturoid!!!!!!!!!!!!!");
 
                 throw new NullPointerException();
+
             }else if( response.getStatus() == 422 ){
 
                 logger.error("Fakturoid!!!!!!!!!!!!!");
@@ -306,8 +342,6 @@ public class Fakturoid_Controller extends Controller {
 
                 throw new NullPointerException();
             }
-
-
 
             throw new NullPointerException();
 

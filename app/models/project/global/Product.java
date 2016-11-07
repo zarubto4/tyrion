@@ -2,22 +2,25 @@ package models.project.global;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
+import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
 import models.compiler.LibraryGroup;
 import models.compiler.SingleLibrary;
 import models.project.global.financial.GeneralTariff;
+import models.project.global.financial.GeneralTariff_Extensions;
 import models.project.global.financial.Invoice;
 import models.project.global.financial.Payment_Details;
 import play.Configuration;
 import play.libs.Json;
 import utilities.Server;
-import utilities.enums.Payment_mode;
 import utilities.enums.Currency;
 import utilities.enums.Payment_method;
+import utilities.enums.Payment_mode;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -34,15 +37,15 @@ public class Product extends Model {
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)                 public Long id;
                                                                             public String product_individual_name;
 
-
-    @JsonIgnore                                                    @ManyToOne()        public GeneralTariff general_tariff;
+    @JsonIgnore                                  @ManyToOne(fetch = FetchType.LAZY)    public GeneralTariff general_tariff;
     @JsonIgnore    @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)    public Payment_mode mode;
     @JsonIgnore    @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)    public Payment_method method;
 
+                                                                            public String subscription_id;
                     @JsonIgnore                                             public String fakturoid_subject_id;        // ID účtu ve fakturoidu
                     @JsonIgnore                                             public Long gopay_id;
 
-                                                        @JsonIgnore         public boolean active;           // Jestli je projekt aktivní (může být zmražený, nebo třeba ještě neuhrazený platbou)
+                                                                            public boolean active;           // Jestli je projekt aktivní (může být zmražený, nebo třeba ještě neuhrazený platbou)
 
                                                         @JsonIgnore         public Integer monthly_day_period;  // Den v měsíci, kdy bude obnovována platba // Nejvyšší možné číslo je 28!!!
                                                         @JsonIgnore         public Integer monthly_year_period;  // Měsíc v roce, kdy bude obnovována platba // Nejvyšší možné číslo je 12!!!
@@ -54,26 +57,40 @@ public class Product extends Model {
    @Enumerated(EnumType.STRING)   @ApiModelProperty(required = true)        public Currency currency;
 
 
-   @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL)    public List<Project> projects = new ArrayList<>();
-               @OneToMany(mappedBy="product", cascade = CascadeType.ALL)    public List<Invoice> invoices = new ArrayList<>();
+   @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)    public List<Project> projects = new ArrayList<>();
+   @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)    public List<Invoice> invoices = new ArrayList<>();
 
-   @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL)    public List<SingleLibrary> single_libraries  = new ArrayList<>();
-   @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL)    public List<LibraryGroup> library_groups  = new ArrayList<>();
+   @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)    public List<SingleLibrary> single_libraries  = new ArrayList<>();
+   @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)    public List<LibraryGroup> library_groups  = new ArrayList<>();
 
 
                @OneToOne(mappedBy = "product", cascade = CascadeType.ALL)   public Payment_Details payment_details;
 
 
+    @ManyToMany(cascade = CascadeType.ALL, mappedBy = "products") @JoinTable(name = "typePostsTable") public List<GeneralTariff_Extensions> extensionses = new ArrayList<>();
+
+
 
  /* JSON PROPERTY METHOD -----------------------------------------------------------------------------------------------*/
 
-   // @JsonProperty public Long product_detail_id(){return  payment_details.id;}
-   @JsonProperty
-   @Transient  @ApiModelProperty(required = true, readOnly = true)
-   public String product_type(){
-       return general_tariff.tariff_name;
-   }
+    @ApiModelProperty(required = true)
+    @JsonProperty public List<Invoice> invoices(){
 
+        List<Invoice> invoices = Invoice.find.where().eq("product.id", this.id).findList();
+        return invoices;
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_EMPTY) @JsonProperty @ApiModelProperty(required = false, value = "Only if Payment Mode is CREDIT ")
+    public Integer remaining_credit(){
+        if(this.mode.name().equals( Payment_mode.per_credit.name())) return null;
+        return 0;
+    }
+
+
+    @JsonProperty @Transient  @ApiModelProperty(required = true, readOnly = true)
+    public String product_type(){
+        return GeneralTariff.find.where().eq("product.id", id).select("tariff_name").findUnique().tariff_name;
+    }
 
 
     @JsonProperty @Transient  @ApiModelProperty(required = true, readOnly = true)
@@ -103,7 +120,7 @@ public class Product extends Model {
 /* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/
 
 
-    @JsonIgnore            private String azure_product_link;
+    @JsonIgnore private String azure_product_link;
 
     @JsonIgnore @Override public void save() {
 
@@ -111,6 +128,12 @@ public class Product extends Model {
             this.azure_product_link = get_Container().getName() + "/" + UUID.randomUUID().toString();
             if (Product.find.where().eq("azure_product_link", azure_product_link ).findUnique() == null) break;
         }
+
+        while(true){ // I need Unique Value
+            this.subscription_id =  UUID.randomUUID().toString().substring(0, 12);
+            if (Product.find.where().eq("subscription_id", subscription_id ).findUnique() == null) break;
+        }
+
         super.save();
     }
 
@@ -141,15 +164,16 @@ public class Product extends Model {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore   @Transient                                    public boolean create_permission()              {  return true;  }
-    @JsonIgnore   @Transient                                    public boolean read_permission()                {  return true;  }
-                  @Transient                                    public boolean edit_permission()                {  return true;  }
-
+    @JsonIgnore   @Transient                                    public boolean read_permission()                {  return payment_details.person.id.equals(SecurityController.getPerson().id) || SecurityController.getPerson().has_permission("Product_read");  }
+                  @Transient                                    public boolean edit_permission()                {  return payment_details.person.id.equals(SecurityController.getPerson().id) || SecurityController.getPerson().has_permission("Product_edit");  }
+                  @Transient                                    public boolean act_deactivate_permission()      {  return payment_details.person.id.equals(SecurityController.getPerson().id) || SecurityController.getPerson().has_permission("Product_act_deactivate"); }
+    @JsonIgnore   @Transient                                    public boolean delete_permission()              {  return SecurityController.getPerson().has_permission("Product_delete");}
 
     // Project
-    @JsonIgnore   @Transient @ApiModelProperty(required = true) public boolean create_new_project()             {
+    @JsonIgnore   @Transient @ApiModelProperty(required = true) public boolean  create_new_project()             {
         return active;
     }
-    @JsonIgnore   @Transient @ApiModelProperty(required = true) public JsonNode create_new_project_if_not()     {
+    @JsonIgnore   @Transient @ApiModelProperty(required = true) public JsonNode create_new_project_if_not(){
         ObjectNode result = Json.newObject();
             result.put("tariff", general_tariff.tariff_name);
 
@@ -167,11 +191,7 @@ public class Product extends Model {
     @JsonIgnore   @Transient @ApiModelProperty(required = true) public boolean create_own_server()              {  return true;  }
 
 
-
-
-
-
-    public enum permissions{}
+    public enum permissions{Product_update, Product_read, Product_edit,Product_act_deactivate, Product_delete}
 
 
 /* Price_List ----------------------------------------------------------------------------------------------------------*/
@@ -197,7 +217,8 @@ public class Product extends Model {
     public static Model.Finder<Long,Product> find = new Finder<>(Product.class);
 
 
-/* ENUM values ---------------------------------------------------------------------------------------------------------*/
+/* Private classes values ----------------------------------------------------------------------------------------------*/
+
 
 }
 

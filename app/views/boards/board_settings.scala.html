@@ -352,7 +352,7 @@
           model_data = $("#editTypeOfBoard").serializeObject();
 
           $.ajax({
-            url: "@Server.tyrion_serverAddress" + "/compilation/typeOfBoard/" + id ,
+            url: '@routes.CompilationLibrariesController.edit_TypeOfBoard("")' + id ,
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -374,7 +374,7 @@
         function deleteTypeOfBoard(id){
 
           $.ajax({
-            url: " @Server.tyrion_serverAddress" + "/compilation/typeOfBoard/" + id ,
+            url: '@routes.CompilationLibrariesController.delete_TypeOfBoard("")' + id ,
             type: 'DELETE',
             headers: {
               "X-AUTH-TOKEN":getCookie("authToken"),
@@ -445,7 +445,7 @@
           model_data = $("#editProcessor").serializeObject();
 
           $.ajax({
-            url: " @Server.tyrion_serverAddress" + "/compilation/processor/" + id ,
+            url: '@routes.CompilationLibrariesController.update_Processor("")' + id ,
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -467,7 +467,7 @@
         function deleteProcessor(id){
 
           $.ajax({
-            url: "@Server.tyrion_serverAddress" + "/compilation/processor/" + id ,
+            url: '@routes.CompilationLibrariesController.delete_Processor("")' + id ,
             type: 'DELETE',
             headers: {
               "X-AUTH-TOKEN":getCookie("authToken"),
@@ -518,7 +518,7 @@
           model_data = $("#editProducer").serializeObject();
 
           $.ajax({
-            url: "@Server.tyrion_serverAddress" + "/compilation/producer/" + id ,
+            url: '@routes.CompilationLibrariesController.edit_Producer("")' + id ,
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -540,7 +540,7 @@
         function deleteProducer(id){
 
           $.ajax({
-            url: "@Server.tyrion_serverAddress" + "/compilation/producer/" + id ,
+            url: '@routes.CompilationLibrariesController.delete_Producer("")' + id ,
             type: 'DELETE',
             headers: {
               "X-AUTH-TOKEN":getCookie("authToken"),

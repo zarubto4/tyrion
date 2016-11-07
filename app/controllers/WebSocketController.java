@@ -468,8 +468,13 @@ public class WebSocketController extends Controller {
 
                                     // Vylistuji si seznam instnancí, které by měli běžet na serveru
                                     List<String> instances_in_database_for_uploud = new ArrayList<>();
-                                    for (Homer_Instance cloud_program : Homer_Instance.find.where().eq("cloud_homer_server.id", blocko_server.id).select("blocko_instance_name").findList())
+                                    for (Homer_Instance cloud_program : Homer_Instance.find.where().eq("cloud_homer_server.id", blocko_server.id).eq("virtual_instance", false).select("blocko_instance_name").findList())
                                         instances_in_database_for_uploud.add(cloud_program.blocko_instance_name);
+
+                                    // Vylistuji fiktivní instnace - ale jen ty u kterých má smyls je nahrát
+                                    for (Homer_Instance cloud_program : Homer_Instance.find.where().eq("cloud_homer_server.id", blocko_server.id).eq("virtual_instance", true).isNotNull("boards_in_virtual_instance").select("blocko_instance_name").findList())
+                                        instances_in_database_for_uploud.add(cloud_program.blocko_instance_name);
+
                                     logger.debug("Blocko Server: The number of instances that should run on Homer server by Database: " + instances_in_database_for_uploud.size());
 
 
@@ -513,7 +518,7 @@ public class WebSocketController extends Controller {
                                             try {
 
                                                  logger.debug("Instnace: " + instance.blocko_instance_name + " is not on homer server - it will be also uploaded to Homer server");
-                                                 WebSocketController.homer_server_add_instance(server, instance, true);
+                                                 WebSocketController.homer_server_add_instance(server, instance);
 
                                             } catch (Exception e) {
                                                 logger.warn("Instance " + instance.blocko_instance_name + "  failed to upload properly on the cloud_blocko_server Blocko");
@@ -530,7 +535,7 @@ public class WebSocketController extends Controller {
                                             try {
 
                                                 logger.debug("Instance: " + instance.blocko_instance_name + " will be read to Tyrion Memmory");
-                                                WebSocketController.homer_server_add_instance(server, instance, false);
+                                                WebSocketController.homer_server_add_instance(server, instance);
 
                                             } catch (Exception e) {
                                                 logger.warn("Instance " + instance.blocko_instance_name + "  failed to upload properly on the cloud_blocko_server Blocko");
@@ -725,7 +730,46 @@ public class WebSocketController extends Controller {
         return blockoServer.write_with_confirmation(result, 1000*4, 0, 3);
     }
 
-    public static WebSCType homer_server_add_instance(WS_BlockoServer blockoServer, Homer_Instance instance, boolean with_uploud_to_server) throws Exception{
+
+    public static WebSCType homer_server_add_temporary_instance(WS_BlockoServer blockoServer, String instance_name) throws Exception{
+        try{
+            System.out.println("\n \n");
+            logger.debug("Tyrion uploud new temporrary instance to cloud_blocko_server: " + blockoServer.identifikator);
+
+            if (WebSocketController.incomingConnections_homers.containsKey(instance_name)) {
+                logger.warn("Při přidávání instance do serveru: " + blockoServer.identifikator + " bylo zjištěno že v mapě už existuje jméno homera");
+                return WebSocketController.incomingConnections_homers.get(instance_name);
+            }
+
+            logger.debug("Creating new  Homer");
+            WS_Homer_Cloud homer = new WS_Homer_Cloud(instance_name, true, null, blockoServer);
+
+            ObjectNode result = Json.newObject();
+            result.put("messageType", "createInstance");
+            result.put("messageChannel", "homer-server");
+            result.put("instanceId", instance_name);
+            result.put("devices", "[]");
+
+            logger.debug("Sending to cloud_blocko_server request for new instance ");
+            JsonNode result_instance = blockoServer.write_with_confirmation(result, 1000 * 5, 0, 3);
+
+            logger.debug("Adding a new virtual Homer in private cloud_blocko_server maps in Controller");
+            blockoServer.virtual_homers.put(instance_name, homer);
+
+            logger.debug("Initiating connection procedures");
+            homer_connection_procedure(homer);
+
+            incomingConnections_homers.put(homer.identifikator, homer);
+
+            return homer;
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static WebSCType homer_server_add_instance(WS_BlockoServer blockoServer, Homer_Instance instance) throws Exception{
 
             try {
                 System.out.println("\n \n");
@@ -738,7 +782,7 @@ public class WebSocketController extends Controller {
                 }
 
                 logger.debug("Creating new  Homer");
-                WS_Homer_Cloud homer = new WS_Homer_Cloud(instance.blocko_instance_name, instance.actual_instance.version_object != null ? instance.actual_instance.version_object.id : "null", blockoServer);
+                WS_Homer_Cloud homer = new WS_Homer_Cloud(instance.blocko_instance_name, instance.virtual_instance, instance.actual_instance != null ? instance.actual_instance.version_object.id : null, blockoServer);
 
                 ObjectNode result = Json.newObject();
                 result.put("messageType", "createInstance");
@@ -747,50 +791,61 @@ public class WebSocketController extends Controller {
 
                 List<Swagger_Instance_HW_Group> hw_groups = new ArrayList<>();
 
-                List<B_Program_Hw_Group> hw_group_for_checking = B_Program_Hw_Group.find.where().eq("b_program_version_groups.id", instance.actual_instance.version_object.id).findList();
-                if (hw_group_for_checking != null) {
+                if(instance.actual_instance != null) {
+                    List<B_Program_Hw_Group> hw_group_for_checking = B_Program_Hw_Group.find.where().eq("b_program_version_groups.id", instance.actual_instance.version_object.id).findList();
+                    if (hw_group_for_checking != null) {
 
-                    logger.debug("HW GROUP není nulová");
+                        logger.debug("HW GROUP není nulová");
 
-                    for (B_Program_Hw_Group b_program_hw_group : hw_group_for_checking) {
+                        for (B_Program_Hw_Group b_program_hw_group : hw_group_for_checking) {
 
-                        if (b_program_hw_group.main_board_pair != null) {
+                            if (b_program_hw_group.main_board_pair != null) {
 
-                            Swagger_Instance_HW_Group group = new Swagger_Instance_HW_Group();
-                            group.yodaId = b_program_hw_group.main_board_pair.board.id;
+                                Swagger_Instance_HW_Group group = new Swagger_Instance_HW_Group();
+                                group.yodaId = b_program_hw_group.main_board_pair.board.id;
 
-                            for (B_Pair pair : b_program_hw_group.device_board_pairs) {
-                                group.devicesId.add(pair.board.id);
+                                for (B_Pair pair : b_program_hw_group.device_board_pairs) {
+                                    group.devicesId.add(pair.board.id);
+                                }
+                                hw_groups.add(group);
                             }
-                            hw_groups.add(group);
                         }
+                    } else {
+                        logger.error("HW group je nulová!!!!!");
                     }
-                } else {
-                    logger.error("HW group je nulová!!!!!");
+                }else if(instance.virtual_instance){
+
+                    for(Board board : instance.boards_in_virtual_instance){
+
+                        Swagger_Instance_HW_Group group = new Swagger_Instance_HW_Group();
+                        group.yodaId = board.id;
+                        hw_groups.add(group);
+                    }
+
                 }
 
                 homer.group = hw_groups;
 
                 result.set("devices", Json.toJson(hw_groups));
 
-                if (with_uploud_to_server) {
-                    logger.debug("Sending to cloud_blocko_server request for new instance ");
-                    JsonNode result_instance = blockoServer.write_with_confirmation(result, 1000 * 5, 0, 3);
+
+                logger.debug("Sending to cloud_blocko_server request for new instance ");
+                JsonNode result_instance = blockoServer.write_with_confirmation(result, 1000 * 5, 0, 3);
 
 
-                    logger.debug("Sending Blocko Program if Exist");
-                    if (instance.actual_instance.version_object != null) {
+                logger.debug("Sending Blocko Program if Exist");
+                if (instance.actual_instance != null) {
 
-                        FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", instance.actual_instance.version_object.id).eq("file_name", "program.js").findUnique();
-                        if (fileRecord != null) {
-                            JsonNode result_uploud = WebSocketController.homer_instance_upload_blocko_program(homer, instance.id, fileRecord.get_fileRecord_from_Azure_inString());
-                        } else {
-                            logger.warn("File program.js under server: " + blockoServer.identifikator + " instnace " + instance.id + " not found!");
-                        }
+                    FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", instance.actual_instance.version_object.id).eq("file_name", "program.js").findUnique();
+                    if (fileRecord != null) {
+                        JsonNode result_uploud = WebSocketController.homer_instance_upload_blocko_program(homer, instance.id, fileRecord.get_fileRecord_from_Azure_inString());
                     } else {
-                        logger.debug("Blocko Version not exist under Homer_Instance");
+                        logger.warn("File program.js under server: " + blockoServer.identifikator + " instance " + instance.id + " not found!");
                     }
+                } else {
+                    logger.debug("Blocko Version not exist under Homer_Instance");
                 }
+
 
                 logger.debug("Adding a new virtual Homer in private cloud_blocko_server maps in Controller");
                 blockoServer.virtual_homers.put(instance.blocko_instance_name, homer);

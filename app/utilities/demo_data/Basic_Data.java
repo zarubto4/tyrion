@@ -30,6 +30,7 @@ import utilities.Server;
 import utilities.UtilTools;
 import utilities.enums.Approval_state;
 import utilities.enums.Currency;
+import utilities.enums.Payment_method;
 import utilities.enums.Payment_mode;
 
 import java.util.Date;
@@ -1030,6 +1031,7 @@ public class Basic_Data {
             product.general_tariff = GeneralTariff.find.where().eq("identificator","alpha").findUnique();
             product.product_individual_name = "Pepkova velkolepá Alfa";
             product.active = true;  // Produkt jelikož je Aplha je aktivní - Alpha nebo Trial dojedou kvuli omezení času
+            product.method = Payment_method.free;
             product.mode = Payment_mode.free;
             product.paid_until_the_day = new GregorianCalendar(2016, 12, 30).getTime();
             product.currency = Currency.CZK;
@@ -1047,7 +1049,6 @@ public class Basic_Data {
 
 
             // Vytvořím Projekty
-
             Project project_1 = new Project();
             project_1.product = product;
             project_1.ownersOfProject.add(person);
@@ -1078,27 +1079,32 @@ public class Basic_Data {
 
             Board yoda_1 = Board.find.where().eq("personal_description","Yoda A").findUnique();
             yoda_1.project = project_1;
+            project_1.private_instance.boards_in_virtual_instance.add(yoda_1);
             yoda_1.update();
 
             Board yoda_2 = Board.find.where().eq("personal_description","Yoda B").findUnique();
             yoda_2.project = project_1;
+            project_1.private_instance.boards_in_virtual_instance.add(yoda_2);
             yoda_2.update();
 
 
             Board yoda_3 = Board.find.where().eq("personal_description","Yoda C").findUnique();
             yoda_3.project = project_1;
+            project_1.private_instance.boards_in_virtual_instance.add(yoda_3);
             yoda_3.update();
 
 
-           /* Board yoda_4 = Board.find.where().eq("personal_description","Yoda D").findUnique();
-            board_1.project = project_1;
-            board_1.update();*/
+            Board yoda_4 = Board.find.where().eq("personal_description","Yoda D").findUnique();
+            yoda_4.project = project_1;
+            project_1.private_instance.boards_in_virtual_instance.add(yoda_4);
+            yoda_4.update();
 
             Board yoda_5 = Board.find.where().eq("personal_description","Yoda E").findUnique();
             yoda_5.project = project_1;
+            project_1.private_instance.boards_in_virtual_instance.add(yoda_5);
             yoda_5.update();
 
-
+            project_1.update();
 
             // Bezdráty a Bezdráty
             project_1.boards.add( Board.find.where().eq("personal_description","[1]").findUnique());

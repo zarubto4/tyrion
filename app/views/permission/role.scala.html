@@ -32,7 +32,7 @@
             function addPerson(){
                 var mail = document.getElementById("addPersonForm").elements.namedItem("mail").value;
                 $.ajax({
-                    url: " @Server.tyrion_serverAddress" + "/secure/role/person/"+ mail +"/"+ @role.id ,
+                    url: '@routes.PermissionController.add_Role_Person("", "")' + mail +"/"+ @role.id,
                     type: 'PUT',
                     headers: {
                         "X-AUTH-TOKEN":getCookie("authToken"),
@@ -69,10 +69,10 @@
 
 
     <script>
-            function removePerson(mail){
+            function removePerson(id){
 
                 $.ajax({
-                    url: " @Server.tyrion_serverAddress" + "/secure/role/person/"+ mail +"/"+ @role.id  ,
+                    url: '@routes.PermissionController.remove_Role_Person("", "")' + id +"/"+ @role.id,
                     type: 'DELETE',
                     headers: {
                         "X-AUTH-TOKEN":getCookie("authToken"),
@@ -139,9 +139,9 @@
 
 
     <script>
-            function addPermission(value){
+            function addPermission(id){
                 $.ajax({
-                    url: " @Server.tyrion_serverAddress" + "/secure/role/permission/"+ value +"/"+ @role.id ,
+                    url: '@routes.PermissionController.add_Permission_to_Role("", "")' + id +"/"+ @role.id,
                     type: 'PUT',
                     headers: {
                         "X-AUTH-TOKEN":getCookie("authToken"),
@@ -156,9 +156,9 @@
     </script>
 
     <script>
-            function removePermission(value){
+            function removePermission(id){
                 $.ajax({
-                    url: " @Server.tyrion_serverAddress" + "/secure/role/permission/"+ value +"/"+ @role.id ,
+                    url: '@routes.PermissionController.remove_Permission_from_Role("", "")' + id +"/"+ @role.id,
                     type: 'DELETE',
                     headers: {
                         "X-AUTH-TOKEN":getCookie("authToken"),

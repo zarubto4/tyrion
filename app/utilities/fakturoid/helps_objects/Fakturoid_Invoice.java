@@ -12,7 +12,6 @@ public class Fakturoid_Invoice {
     public String client_name;
     public String subject_id;
     public Currency currency;
-    public String payment_method;
     public Integer due = 10;
 
     public boolean proforma;

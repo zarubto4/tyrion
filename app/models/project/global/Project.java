@@ -11,6 +11,8 @@ import models.grid.Screen_Size_Type;
 import models.person.Invitation;
 import models.person.Person;
 import models.project.b_program.B_Program;
+import models.project.b_program.instnace.Homer_Instance;
+import models.project.b_program.servers.Cloud_Homer_Server;
 import models.project.b_program.servers.Private_Homer_Server;
 import models.project.c_program.C_Program;
 import models.project.c_program.actualization.Actualization_procedure;
@@ -41,6 +43,10 @@ public class Project extends Model {
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Board>                    boards            = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Actualization_procedure>  procedures        = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Invitation>               invitations       = new ArrayList<>();
+
+
+    // reference na Fake Instanci - kam připojuji Yody - pokud nejsou připojení do vlastní instnace vytvořené v blocko programu
+    @JsonIgnore @OneToOne(fetch = FetchType.EAGER)  public Homer_Instance private_instance;
 
 
     @JsonIgnore @ManyToOne( cascade = CascadeType.ALL) public Product product;
@@ -121,10 +127,18 @@ public class Project extends Model {
     @JsonIgnore private String blob_project_link;
 
     @JsonIgnore @Override public void save() {
+
         while(true){ // I need Unique Value
             this.blob_project_link = product.get_path() + "/projects/" + UUID.randomUUID().toString();
             if (Project.find.where().eq("blob_project_link", blob_project_link ).findUnique() == null) break;
         }
+
+        Homer_Instance instance = new Homer_Instance();
+        instance.cloud_homer_server = Cloud_Homer_Server.find.where().eq("name", "Alfa").findUnique();
+        instance.virtual_instance = true;
+        instance.save();
+        this.private_instance = instance;
+
         super.save();
     }
 
@@ -142,7 +156,7 @@ public class Project extends Model {
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission()    {  return ( Project.find.where().eq("ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Project_update");  }
     @JsonIgnore   @Transient @ApiModelProperty(required = true) public boolean read_permission()      {  return ( Project.find.where().eq("ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Project_read");}
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean unshare_permission()  {  return ( Project.find.where().eq("ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Project_unshare"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean unshare_permission()   {  return ( Project.find.where().eq("ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Project_unshare"); }
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean share_permission ()    {  return ( Project.find.where().eq("ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Project_share");   }
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()      {  return ( Project.find.where().eq("ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Project_edit");    }

@@ -78,6 +78,16 @@ public class GeneralTariff extends Model {
         return modes;
     }
 
+    @JsonProperty public List<String> payment_currency(){
+
+        List<String> payment_currency = new ArrayList<>();
+        payment_currency.add("CZK");
+        payment_currency.add("EUR");
+        payment_currency.add("USD");
+
+        return payment_currency;
+    }
+
     @JsonProperty public Price price(){
 
         Price price = new Price();
@@ -88,9 +98,8 @@ public class GeneralTariff extends Model {
 
     }
 
-
     @JsonProperty public List<GeneralTariff_Extensions> extensionses(){
-        return  GeneralTariff_Extensions.find.where().eq("general_tariff.id", id).eq("active", true).findList();
+        return  GeneralTariff_Extensions.find.where().eq("general_tariff.id", id).eq("active", true).orderBy("order_position").findList();
     }
 
 

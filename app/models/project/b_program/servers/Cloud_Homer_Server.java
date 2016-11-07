@@ -36,10 +36,13 @@ public class Cloud_Homer_Server extends Model{
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
 
-    @JsonProperty  public boolean server_is_online(){
+    @JsonProperty @Transient  public boolean server_is_online(){
         return WebSocketController.blocko_servers.containsKey(this.server_name);
     }
 
+    @JsonIgnore @Transient public WS_BlockoServer get_websocketServer(){
+        return (WS_BlockoServer) WebSocketController.blocko_servers.get(this.server_name);
+    }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 

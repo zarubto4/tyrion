@@ -80,8 +80,7 @@ create table board (
   actual_boot_loader_id     varchar(255),
   latest_know_server_id     varchar(255),
   private_homer_servers_id  varchar(255),
-  private_instance_id       varchar(255),
-  constraint uq_board_private_instance_id unique (private_instance_id),
+  virtual_instance_under_project_id varchar(255),
   constraint pk_board primary key (id))
 ;
 
@@ -250,6 +249,9 @@ create table general_tariff_extensions (
   order_position            integer,
   active                    boolean,
   color                     varchar(255),
+  usd                       float,
+  eur                       float,
+  czk                       float,
   general_tariff_id         varchar(255),
   constraint pk_general_tariff_extensions primary key (id))
 ;
@@ -277,6 +279,7 @@ create table homer_instance (
   cloud_homer_server_id     varchar(255),
   private_server_id         varchar(255),
   blocko_instance_name      varchar(255),
+  virtual_instance          boolean,
   constraint uq_homer_instance_private_server unique (private_server_id),
   constraint pk_homer_instance primary key (id))
 ;
@@ -317,7 +320,7 @@ create table invoice (
   status                    varchar(14),
   method                    varchar(13),
   constraint ck_invoice_status check (status in ('paid','sent','created_waited','cancelled')),
-  constraint ck_invoice_method check (method in ('bank_transfer','credit_card','free')),
+  constraint ck_invoice_method check (method in ('credit_card','bank_transfer','free')),
   constraint pk_invoice primary key (id))
 ;
 
@@ -328,6 +331,8 @@ create table invoice_item (
   quantity                  bigint,
   unit_name                 varchar(255),
   unit_price                float,
+  currency                  varchar(3),
+  constraint ck_invoice_item_currency check (currency in ('eur','czk','usd')),
   constraint pk_invoice_item primary key (id))
 ;
 
@@ -498,6 +503,7 @@ create table product (
   general_tariff_id         varchar(255),
   mode                      varchar(10),
   method                    varchar(13),
+  subscription_id           varchar(255),
   fakturoid_subject_id      varchar(255),
   gopay_id                  bigint,
   active                    boolean,
@@ -509,7 +515,7 @@ create table product (
   currency                  varchar(3),
   azure_product_link        varchar(255),
   constraint ck_product_mode check (mode in ('per_credit','monthly','annual','free')),
-  constraint ck_product_method check (method in ('bank_transfer','credit_card','free')),
+  constraint ck_product_method check (method in ('credit_card','bank_transfer','free')),
   constraint ck_product_currency check (currency in ('eur','czk','usd')),
   constraint pk_product primary key (id))
 ;
@@ -518,8 +524,10 @@ create table project (
   id                        varchar(255) not null,
   name                      varchar(255),
   description               varchar(255),
+  private_instance_id       varchar(255),
   product_id                bigint,
   blob_project_link         varchar(255),
+  constraint uq_project_private_instance_id unique (private_instance_id),
   constraint pk_project primary key (id))
 ;
 
@@ -627,6 +635,12 @@ create table version_object (
   constraint pk_version_object primary key (id))
 ;
 
+
+create table general_tariff_extensions_produc (
+  general_tariff_extensions_id   varchar(255) not null,
+  product_id                     bigint not null,
+  constraint pk_general_tariff_extensions_produc primary key (general_tariff_extensions_id, product_id))
+;
 
 create table hash_tag_post (
   hash_tag_post_hash_tag_id      varchar(255) not null,
@@ -833,8 +847,8 @@ alter table board add constraint fk_board_latest_know_server_17 foreign key (lat
 create index ix_board_latest_know_server_17 on board (latest_know_server_id);
 alter table board add constraint fk_board_private_homer_server_18 foreign key (private_homer_servers_id) references private_homer_server (id);
 create index ix_board_private_homer_server_18 on board (private_homer_servers_id);
-alter table board add constraint fk_board_private_instance_19 foreign key (private_instance_id) references homer_instance (id);
-create index ix_board_private_instance_19 on board (private_instance_id);
+alter table board add constraint fk_board_virtual_instance_und_19 foreign key (virtual_instance_under_project_id) references homer_instance (id);
+create index ix_board_virtual_instance_und_19 on board (virtual_instance_under_project_id);
 alter table boot_loader add constraint fk_boot_loader_type_of_board_20 foreign key (type_of_board_id) references type_of_board (id);
 create index ix_boot_loader_type_of_board_20 on boot_loader (type_of_board_id);
 alter table boot_loader add constraint fk_boot_loader_main_type_of_b_21 foreign key (main_type_of_board_id) references type_of_board (id);
@@ -933,32 +947,38 @@ alter table private_homer_server add constraint fk_private_homer_server_b_pro_67
 create index ix_private_homer_server_b_pro_67 on private_homer_server (private_server_id);
 alter table product add constraint fk_product_general_tariff_68 foreign key (general_tariff_id) references general_tariff (id);
 create index ix_product_general_tariff_68 on product (general_tariff_id);
-alter table project add constraint fk_project_product_69 foreign key (product_id) references product (id);
-create index ix_project_product_69 on project (product_id);
-alter table screen_size_type add constraint fk_screen_size_type_project_70 foreign key (project_id) references project (id);
-create index ix_screen_size_type_project_70 on screen_size_type (project_id);
-alter table single_library add constraint fk_single_library_product_71 foreign key (product_id) references product (id);
-create index ix_single_library_product_71 on single_library (product_id);
-alter table type_of_block add constraint fk_type_of_block_project_72 foreign key (project_id) references project (id);
-create index ix_type_of_block_project_72 on type_of_block (project_id);
-alter table type_of_board add constraint fk_type_of_board_producer_73 foreign key (producer_id) references producer (id);
-create index ix_type_of_board_producer_73 on type_of_board (producer_id);
-alter table type_of_board add constraint fk_type_of_board_processor_74 foreign key (processor_id) references processor (id);
-create index ix_type_of_board_processor_74 on type_of_board (processor_id);
-alter table version_object add constraint fk_version_object_author_75 foreign key (author_id) references person (id);
-create index ix_version_object_author_75 on version_object (author_id);
-alter table version_object add constraint fk_version_object_library_gro_76 foreign key (library_group_id) references library_group (id);
-create index ix_version_object_library_gro_76 on version_object (library_group_id);
-alter table version_object add constraint fk_version_object_single_libr_77 foreign key (single_library_id) references single_library (id);
-create index ix_version_object_single_libr_77 on version_object (single_library_id);
-alter table version_object add constraint fk_version_object_c_program_78 foreign key (c_program_id) references c_program (id);
-create index ix_version_object_c_program_78 on version_object (c_program_id);
-alter table version_object add constraint fk_version_object_b_program_79 foreign key (b_program_id) references b_program (id);
-create index ix_version_object_b_program_79 on version_object (b_program_id);
-alter table version_object add constraint fk_version_object_m_program_80 foreign key (m_program_id) references m_program (id);
-create index ix_version_object_m_program_80 on version_object (m_program_id);
+alter table project add constraint fk_project_private_instance_69 foreign key (private_instance_id) references homer_instance (id);
+create index ix_project_private_instance_69 on project (private_instance_id);
+alter table project add constraint fk_project_product_70 foreign key (product_id) references product (id);
+create index ix_project_product_70 on project (product_id);
+alter table screen_size_type add constraint fk_screen_size_type_project_71 foreign key (project_id) references project (id);
+create index ix_screen_size_type_project_71 on screen_size_type (project_id);
+alter table single_library add constraint fk_single_library_product_72 foreign key (product_id) references product (id);
+create index ix_single_library_product_72 on single_library (product_id);
+alter table type_of_block add constraint fk_type_of_block_project_73 foreign key (project_id) references project (id);
+create index ix_type_of_block_project_73 on type_of_block (project_id);
+alter table type_of_board add constraint fk_type_of_board_producer_74 foreign key (producer_id) references producer (id);
+create index ix_type_of_board_producer_74 on type_of_board (producer_id);
+alter table type_of_board add constraint fk_type_of_board_processor_75 foreign key (processor_id) references processor (id);
+create index ix_type_of_board_processor_75 on type_of_board (processor_id);
+alter table version_object add constraint fk_version_object_author_76 foreign key (author_id) references person (id);
+create index ix_version_object_author_76 on version_object (author_id);
+alter table version_object add constraint fk_version_object_library_gro_77 foreign key (library_group_id) references library_group (id);
+create index ix_version_object_library_gro_77 on version_object (library_group_id);
+alter table version_object add constraint fk_version_object_single_libr_78 foreign key (single_library_id) references single_library (id);
+create index ix_version_object_single_libr_78 on version_object (single_library_id);
+alter table version_object add constraint fk_version_object_c_program_79 foreign key (c_program_id) references c_program (id);
+create index ix_version_object_c_program_79 on version_object (c_program_id);
+alter table version_object add constraint fk_version_object_b_program_80 foreign key (b_program_id) references b_program (id);
+create index ix_version_object_b_program_80 on version_object (b_program_id);
+alter table version_object add constraint fk_version_object_m_program_81 foreign key (m_program_id) references m_program (id);
+create index ix_version_object_m_program_81 on version_object (m_program_id);
 
 
+
+alter table general_tariff_extensions_produc add constraint fk_general_tariff_extensions__01 foreign key (general_tariff_extensions_id) references general_tariff_extensions (id);
+
+alter table general_tariff_extensions_produc add constraint fk_general_tariff_extensions__02 foreign key (product_id) references product (id);
 
 alter table hash_tag_post add constraint fk_hash_tag_post_hash_tag_01 foreign key (hash_tag_post_hash_tag_id) references hash_tag (post_hash_tag_id);
 
@@ -1053,6 +1073,8 @@ drop table if exists general_tariff cascade;
 drop table if exists general_tariff_label cascade;
 
 drop table if exists general_tariff_extensions cascade;
+
+drop table if exists general_tariff_extensions_produc cascade;
 
 drop table if exists grid_terminal cascade;
 

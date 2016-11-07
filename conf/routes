@@ -163,15 +163,21 @@ DELETE         /overflow/hashTag/:post_id/:hashTag                              
 ################################################################################################################################################################################
 
 #Tarrifs
-GET            /product/tarifs/for_registration                                             @controllers.Finance_Controller.get_products_tariffs()
-GET            /product/tarifs/user_applicable                                              @controllers.Finance_Controller.get_applicable_products_for_creating_new_project()
+GET            /tarifs/for_registration                                                     @controllers.Finance_Controller.get_products_tariffs()
+
 
 #CRUD Tarrifs
-POST           /product/tarif                                                               @controllers.Finance_Controller.set_tariff_with_account()
-PUT            /product/tarif/details/:payment_details_id                                   @controllers.Finance_Controller.edit_payment_details(payment_details_id: Long)
-PUT            /product/tarif/general/:product_id                                           @controllers.Finance_Controller.edit_general_product_details(product_id: Long)
+POST           /product                                                                     @controllers.Finance_Controller.product_create()
+GET            /product/all                                                                 @controllers.Finance_Controller.product_get_all()
+PUT            /product/deactivate/:product_id                                              @controllers.Finance_Controller.product_deactivate(product_id: Long)
+PUT            /product/activate/:product_id                                                @controllers.Finance_Controller.product_activate(product_id: Long)
+DELETE         /product/:product_id                                                         @controllers.Finance_Controller.product_delete(product_id: Long)
 
-GET            /product/finance/summary                                                     @controllers.Finance_Controller.get_financial_summary()
+GET            /product/user_applicable                                                     @controllers.Finance_Controller.get_applicable_products_for_creating_new_project()
+
+PUT            /product/details/:payment_details_id                                         @controllers.Finance_Controller.edit_payment_details(payment_details_id: Long)
+PUT            /product/general/:product_id                                                 @controllers.Finance_Controller.edit_general_product_details(product_id: Long)
+
 
 #GoPay
 GET            /go_pay/notification_url                                                     @utilities.goPay.GoPay_Controller.call_back_Notification(id: Long)
@@ -179,13 +185,13 @@ GET            /go_pay/return_url                                               
 
 
 #Fakturoid
-GET             /product/invoice/pay/:invoice_id                                            @controllers.Finance_Controller.pay_send_invoice(invoice_id: Long)
-GET             /product/invoice/pdf/:invoice_id                                            @utilities.fakturoid.Fakturoid_Controller.get_PDF_Invoice(invoice_id: Long)
+GET             /invoice/get/:invoice_id                                                    @controllers.Finance_Controller.invoice_get(invoice_id: Long)
+GET             /invoice/pdf/:invoice_id                                                    @utilities.fakturoid.Fakturoid_Controller.invoice_get_pdf(invoice_id: Long)
 
 # Obsluha pouze pro Byzance zaměstnance
-PUT             /product/invoice/set_pay/:invoice_id                                        @controllers.Finance_Controller.set_invoice_as_Paid(invoice_id: Long)
-PUT             /product/invoice/send_remainder/:invoice_id                                 @controllers.Finance_Controller.send_remainder_to_custumer(invoice_id: Long)
-DELETE          /product/invoice/remove/:invoice_id                                         @controllers.Finance_Controller.remove_invoice(invoice_id: Long)
+PUT             /invoice/set_pay/:invoice_id                                                @controllers.Finance_Controller.invoice_set_as_paid(invoice_id: Long)
+PUT             /invoice/send_remainder/:invoice_id                                         @controllers.Finance_Controller.send_remainder_to_custumer(invoice_id: Long)
+DELETE          /invoice/:invoice_id                                                        @controllers.Finance_Controller.invoice_remove(invoice_id: Long)
 
 #Project
 POST           /project                                                                     @controllers.ProgramingPackageController.postNewProject()
@@ -223,11 +229,17 @@ DELETE         /b_program/version/:version_id                                   
 #Instance
 PUT            /b_program/uploadToCloud/:version_id                                         @controllers.ProgramingPackageController.upload_b_Program_ToCloud(version_id)
 
-GET            /instance/:instance_id                                                       @controllers.ProgramingPackageController.get_b_program_instance(instance_id)
-PUT            /instance/command/:instance_id/:target_id/:command                           @controllers.ProgramingPackageController.send_command_to_instance(instance_id, target_id, command)
-PUT            /instance/program/:instance_id                                               @controllers.ProgramingPackageController.update_blocko_code_in_instance_with_code(instance_id)
-PUT            /instance/ping/:instance_id                                                  @controllers.ProgramingPackageController.ping_instance(instance_id)
-PUT            /instance/shut_down/:instance_id                                             @controllers.ProgramingPackageController.instance_shut_down(instance_id)
+GET            /instance/project/:project_id                            @controllers.ProgramingPackageController.get_b_program_instance(project_id)
+GET            /instance/get/:instance_id                               @controllers.ProgramingPackageController.get_b_program_instance(instance_id)
+PUT            /instance/command/:instance_id/:target_id/:command       @controllers.ProgramingPackageController.send_command_to_instance(instance_id, target_id, command)
+PUT            /instance/program/:instance_id                           @controllers.ProgramingPackageController.update_blocko_code_in_instance_with_code(instance_id)
+PUT            /instance/ping/:instance_id                              @controllers.ProgramingPackageController.ping_instance(instance_id)
+PUT            /instance/temporary_instance                             @controllers.ProgramingPackageController.instance_add_temporary_instance()
+PUT            /instance/add_yoda/:instance_id/:yoda_id                 @controllers.ProgramingPackageController.instance_add_yoda(instance_id, yoda_id)
+PUT            /instance/remove_yoda/:instance_id/:yoda_id              @controllers.ProgramingPackageController.instance_remove_yoda(instance_id, yoda_id)
+PUT            /instance/add_device/:instance_id/:yoda_id/:device_id    @controllers.ProgramingPackageController.instance_add_device(instance_id, yoda_id, device_id)
+PUT            /instance/remove_device/:instance_id/:yoda_id/:device_id @controllers.ProgramingPackageController.instance_remove_device(instance_id, yoda_id, device_id)
+PUT            /instance/shut_down/:instance_id                         @controllers.ProgramingPackageController.instance_shut_down(instance_id)
 
 
 #Blocks
@@ -314,32 +326,32 @@ PUT             /processor/:processor_id                                        
 DELETE          /processor/:processor_id                                                    @controllers.CompilationLibrariesController.delete_Processor(processor_id)
 
 #Board
-POST            /compilation/board                                                          @controllers.CompilationLibrariesController.new_Board()
-PUT             /compilation/board/userDescription/:type_of_board_id                        @controllers.CompilationLibrariesController.edit_Board_User_Description(type_of_board_id)
+POST            /board                                                          @controllers.CompilationLibrariesController.new_Board()
+PUT             /board/userDescription/:type_of_board_id                        @controllers.CompilationLibrariesController.edit_Board_User_Description(type_of_board_id)
 
-PUT             /compilation/board/filter/:page_number                                      @controllers.CompilationLibrariesController.get_Board_Filter(page_number: Integer)
-GET             /compilation/board/:board_id                                                @controllers.CompilationLibrariesController.get_Board(board_id)
-DELETE          /compilation/board/deactivateBoard/:board_id                                @controllers.CompilationLibrariesController.deactivate_Board(board_id)
-PUT             /compilation/board/:board_id/:project_id                                    @controllers.CompilationLibrariesController.connect_Board_with_Project(board_id, project_id)
-DELETE          /compilation/board/:board_id                                                @controllers.CompilationLibrariesController.disconnect_Board_from_Project(board_id)
+PUT             /board/filter/:page_number                                      @controllers.CompilationLibrariesController.get_Board_Filter(page_number: Integer)
+GET             /board/:board_id                                                @controllers.CompilationLibrariesController.get_Board(board_id)
+DELETE          /board/deactivateBoard/:board_id                                @controllers.CompilationLibrariesController.deactivate_Board(board_id)
+PUT             /board/:board_id/:project_id                                    @controllers.CompilationLibrariesController.connect_Board_with_Project(board_id, project_id)
+DELETE          /board/:board_id                                                @controllers.CompilationLibrariesController.disconnect_Board_from_Project(board_id)
 
 #Board on Project
-GET             /project/board/all_details/:project_id                                      @controllers.CompilationLibrariesController.board_all_details_for_blocko(project_id)
+GET             /project/board/all_details/:project_id                          @controllers.CompilationLibrariesController.board_all_details_for_blocko(project_id)
 
 #Producer
-POST            /compilation/producer                                                       @controllers.CompilationLibrariesController.new_Producer()
-PUT             /compilation/producer/:producer_id                                          @controllers.CompilationLibrariesController.edit_Producer(producer_id)
-GET             /compilation/producer/all                                                   @controllers.CompilationLibrariesController.get_Producers()
-GET             /compilation/producer/:producer_id                                          @controllers.CompilationLibrariesController.get_Producer(producer_id)
-DELETE          /compilation/producer/:producer_id                                          @controllers.CompilationLibrariesController.delete_Producer(producer_id)
+POST            /producer                                                       @controllers.CompilationLibrariesController.new_Producer()
+PUT             /producer/:producer_id                                          @controllers.CompilationLibrariesController.edit_Producer(producer_id)
+GET             /producer/all                                                   @controllers.CompilationLibrariesController.get_Producers()
+GET             /producer/:producer_id                                          @controllers.CompilationLibrariesController.get_Producer(producer_id)
+DELETE          /producer/:producer_id                                          @controllers.CompilationLibrariesController.delete_Producer(producer_id)
 
 #TypeOfBoard
-POST            /compilation/typeOfBoard                                                    @controllers.CompilationLibrariesController.new_TypeOfBoard()
-PUT             /compilation/typeOfBoard/:type_of_board_id                                  @controllers.CompilationLibrariesController.edit_TypeOfBoard(type_of_board_id)
-DELETE          /compilation/typeOfBoard/:type_of_board_id                                  @controllers.CompilationLibrariesController.delete_TypeOfBoard(type_of_board_id)
-GET             /compilation/typeOfBoard/all                                                @controllers.CompilationLibrariesController.get_TypeOfBoard_all()
-GET             /compilation/typeOfBoard/:type_of_board_id                                  @controllers.CompilationLibrariesController.get_TypeOfBoard(type_of_board_id)
-PUT             /compilation/typeOfBoard/mark/c_version/:type_of_board_id/:version_id       @controllers.CompilationLibrariesController.typeOfBoard_mark_C_program_Version_as_main(type_of_board_id,version_id)
+POST            /typeOfBoard                                                    @controllers.CompilationLibrariesController.new_TypeOfBoard()
+PUT             /typeOfBoard/:type_of_board_id                                  @controllers.CompilationLibrariesController.edit_TypeOfBoard(type_of_board_id)
+DELETE          /typeOfBoard/:type_of_board_id                                  @controllers.CompilationLibrariesController.delete_TypeOfBoard(type_of_board_id)
+GET             /typeOfBoard/all                                                @controllers.CompilationLibrariesController.get_TypeOfBoard_all()
+GET             /typeOfBoard/:type_of_board_id                                  @controllers.CompilationLibrariesController.get_TypeOfBoard(type_of_board_id)
+PUT             /typeOfBoard/mark/c_version/:type_of_board_id/:version_id       @controllers.CompilationLibrariesController.typeOfBoard_mark_C_program_Version_as_main(type_of_board_id,version_id)
 
 #Bootloader
 POST            /bootloader/:type_of_board_id                                               @controllers.CompilationLibrariesController.new_Boot_loader(type_of_board_id)
@@ -491,27 +503,26 @@ GET             /javascriptRoutes                               @controllers.Das
 
 # BUGS SERVISE PAGE
 
-GET             /public/bugs/deleteAll                      @controllers.DashboardController.loggy_remove_all_bugs()
-GET             /public/bug/remove/:id                      @controllers.DashboardController.loggy_remove_bug(id: String)
-GET             /public/bug/report/:id                      @controllers.DashboardController.loggy_report_bug_to_youtrack(id: String)
+GET             /admin/bugs/deleteAll                      @controllers.DashboardController.loggy_remove_all_bugs()
+GET             /admin/bug/remove/:id                      @controllers.DashboardController.loggy_remove_bug(id: String)
+GET             /admin/bug/report/:id                      @controllers.DashboardController.loggy_report_bug_to_youtrack(id: String)
 
 # WEBSOCKET SERVISE PAGE
-GET             /public/instance/ping/:id                   @controllers.DashboardController.ping_homer_instance(id: String)
-GET             /public/instance/disconnect/:id             @controllers.DashboardController.disconnect_homer_instance(id: String)
+GET             /admin/instance/ping/:id                   @controllers.DashboardController.ping_homer_instance(id: String)
 
-GET             /public/homer_server/ping/:id               @controllers.DashboardController.ping_homer_server(id)
-GET             /public/homer_server/disconnect/:id         @controllers.DashboardController.disconnect_blocko_server(id)
+GET             /admin/homer_server/ping/:id               @controllers.DashboardController.ping_homer_server(id)
+GET             /admin/homer_server/disconnect/:id         @controllers.DashboardController.disconnect_blocko_server(id)
 
-GET             /public/compilator_server/ping/:id          @controllers.DashboardController.ping_compilation_server(id)
-GET             /public/compilator_server/disconnect/:id    @controllers.DashboardController.disconnect_compilation_server(id)
+GET             /admin/compilator_server/ping/:id          @controllers.DashboardController.ping_compilation_server(id)
+GET             /admin/compilator_server/disconnect/:id    @controllers.DashboardController.disconnect_compilation_server(id)
 
-GET             /public/terminal/ping/:id                   @controllers.DashboardController.ping_terminal(id)
-GET             /public/terminal/disconnect/:id             @controllers.DashboardController.disconnect_terminal(id)
+GET             /admin/terminal/ping/:id                   @controllers.DashboardController.ping_terminal(id)
+GET             /admin/terminal/disconnect/:id             @controllers.DashboardController.disconnect_terminal(id)
 
-GET             /public/becki/ping/:id                      @controllers.DashboardController.ping_becki(id)
-GET             /public/becki/disconnect/:id/:token         @controllers.DashboardController.disconnect_becki(id, token)
+GET             /admin/becki/ping/:id                      @controllers.DashboardController.ping_becki(id)
+GET             /admin/becki/disconnect/:id/:token         @controllers.DashboardController.disconnect_becki(id, token)
 
-GET             /public/terminal/log_out/:id                @controllers.DashboardController.log_out_terminal_user(id)
+GET             /admin/terminal/log_out/:id                @controllers.DashboardController.terminal_log_out_user(id)
 
 
 
