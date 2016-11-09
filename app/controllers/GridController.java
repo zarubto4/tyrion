@@ -3,7 +3,6 @@ package controllers;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.*;
 import models.compiler.Version_Object;
-import models.grid.Screen_Size_Type;
 import models.person.Person;
 import models.project.global.Project;
 import models.project.m_program.Grid_Terminal;
@@ -20,9 +19,7 @@ import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Swagger_M_Program_Interface;
 import utilities.swagger.outboundClass.Swagger_M_Project_Interface;
-import utilities.swagger.outboundClass.Swagger_Screen_Size_Type_Combination;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -371,8 +368,6 @@ public class GridController extends Controller {
             M_Project m_project = M_Project.find.byId( m_project_id );
             if(m_project == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
 
-            Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId( help.screen_size_type_id);
-            if(screen_size_type == null) return GlobalResult.notFoundObject("Screen_Size_Type screen_size_type_id not found");
 
             M_Program m_program = new M_Program();
 
@@ -381,8 +376,6 @@ public class GridController extends Controller {
             m_program.name                = help.name;
 
             m_program.m_project           = m_project;
-
-            m_program.screen_size_type    = screen_size_type;
 
             m_program.set_QR_Token();
 
@@ -651,8 +644,6 @@ public class GridController extends Controller {
             if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_M_Program_New help = form.get();
 
-            Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId(help.screen_size_type_id);
-            if(screen_size_type == null) return GlobalResult.notFoundObject("Screen_Size_Type screen_size_type_id not found");
 
             M_Program m_program = M_Program.find.byId(m_program_id);
             if (!m_program.edit_permission())  return GlobalResult.forbidden_Permission();
@@ -662,7 +653,6 @@ public class GridController extends Controller {
 
             m_program.description = help.description;
             m_program.name        = help.name;
-            m_program.screen_size_type    = screen_size_type;
 
             m_program.update();
 
@@ -703,294 +693,6 @@ public class GridController extends Controller {
 
             return GlobalResult.result_ok();
 
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-
-//######################################################################################################################
-
-    @ApiOperation(value = "create ScreenType",
-            tags = {"Screen_Size_Type"},
-            notes = "Create type of screen - its used for describe Grid dimensions for regular users - (Iphone 5, Samsung Galaxy S3 etc..). " +
-                    "Its also possible create private Screen for Personal/Enterprises projects if you add to json parameter { \"project_id\" : \"{1576}\"} " +
-                    "If json not contain project_id - you need Permission For that!!",
-            produces = "application/json",
-            protocols = "https",
-            code = 201,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Screen_Size_Type.create_permission", value = Screen_Size_Type.create_permission_docs ),
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Project.update_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "Screen_Size_Type_create" ),
-                    })
-            }
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_ScreeSizeType_New",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-
-            }
-
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successfully created",    response = Screen_Size_Type.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @BodyParser.Of(BodyParser.Json.class)
-    @Security.Authenticated(Secured_API.class)
-    public Result new_Screen_Size_Type(){
-        try {
-
-            final Form<Swagger_ScreeSizeType_New> form = Form.form(Swagger_ScreeSizeType_New.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-            Swagger_ScreeSizeType_New help = form.get();
-
-            Screen_Size_Type screen_size_type = new Screen_Size_Type();
-            screen_size_type.name = help.name;
-
-            screen_size_type.landscape_height = help.landscape_height;
-            screen_size_type.landscape_width = help.landscape_width;
-            screen_size_type.landscape_square_height = help.landscape_square_height;
-            screen_size_type.landscape_square_width = help.landscape_square_width;
-            screen_size_type.landscape_max_screens = help.landscape_max_screens;
-            screen_size_type.landscape_min_screens = help.landscape_min_screens;
-
-            screen_size_type.portrait_height = help.portrait_height;
-            screen_size_type.portrait_width = help.portrait_width;
-            screen_size_type.portrait_square_height = help.portrait_square_height;
-            screen_size_type.portrait_square_width = help.portrait_square_width;
-            screen_size_type.portrait_max_screens = help.portrait_max_screens;
-            screen_size_type.portrait_min_screens = help.portrait_min_screens;
-
-            screen_size_type.height_lock = help.height_lock;
-            screen_size_type.width_lock = help.width_lock;
-            screen_size_type.touch_screen = help.touch_screen;
-
-            if( help.project_id != null) {
-                Project project = Project.find.byId(help.project_id);
-                if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
-
-                screen_size_type.project = project;
-            }
-
-            if (!screen_size_type.create_permission())  return GlobalResult.forbidden_Permission();
-
-            screen_size_type.save();
-
-            return GlobalResult.created(Json.toJson(screen_size_type));
-
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "get ScreenType",
-            tags = {"Screen_Size_Type"},
-            notes = "get ScreenType. If you want get private ScreenType you have to owned that. Public are without person_permissions",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Screen_Size_Type.read_permission", value = Screen_Size_Type.read_permission_docs ),
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Screen_Size_Type.read_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "Screen_Size_Type_create" ),
-                    })
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Screen_Size_Type.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @Security.Authenticated(Secured_API.class)
-    public Result get_Screen_Size_Type(@ApiParam(value = "screen_size_type_id String query", required = true) String screen_size_type_id){
-        try {
-            Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId(screen_size_type_id);
-            if (screen_size_type == null) return GlobalResult.notFoundObject("Screen_Size_Type screen_size_type_id not found");
-
-            if (!screen_size_type.read_permission())  return GlobalResult.forbidden_Permission();
-
-            return GlobalResult.result_ok(Json.toJson(screen_size_type));
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "get all ScreenType",
-            tags = {"Screen_Size_Type"},
-            notes = "get all ScreenType. Private_types areon every Persons projects",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Screen_Size_Type.read_permission", value = Screen_Size_Type.read_permission_docs ),
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Screen_Size_Type.read_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "Screen_Size_Type_read" ),
-                    })
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Screen_Size_Type_Combination.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @Security.Authenticated(Secured_API.class)
-    public Result get_Screen_Size_Type_Combination(){
-        try {
-
-            List<Screen_Size_Type> public_list = new ArrayList<>();
-            List<Screen_Size_Type> private_list =  new ArrayList<>();
-
-            for(Screen_Size_Type type : Screen_Size_Type.find.where().eq("project", null).findList() )                                                  if (type.read_permission())  public_list.add(type);
-            for(Screen_Size_Type type : Screen_Size_Type.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).findList() )  if (type.read_permission())  private_list.add(type);
-
-            Swagger_Screen_Size_Type_Combination help = new Swagger_Screen_Size_Type_Combination();
-            help.private_types = private_list;
-            help.public_types = public_list;
-
-            return GlobalResult.result_ok(Json.toJson(help));
-
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "edit ScreenType",
-            tags = {"Screen_Size_Type"},
-            notes = "Edit all ScreenType information",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Screen_Size_Type.edit_permission", value = "true"),
-                    })
-            }
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_ScreeSizeType_New",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-
-            }
-
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Screen_Size_Type.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @BodyParser.Of(BodyParser.Json.class)
-    @Security.Authenticated(Secured_API.class)
-    public Result edit_Screen_Size_Type(@ApiParam(value = "screen_size_type_id String query", required = true) String screen_size_type_id){
-        try {
-
-            final Form<Swagger_ScreeSizeType_New> form = Form.form(Swagger_ScreeSizeType_New.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-            Swagger_ScreeSizeType_New help = form.get();
-
-            Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId(screen_size_type_id);
-            if(screen_size_type == null) return GlobalResult.notFoundObject("Screen_Size_Type screen_size_type_id not found");
-
-            if (!screen_size_type.edit_permission())  return GlobalResult.forbidden_Permission();
-
-            screen_size_type.name = help.name;
-
-            screen_size_type.landscape_height = help.landscape_height;
-            screen_size_type.landscape_width = help.landscape_width;
-            screen_size_type.landscape_square_height = help.landscape_square_height;
-            screen_size_type.landscape_square_width = help.landscape_square_width;
-            screen_size_type.landscape_max_screens = help.landscape_max_screens;
-            screen_size_type.landscape_min_screens = help.landscape_min_screens;
-
-            screen_size_type.portrait_height = help.portrait_height;
-            screen_size_type.portrait_width = help.portrait_width;
-            screen_size_type.portrait_square_height = help.portrait_square_height;
-            screen_size_type.portrait_square_width = help.portrait_square_width;
-            screen_size_type.portrait_max_screens = help.portrait_max_screens;
-            screen_size_type.portrait_min_screens = help.portrait_min_screens;
-
-
-            screen_size_type.height_lock = help.height_lock;
-            screen_size_type.width_lock = help.width_lock;
-            screen_size_type.touch_screen = help.touch_screen;
-
-
-            if( help.project_id != null) {
-                Project project = Project.find.byId(help.project_id);
-                if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
-
-                screen_size_type.project = project;
-            }
-
-            screen_size_type.update();
-
-            return GlobalResult.result_ok(Json.toJson(screen_size_type));
-
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "remove ScreenType",
-            tags = {"Screen_Size_Type"},
-            notes = "remove ScreenType",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Screen_Size_Type_delete_permission", value = "true"),
-                    })
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @Security.Authenticated(Secured_API.class)
-    public Result remove_Screen_Size_Type(@ApiParam(value = "screen_size_type_id String query", required = true)  String screen_size_type_id){
-        try {
-            Screen_Size_Type screen_size_type = Screen_Size_Type.find.byId(screen_size_type_id);
-            if(screen_size_type == null) return GlobalResult.notFoundObject("Screen_Size_Type screen_size_type_id not found");
-
-            if (!screen_size_type.delete_permission())  return GlobalResult.forbidden_Permission();
-
-            screen_size_type.delete();
-
-            return GlobalResult.result_ok();
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }

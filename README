@@ -1,4 +1,51 @@
 ﻿
+
+
+# Verze 1.06.7 #
+
+### Zásadní změn ###
+
+    *  Přibyla podpora finance - s workflow, které je vyobrazeno na zdi.
+
+
+### Finance ###
+
+#### Workflow ####
+
+   * Záskám seznam volných tarifů. Pole Tarifů se základním zobrazením, barvou atd.. (Podporovány jsou pouze barvy z Metronicu). Pole obsahuje i balíček doda
+
+        GET {{url}}/tarifs/for_registration
+
+   * Pro odeslání tarifu je nutné uvést základní údaje které vyžaduje příchozí JSON. Důležitá je položka Extension ID která říká, jaké si uživatel vybral dodatečné balíčky v třetím kroku.
+
+         ...  "extensions_id" : ["41", "42"] ...
+
+   * Záskám seznam volných tarifů. Pokud chci registrovat projekt - musím si vybrat jaký tarif. Seznam dostupných tarifů - (zaplacených - frotnend se nemusí starat) získáte:
+
+        GET {{url}}/product/user_applicable
+
+
+   * Produkt se dá aktivovat nebo deaktivovat
+
+        PUT {{url}}/product/deactivate/41
+        PUT {{url}}/product/activate/41
+
+   * Produkt se dá editovat
+
+        PUT {{url}}/product/details/3
+
+
+   * Detail faktury se získává zvlášt (obsahuje navíc dodatečné údaje jako jsou řádky na faktuře atd) - Teoreticky něco může chybět?
+
+        PUT {{url}}/invoice/get/1
+
+   * u faktury se dá stáhnout i rovnou PDF (Tyrion si už v budoucnu ohlídá aby to bylo jazykově atd správně)
+
+
+
+
+-----
+
 # Verze 1.06.6.6 #
 
   * Board

@@ -106,17 +106,17 @@
 
                   <td>
                   @if(typeOfBoard.main_boot_loader == null){
-                    <p class="lead text-red">(MAIN BOOTLOADER NOT SET!!!)</p>
+                    <p class="small text-red">(MAIN BOOTLOADER NOT SET!!!)</p>
                   }else{
-                    <p class="lead text-green">(BOOTLOADER set)</p>
+                    <p class="small text-green">(BOOTLOADER set)</p>
                   }
                   </td>
 
                   <td>
                   @if(typeOfBoard.default_program == null || typeOfBoard.default_program.default_main_version == null){
-                    <p class="lead text-red">(MAIN FIRMWARE NOT SET!!!)</p>
+                    <p class="small text-red">(MAIN FIRMWARE NOT SET!!!)</p>
                   }else{
-                    <p class="lead text-green">(FIRMWARE set)</p>
+                    <p class="small text-green">(FIRMWARE set)</p>
                   }
                   </td>
 

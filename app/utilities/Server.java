@@ -9,7 +9,6 @@ import models.blocko.BlockoBlock;
 import models.blocko.BlockoBlockVersion;
 import models.blocko.TypeOfBlock;
 import models.compiler.*;
-import models.grid.Screen_Size_Type;
 import models.overflow.*;
 import models.person.FloatingPersonToken;
 import models.person.Person;
@@ -281,9 +280,6 @@ public class Server {
                 for(Enum en : SingleLibrary.permissions.values())           permissions.add(en.name());
                 for(Enum en : TypeOfBoard.permissions.values())             permissions.add(en.name());
                 for(Enum en : BootLoader.permissions.values())              permissions.add(en.name());
-
-            // grid
-                for(Enum en : Screen_Size_Type.permissions.values())        permissions.add(en.name());
 
             // overflow
                 for(Enum en : FloatingPersonToken.permissions.values())     permissions.add(en.name());

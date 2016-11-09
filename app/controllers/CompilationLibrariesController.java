@@ -748,6 +748,7 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
+    @ApiOperation(value = "only for Tyrion Front End", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
     public Result changeApprovalState(){
         try {
@@ -807,6 +808,7 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
+    @ApiOperation(value = "only for Tyrion Front End", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
     public Result approveWithChanges(){
         try {
@@ -1257,6 +1259,68 @@ public class CompilationLibrariesController extends Controller {
              ActualizationController.add_new_actualization_request_with_user_file(board.project, firmware_type, board, fileRecord);
 
             return GlobalResult.result_ok();
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "only for Tyrion Front End", hidden = true)
+    @Security.Authenticated(Secured_Admin.class)
+    public Result uploadBinaryFileToBoard_fake_board(String instance_id, String board_id, String build_id,  String firmware_type_string){
+        try {
+
+            // Slouží k nahrávání firmwaru do deviců, které jsou ve fakce instnaci pro testování
+            // nejsou databázovaný a tedy nejde spustit regulérní update procedura na kterou jsme zvyklé - viz metoda nad tímto
+            // Slouží jen pro Admin rozhraní Tyriona
+
+            if(!WebSocketController.incomingConnections_homers.containsKey(instance_id)) return GlobalResult.notFoundObject("Instance Homer not found");
+
+            Firmware_type firmware_type = Firmware_type.getFirmwareType(firmware_type_string);
+            if (firmware_type == null) return GlobalResult.notFoundObject("FirmwareType not found!");
+
+            List<String> list = new ArrayList<>();
+            list.add(board_id);
+
+            // Přijmu soubor
+            Http.MultipartFormData body = request().body().asMultipartFormData();
+
+            List<Http.MultipartFormData.FilePart> files_from_request = body.getFiles();
+
+            if (files_from_request == null || files_from_request.isEmpty())return GlobalResult.notFoundObject("Bin File not found!");
+            if (files_from_request.size() > 1)return GlobalResult.result_BadRequest("More than one File is not allowed!");
+
+            File file = files_from_request.get(0).getFile();
+            if (file == null) return GlobalResult.result_BadRequest("File not found!");
+            if (file.length() < 1) return GlobalResult.result_BadRequest("File is Empty!");
+
+
+            int dot = files_from_request.get(0).getFilename().lastIndexOf(".");
+            String file_type = files_from_request.get(0).getFilename().substring(dot);
+            String file_name = files_from_request.get(0).getFilename().substring(0, dot);
+
+            // Zkontroluji soubor
+            if (!file_type.equals(".bin"))return GlobalResult.result_BadRequest("Wrong type of File - \"Bin\" required! ");
+            if ((file.length() / 1024) > 500)return GlobalResult.result_BadRequest("File is bigger than 500K b");
+
+
+            ObjectNode request = Json.newObject();
+            request.put("messageChannel", "tyrion");
+            request.put("messageType", "updateDevice");
+            request.put("firmware_type", firmware_type.get_firmwareType());
+            request.set("targetIds",  Json.toJson(list));
+            request.put("build_id", build_id);
+            request.put("program", UtilTools.get_encoded_binary_string_from_File(file));
+
+
+            ObjectNode result =  WebSocketController.incomingConnections_homers.get(instance_id).write_with_confirmation(request, 1000*30, 0, 3);
+
+            if(result.get("status").asText().equals("success")) {
+                return GlobalResult.result_ok();
+            }
+            else {
+                return GlobalResult.result_BadRequest(result);
+            }
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());

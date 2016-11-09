@@ -316,7 +316,7 @@ PUT             /compilation/c_program/version/approve_with_changes             
 #Actualization
 PUT             /compilation/c_program/version/upload/:version_id                           @controllers.CompilationLibrariesController.uploadCompilationToBoard(version_id)
 POST            /compilation/c_program/binary/:board_id/:command                            @controllers.CompilationLibrariesController.uploadBinaryFileToBoard(board_id, command)
-
+POST            /admin_binary/:instance_id/:board_id/:build_id/:command                     @controllers.CompilationLibrariesController.uploadBinaryFileToBoard_fake_board(instance_id: String, board_id: String, build_id: String, command: String)
 
 #Processor
 POST            /processor                                                                  @controllers.CompilationLibrariesController.new_Processor()
@@ -419,14 +419,6 @@ DELETE          /m_program_version/:m_program_id                                
 
 GET             /m_program/app/token/:qr_token                                         @controllers.GridController.get_M_Program_byQR_Token_forMobile(qr_token)
 GET             /m_program/app/m_programs                                              @controllers.GridController.get_M_Program_all_forMobile()
-
-
-#M Screen Type
-POST            /screen_type                                                           @controllers.GridController.new_Screen_Size_Type()
-GET             /screen_type/all                                                       @controllers.GridController.get_Screen_Size_Type_Combination()
-GET             /screen_type/:screen_size_type_id                                      @controllers.GridController.get_Screen_Size_Type(screen_size_type_id)
-PUT             /screen_type/:screen_size_type_id                                      @controllers.GridController.edit_Screen_Size_Type(screen_size_type_id)
-DELETE          /screen_type/:screen_size_type_id                                      @controllers.GridController.remove_Screen_Size_Type(screen_size_type_id)
 
 PUT             /websocket/terminal/identificator                                      @controllers.GridController.get_identificator()
 PUT             /websocket/terminal/identificator/:terminal_id                         @controllers.GridController.check_identifiactor(terminal_id)

@@ -904,7 +904,7 @@ public class WebSocketController extends Controller {
     public static JsonNode homer_server_ping(WS_BlockoServer blockoServer) throws  ExecutionException,  TimeoutException, InterruptedException{
 
         ObjectNode result = Json.newObject();
-        result.put("messageType", "ping");
+        result.put("messageType", "pingServer");
         result.put("messageChannel", "homer-server");
 
        return blockoServer.write_with_confirmation(result, 1000*2 , 0 , 2);
@@ -1548,29 +1548,68 @@ public class WebSocketController extends Controller {
             }
         }
 
-        return request;
+        return result;
     }
 
-    public static JsonNode homer_instance_add_Device_to_instance(WebSCType homer, String yoda_id, String device_id) throws  ExecutionException, TimeoutException, InterruptedException{
+    public static JsonNode homer_instance_add_Device_to_instance(WebSCType homer, String yoda_id, List<String> devices_id) throws  ExecutionException, TimeoutException, InterruptedException{
 
-        ObjectNode result = Json.newObject();
-        result.put("messageType", "addDeviceToInstance");
-        result.put("messageChannel", "tyrion");
-        result.put("yodaId", yoda_id);
-        result.put("deviceId", device_id);
+        ObjectNode request = Json.newObject();
+        request.put("messageType", "addDeviceToInstance");
+        request.put("messageChannel", "tyrion");
+        request.put("yodaId", yoda_id);
+        request.set("devicesId", Json.toJson(devices_id) );
 
-        return homer.write_with_confirmation(result, 1000*3, 0, 4);
+        ObjectNode result = homer.write_with_confirmation(request, 1000*3, 0, 4);
+
+        if(result.get("status").asText().equals("success")){
+
+         WS_Homer_Cloud homer_cloud = (WS_Homer_Cloud) homer;
+
+            System.out.println("Kontrola pole");
+
+            for(Swagger_Instance_HW_Group s : homer_cloud.group){
+
+                System.out.println("Yoda ID: " + s.yodaId + " ?= " + yoda_id);
+
+                if(s.yodaId.equals(yoda_id)){
+                    System.out.println("Shoda!");
+                    System.out.println("Počet prvků před:" + s.devicesId.size());
+                    s.devicesId.addAll(devices_id);
+                    System.out.println("Počet prvků po:" + s.devicesId.size());
+                    break;
+                }
+            }
+
+        }
+
+        return result;
+
     }
 
-    public static JsonNode homer_instance_remove_Device_from_instance(WebSCType homer, String yoda_id, String device_id) throws  ExecutionException, TimeoutException, InterruptedException{
+    public static JsonNode homer_instance_remove_Device_from_instance(WebSCType homer, String yoda_id, List<String> devices_id) throws  ExecutionException, TimeoutException, InterruptedException{
 
-        ObjectNode result = Json.newObject();
-        result.put("messageType", "removeDeviceFromInstance");
-        result.put("messageChannel", "tyrion");
-        result.put("yodaId", yoda_id);
-        result.put("deviceId", device_id);
+        ObjectNode request = Json.newObject();
+        request.put("messageType", "removeDeviceFromInstance");
+        request.put("messageChannel", "tyrion");
+        request.put("yodaId", yoda_id);
+        request.set("devicesId", Json.toJson(devices_id));
 
-        return homer.write_with_confirmation(result, 1000*3, 0, 4);
+        ObjectNode result = homer.write_with_confirmation(request, 1000*3, 0, 4);
+
+        if(result.get("status").asText().equals("success")){
+
+            WS_Homer_Cloud homer_cloud = (WS_Homer_Cloud) homer;
+
+            for(Swagger_Instance_HW_Group s : homer_cloud.group){
+                if(s.yodaId.equals(yoda_id)){
+                    s.devicesId.removeAll(devices_id);
+                    break;
+                }
+            }
+
+        }
+
+        return result;
     }
 
     public static JsonNode homer_instance_upload_blocko_program(WebSCType homer, String program_id, String program) throws  ExecutionException, TimeoutException, InterruptedException {
@@ -1664,7 +1703,7 @@ public class WebSocketController extends Controller {
             return homer.write_with_confirmation(result, 1000*3, 0, 4);
         }
 
-        public static void     homer_instance_unsubscribe_blocko_instance(WS_Homer_Cloud homer){
+        public static void homer_instance_unsubscribe_blocko_instance(WS_Homer_Cloud homer){
 
             ObjectNode result = Json.newObject();
             result.put("messageType",    "unSubscribeChannel");

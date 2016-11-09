@@ -7,7 +7,6 @@ import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
 import models.blocko.TypeOfBlock;
 import models.compiler.Board;
-import models.grid.Screen_Size_Type;
 import models.person.Invitation;
 import models.person.Person;
 import models.project.b_program.B_Program;
@@ -38,7 +37,6 @@ public class Project extends Model {
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<B_Program>                b_programs        = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<C_Program>                c_programs        = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<M_Project>                m_projects        = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Screen_Size_Type>         screen_size_types = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<TypeOfBlock>              type_of_blocks    = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Board>                    boards            = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Actualization_procedure>  procedures        = new ArrayList<>();
@@ -61,7 +59,7 @@ public class Project extends Model {
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Object_detail> c_programs()     { List<Swagger_Object_detail> l = new ArrayList<>();    for( C_Program m               : c_programs)               l.add(new Swagger_Object_detail(m.name, m.description, m.id)); return l;  }
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Object_detail> m_projects()     { List<Swagger_Object_detail> l = new ArrayList<>();    for( M_Project m               : m_projects)               l.add(new Swagger_Object_detail(m.name, m.description, m.id)); return l;  }
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> type_of_blocks_id()             { List<String> l = new ArrayList<>();                   for( TypeOfBlock m             : type_of_blocks)           l.add(m.id); return l;  }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> screen_size_types_id()          { List<String> l = new ArrayList<>();                   for( Screen_Size_Type m        : screen_size_types)        l.add(m.id); return l;  }
+
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> actual_procedures_id()          { List<String> l = new ArrayList<>();                   for( Actualization_procedure m : procedures)               l.add(m.id); return l;  }
 
 

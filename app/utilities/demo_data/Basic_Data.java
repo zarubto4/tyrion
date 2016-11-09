@@ -6,7 +6,6 @@ import models.blocko.BlockoBlock;
 import models.blocko.BlockoBlockVersion;
 import models.blocko.TypeOfBlock;
 import models.compiler.*;
-import models.grid.Screen_Size_Type;
 import models.person.FloatingPersonToken;
 import models.person.Person;
 import models.project.b_program.B_Pair;
@@ -51,7 +50,6 @@ public class Basic_Data {
         set_default_object_EXTERNAL_SERVERS();
         set_default_object_BLOCKO();
         set_default_object_BOARD();
-        set_default_object_TYPE_OF_SCREEN();
     }
 
     public static void set_default_object_PRODUCER_AND_BOARDS() {
@@ -944,55 +942,6 @@ public class Basic_Data {
 
     }
 
-    public static void set_default_object_TYPE_OF_SCREEN(){
-
-        Screen_Size_Type screen_size_type = new Screen_Size_Type();
-        screen_size_type.name = "iPhone6";
-        screen_size_type.landscape_height = 375;
-        screen_size_type.landscape_width = 667;
-        screen_size_type.landscape_square_height = 6;
-        screen_size_type.landscape_square_width = 11;
-        screen_size_type.landscape_max_screens = 10;
-        screen_size_type.landscape_min_screens = 1;
-
-        screen_size_type.portrait_height = 667;
-        screen_size_type.portrait_width = 375;
-        screen_size_type.portrait_square_height = 11;
-        screen_size_type.portrait_square_width = 6;
-        screen_size_type.portrait_max_screens = 10;
-        screen_size_type.portrait_min_screens = 1;
-
-        screen_size_type.height_lock  = true;
-        screen_size_type.width_lock   = true;
-        screen_size_type.touch_screen = true;
-
-        screen_size_type.save();
-
-        Screen_Size_Type screen_size_type_2 = new Screen_Size_Type();
-        screen_size_type_2.name = "Samsung Edge7 - Bang! Bang Bang!";
-        screen_size_type_2.landscape_height = 375;
-        screen_size_type_2.landscape_width = 667;
-        screen_size_type_2.landscape_square_height = 5;
-        screen_size_type_2.landscape_square_width = 14;
-        screen_size_type_2.landscape_max_screens = 5;
-        screen_size_type_2.landscape_min_screens = 1;
-
-        screen_size_type_2.portrait_height = 667;
-        screen_size_type_2.portrait_width = 375;
-        screen_size_type_2.portrait_square_height = 11;
-        screen_size_type_2.portrait_square_width = 6;
-        screen_size_type_2.portrait_max_screens = 10;
-        screen_size_type_2.portrait_min_screens = 1;
-
-        screen_size_type_2.height_lock  = true;
-        screen_size_type_2.width_lock   = true;
-        screen_size_type_2.touch_screen = true;
-
-        screen_size_type_2.save();
-
-    }
-
-
     public static void set_basic_demo_data(){
 
         try {
@@ -1688,7 +1637,6 @@ public class Basic_Data {
             m_program_1.date_of_create = new Date();
             m_program_1.description = "První verze se snad zdařila!!! Yahoooo!!!!";
             m_program_1.name = "Velký M PRogram";
-            m_program_1.screen_size_type = Screen_Size_Type.find.where().eq("name", "iPhone6").findUnique();
             m_program_1.save();
 
 

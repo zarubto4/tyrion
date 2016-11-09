@@ -34,16 +34,20 @@
 
                     <p class="text-muted text-center"> @homer.identifikator</p>
 
-                    @if( Homer_Instance.find.where().eq("blocko_instance_name", homer.identifikator).findRowCount() == 0){
+                    @if(Homer_Instance.find.where().eq("blocko_instance_name", homer.identifikator).findRowCount() == 0){
                         <p class="text-red text-center"> Temporary Instance </p>
-                    }else{
-                        <p class="text-green text-center"> Databased </p>
+                    }else {
+                        @if(homer.virtual_instance) {
+                            <p class="text-orange text-center"> Virtual Instance </p>
+                        } else {
+                            <p class="text-green text-center"> Databased </p>
+                        }
                     }
 
                     <ul class="list-group list-group-unbordered">
                         <li class="list-group-item">
                             <b>Owner</b> <a class="pull-right">
-                                @if( Homer_Instance.find.where().eq("blocko_instance_name", homer.identifikator).findRowCount() == 0){
+                                @if(homer.virtual_instance){
                                     <p class="text-red text-center"> Byzance Developer </p>
                                 }else{
                                     <p class="text-green text-center"> TODO!!!!!!!</p>
@@ -74,11 +78,12 @@
                     </ul>
 
                     <a onclick="showAddMasterDeviceModal()" class="btn btn-warning btn-block"> <b>Add Master board to Instance</b> </a>
-                    <a onclick="showUploadBlockoProgram('@homer.identifikator')"  class="btn btn-primary btn-block"> <b>Uploud Blocko Program</b>        </a>
+                    <a onclick="showUploadBlockoProgram('@homer.identifikator')"  class="btn btn-primary btn-block"> <b>Upload Blocko Program</b>        </a>
                 </div>
             </div>
         </div>
         <div class="col-xs-9">
+            <div id="device_summary_table" class="box">
             @for(x <- homer.group){
                 <div class="box box-primary">
                         <div class="box-body table-responsive no-padding">
@@ -99,7 +104,12 @@
                                             }
 
                                             <a onclick="executeCommand('@x.yodaId','@Type_of_command.INFO_STATE.get_command')" class="btn btn-info btn-sm"><b>Ping Yoda</b></a>
-                                            <a onclick="showCommandDeviceModal('@x.yodaId', 'Yoda')" class="btn btn-info btn-sm"><b>Open Commander</b></a>
+
+                                            @if(Board.find.byId(x.yodaId) == null) {
+                                                <a onclick="showCommandDeviceModal('@x.yodaId', false, 'Yoda')" class="btn btn-info btn-sm"><b>Open Commander</b></a>
+                                            }else{
+                                                <a onclick="showCommandDeviceModal('@x.yodaId', true, 'Yoda')" class="btn btn-info btn-sm"><b>Open Commander</b></a>
+                                            }
                                             <a onclick="showAddDeviceModal('@x.yodaId')" class="btn btn-warning btn-sm"><b>Add new Device</b></a>
                                             <a onclick="removeMasterDevice('@x.yodaId')" class="btn btn-danger btn-sm"><b>Remove Yoda</b></a>
                                     </div>
@@ -117,91 +127,52 @@
 
                                 @if(x.devicesId != null && x.devicesId.size() > 0 ){
 
-                                    @for(board <- Board.find.where().in("id", x.devicesId ).findList() ) {
 
-                                                <tr>
+                                        @for(board_id <- x.devicesId) {
 
-                                                <td> @board.id</td>
-                                                <td> @board.type_of_board.name</td>
-                                                <td> @board.personal_description</td>
-                                                <td>
-                                                    @if(BootLoader.find.where().eq("main_type_of_board.id", board.type_of_board.id ).findUnique() != null){
-                                                        @if(board.update_boot_loader_required()) {
-                                                           <button  type="button" class="commandButton btn btn-primary   btn-sm"  onclick="updateBootLoader('@board.id')">Update Firmware</button>
-                                                        }else {
-                                                            <p class="text-green">(Actual)</p>
-                                                        }
-                                                    }else{
-                                                        <p class="text-red">(Missing bootloader)</p>
-                                                    }
-                                                </td>
-                                                <td><a onclick="showCommandDeviceModal('@board.id', 'device')" class="btn btn-info btn-sm"><b>Open Commander</b></a></td>
-                                                <td><a onclick="removeDevice('@board.id')" class="btn btn-danger btn-sm"><b>Remove Device</b></a></td>
+                                            @if(Board.find.byId(board_id) == null) {
+                                                    <tr>
+                                                        <td>@board_id</td>
+                                                        <td>Virtual</td>
+                                                        <td>---</td>
+                                                        <td>---</td>
+                                                        <td><a onclick="showCommandDeviceModal('@board_id', false, 'Virtual Device')" class="btn btn-info btn-sm"><b>Open Commander</b></a></td>
+                                                        <td><a onclick="removeDevice('@x.yodaId','@board_id')" class="btn btn-danger btn-sm"><b>Remove Device</b></a></td>
+                                                    </tr>
 
-                                            </tr>
+                                            }else{
+
+                                                @for(board_object <- Board.find.where().eq("id", board_id).findList()){
+                                                    <tr>
+                                                            <td> @board_object.id</td>
+                                                            <td> @board_object.type_of_board.name</td>
+                                                            <td> @board_object.personal_description</td>
+                                                            <td>
+                                                                @if(BootLoader.find.where().eq("main_type_of_board.id", board_object.type_of_board.id ).findUnique() != null){
+                                                                    @if(board_object.update_boot_loader_required()) {
+                                                                       <button  type="button" class="commandButton btn btn-primary   btn-sm"  onclick="updateBootLoader('@board_object.id')">Update Firmware</button>
+                                                                    }else {
+                                                                        <p class="text-green">(Actual)</p>
+                                                                    }
+                                                                }else{
+                                                                    <p class="text-red">(Missing bootloader)</p>
+                                                                }
+                                                            </td>
+                                                            <td><a onclick="showCommandDeviceModal('@board_object.id', true, '@board_object.type_of_board.name')" class="btn btn-info btn-sm"><b>Open Commander</b></a></td>
+                                                            <td><a onclick="removeDevice('@x.yodaId','@board_object.id')" class="btn btn-danger btn-sm"><b>Remove Device</b></a></td>
+                                                    </tr>
+                                                }
+                                            }
                                         }
 
                                 }
-
                             </table>
                         </div>
                 </div>
             }
+            </div>
         </div>
     </div>
-
-    <script>
-
-        function removeMasterDevice(id){
-
-            $.ajax({
-                        url: " @Server.tyrion_serverAddress" + "/project/b_program/instance/master_device" + '@homer.identifikator' +  "/" + id ,
-                        type: 'DELETE',
-                        headers: {
-                            "X-AUTH-TOKEN":getCookie("authToken"),
-                        },
-                        success:function(e){
-                            $('#allCompilationServers').load(document.URL +  ' #allCompilationServers');
-                        },
-                        error:function(e) {
-                            alert("Unsuccessful.");
-                        }
-                    }
-            )}
-
-        function removeMasterDevice(id){
-
-            $.ajax({
-                url: " @Server.tyrion_serverAddress" + "/project/b_program/instance/master_device" + '@homer.identifikator' +  "/" + id ,
-                type: 'DELETE',
-                headers: {
-                    "X-AUTH-TOKEN":getCookie("authToken"),
-                },
-                success:function(e){
-                    $('#allCompilationServers').load(document.URL +  ' #allCompilationServers');
-                },
-                error:function(e) {
-                    alert("Unsuccessful.");
-                }
-            })}
-
-        function removeDevice(id){
-
-            $.ajax({
-                url: " @Server.tyrion_serverAddress" + "/project/b_program/instance/device" + '@homer.identifikator' +  "/" + id ,
-                type: 'DELETE',
-                headers: {
-                    "X-AUTH-TOKEN":getCookie("authToken"),
-                },
-                success:function(e){
-                    $('#allCompilationServers').load(document.URL +  ' #allCompilationServers');
-                },
-                error:function(e) {
-                    alert("Unsuccessful.");
-                }
-            })}
-
-    </script>
 
 </section>
 
@@ -213,7 +184,7 @@
         <div class="col-xs-12">
             <div class="box">
                 <div class="box-header">
-                    <h3 class="box-title">Connected Grids Temrinal on this Instance</h3>
+                    <h3 class="box-title">Connected Grids Terminal on this Instance</h3>
                 </div>
                 <div class="box-body table-responsive no-padding">
                     <table class="table table-bordered">
@@ -242,9 +213,16 @@
                 <h4 class="modal-title">Update Blocko Program</h4>
             </div>
             <div class="modal-body">
-                <form id="uploadBlockoProgram">
+                <form id="uploadBlockoProgram" class="form-horizontal" role="form">
 
-                    <label id="instanceId" style="display: block">ID</label>
+                    <div class="form-group">
+                        <label for="uploadBlockoProgram" class="col-sm-2 control-label">Instance ID:</label>
+
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" name="instanceId" id="instanceId" readonly>
+                        </div>
+                    </div>
+
                     <div class="form-group">
                         <textarea id="code" name="code" class="form-control" rows="3" placeholder="Insert Blocko code ..."></textarea>
                     </div>
@@ -261,7 +239,7 @@
 
 
 <div id="commandDeviceModal" style="display: none;" class="modal">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h4 class="modal-title">Commands for Device</h4>
@@ -270,8 +248,21 @@
             <div class="modal-body">
                 <form id="commandDevice">
 
-                    <label id="deviceId" style="display: block">device Id: </label>
-                    <label id="deviceType" style="display: block">Device type: </label>
+                    <div class="form-group">
+                        <label for="tariff_main_form" class="col-sm-2 control-label">Device Id:</label>
+
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" name="command_deviceId" id="command_deviceId" readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tariff_main_form" class="col-sm-2 control-label">Type of Board:</label>
+
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" name="command_deviceType" id="command_deviceType" readonly>
+                        </div>
+                    </div>
 
                     <table class="table table-bordered">
 
@@ -281,7 +272,6 @@
                             <th> Instance Commands</th>
                             <th>Special Commands  </th>
                         </tr>
-
 
                         <tr>
                              <td>
@@ -310,13 +300,15 @@
 
                             </td>
                             <td>
-                                <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="showUploadModal(  this.value,'@Firmware_type.FIRMWARE.get_firmwareType()')"> Uploud Firmware</button>
+                                <button id="upload_firmware_real" type="button" class="commandButton btn btn-primary  btn-sm"  onclick="showUploadModal(  this.value, true, '@Firmware_type.BOOTLOADER.get_firmwareType()')">Upload Bootloader</button>
+                                <button id="upload_firmware_virtual" type="button" class="commandButton btn btn-warning  btn-sm"  onclick="showUploadModal(  this.value, false, '@Firmware_type.BOOTLOADER.get_firmwareType()')">Upload Bootloader</button>
+
                             </td>
                         </tr>
 
                         <tr>
                             <td>
-                                <button type="button" class="commandButton btn btn-primary   btn-sm"  onclick="executeCommand( this.value ,'@Type_of_command.INFO_BOOTLOADER.get_command')"> Get Bootloader Info </button>
+                                <button type="button" class="commandButton btn btn-primary   btn-sm" onclick="executeCommand( this.value ,'@Type_of_command.INFO_BOOTLOADER.get_command')"> Get Bootloader Info </button>
                             </td>
                             <td>
                                 <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="executeCommand(  this.value ,'@Type_of_command.INFO_WIFI_PASSWORD.get_command')"> Get WIFI Password </button><br>
@@ -326,7 +318,8 @@
 
                             </td>
                             <td>
-                                <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="showUploadModal(  this.value,'@Firmware_type.BOOTLOADER.get_firmwareType()')">Upload Bootloader</button>
+                                <button id="upload_bootloader_real" type="button" class="commandButton btn btn-primary  btn-sm"  onclick="showUploadModal(  this.value, true,'@Firmware_type.BOOTLOADER.get_firmwareType()')">Upload Bootloader</button>
+                                <button id="upload_bootloader_virtual" type="button" class="commandButton btn btn-warning  btn-sm"  onclick="showUploadModal(  this.value, false,'@Firmware_type.BOOTLOADER.get_firmwareType()')">Upload Bootloader</button>
                             </td>
                         </tr>
 
@@ -364,27 +357,40 @@
 </div>
 
 
-    <div id="uploadFileModal" style="display: none;" class="modal">
+<div id="uploadFileModal" style="display: none;" class="modal">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title">Uploud Bin File To device</h4>
+                    <h4 class="modal-title">Upload Bin File To device (Databased Device)</h4>
                 </div>
 
                 <div class="modal-body">
 
-                    <form id="uploadFileForm" enctype="multipart/form-data" role="form">
+                    <form id="uploadFileForm" enctype="multipart/form-data" role="form" class="form-horizontal">
 
+                        <div class="form-group">
+                            <label for="uploadBlockoProgram" class="col-sm-2 control-label">Device ID:</label>
 
-                        <b> Device ID:</b> <label id="deviceId_uploadFileModal" style="display: block"></label>
-                        <b> Command:</b>   <label id="command_uploadFileModal"  style="display: block"></label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" name="deviceId_uploadFileModal" id="deviceId_uploadFileModal" readonly>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="uploadBlockoProgram" class="col-sm-2 control-label">Command:</label>
+
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" name="command_uploadFileModal" id="command_uploadFileModal" readonly>
+                            </div>
+                        </div>
 
                         <div class="modal-body">
                             <input type="file" id="file" name="file" />
                         </div>
+
                         <div class="modal-footer">
                             <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#uploadFileModal').css('display','none')">Close</button>
-                            <button id="uploudFileButton" value="" class="btn btn-primary" type="button" onclick="uploadFile( $('#deviceId_uploadFileModal').text(), $('#command_uploadFileModal').text())">Uploud</button>
+                            <button id="uploudFileButton" value="" class="btn btn-primary" type="button" onclick="uploadFile( $('#deviceId_uploadFileModal').text(), $('#command_uploadFileModal').text())">Upload</button>
                         </div>
                     </form>
                 </div>
@@ -393,31 +399,74 @@
      </div>
 
 
+<div id="uploadFileModal_NotDatabased" style="display: none;" class="modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Upload Bin File To device (Not Databased)</h4>
+                </div>
+                <div class="modal-body">
+
+                    <form id="uploadFileForm_NotDatabased" enctype="multipart/form-data" role="form">
+
+                        <b> Device ID:</b> <label id="deviceId_uploadFileModal" style="display: block"></label>
+                        <b> Command:</b>   <label id="command_uploadFileModal"  style="display: block"></label>
+
+                        <label style="">Build Id</label>
+                        <input type="text" class="form-control" id="build_id"  name="build_id">
+
+                        <div class="modal-footer">
+                            <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#uploadFileModal_NotDatabased').css('display','none')">Close</button>
+                            <button id="uploudFileButton" value="" class="btn btn-warning" type="button" onclick="uploadFile_notDatabased( $('#deviceId_uploadFileModal').text(), $('#command_uploadFileModal', $('#build_id').text()).text())">Upload</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
 
 
 <script>
+            function showCommandDeviceModal(id, is_databased, deviceType){
 
-            function showCommandDeviceModal(id, deviceType){
-                $("#commandDeviceModal").css("display","block");
-                $('#deviceId').text("Device ID = " + id);
+
+                if(is_databased == true){
+
+                    document.getElementById("upload_bootloader_real").style.display="block";
+                    document.getElementById("upload_firmware_real").style.display="block";
+                    document.getElementById("upload_bootloader_virtual").style.display="none";
+                    document.getElementById("upload_firmware_virtual").style.display="none";
+
+                }else{
+
+                    document.getElementById("upload_bootloader_real").style.display="none";
+                    document.getElementById("upload_firmware_real").style.display="none";
+                    document.getElementById("upload_bootloader_virtual").style.display="block";
+                    document.getElementById("upload_firmware_virtual").style.display="block";
+                }
+
                 $('.commandButton').val(id);
-                $('#deviceType').text("Device Type = " + deviceType);
+
+                $('#command_deviceId').val(id);
+                $('#command_deviceType').val(deviceType);
+
+                $("#commandDeviceModal").css("display","block");
             }
-</script>
-<script>
-            function showUploadModal(target_id, command){
 
-                console.log("Command: " + command );
-                console.log("target_id: " + target_id );
+            function showUploadModal(target_id, is_databased, command){
 
-                $("#uploadFileModal").css("display","block");
+                if(is_databased == true){
+                    $("#uploadFileModal").css("display","block");
+                }else{
+                    $("#uploadFileModal_NotDatabased").css("display","block");
+                }
+
                 $('#deviceId_uploadFileModal').text(target_id);
-                $('#uploudFileButton').val(target_id);
                 $('#command_uploadFileModal').text(command);
             }
 
-</script>
-<script>
             function uploadFile(target_id, firmwareType){
 
                 event.preventDefault();
@@ -427,7 +476,7 @@
                 formData.append('file', file);
 
                 $.ajax({
-                    url: '@routes.CompilationLibrariesController.uploadBinaryFileToBoard("","")' + target_id + "/" +  firmwareType,
+                    url: '/compilation/c_program/binary/' + target_id + "/" +  firmwareType,
                     type: 'POST',
                     processData: false,  // tell jQuery not to process the data
                     contentType: false,  // tell jQuery not to set contentType
@@ -450,7 +499,7 @@
                         });
 
                     },
-                    error: function (jqXHR, textStatus, errorThrown) {
+                    error:function (data, status) {
                         BootstrapDialog.show({
                             message:  syntaxHighlight(data),
                             type: BootstrapDialog.TYPE_DANGER,
@@ -466,8 +515,55 @@
 
                 })
             }
-</script>
-<script>
+
+            function uploadFile_notDatabased(target_id, firmwareType, build_id){
+
+                event.preventDefault();
+
+                var file = $('#file').get(0).files[0];
+                var formData = new FormData();
+                formData.append('file', file);
+
+                $.ajax({
+                    url: '/admin_binary/' + '@homer.identifikator' + target_id + "/" +  build_id + "/" + firmwareType ,
+                    type: 'POST',
+                    processData: false,  // tell jQuery not to process the data
+                    contentType: false,  // tell jQuery not to set contentType
+                    data : formData,
+
+                    headers: {
+                        "X-AUTH-TOKEN":getCookie("authToken"),
+                    },
+
+                    success:function(data, status){
+                        BootstrapDialog.show({
+                            message:  syntaxHighlight(data),
+
+                            buttons: [{
+                                label: 'Close',
+                                action: function(dialogItself){
+                                    dialogItself.close();
+                                }
+                            }]
+                        });
+
+                    },
+                    error:function (data, status) {
+                        BootstrapDialog.show({
+                            message:  syntaxHighlight(data),
+                            type: BootstrapDialog.TYPE_DANGER,
+                            buttons: [{
+                                label: 'Close',
+                                action: function(dialogItself){
+                                    dialogItself.close();
+                                }
+                            }]
+
+                        });
+                    }
+
+                })
+            }
 
             function updateBootLoader(target_id){
                 var obj = '{' +'"device_ids":' + '["' + target_id + '"]' + '}';
@@ -517,8 +613,8 @@
 
                 })
             }
-</script>
-<script>
+
+
             function executeCommand(target_id, command){
 
                 $.ajax({
@@ -588,7 +684,7 @@
                     return '<span class="' + cls + '">' + match + '</span>';
                 });
             }
-    </script>
+</script>
 
 
 
@@ -601,10 +697,23 @@
             </div>
 
             <div class="modal-body">
-                <form id="addMasterDeviceForm">
+                <form id="addMasterDeviceForm" class="form-horizontal" role="form">
 
-                    <label id="instanceId" style="display: block">Instance ID</label>
-                    <label>Device ID</label><input style="display: block" type="text" name="master_device_id" >
+                    <div class="form-group">
+                        <label for="addMasterDeviceForm" class="col-sm-2 control-label">Instance ID:</label>
+
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" name="instanceId" id="instanceId" value="@homer.identifikator" readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="addMasterDeviceForm" class="col-sm-2 control-label">Yoda ID:</label>
+
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" name="master_device_id" id="master_device_id">
+                        </div>
+                    </div>
 
                 </form>
             </div>
@@ -625,10 +734,24 @@
             </div>
 
             <div class="modal-body">
-                <form id="addDeviceForm">
+                <form id="addDeviceForm"  class="form-horizontal" role="form" >
 
-                    <label id="master_board_Id" style="display: block">ID</label>
-                    <label>Device ID</label><input style="display: block" type="text" name="device_id" >
+                    <div class="form-group">
+                        <label for="addMasterDeviceForm" class="col-sm-2 control-label">Yoda Id:</label>
+
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" name="master_board_id" id="master_board_id" readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="addMasterDeviceForm" class="col-sm-2 control-label">Device Id:</label>
+
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" name="device_id" id="device_id">
+                        </div>
+                    </div>
+
                 </form>
             </div>
             <div class="modal-footer">
@@ -643,8 +766,7 @@
 <script>
           function showAddDeviceModal(id){
               $("#addDeviceModal").css("display","block");
-              $('#addDeviceButton').val(id);
-              $('#yodaId').text("ID = " + id);
+              $('#master_board_id').val(id);
           }
 
           function showAddMasterDeviceModal(){
@@ -652,8 +774,10 @@
           }
 
 
-          function addDevice(master_board_id){
+          function addDevice(){
+
               var device_id = document.getElementById("addDeviceForm").elements.namedItem("device_id").value;
+              var master_board_id = document.getElementById("addDeviceForm").elements.namedItem("master_board_id").value;
 
               $.ajax({
                   url: '/instance/add_device/' +  '@homer.identifikator' + "/" + master_board_id + "/" + device_id,
@@ -662,15 +786,27 @@
                       "X-AUTH-TOKEN":getCookie("authToken"),
                   },
                   success:function(e){
+                      $("#addDeviceForm input[type=text]").val("");
                       $("#addDeviceModal").css("display","none");
+                      $('#device_summary_table').load(document.URL +  ' #device_summary_table');
                   },
-                  error:function(e) {
-                      alert("Unsuccessful.");
+                  error:function(data) {
+                      BootstrapDialog.show({
+                          message: syntaxHighlight(data),
+                          type: BootstrapDialog.TYPE_ERROR,
+                          buttons: [{
+                              label: 'Close',
+                              action: function(dialogItself) {
+                                  dialogItself.close();
+                              }
+                          }]
+
+                      });
                   }
               })
           }
 
-          function removeDevice(master_board_id, device_id ){
+          function removeDevice(master_board_id, device_id){
 
               $.ajax({
                   url: '/instance/remove_device/' + '@homer.identifikator' + "/" + master_board_id + "/" + device_id,
@@ -680,53 +816,81 @@
                   },
                   success:function(e){
                       $("#addDeviceModal").css("display","none");
+                      $('#device_summary_table').load(document.URL +  ' #device_summary_table');
                   },
-                  error:function(e) {
-                      alert("Unsuccessful.");
+                  error:function(data) {
+                      BootstrapDialog.show({
+                          message: syntaxHighlight(data),
+                          type: BootstrapDialog.TYPE_ERROR,
+                          buttons: [{
+                              label: 'Close',
+                              action: function(dialogItself) {
+                                  dialogItself.close();
+                              }
+                          }]
+
+                      });
                   }
               })
           }
-</script>
-<script>
+
           function addMasterDevice(){
 
               var master_device_id = document.getElementById("addMasterDeviceForm").elements.namedItem("master_device_id").value;
 
               $.ajax({
-                  url: '@routes.ProgramingPackageController.instance_add_yoda(homer.identifikator, "")' + master_device_id,
+                  url: '@routes.ProgramingPackageController.instance_add_yoda( homer.identifikator, "")' + master_device_id,
                   type: 'PUT',
                   headers: {
-                      "X-AUTH-TOKEN":getCookie("authToken"),
+                      "X-AUTH-TOKEN":getCookie("authToken")
                   },
                   success:function(e){
-                      $("#addMasterDevice").css("display","none");
+
+                      $("#addMasterDeviceModal").css("display","none");
+                      $('#device_summary_table').load(document.URL +  ' #device_summary_table');
+
                   },
-                  error:function(e) {
-                      alert("Unsuccessful.");
+                  error:function(data) {
+                      BootstrapDialog.show({
+                          message: syntaxHighlight(data),
+                          type: BootstrapDialog.TYPE_ERROR,
+                          buttons: [{
+                              label: 'Close',
+                              action: function(dialogItself) {
+                                  dialogItself.close();
+                              }
+                          }]
+
+                      });
                   }
               })
           }
-</script>
-<script>
+
           function removeMasterDevice(id){
 
               $.ajax({
-                  url: '@routes.ProgramingPackageController.instance_remove_yoda("","")'  @homer.identifikator + "/" + id,
+                  url: '@routes.ProgramingPackageController.instance_remove_yoda(homer.identifikator, "" )' + id,
                   type: 'PUT',
                   headers: {
-                      "X-AUTH-TOKEN":getCookie("authToken"),
+                      "X-AUTH-TOKEN":getCookie("authToken")
                   },
                   success:function(e){
-                      $("#addMasterDevice").css("display","none");
+                      $('#device_summary_table').load(document.URL +  ' #device_summary_table');
                   },
-                  error:function(e) {
-                      alert("Unsuccessful.");
+                  error:function(data) {
+                      BootstrapDialog.show({
+                          message: syntaxHighlight(data),
+                          type: BootstrapDialog.TYPE_ERROR,
+                          buttons: [{
+                              label: 'Close',
+                              action: function(dialogItself) {
+                                  dialogItself.close();
+                              }
+                          }]
+                      });
                   }
               })
           }
-
-</script>
-<script>
 
           function showUploadBlockoProgram(id){
               $("#uploadBlockoProgramModal").css("display","block");
@@ -734,8 +898,6 @@
               $('#instanceId').text("ID = " + id);
           }
 
-</script>
-<script>
           function uploadBlockoProgram(instanceId){
               model_data = $("#uploadBlockoProgram").serializeObject();
               json = JSON.stringify(model_data);
