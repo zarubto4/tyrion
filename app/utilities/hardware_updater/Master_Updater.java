@@ -255,6 +255,7 @@ public class Master_Updater{
             for(Program program : instance.programs.values()){
 
                 Actualization_Task task = new Actualization_Task();
+                task.actualization_procedure_id = procedure_id;
                 task.homer = instance.homer;
                 task.file_record = program.file_record;
                 task.boards = program.boards;

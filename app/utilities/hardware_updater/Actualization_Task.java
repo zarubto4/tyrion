@@ -11,6 +11,8 @@ import java.util.List;
 public class Actualization_Task {
 
     public WebSCType homer;
+    public String actualization_procedure_id;
+
     public FileRecord file_record;
     public List<Board> boards = new ArrayList<>();
     public Firmware_type firmware_type;

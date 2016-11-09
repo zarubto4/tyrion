@@ -100,44 +100,14 @@ public class WS_BlockoServer extends WebSCType{
                         System.out.println("Odesílám požadavek na aktualizaci!");
 
                         if(task.homer != null){
-                            JsonNode result = WebSocketController.homer_instance_update_devices_firmware(task.homer, task.get_ids(), task.firmware_type, task.file_record);
+                            JsonNode result = WebSocketController.homer_instance_update_devices_firmware(task.homer, task.actualization_procedure_id, task.get_ids(), task.firmware_type, task.file_record);
                             System.out.println("Odpověď na Aktualizaci:" + result.toString());
                             System.out.println("Ještě neřeším reakci");
                             task_list.remove(task);
                         }
                         else {
 
-                            try {
-
-                                System.err.println("Homer ještě neexistuje a tak je ho nutné vytvořit");
-
-                                System.err.println("Není to dodělané!!!!!");
-                                /*
-                                Homer_Instance temporary_instance = new Homer_Instance();
-                                temporary_instance.setUnique_blocko_instance_name();
-                                temporary_instance.cloud_homer_server = Cloud_Homer_Server.find.where().eq("server_name", this_server.identifikator).findUnique();
-                                temporary_instance.private_instance_board = task.board;
-                                temporary_instance.project = task.board.project;
-                                temporary_instance.save();
-
-                                task.board.refresh();
-                                task.board.private_instance = temporary_instance;
-                                task.board.update();
-
-                                WS_Homer_Cloud homer = (WS_Homer_Cloud) WebSocketController.homer_server_add_instance(this_server, temporary_instance, true );
-
-
-                                JsonNode result = WebSocketController.homer_instance_update_devices_firmware(homer, task.board.id, task.firmware_type, task.code);
-                                System.out.println("Odpověď na Aktualizaci:" + result.toString());
-
-                                task_list.remove(task);
-                                */
-
-                            }catch (Exception e){
-                                e.printStackTrace();
-                                task_list.remove(task);
-                            }
-
+                           System.err.println("Homer Neexistuje!!!");
                         }
 
                     } else {

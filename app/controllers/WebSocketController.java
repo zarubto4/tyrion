@@ -1713,13 +1713,14 @@ public class WebSocketController extends Controller {
             homer.write_without_confirmation(result);
         }
 
-    public static JsonNode homer_instance_update_devices_firmware(WebSCType homer, List<String> targetIds, Firmware_type firmware_type, FileRecord record) throws  ExecutionException, TimeoutException, InterruptedException {
+    public static JsonNode homer_instance_update_devices_firmware(WebSCType homer, String actualization_procedure_id, List<String> targetIds, Firmware_type firmware_type, FileRecord record) throws  ExecutionException, TimeoutException, InterruptedException {
 
         logger.debug("Homer: " + homer.identifikator + ", will update Yodas or Devices");
 
         ObjectNode result = Json.newObject();
         result.put("messageChannel", "tyrion");
         result.put("messageType", "updateDevice");
+        result.put("actualization_procedure_id", "actualization_procedure_id");
 
         result.put("firmware_type", firmware_type.get_firmwareType());
         result.set("targetIds",  Json.toJson(targetIds));
