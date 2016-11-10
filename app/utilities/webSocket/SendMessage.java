@@ -44,13 +44,12 @@ public class SendMessage{
     public void insert_result(ObjectNode result) {
 
 
-
-        logger.trace("Sending message: " + messageId + " insert result " + result.toString());
+        logger.trace("Sending message: " , messageId , " insert result " , result.toString());
 
         // Pokud zpráva obsahuje subMessage - znamená to - že přišla Zpráva neukončující zprávu - ale s detailem - například o prodloužení
         if(result.has("messageType") && result.get("messageType").asText().equals("subMessage")){
 
-            logger.trace("Incoming Result contains Sub-Message:" + result.toString());
+            logger.trace("Incoming Result contains Sub-Message:" , result.toString());
 
             try {
                 switch ( result.get("typeOfSubMessage").asText() ){
@@ -102,7 +101,7 @@ public class SendMessage{
             }catch (Exception e){e.printStackTrace();}
         }else {
 
-            logger.trace("Sending message: " + messageId + " not contains Sub-Message - its regular message");
+            logger.trace("Sending message: " , messageId , " not contains Sub-Message - its regular message");
 
 
             // Pokud existuje zpráva v zásobníku a Json obsahuje messageId - smažu ze zásobníku
@@ -111,7 +110,7 @@ public class SendMessage{
             }catch (Exception e){/* Nic neprovedu - pro jistotu - většinou sem zapadne zpráva z kompilátoru - která je ale odchycená v jiné vrstvě */}
 
 
-            logger.trace("Sending message: " + messageId + " saving result to variable ");
+            logger.trace("Sending message: " , messageId , " saving result to variable ");
             this.result = result;
 
             logger.trace("Terminating message thread");

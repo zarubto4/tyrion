@@ -39,7 +39,7 @@ public class PersonController extends Controller {
             notes = "create new Person with unique email and nick_name, for standard registration leave invitationToken empty, it's used only if someone is invited via email",
             produces = "application/json",
             protocols = "https",
-            code = 201
+            code = 200
     )
     @ApiImplicitParams(
             {
@@ -53,7 +53,7 @@ public class PersonController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful created",      response = Result_ok.class),
+            @ApiResponse(code = 200, message = "Successful created",      response = Result_ok.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
@@ -109,6 +109,7 @@ public class PersonController extends Controller {
                     logger.error("Sending mail -> critical error", e);
                     e.printStackTrace();
                 }
+
             }else{
                 person.mailValidated = true;
                 person.update();

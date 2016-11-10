@@ -1428,9 +1428,25 @@ public class WebSocketController extends Controller {
                         return;
                     }
 
-                    for( WebSCType webSCType : homer.subscribers_becki) {
-                        webSCType.write_without_confirmation(json);
+                    switch (json.get("messageType").asText()){
+
+                        case "update_notification" : {
+
+                            switch (json.get("notificationType").asText()){
+
+                                case "start" : {
+                                    NotificationController.actualization_procedure_start(homer.subscribers_becki, json.get("deviceId").asText());return;
+                                }
+                                case "restart" : {
+                                    NotificationController.actualization_procedure_restart(homer.subscribers_becki, json.get("deviceId").asText());return;
+                                }
+                                case "progress" : {
+                                   NotificationController.actualization_procedure_progress(homer.subscribers_becki, json.get("deviceId").asText(), json.get("progress").asInt());return;
+                                }
+                            }
+                        }
                     }
+
                     return;
                 }
 
@@ -1720,7 +1736,7 @@ public class WebSocketController extends Controller {
         ObjectNode result = Json.newObject();
         result.put("messageChannel", "tyrion");
         result.put("messageType", "updateDevice");
-        result.put("actualization_procedure_id", "actualization_procedure_id");
+        result.put("actualization_procedure_id", actualization_procedure_id);
 
         result.put("firmware_type", firmware_type.get_firmwareType());
         result.set("targetIds",  Json.toJson(targetIds));

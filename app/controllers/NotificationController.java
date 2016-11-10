@@ -1,6 +1,8 @@
 package controllers;
 
 import com.avaje.ebean.Query;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.*;
 import models.compiler.Board;
 import models.compiler.Version_Object;
@@ -10,8 +12,6 @@ import models.person.Person;
 import models.project.b_program.B_Program;
 import models.project.b_program.instnace.Homer_Instance;
 import models.project.c_program.C_Program;
-import models.project.c_program.actualization.Actualization_procedure;
-import models.project.c_program.actualization.C_Program_Update_Plan;
 import models.project.global.Project;
 import play.data.Form;
 import play.libs.Json;
@@ -33,6 +33,7 @@ import utilities.swagger.outboundClass.Filter_List.Swagger_Notification_List;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Swagger_C_Program_Version;
 import utilities.webSocket.WS_Becki_Website;
+import utilities.webSocket.WebSCType;
 
 import java.util.List;
 
@@ -132,10 +133,6 @@ public class NotificationController extends Controller {
 
   public static void upload_Instance_was_unsuccessfull(Person person, Homer_Instance instance, String reason){
 
-
-    String s = instance.actual_instance.version_object.version_name;
-    String k = instance.b_program.name;
-
     Notification notification = new Notification(Notification_importance.normal, Notification_level.warning, person)
                                     .setText("Server not upload instance to cloud on Blocko Version <b>" + instance.actual_instance.version_object.version_name + "</b> from Blocko program <b>" + instance.b_program.name + "</b> for <b> reason:\"" +  reason + "\" </b> ")
                                     .setObject(Swagger_B_Program_Version.class, instance.actual_instance.version_object.id, instance.actual_instance.version_object.version_name, instance.b_program.project_id() )
@@ -195,16 +192,90 @@ public class NotificationController extends Controller {
 
   }
 
-  public static void upload_firmware_was_successful(Person person, C_Program_Update_Plan plan){
-      // TODO
+  public static void actualization_procedure_start(List<WebSCType> subscribers, String deviceId){
+
+    Board board = Board.find.byId(deviceId);
+    if(board != null){
+      Notification notification = new Notification(Notification_importance.low, Notification_level.info, null)
+              .setText("Board ")
+              .setObject(Board.class, board.id, board.id, board.project_id())
+              .setText("Server started with actualization");
+
+      JsonNode json = Json.toJson(notification);
+
+      for( WebSCType webSCType : subscribers) {
+        webSCType.write_without_confirmation( (ObjectNode) json );
+      }
+
+      return;
+    }
+
+    logger.warn("Device id:", deviceId, " not found!");
   }
 
-  public static void uplood_firmware_was_Unsuccessful(Person person, C_Program_Update_Plan plan){
-      // TODO
+  public static void actualization_procedure_restart(List<WebSCType> subscribers, String deviceId){
+
+    Board board = Board.find.byId(deviceId);
+    if(board != null){
+      Notification notification = new Notification(Notification_importance.low, Notification_level.info, null)
+              .setText("Board ")
+              .setObject(Board.class, board.id, board.id, board.project_id())
+              .setText("Server remotely restarts device after uploading new firmware.");
+
+      JsonNode json = Json.toJson(notification);
+
+      for( WebSCType webSCType : subscribers) {
+        webSCType.write_without_confirmation( (ObjectNode) json );
+      }
+
+      return;
+    }
+
+    logger.warn("Device id:", deviceId, " not found!");
   }
 
-  public static void actualization_procedure_update(Person person, Actualization_procedure procedure){
-     // TODO
+  public static void actualization_procedure_progress(List<WebSCType> subscribers, String deviceId, Integer progress){
+
+    Board board = Board.find.byId(deviceId);
+
+    if(board != null){
+      Notification notification = new Notification(Notification_importance.low, Notification_level.info, null)
+              .setText("Board ")
+              .setObject(Board.class, board.id, board.id, board.project_id())
+              .setText("Uploud firmware progress:: " + progress + "%");
+
+      JsonNode json = Json.toJson(notification);
+
+      for( WebSCType webSCType : subscribers) {
+        webSCType.write_without_confirmation( (ObjectNode) json );
+      }
+
+      return;
+    }
+
+    logger.warn("Device id:", deviceId, " not found!");
+  }
+
+  public static void actualization_procedure_succesful(List<WebSCType> subscribers, String deviceId, Integer progress){
+
+    Board board = Board.find.byId(deviceId);
+
+    if(board != null){
+      Notification notification = new Notification(Notification_importance.low, Notification_level.info, null)
+              .setText("Board ")
+              .setObject(Board.class, board.id, board.id, board.project_id())
+              .setText("Update was succesful");
+
+      JsonNode json = Json.toJson(notification);
+
+      for( WebSCType webSCType : subscribers) {
+        webSCType.write_without_confirmation( (ObjectNode) json );
+      }
+
+      return;
+    }
+
+    logger.warn("Device id:", deviceId, " not found!");
   }
 
 
