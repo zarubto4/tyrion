@@ -654,7 +654,7 @@ public class Finance_Controller extends Controller {
 
     }
 
-    @ApiOperation(value = "get all Products with all informations",
+    @ApiOperation(value = "get all Products with all information's",
             tags = {"Price & Invoice & Tariffs"},
             notes = "",
             produces = "application/json",
@@ -662,8 +662,7 @@ public class Finance_Controller extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Created successfully - payment not required",    response =  Product.class, responseContainer = "List"),
-            @ApiResponse(code = 200, message = "Created successfully - but payment is required", response =  Swagger_GoPay_Url.class),
+            @ApiResponse(code = 200, message = "List of users Products",    response =  Product.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
