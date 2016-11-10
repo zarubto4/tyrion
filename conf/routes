@@ -82,7 +82,7 @@ PUT            /coreClient/person/person/activate/:person_id                @con
 DELETE         /coreClient/person/person/clean_all_tokens/:person_id        @controllers.PersonController.delete_all_tokens(person_id)
 PUT            /coreClient/person/person/valid_email/:person_id             @controllers.PersonController.valid_email_Person(person_id)
 
-GET            /mail_person_authentication/:mail/:token                     @controllers.PersonController.email_Person_authentitaction(mail,token)
+GET            /mail_person_authentication/:mail/:token                     @controllers.PersonController.email_Person_authentication(mail,token)
 
 POST           /coreClient/person/changeProperty                            @controllers.PersonController.changePersonLoginProperty()
 GET            /coreClient/authorize_change/:token                          @controllers.PersonController.authorizePropertyChange(token)
@@ -170,6 +170,7 @@ GET            /product/tarifs/user_applicable                                  
 POST           /product/tarif                                                               @controllers.Finance_Controller.set_tariff_with_account()
 PUT            /product/tarif/details/:payment_details_id                                   @controllers.Finance_Controller.edit_payment_details(payment_details_id: Long)
 PUT            /product/tarif/general/:product_id                                           @controllers.Finance_Controller.edit_general_product_details(product_id: Long)
+PUT            /product/tarif/deactivate/:product_id                                        @controllers.Finance_Controller.deactivate_product(product_id: Long)
 
 GET            /product/finance/summary                                                     @controllers.Finance_Controller.get_financial_summary()
 
@@ -184,7 +185,7 @@ GET             /product/invoice/pdf/:invoice_id                                
 
 # Obsluha pouze pro Byzance zaměstnance
 PUT             /product/invoice/set_pay/:invoice_id                                        @controllers.Finance_Controller.set_invoice_as_Paid(invoice_id: Long)
-PUT             /product/invoice/send_remainder/:invoice_id                                 @controllers.Finance_Controller.send_remainder_to_custumer(invoice_id: Long)
+PUT             /product/invoice/send_remainder/:invoice_id                                 @controllers.Finance_Controller.send_reminder_to_custumer(invoice_id: Long)
 DELETE          /product/invoice/remove/:invoice_id                                         @controllers.Finance_Controller.remove_invoice(invoice_id: Long)
 
 #Project
@@ -459,7 +460,12 @@ GET             /admin/permission/role/:role_id                 @controllers.Das
 GET             /admin/blocko_objects                           @controllers.DashboardController.blocko_objects()
 GET             /admin/blocko_management                        @controllers.DashboardController.blocko_management()
 GET             /admin/public_code                              @controllers.DashboardController.public_code()
+GET             /admin/test                                     @controllers.DashboardController.test()
 
+# Test
+GET             /admin/test/run/:cmd                            @utilities.test.TestLauncher.launch_test(cmd)
+GET             /admin/test/log                                 @utilities.test.TestLog.get_test_log()
+GET             /admin/test/log/clear                           @utilities.test.TestLog.clear_test_log()
 
 # Tariff
 POST            /admin/tariff                                   @controllers.Finance_Controller.tariff_general_create()

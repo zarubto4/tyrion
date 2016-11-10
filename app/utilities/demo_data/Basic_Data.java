@@ -179,7 +179,7 @@ public class Basic_Data {
 
         tariff_1.mode_annually    = false;
         tariff_1.mode_credit      = false;
-        tariff_1.free             = true;
+        tariff_1.free_tariff      = true;
 
         tariff_1.usd = 0.0;
         tariff_1.eur = 0.0;
@@ -236,7 +236,7 @@ public class Basic_Data {
 
         geek_tariff.mode_annually    = false;
         geek_tariff.mode_credit      = false;
-        geek_tariff.free             = true;
+        geek_tariff.free_tariff      = true;
 
         geek_tariff.usd = 4.99;
         geek_tariff.eur = 4.99;
@@ -294,7 +294,7 @@ public class Basic_Data {
 
         business_tariff.mode_annually    = true;
         business_tariff.mode_credit      = true;
-        business_tariff.free             = false;
+        business_tariff.free_tariff      = false;
 
         business_tariff.usd = 39.99;
         business_tariff.eur = 35.99;
@@ -365,7 +365,7 @@ public class Basic_Data {
 
         business_tariff_2.mode_annually    = true;
         business_tariff_2.mode_credit      = true;
-        business_tariff_2.free             = false;
+        business_tariff_2.free_tariff      = false;
 
         business_tariff_2.usd = 1399.99;
         business_tariff_2.eur = 1199.99;

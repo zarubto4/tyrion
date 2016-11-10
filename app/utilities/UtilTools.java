@@ -8,6 +8,7 @@ import models.compiler.FileRecord;
 import models.compiler.Version_Object;
 import models.overflow.HashTag;
 import models.overflow.Post;
+import models.person.FloatingPersonToken;
 import models.person.Person;
 import models.person.PersonPermission;
 import models.person.SecurityRole;
@@ -258,7 +259,7 @@ public class UtilTools extends Controller {
 
         if (Person.find.where().eq("mail", "admin@byzance.cz").findUnique() == null)
         {
-            logger.warn("Creating first admin account: admin@byzance.cz, password: 123456789");
+            logger.warn("Creating first admin account: admin@byzance.cz, password: 123456789, token: token");
             Person person = new Person();
             person.full_name = "Admin Byzance";
             person.mailValidated = true;
@@ -268,6 +269,12 @@ public class UtilTools extends Controller {
             person.roles.add(SecurityRole.findByName("SuperAdmin"));
 
             person.save();
+
+            FloatingPersonToken floatingPersonToken = new FloatingPersonToken();
+            floatingPersonToken.set_basic_values();
+            floatingPersonToken.person = person;
+            floatingPersonToken.user_agent = "Unknown browser";
+            floatingPersonToken.save();
 
         }else{
             // updatuji oprávnění

@@ -19,12 +19,14 @@
     <div></div>
     <h1> &nbsp;&nbsp;&nbsp; Type Of Board: @typeOfBoard.name </h1>
     <ol class="breadcrumb">
-        <li><a href="#"><i class="fa fa-wrench"></i> Admin Page </a></li>
-        <li class="active">Dashboard</li>
+        <li><a href="@routes.DashboardController.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
+        <li class="active"><i class="fa fa-share"></i> Tyrion Object Management </li>
+        <li><a href="@routes.DashboardController.basic_board_management()"><i class="fa fa-wrench"></i> Embedded HW management </a></li>
+        <li class="active"><i class="fa fa-wrench"></i> Board Settings </li>
     </ol>
 </section>
 
-
+<section class="content">
 <div class="row">
     <div class="col-md-12">
         <div class="box">
@@ -140,7 +142,7 @@
                         <th>State</th>
                     </tr>
 
-                    @for(version <- Version_Object.find.where().eq("c_program.defaul_program_type_of_board.id", typeOfBoard.id).findList()){
+                    @for(version <- Version_Object.find.where().eq("c_program.default_program_type_of_board.id", typeOfBoard.id).findList()){
                         <tr>
                             <td>@version.id</td>
                             <td>@version.date_of_create</td>
@@ -179,7 +181,7 @@
         </div>
     </div>
 </div>
-
+</section>
 
 <div id="newBootLoaderModal" style="display: none;" class="modal">
     <div class="modal-dialog">

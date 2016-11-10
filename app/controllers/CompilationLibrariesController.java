@@ -127,8 +127,8 @@ public class CompilationLibrariesController extends Controller {
                 c_program.first_default_version_object = typeOfBoard.default_program.default_main_version;
 
             }else {
-                if( c_program.defaul_program_type_of_board != null) return GlobalResult.result_BadRequest("Its prohibitedd set Two C_Pogram on one TypeOfBoard");
-                c_program.defaul_program_type_of_board = typeOfBoard;
+                if( c_program.default_program_type_of_board != null) return GlobalResult.result_BadRequest("It is prohibited to set Two C_Programs on one TypeOfBoard");
+                c_program.default_program_type_of_board = typeOfBoard;
             }
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)

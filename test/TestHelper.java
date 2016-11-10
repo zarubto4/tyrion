@@ -1,17 +1,33 @@
 import junit.framework.TestCase;
+import models.compiler.Processor;
+import models.compiler.Producer;
+import models.compiler.TypeOfBoard;
+import models.compiler.Version_Object;
 import models.person.FloatingPersonToken;
+import models.person.Invitation;
 import models.person.Person;
 import models.person.ValidationToken;
+import models.project.b_program.servers.Private_Homer_Server;
+import models.project.c_program.C_Program;
+import models.project.global.Product;
+import models.project.global.Project;
 import models.project.global.financial.GeneralTariff;
-import models.project.global.financial.GeneralTariffLabel;
+import models.project.global.financial.Payment_Details;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import play.mvc.Controller;
+import utilities.enums.Currency;
+import utilities.enums.Payment_mode;
 
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.UUID;
 
-public class TestHelper {
+public class TestHelper extends Controller{
 
     static Logger logger = LoggerFactory.getLogger(TestCase.class);
+
+    // PERSON ##########################################################################################################
 
     public static Person person_create(){
 
@@ -36,7 +52,6 @@ public class TestHelper {
             return null;
         }
     }
-
 
     public static void person_authenticate(Person person) {
 
@@ -73,43 +88,54 @@ public class TestHelper {
             person.delete();
 
         }catch (Exception e){
-            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+            logger.error("!!!! Error while cleaning up after test. Method {} failed! Reason: {}. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
         }
     }
 
-    public static GeneralTariff tariff_personal_create(){
+    public static void person_token_delete(String token){
         try {
 
-            GeneralTariff general_tariff = new GeneralTariff();
+            FloatingPersonToken.find.where().eq("authToken", token).findUnique().delete();
 
-            general_tariff.tariff_name      = UUID.randomUUID().toString();
-            general_tariff.identificator    = UUID.randomUUID().toString();
-            general_tariff.tariff_description = UUID.randomUUID().toString();
+        }catch (Exception e){
+            logger.error("!!!! Error while cleaning up after test. Method {} failed! Reason: {}. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+        }
+    }
 
-            general_tariff.color            = UUID.randomUUID().toString();
+    // PRODUCT #########################################################################################################
 
-            general_tariff.required_paid_that = true;
-            general_tariff.number_of_free_months    = 3;
+    public static Product product_create(Person person){
+        try {
 
-            general_tariff.company_details_required  = false;
-            general_tariff.required_payment_mode     = false;
-            general_tariff.required_payment_method   = false;
+            Product product = new Product();
+            product.general_tariff = GeneralTariff.find.byId("2");
+            product.product_individual_name = UUID.randomUUID().toString();
+            product.active = true;
+            product.mode = Payment_mode.free;
+            product.paid_until_the_day = new GregorianCalendar(2016, 12, 30).getTime();
+            product.currency = Currency.CZK;
 
-            general_tariff.credit_card_support      = true;
-            general_tariff.bank_transfer_support    = true;
+            product.save();
+            product.refresh();
 
-            general_tariff.mode_annually    = true;
-            general_tariff.mode_credit      = true;
-            general_tariff.free             = true;
+            Payment_Details payment_details = new Payment_Details();
+            payment_details.person = person;
+            payment_details.company_account = false;
 
-            general_tariff.usd = 3.8;
-            general_tariff.eur = 3.4;
-            general_tariff.czk = 3.0;
+            payment_details.street = UUID.randomUUID().toString();
+            payment_details.street_number = UUID.randomUUID().toString();
+            payment_details.city =UUID.randomUUID().toString();
+            payment_details.zip_code = UUID.randomUUID().toString();
+            payment_details.country = UUID.randomUUID().toString();
+            payment_details.product = product;
 
-            general_tariff.save();
-            general_tariff.refresh();
+            payment_details.save();
+            payment_details.refresh();
 
-            return general_tariff;
+            product.update();
+            product.refresh();
+
+            return product;
 
         }catch (Exception e){
             logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
@@ -117,39 +143,31 @@ public class TestHelper {
         }
     }
 
-    public static GeneralTariff tariff_company_create(){
+    public static void product_delete(Product product){
         try {
 
-            GeneralTariff general_tariff = new GeneralTariff();
+            product.delete();
 
-            general_tariff.tariff_name      = UUID.randomUUID().toString();
-            general_tariff.identificator    = UUID.randomUUID().toString();
-            general_tariff.tariff_description = UUID.randomUUID().toString();
+        }catch (Exception e){
+            logger.error("!!!! Error while cleaning up after test. Method {} failed! Reason: {}. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+        }
+    }
 
-            general_tariff.color            = UUID.randomUUID().toString();
+    // PROJECT #########################################################################################################
 
-            general_tariff.required_paid_that = false;
-            general_tariff.number_of_free_months    = 3;
+    public static Project project_create(Product product){
+        try {
 
-            general_tariff.company_details_required  = true;
-            general_tariff.required_payment_mode     = true;
-            general_tariff.required_payment_method   = true;
+            Project project  = new Project();
+            project.name = UUID.randomUUID().toString();
+            project.description = UUID.randomUUID().toString();
+            project.product = product;
+            project.ownersOfProject.add(product.payment_details.person);
 
-            general_tariff.credit_card_support      = true;
-            general_tariff.bank_transfer_support    = true;
+            project.save();
+            project.refresh();
 
-            general_tariff.mode_annually    = true;
-            general_tariff.mode_credit      = true;
-            general_tariff.free             = true;
-
-            general_tariff.usd = 3.8;
-            general_tariff.eur = 3.4;
-            general_tariff.czk = 3.0;
-
-            general_tariff.save();
-            general_tariff.refresh();
-
-            return general_tariff;
+            return project;
 
         }catch (Exception e){
             logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
@@ -157,29 +175,34 @@ public class TestHelper {
         }
     }
 
-    public static void tariff_delete(GeneralTariff tariff){
+    public static void project_delete(Project project){
         try {
 
-            tariff.delete();
+            project.delete();
 
         }catch (Exception e){
-            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+            logger.error("!!!! Error while cleaning up after test. Method {} failed! Reason: {}. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
         }
     }
 
-    public static GeneralTariffLabel tariff_add_label(GeneralTariff tariff){
+    public static Invitation project_share(Project project, Person owner, Person invited_person){
         try {
 
-            GeneralTariffLabel label = new GeneralTariffLabel();
-            label.general_tariff = tariff;
-            label.description = UUID.randomUUID().toString();
-            label.label = UUID.randomUUID().toString();;
-            label.icon = UUID.randomUUID().toString();;
+            Invitation invitation = Invitation.find.where().eq("mail", invited_person.mail).findUnique();
+            if(invitation == null) {
+                invitation = new Invitation();
+                invitation.mail = invited_person.mail;
+                invitation.date_of_creation = new Date();
+                invitation.owner = owner;
+                invitation.project = project;
 
-            label.save();
-            label.refresh();
+                invitation.save();
+                invitation.refresh();
 
-            return label;
+                project.invitations.add(invitation);
+            }
+
+            return invitation;
 
         }catch (Exception e){
             logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
@@ -187,7 +210,164 @@ public class TestHelper {
         }
     }
 
-    public static void method(){
+    public static void project_add_participant(Project project, Person person){
+        try {
+
+            project.ownersOfProject.add(person);
+            project.update();
+
+        }catch (Exception e){
+            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+        }
+    }
+
+    // HOMER ###########################################################################################################
+
+    public static Private_Homer_Server homer_create(Project project){
+        try {
+
+            Private_Homer_Server privateHomerServer = new Private_Homer_Server();
+            privateHomerServer.mac_address = UUID.randomUUID().toString();
+            privateHomerServer.type_of_device = UUID.randomUUID().toString();
+            privateHomerServer.project = project;
+
+            privateHomerServer.save();
+            privateHomerServer.refresh();
+
+            return privateHomerServer;
+
+        }catch (Exception e){
+            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+            return null;
+        }
+    }
+
+    public static void homer_delete(Private_Homer_Server homer){
+        try {
+
+            homer.delete();
+
+        }catch (Exception e){
+            logger.error("!!!! Error while cleaning up after test. Method {} failed! Reason: {}. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+        }
+    }
+
+    // PRODUCER ########################################################################################################
+
+    public static Producer producer_create(){
+        try {
+
+            Producer producer = new Producer();
+            producer.name = UUID.randomUUID().toString();
+            producer.description = UUID.randomUUID().toString();
+
+            producer.save();
+            producer.refresh();
+
+            return producer;
+
+        }catch (Exception e){
+            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+            return null;
+        }
+    }
+
+    public static void producer_delete(Producer producer){
+        try {
+
+            producer.delete();
+
+        }catch (Exception e){
+            logger.error("!!!! Error while cleaning up after test. Method {} failed! Reason: {}. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+        }
+    }
+
+    // PROCESSOR #######################################################################################################
+
+    public static Processor processor_create(){
+        try {
+
+            Processor processor = new Processor();
+            processor.description    = UUID.randomUUID().toString();
+            processor.processor_code = UUID.randomUUID().toString();
+            processor.processor_name = UUID.randomUUID().toString();
+            processor.speed          = 3000;
+
+            processor.save();
+            processor.refresh();
+
+            return processor;
+
+        }catch (Exception e){
+            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+            return null;
+        }
+    }
+
+    public static void processor_delete(Processor processor){
+        try {
+
+            processor.delete();
+
+        }catch (Exception e){
+            logger.error("!!!! Error while cleaning up after test. Method {} failed! Reason: {}. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+        }
+    }
+
+    // TYPE_OF_BOARD ###################################################################################################
+
+    public static TypeOfBoard type_of_board_create(Producer producer, Processor processor){
+        try {
+
+            TypeOfBoard typeOfBoard = new TypeOfBoard();
+            typeOfBoard.name = UUID.randomUUID().toString();
+            typeOfBoard.description = UUID.randomUUID().toString();
+            typeOfBoard.compiler_target_name = UUID.randomUUID().toString();
+            typeOfBoard.processor = processor;
+            typeOfBoard.producer = producer;
+            typeOfBoard.connectible_to_internet = true;
+
+            typeOfBoard.save();
+            typeOfBoard.refresh();
+
+            C_Program default_program = new C_Program();
+            default_program.name = UUID.randomUUID().toString();
+            default_program.description = UUID.randomUUID().toString();
+            default_program.default_program_type_of_board = typeOfBoard;
+
+            default_program.save();
+            default_program.refresh();
+
+            Version_Object default_version = new Version_Object();
+            default_version.version_name = UUID.randomUUID().toString();
+            default_version.version_description = UUID.randomUUID().toString();
+            default_version.default_version_program = default_program;
+
+            default_version.save();
+            default_program.refresh();
+            typeOfBoard.refresh();
+
+            return typeOfBoard;
+
+        }catch (Exception e){
+            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+            return null;
+        }
+    }
+
+    public static void type_of_board_delete(TypeOfBoard typeOfBoard){
+        try {
+
+            typeOfBoard.delete();
+
+        }catch (Exception e){
+            logger.error("!!!! Error while cleaning up after test. Method {} failed! Reason: {}. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+        }
+    }
+
+    // BOARD ###########################################################################################################
+
+    public static void method7(){
         try {
 
 
@@ -196,25 +376,8 @@ public class TestHelper {
             logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
         }
     }
-    public static void method1(){
-        try {
 
-
-
-        }catch (Exception e){
-            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
-        }
-    }
-    public static void method2(){
-        try {
-
-
-
-        }catch (Exception e){
-            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
-        }
-    }
-    public static void method3(){
+    public static void method8(){
         try {
 
 

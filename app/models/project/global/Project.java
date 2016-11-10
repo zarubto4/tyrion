@@ -43,7 +43,7 @@ public class Project extends Model {
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Invitation>               invitations       = new ArrayList<>();
 
 
-    @JsonIgnore @ManyToOne( cascade = CascadeType.ALL) public Product product;
+    @JsonIgnore @ManyToOne  public Product product;
 
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "owningProjects")  @JoinTable(name = "connected_projects") public List<Person> ownersOfProject = new ArrayList<>();
 

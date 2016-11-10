@@ -127,7 +127,7 @@ public class PersonController extends Controller {
     }
 
     @ApiOperation(value = "Email verification of registration", hidden = true)
-    public Result email_Person_authentitaction(String mail, String authToken) {
+    public Result email_Person_authentication(String mail, String authToken) {
         try{
 
             Person person = Person.find.where().eq("mail", mail).findUnique();

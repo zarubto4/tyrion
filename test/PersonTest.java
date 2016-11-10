@@ -1,6 +1,5 @@
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import junit.framework.TestCase;
-import models.person.FloatingPersonToken;
 import models.person.Person;
 import models.person.ValidationToken;
 import org.junit.*;
@@ -14,6 +13,7 @@ import play.mvc.Http.RequestBuilder;
 import play.mvc.Result;
 import play.test.FakeApplication;
 import play.test.Helpers;
+import controllers.routes;
 
 
 import java.util.UUID;
@@ -39,7 +39,7 @@ public class PersonTest extends TestHelper{
         app = Helpers.fakeApplication();
         Helpers.start(app);
 
-        adminToken = FloatingPersonToken.find.where().eq("person.mail", "admin@byzance.cz").findList().get(0).authToken;
+        adminToken = person_login(Person.find.byId("1"));
 
         person = person_create();
         person_authenticate(person);
@@ -54,6 +54,7 @@ public class PersonTest extends TestHelper{
     public static void stopApp() throws Exception{
         person_delete(person);
         person_delete(randomPerson);
+        person_token_delete(adminToken);
         Helpers.stop(app);
     }
 
@@ -83,21 +84,19 @@ public class PersonTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(POST)
-                .uri("/coreClient/person/person")
+                .uri(routes.PersonController.registred_Person().toString())
                 .bodyJson(body);
 
         Result result = route(request);
-        assertEquals(OK, result.status());
+        assertEquals(CREATED, result.status());
     }
 
     @Test
     public void email_authentication() {
 
-        String token = ValidationToken.find.where().eq("personEmail", person.mail).findUnique().authToken;
-
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
-                .uri("/mail_person_authentication/" + person.mail + "/" + token);
+                .uri(routes.PersonController.email_Person_authentication(person.mail, ValidationToken.find.where().eq("personEmail", person.mail).findUnique().authToken).toString());
 
         Result result = route(request);
         assertEquals(SEE_OTHER, result.status());
@@ -108,7 +107,7 @@ public class PersonTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri("/coreClient/person/person/valid_email/" + person.id)
+                .uri(routes.PersonController.valid_email_Person(person.id).toString())
                 .header("X-AUTH-TOKEN", adminToken);
 
         Result result = route(request);
@@ -120,7 +119,7 @@ public class PersonTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri("/coreClient/person/person/valid_email/" + person.id)
+                .uri(routes.PersonController.valid_email_Person(person.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -137,7 +136,7 @@ public class PersonTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(POST)
-                .uri("/coreClient/person/validate_entity")
+                .uri(routes.PersonController.validate_Entity().toString())
                 .bodyJson(body);
 
         Result result = route(request);
@@ -154,7 +153,7 @@ public class PersonTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(POST)
-                .uri("/coreClient/person/validate_entity")
+                .uri(routes.PersonController.validate_Entity().toString())
                 .bodyJson(body);
 
         Result result = route(request);
@@ -171,7 +170,7 @@ public class PersonTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri("/coreClient/person/person/" + person.id)
+                .uri(routes.PersonController.edit_Person_Information(person.id).toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -189,7 +188,7 @@ public class PersonTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri("/coreClient/person/person/" + person.id)
+                .uri(routes.PersonController.edit_Person_Information(person.id).toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", randomUserToken);
 
@@ -202,7 +201,7 @@ public class PersonTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
-                .uri("/coreClient/person/person/" + person.id)
+                .uri(routes.PersonController.get_Person(person.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -214,7 +213,7 @@ public class PersonTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
-                .uri("/coreClient/person/person/all")
+                .uri(routes.PersonController.get_Person_all().toString())
                 .header("X-AUTH-TOKEN", adminToken);
 
         Result result = route(request);
@@ -228,7 +227,7 @@ public class PersonTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(DELETE)
-                .uri("/coreClient/person/person/remove/" + p.id)
+                .uri(routes.PersonController.deletePerson(p.id).toString())
                 .header("X-AUTH-TOKEN", adminToken);
 
         Result result = route(request);
@@ -242,7 +241,7 @@ public class PersonTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(DELETE)
-                .uri("/coreClient/person/person/remove/" + p.id)
+                .uri(routes.PersonController.deletePerson(p.id).toString())
                 .header("X-AUTH-TOKEN", person_login(p));
 
         Result result = route(request);

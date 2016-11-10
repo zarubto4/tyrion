@@ -43,7 +43,7 @@ public class GeneralTariff extends Model {
 
     @JsonIgnore public boolean mode_annually;
     @JsonIgnore public boolean mode_credit;
-    @JsonIgnore public boolean free;
+    @JsonIgnore public boolean free_tariff;
 
 
                 @OneToMany(mappedBy="general_tariff", cascade = CascadeType.ALL) public List<GeneralTariffLabel> labels = new ArrayList<>();
@@ -58,7 +58,7 @@ public class GeneralTariff extends Model {
 
         if(bank_transfer_support) methods.add( new Pair( Payment_method.bank_transfer.name(), "Bank transfers") );
         if(credit_card_support)   methods.add( new Pair( Payment_method.credit_card.name()  , "Credit Card Payment"));
-        if(free)                  methods.add( new Pair( Payment_method.free.name()         , "I want it free"));
+        if(free_tariff)                  methods.add( new Pair( Payment_method.free.name()         , "I want it free"));
 
         return methods;
     }
@@ -70,7 +70,7 @@ public class GeneralTariff extends Model {
 
         if(mode_annually)  modes.add( new Pair( Payment_mode.monthly.name()   , "Annual monthly / yearly payment"));
         if(mode_credit)    modes.add( new Pair( Payment_mode.per_credit.name(), "Pre-paid credit"));
-        if(free)           modes.add( new Pair(Payment_mode.free.name()       , "I want it free"));
+        if(free_tariff)           modes.add( new Pair(Payment_mode.free.name()       , "I want it free"));
 
         return modes;
     }

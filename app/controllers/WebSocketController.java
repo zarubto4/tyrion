@@ -1225,7 +1225,7 @@ public class WebSocketController extends Controller {
 
             }catch (Exception e){
                 e.printStackTrace();
-                becki_disapprove_subscription_instance_state(becki, json.get("messageId").asText(), "Unknow Error");
+                becki_disapprove_subscription_instance_state(becki, json.get("messageId").asText(), "Unknown Error");
             }
         }
 
@@ -1286,7 +1286,7 @@ public class WebSocketController extends Controller {
 
             }catch (Exception e){
                 e.printStackTrace();
-                becki_disapprove_un_subscription_instance_state(becki, json.get("messageId").asText(), "Unknow Error");
+                becki_disapprove_un_subscription_instance_state(becki, json.get("messageId").asText(), "Unknown Error");
             }
         }
 
@@ -1314,7 +1314,7 @@ public class WebSocketController extends Controller {
             public static void becki_disapprove_subscription_instance_state(WS_Becki_Website becki, String messageId, String error){
 
                 ObjectNode result = Json.newObject();
-                result.put("messageType", "subscribe_instace");
+                result.put("messageType", "subscribe_instance");
                 result.put("messageChannel", "blocko");
                 result.put("status", "error");
                 result.put("error", error);
@@ -1325,7 +1325,7 @@ public class WebSocketController extends Controller {
             public static void becki_disapprove_un_subscription_instance_state(WS_Becki_Website becki, String messageId, String error){
 
                 ObjectNode result = Json.newObject();
-                result.put("messageType", "unsubscribe_instace");
+                result.put("messageType", "unsubscribe_instance");
                 result.put("messageChannel", "blocko");
                 result.put("status", "error");
                 result.put("error", error);
@@ -1335,7 +1335,7 @@ public class WebSocketController extends Controller {
 
     // Reakce na odhlášení blocka
         public static void becki_disconnect(WebSCType webSCType){
-        System.out.println("Becki se mi odpojitlo");
+        System.out.println("Becki se mi odpojilo");
 
     }
 
@@ -1746,14 +1746,14 @@ public class WebSocketController extends Controller {
         logger.debug("Terminal: " + terminal.identifikator + " wanted send message to Blocko program in Homer - but terminal is not connected with any Blocko program ");
 
         ObjectNode result = Json.newObject();
-        result.put("messageType", "NEmáš žádné Grid odběratele - zprává nebyla přeposlána ");
+        result.put("messageType", "Nemáš žádné Grid odběratele - zprává nebyla přeposlána ");
         result.put("TODO", "Tato zpráva není oficiálně definovaná");
 
         terminal.write_without_confirmation(result);
     }
 
     public static void terminal_blocko_program_not_running_anywhere(WebSCType terminal){
-        logger.debug("Message for Terminal: " + terminal.identifikator + ": Blocko program not runing enywhere!");
+        logger.debug("Message for Terminal: " + terminal.identifikator + ": Blocko program not running enywhere!");
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "M_Program je sice spojený, ale program pro Homera nikde neběží a není tedy co kam zasílat");
@@ -1793,7 +1793,7 @@ public class WebSocketController extends Controller {
 
     public static void disconnect_all_homers(){
 
-        logger.warn("Tyrion is shutting down: Trying safety disconnect all connected Homer");
+        logger.warn("Tyrion is shutting down: Trying to safely disconnect all connected Homers");
 
         for (Map.Entry<String, WebSCType> entry :  WebSocketController.incomingConnections_homers.entrySet())
         {
@@ -1803,7 +1803,7 @@ public class WebSocketController extends Controller {
 
     public static void disconnect_all_mobiles() {
 
-        logger.warn("Tyrion is shutting down: Trying safety disconnect all connected Homer");
+        logger.warn("Tyrion is shutting down: Trying to safely disconnect all connected Mobiles");
 
         for (Map.Entry<String, WebSCType> entry :  WebSocketController.incomingConnections_terminals.entrySet())
         {
@@ -1813,7 +1813,7 @@ public class WebSocketController extends Controller {
 
     public static void disconnect_all_Blocko_Servers() {
 
-        logger.warn("Tyrion is shutting down: Trying safety disconnect all connected Homer");
+        logger.warn("Tyrion is shutting down: Trying to safely disconnect all connected Blocko_Servers");
 
         for (Map.Entry<String, WebSCType> entry :  WebSocketController.blocko_servers.entrySet())
         {
@@ -1823,7 +1823,7 @@ public class WebSocketController extends Controller {
 
     public static void disconnect_all_Compilation_Servers() {
 
-        logger.warn("Tyrion is shutting down: Trying safety disconnect all connected Homer");
+        logger.warn("Tyrion is shutting down: Trying to safely disconnect all connected Compilation_Servers");
 
         for (Map.Entry<String, WebSCType> entry :  WebSocketController.compiler_cloud_servers.entrySet())
         {

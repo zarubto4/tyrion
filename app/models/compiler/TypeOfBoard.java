@@ -27,13 +27,13 @@ public class TypeOfBoard extends Model {
                                                              @ApiModelProperty(required = true) public Boolean   connectible_to_internet;
 
     @JsonIgnore @OneToMany(mappedBy="type_of_board", cascade = CascadeType.ALL) public List<Board>       boards      = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="type_of_board", cascade = CascadeType.ALL) public List<C_Program>   c_programs  = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="type_of_board")                            public List<C_Program>   c_programs  = new ArrayList<>();
 
     @JsonIgnore @OneToMany(mappedBy="type_of_board", cascade = CascadeType.ALL) public List<BootLoader>  boot_loaders = new ArrayList<>();
                 @OneToOne (mappedBy="main_type_of_board")                       public BootLoader        main_boot_loader;
 
 
-    @JsonIgnore @OneToOne(mappedBy="defaul_program_type_of_board") public C_Program default_program;
+    @JsonIgnore @OneToOne(mappedBy="default_program_type_of_board")             public C_Program default_program;
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
@@ -48,6 +48,22 @@ public class TypeOfBoard extends Model {
 
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Override public void delete() {
+
+        for (C_Program c_program : this.c_programs){
+            c_program.type_of_board = null;
+            c_program.update();
+        }
+
+        if(default_program != null) this.default_program.delete();
+
+        this.processor = null;
+        this.producer = null;
+        this.update();
+
+        super.delete();
+    }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 

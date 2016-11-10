@@ -70,7 +70,7 @@ public class Finance_Controller extends Controller {
 
             general_tariff.mode_annually    = help.mode_annually;
             general_tariff.mode_credit      = help.mode_credit;
-            general_tariff.free             = help.free;
+            general_tariff.free_tariff      = help.free;
 
             general_tariff.usd = help.usd;
             general_tariff.eur = help.eur;
@@ -112,7 +112,7 @@ public class Finance_Controller extends Controller {
 
             general_tariff.mode_annually    = help.mode_annually;
             general_tariff.mode_credit      = help.mode_credit;
-            general_tariff.free             = help.free;
+            general_tariff.free_tariff      = help.free;
 
             general_tariff.usd = help.usd;
             general_tariff.eur = help.eur;
@@ -269,10 +269,9 @@ public class Finance_Controller extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Tariff_User_Register help = form.get();
 
-            System.out.println("JSem tu1");
             GeneralTariff tariff = GeneralTariff.find.where().eq("identificator", help.tariff_type).findUnique();
             if(tariff == null) return GlobalResult.result_BadRequest("Tariff identificator: {" + help.tariff_type  + "} not found or not supported now! Use only supported");
-            System.out.println("JSem tu2");
+
             Product product = new Product();
 
                 if(help.currency_type.equals( Currency.EUR.name())) product.currency = Currency.EUR;
@@ -280,7 +279,6 @@ public class Finance_Controller extends Controller {
                 else if(help.currency_type.equals( Currency.USD.name())) product.currency = Currency.USD;
                 else { return GlobalResult.result_BadRequest("currency is invalid. Use only (EUR, USD, CZK)");}
 
-            System.out.println("JSem tu3");
                 product.general_tariff =  tariff;
                 product.product_individual_name = help.product_individual_name;
                 product.active = true;  // Produkt jelikož je Aplha je aktivní - Alpha nebo Trial dojedou kvuli omezení času
@@ -317,7 +315,8 @@ public class Finance_Controller extends Controller {
                             payment_details.company_vat_number = help.vat_number;
                         }
 
-                        payment_details.company_registration_no = help.registration_no;
+                        payment_details.company_account = true;
+                        payment_details.company_registration_no  = help.registration_no;
                         payment_details.company_name             = help.company_name;
                         payment_details.company_authorized_email = help.company_authorized_email;
                         payment_details.company_authorized_phone = help.company_authorized_phone;
@@ -807,7 +806,7 @@ public class Finance_Controller extends Controller {
     }
 
 
-    public Result send_remainder_to_custumer(Long invoice_id){
+    public Result send_reminder_to_custumer(Long invoice_id){
         try{
 
             // Kontrola objektu
