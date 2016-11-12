@@ -306,6 +306,12 @@ public class Finance_Controller extends Controller {
             extensions.description = help.description;
             extensions.name = help.name;
             extensions.color = help.color;
+
+            extensions.czk = help.czk;
+            extensions.eur = help.eur;
+            extensions.usd = help.usd;
+
+
             extensions.save();
 
             return GlobalResult.result_ok(Json.toJson(extensions));
