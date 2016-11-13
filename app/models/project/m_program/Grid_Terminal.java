@@ -16,7 +16,7 @@ public class Grid_Terminal extends Model {
 
     @Id
     @ApiModelProperty(required = true, readOnly = true, example = "Mobile, WebBrowser")
-    public String terminal_id;
+    public String terminal_token;
 
     @ApiModelProperty(required = false, readOnly = true)
     public String user_agent;
@@ -30,7 +30,7 @@ public class Grid_Terminal extends Model {
     // public Integer resolution_hight;
     // public Integer resolution_weight; -resolution_weight teoreticky potřebné pro vývojáře Gridu 
 
-    @ApiModelProperty(required = false, readOnly = true, value = "Only if Device is connected with logged Person")
+    @ApiModelProperty(required = false, readOnly = true, value = "Only if Terminal Device is connected with logged Person")
     @JsonIgnore public Person person;
 
     @JsonIgnore  public Date date_of_create;
@@ -47,10 +47,7 @@ public class Grid_Terminal extends Model {
 
     @JsonIgnore
     public void set_terminal_id() {
-        while(true){ // I need Unique Value
-            this.terminal_id  = UUID.randomUUID().toString();
-            if (Grid_Terminal.find.where().eq("terminal_id", this.terminal_id ).findUnique() == null) break;
-        }
+        this.terminal_token = "grid_token_" + UUID.randomUUID().toString() + UUID.randomUUID().toString();
     }
 
 

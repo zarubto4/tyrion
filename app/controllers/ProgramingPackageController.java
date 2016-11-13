@@ -1713,8 +1713,9 @@ public class ProgramingPackageController extends Controller {
 
             Homer_Instance instance = Homer_Instance.find.byId(instance_id);
             if (instance == null) return GlobalResult.notFoundObject("Homer_Instance instance_id not found");
+            if(instance.getB_program() == null ) return GlobalResult.notFoundObject("Homer_Instance is virtual!!");
 
-            if(!instance.b_program.read_permission()) return GlobalResult.forbidden_Permission();
+            if(!instance.getB_program().read_permission()) return GlobalResult.forbidden_Permission();
 
             return GlobalResult.result_ok(Json.toJson(instance));
 

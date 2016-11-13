@@ -19,13 +19,10 @@ GET             /test1                                      @controllers.WikyCon
 ###################################################################################f#################################################################################
 
 GET              /websocket/homer/:mac_adress                  @controllers.WebSocketController.homer_connection(mac_adress)
-GET              /websocket/mobile/:m_project_id/:mac_adress   @controllers.WebSocketController.mobile_connection(m_project_id, mac_adress)
 GET              /websocket/blocko_server/:identificator       @controllers.WebSocketController.homer_cloud_server_connection(identificator)
 GET              /websocket/compilation_server/:identificator  @controllers.WebSocketController.compilator_server_connection(identificator)
 GET              /websocket/becki/:secure_token                @controllers.WebSocketController.becki_website_connection(secure_token)
 GET              /websocket/access_token                       @controllers.WebSocketController.get_Websocket_token()
-
-
 
 
 
@@ -400,7 +397,6 @@ DELETE          /compilation/server/:server_id                                  
 ################################################################################################################################################################################
 
 #M Project
-GET             /m_project/person                                                      @controllers.GridController.get_M_Projects_ByLoggedPerson()
 GET             /m_project/interface_collection/:m_project_id                          @controllers.GridController.get_M_Project_Interface_collection(m_project_id)
 
 POST            /m_project/:project_id                                                 @controllers.GridController.new_M_Project(project_id)
@@ -417,8 +413,10 @@ DELETE          /m_program/:m_progrm_id                                         
 POST            /m_program_version/:m_program_id                                       @controllers.GridController.new_M_Program_version(m_program_id)
 DELETE          /m_program_version/:m_program_id                                       @controllers.GridController.remove_M_Program_version(m_program_id)
 
+# Terminals Aps
 GET             /m_program/app/token/:qr_token                                         @controllers.GridController.get_M_Program_byQR_Token_forMobile(qr_token)
-GET             /m_program/app/m_programs                                              @controllers.GridController.get_M_Program_all_forMobile()
+GET             /m_program/app/m_program/:m_program_version_id                         @controllers.GridController.get_functional_program_for_terminal(m_program_version_id)
+GET             /m_program/app/all_m_programs                                          @controllers.GridController.get_M_Project_all_forTerminal()
 
 PUT             /websocket/terminal/identificator                                      @controllers.GridController.get_identificator()
 PUT             /websocket/terminal/identificator/:terminal_id                         @controllers.GridController.check_identifiactor(terminal_id)

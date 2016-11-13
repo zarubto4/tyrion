@@ -3,11 +3,11 @@ package controllers;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.*;
 import models.compiler.Version_Object;
-import models.person.Person;
 import models.project.global.Project;
 import models.project.m_program.Grid_Terminal;
 import models.project.m_program.M_Program;
 import models.project.m_program.M_Project;
+import models.project.m_program.M_Project_Program_SnapShot;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.*;
@@ -22,7 +22,7 @@ import utilities.swagger.outboundClass.Swagger_M_Project_Interface;
 
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
 
 @Api(value = "Not Documented API - InProgress or Stuck")
@@ -223,44 +223,6 @@ public class GridController extends Controller {
         }
     }
 
-    @ApiOperation(value = "get all M_Project by Logged Person",
-            tags = {"M_Program"},
-            notes = "get List<M_Project> by logged person ->that's required valid token in html head",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "M_Project.delete_permission", value = M_Project.read_permission_docs ),
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "M_Project.remove_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key"      , value = "M_Project_delete" ),
-                            @ExtensionProperty(name = "Dynamic Permission key"     , value = "M_Project_delete.{project_id}"),
-                    })
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = M_Project.class, responseContainer = "List"),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @Security.Authenticated(Secured_API.class)
-    public Result get_M_Projects_ByLoggedPerson(){
-        try{
-
-            Person person = SecurityController.getPerson();
-            List<M_Project> m_projects = M_Project.find.where().eq("project.ownersOfProject.id", person.id).findList();
-
-            return GlobalResult.result_ok(Json.toJson(m_projects));
-
-        }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
-        }
-
-    }
-
     @ApiOperation(value = "get accessible interface from M_Project",
             tags = {"M_Program"},
             notes = "get accessible interface from M_Project",
@@ -377,8 +339,6 @@ public class GridController extends Controller {
 
             m_program.m_project           = m_project;
 
-            m_program.set_QR_Token();
-
             if (!m_program.create_permission()) return GlobalResult.forbidden_Permission();
             m_program.save();
 
@@ -444,6 +404,9 @@ public class GridController extends Controller {
             version_object.version_name        = help.version_name;
             version_object.m_program           = main_m_program;
             version_object.author              = SecurityController.getPerson();
+            version_object.public_version      = help.public_mode;
+            version_object.qr_token            = UUID.randomUUID().toString() + UUID.randomUUID().toString();
+
             version_object.save();
 
             main_m_program.version_objects.add(version_object);
@@ -497,70 +460,6 @@ public class GridController extends Controller {
             return GlobalResult.result_ok( );
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "get M_Program by generated token",
-            tags = {"APP-Api"},
-            notes = "get M_Program by token",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "M_Program.read_qr_token_permission", value = M_Program.read_qr_token_permission_docs),
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "M_Program.read_qr_token_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key"    , value = "M_Program_read" ),
-                            @ExtensionProperty(name = "Dynamic Permission key"   , value = "M_Program_read.{project_id}"),
-                    })
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = M_Program.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public Result get_M_Program_byQR_Token_forMobile(@ApiParam(value = "qr_token String query", required = true) String qr_token){
-       try{
-
-           M_Program m_program = M_Program.find.where().eq("qr_token", qr_token).findUnique();
-           if(m_program == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
-
-           if (!m_program.read_qr_token_permission())  return GlobalResult.forbidden_Permission();
-           return GlobalResult.result_ok(Json.toJson(m_program));
-
-       }catch (Exception e){
-           return Loggy.result_internalServerError(e, request());
-       }
-    }
-
-    @ApiOperation(value = "get all M_Program b yLogged Person",
-            tags = {"APP-Api"},
-            notes = "get list of M_Programs by logged Person",
-            produces = "application/json",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = M_Program.class, responseContainer = "List"),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @Security.Authenticated(Secured_API.class)
-    public Result get_M_Program_all_forMobile(){
-        try{
-
-            List<M_Program> m_programs = M_Program.find.where().eq("m_project.project.ownersOfProject.id", SecurityController.getPerson().id).findList().stream().filter(M_Program::read_permission).collect(Collectors.toList());
-
-            return GlobalResult.result_ok(Json.toJson(m_programs));
-
-        }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
         }
     }
@@ -700,56 +599,100 @@ public class GridController extends Controller {
 
 //######################################################################################################################
 
-    @ApiOperation(value = "get Terminal terminal_id",
+    // Příkazy pro Terminál
+
+    @ApiOperation(value = "get M_Program by generated token",
             tags = {"APP-Api"},
-            notes = "Only for Grid Terminals! Before when you want connect terminal (grid) application with Tyrion throw WebSocker. " +
-                    "You need unique identification key. If Person loggs to you application Tyrion connects this device with Person. Try to " +
-                    "save this key to cookies or on mobile device, or you have to ask every time again",
+            notes = "get M_Program by token",
             produces = "application/json",
             protocols = "https",
-            code = 201
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Grid_Terminal_Identf",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "M_Program.read_qr_token_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key"    , value = "M_Program_read" ),
+                            @ExtensionProperty(name = "Dynamic Permission key"   , value = "M_Program_read.{project_id}"),
+                    })
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful created",      response = Grid_Terminal.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_M_Program_Version.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result get_M_Program_byQR_Token_forMobile(@ApiParam(value = "qr_token String query", required = true) String qr_token){
+        try{
+
+            Version_Object version_object = Version_Object.find.where().eq("qr_token", qr_token).findUnique();
+            if(version_object == null) return GlobalResult.notFoundObject("M_Program version qr_token not found");
+            if(version_object.m_program == null) return GlobalResult.notFoundObject("M_Program version qr_token not found");
+
+            if (!version_object.m_program.read_qr_token_permission())  return GlobalResult.forbidden_Permission();
+
+            return GlobalResult.result_ok(Json.toJson(M_Program.program_version(version_object)));
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "get all M_Project( Programs) by Logged Person",
+            tags = {"APP-Api"},
+            notes = "get list of M_Programs by logged Person accasable and connectable to Homer server",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = M_Project_Program_SnapShot.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured_API.class)
+    public Result get_M_Project_all_forTerminal(){
+        try{
+
+            List<M_Project_Program_SnapShot> list = M_Project_Program_SnapShot.find.where()
+                    .isNotNull("version_objects.instance_record.actual_running_instance")
+                    .eq("version_objects.b_program.project.ownersOfProject.id",  SecurityController.getPerson().id)
+                    .findList();
+
+            return GlobalResult.result_ok(Json.toJson(list));
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "get m_program code for Terminal",
+            tags = {"APP-Api"},
+            notes = "",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successful created",      response = Swagger_M_Program_Version.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result get_identificator(){
+    //@Security.Authenticated(Secured_API.class) - Není záměrně!!!! - Ověřuje se v read permision program může být public!
+    public Result get_functional_program_for_terminal(String m_program_version_id){
         try{
 
-            final Form<Swagger_Grid_Terminal_Identf> form = Form.form(Swagger_Grid_Terminal_Identf.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-            Swagger_Grid_Terminal_Identf help = form.get();
+            Version_Object m_program_version = Version_Object.find.byId(m_program_version_id);
+            if (m_program_version == null) return GlobalResult.notFoundObject("Version m_program_id not found");
+            if (m_program_version.m_program == null) return GlobalResult.notFoundObject("Not version of M_Program");
 
-            Grid_Terminal terminal = new Grid_Terminal();
-            terminal.device_name = help.device_name;
-            terminal.device_type = help.device_type;
-            terminal.date_of_create = new Date();
+            if (!m_program_version.m_program.read_permission())  return GlobalResult.forbidden_Permission();
 
-            if( Http.Context.current().request().headers().get("User-Agent")[0] != null) terminal.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
-            else  terminal.user_agent = "Unknown browser";
-
-            terminal.set_terminal_id();
-
-
-            if(SecurityController.getPerson() !=  null) {
-                terminal.person = SecurityController.getPerson();
-            }
-
-            terminal.save();
-            return GlobalResult.created(Json.toJson(terminal));
+            return GlobalResult.created(Json.toJson(M_Program.program_version(m_program_version)));
 
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
@@ -815,5 +758,60 @@ public class GridController extends Controller {
         }
     }
 
+    @ApiOperation(value = "get Terminal terminal_id",
+            tags = {"APP-Api"},
+            notes = "Only for Grid Terminals! Before when you want connect terminal (grid) application with Tyrion throw WebSocker. " +
+                    "You need unique identification key. If Person loggs to you application Tyrion connects this device with Person. Try to " +
+                    "save this key to cookies or on mobile device, or you have to ask every time again",
+            produces = "application/json",
+            protocols = "https",
+            code = 201
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Grid_Terminal_Identf",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successful created",      response = Grid_Terminal.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    //@Security.Authenticated(Secured_API.class) - Není záměrně!!!! - Ověřuje se v read permision program může být public!
+    public Result get_identificator(){
+        try{
 
+            final Form<Swagger_Grid_Terminal_Identf> form = Form.form(Swagger_Grid_Terminal_Identf.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Grid_Terminal_Identf help = form.get();
+
+            Grid_Terminal terminal = new Grid_Terminal();
+            terminal.device_name = help.device_name;
+            terminal.device_type = help.device_type;
+            terminal.date_of_create = new Date();
+
+            if( Http.Context.current().request().headers().get("User-Agent")[0] != null) terminal.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
+            else  terminal.user_agent = "Unknown browser";
+
+            terminal.set_terminal_id();
+
+
+            if(SecurityController.getPerson() !=  null) {
+                terminal.person = SecurityController.getPerson();
+            }
+
+            terminal.save();
+            return GlobalResult.created(Json.toJson(terminal));
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
 }

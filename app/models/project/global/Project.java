@@ -132,7 +132,7 @@ public class Project extends Model {
         }
 
         Homer_Instance instance = new Homer_Instance();
-        instance.cloud_homer_server = Cloud_Homer_Server.find.where().eq("name", "Alfa").findUnique();
+        instance.cloud_homer_server = Cloud_Homer_Server.find.where().eq("server_name", "Alfa").findUnique();
         instance.virtual_instance = true;
         instance.save();
         this.private_instance = instance;

@@ -257,7 +257,7 @@ create table general_tariff_extensions (
 ;
 
 create table grid_terminal (
-  terminal_id               varchar(255) not null,
+  terminal_token            varchar(255) not null,
   user_agent                varchar(255),
   device_type               varchar(255),
   device_name               varchar(255),
@@ -266,7 +266,7 @@ create table grid_terminal (
   ws_permission             boolean,
   m_program_access          boolean,
   up_to_date                boolean,
-  constraint pk_grid_terminal primary key (terminal_id))
+  constraint pk_grid_terminal primary key (terminal_token))
 ;
 
 create table hash_tag (
@@ -365,7 +365,6 @@ create table m_program (
   id                        varchar(255) not null,
   name                      varchar(255),
   description               TEXT,
-  qr_token                  varchar(255),
   m_project_id              varchar(255),
   date_of_create            timestamp,
   azure_m_program_link      varchar(255),
@@ -606,6 +605,7 @@ create table version_object (
   approval_state            varchar(11),
   b_program_id              varchar(255),
   m_program_id              varchar(255),
+  qr_token                  varchar(255),
   blob_version_link         varchar(255),
   constraint ck_version_object_approval_state check (approval_state in ('approved','edited','pending','disapproved')),
   constraint pk_version_object primary key (id))

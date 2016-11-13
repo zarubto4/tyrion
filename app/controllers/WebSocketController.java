@@ -210,11 +210,13 @@ public class WebSocketController extends Controller {
         }
     }
 
-    @ApiOperation(value = "Terminal connection", tags = {"WebSocket"})
-    public  WebSocket<String>  mobile_connection(String m_program_id, String terminal_id) {
+    // TODO - Smazat
+   // @ApiOperation(value = "Terminal connection", tags = {"WebSocket"})
+
+   /* public  WebSocket<String>  mobile_connection(String m_program_id, String terminal_id) {
         try {
 
-       /*     logger.debug("Terminal: Incoming connection on terminal: " + terminal_id + " on m_program " + m_program_id);
+            logger.debug("Terminal: Incoming connection on terminal: " + terminal_id + " on m_program " + m_program_id);
 
             if (incomingConnections_terminals.containsKey(terminal_id)) {
                 logger.debug("Terminal: Incoming connection on terminal: " + terminal_id + " is already used");
@@ -377,7 +379,7 @@ public class WebSocketController extends Controller {
                  terminal_blocko_program_not_running_anywhere(terminal);
                  return ws;
 
-            */
+
 
             return null;
 
@@ -386,6 +388,7 @@ public class WebSocketController extends Controller {
             return WebSocket.reject(forbidden());
         }
     }
+    */
 
     @ApiOperation(value = "Homer Server Connection", tags = {"WebSocket"})
     public  WebSocket<String>  homer_cloud_server_connection(String server_name){
@@ -729,7 +732,6 @@ public class WebSocketController extends Controller {
 
         return blockoServer.write_with_confirmation(result, 1000*4, 0, 3);
     }
-
 
     public static WebSCType homer_server_add_temporary_instance(WS_BlockoServer blockoServer, String instance_name) throws Exception{
         try{
@@ -1393,10 +1395,6 @@ public class WebSocketController extends Controller {
         System.out.println("Becki se mi odpojitlo");
 
     }
-
-
-
-
 
 // PRIVATE Homer -----------------------------------------------------------------------------------------------------------------
 

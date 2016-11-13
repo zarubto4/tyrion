@@ -30,9 +30,9 @@ public class Homer_Instance extends Model {
 
                                                     @JsonIgnore     public String blocko_instance_name;
 
-    @JsonIgnore @OneToOne(mappedBy="instance", fetch = FetchType.LAZY)                  public B_Program b_program; // BLocko program ke kterému se Homer Instance váže
+    @JsonIgnore @OneToOne(mappedBy="instance", fetch = FetchType.LAZY)                  public B_Program b_program; //LAZY!! - přes Getter!! // BLocko program ke kterému se Homer Instance váže
 
-    @JsonIgnore @OneToOne(mappedBy="actual_running_instance", cascade=CascadeType.ALL)  public Homer_Instance_Record actual_instance; // Aktuálně běžící instnace na Serveri
+    @JsonIgnore @OneToOne(mappedBy="actual_running_instance", cascade=CascadeType.ALL)  public Homer_Instance_Record actual_instance; // Aktuálně běžící instnace na Serveru
 
                 @OneToMany(mappedBy="main_instance_history", cascade=CascadeType.ALL) @OrderBy("id ASC") public List<Homer_Instance_Record> instance_history = new ArrayList<>(); // Setříděné pořadí různě nasazovaných verzí Blocko programu
 
@@ -91,6 +91,11 @@ public class Homer_Instance extends Model {
 
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+
+    public B_Program getB_program() {
+        return b_program;
+    }
 
     @JsonIgnore @Transient public boolean instance_online(){ return WebSocketController.homer__instance_online_state(blocko_instance_name);}
 

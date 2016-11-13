@@ -32,10 +32,9 @@ public class M_Program extends Model{
     @JsonInclude(JsonInclude.Include.NON_NULL)                                      public String name;
     @JsonInclude(JsonInclude.Include.NON_NULL)  @Column(columnDefinition = "TEXT")  public String description;
 
-    @ApiModelProperty(required = true)      public String qr_token;
-
     //# Vazby Programu
     @JsonIgnore @ManyToOne      public M_Project m_project;
+
 
     // Každá verze má datum vytvoření
     @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp in millis", example = "1458315085338") public Date date_of_create;
@@ -64,19 +63,21 @@ public class M_Program extends Model{
 
     /* Private Documentation Class -------------------------------------------------------------------------------------*/
 
-    // Objekt určený k vracení verze
+    // Objekt určený k vracení verze - Fatch lazy!!
     public List<Version_Object> getVersion_objects() {
         return version_objects;
     }
 
 
     @JsonIgnore @Transient
-    public Swagger_M_Program_Version program_version(Version_Object version_object){
+    public static Swagger_M_Program_Version program_version(Version_Object version_object){
         try {
 
             Swagger_M_Program_Version m_program_versions = new Swagger_M_Program_Version();
 
             m_program_versions.version_object = version_object;
+            m_program_versions.public_mode = version_object.public_version;
+            m_program_versions.qr_token = version_object.qr_token;
 
             FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "m_program.json").findUnique();
 
@@ -129,14 +130,6 @@ public class M_Program extends Model{
         }
     }
 
-
-    @Transient @JsonIgnore
-    public void set_QR_Token() {
-        while(true){ // I need Unique Value
-            this.qr_token  = UUID.randomUUID().toString();
-            if (M_Program.find.where().eq("qr_token", this.qr_token ).findUnique() == null) break;
-        }
-    }
 
 /* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/
     @JsonIgnore            private String azure_m_program_link;

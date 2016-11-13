@@ -83,8 +83,7 @@ public class Version_Object extends Model {
     // M_Project --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)    public M_Program m_program;
-
-
+    @JsonIgnore  public String qr_token;
 
     // Actual Procedure --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     @JsonIgnore @OneToMany(mappedBy="b_program_version_procedure", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Actualization_procedure>  actualization_procedures  = new ArrayList<>();
