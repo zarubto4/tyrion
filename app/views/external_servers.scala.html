@@ -25,7 +25,7 @@
                     <h4 class="modal-title">Edit Type of Board</h4>
                 </div>
                 <div class="modal-body">
-                    <form id="editCompilationServer")>
+                    <form id="editCompilationServer">
 
                         <label id="typeOfBoardId" style="display: block">ID</label>
                         <label>Server name</label> <input style="display: block" type="text" name="name" >
@@ -48,9 +48,8 @@
                     <h4 class="modal-title">Create new Compilation Server</h4>
                 </div>
                 <div class="modal-body">
-                    <form id="newCompilationServer")>
+                    <form id="newCompilationServer">
                         <label>Server name</label>            <input type="text" name="server_name" >
-                        <label>Server Destination URL</label> <input type="text" name="destination_address" >
                     </form>
                 </div>
 
@@ -126,11 +125,19 @@
                     <h4 class="modal-title">Edit Type of Board</h4>
                 </div>
                 <div class="modal-body">
-                    <form id="editHomerServer")>
+                    <form id="editHomerServer">
 
-                        <label id="typeOfBoardId" style="display: block">ID</label>
-                        <label>Server name</label> <input style="display: block" type="text" name="name" >
+                        <label>Server Name</label>
+                        <input type="text" class="form-control" id="name"  name="server_name" readonly>
 
+                        <label style="">MQTT Port:</label>
+                        <input type="text" class="form-control" id="mqtt_port"  name="mqtt_port">
+
+                        <label style="">Grid Port:</label>
+                        <input type="text" class="form-control" id="grid_port"  name="grid_port">
+
+                        <label style="">Server Url:</label>
+                        <input type="text" class="form-control" id="server_url"  name="server_url">
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -150,8 +157,20 @@
                 </div>
                 <div class="modal-body">
                     <form id="newHomerServer")>
-                        <label>Server name</label>            <input type="text" name="server_name" >
-                        <label>Server Destination URL</label> <input type="text" name="destination_address" >
+
+                        <label>Server name</label>
+                        <input type="text" class="form-control" name="server_name" >
+
+                        <label style="">MQTT Port:</label>
+                        <input type="text" class="form-control" id="mqtt_port"  name="mqtt_port">
+
+                        <label style="">Grid Port:</label>
+                        <input type="text" class="form-control" id="grid_port"  name="grid_port">
+
+                        <label style="">Server Url:</label>
+                        <input type="text" class="form-control" id="server_url"  name="server_url">
+
+
                     </form>
                 </div>
 
@@ -197,7 +216,7 @@
                                 <td>@homer_server.hash_certificate</td>
                                 <td>@homer_server.destination_address</td>
                                 <td>@homer_server.server_is_online()</td>
-                                <td><button class="btn btn-block btn-info" type="button" onclick="showEditFormHomerServer('@homer_server.id', '@homer_server.server_name')">Edit</button></td>
+                                <td><button class="btn btn-block btn-info" type="button" onclick="showEditFormHomerServer('@homer_server.id', '@homer_server.server_name','@homer_server.mqtt_port', '@homer_server.grid_port',  '@homer_server.server_url' )">Edit</button></td>
                                 <td><button class="btn btn-block btn-danger" type="button" onclick="deleteHomerServer(@homer_server.id)">Delete</button></td>
                             </tr>
                         }
@@ -237,7 +256,17 @@ function newCompilationServer(){
             $('#allCompilationServers').load(document.URL +  ' #allCompilationServers');
         },
         error:function(e) {
-            alert("Unsuccessful.");
+            BootstrapDialog.show({
+                message: syntaxHighlight(e),
+                type: BootstrapDialog.TYPE_DANGER,
+                buttons: [{
+                    label: 'Close',
+                    action: function(dialogItself) {
+                        dialogItself.close();
+                    }
+                }]
+
+            });
         }
     })}
 
@@ -245,6 +274,7 @@ function editCompilationServer(id){
     model_data = $("#editCompilationServer").serializeObject();
 
     $.ajax({
+        url: '@routes.CompilationLibrariesController.edit_Compilation_Server("")' + id,
         url: "@Server.tyrion_serverAddress" + "/compilation/server" + id ,
         type: 'PUT',
         contentType: 'application/json',
@@ -260,14 +290,24 @@ function editCompilationServer(id){
             $('#allCompilationServers').load(document.URL +  ' #allCompilationServers');
         },
         error:function(e) {
-            alert("Unsuccessful.");
+            BootstrapDialog.show({
+                message: syntaxHighlight(e),
+                type: BootstrapDialog.TYPE_DANGER,
+                buttons: [{
+                    label: 'Close',
+                    action: function(dialogItself) {
+                        dialogItself.close();
+                    }
+                }]
+
+            });
         }
     })}
 
 function deleteCompilationServer(id){
 
     $.ajax({
-        url: " @Server.tyrion_serverAddress" + "/compilation/server/" + id ,
+        url: '@routes.CompilationLibrariesController.delete_Compilation_Server("")' + id,
         type: 'DELETE',
         headers: {
             "X-AUTH-TOKEN":getCookie("authToken"),
@@ -276,7 +316,17 @@ function deleteCompilationServer(id){
             $('#allCompilationServers').load(document.URL +  ' #allCompilationServers');
         },
         error:function(e) {
-            alert("Unsuccessful.");
+            BootstrapDialog.show({
+                message: syntaxHighlight(e),
+                type: BootstrapDialog.TYPE_DANGER,
+                buttons: [{
+                    label: 'Close',
+                    action: function(dialogItself) {
+                        dialogItself.close();
+                    }
+                }]
+
+            });
         }
     })}
 
@@ -317,7 +367,17 @@ function newHomerServer(){
             $('#allHomerServers').load(document.URL +  ' #allHomerServers');
         },
         error:function(e) {
-            alert("Unsuccessful.");
+            BootstrapDialog.show({
+                message: syntaxHighlight(e),
+                type: BootstrapDialog.TYPE_DANGER,
+                buttons: [{
+                    label: 'Close',
+                    action: function(dialogItself) {
+                        dialogItself.close();
+                    }
+                }]
+
+            });
         }
     })}
 
@@ -325,7 +385,7 @@ function editHomerServer(id){
     model_data = $("#editHomerServer").serializeObject();
 
     $.ajax({
-        url: "@Server.tyrion_serverAddress" + "/project/blocko/server/" + id ,
+        url: '@routes.ProgramingPackageController.edit_Blocko_Server("")' + id,
         type: 'PUT',
         contentType: 'application/json',
         headers: {
@@ -340,14 +400,24 @@ function editHomerServer(id){
             $('#allHomerServers').load(document.URL +  ' #allHomerServers');
         },
         error:function(e) {
-            alert("Unsuccessful.");
+            BootstrapDialog.show({
+                message: syntaxHighlight(e),
+                type: BootstrapDialog.TYPE_DANGER,
+                buttons: [{
+                    label: 'Close',
+                    action: function(dialogItself) {
+                        dialogItself.close();
+                    }
+                }]
+
+            });
         }
     })}
 
 function deleteHomerServer(id){
 
     $.ajax({
-        url: " @Server.tyrion_serverAddress" + "/project/blocko/server/" + id ,
+        url: '@routes.ProgramingPackageController.delete_Blocko_Server("")' + id,
         type: 'DELETE',
         headers: {
             "X-AUTH-TOKEN":getCookie("authToken"),
@@ -356,16 +426,30 @@ function deleteHomerServer(id){
             $('#allHomerServers').load(document.URL +  ' #allHomerServers');
         },
         error:function(e) {
-            alert("Unsuccessful.");
+            BootstrapDialog.show({
+                message: syntaxHighlight(e),
+                type: BootstrapDialog.TYPE_DANGER,
+                buttons: [{
+                    label: 'Close',
+                    action: function(dialogItself) {
+                        dialogItself.close();
+                    }
+                }]
+
+            });
         }
     })}
 
-function showEditFormHomerServer(id, server_name, destination_address){
+function showEditFormHomerServer(id, server_name, mqtt_port, grid_port, server_url){
     $("#editHomerServerModal").css("display","block");
     $('#editHomerServerButton').val(id);
     $('#compilationServerId').text("ID = " + id);
-    $("#editHomerServer input[name=name]").val(server_name);
-    $("#editHomerServer input[name=destination_address]").val(destination_address);
+
+    $("#editHomerServer input[name=server_name]").val(server_name);
+    $("#editHomerServer input[name=mqtt_port]").val(mqtt_port);
+    $("#editHomerServer input[name=grid_port]").val(grid_port);
+    $("#editHomerServer input[name=server_url]").val(server_url);
+
 }
 
 

@@ -132,12 +132,18 @@ public class Basic_Data {
         Cloud_Homer_Server cloud_server_1 = new Cloud_Homer_Server();
         cloud_server_1.server_name = "Alfa";
         cloud_server_1.destination_address = Server.tyrion_webSocketAddress + "/websocket/homer_server/" + cloud_server_1.server_name;
+        cloud_server_1.server_url = "localhost";
+        cloud_server_1.grid_port = ":8500";
+        cloud_server_1.mqtt_port = ":1883";
         cloud_server_1.set_hash_certificate();
         cloud_server_1.save();
 
         Cloud_Homer_Server cloud_server_2 = new Cloud_Homer_Server();
         cloud_server_2.server_name = "Taurus";
         cloud_server_2.destination_address = Server.tyrion_webSocketAddress + "/websocket/homer_server/" + cloud_server_2.server_name;
+        cloud_server_2.server_url = "localhost";
+        cloud_server_2.grid_port = ":8500";
+        cloud_server_2.mqtt_port = ":1883";
         cloud_server_2.set_hash_certificate();
 
         // Nastavím kompilační servery

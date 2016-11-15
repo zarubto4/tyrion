@@ -25,8 +25,8 @@ import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_NotFound;
 import utilities.response.response_objects.Result_PermissionRequired;
 import utilities.response.response_objects.Result_Unauthorized;
-import utilities.swagger.documentationClass.Swagger_WebSocket_Device_connected;
-import utilities.swagger.documentationClass.Swagger_WebSocket_Yoda_connected;
+import utilities.webSocket.messageObjects.WS_DeviceConnected;
+import utilities.webSocket.messageObjects.WS_YodaConnected;
 
 import java.util.*;
 
@@ -422,7 +422,7 @@ public class ActualizationController extends Controller {
 
 // ---------------------------------------------------------------------------------------------------------------------
 
-    public static void hardware_connected(Board board, Swagger_WebSocket_Yoda_connected report){
+    public static void hardware_connected(Board board, WS_YodaConnected report){
 
         logger.debug("Tyrion Checking summary information of connected master board: ", board.id);
 
@@ -511,7 +511,7 @@ public class ActualizationController extends Controller {
         }
 
 
-        for(Swagger_WebSocket_Device_connected device_report : report.devices_summary){
+        for(WS_DeviceConnected device_report : report.devices_summary){
 
             Board device = Board.find.byId(device_report.deviceId);
 
@@ -528,7 +528,7 @@ public class ActualizationController extends Controller {
 
     }
 
-    public static void hardware_connected(Board board, Swagger_WebSocket_Device_connected report) {
+    public static void hardware_connected(Board board, WS_DeviceConnected report) {
         logger.debug("Tyrion Checking summary information of connected padavan board: ", board.id);
 
         // Pokusím se najít Aktualizační proceduru jestli existuje s následujícími stavy

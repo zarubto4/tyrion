@@ -1,15 +1,12 @@
-package utilities.swagger.documentationClass;
+package utilities.webSocket.messageObjects;
 
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 
-@ApiModel(description = "Json Model with List of Board ID",
-          value = "YodaConnected")
-public class Swagger_WebSocket_Yoda_connected {
+public class WS_YodaConnected {
 
     @ApiModelProperty(required = true) public String instanceId;
     @ApiModelProperty(required = true) public String deviceId;
@@ -27,5 +24,5 @@ public class Swagger_WebSocket_Yoda_connected {
     @ApiModelProperty(required = true) public String bootloader_build_datetime;
 
     @Valid
-    public List<Swagger_WebSocket_Device_connected> devices_summary  = new ArrayList<>();
+    public List<WS_DeviceConnected> devices_summary  = new ArrayList<>();
 }

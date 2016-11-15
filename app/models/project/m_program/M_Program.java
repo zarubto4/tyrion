@@ -64,8 +64,9 @@ public class M_Program extends Model{
     /* Private Documentation Class -------------------------------------------------------------------------------------*/
 
     // Objekt určený k vracení verze - Fatch lazy!!
+    @JsonIgnore @Transient
     public List<Version_Object> getVersion_objects() {
-        return version_objects;
+        return Version_Object.find.where().eq("m_program.id", this.id).findList();
     }
 
 
@@ -95,6 +96,18 @@ public class M_Program extends Model{
             e.printStackTrace();
             return null;
         }
+    }
+
+    @JsonIgnore @Transient public static String get_m_code(Version_Object version_object) {
+        FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "m_program.json").findUnique();
+
+        if (fileRecord != null) {
+
+            JsonNode json = Json.parse(fileRecord.get_fileRecord_from_Azure_inString());
+            return json.get("m_code").asText();
+        }
+
+        return null;
     }
 
 

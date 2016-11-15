@@ -226,8 +226,9 @@ DELETE         /b_program/version/:version_id                                   
 #Instance
 PUT            /b_program/uploadToCloud/:version_id                                         @controllers.ProgramingPackageController.upload_b_Program_ToCloud(version_id)
 
-GET            /instance/project/:project_id                            @controllers.ProgramingPackageController.get_b_program_instance(project_id)
+GET            /instance/project/:project_id                            @controllers.ProgramingPackageController.get_b_program_instance_under_project(project_id)
 GET            /instance/get/:instance_id                               @controllers.ProgramingPackageController.get_b_program_instance(instance_id)
+
 PUT            /instance/command/:instance_id/:target_id/:command       @controllers.ProgramingPackageController.send_command_to_instance(instance_id, target_id, command)
 PUT            /instance/program/:instance_id                           @controllers.ProgramingPackageController.update_blocko_code_in_instance_with_code(instance_id)
 PUT            /instance/ping/:instance_id                              @controllers.ProgramingPackageController.ping_instance(instance_id)
@@ -387,10 +388,10 @@ GET             /file/fileRecord/:file_record_id                                
 
 
 #Compilation Server
-POST            /compilation/server                                                         @controllers.CompilationLibrariesController.create_Compilation_Server()
-PUT             /compilation/server/:server_id                                              @controllers.CompilationLibrariesController.edit_Compilation_Server(server_id)
-GET             /compilation/server                                                         @controllers.CompilationLibrariesController.get_All_Compilation_Server()
-DELETE          /compilation/server/:server_id                                              @controllers.CompilationLibrariesController.delete_Compilation_Server(server_id)
+POST            /compilation_server                                                         @controllers.CompilationLibrariesController.create_Compilation_Server()
+PUT             /compilation_server/:server_id                                              @controllers.CompilationLibrariesController.edit_Compilation_Server(server_id)
+GET             /compilation_server                                                         @controllers.CompilationLibrariesController.get_All_Compilation_Server()
+DELETE          /compilation_server/:server_id                                              @controllers.CompilationLibrariesController.delete_Compilation_Server(server_id)
 
 
 ### GRIDS ############ GRIDS ############### GRIDS ################ GRIDS ######################################################################################################
@@ -415,8 +416,8 @@ DELETE          /m_program_version/:m_program_id                                
 
 # Terminals Aps
 GET             /m_program/app/token/:qr_token                                         @controllers.GridController.get_M_Program_byQR_Token_forMobile(qr_token)
-GET             /m_program/app/m_program/:m_program_version_id                         @controllers.GridController.get_functional_program_for_terminal(m_program_version_id)
 GET             /m_program/app/all_m_programs                                          @controllers.GridController.get_M_Project_all_forTerminal()
+GET             /m_program/app/url/:instance_id/:m_program_id/:version_object_id       @controllers.GridController.get_conection_url(instance_id, m_program_id, version_object_id)
 
 PUT             /websocket/terminal/identificator                                      @controllers.GridController.get_identificator()
 PUT             /websocket/terminal/identificator/:terminal_id                         @controllers.GridController.check_identifiactor(terminal_id)

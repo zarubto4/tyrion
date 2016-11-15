@@ -25,7 +25,11 @@ public class Cloud_Homer_Server extends Model{
                                        @JsonIgnore              public String hash_certificate;
 
                                        @Column(unique=true)     public String server_name;
-             @JsonIgnore               @Column(unique=true)     public String destination_address;
+                                                                public String destination_address;
+
+                                                                public String mqtt_port;              // Přidává se destination_address + "/" grid_ulr
+                                                                public String grid_port;              // Přidává se destination_address + "/" grid_ulr
+                                        @Column(unique=true)    public String server_url;            // Může být i IP adresa
 
     @JsonIgnore                                                 public boolean is_private = false;  // Todo navázat na produkt
 

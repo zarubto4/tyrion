@@ -173,9 +173,12 @@ create table cloud_homer_server (
   hash_certificate          varchar(255),
   server_name               varchar(255),
   destination_address       varchar(255),
+  mqtt_port                 varchar(255),
+  grid_port                 varchar(255),
+  server_url                varchar(255),
   is_private                boolean,
   constraint uq_cloud_homer_server_server_nam unique (server_name),
-  constraint uq_cloud_homer_server_destinatio unique (destination_address),
+  constraint uq_cloud_homer_server_server_url unique (server_url),
   constraint pk_cloud_homer_server primary key (id))
 ;
 
@@ -286,6 +289,7 @@ create table homer_instance (
 
 create table homer_instance_record (
   id                        varchar(255) not null,
+  websocket_grid_token      varchar(255),
   main_instance_history_id  varchar(255),
   date_of_created           timestamp,
   running_from              timestamp,
@@ -630,10 +634,16 @@ create table library_group_processor (
   constraint pk_library_group_processor primary key (library_group_id, processor_id))
 ;
 
-create table m_version_snapShots (
+create table b_program_version_snapshots (
   m_project_program_snap_shot_id varchar(255) not null,
   version_object_id              varchar(255) not null,
-  constraint pk_m_version_snapShots primary key (m_project_program_snap_shot_id, version_object_id))
+  constraint pk_b_program_version_snapshots primary key (m_project_program_snap_shot_id, version_object_id))
+;
+
+create table m_project_program_snapshots (
+  m_project_program_snap_shot_id varchar(255) not null,
+  version_object_id              varchar(255) not null,
+  constraint pk_m_project_program_snapshots primary key (m_project_program_snap_shot_id, version_object_id))
 ;
 
 create table person_project (
@@ -688,12 +698,6 @@ create table version_object_program_hw_group (
   version_object_id              varchar(255) not null,
   b_program_hw_group_id          bigint not null,
   constraint pk_version_object_program_hw_group primary key (version_object_id, b_program_hw_group_id))
-;
-
-create table version_object_project_program_s (
-  version_object_id              varchar(255) not null,
-  m_project_program_snap_shot_id varchar(255) not null,
-  constraint pk_version_object_project_program_s primary key (version_object_id, m_project_program_snap_shot_id))
 ;
 create sequence actualization_procedure_seq;
 
@@ -958,9 +962,13 @@ alter table library_group_processor add constraint fk_library_group_processor_li
 
 alter table library_group_processor add constraint fk_library_group_processor_pr_02 foreign key (processor_id) references processor (id);
 
-alter table m_version_snapShots add constraint fk_m_version_snapShots_m_proj_01 foreign key (m_project_program_snap_shot_id) references m_project_program_snap_shot (id);
+alter table b_program_version_snapshots add constraint fk_b_program_version_snapshot_01 foreign key (m_project_program_snap_shot_id) references m_project_program_snap_shot (id);
 
-alter table m_version_snapShots add constraint fk_m_version_snapShots_versio_02 foreign key (version_object_id) references version_object (id);
+alter table b_program_version_snapshots add constraint fk_b_program_version_snapshot_02 foreign key (version_object_id) references version_object (id);
+
+alter table m_project_program_snapshots add constraint fk_m_project_program_snapshot_01 foreign key (m_project_program_snap_shot_id) references m_project_program_snap_shot (id);
+
+alter table m_project_program_snapshots add constraint fk_m_project_program_snapshot_02 foreign key (version_object_id) references version_object (id);
 
 alter table person_project add constraint fk_person_project_person_01 foreign key (person_id) references person (id);
 
@@ -997,10 +1005,6 @@ alter table type_of_confirms_post add constraint fk_type_of_confirms_post_post_0
 alter table version_object_program_hw_group add constraint fk_version_object_program_hw__01 foreign key (version_object_id) references version_object (id);
 
 alter table version_object_program_hw_group add constraint fk_version_object_program_hw__02 foreign key (b_program_hw_group_id) references b_program_hw_group (id);
-
-alter table version_object_project_program_s add constraint fk_version_object_project_pro_01 foreign key (version_object_id) references version_object (id);
-
-alter table version_object_project_program_s add constraint fk_version_object_project_pro_02 foreign key (m_project_program_snap_shot_id) references m_project_program_snap_shot (id);
 
 # --- !Downs
 
@@ -1076,7 +1080,9 @@ drop table if exists m_project cascade;
 
 drop table if exists m_project_program_snap_shot cascade;
 
-drop table if exists m_version_snapShots cascade;
+drop table if exists b_program_version_snapshots cascade;
+
+drop table if exists m_project_program_snapshots cascade;
 
 drop table if exists notification cascade;
 
@@ -1133,8 +1139,6 @@ drop table if exists type_of_post cascade;
 drop table if exists validation_token cascade;
 
 drop table if exists version_object cascade;
-
-drop table if exists version_object_project_program_s cascade;
 
 drop sequence if exists actualization_procedure_seq;
 

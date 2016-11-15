@@ -1,6 +1,7 @@
 package utilities.swagger.outboundClass;
 
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,16 +10,16 @@ import java.util.List;
         value = "M_Project_interface")
 public class Swagger_M_Project_Interface {
 
-    public String id;
+    @ApiModelProperty(required = true, readOnly = true)   public String id;
 
-    public String name;
+    @ApiModelProperty(required = true, readOnly = true) public String name;
 
-    public String description;
+    @ApiModelProperty(required = false, readOnly = true)  public String description;
 
-    public boolean auto_incrementing;
+    @ApiModelProperty(required = false, readOnly = true)  public boolean auto_incrementing;
 
 
-    public List<Swagger_M_Program_Interface> accessible_interface = new ArrayList<>();
+    @ApiModelProperty(required = true, readOnly = true)  public List<Swagger_M_Program_Interface> accessible_interface = new ArrayList<>();
 
 
 }

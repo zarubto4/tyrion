@@ -25,8 +25,8 @@ public class Homer_Instance extends Model {
 
         @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)     public String id;
 
-                                         @JsonIgnore @ManyToOne     public Cloud_Homer_Server cloud_homer_server;
-                                         @JsonIgnore @OneToOne      public Private_Homer_Server private_server; // Nevyužívané
+                                         @JsonIgnore @ManyToOne()   public Cloud_Homer_Server cloud_homer_server;
+        @JsonIgnore @OneToOne(fetch = FetchType.LAZY)               public Private_Homer_Server private_server; // Nevyužívané
 
                                                     @JsonIgnore     public String blocko_instance_name;
 
@@ -45,9 +45,9 @@ public class Homer_Instance extends Model {
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
 
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_id()             {  return b_program.id;}
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_name()           {  return b_program.name;}
-
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_id()             {  return this.getB_program().id;}
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_name()           {  return this.getB_program().name;}
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_description()    {  return this.getB_program().description;}
 
     @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_name()             {  return cloud_homer_server.server_name;}
     @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_id()               {  return cloud_homer_server.id;}
@@ -71,7 +71,7 @@ public class Homer_Instance extends Model {
                 instance.b_program_version_id = actual_instance.b_program_version_id();
 
                 instance.hardware_group = actual_instance.version_object.b_program_hw_groups;
-                instance.m_project_program_snapshots = actual_instance.version_object.m_project_program_snapShots;
+                instance.m_project_program_snapshots = actual_instance.version_object.b_program_version_snapshots;
             }
 
             instance.server_is_online = cloud_homer_server.server_is_online();

@@ -21,7 +21,10 @@ public class M_Project_Program_SnapShot extends Model {
 
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public M_Project m_project;
-    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER) @JoinTable(name = "m_version_snapShots")  public List<Version_Object> version_objects = new ArrayList<>();    // Verze M_Programu
+
+    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "") @JoinTable(name = "b_program_version_snapshots") public List<Version_Object> instance_versions = new ArrayList<>(); // Vazba přes version_objet na Homer_Instance_record
+
+    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "") @JoinTable(name = "m_project_program_snapshots") public List<Version_Object> version_objects_program = new ArrayList<>();    // Verze M_Programu
 
 
 
@@ -34,8 +37,8 @@ public class M_Project_Program_SnapShot extends Model {
         List<M_Program_SnapShot_Detail> list = new ArrayList<>();
         try {
 
-            if (version_objects != null)
-                for (Version_Object version_object : version_objects) {
+            if (version_objects_program != null)
+                for (Version_Object version_object : version_objects_program) {
                     M_Program_SnapShot_Detail s = new M_Program_SnapShot_Detail();
                     s.m_program_id = version_object.m_program.id;
                     s.m_program_name = version_object.m_program.name;

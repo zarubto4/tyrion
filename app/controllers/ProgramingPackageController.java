@@ -1238,10 +1238,11 @@ public class ProgramingPackageController extends Controller {
                 for(Swagger_B_Program_Version_New.M_Program_SnapShot help_m_program_snap : help_m_project_snap.m_program_snapshots){
                     Version_Object m_program_version = Version_Object.find.where().eq("id", help_m_program_snap.version_object_id ).eq("m_program.id", help_m_program_snap.m_program_id).eq("m_program.m_project.id", m_project.id).findUnique();
                     if(m_program_version == null) return GlobalResult.notFoundObject("M_Program Verison id not found");
-                    snap.version_objects.add(m_program_version);
+                    snap.version_objects_program.add(m_program_version);
                 }
 
-                version_object.m_project_program_snapShots.add(snap);
+
+                version_object.b_program_version_snapshots.add(snap);
             }
 
 
@@ -1572,6 +1573,11 @@ public class ProgramingPackageController extends Controller {
                 if (!help.upload_time.after(new Date()))  return GlobalResult.result_BadRequest("time must be set in the future");
                 record.planed_when = help.upload_time;
 
+                b_program.instance.actual_instance =null;
+                b_program.instance.update();
+
+                record.actual_running_instance = b_program.instance;
+
             } else record.running_from = new Date();
 
             record.save();
@@ -1687,8 +1693,45 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-    @ApiOperation(value = "get Instance",
-            tags = {"B_Program", "Instance"},
+    @ApiOperation(value = "get Instance by Project ID",
+            tags = {"Instance"},
+            notes = "get unique instance under Blocko program (now its 1:1) we are not supporting multi-instnace schema yet",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "B_program.update_permission", value = "true"),
+                    })
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successful Uploaded",                       response = Homer_Instance.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",                      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",                  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result get_b_program_instance_under_project(String project_id){
+        try{
+
+
+            List<Homer_Instance> instances = Homer_Instance.find.where()
+                                     .isNotNull("actual_instance")
+                                     .eq("b_program.project.id", project_id)
+                                     .findList();
+
+
+            return GlobalResult.result_ok(Json.toJson(instances));
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "get Instance by instance_id",
+            tags = {"Instance"},
             notes = "get unique instance under Blocko program (now its 1:1) we are not supporting multi-instnace schema yet",
             produces = "application/json",
             consumes = "text/html",
@@ -1702,7 +1745,6 @@ public class ProgramingPackageController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successful Uploaded",                       response = Homer_Instance.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",                      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",                  response = Result_PermissionRequired.class),
@@ -1710,6 +1752,7 @@ public class ProgramingPackageController extends Controller {
     })
     public Result get_b_program_instance(String instance_id){
         try{
+
 
             Homer_Instance instance = Homer_Instance.find.byId(instance_id);
             if (instance == null) return GlobalResult.notFoundObject("Homer_Instance instance_id not found");
@@ -1723,6 +1766,8 @@ public class ProgramingPackageController extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
     }
+
+
 
     @ApiOperation(value = "Only for Tyrion Front End",  hidden = true)
     public Result instance_add_temporary_instance(){
@@ -2057,6 +2102,9 @@ public class ProgramingPackageController extends Controller {
             Cloud_Homer_Server server = new Cloud_Homer_Server();
             server.server_name = help.server_name;
             server.destination_address = Server.tyrion_webSocketAddress + "/websocket/blocko_server/" + server.server_name;
+            server.mqtt_port = help.mqtt_port;
+            server.grid_port = help.grid_port;
+            server.server_url = help.server_url;
 
             server.set_hash_certificate();
 
@@ -2123,9 +2171,13 @@ public class ProgramingPackageController extends Controller {
 
             // Úprava objektu
             server.server_name = help.server_name;
+            server.destination_address = Server.tyrion_webSocketAddress + "/websocket/blocko_server/" + server.server_name;
+            server.mqtt_port = help.mqtt_port;
+            server.grid_port = help.grid_port;
+            server.server_url = help.server_url;
 
             // Uložení objektu
-            server.save();
+            server.update();
 
             // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(server));

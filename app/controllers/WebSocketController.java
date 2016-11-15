@@ -29,10 +29,11 @@ import utilities.loginEntities.Secured_API;
 import utilities.loginEntities.TokenCache;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_Unauthorized;
-import utilities.swagger.documentationClass.Swagger_WebSocket_Yoda_connected;
 import utilities.swagger.outboundClass.Swagger_Instance_HW_Group;
 import utilities.swagger.outboundClass.Swagger_Websocket_Token;
 import utilities.webSocket.*;
+import utilities.webSocket.messageObjects.WS_DeviceConnected;
+import utilities.webSocket.messageObjects.WS_YodaConnected;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -441,8 +442,6 @@ public class WebSocketController extends Controller {
                             sleep(500);
                             interrupter-=500;
 
-                            logger.debug("Blocko Server: In control cycle: Iteration: " + interrupter);
-
                             if (server.isReady()) {
 
                                 logger.debug("Blocko Server: Tyrion send to Blocko Server request for listInstances");
@@ -452,7 +451,7 @@ public class WebSocketController extends Controller {
                                 result.put("messageChannel", "homer-server");
                                 JsonNode jsonNode = server.write_with_confirmation(result, 1000*25, 0, 3);
 
-                                logger.debug("Blocko Server: In control cycle: Iteration: " + interrupter);
+                                logger.debug("Blocko Server: In control cycle: Iteration: ", interrupter);
 
                                 if (jsonNode.has("status")) {
 
@@ -679,16 +678,6 @@ public class WebSocketController extends Controller {
 
                 switch (json.get("messageType").asText()){
 
-                    case "yodaDisconnected" : {
-                        logger.debug("yodaDisconnected");
-                        homer_server_yodaDisconnected(blockoServer,json);
-                        return;
-                    }
-                    case "yodaConnected" : {
-                        logger.debug("yodaConnected");
-                        homer_server_yodaConnected(blockoServer,json);
-                        return;
-                    }
                     default: {
                         logger.error("ERROR");
                         logger.error("Blocko Server Incoming messageChanel homer-server not recognize messageType ->" + json.get("messageType").asText());
@@ -704,6 +693,7 @@ public class WebSocketController extends Controller {
             }
 
         }
+
     }else {
         logger.error("ERROR");
         logger.error("Homer: "+ blockoServer.identifikator + " Incoming message has not messageChannel!!!!");
@@ -751,6 +741,7 @@ public class WebSocketController extends Controller {
             result.put("messageChannel", "homer-server");
             result.put("instanceId", instance_name);
             result.put("devices", "[]");
+            result.put("grid_websocket_token", "ws_" + instance_name);
 
             logger.debug("Sending to cloud_blocko_server request for new instance ");
             JsonNode result_instance = blockoServer.write_with_confirmation(result, 1000 * 5, 0, 3);
@@ -790,6 +781,7 @@ public class WebSocketController extends Controller {
                 result.put("messageType", "createInstance");
                 result.put("messageChannel", "homer-server");
                 result.put("instanceId", instance.blocko_instance_name);
+                result.put("grid_websocket_token", instance.virtual_instance ? (UUID.randomUUID().toString() + UUID.randomUUID().toString()) : instance.actual_instance.websocket_grid_token);
 
                 List<Swagger_Instance_HW_Group> hw_groups = new ArrayList<>();
 
@@ -923,28 +915,28 @@ public class WebSocketController extends Controller {
 
     }
 
-    public static void homer_server_yodaConnected(WS_BlockoServer blockoServer, ObjectNode json){
+    public static void homer_server_yodaConnected(WS_Homer_Cloud homer, ObjectNode json){
         try {
 
             // Zpracování Json
-            final Form<Swagger_WebSocket_Yoda_connected> form = Form.form(Swagger_WebSocket_Yoda_connected.class).bind(json);
+            final Form<WS_YodaConnected> form = Form.form(WS_YodaConnected.class).bind(json);
             if(form.hasErrors()){
                 logger.error("Incoming Json for Yoda has not right Form");
                 return;
             }
 
-            Swagger_WebSocket_Yoda_connected help = form.get();
+            WS_YodaConnected help = form.get();
 
                 Board master_device = Board.find.byId(help.deviceId);
 
                 if(master_device == null){
 
                     logger.warn("WARN! WARN! WARN! WARN!");
-                    logger.warn("Unregistered Hardware connected to Blocko cloud_blocko_server - " + blockoServer.identifikator);
+                    logger.warn("Unregistered Hardware connected to Blocko cloud_blocko_server - " + homer.blockoServer.identifikator);
                     logger.warn("Unregistered Hardware: " +  json.get("macAddress").asText() );
                     logger.warn("WARN! WARN! WARN! WARN!");
 
-                    homer_server_unregistered_board_are_connected(blockoServer, help.deviceId);
+                    homer_server_unregistered_board_are_connected(homer.blockoServer, help.deviceId);
                     return;
                 }
 
@@ -954,7 +946,7 @@ public class WebSocketController extends Controller {
                 if(master_device.latest_know_server == null){
 
                     logger.debug("The Board is not yet matched the Server");
-                    Cloud_Homer_Server server = Cloud_Homer_Server.find.where().eq("server_name", blockoServer.identifikator).findUnique();
+                    Cloud_Homer_Server server = Cloud_Homer_Server.find.where().eq("server_name", homer.blockoServer.identifikator).findUnique();
 
                     if(server == null) {
                         logger.error("blocko_server_yodaConnected => cloud_blocko_server not exist!!!!");
@@ -979,13 +971,6 @@ public class WebSocketController extends Controller {
                     }
                 }
 
-
-                // Kontrola AutoBackupu
-
-                // Kontola
-
-
-
                 // Požádám o kontrolu zda nečeká nějaká nová aktualizační procedura - pro Yodu nebo jeho device
                 ActualizationController.hardware_connected(master_device, help);
 
@@ -994,7 +979,7 @@ public class WebSocketController extends Controller {
         }
     }
 
-    public static void homer_server_yodaDisconnected(WS_BlockoServer blockoServer, ObjectNode json){
+    public static void homer_server_yodaDisconnected(WS_Homer_Cloud homer, ObjectNode json){
         try {
 
             if(json.has("deviceId")) {
@@ -1002,7 +987,7 @@ public class WebSocketController extends Controller {
                 Board board = Board.find.byId(json.get("deviceId").asText());
                 if(board == null){
                     logger.warn("WARN! WARN! WARN! WARN!");
-                    logger.warn("Unregistered Hardware disconnected to Blocko cloud_blocko_server - " + blockoServer.identifikator);
+                    logger.warn("Unregistered Hardware disconnected to Blocko cloud_blocko_server - " + homer.blockoServer.identifikator);
                     logger.warn("Unregistered Hardware: " +  json.get("deviceId").asText() );
                     logger.warn("WARN! WARN! WARN! WARN!");
                     return;
@@ -1019,6 +1004,100 @@ public class WebSocketController extends Controller {
 
             }else {
                 logger.error("Incoming message: Yoda Disconnected: has not deviceId!!!!");
+            }
+        }catch (Exception e){
+            logger.error("Blocko Server - Yoda Connected ERROR", e);
+        }
+    }
+
+    public static void homer_server_deviceConnected(WS_Homer_Cloud homer, ObjectNode json){
+        try {
+
+            // Zpracování Json
+            final Form<WS_DeviceConnected> form = Form.form(WS_DeviceConnected.class).bind(json);
+            if(form.hasErrors()){ logger.error("Incoming Json for Yoda has not right Form"); return; }
+
+            WS_DeviceConnected help = form.get();
+
+            Board device = Board.find.byId(help.deviceId);
+
+            if(device == null){
+
+                logger.warn("WARN! WARN! WARN! WARN!");
+                logger.warn("Unregistered Hardware connected to Blocko cloud_blocko_server - " + homer.blockoServer.identifikator);
+                logger.warn("Unregistered Hardware: " +  json.get("macAddress").asText() );
+                logger.warn("WARN! WARN! WARN! WARN!");
+
+                // TODO homer_server_unregistered_board_are_connected(blockoServer, help.deviceId);
+                return;
+            }
+
+            logger.debug("Board connected to Blocko cloud_blocko_server");
+
+            // Pokud se Yoda přihlásil poprvé - a nikdy neměl intanci a asi nemá ani klienta!
+            if(device.latest_know_server == null){
+
+                logger.debug("The Board is not yet matched the Server");
+                Cloud_Homer_Server server = Cloud_Homer_Server.find.where().eq("server_name", homer.blockoServer.identifikator).findUnique();
+
+                if(server == null) {
+                    logger.error("blocko_server_yodaConnected => cloud_blocko_server not exist!!!!");
+                    return;
+                }
+
+                server.boards.add(device);
+                server.refresh();
+                server.update();
+
+                device.refresh();
+                device.latest_know_server = server;
+                device.is_active = true;
+                device.update();
+            }
+
+            // Odešlu notifikaci o připojení
+            List<Person> persons = Person.find.where().eq("owningProjects.boards.id", device.id).findList();
+            for(Person person : persons){
+                if( becki_website.containsKey(person.id)) {
+                    NotificationController.board_connect(person, device);
+                }
+            }
+
+
+            // Požádám o kontrolu zda nečeká nějaká nová aktualizační procedura - pro Yodu nebo jeho device
+            ActualizationController.hardware_connected(device, help);
+
+        }catch (Exception e){
+            logger.error("Blocko Server - Yoda Connected ERROR", e);
+        }
+    }
+
+    public static void homer_server_deviceDisconnected(WS_Homer_Cloud homer, ObjectNode json){
+        try {
+            if(json.has("deviceId")) {
+
+                Board board = Board.find.byId(json.get("deviceId").asText());
+
+                if(board == null){
+                    // TODO smazat zařízení z Homer serveru
+                    logger.warn("WARN! WARN! WARN! WARN!");
+                    logger.warn("Unregistered Hardware disconnected to Blocko cloud_blocko_server - " + homer.blockoServer.identifikator);
+                    logger.warn("Unregistered Hardware: " +  json.get("deviceId").asText() );
+                    logger.warn("WARN! WARN! WARN! WARN!");
+                    return;
+                }
+
+                List<Person> persons = Person.find.where().eq("owningProjects.boards.id", board.id).findList();
+                for(Person person : persons){
+                    if( becki_website.containsKey(person.id)) {
+                        NotificationController.board_disconnect(person, board);
+                    }
+                }
+
+                ActualizationController.hardware_disconnected(board);
+
+            }else {
+                logger.error("Incoming message: Device Disconnected: has not deviceId!!!!");
             }
         }catch (Exception e){
             logger.error("Blocko Server - Yoda Connected ERROR", e);
@@ -1089,8 +1168,6 @@ public class WebSocketController extends Controller {
 
 
 
-
-
 // PRIVATE Becki -----------------------------------------------------------------------------------------------------------------
 
     public static void becki_incoming_message(WS_Becki_Website becki, ObjectNode json){
@@ -1115,7 +1192,7 @@ public class WebSocketController extends Controller {
                             logger.error("ERROR \n");
                             logger.error("Becki: "+ becki.identifikator + " Incoming message on messageChannel \"becki\" has not unknown messageType!!!!");
                             logger.error("ERROR \n");
-                        }
+                        }/**/
 
                     }
                 }
@@ -1216,7 +1293,7 @@ public class WebSocketController extends Controller {
 
         // Ping
         public static JsonNode becki_ping(WebSCType webSCType) throws TimeoutException, InterruptedException, ExecutionException {
- 
+
             ObjectNode result = Json.newObject();
             result.put("messageType", "ping");
             result.put("messageChannel", "tyrion");
@@ -1456,14 +1533,30 @@ public class WebSocketController extends Controller {
                             WS_Homer_Cloud homer_cloud = (WS_Homer_Cloud) homer;
 
                             logger.debug("yodaDisconnected");
-                            homer_server_yodaDisconnected(homer_cloud.blockoServer ,json);
+                            homer_server_yodaDisconnected(homer_cloud ,json);
                             return;
                         }
                         case "yodaConnected" : {
                             WS_Homer_Cloud homer_cloud = (WS_Homer_Cloud) homer;
 
                             logger.debug("yodaConnected");
-                            homer_server_yodaConnected(homer_cloud.blockoServer ,json);
+                            homer_server_yodaConnected(homer_cloud ,json);
+                            return;
+                        }
+
+                        case "deviceConnected" : {
+                            WS_Homer_Cloud homer_cloud = (WS_Homer_Cloud) homer;
+
+                            logger.debug("yodaConnected");
+                            homer_server_deviceConnected(homer_cloud,json);
+                            return;
+                        }
+
+                        case "deviceDisconnected" : {
+                            WS_Homer_Cloud homer_cloud = (WS_Homer_Cloud) homer;
+
+                            logger.debug("yodaDiconnected");
+                            homer_server_deviceConnected(homer_cloud,json);
                             return;
                         }
                     }

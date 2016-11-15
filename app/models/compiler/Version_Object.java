@@ -73,10 +73,12 @@ public class Version_Object extends Model {
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)     public List<B_Program_Hw_Group> b_program_hw_groups = new ArrayList<>();
 
 
-    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL)                              public List<M_Project_Program_SnapShot> m_project_program_snapShots = new ArrayList<>();    // Bazba kvůli puštěným B_programům
+    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, mappedBy = "instance_versions")         public List<M_Project_Program_SnapShot> b_program_version_snapshots = new ArrayList<>();    // Bazba kvůli puštěným B_programům
+    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, mappedBy = "version_objects_program")   public List<M_Project_Program_SnapShot> m_project_program_snapshots = new ArrayList<>();    // Bazba kvůli puštěným B_programům
+
 
         // B_Program - Instance
-        @JsonIgnore  @OneToMany(mappedBy="version_object") public List<Homer_Instance_Record> instance_record;
+        @JsonIgnore  @OneToMany(mappedBy="version_object") public List<Homer_Instance_Record> instance_record = new ArrayList<>();
 
 
 

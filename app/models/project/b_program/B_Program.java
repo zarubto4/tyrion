@@ -55,7 +55,7 @@ public class B_Program extends Model {
             Swagger_B_Program_Version b_program_version = new Swagger_B_Program_Version();
             b_program_version.version_object = v;
             b_program_version.hardware_group = v.b_program_hw_groups;
-            b_program_version.m_project_program_snapshots = v.m_project_program_snapShots;
+            b_program_version.m_project_program_snapshots = v.b_program_version_snapshots;
 
             FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", v.id).eq("file_name", "program.js").findUnique();
             if(fileRecord != null) b_program_version.program             = fileRecord.get_fileRecord_from_Azure_inString();
@@ -104,7 +104,7 @@ public class B_Program extends Model {
 
         b_program_version.version_object                = version_object;
         b_program_version.hardware_group                = version_object.b_program_hw_groups;
-        b_program_version.m_project_program_snapshots   = version_object.m_project_program_snapShots;
+        b_program_version.m_project_program_snapshots   = version_object.b_program_version_snapshots;
 
         FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "program.js").findUnique();
         if(fileRecord != null) b_program_version.program             = fileRecord.get_fileRecord_from_Azure_inString();

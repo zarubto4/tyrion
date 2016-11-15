@@ -3,11 +3,11 @@ package controllers;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.*;
 import models.compiler.Version_Object;
+import models.project.b_program.instnace.Homer_Instance_Record;
 import models.project.global.Project;
 import models.project.m_program.Grid_Terminal;
 import models.project.m_program.M_Program;
 import models.project.m_program.M_Project;
-import models.project.m_program.M_Project_Program_SnapShot;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.*;
@@ -19,7 +19,10 @@ import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Swagger_M_Program_Interface;
 import utilities.swagger.outboundClass.Swagger_M_Project_Interface;
+import utilities.swagger.outboundClass.Swagger_Mobile_Connection_Summary;
+import utilities.swagger.outboundClass.Swagger_Mobile_M_Project_Snapshot;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -625,13 +628,16 @@ public class GridController extends Controller {
     public Result get_M_Program_byQR_Token_forMobile(@ApiParam(value = "qr_token String query", required = true) String qr_token){
         try{
 
-            Version_Object version_object = Version_Object.find.where().eq("qr_token", qr_token).findUnique();
-            if(version_object == null) return GlobalResult.notFoundObject("M_Program version qr_token not found");
-            if(version_object.m_program == null) return GlobalResult.notFoundObject("M_Program version qr_token not found");
+            Homer_Instance_Record record = Homer_Instance_Record.find.where().eq("websocket_grid_token", qr_token).findUnique();
+            if(record == null) return GlobalResult.notFoundObject("Instance not found");
+            if(!record.version_object.public_version) return GlobalResult.forbidden_Permission("Instance is not public!");
+            if(record.actual_running_instance == null)  return GlobalResult.notFoundObject("Instance not found or not running in cloud!");
 
-            if (!version_object.m_program.read_qr_token_permission())  return GlobalResult.forbidden_Permission();
+            Swagger_Mobile_Connection_Summary summary = new Swagger_Mobile_Connection_Summary();
+            summary.url = "ws://" + record.actual_running_instance.cloud_homer_server.server_url  + record.actual_running_instance.cloud_homer_server.grid_port + "/" + record.websocket_grid_token + "/#grid_connection_token";
+            summary.m_program = M_Program.get_m_code(record.version_object);
 
-            return GlobalResult.result_ok(Json.toJson(M_Program.program_version(version_object)));
+            return GlobalResult.result_ok(Json.toJson(summary));
 
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
@@ -646,7 +652,7 @@ public class GridController extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = M_Project_Program_SnapShot.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Mobile_M_Project_Snapshot.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -655,19 +661,36 @@ public class GridController extends Controller {
     public Result get_M_Project_all_forTerminal(){
         try{
 
-            List<M_Project_Program_SnapShot> list = M_Project_Program_SnapShot.find.where()
-                    .isNotNull("version_objects.instance_record.actual_running_instance")
-                    .eq("version_objects.b_program.project.ownersOfProject.id",  SecurityController.getPerson().id)
+            List<Homer_Instance_Record> list = Homer_Instance_Record.find.where()
+                    .isNotNull("actual_running_instance")
+                    .eq("main_instance_history.b_program.project.ownersOfProject.id",  SecurityController.getPerson().id)
+                    .select("version_object")
+                    .select("main_instance_history")
+                    .select("id")
                     .findList();
 
-            return GlobalResult.result_ok(Json.toJson(list));
+
+            List<Swagger_Mobile_M_Project_Snapshot> result = new ArrayList<>();
+            for(Homer_Instance_Record instnace : list){
+
+                Swagger_Mobile_M_Project_Snapshot o = new Swagger_Mobile_M_Project_Snapshot();
+                o.b_program_name = instnace.main_instance_history.b_program_name();
+                o.b_program_name = instnace.main_instance_history.b_program_description();
+
+                o.instance_id = instnace.id;
+                o.snapshots = instnace.m_project_snapshop();
+                result.add(o);
+            }
+
+            return GlobalResult.result_ok(Json.toJson(result));
 
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
         }
     }
 
-    @ApiOperation(value = "get m_program code for Terminal",
+
+    @ApiOperation(value = "get url + m_program code for Terminal",
             tags = {"APP-Api"},
             notes = "",
             produces = "application/json",
@@ -681,18 +704,21 @@ public class GridController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @BodyParser.Of(BodyParser.Json.class)
-    //@Security.Authenticated(Secured_API.class) - Není záměrně!!!! - Ověřuje se v read permision program může být public!
-    public Result get_functional_program_for_terminal(String m_program_version_id){
+    public Result get_conection_url(String instance_id, String m_program_id, String version_object_id){
         try{
 
-            Version_Object m_program_version = Version_Object.find.byId(m_program_version_id);
-            if (m_program_version == null) return GlobalResult.notFoundObject("Version m_program_id not found");
-            if (m_program_version.m_program == null) return GlobalResult.notFoundObject("Not version of M_Program");
+            Homer_Instance_Record record = Homer_Instance_Record.find.byId(instance_id);
+            if(record == null) return GlobalResult.notFoundObject("Instance not found");
 
-            if (!m_program_version.m_program.read_permission())  return GlobalResult.forbidden_Permission();
+            Version_Object version_object = Version_Object.find.where().eq("id",version_object_id).eq("m_program.id",m_program_id).findUnique();
+            if(version_object == null) return GlobalResult.notFoundObject("M_program not found");
 
-            return GlobalResult.created(Json.toJson(M_Program.program_version(m_program_version)));
+
+            Swagger_Mobile_Connection_Summary summary = new Swagger_Mobile_Connection_Summary();
+            summary.url = "ws://" + record.actual_running_instance.cloud_homer_server.server_url  + record.actual_running_instance.cloud_homer_server.grid_port + "/" + record.websocket_grid_token + "/#grid_connection_token";
+            summary.m_program = M_Program.get_m_code(version_object);
+
+            return GlobalResult.created(Json.toJson(summary));
 
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
