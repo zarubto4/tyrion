@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import models.compiler.Board;
 import models.compiler.TypeOfBoard;
 import models.project.c_program.C_Program;
+import models.project.m_program.M_Project;
 
 import java.util.List;
 
@@ -23,5 +24,6 @@ public class Swagger_Boards_for_blocko {
     @ApiModelProperty(required = true, readOnly = true)
     public List<Board> boards;
 
-
+    @ApiModelProperty(required = true, readOnly = true)
+    public List<M_Project> m_projects;
 }

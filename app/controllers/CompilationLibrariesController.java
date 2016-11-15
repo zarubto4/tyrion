@@ -3967,7 +3967,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result board_all_details_for_blocko(@ApiParam(required = true)   String project_id){
+    public Result all_details_for_blocko(@ApiParam(required = true)   String project_id){
         try {
 
             // Kontrola objektu
@@ -3982,6 +3982,7 @@ public class CompilationLibrariesController extends Controller {
             boards_for_blocko.boards = project.boards;
             boards_for_blocko.type_of_boards = TypeOfBoard.find.where().eq("boards.project.id", project.id ).findList();
             boards_for_blocko.c_programs = project.c_programs;
+            boards_for_blocko.m_projects = project.m_projects;
 
             // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(boards_for_blocko));

@@ -276,6 +276,10 @@ DELETE          /blocko_server/:server_id                                       
 PUT             /blocko/disapprove                                                  @controllers.ProgramingPackageController.blockoDisapprove()
 PUT             /blocko/approval                                                    @controllers.ProgramingPackageController.blockoApproval()
 
+#Board on Project
+GET             /blocko/all_details/:project_id                                     @controllers.CompilationLibrariesController.all_details_for_blocko(project_id)
+
+
 ### ACTUALIZATION PROCEDURE ############ ACTUALIZATION PROCEDURE ############### ACTUALIZATION PROCEDURE ################ ACTUALIZATION PROCEDURE ##############################
 ################################################################################################################################################################################
 
@@ -333,8 +337,6 @@ DELETE          /board/deactivateBoard/:board_id                                
 PUT             /board/:board_id/:project_id                                    @controllers.CompilationLibrariesController.connect_Board_with_Project(board_id, project_id)
 DELETE          /board/:board_id                                                @controllers.CompilationLibrariesController.disconnect_Board_from_Project(board_id)
 
-#Board on Project
-GET             /project/board/all_details/:project_id                          @controllers.CompilationLibrariesController.board_all_details_for_blocko(project_id)
 
 #Producer
 POST            /producer                                                       @controllers.CompilationLibrariesController.new_Producer()
