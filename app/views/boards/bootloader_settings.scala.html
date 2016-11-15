@@ -20,7 +20,7 @@
     <h1> &nbsp;&nbsp;&nbsp; Type Of Board: @typeOfBoard.name </h1>
     <ol class="breadcrumb">
         <li><a href="@routes.DashboardController.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
-        <li class="active"><i class="fa fa-share"></i> Tyrion Object Management </li>
+        <li class="active"><i class="fa fa-share"></i> Server Management </li>
         <li><a href="@routes.DashboardController.basic_board_management()"><i class="fa fa-wrench"></i> Embedded HW management </a></li>
         <li class="active"><i class="fa fa-wrench"></i> Board Settings </li>
     </ol>
@@ -181,6 +181,25 @@
         </div>
     </div>
 </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Picture</h3>
+                    <button id="showPictureRemoveModalButton" @if(typeOfBoard.picture_link() == null) { disabled="disabled" } class="btn btn-danger pull-right @if(typeOfBoard.picture_link() == null) { disabled }" type="button" onclick="showPictureRemoveModal(@typeOfBoard.id)">Remove Picture</button>
+                    <button style="margin-right: 10px;" class="btn btn-success pull-right" type="button" onclick="showPictureModal(@typeOfBoard.id)">Upload Picture</button>
+                </div>
+                <div id="picture_container" class="box-body">
+                    @if(typeOfBoard.picture_link() == null) {
+                        <p>Picture is not available</p>
+                    }else{
+                        <img style=" display: block; max-width: 100%; margin-right: auto; margin-left: auto;" src="@typeOfBoard.picture_link()">
+                    }
+                </div>
+                <div class="box-footer"></div>
+            </div>
+        </div>
+    </div>
 </section>
 
 <div id="newBootLoaderModal" style="display: none;" class="modal">
@@ -284,6 +303,44 @@
             <div class="modal-footer">
                 <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newFileModal').css('display','none')">Close</button>
                 <button id="uploadBootLoaderButton" value="" class="btn btn-primary" type="button" onclick="uploadBootLoaderFile(this.value)">Upload</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="pictureModal" style="display: none;" class="modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Upload Picture</h4>
+            </div>
+            <div class="modal-body">
+                <form id="pictureForm">
+                    <label>Choose picture:</label>
+                    <input type="file" id="picture" name="file" />
+                    <p>If type of board already has a picture, it will be replaced by the new one.</p>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#pictureModal').css('display','none')">Close</button>
+                <button id="uploadPictureButton" value="" class="btn btn-success" type="button" onclick="uploadPicture(this.value)">Upload</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="pictureRemoveModal" style="display: none;" class="modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Remove Picture</h4>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#pictureRemoveModal').css('display','none')">Close</button>
+                <button id="removePictureButton" value="" class="btn btn-danger" type="button" onclick="removePicture(this.value)">Remove</button>
             </div>
         </div>
     </div>
@@ -589,6 +646,85 @@
                 });
             }
 
+        })
+    }
+
+    function showPictureModal(id) {
+        $("#pictureModal").css("display", "block");
+        $('#uploadPictureButton').val(id);
+    }
+
+    function showPictureRemoveModal(id) {
+        $("#pictureRemoveModal").css("display", "block");
+        $('#removePictureButton').val(id);
+    }
+
+    function uploadPicture(id) {
+
+        var model_data = new FormData($("#pictureForm")[0]);
+
+        $.ajax({
+            url: "@Server.tyrion_serverAddress" + "/compilation/typeOfBoard/upload_picture/" + id,
+            type: 'PUT',
+            contentType: false,
+            processData: false,
+            headers: {
+                "X-AUTH-TOKEN": getCookie("authToken")
+            },
+            data: model_data,
+            dataType: 'json',
+
+            success: function(json) {
+                $("#pictureModal").css("display", "none");
+                $('#picture_container').html("<img style='display: block; max-width: 100%; margin-right: auto; margin-left: auto;' src='" + json.picture_link + "'>");
+                $('#showPictureRemoveModalButton').prop('disabled', false);
+                $('#showPictureRemoveModalButton').removeClass('disabled');
+            },
+            error: function(data) {
+
+                BootstrapDialog.show({
+                    message: syntaxHighlight(data),
+                    type: BootstrapDialog.TYPE_DANGER,
+                    buttons: [{
+                        label: 'Close',
+                        action: function(dialogItself) {
+                            dialogItself.close();
+                        }
+                    }]
+
+                });
+            }
+        })
+    }
+
+    function removePicture(id) {
+        $.ajax({
+            url: "@Server.tyrion_serverAddress" + "/compilation/typeOfBoard/remove_picture/" + id,
+            type: 'PUT',
+            headers: {
+                "X-AUTH-TOKEN": getCookie("authToken")
+            },
+            dataType: 'json',
+            success: function(data) {
+                $("#pictureRemoveModal").css("display", "none");
+                $('#picture_container').html("<p>Picture was deleted!</p>");
+                $('#showPictureRemoveModalButton').prop('disabled', true);
+                $('#showPictureRemoveModalButton').addClass('disabled');
+            },
+            error: function(data) {
+
+                BootstrapDialog.show({
+                    message: syntaxHighlight(data),
+                    type: BootstrapDialog.TYPE_DANGER,
+                    buttons: [{
+                        label: 'Close',
+                        action: function(dialogItself) {
+                            dialogItself.close();
+                        }
+                    }]
+
+                });
+            }
         })
     }
 

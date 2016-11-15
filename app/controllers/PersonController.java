@@ -972,9 +972,12 @@ public class PersonController extends Controller {
 
             // Přijmu soubor
             Http.MultipartFormData body = request().body().asMultipartFormData();
+
+            if (body == null) return GlobalResult.notFoundObject("Missing picture!");
+
             Http.MultipartFormData.FilePart file_from_request = body.getFile("file");
 
-            if (file_from_request == null) return GlobalResult.notFoundObject("Picture not found!");
+            if (file_from_request == null) return GlobalResult.notFoundObject("Missing picture!");
 
             File file = file_from_request.getFile();
 

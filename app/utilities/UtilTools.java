@@ -171,17 +171,16 @@ public class UtilTools extends Controller {
 
         int slash = file_path.indexOf("/");
         String container_name = file_path.substring(0,slash);
-        String real_file_path = file_path.substring(slash+1);
         CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
 
-        CloudBlockBlob blob = container.getBlockBlobReference(real_file_path + "/" + file_name);
+        CloudBlockBlob blob = container.getBlockBlobReference(file_name);
 
         InputStream is = new FileInputStream(file);
         blob.upload(is, -1);
 
         FileRecord fileRecord = new FileRecord();
         fileRecord.file_name = file_name;
-        fileRecord.file_path = file_path + "/" + file_name;
+        fileRecord.file_path = file_path;
         fileRecord.save();
 
         return fileRecord;

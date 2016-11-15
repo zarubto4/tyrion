@@ -3,9 +3,11 @@ package models.compiler;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
 import models.project.c_program.C_Program;
+import utilities.Server;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -20,11 +22,13 @@ public class TypeOfBoard extends Model {
                                                              @ApiModelProperty(required = true) public String name;
                                                                                     @JsonIgnore public String compiler_target_name;
                                                              @ApiModelProperty(required = true) public String revision;
+                                                                                    @JsonIgnore public String azure_picture_link;
 
                        @Column(columnDefinition = "TEXT")    @ApiModelProperty(required = true) public String    description;
                                                                         @JsonIgnore  @ManyToOne public Producer  producer;
                                                                         @JsonIgnore  @ManyToOne public Processor processor;
                                                              @ApiModelProperty(required = true) public Boolean   connectible_to_internet;
+                                                                          @JsonIgnore @OneToOne public FileRecord picture;
 
     @JsonIgnore @OneToMany(mappedBy="type_of_board", cascade = CascadeType.ALL) public List<Board>       boards      = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="type_of_board")                            public List<C_Program>   c_programs  = new ArrayList<>();
@@ -45,7 +49,13 @@ public class TypeOfBoard extends Model {
 
     @ApiModelProperty(readOnly =true) @Transient @JsonProperty public String target_name       (){ return compiler_target_name;}
 
-
+    @JsonProperty @ApiModelProperty(required = true)
+    public String picture_link(){
+        if(this.azure_picture_link == null){
+            return null;
+        }
+        return Server.azureLink + azure_picture_link;
+    }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
@@ -63,6 +73,16 @@ public class TypeOfBoard extends Model {
         this.update();
 
         super.delete();
+    }
+
+    @JsonIgnore @Transient
+    public CloudBlobContainer get_Container(){
+        try {
+            return Server.blobClient.getContainerReference("pictures");
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new NullPointerException();
+        }
     }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/

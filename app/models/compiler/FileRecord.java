@@ -32,7 +32,8 @@ public class FileRecord extends Model {
     @ApiModelProperty(required = true)                          public String file_name;
                                                  @JsonIgnore    public String file_path;
 
-                                    @JsonIgnore @OneToOne(fetch = FetchType.LAZY)       public Person person;   // personal_picture
+                @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "picture")     public Person person;   // personal_picture
+                @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "picture")     public TypeOfBoard type_of_board;   // type_of_board_picture
                                     @JsonIgnore @OneToOne()                             public BootLoader boot_loader;
                                    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)       public Version_Object version_object;
              @JsonIgnore @OneToMany(mappedBy="binary_file",fetch = FetchType.LAZY)      public List<C_Program_Update_Plan> c_program_update_plen  = new ArrayList<>();

@@ -92,7 +92,7 @@ public class ProgramingPackageTest extends TestHelper{
             logger.info("Test {} successfully run.", description.getMethodName());
         }
         public void failed(Throwable e, Description description) {
-            logger.error("Test {} failed! Reason: {} a.", description.getMethodName(), e.getMessage());
+            logger.error("Test {} failed! Reason: {}.", description.getMethodName(), e.getMessage());
         }
     };
 
