@@ -1628,7 +1628,7 @@ public class ProgramingPackageController extends Controller {
 
 
             //Určím podle časové konstanty zda nahraju hned nebo až za chvíli
-            if(record.planed_when == null) return GlobalResult.result_ok();
+            if(record.planed_when != null) return GlobalResult.result_ok();
 
             b_program.instance.actual_instance = record;
             b_program.instance.update();
