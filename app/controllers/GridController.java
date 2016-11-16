@@ -1,5 +1,6 @@
 package controllers;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.*;
 import models.compiler.Version_Object;
@@ -697,28 +698,61 @@ public class GridController extends Controller {
             protocols = "https",
             code = 200
     )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Mobile_Connection_Request",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successful created",      response = Swagger_M_Program_Version.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 477, message = "Instance is offline",     response = Result_BadRequest.class),
+            @ApiResponse(code = 478, message = "External Server Error",     response = Result_BadRequest.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_conection_url(String instance_id, String m_program_id, String version_object_id){
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result get_conection_url(){
         try{
 
-            Homer_Instance_Record record = Homer_Instance_Record.find.byId(instance_id);
+            final Form<Swagger_Mobile_Connection_Request> form = Form.form(Swagger_Mobile_Connection_Request.class).bindFromRequest();
+            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Mobile_Connection_Request help = form.get();
+
+            Homer_Instance_Record record = Homer_Instance_Record.find.byId(help.instance_id);
             if(record == null) return GlobalResult.notFoundObject("Instance not found");
 
-            Version_Object version_object = Version_Object.find.where().eq("id",version_object_id).eq("m_program.id",m_program_id).findUnique();
+            if(!record.actual_running_instance.instance_online()){
+                return GlobalResult.result_external_server_is_offline("Instance is offline");
+            }
+
+            Version_Object version_object = Version_Object.find.where().eq("id",help.version_object_id).eq("m_program.id",help.m_program_id).findUnique();
             if(version_object == null) return GlobalResult.notFoundObject("M_program not found");
 
+            Grid_Terminal terminal = Grid_Terminal.find.byId( help.terminal_token);
+            if(terminal == null) return GlobalResult.notFoundObject("Grid_Terminal not found");
 
-            Swagger_Mobile_Connection_Summary summary = new Swagger_Mobile_Connection_Summary();
-            summary.url = "ws://" + record.actual_running_instance.cloud_homer_server.server_url  + record.actual_running_instance.cloud_homer_server.grid_port + "/" + record.websocket_grid_token + "/#grid_connection_token";
-            summary.m_program = M_Program.get_m_code(version_object);
 
-            return GlobalResult.created(Json.toJson(summary));
+
+            JsonNode result = WebSocketController.homer_instance_add_grid_token(record.actual_running_instance.get_instance(), help.terminal_token);
+
+            if(result.get("status").asText().equals("success")) {
+
+                Swagger_Mobile_Connection_Summary summary = new Swagger_Mobile_Connection_Summary();
+                summary.url = "ws://" + record.actual_running_instance.cloud_homer_server.server_url + record.actual_running_instance.cloud_homer_server.grid_port + "/" + record.websocket_grid_token + "/" +  help.terminal_token;
+                summary.m_program = M_Program.get_m_code(version_object);
+
+                return GlobalResult.created(Json.toJson(summary));
+            }else
+
+            return GlobalResult.result_external_server_error("External Server Error");
 
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());

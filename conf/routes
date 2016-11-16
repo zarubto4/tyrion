@@ -18,7 +18,6 @@ GET             /test1                                      @controllers.WikyCon
 ### WEBSOCKET ############ WEBSOCKET ############### WEBSOCKET ################ WEBSOCKET ###########################################################################
 ###################################################################################f#################################################################################
 
-GET              /websocket/homer/:mac_adress                  @controllers.WebSocketController.homer_connection(mac_adress)
 GET              /websocket/blocko_server/:identificator       @controllers.WebSocketController.homer_cloud_server_connection(identificator)
 GET              /websocket/compilation_server/:identificator  @controllers.WebSocketController.compilator_server_connection(identificator)
 GET              /websocket/becki/:secure_token                @controllers.WebSocketController.becki_website_connection(secure_token)
@@ -419,7 +418,7 @@ DELETE          /m_program_version/:m_program_id                                
 # Terminals Aps
 GET             /m_program/app/token/:qr_token                                         @controllers.GridController.get_M_Program_byQR_Token_forMobile(qr_token)
 GET             /m_program/app/all_m_programs                                          @controllers.GridController.get_M_Project_all_forTerminal()
-GET             /m_program/app/url/:instance_id/:m_program_id/:version_object_id       @controllers.GridController.get_conection_url(instance_id, m_program_id, version_object_id)
+PUT             /m_program/app/url                                                     @controllers.GridController.get_conection_url()
 
 PUT             /websocket/terminal/identificator                                      @controllers.GridController.get_identificator()
 PUT             /websocket/terminal/identificator/:terminal_id                         @controllers.GridController.check_identifiactor(terminal_id)
@@ -509,13 +508,9 @@ GET             /admin/homer_server/disconnect/:id         @controllers.Dashboar
 GET             /admin/compilator_server/ping/:id          @controllers.DashboardController.ping_compilation_server(id)
 GET             /admin/compilator_server/disconnect/:id    @controllers.DashboardController.disconnect_compilation_server(id)
 
-GET             /admin/terminal/ping/:id                   @controllers.DashboardController.ping_terminal(id)
-GET             /admin/terminal/disconnect/:id             @controllers.DashboardController.disconnect_terminal(id)
-
 GET             /admin/becki/ping/:id                      @controllers.DashboardController.ping_becki(id)
 GET             /admin/becki/disconnect/:id/:token         @controllers.DashboardController.disconnect_becki(id, token)
 
-GET             /admin/terminal/log_out/:id                @controllers.DashboardController.terminal_log_out_user(id)
 
 
 

@@ -1668,7 +1668,7 @@ public class ProgramingPackageController extends Controller {
                                 FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "program.js").findUnique();
 
                                 // Updajtuji instanci Blocka s novým kodem
-                                WebSocketController.homer_instance_upload_blocko_program(homer, b_program.instance.actual_instance.version_object.id, fileRecord.get_fileRecord_from_Azure_inString());
+                                WebSocketController.homer_instance_upload_blocko_program((WS_Homer_Cloud) homer, b_program.instance.actual_instance.version_object.id, fileRecord.get_fileRecord_from_Azure_inString());
 
                             }
 
@@ -1867,7 +1867,7 @@ public class ProgramingPackageController extends Controller {
                  result = WebSocketController.homer_instance_add_Yoda_to_instance(homer_instance.get_instance(), yoda_id);
 
             }else {
-                result = WebSocketController.homer_instance_add_Yoda_to_instance( WebSocketController.incomingConnections_homers.get(instance_name), yoda_id);
+                result = WebSocketController.homer_instance_add_Yoda_to_instance( (WS_Homer_Cloud) WebSocketController.incomingConnections_homers.get(instance_name), yoda_id);
             }
 
 
@@ -1899,7 +1899,7 @@ public class ProgramingPackageController extends Controller {
                 result = WebSocketController.homer_instance_remove_Yoda_from_instance(homer_instance.get_instance(), yoda_id);
 
             }else {
-                result = WebSocketController.homer_instance_remove_Yoda_from_instance( WebSocketController.incomingConnections_homers.get(instance_name), yoda_id);
+                result = WebSocketController.homer_instance_remove_Yoda_from_instance( (WS_Homer_Cloud)  WebSocketController.incomingConnections_homers.get(instance_name), yoda_id);
             }
 
 
@@ -1935,7 +1935,7 @@ public class ProgramingPackageController extends Controller {
                 result = WebSocketController.homer_instance_add_Device_to_instance(homer_instance.get_instance(), yoda_id, list_of_devices);
 
             }else {
-                result = WebSocketController.homer_instance_add_Device_to_instance( WebSocketController.incomingConnections_homers.get(instance_name), yoda_id, list_of_devices);
+                result = WebSocketController.homer_instance_add_Device_to_instance( (WS_Homer_Cloud) WebSocketController.incomingConnections_homers.get(instance_name), yoda_id, list_of_devices);
             }
 
 
@@ -1970,7 +1970,7 @@ public class ProgramingPackageController extends Controller {
                 result = WebSocketController.homer_instance_remove_Device_from_instance(homer_instance.get_instance(), yoda_id, list_of_devices);
 
             }else {
-                result = WebSocketController.homer_instance_remove_Device_from_instance( WebSocketController.incomingConnections_homers.get(instance_name), yoda_id, list_of_devices);
+                result = WebSocketController.homer_instance_remove_Device_from_instance( (WS_Homer_Cloud) WebSocketController.incomingConnections_homers.get(instance_name), yoda_id, list_of_devices);
             }
 
             if(result.has("status") && result.get("status").asText().equals("success")){
@@ -2036,7 +2036,7 @@ public class ProgramingPackageController extends Controller {
 
 
             // Updajtuju sice kod ? Ale nikoliv HW?
-            JsonNode result = WebSocketController.homer_instance_devices_commands( WebSocketController.incomingConnections_homers.get(instance_name), target_id, command);
+            JsonNode result = WebSocketController.homer_instance_devices_commands( (WS_Homer_Cloud) WebSocketController.incomingConnections_homers.get(instance_name), target_id, command);
 
             if(result.has("state") && result.get("state").asText().equals("success")){
                 // Vrácení potvrzení

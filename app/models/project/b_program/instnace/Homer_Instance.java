@@ -11,7 +11,7 @@ import models.project.b_program.servers.Cloud_Homer_Server;
 import models.project.b_program.servers.Private_Homer_Server;
 import models.project.global.Project;
 import utilities.swagger.outboundClass.Swagger_B_Program_Instance;
-import utilities.webSocket.WebSCType;
+import utilities.webSocket.WS_Homer_Cloud;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -133,8 +133,8 @@ public class Homer_Instance extends Model {
 
 
     @JsonIgnore @Transient
-    public WebSCType get_instance(){
-        return WebSocketController.incomingConnections_homers.get(blocko_instance_name);
+    public WS_Homer_Cloud get_instance(){
+        return (WS_Homer_Cloud) WebSocketController.incomingConnections_homers.get(blocko_instance_name);
     }
 
 

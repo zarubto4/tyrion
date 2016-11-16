@@ -115,6 +115,13 @@ public class GlobalResult extends Controller {
 
     }
 
+    public static Result result_external_server_error(String message){
+
+        CoreResponse.cors();
+        return Controller.status(478, message);
+
+    }
+
 //**********************************************************************************************************************
 
     // 400

@@ -1,10 +1,10 @@
 
 @import models.person.Person
-@import utilities.enums.{Firmware_type, Type_of_command}
-@import utilities.webSocket.{WS_Grid_Terminal, WS_Homer_Cloud, WS_BlockoServer, WS_CompilerServer, WS_Becki_Website}
+@import utilities.enums.{Type_of_command}
+@import utilities.webSocket.{WS_Homer_Cloud, WS_BlockoServer, WS_CompilerServer, WS_Becki_Website}
 
 
-@(homers: List[WS_Homer_Cloud], grids: List[WS_Grid_Terminal], becki_Terminal: List[WS_Becki_Website], cloud_blocko_server: List[WS_BlockoServer], compilation_server: List[WS_CompilerServer])
+@(homers: List[WS_Homer_Cloud], becki_Terminal: List[WS_Becki_Website], cloud_blocko_server: List[WS_BlockoServer], compilation_server: List[WS_CompilerServer])
 
 <section class="content-header">
     <h1> Websocket <small> connections </small> </h1>
@@ -97,78 +97,6 @@
             </div><!-- /.box -->
         </div>
     </div>
-
-    <div class="row">
-        <div class="col-xs-12">
-            <div class="box">
-                <div class="box-header">
-                    <h3 class="box-title">Connected Grid-Terminals (Browser, Iphone...)</h3>
-                    <div class="pull-right">
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-danger btn-sm"> Disconnect All </button>
-                            <button type="button" class="btn btn-info btn-sm "> Send Ping to all </button>
-                        </div><!-- /.btn-group -->
-                    </div><!-- /.pull-right -->
-                </div>
-                <div class="box-body table-responsive no-padding">
-                    <table id="terminal_table" class="table table-bordered">
-
-                        <tr>
-                            <th class="col-xs-1">Identificator</th>
-                            <th class="col-xs-1">Receive from Homer</th>
-                            <th class="col-xs-1">Homer Identificator</th>
-                            <th class="col-xs-1">M Program Id</th>
-
-                            <th class="col-xs-1">Get Status</th>
-                            <th class="col-xs-1">Ping</th>
-                            <th class="col-xs-1">Log out</th>
-                            <th class="col-xs-1">Disconnect</th>
-
-                        </tr>
-
-                        @for( x <- grids){
-                            <tr>
-                                <td> @x.identifikator.substring(0,7) </td>
-
-                                <td > @if( x.subscribers_grid.isEmpty){
-                                    <b>FALSE</b>
-                                }else{
-                                    <b>TRUE</b>
-                                }
-                                </td>
-
-                                <td> @if( !x.subscribers_grid.isEmpty) {
-                                    @x.subscribers_grid.get(0).identifikator.substring(0,7)
-                                } else{
-                                    -----
-                                }</td>
-
-                                <td> @x.m_project_id </td>
-
-                                <td align="center"><button class="btn btn-block btn-success btn-xs">Get Status</button></td>
-
-                                <td align="center">
-                                    <button onclick="ping_terminal('@x.identifikator')" class="btn btn-block btn-info btn-xs">Ping</button>
-                                </td>
-
-                                <td align="center">
-                                    <button onclick="log_out_Terminal_User('@x.identifikator')" class="btn btn-block btn-warning btn-xs">Logout</button>
-                                </td>
-
-                                <td align="center">
-                                    <button onclick="disconnect_terminal('@x.identifikator')" class="btn btn-block btn-danger btn-xs">Disconnect</button>
-                                </td>
-
-                            </tr>
-                        }
-                        </table>
-
-                </div><!-- /.box-body -->
-            </div><!-- /.box -->
-        </div>
-    </div>
-
-
 
     <div class="row">
         <div class="col-xs-12">
@@ -529,121 +457,6 @@
                 }
             })}
 
-        function ping_terminal(data){
-            $.ajax({
-
-                url: '@routes.DashboardController.ping_terminal("")' + id,
-                type: 'GET',
-
-                headers: {
-                    "X-AUTH-TOKEN":getCookie("authToken")
-                },
-
-                success:function(e){
-                    BootstrapDialog.show({
-                        message:  syntaxHighlight(data),
-
-                        buttons: [{
-                            label: 'Close',
-                            action: function(dialogItself){
-                                dialogItself.close();
-                            }
-                        }]
-
-                    });
-                    $('#homer').load(document.URL +  ' #homer');
-                },
-                error:function(e) {
-                    BootstrapDialog.show({
-                        message:  syntaxHighlight(data),
-                        type: BootstrapDialog.TYPE_DANGER,
-                        buttons: [{
-                            label: 'Close',
-                            action: function(dialogItself){
-                                dialogItself.close();
-                            }
-                        }]
-
-                    });
-                }
-            })}
-
-        function log_out_Terminal_User(id){
-            $.ajax({
-
-                url: '@routes.DashboardController.terminal_log_out_user("")' + id,
-                type: 'GET',
-
-                headers: {
-                    "X-AUTH-TOKEN":getCookie("authToken")
-                },
-
-                success:function(e){
-                    BootstrapDialog.show({
-                        message:  syntaxHighlight(data),
-
-                        buttons: [{
-                            label: 'Close',
-                            action: function(dialogItself){
-                                dialogItself.close();
-                            }
-                        }]
-
-                    });
-                    $('#homer').load(document.URL +  ' #homer');
-                },
-                error:function(data) {
-                    BootstrapDialog.show({
-                        message:  syntaxHighlight(data),
-                        type: BootstrapDialog.TYPE_DANGER,
-                        buttons: [{
-                            label: 'Close',
-                            action: function(dialogItself){
-                                dialogItself.close();
-                            }
-                        }]
-
-                    });
-                }
-            })}
-        function disconnect_terminal(id){
-            $.ajax({
-
-                url: '@routes.DashboardController.disconnect_terminal("")' + id,
-                type: 'GET',
-
-                headers: {
-                    "X-AUTH-TOKEN":getCookie("authToken")
-                },
-
-                success:function(data){
-                    BootstrapDialog.show({
-                        message:  syntaxHighlight(data),
-
-                        buttons: [{
-                            label: 'Close',
-                            action: function(dialogItself){
-                                dialogItself.close();
-                            }
-                        }]
-
-                    });
-                    $('#homer').load(document.URL +  ' #homer');
-                },
-                error:function(data) {
-                    BootstrapDialog.show({
-                        message:  syntaxHighlight(data),
-                        type: BootstrapDialog.TYPE_DANGER,
-                        buttons: [{
-                            label: 'Close',
-                            action: function(dialogItself){
-                                dialogItself.close();
-                            }
-                        }]
-
-                    });
-                }
-            })}
         function ping_becki(id){
             $.ajax({
                 url: '@routes.DashboardController.ping_becki("")' + id,

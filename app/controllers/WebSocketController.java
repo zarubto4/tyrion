@@ -48,7 +48,6 @@ public class WebSocketController extends Controller {
 // Values  --------------------------------------------- ----------------------------------------------------------------
 
     public static Map<String, WebSCType> incomingConnections_homers    = new HashMap<>(); // (Identificator, Websocket)
-    public static Map<String, WebSCType> incomingConnections_terminals = new HashMap<>(); // (Identificator, Websocket)
 
     //TODO - tohle lze teoreticky dát do databáze
     // Sem podle ID homera uložím seznam zařízení, na která by se měl opět připojit
@@ -57,7 +56,7 @@ public class WebSocketController extends Controller {
     // Ztracené připojení s Becki když se homer odpojil
     public static Map<String, ArrayList<String>> becki_lost_connection_homer = new HashMap<>();
 
-    // Připojené servery, kde běží Homer instance jsou drženy v homer_cloud_server. Jde jen o jendoduché čisté spojení a
+    // Připojené servery, kde běží Homer instance jsou drženy v homer_cloud_server. Jde jen o jednoduché čisté spojení a
     // několik servisních metod. Ale aby bylo dosaženo toho, že Homer jak v cloudu tak i na fyzickém počítači byl obsluhován stejně
     // je redundantně (jen ukazateli) vytvořeno virtuální spojení na každou instanci blocko programu v cloudu.
     public static Map<String, WebSCType> blocko_servers = new HashMap<>(); // (<Server-Identificator, Websocket> >)
@@ -103,24 +102,6 @@ public class WebSocketController extends Controller {
         }
     }
 
-    // Připojení Homera (Cloud i Local)
-    @ApiOperation(value = "Homer websocket Connection", hidden = true)
-    public  WebSocket<String>  homer_connection(String homer_mac_address){
-
-        logger.debug("Homer Connection on mac_address: " + homer_mac_address);
-
-        // Inicializace Websocketu pro Homera
-        WS_Homer_Local homer = new WS_Homer_Local(homer_mac_address, incomingConnections_homers);
-
-        // Vtvoří se zástupný objekt připojení
-        WebSocket<String> webSocket = homer.connection();
-
-        logger.debug("Connection created on: " + homer_mac_address);
-        homer_connection_procedure(homer);
-
-        logger.debug("Returning connection on: " + homer_mac_address);
-        return  webSocket;
-    }
     public static void  homer_connection_procedure(WebSCType homer) {
 
         logger.debug("Homer connection procedure on: " + homer.identifikator);
@@ -136,32 +117,6 @@ public class WebSocketController extends Controller {
                 for (String terminal_name : terminal_lost_connection_homer.get(homer.identifikator)) {
 
                     logger.debug("Homer -> Lost Connection: Terminal found: " + terminal_name);
-
-                    // zkontrolu zda terminál je stále přopojený
-                    if (incomingConnections_terminals.containsKey(terminal_name)) {
-
-                        // V případě že tedy nějaké temrinály jsou připravené komunikovat, musím upozornit homera, že chci odebírat jeho změny. Takže ho u prvního oběratele budu informovat
-                        if (homer.subscribers_grid.isEmpty()) {
-
-                            homer_instance_ask_for_receiving_for_Grid(homer);
-                            homer.subscribers_grid.add(incomingConnections_terminals.get(terminal_name));
-                            incomingConnections_terminals.get(terminal_name).subscribers_grid.add(homer);
-
-                        } else {
-
-                            homer.subscribers_grid.add(incomingConnections_terminals.get(terminal_name));
-                            incomingConnections_terminals.get(terminal_name).subscribers_grid.add(homer);
-
-                        }
-
-                        // Zasílám na terminál informaci o znovu připojení
-                        terminal_homer_reconnection(incomingConnections_terminals.get(terminal_name));
-                    }
-                    // Pokud není připojený - vyřadím ho ze seznamu
-                    else {
-                        logger.debug("Homer -> Lost Connection: Terminal "+ terminal_name +" is no more connected" );
-                        terminal_lost_connection_homer.get(homer.identifikator ).remove(terminal_name);
-                    }
                 }
 
                 // Po obnově spojení se všem ztracenými připojeními vyhazuji objekt ztraceného spojení z mapy vázaný na tento Homer
@@ -204,192 +159,13 @@ public class WebSocketController extends Controller {
                     }
                 }
 
-            } else homer_instance_all_terminals_are_gone(homer);
+            } else homer_instance_all_terminals_are_gone((WS_Homer_Cloud) homer);
 
         }catch (Exception e){
             logger.error("Homer Connection Exception", e);
         }
     }
 
-    // TODO - Smazat
-   // @ApiOperation(value = "Terminal connection", tags = {"WebSocket"})
-
-   /* public  WebSocket<String>  mobile_connection(String m_program_id, String terminal_id) {
-        try {
-
-            logger.debug("Terminal: Incoming connection on terminal: " + terminal_id + " on m_program " + m_program_id);
-
-            if (incomingConnections_terminals.containsKey(terminal_id)) {
-                logger.debug("Terminal: Incoming connection on terminal: " + terminal_id + " is already used");
-                return WebSocket.reject(forbidden());
-            }
-            if (Grid_Terminal.find.where().eq("terminal_id", terminal_id).findUnique() == null) {
-                logger.debug("Terminal: Incoming connection on terminal: " + terminal_id + " is not registered in database");
-                return WebSocket.reject(forbidden());
-            }
-
-            M_Program m_program = M_Program.find.byId(m_program_id);
-
-            Version_Object version_object = m_program.get_m_project().b_program_version.get(0);
-
-            if (m_program.get_m_project().b_program_version == null) {
-                logger.debug("Terminal: Incoming connection on terminal: " + terminal_id + " where "+ m_program_id +" is not registered in database");
-                return WebSocket.reject(forbidden());
-            }
-            if (m_program.versions == null) {
-                logger.debug("Terminal: Incoming connection on terminal: " + terminal_id + " where "+ m_program_id +" where M_Project is not connected with B_program");
-                return WebSocket.reject(forbidden());
-            }
-
-            //----------------------------------------------------------------------------------------------------------------------
-
-            WS_Grid_Terminal terminal = new WS_Grid_Terminal(terminal_id, m_program_id, incomingConnections_terminals);
-            WebSocket<String> ws = terminal.connection();
-
-            // Tohle je cloudové nasazení B programu
-            //-----------------------------------------------------------------------------------------------------------
-
-            // POKUD JE B_PROGRAM V CLOUDU ale shodná verze neexistuje ale je povoleno auto increment
-            if (version_object.homer_instance == null &&  m_program.get_m_project().auto_incrementing &&  B_Program.find.where().isNotNull("version_objects.b_program_cloud").findUnique() != null) {
-                logger.debug("Terminal: Program on Cloud win but system have to iterate to new version: ");
-
-                m_project.b_program_version = m_project.b_program.where_program_run();
-                m_project.update();
-
-            }
-
-            // POKUD JE B_PROGRAM V CLOUDU a má shodnou verzi
-            if (m_project.b_program_version_object.instance_record  != null) {
-
-
-                logger.debug("Terminal: Program on Cloud win");
-
-                String homer_identificator = m_project.b_program_version_object.instance_record .blocko_instance_name;
-                String server_name =  Cloud_Homer_Server.find.where().eq("cloud_programs.version_object.m_project.id", m_project.id ).findUnique().server_name;
-
-                logger.debug("Terminal: Connection with Server " + server_name);
-                logger.debug("Terminal: Connection with Homer " + homer_identificator);
-
-                logger.debug("Tyrion: Is CLoud cloud_blocko_server connected?");
-
-                if (!blocko_servers.containsKey(server_name)) {
-
-                    logger.debug("Tyrion: No its not - So Server make procedure for archive this state");
-
-                    if (terminal_lost_connection_homer.containsKey(homer_identificator)) {
-
-                        terminal_lost_connection_homer.get(homer_identificator).add(terminal_id);
-
-                    } else {
-                        ArrayList<String> list = new ArrayList<>(4);
-                        list.add(terminal_id);
-                        WebSocketController.terminal_lost_connection_homer.put(homer_identificator, list);
-                    }
-
-                    logger.debug("Tyrion: Sending to Terminal, that homer is nto connected yet");
-                    WebSocketController.terminal_homer_is_not_connected_yet(terminal);
-
-                    return ws;
-                }
-
-                logger.debug("Tyrion: Homer is online, so connection will be successful");
-                WebSCType homer = WebSocketController.incomingConnections_homers.get(homer_identificator);
-
-                terminal.subscribers_grid.add(WebSocketController.incomingConnections_homers.get(homer_identificator));
-                if (homer.subscribers_grid.isEmpty()) WebSocketController.homer_instance_ask_for_receiving_for_Grid(homer);
-
-                homer.subscribers_grid.add(terminal);
-                return ws;
-
-            // TODO POKUD JE B_PROGRAM V CLOUDU ale nemám schodnou verzi a zakázal jsem autoincrementování
-            } else if (! m_project.auto_incrementing && B_Program.find.where().isNotNull("version_objects.b_program_cloud").findUnique() != null){
-
-                logger.debug("Tyrion: Warning: B_program is in cloud, but autoincrement is prohibited!!!");
-                logger.warn ("Tyrion: Warning: B_program is in cloud, but autoincrement is prohibited!!!");
-
-                m_project_is_connected_with_older_version(terminal);
-                return ws;
-            }
-
-
-
-            // Tohle je fyzické nasazení B programu na PC
-            //-----------------------------------------------------------------------------------------------------------
-
-             // POKUD JE B_PROGRAM NA PC ale shodná verze neexistuje a povolil jsem auto inkrementaci
-              if( m_project.b_program_version_object.instance_record .private_server == null && m_project.auto_incrementing  && B_Program.find.where().isNotNull("version_objects.b_program_homer").findUnique() != null) {
-
-                  logger.debug("Tyrion: Homer is on local computer, but Tyrion have to repair versions");
-                  m_project.b_program_version = m_project.b_program.where_program_run();
-                  m_project.update();
-
-              }
-              // POKUD JE B_PROGRAM NA PC a má shodnou verzi
-              if (m_project.b_program_version_object.instance_record .private_server != null) {
-
-                  logger.debug("Tyrion: Homer is on local computer");
-
-                  String homer_identificator = m_project.b_program_version_object.instance_record .private_server.id;
-
-                  logger.debug("Tyrion: Connection will be on Homer: " + homer_identificator);
-
-                  logger.debug("Tyrion: is Homer online?");
-
-                  if (!WebSocketController.incomingConnections_homers.containsKey(homer_identificator)) {
-
-                      logger.debug("Tyrion: No its not - So Server make procedure for archive this state");
-
-                      if (WebSocketController.terminal_lost_connection_homer.containsKey(homer_identificator)) {
-                         WebSocketController.terminal_lost_connection_homer.get(homer_identificator).add(terminal_id);
-
-                      } else {
-                          ArrayList<String> list = new ArrayList<>(4);
-                          list.add(terminal_id);
-                          WebSocketController.terminal_lost_connection_homer.put(homer_identificator, list);
-                      }
-
-                      logger.debug("Tyrion: Sending to Terminal, that homer is nto connected yet");
-                      WebSocketController.terminal_homer_is_not_connected_yet(terminal);
-
-                      return ws;
-                  }
-
-                  logger.debug("Tyrion: Homer is online, so connection will be successful");
-                  WebSCType homer = WebSocketController.incomingConnections_homers.get(homer_identificator);
-
-                  terminal.subscribers_grid.add(WebSocketController.incomingConnections_homers.get(homer_identificator));
-                  if (homer.subscribers_grid.isEmpty()) WebSocketController.homer_instance_ask_for_receiving_for_Grid(homer);
-
-                  homer.subscribers_grid.add(terminal);
-                  return ws;
-
-
-                  // POKUD JE B_PROGRAM NA PC ale shodná verze neexistuje a zakázal jsem auto inkrementaci
-                } else if( ! m_project.auto_incrementing && B_Program.find.where().isNotNull("version_objects.b_program_homer").findUnique() != null){
-
-                  logger.debug("Tyrion: Warning: B_program is in cloud, but autoincrement is prohibited!!!");
-                  logger.warn ("Tyrion: Warning: B_program is in cloud, but autoincrement is prohibited!!!");
-
-                  m_project_is_connected_with_older_version(terminal);
-                   return ws;
-
-                }
-
-                 logger.warn ("Tyrion: Warning!!! homer is not in cloud and also on local computer!");
-
-                 terminal_blocko_program_not_running_anywhere(terminal);
-                 return ws;
-
-
-
-            return null;
-
-        }catch (Exception e){
-            logger.error("Mobile / terminal Web Socket connection", e);
-            return WebSocket.reject(forbidden());
-        }
-    }
-    */
 
     @ApiOperation(value = "Homer Server Connection", tags = {"WebSocket"})
     public  WebSocket<String>  homer_cloud_server_connection(String server_name){
@@ -590,6 +366,7 @@ public class WebSocketController extends Controller {
         }
     }
 
+
     @ApiOperation(value = "Compilation Server Conection", tags = {"WebSocket"})
     public  WebSocket<String>  compilator_server_connection (String server_name){
         try{
@@ -616,6 +393,7 @@ public class WebSocketController extends Controller {
             return WebSocket.reject(forbidden("Server side error"));
         }
     }
+
 
     @ApiOperation(value = "FrontEnd Becki Connection", tags = {"WebSocket"})
     public  WebSocket<String>  becki_website_connection (String security_token){
@@ -870,7 +648,7 @@ public class WebSocketController extends Controller {
 
         logger.debug("Sending Blocko Program if Exist");
 
-        JsonNode result_uploud = WebSocketController.homer_instance_upload_blocko_program(homer, instance.id, instance.actual_instance.version_object.files.get(0).get_fileRecord_from_Azure_inString());
+        JsonNode result_uploud = WebSocketController.homer_instance_upload_blocko_program((WS_Homer_Cloud) homer, instance.id, instance.actual_instance.version_object.files.get(0).get_fileRecord_from_Azure_inString());
 
         if(result_uploud.get("status").asText().equals("success")){
 
@@ -1475,7 +1253,7 @@ public class WebSocketController extends Controller {
 
 // PRIVATE Homer -----------------------------------------------------------------------------------------------------------------
 
-    public static void homer_instance_incoming_message(WebSCType homer, ObjectNode json){
+    public static void homer_instance_incoming_message(WS_Homer_Cloud homer, ObjectNode json){
 
         logger.debug("Homer: "+ homer.identifikator + " Incoming message: " + json.toString());
 
@@ -1576,7 +1354,7 @@ public class WebSocketController extends Controller {
         }
     }
 
-    public static JsonNode homer_instance_getState(WebSCType homer) throws  ExecutionException, TimeoutException, InterruptedException {
+    public static JsonNode homer_instance_getState(WS_Homer_Cloud homer) throws  ExecutionException, TimeoutException, InterruptedException {
 
         logger.debug("Tyrion: want to know state of Homer: " + homer.identifikator);
 
@@ -1587,7 +1365,7 @@ public class WebSocketController extends Controller {
         return homer.write_with_confirmation(result, 1000*3, 0, 2);
     }
 
-    public static JsonNode homer_instance_ping_instance(WebSCType homer) throws  ExecutionException, TimeoutException, InterruptedException {
+    public static JsonNode homer_instance_ping_instance(WS_Homer_Cloud homer) throws  ExecutionException, TimeoutException, InterruptedException {
 
         logger.debug("Tyrion: Server want send ping to Homer: " + homer.identifikator);
 
@@ -1598,7 +1376,7 @@ public class WebSocketController extends Controller {
         return homer.write_with_confirmation(result, 1000*3, 0, 2);
     }
 
-    public static JsonNode homer_instance_devices_commands(WebSCType homer, String targetId, Type_of_command command) throws  ExecutionException, TimeoutException, InterruptedException {
+    public static JsonNode homer_instance_devices_commands(WS_Homer_Cloud homer, String targetId, Type_of_command command) throws  ExecutionException, TimeoutException, InterruptedException {
 
         logger.debug("Tyrion: Server want send command to Devices in Homer Instance: " + homer.identifikator);
 
@@ -1613,7 +1391,7 @@ public class WebSocketController extends Controller {
 
     }
 
-    public static JsonNode homer_instance_add_Yoda_to_instance(WebSCType homer, String yoda_id) throws  ExecutionException, TimeoutException, InterruptedException{
+    public static JsonNode homer_instance_add_Yoda_to_instance(WS_Homer_Cloud homer, String yoda_id) throws  ExecutionException, TimeoutException, InterruptedException{
 
         ObjectNode request = Json.newObject();
         request.put("messageType", "addYodaToInstance");
@@ -1633,7 +1411,7 @@ public class WebSocketController extends Controller {
        return result;
     }
 
-    public static JsonNode homer_instance_remove_Yoda_from_instance(WebSCType homer, String yoda_id) throws  ExecutionException, TimeoutException, InterruptedException{
+    public static JsonNode homer_instance_remove_Yoda_from_instance(WS_Homer_Cloud homer, String yoda_id) throws  ExecutionException, TimeoutException, InterruptedException{
 
         ObjectNode request = Json.newObject();
         request.put("messageType", "removeYodaFromInstance");
@@ -1658,7 +1436,7 @@ public class WebSocketController extends Controller {
         return result;
     }
 
-    public static JsonNode homer_instance_add_Device_to_instance(WebSCType homer, String yoda_id, List<String> devices_id) throws  ExecutionException, TimeoutException, InterruptedException{
+    public static JsonNode homer_instance_add_Device_to_instance(WS_Homer_Cloud homer, String yoda_id, List<String> devices_id) throws  ExecutionException, TimeoutException, InterruptedException{
 
         ObjectNode request = Json.newObject();
         request.put("messageType", "addDeviceToInstance");
@@ -1693,7 +1471,7 @@ public class WebSocketController extends Controller {
 
     }
 
-    public static JsonNode homer_instance_remove_Device_from_instance(WebSCType homer, String yoda_id, List<String> devices_id) throws  ExecutionException, TimeoutException, InterruptedException{
+    public static JsonNode homer_instance_remove_Device_from_instance(WS_Homer_Cloud homer, String yoda_id, List<String> devices_id) throws  ExecutionException, TimeoutException, InterruptedException{
 
         ObjectNode request = Json.newObject();
         request.put("messageType", "removeDeviceFromInstance");
@@ -1719,7 +1497,7 @@ public class WebSocketController extends Controller {
         return result;
     }
 
-    public static JsonNode homer_instance_upload_blocko_program(WebSCType homer, String program_id, String program) throws  ExecutionException, TimeoutException, InterruptedException {
+    public static JsonNode homer_instance_upload_blocko_program(WS_Homer_Cloud homer, String program_id, String program) throws  ExecutionException, TimeoutException, InterruptedException {
 
             ObjectNode result = Json.newObject();
             result.put("messageType", "loadProgram");
@@ -1734,7 +1512,7 @@ public class WebSocketController extends Controller {
         return incomingConnections_homers.containsKey(homer_name);
     }
 
-    public static JsonNode homer_instance_get_device_list(WebSCType homer) throws  ExecutionException, TimeoutException, InterruptedException{
+    public static JsonNode homer_instance_get_device_list(WS_Homer_Cloud homer) throws  ExecutionException, TimeoutException, InterruptedException{
 
         ObjectNode result = Json.newObject();
         result.put("messageType", "getDeviceList");
@@ -1743,7 +1521,7 @@ public class WebSocketController extends Controller {
         return homer.write_with_confirmation(result, 1000*3, 0, 4);
     }
 
-    public static void homer_instance_is_disconnect(WebSCType homer) {
+    public static void homer_instance_is_disconnect(WS_Homer_Cloud homer) {
 
         logger.debug("Lost connection with Homer: " + homer.identifikator + " deleting that from connection map and add to lost connection map");
         incomingConnections_homers.remove(homer.identifikator);
@@ -1777,7 +1555,7 @@ public class WebSocketController extends Controller {
 
     }
 
-    public static void homer_instance_all_terminals_are_gone(WebSCType homer) throws  ExecutionException, TimeoutException, InterruptedException {
+    public static void homer_instance_all_terminals_are_gone(WS_Homer_Cloud homer) throws  ExecutionException, TimeoutException, InterruptedException {
 
         logger.debug("Homer: " + homer.identifikator + "  does not have any subscribers:");
 
@@ -1788,7 +1566,7 @@ public class WebSocketController extends Controller {
         homer.write_with_confirmation(result, 1000*3, 0, 4);
     }
 
-    public static void homer_instance_ask_for_receiving_for_Grid(WebSCType homer) throws  ExecutionException, TimeoutException, InterruptedException {
+    public static void homer_instance_ask_for_receiving_for_Grid(WS_Homer_Cloud homer) throws  ExecutionException, TimeoutException, InterruptedException {
 
         logger.debug("Homer: " + homer.identifikator + ", cloud_blocko_server want send you request for receiving for Grid:");
 
@@ -1820,7 +1598,7 @@ public class WebSocketController extends Controller {
             homer.write_without_confirmation(result);
         }
 
-    public static JsonNode homer_instance_update_devices_firmware(WebSCType homer, String actualization_procedure_id, List<String> targetIds, Firmware_type firmware_type, FileRecord record) throws  ExecutionException, TimeoutException, InterruptedException {
+    public static JsonNode homer_instance_update_devices_firmware(WS_Homer_Cloud homer, String actualization_procedure_id, List<String> targetIds, Firmware_type firmware_type, FileRecord record) throws  ExecutionException, TimeoutException, InterruptedException {
 
         logger.debug("Homer: " + homer.identifikator + ", will update Yodas or Devices");
 
@@ -1843,6 +1621,26 @@ public class WebSocketController extends Controller {
         return homer.write_with_confirmation(result, 1000*30, 0, 3);
     }
 
+    public static JsonNode homer_instance_add_grid_token(WS_Homer_Cloud homer, String token) throws  ExecutionException, TimeoutException, InterruptedException {
+
+        ObjectNode result = Json.newObject();
+        result.put("messageType", "add_gridToken");
+        result.put("messageChannel", "tyrion");
+        result.put("gridToken", token);
+        result.put("expiration_time", 25 * 1000);
+
+        return homer.write_with_confirmation(result, 1000*3, 0, 4);
+    }
+
+    public static JsonNode homer_instance_remove_grid_token(WS_Homer_Cloud homer, String token) throws  ExecutionException, TimeoutException, InterruptedException {
+
+        ObjectNode result = Json.newObject();
+        result.put("messageType", "remove_gridToken");
+        result.put("messageChannel", "tyrion");
+        result.put("gridToken", token);
+
+        return homer.write_with_confirmation(result, 1000*3, 0, 4);
+    }
 
 // PRIVATE Terminal ---------------------------------------------------------------------------------------------------------
 
@@ -1901,7 +1699,7 @@ public class WebSocketController extends Controller {
             if(subscriber.subscribers_grid.isEmpty()){
 
                 try {
-                    WebSocketController.homer_instance_all_terminals_are_gone(subscriber);
+                    WebSocketController.homer_instance_all_terminals_are_gone((WS_Homer_Cloud) subscriber);
                 }catch (Exception e){
                     logger.debug("When Tyrion try to send terminals, that homer is offline SHIT HAPPENS!!!", e);
                 }
@@ -2004,13 +1802,7 @@ public class WebSocketController extends Controller {
     }
 
     public static void disconnect_all_mobiles() {
-
         logger.warn("Tyrion is shutting down: Trying safety disconnect all connected Homer");
-
-        for (Map.Entry<String, WebSCType> entry :  WebSocketController.incomingConnections_terminals.entrySet())
-        {
-            server_violently_terminate_terminal(entry.getValue());
-        }
     }
 
     public static void disconnect_all_Blocko_Servers() {

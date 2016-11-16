@@ -70,9 +70,6 @@ public class Global extends GlobalSettings {
         logger.warn("Disconnection all Homers");
         WebSocketController.disconnect_all_homers();
 
-        logger.warn("Disconnection all Terminals");
-        WebSocketController.disconnect_all_mobiles();
-
         logger.warn("Disconnection all Blocko Servers");
         WebSocketController.disconnect_all_Blocko_Servers();
 

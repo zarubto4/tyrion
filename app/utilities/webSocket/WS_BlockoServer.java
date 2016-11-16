@@ -100,7 +100,7 @@ public class WS_BlockoServer extends WebSCType{
                         System.out.println("Odesílám požadavek na aktualizaci!");
 
                         if(task.homer != null){
-                            JsonNode result = WebSocketController.homer_instance_update_devices_firmware(task.homer, task.actualization_procedure_id, task.get_ids(), task.firmware_type, task.file_record);
+                            JsonNode result = WebSocketController.homer_instance_update_devices_firmware((WS_Homer_Cloud) task.homer, task.actualization_procedure_id, task.get_ids(), task.firmware_type, task.file_record);
                             System.out.println("Odpověď na Aktualizaci:" + result.toString());
                             System.out.println("Ještě neřeším reakci");
                             task_list.remove(task);

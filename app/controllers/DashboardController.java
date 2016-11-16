@@ -188,31 +188,6 @@ public class DashboardController extends Controller {
 // WEBSOCKET STATS ######################################################################################################
 
     @Security.Authenticated(Secured_Admin.class)
-    public Result disconnect_terminal(String terminal_id){
-        try {
-
-            if (WebSocketController.incomingConnections_terminals.containsKey(terminal_id)){
-
-                WebSocketController.incomingConnections_terminals.get(terminal_id).onClose();
-
-                ObjectNode result = Json.newObject();
-                result.put("status", "Terminal was disconnected successfully");
-
-                return GlobalResult.result_ok(result);
-
-            }else {
-
-                ObjectNode result = Json.newObject();
-                result.put("status", "Terminal ID is not connected now");
-                return GlobalResult.result_ok(result);
-            }
-
-        }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-    @Security.Authenticated(Secured_Admin.class)
     public Result disconnect_becki(String person_id, String token){
         try {
 
@@ -288,27 +263,6 @@ public class DashboardController extends Controller {
         }
     }
 
-    @Security.Authenticated(Secured_Admin.class)
-    public Result ping_terminal(String terminal_id) throws TimeoutException, InterruptedException {
-        try {
-
-            if (WebSocketController.incomingConnections_terminals.containsKey(terminal_id)) {
-
-                JsonNode result = WebSocketController.terminal_ping( WebSocketController.incomingConnections_terminals.get(terminal_id));
-                return GlobalResult.result_ok(result);
-            }
-            else {
-                ObjectNode result = Json.newObject();
-                result.put("status", "Terminalr ID is not connected now");
-
-                return GlobalResult.result_BadRequest(result);
-            }
-
-        }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
-        }
-
-    }
 
     @Security.Authenticated(Secured_Admin.class)
     public Result ping_becki(String person_id) throws TimeoutException, InterruptedException {
@@ -400,12 +354,6 @@ public class DashboardController extends Controller {
     }
 
 
-    @Security.Authenticated(Secured_Admin.class)
-    public Result terminal_log_out_user(String identificator) {
-        System.out.println("Ještě neimplementováno");
-        return GlobalResult.result_ok();
-    }
-
 // LOGGY ###############################################################################################################
 
     // Vykreslí šablonu s bugy
@@ -448,12 +396,11 @@ public class DashboardController extends Controller {
     public Result show_web_socket_stats() {
 
         List<WS_Homer_Cloud>    homers                  = new ArrayList<>(WebSocketController.incomingConnections_homers.values()).stream().map(o -> (WS_Homer_Cloud) o).collect(Collectors.toList());
-        List<WS_Grid_Terminal>  grids                   = new ArrayList<>(WebSocketController.incomingConnections_terminals.values()).stream().map(o -> (WS_Grid_Terminal) o).collect(Collectors.toList());
         List<WS_Becki_Website>  becki_terminals         = new ArrayList<>(WebSocketController.becki_website.values()).stream().map(o -> (WS_Becki_Website) o).collect(Collectors.toList());
         List<WS_BlockoServer>   blocko_cloud_servers    = new ArrayList<>(WebSocketController.blocko_servers.values()).stream().map(o -> (WS_BlockoServer) o).collect(Collectors.toList());
         List<WS_CompilerServer> compilation_servers     = new ArrayList<>(WebSocketController.compiler_cloud_servers.values()).stream().map(o -> (WS_CompilerServer) o).collect(Collectors.toList());
 
-        Html content =   websocket.render(homers, grids, becki_terminals, blocko_cloud_servers , compilation_servers);
+        Html content =   websocket.render(homers, becki_terminals, blocko_cloud_servers , compilation_servers);
         return return_page(content);
     }
 
