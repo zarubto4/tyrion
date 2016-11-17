@@ -50,7 +50,7 @@ public class Global extends GlobalSettings {
 
            //8
            logger.warn("Creating Administrator");
-           UtilTools.set_Developer_objects();
+           Basic_Data.set_Developer_objects();
     //****************************************************************************************************************************
 
            logger.warn("Creating demo data");

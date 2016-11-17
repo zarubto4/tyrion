@@ -34,7 +34,6 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.Server;
-import utilities.UtilTools;
 import utilities.becki_widgets.Becki_Widget_Generator;
 import utilities.becki_widgets.Becki_Color;
 import utilities.emails.EmailTool;
@@ -1327,7 +1326,7 @@ public class ProgramingPackageController extends Controller {
             version_object.refresh();
 
             // Nahrání na Azure
-             UtilTools.uploadAzure_Version(file_content, "program.js", b_program.get_path() , version_object);
+             FileRecord.uploadAzure_Version(file_content, "program.js", b_program.get_path() , version_object);
 
             // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson( version_object.b_program.program_version(version_object) ));

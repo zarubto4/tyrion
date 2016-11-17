@@ -20,7 +20,6 @@ import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import play.mvc.*;
 import utilities.Server;
-import utilities.UtilTools;
 import utilities.emails.EmailTool;
 import utilities.enums.Approval_state;
 import utilities.enums.Firmware_type;
@@ -465,7 +464,7 @@ public class CompilationLibrariesController extends Controller {
 
             // Content se nahraje na Azure
 
-            UtilTools.uploadAzure_Version(content.toString(), "code.json" , c_program.get_path() ,  version_object);
+            FileRecord.uploadAzure_Version(content.toString(), "code.json" , c_program.get_path() ,  version_object);
 
 
             String token = request().getHeader("X-AUTH-TOKEN"); // Určen pro exetrní vlákno zpracování
@@ -850,7 +849,7 @@ public class CompilationLibrariesController extends Controller {
 
             // Content se nahraje na Azure
 
-            UtilTools.uploadAzure_Version(content.toString(), "code.json" , c_program.get_path() ,  version_object);
+            FileRecord.uploadAzure_Version(content.toString(), "code.json" , c_program.get_path() ,  version_object);
 
 
             String token = request().getHeader("X-AUTH-TOKEN"); // Určen pro exetrní vlákno zpracování
@@ -1044,8 +1043,8 @@ public class CompilationLibrariesController extends Controller {
                    if( body != null) {
                         // Daný soubor potřebuji dostat na Azure a Propojit s verzí
 
-                        String binary_file_in_string = UtilTools.get_encoded_binary_string_from_body(body);
-                        c_compilation.bin_compilation_file = UtilTools.create_Binary_file( c_compilation.get_path() , binary_file_in_string, "compilation.bin");
+                        String binary_file_in_string = FileRecord.get_encoded_binary_string_from_body(body);
+                        c_compilation.bin_compilation_file = FileRecord.create_Binary_file( c_compilation.get_path() , binary_file_in_string, "compilation.bin");
 
                         logger.debug("File succesfuly restored in Azure!");
                     }
@@ -1253,8 +1252,8 @@ public class CompilationLibrariesController extends Controller {
 
             // Existuje Homer?
 
-             String binary_file = UtilTools.get_encoded_binary_string_from_File(file);
-             FileRecord fileRecord = UtilTools.create_Binary_file("byzance-private/binaryfiles", binary_file, file_name);
+             String binary_file = FileRecord.get_encoded_binary_string_from_File(file);
+             FileRecord fileRecord = FileRecord.create_Binary_file("byzance-private/binaryfiles", binary_file, file_name);
              ActualizationController.add_new_actualization_request_with_user_file(board.project, firmware_type, board, fileRecord);
 
             return GlobalResult.result_ok();
@@ -1973,7 +1972,7 @@ public class CompilationLibrariesController extends Controller {
                 File libraryFile = file.getFile();
 
 
-                UtilTools.uploadAzure_Version(libraryFile, "library.txt", library_group.get_path(), version_object);
+                FileRecord.uploadAzure_Version(libraryFile, "library.txt", library_group.get_path(), version_object);
 
             }
 
@@ -2491,7 +2490,7 @@ public class CompilationLibrariesController extends Controller {
 
             // Nahraji soubor na Azure
 
-            UtilTools.uploadAzure_Version(libraryFile, "library.txt",  version_object.single_library.get_path() ,version_object);
+            FileRecord.uploadAzure_Version(libraryFile, "library.txt",  version_object.single_library.get_path() ,version_object);
 
             // Vrácení verze
             return GlobalResult.result_ok(Json.toJson(version_object));
@@ -3317,7 +3316,7 @@ public class CompilationLibrariesController extends Controller {
             int slash = file_path.indexOf("/");
             String file_name = file_path.substring(slash+1);
 
-            type_of_board.picture = UtilTools.uploadAzure_File(file, file_name, file_path);
+            type_of_board.picture = FileRecord.uploadAzure_File(file, file_name, file_path);
             type_of_board.update();
 
 
@@ -3430,8 +3429,8 @@ public class CompilationLibrariesController extends Controller {
             if (!file_type.equals(".bin")) return GlobalResult.result_BadRequest("Wrong type of File - \"Bin\" required! ");
             if ((file.length() / 1024) > 500) return GlobalResult.result_BadRequest("File is bigger than 500Kb");
 
-            String binary_file = UtilTools.get_encoded_binary_string_from_File(file);
-            FileRecord filerecord  = UtilTools.create_Binary_file( boot_loader.get_path(), binary_file, "bootloader.bin");
+            String binary_file = FileRecord.get_encoded_binary_string_from_File(file);
+            FileRecord filerecord  = FileRecord.create_Binary_file( boot_loader.get_path(), binary_file, "bootloader.bin");
 
             boot_loader.file = filerecord;
             filerecord.boot_loader = boot_loader;

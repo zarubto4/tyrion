@@ -1012,11 +1012,9 @@ public class PersonController extends Controller {
 
             String file_path = person.get_picture_path();
 
-            int slash = file_path.indexOf("/");
-            String file_name = file_path.substring(slash+1);
+            String file_name = file_path.substring(file_path.indexOf("/") + 1);
 
-            FileRecord fileRecord = UtilTools.uploadAzure_File(file, file_name, file_path);
-            person.picture = fileRecord;
+            person.picture = FileRecord.uploadAzure_File(file, file_name, file_path);
             person.update();
 
 

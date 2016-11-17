@@ -11,7 +11,6 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.UtilTools;
 import utilities.enums.*;
 import utilities.fakturoid.Fakturoid_Controller;
 import utilities.goPay.GoPay_Controller;
@@ -311,7 +310,7 @@ public class Finance_Controller extends Controller {
                         if(help.company_invoice_email == null)      return GlobalResult.result_BadRequest("company_invoice_email is required with this tariff");
 
                         if(help.vat_number != null) {
-                            if (!UtilTools.controll_vat_number(help.vat_number))return GlobalResult.badRequest("Prefix code in VatNumber is not valid");
+                            if (!Payment_Details.control_vat_number(help.vat_number))return GlobalResult.badRequest("Prefix code in VatNumber is not valid");
                             payment_details.company_vat_number = help.vat_number;
                         }
 
@@ -659,7 +658,7 @@ public class Finance_Controller extends Controller {
                 if (help.company_invoice_email == null)     return GlobalResult.result_BadRequest("company_invoice_email is required with this tariff");
 
                 if (help.vat_number != null) {
-                    if (!UtilTools.controll_vat_number(help.vat_number))
+                    if (!Payment_Details.control_vat_number(help.vat_number))
                         return GlobalResult.badRequest("Prefix code in VatNumber is not valid");
                     payment_details.company_vat_number = help.vat_number;
                 }
