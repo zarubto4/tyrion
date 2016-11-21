@@ -322,7 +322,7 @@ public class ActualizationController extends Controller {
 
         try {
 
-            NotificationController.new_actualization_request_homer_instance( SecurityController.getPerson(), program_cloud);
+            NotificationController.new_actualization_request_homer_instance( project, program_cloud);
 
             logger.debug("Incoming new Actualization request under program_cloud!");
 
@@ -603,9 +603,6 @@ public class ActualizationController extends Controller {
 
     }
 
-    public static void hardware_disconnected(Board board){
-        logger.debug("Device disconnected: " + board.id);
-    }
 
 
 

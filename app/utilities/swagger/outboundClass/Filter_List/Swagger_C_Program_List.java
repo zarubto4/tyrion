@@ -45,10 +45,7 @@ public class Swagger_C_Program_List {
 
             help.c_program_id = c_program.id;
             help.c_program_name = c_program.name;
-            help.c_program_version_id = c_program.version_objects.get(0).id;
-            help.c_program_version_name = c_program.version_objects.get(0).version_name;
-            help.type_of_board_id = c_program.type_of_board.id;
-            help.type_of_board_name = c_program.type_of_board.name;
+            help.c_program_description = c_program.description;
 
             this.content.add(help);
         }

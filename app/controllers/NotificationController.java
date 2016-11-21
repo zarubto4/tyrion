@@ -181,14 +181,16 @@ public class NotificationController extends Controller {
 
   }
 
-  public static void new_actualization_request_homer_instance(Person person, Homer_Instance homer_instance){
+  public static void new_actualization_request_homer_instance(Project project, Homer_Instance homer_instance){
 
-    Notification notification = new Notification(Notification_importance.low, Notification_level.info, person)
-            .setText("New actualization task was added to Task Queue on ")
-            .setObject(Swagger_B_Program_Version_New.class, homer_instance.actual_instance.version_object.id, "Version " + homer_instance.actual_instance.version_object.version_name, homer_instance.actual_instance.version_object.b_program.project_id()  );
+    for(Person person : project.ownersOfProject) {
+      Notification notification = new Notification(Notification_importance.low, Notification_level.info, person)
+              .setText("New actualization task was added to Task Queue on ")
+              .setObject(Swagger_B_Program_Version_New.class, homer_instance.actual_instance.version_object.id, "Version " + homer_instance.actual_instance.version_object.version_name, homer_instance.actual_instance.version_object.b_program.project_id());
 
 
-    send_notification(person, notification);
+      send_notification(person, notification);
+    }
 
   }
 

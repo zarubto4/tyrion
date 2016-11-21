@@ -545,15 +545,10 @@ public class CompilationLibrariesController extends Controller {
             // Kontrola oprávnění
             if(!version_object.c_program.delete_permission()) return GlobalResult.forbidden_Permission();
 
-            // Smažu obsah konkrétní verze
-            Product product = Product.find.where().eq("projects.c_programs.version_objects.id", version_id).findUnique();
-
-            for(FileRecord fileRecord : version_object.files)fileRecord.delete();
-
-            version_object.c_program = null;
+            version_object.removed_by_user = true;
 
             // Smažu zástupný objekt
-            version_object.delete();
+            version_object.update();
 
             // Vracím potvrzení o smazání
             return GlobalResult.result_ok();
@@ -1005,7 +1000,7 @@ public class CompilationLibrariesController extends Controller {
 
             NotificationController.starting_of_compilation(SecurityController.getPerson(), version_object);
 
-            JsonNode compilation_result = WebSocketController.compiler_server_make_Compilation(SecurityController.getPerson(), result);
+            JsonNode compilation_result = Cloud_Compilation_Server.make_Compilation(result);
 
 
             // V případě úspěšného buildu obsahuje příchozí JsonNode buildUrl
@@ -1163,7 +1158,7 @@ public class CompilationLibrariesController extends Controller {
 
 
             // Odesílám na compilační cloud_compilation_server
-            JsonNode compilation_result = WebSocketController.compiler_server_make_Compilation(SecurityController.getPerson(), result);
+            JsonNode compilation_result = Cloud_Compilation_Server.make_Compilation(result);
             ObjectMapper mapper = new ObjectMapper();
 
             // V případě úspěšného buildu obsahuje příchozí JsonNode buildUrl
@@ -1274,8 +1269,6 @@ public class CompilationLibrariesController extends Controller {
             // nejsou databázovaný a tedy nejde spustit regulérní update procedura na kterou jsme zvyklé - viz metoda nad tímto
             // Slouží jen pro Admin rozhraní Tyriona
 
-            if(!WebSocketController.incomingConnections_homers.containsKey(instance_id)) return GlobalResult.notFoundObject("Instance Homer not found");
-
             Firmware_type firmware_type = Firmware_type.getFirmwareType(firmware_type_string);
             if (firmware_type == null) return GlobalResult.notFoundObject("FirmwareType not found!");
 
@@ -1306,20 +1299,21 @@ public class CompilationLibrariesController extends Controller {
 
             ObjectNode request = Json.newObject();
             request.put("messageChannel", "tyrion");
+            request.put("instanceId", instance_id);
             request.put("messageType", "updateDevice");
             request.put("firmware_type", firmware_type.get_firmwareType());
             request.set("targetIds",  Json.toJson(list));
             request.put("build_id", build_id);
             request.put("program", UtilTools.get_encoded_binary_string_from_File(file));
 
+            // TODO - tohle nejde nějak domylset
+            // ObjectNode result =  WebSocketController.incomingConnections_homers.get(instance_id).write_with_confirmation(request, 1000*30, 0, 3);
 
-            ObjectNode result =  WebSocketController.incomingConnections_homers.get(instance_id).write_with_confirmation(request, 1000*30, 0, 3);
-
-            if(result.get("status").asText().equals("success")) {
+            if(request.get("status").asText().equals("success")) {
                 return GlobalResult.result_ok();
             }
             else {
-                return GlobalResult.result_BadRequest(result);
+                return GlobalResult.result_BadRequest(request);
             }
 
         } catch (Exception e) {
@@ -3498,6 +3492,7 @@ public class CompilationLibrariesController extends Controller {
     ///###################################################################################################################*/
 
     @ApiOperation(value = "create Board",
+            hidden =  true,
             tags = { "Board"},
             notes = "This Api is using only for developing mode, for registration of our Board - in future it will be used only by machine in factory or " +
                     "boards themselves with \"registration procedure\". Its not allowed to delete that! Only deactivate. Classic User can registed that to own " +
@@ -3854,40 +3849,22 @@ public class CompilationLibrariesController extends Controller {
             // uprava desky
             board.project = project;
             project.boards.add(board);
+            board.update();
+            project.update();
+
 
             if(board.type_of_board.connectible_to_internet){
 
-                logger.debug("CompilationControler:: Deska je připojitelná k internetu");
+                logger.debug("CompilationController:: connect_Board_with_Project:: Deska je připojitelná k internetu");
 
                 Homer_Instance instance = project.private_instance;
                 instance.boards_in_virtual_instance.add(board);
+                board.virtual_instance_under_project = instance;
                 instance.update();
-
-                if(instance.boards_in_virtual_instance.size() == 1){
-
-                    //Nahraji instnaci do Homer Serveru WS_BlockoServer blockoServer, Homer_Instance instance, boolean with_uploud_to_server
-                    // Je server kde by to mělo běžet online?
-                    if(instance.cloud_homer_server.server_is_online()) {
-                        WebSocketController.homer_server_add_instance( instance.cloud_homer_server.get_websocketServer() ,instance);
-
-                    }else {
-                        logger.debug("CompilationControler:: Server s instnací pro přidání instance byl ofline");
-                    }
-
-                }
-
-                if(instance.instance_online()) {
-                    WebSocketController.homer_instance_add_Yoda_to_instance( instance.get_instance(), board.id);
-                }
-
-
-
-
+                board.update();
+                instance.add_Yoda_to_instance(board_id);
             }
 
-            // Update databáze -> propojení
-            project.update();
-            board.update();
 
              // vrácení objektu
              return GlobalResult.result_ok(Json.toJson(board));

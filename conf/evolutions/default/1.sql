@@ -28,12 +28,12 @@ create table b_program (
   id                        varchar(255) not null,
   name                      varchar(255),
   description               TEXT,
-  instance_id               varchar(255),
+  instance_blocko_instance_name varchar(255),
   last_update               timestamp,
   date_of_create            timestamp,
   project_id                varchar(255),
   azure_b_program_link      varchar(255),
-  constraint uq_b_program_instance_id unique (instance_id),
+  constraint uq_b_program_instance_blocko_ins unique (instance_blocko_instance_name),
   constraint pk_b_program primary key (id))
 ;
 
@@ -80,7 +80,7 @@ create table board (
   actual_boot_loader_id     varchar(255),
   latest_know_server_id     varchar(255),
   private_homer_servers_id  varchar(255),
-  virtual_instance_under_project_id varchar(255),
+  virtual_instance_under_project_blocko_instance_name varchar(255),
   constraint pk_board primary key (id))
 ;
 
@@ -278,26 +278,25 @@ create table hash_tag (
 ;
 
 create table homer_instance (
-  id                        varchar(255) not null,
+  blocko_instance_name      varchar(255) not null,
   cloud_homer_server_id     varchar(255),
   private_server_id         varchar(255),
-  blocko_instance_name      varchar(255),
   virtual_instance          boolean,
   constraint uq_homer_instance_private_server unique (private_server_id),
-  constraint pk_homer_instance primary key (id))
+  constraint pk_homer_instance primary key (blocko_instance_name))
 ;
 
 create table homer_instance_record (
   id                        varchar(255) not null,
   websocket_grid_token      varchar(255),
-  main_instance_history_id  varchar(255),
+  main_instance_history_blocko_instance_name varchar(255),
   date_of_created           timestamp,
   running_from              timestamp,
   running_to                timestamp,
   planed_when               timestamp,
   version_object_id         varchar(255),
-  actual_running_instance_id varchar(255),
-  constraint uq_homer_instance_record_actual_ unique (actual_running_instance_id),
+  actual_running_instance_blocko_instance_name varchar(255),
+  constraint uq_homer_instance_record_actual_ unique (actual_running_instance_blocko_instance_name),
   constraint pk_homer_instance_record primary key (id))
 ;
 
@@ -526,10 +525,10 @@ create table project (
   id                        varchar(255) not null,
   name                      varchar(255),
   description               varchar(255),
-  private_instance_id       varchar(255),
+  private_instance_blocko_instance_name varchar(255),
   product_id                bigint,
   blob_project_link         varchar(255),
-  constraint uq_project_private_instance_id unique (private_instance_id),
+  constraint uq_project_private_instance_bloc unique (private_instance_blocko_instance_name),
   constraint pk_project primary key (id))
 ;
 
@@ -600,6 +599,7 @@ create table version_object (
   version_description       TEXT,
   author_id                 varchar(255),
   public_version            boolean,
+  removed_by_user           boolean,
   date_of_create            timestamp,
   library_group_id          varchar(255),
   single_library_id         varchar(255),
@@ -735,8 +735,6 @@ create sequence general_tariff_label_seq;
 
 create sequence general_tariff_extensions_seq;
 
-create sequence homer_instance_seq;
-
 create sequence homer_instance_record_seq;
 
 create sequence invitation_seq;
@@ -801,8 +799,8 @@ alter table b_pair add constraint fk_b_pair_device_board_pair_5 foreign key (dev
 create index ix_b_pair_device_board_pair_5 on b_pair (device_board_pair_id);
 alter table b_pair add constraint fk_b_pair_main_board_pair_6 foreign key (main_board_pair_id) references b_program_hw_group (id);
 create index ix_b_pair_main_board_pair_6 on b_pair (main_board_pair_id);
-alter table b_program add constraint fk_b_program_instance_7 foreign key (instance_id) references homer_instance (id);
-create index ix_b_program_instance_7 on b_program (instance_id);
+alter table b_program add constraint fk_b_program_instance_7 foreign key (instance_blocko_instance_name) references homer_instance (blocko_instance_name);
+create index ix_b_program_instance_7 on b_program (instance_blocko_instance_name);
 alter table b_program add constraint fk_b_program_project_8 foreign key (project_id) references project (id);
 create index ix_b_program_project_8 on b_program (project_id);
 alter table blocko_block add constraint fk_blocko_block_author_9 foreign key (author_id) references person (id);
@@ -825,8 +823,8 @@ alter table board add constraint fk_board_latest_know_server_17 foreign key (lat
 create index ix_board_latest_know_server_17 on board (latest_know_server_id);
 alter table board add constraint fk_board_private_homer_server_18 foreign key (private_homer_servers_id) references private_homer_server (id);
 create index ix_board_private_homer_server_18 on board (private_homer_servers_id);
-alter table board add constraint fk_board_virtual_instance_und_19 foreign key (virtual_instance_under_project_id) references homer_instance (id);
-create index ix_board_virtual_instance_und_19 on board (virtual_instance_under_project_id);
+alter table board add constraint fk_board_virtual_instance_und_19 foreign key (virtual_instance_under_project_blocko_instance_name) references homer_instance (blocko_instance_name);
+create index ix_board_virtual_instance_und_19 on board (virtual_instance_under_project_blocko_instance_name);
 alter table boot_loader add constraint fk_boot_loader_type_of_board_20 foreign key (type_of_board_id) references type_of_board (id);
 create index ix_boot_loader_type_of_board_20 on boot_loader (type_of_board_id);
 alter table boot_loader add constraint fk_boot_loader_main_type_of_b_21 foreign key (main_type_of_board_id) references type_of_board (id);
@@ -873,12 +871,12 @@ alter table homer_instance add constraint fk_homer_instance_cloud_homer_41 forei
 create index ix_homer_instance_cloud_homer_41 on homer_instance (cloud_homer_server_id);
 alter table homer_instance add constraint fk_homer_instance_private_ser_42 foreign key (private_server_id) references private_homer_server (id);
 create index ix_homer_instance_private_ser_42 on homer_instance (private_server_id);
-alter table homer_instance_record add constraint fk_homer_instance_record_main_43 foreign key (main_instance_history_id) references homer_instance (id);
-create index ix_homer_instance_record_main_43 on homer_instance_record (main_instance_history_id);
+alter table homer_instance_record add constraint fk_homer_instance_record_main_43 foreign key (main_instance_history_blocko_instance_name) references homer_instance (blocko_instance_name);
+create index ix_homer_instance_record_main_43 on homer_instance_record (main_instance_history_blocko_instance_name);
 alter table homer_instance_record add constraint fk_homer_instance_record_vers_44 foreign key (version_object_id) references version_object (id);
 create index ix_homer_instance_record_vers_44 on homer_instance_record (version_object_id);
-alter table homer_instance_record add constraint fk_homer_instance_record_actu_45 foreign key (actual_running_instance_id) references homer_instance (id);
-create index ix_homer_instance_record_actu_45 on homer_instance_record (actual_running_instance_id);
+alter table homer_instance_record add constraint fk_homer_instance_record_actu_45 foreign key (actual_running_instance_blocko_instance_name) references homer_instance (blocko_instance_name);
+create index ix_homer_instance_record_actu_45 on homer_instance_record (actual_running_instance_blocko_instance_name);
 alter table invitation add constraint fk_invitation_owner_46 foreign key (owner_id) references person (id);
 create index ix_invitation_owner_46 on invitation (owner_id);
 alter table invitation add constraint fk_invitation_project_47 foreign key (project_id) references project (id);
@@ -919,12 +917,12 @@ alter table post add constraint fk_post_author_64 foreign key (author_id) refere
 create index ix_post_author_64 on post (author_id);
 alter table private_homer_server add constraint fk_private_homer_server_proje_65 foreign key (project_id) references project (id);
 create index ix_private_homer_server_proje_65 on private_homer_server (project_id);
-alter table private_homer_server add constraint fk_private_homer_server_b_pro_66 foreign key (private_server_id) references homer_instance (id);
+alter table private_homer_server add constraint fk_private_homer_server_b_pro_66 foreign key (private_server_id) references homer_instance (blocko_instance_name);
 create index ix_private_homer_server_b_pro_66 on private_homer_server (private_server_id);
 alter table product add constraint fk_product_general_tariff_67 foreign key (general_tariff_id) references general_tariff (id);
 create index ix_product_general_tariff_67 on product (general_tariff_id);
-alter table project add constraint fk_project_private_instance_68 foreign key (private_instance_id) references homer_instance (id);
-create index ix_project_private_instance_68 on project (private_instance_id);
+alter table project add constraint fk_project_private_instance_68 foreign key (private_instance_blocko_instance_name) references homer_instance (blocko_instance_name);
+create index ix_project_private_instance_68 on project (private_instance_blocko_instance_name);
 alter table project add constraint fk_project_product_69 foreign key (product_id) references product (id);
 create index ix_project_product_69 on project (product_id);
 alter table single_library add constraint fk_single_library_product_70 foreign key (product_id) references product (id);
@@ -1175,8 +1173,6 @@ drop sequence if exists general_tariff_seq;
 drop sequence if exists general_tariff_label_seq;
 
 drop sequence if exists general_tariff_extensions_seq;
-
-drop sequence if exists homer_instance_seq;
 
 drop sequence if exists homer_instance_record_seq;
 

@@ -36,7 +36,8 @@ public class Version_Object extends Model {
 
                                                 @JsonIgnore @ApiModelProperty(required = true)  public boolean public_version;
 
-
+    // OBJEKT V KOŠI!! - SLOUŽÍ K ODSTRANĚNÍ Z POHLEDU UŽIVATELE - ALE NIKOLIV Z DATABÁZE!
+    public boolean removed_by_user; // Defaultně false - když true - tak se to nemá uživateli vracet!
 
     @ApiModelProperty(required = true,
             dataType = "integer", readOnly = true,

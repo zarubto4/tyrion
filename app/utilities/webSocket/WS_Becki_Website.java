@@ -27,7 +27,6 @@ public class WS_Becki_Website extends  WebSCType {
     public void onClose() {
         System.out.println("Local_Terminal onClose " + super.identifikator);
         this.close();
-        WebSocketController.becki_disconnect(this);
     }
 
     public void person_connection_onClose(WS_Becki_Single_Connection becki){
@@ -36,19 +35,6 @@ public class WS_Becki_Website extends  WebSCType {
         if(all_person_Connections.containsKey(becki.identifikator)) {
             System.out.println("Contains becki a tak jí smažu");
             all_person_Connections.remove(becki.identifikator);
-        }
-        if(all_person_Connections.isEmpty()){
-            System.out.println("Už žádné připojení uživatele id=" + super.identifikator );
-            System.out.println("Odmazávám z centrální mapy" );
-            // smažu z mapy připojení
-            WebSocketController.becki_website.remove(super.identifikator);
-
-            // a informuji odběratele o tom že je nikdo neodebírá
-            for(WebSCType homer : super.subscribers_becki){
-                WebSocketController.homer_instance_unsubscribe_blocko_instance( (WS_Homer_Cloud) homer);
-            }
-
-            this.onClose();
         }
 
     }

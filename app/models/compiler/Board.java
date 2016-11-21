@@ -4,6 +4,8 @@ import com.avaje.ebean.Expr;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import controllers.ActualizationController;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
 import models.project.b_program.B_Pair;
@@ -12,7 +14,11 @@ import models.project.b_program.servers.Cloud_Homer_Server;
 import models.project.b_program.servers.Private_Homer_Server;
 import models.project.c_program.actualization.C_Program_Update_Plan;
 import models.project.global.Project;
+import play.data.Form;
 import utilities.swagger.outboundClass.Swagger_Board_status;
+import utilities.webSocket.WS_BlockoServer;
+import utilities.webSocket.messageObjects.WS_DeviceConnected;
+import utilities.webSocket.messageObjects.WS_YodaConnected;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -127,7 +133,110 @@ public class Board extends Model {
 
 
     @JsonProperty  @Transient @ApiModelProperty(required = true) public boolean up_to_date_firmware()        { return  (c_program_update_plans == null);    }
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public boolean update_boot_loader_required(){ return (type_of_board.main_boot_loader == null || actual_boot_loader == null) ? true : !this.type_of_board.main_boot_loader.id.equals(this.actual_boot_loader.id);}
+    @JsonProperty  @Transient @ApiModelProperty(required = true) public boolean update_boot_loader_required(){ return  (type_of_board.main_boot_loader == null || actual_boot_loader == null) ? true : !this.type_of_board.main_boot_loader.id.equals(this.actual_boot_loader.id);}
+
+
+/* BOARD WEBSOCKET CONTROLLING UNDER INSTANCE --------------------------------------------------------------------------*/
+
+
+    @JsonIgnore @Transient  public static void master_device_Connected(WS_BlockoServer server, ObjectNode json){
+        try {
+
+            // Zpracování Json
+            final Form<WS_YodaConnected> form = Form.form(WS_YodaConnected.class).bind(json);
+            if(form.hasErrors()){logger.error("Incoming Json for Yoda has not right Form");return;}
+
+            WS_YodaConnected help = form.get();
+            Board master_device = Board.find.byId(help.deviceId);
+
+            if(master_device == null){
+                logger.error("Board:: master_device_Connected:: Unregistered Hardware connected to Blocko cloud_blocko_server:: ", server.identifikator);
+                logger.error("Board:: master_device_Connected:: Unregistered Hardware:: ",  help.deviceId);
+                return;
+            }
+
+            logger.debug("Board:: master_device_Connected:: Board connected to Blocko cloud_blocko_server:: ", help.deviceId);
+
+            // Pokud se Yoda přihlásil poprvé - a nikdy neměl intanci a asi nemá ani klienta!
+            if(master_device.latest_know_server == null){
+
+                logger.debug("Board:: master_device_Connected:: ", help.deviceId, " The Board is not yet matched the Server");
+                Cloud_Homer_Server cloud_server = Cloud_Homer_Server.find.where().eq("server_name", server.identifikator).findUnique();
+                if(cloud_server == null) {
+                    logger.error("Board:: master_device_Connected:: ", help.deviceId, " Cloud_Homer_Server not exist!!!!");
+                    return;
+                }
+
+                cloud_server.boards.add(master_device);
+                cloud_server.refresh();
+                cloud_server.update();
+
+                master_device.refresh();
+                master_device.latest_know_server = cloud_server;
+                master_device.is_active = true;
+                master_device.update();
+            }
+
+
+
+            // Požádám o kontrolu zda nečeká nějaká nová aktualizační procedura - pro Yodu nebo jeho device
+            ActualizationController.hardware_connected(master_device, help);
+
+        }catch (Exception e){
+            logger.error("Board:: master_device_Connected:: ERROR::", e);
+        }
+    }
+
+    @JsonIgnore @Transient  public static void master_device_Disconnected(ObjectNode json){
+        try {
+
+        }catch (Exception e){
+            logger.error("Board:: master_device_Disconnected:: ERROR:: ", e);
+        }
+    }
+
+    @JsonIgnore @Transient  public static void device_Connected(WS_BlockoServer server, ObjectNode json){
+        try {
+
+            // Zpracování Json
+            final Form<WS_DeviceConnected> form = Form.form(WS_DeviceConnected.class).bind(json);
+            if(form.hasErrors()){ logger.error("Incoming Json from Device has not right Form"); return; }
+
+            WS_DeviceConnected help = form.get();
+
+            Board device = Board.find.byId(help.deviceId);
+
+            if(device == null){
+                logger.warn("WARN! WARN! WARN! WARN!");
+                logger.warn("Unregistered Hardware connected to Blocko cloud_blocko_server - " + server.identifikator);
+                logger.warn("Unregistered Hardware: " +  help.deviceId);
+                logger.warn("WARN! WARN! WARN! WARN!");
+                return;
+            }
+
+
+            if(!device.is_active ){
+                device.is_active = true;
+                device.update();
+            }
+
+            // Požádám o kontrolu zda nečeká nějaká nová aktualizační procedura - pro Yodu nebo jeho device
+            ActualizationController.hardware_connected(device, help);
+
+        }catch (Exception e){
+            logger.error("Board:: device_Connected:: ERROR:: ", e);
+        }
+    }
+
+    @JsonIgnore @Transient  public static void device_Disconnected(ObjectNode json){
+        try {
+
+        }catch (Exception e){
+            logger.error("Board:: device_Disconnected:: ERROR:: ", e);
+        }
+    }
+
+
 
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
@@ -142,10 +251,6 @@ public class Board extends Model {
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean read_permission()  {  return  (project != null && project.read_permission()  )|| SecurityController.getPerson().has_permission("Board_read")  ;}
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return  (project != null && project.update_permission())|| SecurityController.getPerson().has_permission("Board_delete");}
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission(){  return  (project != null && project.update_permission())|| SecurityController.getPerson().has_permission("Board_update");}
-
-
-
-
 
 
     public enum permissions {Board_read, Board_Create, Board_edit, Board_delete, Board_update}

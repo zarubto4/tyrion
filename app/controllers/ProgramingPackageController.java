@@ -8,7 +8,6 @@ import models.blocko.BlockoBlock;
 import models.blocko.BlockoBlockVersion;
 import models.blocko.TypeOfBlock;
 import models.compiler.Board;
-import models.compiler.FileRecord;
 import models.compiler.TypeOfBoard;
 import models.compiler.Version_Object;
 import models.notification.Notification;
@@ -50,9 +49,6 @@ import utilities.swagger.outboundClass.Filter_List.Swagger_Homer_List;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Type_Of_Block_List;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Swagger_BlockoBlock_Version_scheme;
-import utilities.webSocket.WS_BlockoServer;
-import utilities.webSocket.WS_Homer_Cloud;
-import utilities.webSocket.WebSCType;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -1309,7 +1305,7 @@ public class ProgramingPackageController extends Controller {
             version_object.save();
 
             // Úprava objektu
-            b_program.version_objects.add(version_object);
+            b_program.getVersion_objects().add(version_object);
 
             // Uložení objektu
             b_program.update();
@@ -1360,20 +1356,6 @@ public class ProgramingPackageController extends Controller {
             // Kontrola oprávění
             if (! program.delete_permission() ) return GlobalResult.forbidden_Permission();
 
-
-            // Před smazáním blocko programu je nutné smazat jeho běžící cloud instance
-            List<Homer_Instance> blockoInstnaces = Homer_Instance.find.where().eq("version_object.b_program.id", program.id).findList();
-
-
-            for(Homer_Instance blockoInstnace : blockoInstnaces){
-               if(  WebSocketController.blocko_servers.containsKey(blockoInstnace.cloud_homer_server.server_name)){
-
-                   WS_BlockoServer server = (WS_BlockoServer)  WebSocketController.blocko_servers.get(blockoInstnace.cloud_homer_server.server_name);
-                   WebSocketController.homer_server_remove_instance( server, blockoInstnace.blocko_instance_name);
-                   if(WebSocketController.incomingConnections_homers.containsKey( blockoInstnace.blocko_instance_name ))   WebSocketController.incomingConnections_homers.get(blockoInstnace.blocko_instance_name).onClose();
-               }
-            }
-
             // Smazání objektu
             program.delete();
 
@@ -1419,27 +1401,9 @@ public class ProgramingPackageController extends Controller {
             // Kontrola oprávnění
             if (! version_object.b_program.delete_permission() ) return GlobalResult.forbidden_Permission();
 
-
-            // Před smazáním verze je nutné smazat jeho běžící cloud instanco
-            //* Jestli tedy nějaké
-            if(version_object.instance_record != null) {
-                Homer_Instance blockoInstnace = Homer_Instance.find.where().eq("b_program.version_objects.id", version_id).findUnique();
-
-                Cloud_Homer_Server server_cloud = Cloud_Homer_Server.find.where().eq("cloud_instances.id", blockoInstnace.id).findUnique();
-
-                if (WebSocketController.blocko_servers.containsKey(server_cloud.server_name)) {
-
-                    WS_BlockoServer server = (WS_BlockoServer) WebSocketController.blocko_servers.get(blockoInstnace.cloud_homer_server.server_name);
-                    WebSocketController.homer_server_remove_instance(server, blockoInstnace.blocko_instance_name);
-
-                    if (WebSocketController.incomingConnections_homers.containsKey(blockoInstnace.blocko_instance_name))
-                        WebSocketController.incomingConnections_homers.get(blockoInstnace.blocko_instance_name).onClose();
-                }
-
-            }
-
             // Smazání objektu
-            version_object.delete();
+            version_object.removed_by_user = true;
+            version_object.update();
 
             // Vrácení potvrzení
             return GlobalResult.result_ok();
@@ -1595,16 +1559,7 @@ public class ProgramingPackageController extends Controller {
 
                         //1. Pokud už běží v jiné instanci mimo vlastní dočasnou instnaci
                         if (yoda.virtual_instance_under_project != null) {
-
-                            if(yoda.virtual_instance_under_project.instance_online()) {
-                                WebSocketController.homer_instance_remove_Yoda_from_instance( yoda.virtual_instance_under_project.get_instance(), yoda.id);
-                            }
-
-                            logger.debug("Yoda měl už vlastní historickou instanci! Proto jí musím smazat a to i z Homer serveru");
-                            yoda.virtual_instance_under_project = null;
-
-
-                            yoda.update(); //Tohle bude dělat problémy když ten HW nebude ok v následující podmíncE!!
+                            yoda.virtual_instance_under_project.remove_board_from_virtual_instance(yoda);
                         }
 
                         if(group.device_board_pairs != null) {
@@ -1630,7 +1585,13 @@ public class ProgramingPackageController extends Controller {
             //Určím podle časové konstanty zda nahraju hned nebo až za chvíli
             if(record.planed_when != null) return GlobalResult.result_ok();
 
+
+            b_program.instance.actual_instance.actual_running_instance = null;
+            b_program.instance.actual_instance.update();
+
             b_program.instance.actual_instance = record;
+            record.actual_running_instance = b_program.instance;
+            record.update();
             b_program.instance.update();
 
             Person person = SecurityController.getPerson();
@@ -1643,33 +1604,19 @@ public class ProgramingPackageController extends Controller {
 
                         // Ověřím připojený server
                         if (!WebSocketController.blocko_servers.containsKey(b_program.instance.cloud_homer_server.server_name)) {
-                            NotificationController.upload_Instance_was_unsuccessfull(person, b_program.instance, "Server is offline now. It will be uploaded as soon as possible");
+                            NotificationController.upload_Instance_was_unsuccessfull(person, b_program.instance, "Server is offline. It will be uploaded as soon as possible");
                             logger.warn("Server je offline!! Nenahraju instanci!!");
                             return;
                         }
 
                         // Server je připojený
                         try {
-                            // Vytvářím instanci na serveru
-                            WS_BlockoServer server = (WS_BlockoServer) WebSocketController.blocko_servers.get(b_program.instance.cloud_homer_server.server_name);
 
-                            WebSCType homer;
-                            if (!WebSocketController.incomingConnections_homers.containsKey(b_program.instance.blocko_instance_name)) {
 
-                                // Založím instanci a nahraji do ní první informace
-                                homer = WebSocketController.homer_server_add_instance(server, b_program.instance);
-
+                            if (!record.main_instance_history.instance_online()) {
+                                 record.main_instance_history.add_instance_to_server();
                             } else {
-
-                                // Najdu Instanci Homera
-                                homer = WebSocketController.incomingConnections_homers.get(b_program.instance.blocko_instance_name);
-
-                                // Najdu soubor s kodem pro Blocko
-                                FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "program.js").findUnique();
-
-                                // Updajtuji instanci Blocka s novým kodem
-                                WebSocketController.homer_instance_upload_blocko_program((WS_Homer_Cloud) homer, b_program.instance.actual_instance.version_object.id, fileRecord.get_fileRecord_from_Azure_inString());
-
+                                 record.main_instance_history.update_instance_to_actual_instance_record();
                             }
 
                             // Zpouštím aktualizační proceduru na sesynchronizování HW a verzí
@@ -1781,15 +1728,11 @@ public class ProgramingPackageController extends Controller {
             Cloud_Homer_Server server = Cloud_Homer_Server.find.where().eq("server_name", help.server_name).findUnique();
             if(server == null) return GlobalResult.notFoundObject("Server not found");
 
+            JsonNode result = server.add_temporary_instance(help.instance_name);
 
-            WebSCType result = WebSocketController.homer_server_add_temporary_instance(server.get_websocketServer(), help.instance_name);
+            if(result.get("status").asText().equals("success")) return GlobalResult.result_ok(result);
+            else return GlobalResult.result_BadRequest(result);
 
-            if(result != null){
-                // Vrácení potvrzení
-                return GlobalResult.result_ok();
-            }else {
-                return GlobalResult.result_BadRequest("Creating instnace Faild");
-            }
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }
@@ -1815,14 +1758,11 @@ public class ProgramingPackageController extends Controller {
 
             if(!homer_instance.instance_online()) return GlobalResult.notFoundObject("Homer_Instance is not online");
 
-            JsonNode result = WebSocketController.homer_instance_upload_blocko_program(homer_instance.get_instance(), "fake_program", help.code );
+            JsonNode result = homer_instance.upload_blocko_program("fake_program", help.code );
 
-            if(result.has("status") && result.get("status").asText().equals("success")){
-                // Vrácení potvrzení
-                return GlobalResult.result_ok();
-            }else {
-                return GlobalResult.result_BadRequest(result);
-            }
+            if(result.has("status") && result.get("status").asText().equals("success")) return GlobalResult.result_ok();
+            return GlobalResult.result_BadRequest(result);
+
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }
@@ -1838,14 +1778,11 @@ public class ProgramingPackageController extends Controller {
 
             if(!homer_instance.instance_online()) return GlobalResult.notFoundObject("Homer_Instance on Tyrion is not online");
 
-            JsonNode result = WebSocketController.homer_instance_ping_instance(homer_instance.get_instance());
 
-            if(result.has("status") && result.get("status").asText().equals("success")){
-                // Vrácení potvrzení
-                return GlobalResult.result_ok();
-            }else {
-                return GlobalResult.result_BadRequest(result);
-            }
+            JsonNode result = homer_instance.ping();
+
+            if(result.has("status") && result.get("status").asText().equals("success")) return GlobalResult.result_ok();
+            return GlobalResult.result_BadRequest(result);
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }
@@ -1854,30 +1791,18 @@ public class ProgramingPackageController extends Controller {
     @ApiOperation(value = "Only for Tyrion Front End",  hidden = true)
     public Result instance_add_yoda(String instance_name, String yoda_id){
         try{
-            JsonNode result;
 
             // Kontrola objektu
-            if(! WebSocketController.incomingConnections_homers.containsKey(instance_name)) {
+            Homer_Instance homer_instance = Homer_Instance.find.where().eq("blocko_instance_name", instance_name).findUnique();
+            if (homer_instance == null) return GlobalResult.notFoundObject("Homer_Instance id not found");
 
-                Homer_Instance homer_instance = Homer_Instance.find.where().eq("blocko_instance_name", instance_name).findUnique();
-                if (homer_instance == null) return GlobalResult.notFoundObject("Homer_Instance id not found");
+            if (!homer_instance.instance_online()) return GlobalResult.notFoundObject("Homer_Instance on Tyrion is not online");
 
-                if (!homer_instance.instance_online()) return GlobalResult.notFoundObject("Homer_Instance on Tyrion is not online");
+            JsonNode result = homer_instance.add_Yoda_to_instance( yoda_id);
 
-                 result = WebSocketController.homer_instance_add_Yoda_to_instance(homer_instance.get_instance(), yoda_id);
+            if(result.has("status") && result.get("status").asText().equals("success")) return GlobalResult.result_ok();
+            return GlobalResult.result_BadRequest(result);
 
-            }else {
-                result = WebSocketController.homer_instance_add_Yoda_to_instance( (WS_Homer_Cloud) WebSocketController.incomingConnections_homers.get(instance_name), yoda_id);
-            }
-
-
-
-            if(result.has("status") && result.get("status").asText().equals("success")){
-                // Vrácení potvrzení
-                return GlobalResult.result_ok();
-            }else {
-                return GlobalResult.result_BadRequest(result);
-            }
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }
@@ -1886,30 +1811,18 @@ public class ProgramingPackageController extends Controller {
     @ApiOperation(value = "Only for Tyrion Front End",  hidden = true)
     public Result instance_remove_yoda(String instance_name, String yoda_id){
         try{
-            JsonNode result;
 
-            // Kontrola objektu
-            if(! WebSocketController.incomingConnections_homers.containsKey(instance_name)) {
+            Homer_Instance homer_instance = Homer_Instance.find.where().eq("blocko_instance_name", instance_name).findUnique();
+            if (homer_instance == null) return GlobalResult.notFoundObject("Homer_Instance id not found");
 
-                Homer_Instance homer_instance = Homer_Instance.find.where().eq("blocko_instance_name", instance_name).findUnique();
-                if (homer_instance == null) return GlobalResult.notFoundObject("Homer_Instance id not found");
+            if (!homer_instance.instance_online()) return GlobalResult.notFoundObject("Homer_Instance on Tyrion is not online");
 
-                if (!homer_instance.instance_online()) return GlobalResult.notFoundObject("Homer_Instance on Tyrion is not online");
-
-                result = WebSocketController.homer_instance_remove_Yoda_from_instance(homer_instance.get_instance(), yoda_id);
-
-            }else {
-                result = WebSocketController.homer_instance_remove_Yoda_from_instance( (WS_Homer_Cloud)  WebSocketController.incomingConnections_homers.get(instance_name), yoda_id);
-            }
+            JsonNode result = homer_instance.remove_Yoda_from_instance(yoda_id);
 
 
-            if(result.has("status") && result.get("status").asText().equals("success")){
-                // Vrácení potvrzení
-                return GlobalResult.result_ok();
+            if(result.has("status") && result.get("status").asText().equals("success")) return GlobalResult.result_ok();
+            return GlobalResult.result_BadRequest(result);
 
-            }else {
-                return GlobalResult.result_BadRequest(result);
-            }
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }
@@ -1918,33 +1831,23 @@ public class ProgramingPackageController extends Controller {
     @ApiOperation(value = "Only for Tyrion Front End",  hidden = true)
     public Result instance_add_device(String instance_name, String yoda_id, String device_id){
         try{
-            // Kontrola objektu
-            JsonNode result;
 
+            // Transformace na seznam
             List<String> list_of_devices = new ArrayList<>();
             list_of_devices.add(device_id);
 
             // Kontrola objektu
-            if(! WebSocketController.incomingConnections_homers.containsKey(instance_name)) {
+            Homer_Instance homer_instance = Homer_Instance.find.where().eq("blocko_instance_name", instance_name).findUnique();
+            if (homer_instance == null) return GlobalResult.notFoundObject("Homer_Instance id not found");
 
-                Homer_Instance homer_instance = Homer_Instance.find.where().eq("blocko_instance_name", instance_name).findUnique();
-                if (homer_instance == null) return GlobalResult.notFoundObject("Homer_Instance id not found");
-
-                if (!homer_instance.instance_online()) return GlobalResult.notFoundObject("Homer_Instance on Tyrion is not online");
-
-                result = WebSocketController.homer_instance_add_Device_to_instance(homer_instance.get_instance(), yoda_id, list_of_devices);
-
-            }else {
-                result = WebSocketController.homer_instance_add_Device_to_instance( (WS_Homer_Cloud) WebSocketController.incomingConnections_homers.get(instance_name), yoda_id, list_of_devices);
-            }
+            if (!homer_instance.instance_online()) return GlobalResult.notFoundObject("Homer_Instance on Tyrion is not online");
 
 
-            if(result.has("status") && result.get("status").asText().equals("success")){
-                // Vrácení potvrzení
-                return GlobalResult.result_ok();
-            }else {
-                return GlobalResult.result_BadRequest(result);
-            }
+            JsonNode result = homer_instance.add_Device_to_instance(yoda_id, list_of_devices);
+
+            if(result.has("status") && result.get("status").asText().equals("success")) return GlobalResult.result_ok();
+            return GlobalResult.result_BadRequest(result);
+
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }
@@ -1953,32 +1856,22 @@ public class ProgramingPackageController extends Controller {
     @ApiOperation(value = "Only for Tyrion Front End",  hidden = true)
     public Result instance_remove_device(String instance_name, String yoda_id, String device_id){
         try{
-            // Kontrola objektu
-            JsonNode result;
-
+            // Transformace na seznam
             List<String> list_of_devices = new ArrayList<>();
             list_of_devices.add(device_id);
 
             // Kontrola objektu
-            if(! WebSocketController.incomingConnections_homers.containsKey(instance_name)) {
+            Homer_Instance homer_instance = Homer_Instance.find.where().eq("blocko_instance_name", instance_name).findUnique();
+            if (homer_instance == null) return GlobalResult.notFoundObject("Homer_Instance id not found");
 
-                Homer_Instance homer_instance = Homer_Instance.find.where().eq("blocko_instance_name", instance_name).findUnique();
-                if (homer_instance == null) return GlobalResult.notFoundObject("Homer_Instance id not found");
+            if (!homer_instance.instance_online()) return GlobalResult.notFoundObject("Homer_Instance on Tyrion is not online");
 
-                if (!homer_instance.instance_online()) return GlobalResult.notFoundObject("Homer_Instance on Tyrion is not online");
 
-                result = WebSocketController.homer_instance_remove_Device_from_instance(homer_instance.get_instance(), yoda_id, list_of_devices);
+            JsonNode result = homer_instance.remove_Device_from_instance(yoda_id, list_of_devices);
 
-            }else {
-                result = WebSocketController.homer_instance_remove_Device_from_instance( (WS_Homer_Cloud) WebSocketController.incomingConnections_homers.get(instance_name), yoda_id, list_of_devices);
-            }
+            if(result.has("status") && result.get("status").asText().equals("success")) return GlobalResult.result_ok();
+            return GlobalResult.result_BadRequest(result);
 
-            if(result.has("status") && result.get("status").asText().equals("success")){
-                // Vrácení potvrzení
-                return GlobalResult.result_ok();
-            }else {
-                return GlobalResult.result_BadRequest(result);
-            }
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }
@@ -1987,28 +1880,22 @@ public class ProgramingPackageController extends Controller {
 
 
     @ApiOperation(value = "Only for Tyrion Front End",  hidden = true)
+    @Security.Authenticated(Secured_Admin.class)
     public Result instance_shut_down(String instance_name){
         try{
+
             // Kontrola objektu
-            Homer_Instance homer_instance = Homer_Instance.find.where().eq("blocko_instance_name",instance_name).findUnique();
+            Homer_Instance homer_instance = Homer_Instance.find.where().eq("blocko_instance_name", instance_name).findUnique();
             if (homer_instance == null) return GlobalResult.notFoundObject("Homer_Instance id not found");
 
-            if(!homer_instance.instance_online()) return GlobalResult.notFoundObject("Homer_Instance on Tyrion is not online");
+            if (!homer_instance.instance_online()) return GlobalResult.notFoundObject("Homer_Instance on Tyrion is not online");
 
-            WS_Homer_Cloud homer_cloud = (WS_Homer_Cloud) homer_instance.get_instance();
 
-            JsonNode result = WebSocketController.homer_server_remove_instance(homer_cloud.blockoServer, instance_name);
+            JsonNode result =  homer_instance.cloud_homer_server.remove_instance(homer_instance.blocko_instance_name);
 
-            if(result.has("status") && result.get("status").asText().equals("success")){
+            if(result.has("status") && result.get("status").asText().equals("success")) return GlobalResult.result_ok();
+            return GlobalResult.result_BadRequest(result);
 
-                homer_instance.delete();
-                return GlobalResult.result_ok();
-
-            }else {
-
-                homer_instance.delete();
-                return GlobalResult.result_BadRequest(result);
-            }
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }
@@ -2017,34 +1904,27 @@ public class ProgramingPackageController extends Controller {
 
 
 
-    @ApiOperation(value = "send command to instance",
-    // SLouží k zasílání příkazů (různých) z jakkýchkoliv vazeb na objekty do Homera nebo instance
-            hidden = true
-    )
+    @ApiOperation(value = "send command to instance", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
     public Result send_command_to_instance(String instance_name, String target_id, String string_command){
         try{
-
-            if(! WebSocketController.incomingConnections_homers.containsKey(instance_name)) return GlobalResult.result_BadRequest("Instance is offline");
 
             // Kontrola oprávnění
             Board board = Board.find.byId(target_id);
             if (board == null) return GlobalResult.notFoundObject("Board targetId not found");
 
+            // Kontrola objektu
             Type_of_command command = Type_of_command.getTypeCommand(string_command);
             if(command == null) return GlobalResult.notFoundObject("Command not found!");
 
+            // Kontrola objektu
+            Homer_Instance homer_instance = Homer_Instance.find.where().eq("blocko_instance_name", instance_name).findUnique();
+            if (homer_instance == null) return GlobalResult.notFoundObject("Homer_Instance id not found");
 
-            // Updajtuju sice kod ? Ale nikoliv HW?
-            JsonNode result = WebSocketController.homer_instance_devices_commands( (WS_Homer_Cloud) WebSocketController.incomingConnections_homers.get(instance_name), target_id, command);
+            JsonNode result = homer_instance.devices_commands(target_id, command);
 
-            if(result.has("state") && result.get("state").asText().equals("success")){
-                // Vrácení potvrzení
-                return GlobalResult.result_ok();
-
-            }else {
-                return GlobalResult.result_ok(result);
-            }
+            if(result.has("status") && result.get("status").asText().equals("success")) return GlobalResult.result_ok();
+            return GlobalResult.result_BadRequest(result);
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());

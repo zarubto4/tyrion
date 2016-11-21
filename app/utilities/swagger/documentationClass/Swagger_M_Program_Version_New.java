@@ -7,6 +7,8 @@ public class Swagger_M_Program_Version_New {
 
 
     @Constraints.Required
+    @Constraints.MinLength(value = 4, message = "The name must have at least 4 characters")
+    @Constraints.MaxLength(value = 255, message = "The description must not have more than 255 characters.")
     @ApiModelProperty(required = true, value = "Required valid screen_type_id")
     public String version_name;
 

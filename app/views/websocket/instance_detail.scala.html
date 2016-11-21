@@ -8,14 +8,14 @@
 @import models.compiler.Board
 @import models.compiler.BootLoader
 @import utilities.Server
-@import utilities.webSocket.{WS_Homer_Cloud, WebSCType}
+@import utilities.webSocket.{ WebSCType}
 
-@(homer: WS_Homer_Cloud)
+@(instance: Homer_Instance)
 
 
 
 <section class="content-header">
-    <h1> Instance <small> detail: @homer.identifikator</small> </h1>
+    <h1> Instance <small> detail: @instance.blocko_instance_name</small> </h1>
     <ol class="breadcrumb">
         <li><a href="@routes.DashboardController.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
         <li class="active"><i class="fa fa-heart"></i> Websocket connections </li>
@@ -32,143 +32,181 @@
                 <div id="instance_detail" class="box-body box-profile">
                     <h3 class="text-center">Instance:</h3>
 
-                    <p class="text-muted text-center"> @homer.identifikator</p>
+                    <p class="text-muted text-center"> @instance.blocko_instance_name</p>
 
-                    @if(Homer_Instance.find.where().eq("blocko_instance_name", homer.identifikator).findRowCount() == 0){
-                        <p class="text-red text-center"> Temporary Instance </p>
-                    }else {
-                        @if(homer.virtual_instance) {
+                        @if(instance.virtual_instance) {
                             <p class="text-orange text-center"> Virtual Instance </p>
                         } else {
-                            <p class="text-green text-center"> Databased </p>
+                            <p class="text-green text-center"> Standard </p>
                         }
-                    }
 
                     <ul class="list-group list-group-unbordered">
                         <li class="list-group-item">
                             <b>Owner</b> <a class="pull-right">
-                                @if(homer.virtual_instance){
+                                @if(instance.virtual_instance){
                                     <p class="text-red text-center"> Byzance Developer </p>
                                 }else{
-                                    <p class="text-green text-center"> TODO!!!!!!!</p>
+                                    <p class="text-green text-center"> User </p>
                                 }
                             </a>
                         </li>
 
-                        @if( B_Program.find.where().eq("version_objects.id", homer.version_id ).findUnique() != null) {
-                            <li class="list-group-item">
-                                <b>B_Program ID</b> <a class="pull-right">
-                                @B_Program.find.where().eq("version_objects.id", homer.version_id).findUnique().id)
-                            </a>
-                            </li>
-                            <li class="list-group-item">
-                                <b>B_Program Název</b>
-                                <a class="pull-right">
-                                    @B_Program.find.where().eq("version_objects.id", homer.version_id).findUnique().name
+                        @if(instance.b_program != null) {
 
-                                </a>
+                            <li class="list-group-item">
+                                <b>B_Program ID:: </b>
+                                @instance.b_program.id
+                            </li>
+
+                            <li class="list-group-item">
+                                <b>B_Program Název:: </b>
+                                @instance.b_program.name
                             </li>
                         }
-                        <li class="list-group-item">
-                            <b>Version ID:</b> <a class="pull-right">@homer.version_id</a>
-                        </li>
-                        <li class="list-group-item">
-                            <b>Server name</b> <a class="pull-right">@homer.blockoServer.identifikator</a>
-                        </li>
+
+                        @if(instance.project != null) {
+
+                            <li class="list-group-item">
+                                <b>Project ID:: </b>
+                                @instance.project.id
+                            </li>
+
+                            <li class="list-group-item">
+                                <b>Project Název:: </b>
+                                @instance.project.name
+                            </li>
+                        }
+
+                        @if(instance.actual_instance != null) {
+
+                            <li class="list-group-item">
+                                <b>Version ID:</b>@instance.actual_instance.version_object.id
+                            </li>
+                            <li class="list-group-item">
+                                <b>Server name</b> @instance.cloud_homer_server.server_name
+                            </li>
+                        }
                     </ul>
 
                     <a onclick="showAddMasterDeviceModal()" class="btn btn-warning btn-block"> <b>Add Master board to Instance</b> </a>
-                    <a onclick="showUploadBlockoProgram('@homer.identifikator')"  class="btn btn-primary btn-block"> <b>Upload Blocko Program</b>        </a>
+                    <a onclick="showUploadBlockoProgram('@instance.blocko_instance_name')"  class="btn btn-primary btn-block"> <b>Upload Blocko Program</b>        </a>
                 </div>
             </div>
         </div>
         <div class="col-xs-9">
             <div id="device_summary_table" class="box">
-            @for(x <- homer.group){
-                <div class="box box-primary">
+            @if(instance.actual_instance != null){
+                @if( instance.actual_instance.version_object != null ){
+                    @if(  instance.actual_instance.version_object.b_program_hw_groups != null ){
+                        @for(x <- instance.actual_instance.version_object.b_program_hw_groups){
+                            <div class="box box-primary">
+                                <div class="box-body table-responsive no-padding">
+                                    <div class="box-header">
+                                        <h3 class="box-title"> Yoda: @x.main_board_pair.id </h3>
+                                        <div class="pull-right">
+                                            <div class="btn-group">
+
+                                                @if(BootLoader.find.where().eq("main_type_of_board.boards.id", x.main_board_pair.id  ).findUnique() != null){
+                                                    @if(Board.find.byId( x.main_board_pair.id ).update_boot_loader_required()) {
+                                                        <a  onclick="updateBootLoader('@x.main_board_pair.id')" class="btn btn-primary btn-sm" ><b>Update Firmware</b></a>
+                                                    }else {
+                                                        <p class="lead text-green">(Actual)</p>
+                                                        <a class="btn btn-success btn-sm disabled" ><b> Bootloader Up To date </b></a>
+                                                    }
+                                                }else{
+                                                    <a  onclick="executeCommand('' ,'')" class="btn btn-danger btn-sm disabled" ><b>Missing bootloader</b></a>
+                                                }
+
+                                            <a onclick="executeCommand('@x.main_board_pair.id ','@Type_of_command.INFO_STATE.get_command')" class="btn btn-info btn-sm"><b>Ping Yoda</b></a>
+
+                                                @if(Board.find.byId(x.main_board_pair.id) == null) {
+                                                    <a onclick="showCommandDeviceModal('@x.main_board_pair.id ', false, 'Yoda')" class="btn btn-info btn-sm"><b>Open Commander</b></a>
+                                                }else{
+                                                    <a onclick="showCommandDeviceModal('@x.main_board_pair.id ', true, 'Yoda')" class="btn btn-info btn-sm"><b>Open Commander</b></a>
+                                                }
+                                            <a onclick="showAddDeviceModal('@x.main_board_pair.id ')" class="btn btn-warning btn-sm"><b>Add new Device</b></a>
+                                            <a onclick="removeMasterDevice('@x.main_board_pair.id ')" class="btn btn-danger btn-sm"><b>Remove Yoda</b></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <table class="table table-bordered">
+                                        <tr>
+                                            <th>Device Id</th>
+                                            <th>Type Of Board</th>
+                                            <th>User Name</th>
+                                            <th>BootLoader</th>
+                                            <th>Commands</th>
+                                            <th>Remove</th>
+                                        </tr>
+
+                                        @for(b_pair <- x.device_board_pairs) {
+
+                                            <tr>
+                                                <td> @b_pair.board.id</td>
+                                                <td> @b_pair.board.type_of_board.name</td>
+                                                <td> @b_pair.board.personal_description</td>
+                                                <td>
+                                                @if(BootLoader.find.where().eq("main_type_of_board.id", b_pair.board.id ).findUnique() != null){
+                                                    @if(b_pair.board.update_boot_loader_required()) {
+                                                        <button  type="button" class="commandButton btn btn-primary   btn-sm"  onclick="updateBootLoader('@b_pair.board.id ')">Update Firmware</button>
+                                                    }else {
+                                                        <p class="text-green">(Actual)</p>
+                                                    }
+                                                }else{
+                                                    <p class="text-red">(Missing bootloader)</p>
+                                                }
+                                                </td>
+                                                <td><a onclick="showCommandDeviceModal('@b_pair.board.id ', true, '@b_pair.board.type_of_board.name')" class="btn btn-info btn-sm"><b>Open Commander</b></a></td>
+                                                <td><a onclick="removeDevice('@x.main_board_pair.id','@b_pair.board.id ')" class="btn btn-danger btn-sm"><b>Remove Device</b></a></td>
+                                            </tr>
+
+
+                                        }
+
+
+                                    </table>
+                                </div>
+                            </div>
+                        }
+
+                    }
+
+                }
+            }else {
+                @for(x <- instance.getBoards_in_virtual_instance()){
+                    <div class="box box-primary">
                         <div class="box-body table-responsive no-padding">
-                           <div class="box-header">
-                                <h3 class="box-title"> Yoda: @x.yodaId </h3>
+                            <div class="box-header">
+                                <h3 class="box-title"> Yoda: @x.id </h3>
                                 <div class="pull-right">
                                     <div class="btn-group">
 
-                                            @if(BootLoader.find.where().eq("main_type_of_board.boards.id", x.yodaId ).findUnique() != null){
-                                                @if(Board.find.byId( x.yodaId).update_boot_loader_required()) {
-                                                    <a  onclick="updateBootLoader('@x.yodaId')" class="btn btn-primary btn-sm" ><b>Update Firmware</b></a>
-                                                }else {
-                                                    <p class="lead text-green">(Actual)</p>
-                                                    <a class="btn btn-success btn-sm disabled" ><b> Bootloader Up To date </b></a>
-                                                }
-                                            }else{
-                                                <a  onclick="executeCommand('' ,'')" class="btn btn-danger btn-sm disabled" ><b>Missing bootloader</b></a>
+                                        @if(BootLoader.find.where().eq("main_type_of_board.boards.id", x.id  ).findUnique() != null){
+                                            @if(Board.find.byId( x.id ).update_boot_loader_required()) {
+                                                <a  onclick="updateBootLoader('@x.id')" class="btn btn-primary btn-sm" ><b>Update Firmware</b></a>
+                                            }else {
+                                                <p class="lead text-green">(Actual)</p>
+                                                <a class="btn btn-success btn-sm disabled" ><b> Bootloader Up To date </b></a>
                                             }
+                                        }else{
+                                            <a  onclick="executeCommand('' ,'')" class="btn btn-danger btn-sm disabled" ><b>Missing bootloader</b></a>
+                                        }
 
-                                            <a onclick="executeCommand('@x.yodaId','@Type_of_command.INFO_STATE.get_command')" class="btn btn-info btn-sm"><b>Ping Yoda</b></a>
+                                    <a onclick="executeCommand('@x.id ','@Type_of_command.INFO_STATE.get_command')" class="btn btn-info btn-sm"><b>Ping Yoda</b></a>
 
-                                            @if(Board.find.byId(x.yodaId) == null) {
-                                                <a onclick="showCommandDeviceModal('@x.yodaId', false, 'Yoda')" class="btn btn-info btn-sm"><b>Open Commander</b></a>
-                                            }else{
-                                                <a onclick="showCommandDeviceModal('@x.yodaId', true, 'Yoda')" class="btn btn-info btn-sm"><b>Open Commander</b></a>
-                                            }
-                                            <a onclick="showAddDeviceModal('@x.yodaId')" class="btn btn-warning btn-sm"><b>Add new Device</b></a>
-                                            <a onclick="removeMasterDevice('@x.yodaId')" class="btn btn-danger btn-sm"><b>Remove Yoda</b></a>
+                                        @if(Board.find.byId(x.id) == null) {
+                                            <a onclick="showCommandDeviceModal('@x.id ', false, 'Yoda')" class="btn btn-info btn-sm"><b>Open Commander</b></a>
+                                        }else{
+                                            <a onclick="showCommandDeviceModal('@x.id ', true, 'Yoda')" class="btn btn-info btn-sm"><b>Open Commander</b></a>
+                                        }
+                                    <a onclick="showAddDeviceModal('@x.id ')" class="btn btn-warning btn-sm"><b>Add new Device</b></a>
+                                    <a onclick="removeMasterDevice('@x.id ')" class="btn btn-danger btn-sm"><b>Remove Yoda</b></a>
                                     </div>
                                 </div>
                             </div>
-                            <table class="table table-bordered">
-                                <tr>
-                                    <th>Device Id</th>
-                                    <th>Type Of Board</th>
-                                    <th>User Name</th>
-                                    <th>BootLoader</th>
-                                    <th>Commands</th>
-                                    <th>Remove</th>
-                                </tr>
-
-                                @if(x.devicesId != null && x.devicesId.size() > 0 ){
-
-
-                                        @for(board_id <- x.devicesId) {
-
-                                            @if(Board.find.byId(board_id) == null) {
-                                                    <tr>
-                                                        <td>@board_id</td>
-                                                        <td>Virtual</td>
-                                                        <td>---</td>
-                                                        <td>---</td>
-                                                        <td><a onclick="showCommandDeviceModal('@board_id', false, 'Virtual Device')" class="btn btn-info btn-sm"><b>Open Commander</b></a></td>
-                                                        <td><a onclick="removeDevice('@x.yodaId','@board_id')" class="btn btn-danger btn-sm"><b>Remove Device</b></a></td>
-                                                    </tr>
-
-                                            }else{
-
-                                                @for(board_object <- Board.find.where().eq("id", board_id).findList()){
-                                                    <tr>
-                                                            <td> @board_object.id</td>
-                                                            <td> @board_object.type_of_board.name</td>
-                                                            <td> @board_object.personal_description</td>
-                                                            <td>
-                                                                @if(BootLoader.find.where().eq("main_type_of_board.id", board_object.type_of_board.id ).findUnique() != null){
-                                                                    @if(board_object.update_boot_loader_required()) {
-                                                                       <button  type="button" class="commandButton btn btn-primary   btn-sm"  onclick="updateBootLoader('@board_object.id')">Update Firmware</button>
-                                                                    }else {
-                                                                        <p class="text-green">(Actual)</p>
-                                                                    }
-                                                                }else{
-                                                                    <p class="text-red">(Missing bootloader)</p>
-                                                                }
-                                                            </td>
-                                                            <td><a onclick="showCommandDeviceModal('@board_object.id', true, '@board_object.type_of_board.name')" class="btn btn-info btn-sm"><b>Open Commander</b></a></td>
-                                                            <td><a onclick="removeDevice('@x.yodaId','@board_object.id')" class="btn btn-danger btn-sm"><b>Remove Device</b></a></td>
-                                                    </tr>
-                                                }
-                                            }
-                                        }
-
-                                }
-                            </table>
                         </div>
-                </div>
+                    </div>
+                }
             }
             </div>
         </div>
@@ -202,8 +240,6 @@
         </div>
     </div>
 </section>
-
-
 
 
 <div id="uploadBlockoProgramModal" style="display: none;" class="modal">
@@ -426,8 +462,6 @@
     </div>
 
 
-
-
 <script>
             function showCommandDeviceModal(id, is_databased, deviceType){
 
@@ -525,7 +559,7 @@
                 formData.append('file', file);
 
                 $.ajax({
-                    url: '/admin_binary/' + '@homer.identifikator' + target_id + "/" +  build_id + "/" + firmwareType ,
+                    url: '/admin_binary/' + '@instance.blocko_instance_name' + target_id + "/" +  build_id + "/" + firmwareType ,
                     type: 'POST',
                     processData: false,  // tell jQuery not to process the data
                     contentType: false,  // tell jQuery not to set contentType
@@ -618,7 +652,7 @@
             function executeCommand(target_id, command){
 
                 $.ajax({
-                    url: '/instance/command/' + '@homer.identifikator' +"/" + target_id + "/" + command,
+                    url: '/instance/command/' + '@instance.blocko_instance_name' +"/" + target_id + "/" + command,
                     type: 'PUT',
                     contentType: 'application/json',
                     headers: {
@@ -687,8 +721,6 @@
 </script>
 
 
-
-
 <div id="addMasterDeviceModal" style="display: none;" class="modal">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -703,7 +735,7 @@
                         <label for="addMasterDeviceForm" class="col-sm-2 control-label">Instance ID:</label>
 
                         <div class="col-sm-10">
-                            <input type="text" class="form-control" name="instanceId" id="instanceId" value="@homer.identifikator" readonly>
+                            <input type="text" class="form-control" name="instanceId" id="instanceId" value="@instance.blocko_instance_name" readonly>
                         </div>
                     </div>
 
@@ -780,7 +812,7 @@
               var master_board_id = document.getElementById("addDeviceForm").elements.namedItem("master_board_id").value;
 
               $.ajax({
-                  url: '/instance/add_device/' +  '@homer.identifikator' + "/" + master_board_id + "/" + device_id,
+                  url: '/instance/add_device/' +  '@instance.blocko_instance_name' + "/" + master_board_id + "/" + device_id,
                   type: 'PUT',
                   headers: {
                       "X-AUTH-TOKEN":getCookie("authToken"),
@@ -809,7 +841,7 @@
           function removeDevice(master_board_id, device_id){
 
               $.ajax({
-                  url: '/instance/remove_device/' + '@homer.identifikator' + "/" + master_board_id + "/" + device_id,
+                  url: '/instance/remove_device/' + '@instance.blocko_instance_name' + "/" + master_board_id + "/" + device_id,
                   type: 'PUT',
                   headers: {
                       "X-AUTH-TOKEN":getCookie("authToken"),
@@ -839,7 +871,7 @@
               var master_device_id = document.getElementById("addMasterDeviceForm").elements.namedItem("master_device_id").value;
 
               $.ajax({
-                  url: '@routes.ProgramingPackageController.instance_add_yoda( homer.identifikator, "")' + master_device_id,
+                  url: '@routes.ProgramingPackageController.instance_add_yoda( instance.blocko_instance_name, "")' + master_device_id,
                   type: 'PUT',
                   headers: {
                       "X-AUTH-TOKEN":getCookie("authToken")
@@ -869,7 +901,7 @@
           function removeMasterDevice(id){
 
               $.ajax({
-                  url: '@routes.ProgramingPackageController.instance_remove_yoda(homer.identifikator, "" )' + id,
+                  url: '@routes.ProgramingPackageController.instance_remove_yoda( instance.blocko_instance_name, "" )' + id,
                   type: 'PUT',
                   headers: {
                       "X-AUTH-TOKEN":getCookie("authToken")

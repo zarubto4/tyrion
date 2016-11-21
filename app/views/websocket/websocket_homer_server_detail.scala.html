@@ -1,0 +1,288 @@
+
+@import models.project.b_program.servers.Cloud_Homer_Server
+@import models.project.b_program.instnace.Homer_Instance
+@import utilities.enums.Type_of_command
+
+@(homer_server: Cloud_Homer_Server)
+
+<section class="content-header">
+    <h1> Homer Server @homer_server.server_name  <small> service </small> </h1>
+    <ol class="breadcrumb">
+        <li><a href="@routes.DashboardController.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
+        <li class="active"><i class="fa fa-heart"></i> Websocket connections </li>
+    </ol>
+</section>
+
+<script type="text/javascript" src="@routes.DashboardController.javascriptRoutes"></script>
+
+<section class="content">
+
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+
+                <div class="box-header">
+                    <h3 class="box-title">Connected Homers (PC/RPI..)</h3>
+                    <div class="pull-right">
+                        <div class="btn-group">
+                            <button id="addDeviceButton" value="" class="btn btn-success" type="button" onclick="showAddTemporaryInstance()">ADD TEMPORARY INSTANCE</button>
+                        </div><!-- /.btn-group -->
+                    </div><!-- /.pull-right -->
+                </div>
+
+                <div class="box-body table-responsive no-padding">
+                    <table id="homer_table" class="table table-bordered">
+
+                        <tr>
+                            <th>Instance ID</th>
+                            <th>Segment</th>
+                            <th>Required Status</th>
+                            <th>Actual Status</th>
+                            <th>Open Details</th>
+                            <th>Get Status</th>
+                            <th>Disconnect</th>
+                        </tr>
+
+
+                        @for( x <- Homer_Instance.find.where().eq("cloud_homer_server.server_name", homer_server.server_name).findList()){
+                            <tr>
+
+                                <td>
+                                    @if(x.virtual_instance){
+                                        <p class="small text-red"> @x.blocko_instance_name</p>
+                                    }else{
+                                        <p class="small text-green"> @x.blocko_instance_name</p>
+                                    }
+                                </td>
+
+
+                                <td>
+                                    @if(x.virtual_instance){
+                                       Project ID: @x.project.id
+                                    }else{
+                                      B_Program ID: @x.b_program_id()
+                                    }
+                                </td>
+
+                                <td>
+                                @if(x.virtual_instance){
+                                   @if(x.getBoards_in_virtual_instance().size() > 0){
+                                       <p class="small text-red">yes</p>
+                                   }else{
+                                       <p class="small text-gray">no</p>
+                                   }
+                                }else{
+                                    @if(x.actual_instance != null){
+                                        <p class="small text-red">yes</p>
+                                    }else{
+                                        <p class="small text-gray">no</p>
+                                    }
+                                }
+                                </td>
+
+
+                                <td>
+                                    @if(!x.instance_online()){
+                                        <p class= "text-red"> offline </p>
+                                    }else{
+                                        <p class= "text-green"> online </p>
+                                    }
+                                </td>
+
+
+                                <td align="center">
+                                    <a href=' @routes.DashboardController.show_instance_detail( x.blocko_instance_name )' >
+                                        <button class="btn btn-block btn-info btn-xs">Details</button>
+                                    </a>
+                                </td>
+
+                                <td align="center">
+                                    <button onclick="ping_instance('@x.blocko_instance_name', '@Type_of_command.COMMAND_PING_INSTANCE.get_command')" class="btn btn-block btn-info btn-xs">Ping</button>
+                                </td>
+
+                                <td align="center">
+                                    <button onclick="disconnect_instance('@x.blocko_instance_name', '@Type_of_command.COMMAND_DISCONNECT_INSTANCE.get_command' )" class="btn btn-block btn-danger btn-xs">Disconnect</button>
+                                </td>
+
+                            </tr>
+                        }
+
+                    </table>
+                </div><!-- /.box-body -->
+
+
+            </div><!-- /.box -->
+        </div>
+    </div>
+
+</section>
+
+
+ <!-- /. MODALS---------------------------------------------------------------------------------------------------------->
+
+
+<div id="addTemporaryInstanceModal" style="display: none;" class="modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Device</h4>
+            </div>
+
+            <div class="modal-body">
+                <form id="addTemporaryInstanceForm">
+
+                    <label>Instnace ID: (Min 5 znaků) </label>
+                    <input style="display: block" type="text" id="instance_name" name="instance_name" >
+
+                    <input style="display: block" type="text" id="instance_name" name="server_name" value="@homer_server.server_name" >
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger pull-left" type="button" data-dismiss="modal" onclick="$('#addTemporaryInstanceModal').css('display','none')">Close</button>
+                <button id="addTemporaryInstanceButton" value="" class="btn btn-primary" type="button" onclick="add_TemporaryInstance()">Create temporary instance</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <script>
+
+         function showAddTemporaryInstance(){
+             $("#addTemporaryInstanceModal").css("display","block");
+         }
+
+         function add_TemporaryInstance(){
+
+             model_data = $("#addTemporaryInstanceForm").serializeObject();
+
+             $.ajax({
+                 url: '@routes.ProgramingPackageController.instance_add_temporary_instance()',
+                 type: 'PUT',
+                 contentType: 'application/json',
+                 headers: {
+                     "X-AUTH-TOKEN":getCookie("authToken"),
+                     "Content-Type":"application/json"
+                 },
+                 data: JSON.stringify(model_data),
+                 dataType: 'json',
+                 success:function(data, status){
+
+                     console.log(data);
+                     console.log(status);
+
+                     $('#addTemporaryInstanceModal').css('display','none');
+                     $("#addTemporaryInstanceForm input[type=text]").val("");
+                     $('#homer_table').load(document.URL +  ' #homer_table');
+
+                     BootstrapDialog.show({
+                         message:  syntaxHighlight(data),
+
+                         buttons: [{
+                             label: 'Close',
+                             action: function(dialogItself){
+                                 dialogItself.close();
+                             }
+                         }]
+
+                     });
+                 },
+                 error:function(data) {
+
+                     BootstrapDialog.show({
+                         message:  syntaxHighlight(data),
+                         type: BootstrapDialog.TYPE_DANGER,
+                         buttons: [{
+                             label: 'Close',
+                             action: function(dialogItself){
+                                 dialogItself.close();
+                             }
+                         }]
+                     });
+                 }
+             })}
+
+         function ping_instance(instance_id){
+
+             $.ajax({
+                 url: '@routes.DashboardController.ping_homer_instance("")' + instance_id,
+                 data : {
+                     instance_id: instance_id
+                 },
+                 type: 'GET',
+
+                 headers: {
+                     "X-AUTH-TOKEN":getCookie("authToken")
+                 },
+
+                 success:function(data, status){
+                     console.log(data);
+                     console.log(status);
+                     BootstrapDialog.show({
+                         message:  syntaxHighlight(data),
+
+                         buttons: [{
+                             label: 'Close',
+                             action: function(dialogItself){
+                                 dialogItself.close();
+                             }
+                         }]
+
+                     });
+                 },
+                 error:function(data) {
+                     BootstrapDialog.show({
+                         message:  syntaxHighlight(data),
+                         type: BootstrapDialog.TYPE_DANGER,
+                         buttons: [{
+                             label: 'Close',
+                             action: function(dialogItself){
+                                 dialogItself.close();
+                             }
+                         }]
+                     });
+                 }
+             })}
+
+         function disconnect_instance(instance_id){
+             $.ajax({
+                 url: '@routes.ProgramingPackageController.instance_shut_down("")' + instance_id,
+                 type: 'GET',
+
+                 headers: {
+                     "X-AUTH-TOKEN":getCookie("authToken")
+                 },
+
+                 success:function(data){
+                     BootstrapDialog.show({
+                         message:  syntaxHighlight(data),
+
+                         buttons: [{
+                             label: 'Close',
+                             action: function(dialogItself){
+                                 dialogItself.close();
+                             }
+                         }]
+
+                     });
+                     $('#homer').load(document.URL +  ' #homer');
+                 },
+                 error:function(data) {
+                     BootstrapDialog.show({
+                         message:  syntaxHighlight(data),
+                         type: BootstrapDialog.TYPE_DANGER,
+                         buttons: [{
+                             label: 'Close',
+                             action: function(dialogItself){
+                                 dialogItself.close();
+                             }
+                         }]
+
+                     });
+                 }
+             })}
+
+
+
+    </script>

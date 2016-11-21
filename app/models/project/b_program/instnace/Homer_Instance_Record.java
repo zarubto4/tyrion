@@ -39,7 +39,7 @@ public class Homer_Instance_Record  extends Model {
     @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String b_program_version_name()  {  return version_object.version_name;}
     @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String instance_record_id()      {  return this.id;}
 
-    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public List<B_Program_Hw_Group> hardware_group()    {  return version_object.b_program_hw_groups;}
+    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public List<B_Program_Hw_Group> hardware_group()               {  return version_object.b_program_hw_groups;}
     @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public List<M_Project_Program_SnapShot> m_project_snapshop()    {  return version_object.b_program_version_snapshots;}
 
 /* ENUMS PARAMETERS ----------------------------------------------------------------------------------------------------*/

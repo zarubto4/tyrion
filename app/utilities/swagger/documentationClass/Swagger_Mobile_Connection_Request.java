@@ -16,7 +16,4 @@ public class Swagger_Mobile_Connection_Request {
     @Constraints.Required
     public String version_object_id;
 
-    @Constraints.Required
-    public String terminal_token;
-
 }

@@ -1,6 +1,5 @@
 package controllers;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.*;
 import models.compiler.Version_Object;
@@ -413,7 +412,7 @@ public class GridController extends Controller {
 
             version_object.save();
 
-            main_m_program.version_objects.add(version_object);
+            main_m_program.getVersion_objects().add(version_object);
 
             ObjectNode content = Json.newObject();
             content.put("m_code", help.m_code);
@@ -453,15 +452,26 @@ public class GridController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Empty.class)
-    public Result remove_M_Program_version( @ApiParam(value = "m_program_id", required = true) String m_program_id) {
+    public Result remove_M_Program_version( @ApiParam(value = "m_program_version_id", required = true) String m_program_version_id) {
         try {
 
-            M_Program main_m_program = M_Program.find.byId( m_program_id );
-            if(main_m_program == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
+            // Získání objektu
+            Version_Object version_object  = Version_Object.find.byId(m_program_version_id);
 
-            if (!main_m_program.delete_permission()) return GlobalResult.forbidden_Permission();
+            // Kontrola objektu
+            if (version_object == null) return GlobalResult.notFoundObject("Version_Object id not found");
+            if (version_object.m_program == null) return GlobalResult.result_BadRequest("M_Project m_project_id not found");
 
-            return GlobalResult.result_ok( );
+            // Kontrola oprávnění
+            if (! version_object.m_program.delete_permission() ) return GlobalResult.forbidden_Permission();
+
+            // Smazání objektu
+            version_object.removed_by_user = true;
+            version_object.update();
+
+            // Vrácení potvrzení
+            return GlobalResult.result_ok();
+
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -690,7 +700,6 @@ public class GridController extends Controller {
         }
     }
 
-
     @ApiOperation(value = "get url + m_program code for Terminal",
             tags = {"APP-Api"},
             notes = "",
@@ -715,7 +724,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 477, message = "Instance is offline",     response = Result_BadRequest.class),
-            @ApiResponse(code = 478, message = "External Server Error",     response = Result_BadRequest.class),
+            @ApiResponse(code = 478, message = "External Server Error",   response = Result_BadRequest.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -736,23 +745,11 @@ public class GridController extends Controller {
             Version_Object version_object = Version_Object.find.where().eq("id",help.version_object_id).eq("m_program.id",help.m_program_id).findUnique();
             if(version_object == null) return GlobalResult.notFoundObject("M_program not found");
 
-            Grid_Terminal terminal = Grid_Terminal.find.byId( help.terminal_token);
-            if(terminal == null) return GlobalResult.notFoundObject("Grid_Terminal not found");
+            Swagger_Mobile_Connection_Summary summary = new Swagger_Mobile_Connection_Summary();
+            summary.url = "ws://" + record.actual_running_instance.cloud_homer_server.server_url + record.actual_running_instance.cloud_homer_server.grid_port + "/" + record.websocket_grid_token + "/";
+            summary.m_program = M_Program.get_m_code(version_object);
 
-
-
-            JsonNode result = WebSocketController.homer_instance_add_grid_token(record.actual_running_instance.get_instance(), help.terminal_token);
-
-            if(result.get("status").asText().equals("success")) {
-
-                Swagger_Mobile_Connection_Summary summary = new Swagger_Mobile_Connection_Summary();
-                summary.url = "ws://" + record.actual_running_instance.cloud_homer_server.server_url + record.actual_running_instance.cloud_homer_server.grid_port + "/" + record.websocket_grid_token + "/" +  help.terminal_token;
-                summary.m_program = M_Program.get_m_code(version_object);
-
-                return GlobalResult.created(Json.toJson(summary));
-            }else
-
-            return GlobalResult.result_external_server_error("External Server Error");
+            return GlobalResult.created(Json.toJson(summary));
 
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());

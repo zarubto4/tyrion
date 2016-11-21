@@ -67,9 +67,6 @@ public class Global extends GlobalSettings {
 
         logger.warn("Restarting Server - Time: " + new Date());
 
-        logger.warn("Disconnection all Homers");
-        WebSocketController.disconnect_all_homers();
-
         logger.warn("Disconnection all Blocko Servers");
         WebSocketController.disconnect_all_Blocko_Servers();
 

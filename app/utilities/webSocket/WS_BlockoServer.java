@@ -3,6 +3,7 @@ package utilities.webSocket;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.WebSocketController;
+import models.project.b_program.servers.Cloud_Homer_Server;
 import utilities.hardware_updater.Actualization_Task;
 
 import java.util.ArrayList;
@@ -11,16 +12,15 @@ import java.util.Map;
 
 public class WS_BlockoServer extends WebSCType{
 
-    // Zde si udržuju referenci na tímto serverem vytvořené virtuální homery, které jsem dal do globální mapy (incomingConnections_homers)
-    public Map<String, WebSCType> virtual_homers = new HashMap<>();
-    private WS_BlockoServer this_server;
+    public Map<String, WebSCType> virtual_homers = new HashMap<>();  // Zde si udržuju referenci na tímto serverem vytvořené virtuální homery, které jsem dal do globální mapy (incomingConnections_homers) - určeno pro vývojáře
+    public Cloud_Homer_Server server;
 
-    public WS_BlockoServer(String server_name, Map<String, WebSCType> blocko_servers) {
+    public WS_BlockoServer(Cloud_Homer_Server server, Map<String, WebSCType> blocko_servers) {
         super();
-        super.identifikator = server_name;
+        super.identifikator = server.server_name;
         super.maps = blocko_servers;
         super.webSCtype = this;
-        this_server = this;
+        this.server = server;
         this.update_thread.start();
     }
 
@@ -36,8 +36,9 @@ public class WS_BlockoServer extends WebSCType{
             entry.getValue().onClose();
         }
 
-       this.update_thread.stop();
-        WebSocketController.homer_server_is_disconnect(this);
+        this.update_thread.stop();
+        WebSocketController.blocko_servers.remove(super.identifikator);
+        server.is_disconnect();
     }
 
     @Override
@@ -99,8 +100,8 @@ public class WS_BlockoServer extends WebSCType{
 
                         System.out.println("Odesílám požadavek na aktualizaci!");
 
-                        if(task.homer != null){
-                            JsonNode result = WebSocketController.homer_instance_update_devices_firmware((WS_Homer_Cloud) task.homer, task.actualization_procedure_id, task.get_ids(), task.firmware_type, task.file_record);
+                        if(task.instance != null){
+                            JsonNode result = task.instance.update_devices_firmware(task.actualization_procedure_id, task.get_ids(), task.firmware_type, task.file_record);
                             System.out.println("Odpověď na Aktualizaci:" + result.toString());
                             System.out.println("Ještě neřeším reakci");
                             task_list.remove(task);

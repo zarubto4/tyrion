@@ -7,6 +7,7 @@ import models.compiler.Cloud_Compilation_Server;
 import models.compiler.TypeOfBoard;
 import models.person.Person;
 import models.person.SecurityRole;
+import models.project.b_program.instnace.Homer_Instance;
 import models.project.b_program.servers.Cloud_Homer_Server;
 import models.project.global.financial.GeneralTariff;
 import models.project.global.financial.GeneralTariff_Extensions;
@@ -41,6 +42,7 @@ import views.html.super_general.menu;
 import views.html.user_summary.user_summary;
 import views.html.websocket.instance_detail;
 import views.html.websocket.websocket;
+import views.html.websocket.websocket_homer_server_detail;
 import scala.collection.JavaConversions;
 
 import javax.inject.Inject;
@@ -123,12 +125,7 @@ public class DashboardController extends Controller {
         Map<String, WebSCType> map_compile =  WebSocketController.compiler_cloud_servers;
         for (Map.Entry<String, WebSCType> entry : map_compile.entrySet()) compilerServerMap.put(entry.getKey(), (WS_CompilerServer) entry.getValue());
 
-        Html content_html = dashboard.render(
-                blockoServerMap,
-                compilerServerMap,
-                Cloud_Homer_Server.find.all(),
-                Cloud_Compilation_Server.find.all()
-        );
+        Html content_html = dashboard.render();
 
         return ok( main.render(content_html) );
     }
@@ -288,65 +285,39 @@ public class DashboardController extends Controller {
     }
 
     @Security.Authenticated(Secured_Admin.class)
-    public Result ping_homer_server(String identificator) throws TimeoutException, InterruptedException {
+    public Result ping_homer_server(String identificator) {
         try {
 
-            if (WebSocketController.blocko_servers.containsKey(identificator)) {
-
-                JsonNode result = WebSocketController.homer_server_ping((WS_BlockoServer) WebSocketController.blocko_servers.get(identificator));
-                return GlobalResult.result_ok(result);
-            }
-            else {
-
-                ObjectNode result = Json.newObject();
-                result.put("status", "Homer server ID is not connected now");
-
-                return GlobalResult.result_BadRequest(result);
-            }
-
+            Cloud_Homer_Server  server = Cloud_Homer_Server.find.where().eq("server_name", identificator).findUnique();
+            JsonNode result = server.ping();
+            return GlobalResult.result_ok(result);
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
         }
     }
 
     @Security.Authenticated(Secured_Admin.class)
-    public Result ping_homer_instance(String instance_id) throws TimeoutException, InterruptedException {
+    public Result ping_homer_instance(String instance_id) {
         try {
 
-            if (WebSocketController.incomingConnections_homers.containsKey(instance_id)) {
-
-                JsonNode result = WebSocketController.homer_instance_ping_instance( (WS_Homer_Cloud) WebSocketController.incomingConnections_homers.get(instance_id));
-                return GlobalResult.result_ok(result);
-            }
-            else {
-
-                ObjectNode result = Json.newObject();
-                result.put("status", "Instance is not server ID is not connected now");
-
-                return GlobalResult.result_BadRequest(result);
-            }
-
+            Homer_Instance  instance = Homer_Instance.find.where().eq("blocko_instance_name", instance_id).findUnique();
+            JsonNode result = instance.ping();
+            return GlobalResult.result_ok(result);
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
         }
     }
 
     @Security.Authenticated(Secured_Admin.class)
-    public Result ping_compilation_server(String identificator) throws TimeoutException, InterruptedException, ExecutionException {
+    public Result ping_compilation_server(String identificator) {
         try {
 
-            if (WebSocketController.compiler_cloud_servers.containsKey(identificator)) {
+            Cloud_Compilation_Server server = Cloud_Compilation_Server.find.where().eq("server_name", identificator).findUnique();
+            JsonNode result = server.ping();
 
-                JsonNode result = WebSocketController.compiler_server_ping( (WS_CompilerServer) WebSocketController.compiler_cloud_servers.get(identificator) );
-                return GlobalResult.result_ok(result);
-            }
-            else {
 
-                ObjectNode result = Json.newObject();
-                result.put("status", "Compilation server ID is not connected now");
+            return GlobalResult.result_ok(result);
 
-                return GlobalResult.result_BadRequest(result);
-            }
 
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
@@ -395,23 +366,31 @@ public class DashboardController extends Controller {
     @Security.Authenticated(Secured_Admin.class)
     public Result show_web_socket_stats() {
 
-        List<WS_Homer_Cloud>    homers                  = new ArrayList<>(WebSocketController.incomingConnections_homers.values()).stream().map(o -> (WS_Homer_Cloud) o).collect(Collectors.toList());
         List<WS_Becki_Website>  becki_terminals         = new ArrayList<>(WebSocketController.becki_website.values()).stream().map(o -> (WS_Becki_Website) o).collect(Collectors.toList());
-        List<WS_BlockoServer>   blocko_cloud_servers    = new ArrayList<>(WebSocketController.blocko_servers.values()).stream().map(o -> (WS_BlockoServer) o).collect(Collectors.toList());
-        List<WS_CompilerServer> compilation_servers     = new ArrayList<>(WebSocketController.compiler_cloud_servers.values()).stream().map(o -> (WS_CompilerServer) o).collect(Collectors.toList());
-
-        Html content =   websocket.render(homers, becki_terminals, blocko_cloud_servers , compilation_servers);
+        Html content =   websocket.render(becki_terminals);
         return return_page(content);
     }
 
     @Security.Authenticated(Secured_Admin.class)
     public Result  show_instance_detail(String instance_id) {
 
-        if(!WebSocketController.incomingConnections_homers.containsKey(instance_id)) return show_web_socket_stats();
+        Homer_Instance instance = Homer_Instance.find.byId(instance_id);
+        if(instance == null) return show_web_socket_stats();
 
-        WS_Homer_Cloud homers = (WS_Homer_Cloud) WebSocketController.incomingConnections_homers.get(instance_id);
 
-        Html content = instance_detail.render(homers);
+        Html content = instance_detail.render(instance);
+        return return_page(content);
+    }
+
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result  show_websocket_server_detail(String server_name) {
+
+        Cloud_Homer_Server server = Cloud_Homer_Server.find.where().eq("server_name",server_name).findUnique();
+        if(server == null) return show_web_socket_stats();
+
+
+        Html content = websocket_homer_server_detail.render(server);
         return return_page(content);
     }
 

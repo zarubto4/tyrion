@@ -1,6 +1,7 @@
 package utilities.webSocket;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import controllers.WebSocketController;
 
 public class WS_Becki_Single_Connection extends  WebSCType {
 
@@ -20,6 +21,9 @@ public class WS_Becki_Single_Connection extends  WebSCType {
         System.out.println("WS_Becki_Single_Connection onClose " + super.identifikator);
         this.close();
         person_connection.person_connection_onClose(this);
+        if(person_connection.all_person_Connections.isEmpty()){
+            WebSocketController.becki_website.remove(person_connection.identifikator);
+        }
     }
 
 

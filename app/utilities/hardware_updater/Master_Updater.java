@@ -10,8 +10,6 @@ import models.project.c_program.actualization.C_Program_Update_Plan;
 import play.libs.Json;
 import utilities.enums.Firmware_type;
 import utilities.hardware_updater.States.C_ProgramUpdater_State;
-import utilities.webSocket.WS_BlockoServer;
-import utilities.webSocket.WebSCType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -104,10 +102,7 @@ public class Master_Updater{
     }
 
     class Instance{
-
         public Homer_Instance instance;
-        public WS_BlockoServer server;
-        public WebSCType homer;
         public HashMap<String, Program> programs = new HashMap<>();
     }
 
@@ -155,7 +150,7 @@ public class Master_Updater{
                        continue;
                    }
 
-                   logger.debug("Homer_instance id: "+ homer_instance.id);
+                   logger.debug("Homer_instance id: "+ homer_instance.blocko_instance_name);
 
 
                    logger.debug("Hardware (board) is running under cloud blocko program");
@@ -170,7 +165,7 @@ public class Master_Updater{
                       continue;
                    }
 
-                   if (!WebSocketController.incomingConnections_homers.containsKey(homer_instance.blocko_instance_name)) {
+                   if (!homer_instance.instance_online()) {
                         logger.warn("Homer is offline. Putting off the task for later ");
                         plan.state = C_ProgramUpdater_State.instance_inaccessible;
                         plan.update();
@@ -181,12 +176,10 @@ public class Master_Updater{
 
 
                    // Založím ve Struktuře seznam instnací
-                  if (!structure.instances.containsKey(homer_instance.id)) {
+                  if (!structure.instances.containsKey(homer_instance.blocko_instance_name)) {
                       Instance instance = new Instance();
                       instance.instance = homer_instance;
-                      instance.server = (WS_BlockoServer) WebSocketController.blocko_servers.get( homer_instance.cloud_homer_server.server_name );
-                      instance.homer = WebSocketController.incomingConnections_homers.get(homer_instance.blocko_instance_name);;
-                      structure.instances.put(homer_instance.id, instance);
+                      structure.instances.put(homer_instance.blocko_instance_name, instance);
                   }
 
                   String program_identificator = null;
@@ -226,18 +219,18 @@ public class Master_Updater{
 
 
                   // Pod instnací podle typu programu vytvořím program
-                  if(!structure.instances.get(homer_instance.id).programs.containsKey(program_identificator)){
+                  if(!structure.instances.get(homer_instance.blocko_instance_name).programs.containsKey(program_identificator)){
 
                       Program program = new Program();
                       program.program_identificator = program_identificator;
                       program.firmware_type  = plan.firmware_type;
                       program.file_record = file_record;
 
-                      structure.instances.get(homer_instance.id).programs.put(program_identificator, program);
+                      structure.instances.get(homer_instance.blocko_instance_name).programs.put(program_identificator, program);
 
                   }
 
-                   structure.instances.get(homer_instance.id).programs.get(program_identificator).boards.add(board);
+                   structure.instances.get(homer_instance.blocko_instance_name).programs.get(program_identificator).boards.add(board);
 
                    plan.state = C_ProgramUpdater_State.in_progress;
                    plan.update();
@@ -256,13 +249,13 @@ public class Master_Updater{
 
                 Actualization_Task task = new Actualization_Task();
                 task.actualization_procedure_id = procedure_id;
-                task.homer = instance.homer;
+                task.instance = instance.instance;
                 task.file_record = program.file_record;
                 task.boards = program.boards;
                 task.firmware_type = program.firmware_type;
 
                 logger.debug("Actualization task is ready. Sending to Server object to cloud_blocko_server blocko independent Thread");
-                instance.server.add_task(task);
+                instance.instance.cloud_homer_server.add_task(task);
 
             }
         }

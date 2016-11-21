@@ -1,10 +1,11 @@
 
 @import models.person.Person
-@import utilities.enums.{Type_of_command}
-@import utilities.webSocket.{WS_Homer_Cloud, WS_BlockoServer, WS_CompilerServer, WS_Becki_Website}
+@import utilities.enums.Type_of_command
+@import utilities.webSocket.{WS_BlockoServer, WS_CompilerServer, WS_Becki_Website}
+@import models.project.b_program.servers.Cloud_Homer_Server
+@import models.compiler.Cloud_Compilation_Server
 
-
-@(homers: List[WS_Homer_Cloud], becki_Terminal: List[WS_Becki_Website], cloud_blocko_server: List[WS_BlockoServer], compilation_server: List[WS_CompilerServer])
+@(becki_Terminal: List[WS_Becki_Website])
 
 <section class="content-header">
     <h1> Websocket <small> connections </small> </h1>
@@ -13,91 +14,9 @@
         <li class="active"><i class="fa fa-heart"></i> Websocket connections </li>
     </ol>
 </section>
-
 <script type="text/javascript" src="@routes.DashboardController.javascriptRoutes"></script>
 
-<section class="content">
-
-    <div class="row">
-        <div class="col-xs-12">
-            <div class="box">
-                <div class="box-header">
-                    <h3 class="box-title">Connected Homers (PC/RPI..)</h3>
-                    <div class="pull-right">
-                        <div class="btn-group">
-                            <button id="addDeviceButton" value="" class="btn btn-success" type="button" onclick="showAddTemporaryInstance()">ADD TEMPORARY INSTANCE</button>
-                        </div><!-- /.btn-group -->
-                    </div><!-- /.pull-right -->
-                </div>
-
-                <div class="box-body table-responsive no-padding">
-                    <table id="homer_table" class="table table-bordered">
-
-                        <tr>
-                            <th>Instance ID</th>
-                            <th>Grid Subscribers</th>
-                            <th>Becki Subscribers</th>
-                            <th>Open Details</th>
-                            <th>Get Status</th>
-                            <th>Disconnect</th>
-                        </tr>
-
-                        @for( x <- homers){
-                            <tr>
-
-                                <td>
-                                @if(x.virtual_instance){
-                                    <p class="small text-red"> @x.identifikator</p>
-                                }else{
-                                    <p class="small text-green"> @x.identifikator</p>
-                                }
-                                </td>
-
-
-
-                                <td> @if( !x.subscribers_grid.isEmpty) {
-                                    @for( y <- x.subscribers_grid){
-                                        @y.identifikator
-                                    }
-                                } else{
-                                    -----
-                                }</td>
-
-
-                                <td> @if( !x.subscribers_becki.isEmpty) {
-                                    @for( y <- x.subscribers_becki){
-                                        @Person.find.byId(y.identifikator).mail
-                                    }
-                                } else{
-                                    -----
-                                }</td>
-
-                                <td align="center">
-                                    <a href=' @routes.DashboardController.show_instance_detail( x.identifikator )' >
-                                        <button class="btn btn-block btn-info btn-xs">Details</button>
-                                    </a>
-
-                                </td>
-
-                                <td align="center">
-                                    <button onclick="ping_instance('@x.identifikator', '@Type_of_command.COMMAND_PING_INSTANCE.get_command')" class="btn btn-block btn-info btn-xs">Ping</button>
-                                </td>
-
-                                <td align="center">
-                                    <button onclick="disconnect_instance('@x.identifikator', '@Type_of_command.COMMAND_DISCONNECT_INSTANCE.get_command' )" class="btn btn-block btn-danger btn-xs">Disconnect</button>
-                                </td>
-
-                            </tr>
-                        }
-
-                    </table>
-                </div><!-- /.box-body -->
-
-
-            </div><!-- /.box -->
-        </div>
-    </div>
-
+<section>
     <div class="row">
         <div class="col-xs-12">
             <div class="box">
@@ -125,8 +44,6 @@
                         </tr>
 
                         @for( x <- becki_Terminal){
-
-
 
                                 <tr>
                                     <th rowspan="@(x.all_person_Connections.size()+2)"> @(Person.find.byId( x.identifikator ).mail )</th>
@@ -188,39 +105,55 @@
                     <h3 class="box-title">Connected Blocko-Servers (Homer Cloud instances)</h3>
                     <div class="pull-right">
                         <div class="btn-group">
-                                <!--   <button type="button" class="btn btn-danger btn-sm"> Disconnect All </button>  -->
-                                <!--    <button type="button" class="btn btn-info btn-sm ">  Send Ping to all</button>  -->
-                        </div><!-- /.btn-group -->
-                    </div><!-- /.pull-right -->
+                        </div>
+                    </div>
                 </div>
                 <div class="box-body table-responsive no-padding">
                     <table id="homer_server_table" class="table table-bordered">
 
                         <tr>
-                            <th align="center" >Server</th>
+                            <th align="center">Server</th>
+                            <th align="center">Online</th>
                             <th align="center">Working instances</th>
 
-                            <th class="col-xs-1">Get Status</th>
+                            <th class="col-xs-1">Show Instancies</th>
                             <th class="col-xs-1">Ping</th>
                             <th class="col-xs-1">Disconnect</th>
 
                         </tr>
 
-                        @for( x <- cloud_blocko_server ){
+                        @for( x <- Cloud_Homer_Server.find.all() ){
                             <tr>
-                                <td> @x.identifikator </td>
-                                <td> @x.virtual_homers.size() </td>
+                                <td> @x.server_name </td>
+                                <td>
+                                    @if(!x.server_is_online()){
+                                        <p class="small text-red"> Offline </p>
+                                    }else{
+                                        <p class="small text-green"> Online </p>
+                                    }
+                                </td>
 
-                                <td align="center">
-                                    <button onclick="show_all_logs()" class="btn btn-block btn-success btn-xs">Get Status</button>
+                                <td>
+                                    @if(x.server_is_online()){
+                                            @x.get_homer_server_numberOfInstance().get("value").asInt()
+                                    }else{
+                                        <p class="small text-red"> Offline </p>
+                                    }
                                 </td>
 
                                 <td align="center">
-                                    <button onclick="ping_Blocko_Server('@x.identifikator')" class="btn btn-block btn-info btn-xs">Ping</button>
+                                    <a href=' @routes.DashboardController.show_websocket_server_detail(  x.server_name )' >
+                                        <button class="btn btn-block btn-info btn-xs">All Instancies</button>
+                                    </a>
+                                </td>
+
+
+                                <td align="center">
+                                    <button onclick="ping_Blocko_Server('@x.server_name')" class="btn btn-block btn-info btn-xs">Ping</button>
                                 </td>
 
                                 <td align="center">
-                                    <button onclick="disconnect_Blocko_Server('@x.identifikator')" class="btn btn-block btn-danger btn-xs">Disconnect</button>
+                                    <button onclick="disconnect_Blocko_Server('@x.server_name')" class="btn btn-block btn-danger btn-xs">Disconnect</button>
                                 </td>
                             </tr>
                         }
@@ -247,28 +180,31 @@
 
                         <tr>
                             <th>Server</th>
-
-                            <th class="col-xs-1">Get Status</th>
+                            <th class="col-xs-1">Status</th>
                             <th class="col-xs-1">Ping</th>
                             <th class="col-xs-1">Disconnect</th>
 
                         </tr>
 
-                        @for( x <- compilation_server ){
+                        @for( x <- Cloud_Compilation_Server.find.all() ){
                             <tr>
-                                <td> @x.identifikator </td>
+                                <td> @x.server_name </td>
+
+                                <td>
+                                @if(!x.server_is_online()){
+                                    <p class="small text-red"> Offline </p>
+                                }else{
+                                    <p class="small text-green"> Online </p>
+                                }
+                                </td>
 
 
                                 <td align="center">
-                                    <button onclick="show_all_logs()" class="btn btn-block btn-success btn-xs">Get Status</button>
+                                    <button onclick="ping_Compilation_Server('@x.server_name')" class="btn btn-block btn-info btn-xs">Ping</button>
                                 </td>
 
                                 <td align="center">
-                                    <button onclick="ping_Compilation_Server('@x.identifikator')" class="btn btn-block btn-info btn-xs">Ping</button>
-                                </td>
-
-                                <td align="center">
-                                    <button onclick="disconnect_Compilation_Server('@x.identifikator')" class="btn btn-block btn-danger btn-xs">Disconnect</button>
+                                    <button onclick="disconnect_Compilation_Server('@x.server_name')" class="btn btn-block btn-danger btn-xs">Disconnect</button>
                                 </td>
                             </tr>
                         }
@@ -285,177 +221,11 @@
 
 
 
-<!-- /. MODALS---------------------------------------------------------------------------------------------------------->
-<div id="addTemporaryInstanceModal" style="display: none;" class="modal">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title">Add Device</h4>
-            </div>
-
-            <div class="modal-body">
-                <form id="addTemporaryInstanceForm">
-
-                    <label>Instnace ID: (Min 5 znaků) </label>
-                    <input style="display: block" type="text" id="instance_name" name="instance_name" >
-
-
-                    <select class="selectpicker" name="server_name">
-
-                        @for(server <- cloud_blocko_server){
-                            <option name="server_name" id="server_name" value="@server.identifikator"> Public Server: @server.identifikator</option>
-                        }
-
-                    </select>
-
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-danger pull-left" type="button" data-dismiss="modal" onclick="$('#addTemporaryInstanceModal').css('display','none')">Close</button>
-                <button id="addTemporaryInstanceButton" value="" class="btn btn-primary" type="button" onclick="add_TemporaryInstance()">Create temporary instance</button>
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- /. SCRIPT --------------------------------------------------------------------------------------------------------->
 
 <script>
         $.ajaxSetup({ cache: false });
-
-        function showAddTemporaryInstance(){
-            $("#addTemporaryInstanceModal").css("display","block");
-        }
-
-        function add_TemporaryInstance(){
-
-            model_data = $("#addTemporaryInstanceForm").serializeObject();
-
-            $.ajax({
-                url: '@routes.ProgramingPackageController.instance_add_temporary_instance()',
-                type: 'PUT',
-                contentType: 'application/json',
-                headers: {
-                    "X-AUTH-TOKEN":getCookie("authToken"),
-                    "Content-Type":"application/json"
-                },
-                data: JSON.stringify(model_data),
-                dataType: 'json',
-                success:function(data, status){
-
-                    console.log(data);
-                    console.log(status);
-
-                    $('#addTemporaryInstanceModal').css('display','none');
-                    $("#addTemporaryInstanceForm input[type=text]").val("");
-                    $('#homer_table').load(document.URL +  ' #homer_table');
-
-                    BootstrapDialog.show({
-                        message:  syntaxHighlight(data),
-
-                        buttons: [{
-                            label: 'Close',
-                            action: function(dialogItself){
-                                dialogItself.close();
-                            }
-                        }]
-
-                    });
-                },
-                error:function(data) {
-
-                    BootstrapDialog.show({
-                        message:  syntaxHighlight(data),
-                        type: BootstrapDialog.TYPE_DANGER,
-                        buttons: [{
-                            label: 'Close',
-                            action: function(dialogItself){
-                                dialogItself.close();
-                            }
-                        }]
-                    });
-                }
-            })}
-
-        function ping_instance(instance_id){
-
-            $.ajax({
-                url: '@routes.DashboardController.ping_homer_instance("")' + instance_id,
-                data : {
-                    instance_id: instance_id
-                },
-                type: 'GET',
-
-                headers: {
-                    "X-AUTH-TOKEN":getCookie("authToken")
-                },
-
-                success:function(data, status){
-                    console.log(data);
-                    console.log(status);
-                    BootstrapDialog.show({
-                        message:  syntaxHighlight(data),
-
-                        buttons: [{
-                            label: 'Close',
-                            action: function(dialogItself){
-                                dialogItself.close();
-                            }
-                        }]
-
-                    });
-                },
-                error:function(data) {
-                    BootstrapDialog.show({
-                        message:  syntaxHighlight(data),
-                        type: BootstrapDialog.TYPE_DANGER,
-                        buttons: [{
-                            label: 'Close',
-                            action: function(dialogItself){
-                                dialogItself.close();
-                            }
-                        }]
-                    });
-                }
-            })}
-
-        function disconnect_instance(instance_id){
-            $.ajax({
-                url: '@routes.ProgramingPackageController.instance_shut_down("")' + instance_id,
-                type: 'GET',
-
-                headers: {
-                    "X-AUTH-TOKEN":getCookie("authToken")
-                },
-
-                success:function(data){
-                    BootstrapDialog.show({
-                        message:  syntaxHighlight(data),
-
-                        buttons: [{
-                            label: 'Close',
-                            action: function(dialogItself){
-                                dialogItself.close();
-                            }
-                        }]
-
-                    });
-                    $('#homer').load(document.URL +  ' #homer');
-                },
-                error:function(data) {
-                    BootstrapDialog.show({
-                        message:  syntaxHighlight(data),
-                        type: BootstrapDialog.TYPE_DANGER,
-                        buttons: [{
-                            label: 'Close',
-                            action: function(dialogItself){
-                                dialogItself.close();
-                            }
-                        }]
-
-                    });
-                }
-            })}
 
         function ping_becki(id){
             $.ajax({
@@ -522,16 +292,6 @@
                 }
             })}
 
-        function show_all_logs(){
-            $.ajax({
-                url: '@routes.DashboardController.show_all_logs()',
-                type: 'GET',
-                success:function(e){
-                },
-                error:function(e) {
-                    alert("Unsuccessful.");
-                }
-            })}
 
         function ping_Blocko_Server(id){
             $.ajax({

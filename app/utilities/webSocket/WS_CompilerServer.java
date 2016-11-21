@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.WebSocketController;
+import models.compiler.Cloud_Compilation_Server;
 import play.libs.Json;
 
 import java.util.HashMap;
@@ -14,11 +15,13 @@ public class WS_CompilerServer extends WebSCType{
     public String server_address;
     public Map<String, ObjectNode> compilation_results = new HashMap<>();
     public Map<String, ObjectNode> compilation_request = new HashMap<>();
+    Cloud_Compilation_Server server;
 
-    public WS_CompilerServer(String server_name, String server_address, Map<String, WebSCType> compiler_cloud_servers) {
+
+    public WS_CompilerServer(Cloud_Compilation_Server server, Map<String, WebSCType> compiler_cloud_servers) {
         super();
-        this.server_address = server_address;
-        super.identifikator = server_name;
+        this.server_address = server.destination_address;
+        super.identifikator = server.server_name;
         super.maps = compiler_cloud_servers;
         super.webSCtype = this;
     }
@@ -27,7 +30,7 @@ public class WS_CompilerServer extends WebSCType{
     @Override
     public void onClose() {
         this.close();
-        WebSocketController.compiler_server_is_disconnect(this);
+        server.compiler_server_is_disconnect();
     }
 
     @Override

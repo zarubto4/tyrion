@@ -59,14 +59,12 @@ public class M_Program extends Model{
     }
 
 
-    /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
-
-    /* Private Documentation Class -------------------------------------------------------------------------------------*/
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     // Objekt určený k vracení verze - Fatch lazy!!
     @JsonIgnore @Transient
     public List<Version_Object> getVersion_objects() {
-        return Version_Object.find.where().eq("m_program.id", this.id).findList();
+        return Version_Object.find.where().eq("m_program.id", this.id).eq("removed_by_user", false).order().asc("date_of_create").findList();
     }
 
 

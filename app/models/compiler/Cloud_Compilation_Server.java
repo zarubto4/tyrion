@@ -3,11 +3,20 @@ package models.compiler;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.SecurityController;
 import controllers.WebSocketController;
 import io.swagger.annotations.ApiModelProperty;
+import models.project.b_program.servers.Cloud_Homer_Server;
+import play.libs.Json;
+import utilities.webSocket.SendMessage;
+import utilities.webSocket.WS_CompilerServer;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 @Entity
@@ -42,6 +51,61 @@ public class Cloud_Compilation_Server extends Model {
             unique_identificator = UUID. randomUUID().toString().substring(0,6);
             if (Cloud_Compilation_Server.find.where().eq("unique_identificator",unique_identificator).findUnique() == null) break;
         }
+    }
+
+
+/* SERVER WEBSOCKET CONTROLLING ---------------------------------------------------------------------------------------*/
+
+    public static String CHANNEL = "compilation-server";
+    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+
+
+    @JsonIgnore @Transient public static JsonNode make_Compilation(ObjectNode request){
+        try{
+        List<String> keys        = new ArrayList<>(WebSocketController.compiler_cloud_servers.keySet());
+        WS_CompilerServer server = (WS_CompilerServer) WebSocketController.compiler_cloud_servers.get( keys.get( new Random().nextInt(keys.size())) );
+
+        ObjectNode compilation_request = server.write_with_confirmation(request, 1000*5, 0, 3);
+            request.put("messageChannel", CHANNEL);
+
+        if(!compilation_request.get("status").asText().equals("success")) {
+
+            logger.debug("Incoming message has not contains state = success");
+
+            ObjectNode error_result = Json.newObject();
+            error_result.put("error", "Something was wrong");
+            return  error_result;
+        }
+
+        logger.debug("Start of compilation was successful - waiting for result");
+
+        SendMessage get_compilation = new SendMessage(null, null, null, "compilation_message", 1000 * 35, 0, 1);
+        server.sendMessageMap.put( compilation_request.get("buildId").asText(), get_compilation);
+        ObjectNode result = get_compilation.send_with_response();
+        result.set("interface",compilation_request.get("interface") ); // Přiřadím interface do zprávy
+        return result;
+
+        }catch (Exception e){
+            return Cloud_Homer_Server.RESULT_server_is_offline();
+        }
+    }
+
+    @JsonIgnore @Transient public JsonNode ping(){
+        try {
+            ObjectNode request = Json.newObject();
+            request.put("messageType", "ping");
+            request.put("messageChannel", CHANNEL);
+
+            return  WebSocketController.compiler_cloud_servers.get(this.server_name).write_with_confirmation(request, 1000 * 3, 0, 3);
+
+        }catch (Exception e){
+            return Cloud_Homer_Server.RESULT_server_is_offline();
+        }
+    }
+
+    @JsonIgnore @Transient public void compiler_server_is_disconnect(){
+        logger.debug("Connection lost with compilation cloud_blocko_server!: " + server_name);
+        // Nějaké upozornění???
     }
 
 

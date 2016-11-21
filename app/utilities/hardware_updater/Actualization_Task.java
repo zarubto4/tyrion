@@ -2,6 +2,7 @@ package utilities.hardware_updater;
 
 import models.compiler.Board;
 import models.compiler.FileRecord;
+import models.project.b_program.instnace.Homer_Instance;
 import utilities.enums.Firmware_type;
 import utilities.webSocket.WebSCType;
 
@@ -10,7 +11,7 @@ import java.util.List;
 
 public class Actualization_Task {
 
-    public WebSCType homer;
+    public Homer_Instance instance;
     public String actualization_procedure_id;
 
     public FileRecord file_record;

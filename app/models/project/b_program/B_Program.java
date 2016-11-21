@@ -40,7 +40,7 @@ public class B_Program extends Model {
             example = "1466163478925")                       public Date date_of_create;
                                     @JsonIgnore @ManyToOne   public Project project;
 
-    @JsonIgnore   @OneToMany(mappedBy="b_program", cascade=CascadeType.ALL) @OrderBy("id DESC") public List<Version_Object> version_objects = new ArrayList<>();
+    @JsonIgnore   @OneToMany(mappedBy="b_program", cascade=CascadeType.ALL, fetch = FetchType.LAZY) public List<Version_Object> version_objects = new ArrayList<>();
                                                                     @JsonProperty @Transient     public String   project_id() {  return project.id; }
 
 
@@ -50,7 +50,7 @@ public class B_Program extends Model {
 
         List<Swagger_B_Program_Version> versions = new ArrayList<>();
 
-        for(Version_Object v : version_objects){
+        for(Version_Object v : getVersion_objects()){
 
             Swagger_B_Program_Version b_program_version = new Swagger_B_Program_Version();
             b_program_version.version_object = v;
@@ -65,7 +65,6 @@ public class B_Program extends Model {
 
         return versions;
     }
-
 
     @JsonProperty @Transient public Swagger_B_Program_State program_state(){
 
@@ -83,7 +82,7 @@ public class B_Program extends Model {
         state.version_id = instance.actual_instance.id;
 
         // Instnace ID
-        state.instance_id = instance.id;
+        state.instance_id = instance.blocko_instance_name;
 
         // Informace o Serveru
         state.server_id = instance.cloud_homer_server.id;
@@ -92,9 +91,11 @@ public class B_Program extends Model {
         return state;
     }
 
+
+
+
 /* Private Documentation Class -----------------------------------------------------------------------------------------*/
 
-    // Určeno pro metodu program_versions tohoto objektu
 
     // Objekt určený k vracení verze
     @JsonIgnore @Transient
@@ -114,13 +115,12 @@ public class B_Program extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
+    @JsonProperty @Transient public List<Version_Object> getVersion_objects() {
+        return Version_Object.find.where().eq("b_program.id", id).eq("removed_by_user", false).order().asc("date_of_create").findList();
+    }
+
     @JsonIgnore @Transient  public Version_Object where_program_run(){
-        Version_Object version_object = Version_Object.find
-                    .where()
-                    .eq("b_program.id", id)
-                    .isNotNull("homer_instance")
-        .findUnique();
-        return  version_object;
+        return Version_Object.find.where().eq("b_program.id", id).isNotNull("homer_instance").findUnique();
     }
 
 
@@ -148,6 +148,13 @@ public class B_Program extends Model {
         super.save();
     }
 
+    @JsonIgnore @Override public void delete() {
+
+       instance.delete();
+
+    }
+
+
     @JsonIgnore @Transient
     public String get_path(){
         return azure_b_program_link;
@@ -162,6 +169,8 @@ public class B_Program extends Model {
     @JsonProperty @Transient public boolean delete_permission()  {  return  ( B_Program.find.where().where().eq("project.ownersOfProject.id", SecurityController.getPerson().id ).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("B_Program_delete");  }
 
     public enum permissions{ B_Program_create, B_Program_update, B_Program_read, B_Program_edit , B_Program_delete}
+
+
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
      public static Model.Finder<String,B_Program> find = new Finder<>(B_Program.class);

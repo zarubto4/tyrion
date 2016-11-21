@@ -236,7 +236,7 @@ PUT            /instance/add_yoda/:instance_id/:yoda_id                 @control
 PUT            /instance/remove_yoda/:instance_id/:yoda_id              @controllers.ProgramingPackageController.instance_remove_yoda(instance_id, yoda_id)
 PUT            /instance/add_device/:instance_id/:yoda_id/:device_id    @controllers.ProgramingPackageController.instance_add_device(instance_id, yoda_id, device_id)
 PUT            /instance/remove_device/:instance_id/:yoda_id/:device_id @controllers.ProgramingPackageController.instance_remove_device(instance_id, yoda_id, device_id)
-PUT            /instance/shut_down/:instance_id                         @controllers.ProgramingPackageController.instance_shut_down(instance_id)
+PUT            /instance/shut_down/:instance_name                       @controllers.ProgramingPackageController.instance_shut_down(instance_name)
 
 
 #Blocks
@@ -413,7 +413,7 @@ PUT             /m_program/:m_progrm_id                                         
 DELETE          /m_program/:m_progrm_id                                                @controllers.GridController.remove_M_Program(m_progrm_id)
 
 POST            /m_program_version/:m_program_id                                       @controllers.GridController.new_M_Program_version(m_program_id)
-DELETE          /m_program_version/:m_program_id                                       @controllers.GridController.remove_M_Program_version(m_program_id)
+DELETE          /m_program_version/:m_program_version_id                               @controllers.GridController.remove_M_Program_version(m_program_version_id)
 
 # Terminals Aps
 GET             /m_program/app/token/:qr_token                                         @controllers.GridController.get_M_Program_byQR_Token_forMobile(qr_token)
@@ -451,7 +451,8 @@ GET             /                                               @controllers.Das
 GET             /admin/login                                    @controllers.DashboardController.login()
 GET             /admin/bugs                                     @controllers.DashboardController.show_all_logs()
 GET             /admin/websocket/summary                        @controllers.DashboardController.show_web_socket_stats()
-GET             /admin/websocket/detail/:instance_id            @controllers.DashboardController.show_instance_detail(instance_id)
+GET             /admin/websocket/server_detail/:server_name     @controllers.DashboardController.show_websocket_server_detail(server_name)
+GET             /admin/websocket/instance_detail/:instance_id   @controllers.DashboardController.show_instance_detail(instance_id)
 GET             /admin/show_readme                              @controllers.DashboardController.show_readme()
 GET             /admin/show_diff_on_Api/                        @controllers.DashboardController.show_diff_on_Api(old_api: String?="",new_api: String?="")
 GET             /admin/board_settings                           @controllers.DashboardController.basic_board_management()

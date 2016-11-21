@@ -49,9 +49,6 @@ public class Swagger_B_Program_List {
             help.b_program_id = b_program.id;
             help.b_program_name = b_program.name;
             help.b_program_description = b_program.description;
-            help.b_program_version_id = b_program.version_objects.get(0).id;
-            help.b_program_version_name = b_program.version_objects.get(0).version_name;
-            help.b_program_version_description = b_program.version_objects.get(0).version_description;
 
             this.content.add(help);
         }
