@@ -475,7 +475,7 @@ public class WebSocketController extends Controller {
 
         // Reakce na odhlášení blocka
         public static void becki_disconnect(WebSCType becki){
-             System.out.println("Becki se mi odpojitlo");
+             System.out.println("Becki se mi odpojilo");
         }
 
 

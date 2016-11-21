@@ -233,14 +233,22 @@ public class Board extends Model {
 
     @JsonIgnore @Transient  public static void device_Disconnected(ObjectNode json){
         try {
-
+            //TODO
         }catch (Exception e){
             logger.error("Board:: device_Disconnected:: ERROR:: ", e);
         }
     }
 
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
+    public void notification_board_connect(){
 
+        new Notification(Notification_importance.low, Notification_level.info)
+                .setText("One of your Board " + (this.personal_description != null ? this.personal_description : null))
+                .setObject(Board.class, this.id, this.id, this.project_id())
+                .setText("is connected.")
+                .send(this.project.ownersOfProject);
+    }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
@@ -270,19 +278,5 @@ public class Board extends Model {
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String, Board> find = new Finder<>(Board.class);
-
-/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
-
-    public void board_connect(){
-
-        for(Person person : this.project.ownersOfProject) {
-
-            Notification notification = new Notification(Notification_importance.low, Notification_level.info, person)
-                    .setText("One of your Board " + (this.personal_description != null ? this.personal_description : null))
-                    .setObject(Board.class, this.id, this.id, this.project_id())
-                    .setText("is connected.");
-        }
-
-    }
 
 }

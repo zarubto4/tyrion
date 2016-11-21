@@ -16,12 +16,14 @@ public class Swagger_Notification_Element {
 
     @ApiModelProperty(required =  true)    @Enumerated(EnumType.STRING) public Notification_type type = null;
     @ApiModelProperty(required =  true)                                 public boolean required = false;
+    @ApiModelProperty(required =  true)                                 public String text = null;
 
-    @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public String get_url  = null;
+    @ApiModelProperty(required =  true)                                 public boolean bold = false;
+    @ApiModelProperty(required =  true)                                 public boolean italic = false;
+    @ApiModelProperty(required =  true)                                 public boolean underline = false;
+
     @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public String url      = null;
-    @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public String label    = null;
-
-    @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public String value    = null;
+    @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public String name    = null;
     @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public String id       = null;
     @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public String project_id = null;
 

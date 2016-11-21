@@ -16,7 +16,7 @@
 </section>
 <script type="text/javascript" src="@routes.DashboardController.javascriptRoutes"></script>
 
-<section>
+<section class="content">
     <div class="row">
         <div class="col-xs-12">
             <div class="box">
@@ -53,19 +53,25 @@
                                     <th rowspan="@(x.all_person_Connections.size()+2)">
                                         <button onclick="ping_becki('@x.identifikator')" class="btn btn-block btn-info btn-xs">Ping</button>
                                         <form id="testNotification">
-                                            <select  name="level" id="level">
+                                            <select style="margin-top: 10px;" name="level" id="level">
                                                 <option value="info">info</option>
                                                 <option value="success">success</option>
                                                 <option value="warning">warning</option>
                                                 <option value="error">error</option>
                                             </select>
-                                            <select name="importance" id="importance">
+                                            <select style="margin-top: 10px;" name="importance" id="importance">
                                                 <option value="low">low</option>
                                                 <option value="normal">normal</option>
                                                 <option value="high">high</option>
                                             </select>
-                                            <input type="checkbox" name="confirmation_required">
-                                            <input type="button" onclick="test_notification('@(Person.find.byId( x.identifikator ).mail )')" class="btn btn-block btn-primary btn-xs" value="Send test notification">
+                                            <select style="margin-top: 10px;" name="type" id="type">
+                                                <option value="1">All objects</option>
+                                                <option value="2">Object and long text</option>
+                                                <option value="3">Short text and link</option>
+                                                <option value="4">Object and link</option>
+                                            </select>
+                                            <input class="pull-left"  style="margin-top: 10px;" type="checkbox" name="confirmation_required">
+                                            <input style="margin-top: 10px;" type="button" onclick="test_notification('@(Person.find.byId( x.identifikator ).mail )')" class="btn btn-primary btn-xs pull-right" value="Send test notification">
                                         </form>
                                     </th>
                                 </tr>

@@ -62,6 +62,13 @@ public class Notification extends Model {
         created = new Date();
     }
 
+    @JsonIgnore
+    public  Notification(Notification_importance importance, Notification_level level){
+        this.notification_level = level;
+        this.notification_importance = importance;
+        created = new Date();
+    }
+
     //---------------------------------------------------------------------------------------------------------------------
 
     //---------------------------------------------------------------------------------------------------------------------
@@ -71,7 +78,7 @@ public class Notification extends Model {
 
         Swagger_Notification_Element element = new Swagger_Notification_Element();
         element.type     = Notification_type.text;
-        element.value    = message;
+        element.text     = message;
 
         array.add(element);
         return this;
@@ -81,21 +88,46 @@ public class Notification extends Model {
     public Notification setBoldText(String message){
 
         Swagger_Notification_Element element = new Swagger_Notification_Element();
-        element.type     = Notification_type.bold_text;
-        element.value    = message;
+        element.type     = Notification_type.text;
+        element.text     = message;
+        element.bold     = true;
 
         array.add(element);
         return this;
     }
 
     @JsonIgnore @Transient
-    public Notification setObject(Class object , String id , String label, String project_id){
+    public Notification setItalicText(String message){
+
+        Swagger_Notification_Element element = new Swagger_Notification_Element();
+        element.type     = Notification_type.text;
+        element.text     = message;
+        element.italic   = true;
+
+        array.add(element);
+        return this;
+    }
+
+    @JsonIgnore @Transient
+    public Notification setUnderlineText(String message){
+
+        Swagger_Notification_Element element = new Swagger_Notification_Element();
+        element.type     = Notification_type.text;
+        element.text     = message;
+        element.underline= true;
+
+        array.add(element);
+        return this;
+    }
+
+    @JsonIgnore @Transient
+    public Notification setObject(Class object , String id , String text, String project_id){
 
         Swagger_Notification_Element element = new Swagger_Notification_Element();
         element.type     = Notification_type.object;
-        element.value    = object.getSimpleName().replaceAll("Swagger_","");
+        element.name    = object.getSimpleName().replaceAll("Swagger_","");
         element.id       = id;
-        element.label    = label;
+        element.text    = text;
         element.project_id = project_id;
 
         array.add(element);
@@ -103,30 +135,16 @@ public class Notification extends Model {
     }
 
     @JsonIgnore @Transient
-    public Notification setLink_ToTyrion(String label, String url){
+    public Notification setLink_ToTyrion(String text, String url){
 
         Swagger_Notification_Element element = new Swagger_Notification_Element();
-        element.type     = Notification_type.confirmation;
+        element.type     = Notification_type.link;
         element.url = url;
-        element.label = label;
+        element.text = text;
 
         array.add(element);
         return this;
     }
-
-    @JsonIgnore @Transient
-    public Notification required(){
-        confirmation_required = true;
-
-        Swagger_Notification_Element element = new Swagger_Notification_Element();
-        element.type        = Notification_type.confirmation;
-        element.required    = true;
-        element.get_url     = Server.tyrion_serverAddress + "/notification/confirm/" + this.id;
-
-        array.add(element);
-        return this;
-    }
-
 
     @Override
     public void save(){
@@ -168,6 +186,13 @@ public class Notification extends Model {
     }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient
+    public Notification confirmation_required(){
+        this.confirmation_required = true;
+        this.update();
+        return this;
+    }
 
     @JsonIgnore @Transient
     public void set_read(){

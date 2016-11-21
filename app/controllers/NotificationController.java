@@ -261,7 +261,7 @@ public class NotificationController extends Controller {
 
   }
 
-  public static void test_notification(Person person, String level, String importance, boolean confirmation_required){
+  public static void test_notification(Person person, String level, String importance, boolean confirmation_required, String type){
 
     Notification_level lvl;
 
@@ -282,13 +282,48 @@ public class NotificationController extends Controller {
       default: lvl = Notification_level.info;break;
     }
 
-    Notification notification = new Notification(imp, lvl, person)
-            .setText("Test object: ")
-            .setObject(Person.class, person.id, person.full_name, "")
-            .setText("test bold text: ")
-            .setBoldText("bold text")
-            .setText("test link:")
-            .setLink_ToTyrion("TestLink","#");
+    Notification notification;
+
+    switch (type){
+      case "1":{
+        notification = new Notification(imp, lvl, person)
+              .setText("Test object: ")
+              .setObject(Person.class, person.id, person.full_name, "")
+              .setText(" test bold text: ")
+              .setBoldText("bold text ")
+              .setText("test link: ")
+              .setLink_ToTyrion("TestLink","#");
+        break;}
+      case "2":{
+        notification = new Notification(imp, lvl, person)
+                .setText("Test object and long text: ")
+                .setObject(Person.class, person.id, person.full_name, "")
+                .setText(" test text: Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. ");
+        break;}
+      case "3":{
+        notification = new Notification(imp, lvl, person)
+                .setText("Test short text with link: ")
+                .setLink_ToTyrion("TestLink","#");
+        break;}
+      case "4": {
+        notification = new Notification(imp, lvl, person)
+                .setText("Test object and link: ")
+                .setObject(Person.class, person.id, person.full_name, "")
+                .setText(" test decision link: ")
+                .setLink_ToTyrion("Yes","#")
+                .setText(" / ")
+                .setLink_ToTyrion("No","#");
+        break;}
+      default:{
+        notification = new Notification(imp, lvl, person)
+                .setText("Test object: ")
+                .setObject(Person.class, person.id, person.full_name, "")
+                .setText(" test bold text: ")
+                .setBoldText("bold text ")
+                .setText("test link: ")
+                .setLink_ToTyrion("TestLink","#");
+        break;}
+    }
 
     if(confirmation_required) notification.confirmation_required = true;
 
@@ -452,7 +487,7 @@ public class NotificationController extends Controller {
       Person person = Person.find.where().eq("mail", mail).findUnique();
       if (person == null) return GlobalResult.notFoundObject("Person not found");
 
-      NotificationController.test_notification(person, help.level, help.importance, help.confirmation_required);
+      NotificationController.test_notification(person, help.level, help.importance, help.confirmation_required, help.type);
       return GlobalResult.result_ok();
 
     }catch (Exception e){
