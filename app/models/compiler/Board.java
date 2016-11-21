@@ -7,12 +7,16 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
+import models.notification.Notification;
+import models.person.Person;
 import models.project.b_program.B_Pair;
 import models.project.b_program.instnace.Homer_Instance;
 import models.project.b_program.servers.Cloud_Homer_Server;
 import models.project.b_program.servers.Private_Homer_Server;
 import models.project.c_program.actualization.C_Program_Update_Plan;
 import models.project.global.Project;
+import utilities.enums.Notification_importance;
+import utilities.enums.Notification_level;
 import utilities.swagger.outboundClass.Swagger_Board_status;
 
 import javax.persistence.*;
@@ -127,7 +131,6 @@ public class Board extends Model {
 
     }
 
-
     @JsonProperty  @Transient @ApiModelProperty(required = true) public boolean up_to_date_firmware()        { return  (c_program_update_plans == null);    }
     @JsonProperty  @Transient @ApiModelProperty(required = true) public boolean update_boot_loader_required(){ return (type_of_board.main_boot_loader == null || actual_boot_loader == null) ? true : !this.type_of_board.main_boot_loader.id.equals(this.actual_boot_loader.id);}
 
@@ -165,5 +168,18 @@ public class Board extends Model {
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String, Board> find = new Finder<>(Board.class);
 
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
+
+    public void board_connect(){
+
+        for(Person person : this.project.ownersOfProject) {
+
+            Notification notification = new Notification(Notification_importance.low, Notification_level.info, person)
+                    .setText("One of your Board " + (this.personal_description != null ? this.personal_description : null))
+                    .setObject(Board.class, this.id, this.id, this.project_id())
+                    .setText("is connected.");
+        }
+
+    }
 
 }

@@ -42,9 +42,6 @@ public class NotificationController extends Controller {
   //####################################################################################################################
   static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
-
-
-
   private static void send_notification(Person person, Notification notification) {
 
     // Pokud je notification_importance vyšší než "low" notifikaci uložím
@@ -70,7 +67,7 @@ public class NotificationController extends Controller {
         send_notification(person, notification);
   }
 
-  public static void upload_firmare_progress(Person person, String version_object){
+  public static void upload_firmware_progress(Person person, String version_object){
     // TODO
   }
 
@@ -130,7 +127,7 @@ public class NotificationController extends Controller {
   }
 
 
-  public static void upload_Instance_was_unsuccessfull(Person person, Homer_Instance instance, String reason){
+  public static void upload_Instance_was_unsuccessful(Person person, Homer_Instance instance, String reason){
 
 
     String s = instance.actual_instance.version_object.version_name;
@@ -147,7 +144,7 @@ public class NotificationController extends Controller {
 
   }
 
-  public static void upload_of_Instance_was_unsuccessfull_with_error(Person person, Version_Object version_object){
+  public static void upload_of_Instance_was_unsuccessful_with_error(Person person, Version_Object version_object){
 
     Notification notification = new Notification(Notification_importance.normal, Notification_level.error, person)
                                     .setText("Server not upload instance to cloud on Blocko Version")
@@ -199,7 +196,7 @@ public class NotificationController extends Controller {
       // TODO
   }
 
-  public static void uplood_firmware_was_Unsuccessful(Person person, C_Program_Update_Plan plan){
+  public static void upload_firmware_was_unsuccessful(Person person, C_Program_Update_Plan plan){
       // TODO
   }
 

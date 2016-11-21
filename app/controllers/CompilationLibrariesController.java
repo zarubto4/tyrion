@@ -959,7 +959,7 @@ public class CompilationLibrariesController extends Controller {
 
 
             FileRecord file = FileRecord.find.where().eq("file_name", "code.json").eq("version_object.id", version_id).findUnique();
-            if(file == null) return GlobalResult.notFoundObject("Server has no contenct from version");
+            if(file == null) return GlobalResult.notFoundObject("Server has no content from version");
 
             // Smažu předchozí kompilaci
             if(version_object.c_program == null) return GlobalResult.result_BadRequest("Version is not version of C_Program");
@@ -1011,7 +1011,7 @@ public class CompilationLibrariesController extends Controller {
 
                NotificationController.successful_compilation(SecurityController.getPerson(), version_object);
 
-               logger.debug("Build was succesfull");
+               logger.debug("Build was succesful");
                // Updatuji verzi - protože vše proběhlo v pořádku
                version_object.compilation_in_progress = false;
                version_object.compilable = true;
@@ -1030,7 +1030,7 @@ public class CompilationLibrariesController extends Controller {
                 logger.debug("Trying download bin file");
                try{
 
-                   logger.debug("Sending request to Compilatin server for downloading");
+                   logger.debug("Sending request to Compilation server for downloading");
                    F.Promise<WSResponse> responsePromise = ws.url(c_compilation.c_comp_build_url)
                            .setContentType("undefined")
                            .setRequestTimeout(2500)
@@ -1039,14 +1039,14 @@ public class CompilationLibrariesController extends Controller {
 
                    byte[] body = responsePromise.get(2500).asByteArray();
 
-                   logger.debug("Compilatin server respond successfuly WITH File");
+                   logger.debug("Compilation server respond successfully WITH File");
                    if( body != null) {
                         // Daný soubor potřebuji dostat na Azure a Propojit s verzí
 
                         String binary_file_in_string = FileRecord.get_encoded_binary_string_from_body(body);
                         c_compilation.bin_compilation_file = FileRecord.create_Binary_file( c_compilation.get_path() , binary_file_in_string, "compilation.bin");
 
-                        logger.debug("File succesfuly restored in Azure!");
+                        logger.debug("File successfully restored in Azure!");
                     }
                 } catch (Exception e) {
                     logger.warn("Došlo k chybě při stahování souboru", e);
@@ -1061,7 +1061,7 @@ public class CompilationLibrariesController extends Controller {
 
                NotificationController.unsuccessful_compilation_warn( SecurityController.getPerson(), version_object, compilation_result.get("buildErrors").asText() );
 
-               logger.debug("Build wasn't succesfull - buildErrors");
+               logger.debug("Build wasn't successful - buildErrors");
                version_object.compilable = false;
                version_object.update();
 
