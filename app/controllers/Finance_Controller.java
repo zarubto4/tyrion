@@ -70,7 +70,7 @@ public class Finance_Controller extends Controller {
 
             general_tariff.mode_annually    = help.mode_annually;
             general_tariff.mode_credit      = help.mode_credit;
-            general_tariff.free_tariff      = help.free;
+            general_tariff.free_tariff      = help.free_tariff;
 
             general_tariff.usd = help.usd;
             general_tariff.eur = help.eur;
@@ -112,7 +112,7 @@ public class Finance_Controller extends Controller {
 
             general_tariff.mode_annually    = help.mode_annually;
             general_tariff.mode_credit      = help.mode_credit;
-            general_tariff.free_tariff      = help.free;
+            general_tariff.free_tariff      = help.free_tariff;
 
             general_tariff.usd = help.usd;
             general_tariff.eur = help.eur;

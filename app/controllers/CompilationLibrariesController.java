@@ -1305,7 +1305,7 @@ public class CompilationLibrariesController extends Controller {
             request.put("firmware_type", firmware_type.get_firmwareType());
             request.set("targetIds",  Json.toJson(list));
             request.put("build_id", build_id);
-            request.put("program", UtilTools.get_encoded_binary_string_from_File(file));
+            request.put("program", FileRecord.get_encoded_binary_string_from_File(file));
 
             // TODO - tohle nejde nějak domylset
             // ObjectNode result =  WebSocketController.incomingConnections_homers.get(instance_id).write_with_confirmation(request, 1000*30, 0, 3);

@@ -10,8 +10,6 @@ import models.person.Person;
 import models.project.b_program.B_Program;
 import models.project.b_program.instnace.Homer_Instance;
 import models.project.c_program.C_Program;
-import models.project.c_program.actualization.Actualization_procedure;
-import models.project.c_program.actualization.C_Program_Update_Plan;
 import models.project.global.Project;
 import play.data.Form;
 import play.libs.Json;
@@ -189,92 +187,6 @@ public class NotificationController extends Controller {
       send_notification(person, notification);
     }
 
-  }
-
-  public static void actualization_procedure_start(List<WebSCType> subscribers, String deviceId){
-
-    Board board = Board.find.byId(deviceId);
-    if(board != null){
-      Notification notification = new Notification(Notification_importance.low, Notification_level.info, null)
-              .setText("Board ")
-              .setObject(Board.class, board.id, board.id, board.project_id())
-              .setText("Server started with actualization");
-
-      JsonNode json = Json.toJson(notification);
-
-      for( WebSCType webSCType : subscribers) {
-        webSCType.write_without_confirmation( (ObjectNode) json );
-      }
-
-      return;
-    }
-
-    logger.warn("Device id:", deviceId, " not found!");
-  }
-
-  public static void actualization_procedure_restart(List<WebSCType> subscribers, String deviceId){
-
-    Board board = Board.find.byId(deviceId);
-    if(board != null){
-      Notification notification = new Notification(Notification_importance.low, Notification_level.info, null)
-              .setText("Board ")
-              .setObject(Board.class, board.id, board.id, board.project_id())
-              .setText("Server remotely restarts device after uploading new firmware.");
-
-      JsonNode json = Json.toJson(notification);
-
-      for( WebSCType webSCType : subscribers) {
-        webSCType.write_without_confirmation( (ObjectNode) json );
-      }
-
-      return;
-    }
-
-    logger.warn("Device id:", deviceId, " not found!");
-  }
-
-  public static void actualization_procedure_progress(List<WebSCType> subscribers, String deviceId, Integer progress){
-
-    Board board = Board.find.byId(deviceId);
-
-    if(board != null){
-      Notification notification = new Notification(Notification_importance.low, Notification_level.info, null)
-              .setText("Board ")
-              .setObject(Board.class, board.id, board.id, board.project_id())
-              .setText("Uploud firmware progress:: " + progress + "%");
-
-      JsonNode json = Json.toJson(notification);
-
-      for( WebSCType webSCType : subscribers) {
-        webSCType.write_without_confirmation( (ObjectNode) json );
-      }
-
-      return;
-    }
-
-    logger.warn("Device id:", deviceId, " not found!");
-  }
-
-  public static void actualization_procedure_succesful(List<WebSCType> subscribers, String deviceId, Integer progress){
-
-    Board board = Board.find.byId(deviceId);
-
-    if(board != null){
-      Notification notification = new Notification(Notification_importance.low, Notification_level.info, null)
-              .setText("Board ")
-              .setObject(Board.class, board.id, board.id, board.project_id())
-              .setText("Update was succesful");
-
-      JsonNode json = Json.toJson(notification);
-
-      for( WebSCType webSCType : subscribers) {
-        webSCType.write_without_confirmation( (ObjectNode) json );
-      }
-
-      return;
-    }
-
-    logger.warn("Device id:", deviceId, " not found!");
   }
 
 

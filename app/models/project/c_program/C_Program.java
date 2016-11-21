@@ -75,7 +75,7 @@ public class C_Program extends Model {
 
         // Složí k odpojení defaultních prvních verzí programu pro divnostav
         // Lexa
-        
+
         if (this.first_default_version_object != null) {
             this.first_default_version_object.first_version_of_c_programs.remove(this);
             this.first_default_version_object.update();
