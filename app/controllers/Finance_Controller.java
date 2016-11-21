@@ -15,6 +15,7 @@ import utilities.enums.Currency;
 import utilities.enums.Payment_method;
 import utilities.enums.Payment_mode;
 import utilities.enums.Payment_status;
+import utilities.enums.*;
 import utilities.fakturoid.Fakturoid_Controller;
 import utilities.goPay.GoPay_Controller;
 import utilities.loggy.Loggy;
@@ -69,7 +70,7 @@ public class Finance_Controller extends Controller {
 
             general_tariff.mode_annually    = help.mode_annually;
             general_tariff.mode_credit      = help.mode_credit;
-            general_tariff.free             = help.free;
+            general_tariff.free_tariff      = help.free;
 
             general_tariff.usd = help.usd;
             general_tariff.eur = help.eur;
@@ -111,7 +112,7 @@ public class Finance_Controller extends Controller {
 
             general_tariff.mode_annually    = help.mode_annually;
             general_tariff.mode_credit      = help.mode_credit;
-            general_tariff.free             = help.free;
+            general_tariff.free_tariff      = help.free;
 
             general_tariff.usd = help.usd;
             general_tariff.eur = help.eur;
@@ -542,11 +543,12 @@ public class Finance_Controller extends Controller {
                         if(help.company_invoice_email == null)      return GlobalResult.result_BadRequest("company_invoice_email is required with this tariff");
 
                         if(help.vat_number != null) {
-                            if (!UtilTools.controll_vat_number(help.vat_number))return GlobalResult.result_BadRequest("Prefix code in VatNumber is not valid");
+                            if (!Payment_Details.control_vat_number(help.vat_number))return GlobalResult.badRequest("Prefix code in VatNumber is not valid");
                             payment_details.company_vat_number = help.vat_number;
                         }
 
-                        payment_details.company_registration_no = help.registration_no;
+                        payment_details.company_account = true;
+                        payment_details.company_registration_no  = help.registration_no;
                         payment_details.company_name             = help.company_name;
                         payment_details.company_authorized_email = help.company_authorized_email;
                         payment_details.company_authorized_phone = help.company_authorized_phone;
@@ -983,8 +985,8 @@ public class Finance_Controller extends Controller {
                 if (help.company_invoice_email == null)     return GlobalResult.result_BadRequest("company_invoice_email is required with this tariff");
 
                 if (help.vat_number != null) {
-                    if (!UtilTools.controll_vat_number(help.vat_number))
-                        return GlobalResult.result_BadRequest("Prefix code in VatNumber is not valid");
+                    if (!Payment_Details.control_vat_number(help.vat_number))
+                        return GlobalResult.badRequest("Prefix code in VatNumber is not valid");
                     payment_details.company_vat_number = help.vat_number;
                 }
 

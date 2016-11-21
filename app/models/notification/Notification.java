@@ -13,6 +13,7 @@ import utilities.Server;
 import utilities.enums.Notification_type;
 import utilities.enums.Notification_importance;
 import utilities.enums.Notification_level;
+import utilities.notifications.Notification_Handler;
 import utilities.swagger.outboundClass.Swagger_Notification_Element;
 
 import javax.persistence.*;
@@ -49,6 +50,9 @@ public class Notification extends Model {
 
     @JsonIgnore @Transient
     List<Swagger_Notification_Element> array = new ArrayList<>();
+
+    @JsonIgnore @Transient
+    public List<Person> receivers = new ArrayList<>();
 
     @JsonIgnore
     public  Notification(Notification_importance importance, Notification_level level, Person person){
@@ -175,6 +179,12 @@ public class Notification extends Model {
     public void confirm(){
         this.confirmed = true;
         this.update();
+    }
+
+    @JsonIgnore @Transient
+    public void send(List<Person> receivers){
+        this.receivers = receivers;
+        Notification_Handler.add_to_queue(this);
     }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/

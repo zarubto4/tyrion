@@ -69,7 +69,7 @@ public class SendMessage{
 
                             for (WebSCType ws :notification_subscribers){
                                 WS_Becki_Website subscriber = (WS_Becki_Website) ws;
-                                NotificationController.upload_firmare_progress( subscriber.person, result.get("message").asText());
+                                NotificationController.upload_firmware_progress( subscriber.person, result.get("message").asText());
                             }
                         }
                         return;
@@ -84,7 +84,7 @@ public class SendMessage{
                         if(notification_subscribers != null && !notification_subscribers.isEmpty()) {
                             for (WebSCType ws :notification_subscribers){
                                 WS_Becki_Website subscriber = (WS_Becki_Website) ws;
-                                NotificationController.upload_firmare_progress(subscriber.person, result.get("message").asText());
+                                NotificationController.upload_firmware_progress(subscriber.person, result.get("message").asText());
                             }
                         }
                         return;

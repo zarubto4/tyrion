@@ -21,7 +21,6 @@ import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import play.mvc.*;
 import utilities.Server;
-import utilities.UtilTools;
 import utilities.emails.EmailTool;
 import utilities.enums.Approval_state;
 import utilities.enums.Firmware_type;
@@ -34,6 +33,8 @@ import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Filter_List.*;
 import utilities.swagger.outboundClass.*;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.*;
 
@@ -128,8 +129,8 @@ public class CompilationLibrariesController extends Controller {
                 c_program.first_default_version_object = typeOfBoard.default_program.default_main_version;
 
             }else {
-                if( c_program.defaul_program_type_of_board != null) return GlobalResult.result_BadRequest("Its prohibitedd set Two C_Pogram on one TypeOfBoard");
-                c_program.defaul_program_type_of_board = typeOfBoard;
+                if( c_program.default_program_type_of_board != null) return GlobalResult.result_BadRequest("It is prohibited to set Two C_Programs on one TypeOfBoard");
+                c_program.default_program_type_of_board = typeOfBoard;
             }
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
@@ -464,7 +465,7 @@ public class CompilationLibrariesController extends Controller {
 
             // Content se nahraje na Azure
 
-            UtilTools.uploadAzure_Version(content.toString(), "code.json" , c_program.get_path() ,  version_object);
+            FileRecord.uploadAzure_Version(content.toString(), "code.json" , c_program.get_path() ,  version_object);
 
 
             String token = request().getHeader("X-AUTH-TOKEN"); // Určen pro exetrní vlákno zpracování
@@ -846,7 +847,7 @@ public class CompilationLibrariesController extends Controller {
 
             // Content se nahraje na Azure
 
-            UtilTools.uploadAzure_Version(content.toString(), "code.json" , c_program.get_path() ,  version_object);
+            FileRecord.uploadAzure_Version(content.toString(), "code.json" , c_program.get_path() ,  version_object);
 
 
             String token = request().getHeader("X-AUTH-TOKEN"); // Určen pro exetrní vlákno zpracování
@@ -956,7 +957,7 @@ public class CompilationLibrariesController extends Controller {
 
 
             FileRecord file = FileRecord.find.where().eq("file_name", "code.json").eq("version_object.id", version_id).findUnique();
-            if(file == null) return GlobalResult.notFoundObject("Server has no contenct from version");
+            if(file == null) return GlobalResult.notFoundObject("Server has no content from version");
 
             // Smažu předchozí kompilaci
             if(version_object.c_program == null) return GlobalResult.result_BadRequest("Version is not version of C_Program");
@@ -1027,7 +1028,7 @@ public class CompilationLibrariesController extends Controller {
                 logger.debug("CompilationControler:: Trying download bin file");
                try{
 
-                   logger.debug("CompilationControler:: Sending request to Compilatin server for downloading");
+                   logger.debug("Sending request to Compilation server for downloading");
                    F.Promise<WSResponse> responsePromise = ws.url(c_compilation.c_comp_build_url)
                            .setContentType("undefined")
                            .setRequestTimeout(2500)
@@ -1040,8 +1041,8 @@ public class CompilationLibrariesController extends Controller {
                    if( body != null) {
                         // Daný soubor potřebuji dostat na Azure a Propojit s verzí
 
-                        String binary_file_in_string = UtilTools.get_encoded_binary_string_from_body(body);
-                        c_compilation.bin_compilation_file = UtilTools.create_Binary_file( c_compilation.get_path() , binary_file_in_string, "compilation.bin");
+                        String binary_file_in_string = FileRecord.get_encoded_binary_string_from_body(body);
+                        c_compilation.bin_compilation_file = FileRecord.create_Binary_file( c_compilation.get_path() , binary_file_in_string, "compilation.bin");
 
                         logger.debug("CompilationControler:: File succesfuly restored in Azure!");
                     }
@@ -1249,8 +1250,8 @@ public class CompilationLibrariesController extends Controller {
 
             // Existuje Homer?
 
-             String binary_file = UtilTools.get_encoded_binary_string_from_File(file);
-             FileRecord fileRecord = UtilTools.create_Binary_file("byzance-private/binaryfiles", binary_file, file_name);
+             String binary_file = FileRecord.get_encoded_binary_string_from_File(file);
+             FileRecord fileRecord = FileRecord.create_Binary_file("byzance-private/binaryfiles", binary_file, file_name);
              ActualizationController.add_new_actualization_request_with_user_file(board.project, firmware_type, board, fileRecord);
 
             return GlobalResult.result_ok();
@@ -2030,7 +2031,7 @@ public class CompilationLibrariesController extends Controller {
                 File libraryFile = file.getFile();
 
 
-                UtilTools.uploadAzure_Version(libraryFile, "library.txt", library_group.get_path(), version_object);
+                FileRecord.uploadAzure_Version(libraryFile, "library.txt", library_group.get_path(), version_object);
 
             }
 
@@ -2547,7 +2548,7 @@ public class CompilationLibrariesController extends Controller {
 
             // Nahraji soubor na Azure
 
-            UtilTools.uploadAzure_Version(libraryFile, "library.txt",  version_object.single_library.get_path() ,version_object);
+            FileRecord.uploadAzure_Version(libraryFile, "library.txt",  version_object.single_library.get_path() ,version_object);
 
             // Vrácení verze
             return GlobalResult.result_ok(Json.toJson(version_object));
@@ -3306,6 +3307,119 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
+    @ApiOperation(value = "upload TypeOfBoard picture",
+            tags = {"TypeOfBoard"},
+            notes = "Uploads photo of TypeOfBoard. Picture must be smaller than 500 KB and its dimensions must be between 50 and 400 pixels. If picture already exists, it will be replaced by the new one. " +
+                    "API requires 'multipart/form-data' Content-Type, name of the property is 'file'.",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK Result",               response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured_API.class)
+    public Result upload_TypeOfBoard_picture(@ApiParam(required = true) String type_of_board_id){
+        try {
+
+            TypeOfBoard type_of_board = TypeOfBoard.find.byId(type_of_board_id);
+            if (type_of_board == null) return GlobalResult.notFoundObject("Type of board does not exist");
+
+            // Přijmu soubor
+            Http.MultipartFormData body = request().body().asMultipartFormData();
+
+            if (body == null) return GlobalResult.notFoundObject("Missing picture!");
+
+            Http.MultipartFormData.FilePart file_from_request = body.getFile("file");
+
+            if (file_from_request == null) return GlobalResult.notFoundObject("Missing picture!");
+
+            File file = file_from_request.getFile();
+
+            int dot = file_from_request.getFilename().lastIndexOf(".");
+            String file_type = file_from_request.getFilename().substring(dot);
+
+            // Zkontroluji soubor - formát, velikost, rozměry
+            if((!file_type.equals(".jpg"))&&(!file_type.equals(".png"))) return GlobalResult.result_BadRequest("Wrong type of File - '.jpg' or '.png' required! ");
+            if( (file.length() / 1024) > 500) return GlobalResult.result_BadRequest("Picture is bigger than 500 KB");
+            BufferedImage bimg = ImageIO.read(file);
+            if((bimg.getWidth() < 50)||(bimg.getWidth() > 400)||(bimg.getHeight() < 50)||(bimg.getHeight() > 400)) return GlobalResult.result_BadRequest("Picture height or width is not between 50 and 400 pixels.");
+
+            // Odebrání předchozího obrázku
+            if(!(type_of_board.picture == null)){
+                FileRecord fileRecord = type_of_board.picture;
+                type_of_board.picture = null;
+                type_of_board.update();
+                fileRecord.delete();
+            }
+
+            // Pokud link není, vygeneruje se nový, unikátní
+            if(type_of_board.azure_picture_link == null){
+                while(true){ // I need Unique Value
+                    String azure_picture_link = type_of_board.get_Container().getName() + "/" + UUID.randomUUID().toString() + file_type;
+                    if (TypeOfBoard.find.where().eq("azure_picture_link", azure_picture_link ).findUnique() == null) {
+                        type_of_board.azure_picture_link = azure_picture_link;
+                        type_of_board.update();
+                        break;
+                    }
+                }
+            }
+
+            String file_path = type_of_board.azure_picture_link;
+
+            int slash = file_path.indexOf("/");
+            String file_name = file_path.substring(slash+1);
+
+            type_of_board.picture = FileRecord.uploadAzure_File(file, file_name, file_path);
+            type_of_board.update();
+
+
+            return GlobalResult.result_ok(Json.toJson(type_of_board));
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "remove TypeOfBoard picture",
+            tags = {"TypeOfBoard"},
+            notes = "Removes picture of given TypeOfBoard",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK Result",               response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured_API.class)
+    public Result remove_TypeOfBoard_picture(@ApiParam(required = true) String type_of_board_id){
+        try {
+
+            TypeOfBoard type_of_board = TypeOfBoard.find.byId(type_of_board_id);
+            if (type_of_board == null) return GlobalResult.notFoundObject("Type of Board does not exist");
+
+            if(!(type_of_board.picture == null)) {
+                FileRecord fileRecord = type_of_board.picture;
+                type_of_board.azure_picture_link = null;
+                type_of_board.picture = null;
+                type_of_board.update();
+                fileRecord.delete();
+            }else{
+                return GlobalResult.badRequest("There is no picture to remove.");
+            }
+
+            return GlobalResult.result_ok("Picture successfully removed");
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
     // BootLoader ---------------------------------------------------------------------------------------------------------------------
 
     @ApiOperation(value = "new_boot_loader", hidden = true)
@@ -3373,8 +3487,8 @@ public class CompilationLibrariesController extends Controller {
             if (!file_type.equals(".bin")) return GlobalResult.result_BadRequest("Wrong type of File - \"Bin\" required! ");
             if ((file.length() / 1024) > 500) return GlobalResult.result_BadRequest("File is bigger than 500Kb");
 
-            String binary_file = UtilTools.get_encoded_binary_string_from_File(file);
-            FileRecord filerecord  = UtilTools.create_Binary_file( boot_loader.get_path(), binary_file, "bootloader.bin");
+            String binary_file = FileRecord.get_encoded_binary_string_from_File(file);
+            FileRecord filerecord  = FileRecord.create_Binary_file( boot_loader.get_path(), binary_file, "bootloader.bin");
 
             boot_loader.file = filerecord;
             filerecord.boot_loader = boot_loader;

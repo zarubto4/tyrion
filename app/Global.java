@@ -38,11 +38,11 @@ public class Global extends GlobalSettings {
 
            //5
            logger.warn("Starting actualization threads");
-           // Server.startThreads();
+           Server.startThreads();
 
            //6
            logger.warn("Starting all scheduler threads");
-           // Server.startScheduling_procedures();
+           Server.startScheduling_procedures();
 
            //7
            logger.warn("Creating default system data in database");
@@ -50,7 +50,7 @@ public class Global extends GlobalSettings {
 
            //8
            logger.warn("Creating Administrator");
-           UtilTools.set_Developer_objects();
+           Basic_Data.set_Developer_objects();
     //****************************************************************************************************************************
 
            logger.warn("Creating demo data");
@@ -70,7 +70,7 @@ public class Global extends GlobalSettings {
         logger.warn("Disconnection all Blocko Servers");
         WebSocketController.disconnect_all_Blocko_Servers();
 
-        logger.warn("Disconnection all Compilation Servers");
+        logger.warn("Disconnecting all Compilation Servers");
         WebSocketController.disconnect_all_Compilation_Servers();
 
 

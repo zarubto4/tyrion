@@ -9,7 +9,7 @@ import play.data.validation.Constraints;
 public class Swagger_Tariff_User_Details_Edit {
 
     @Constraints.Required
-    @Constraints.MinLength(value = 5, message = "The street must have at least 4 characters")
+    @Constraints.MinLength(value = 4, message = "The street must have at least 4 characters")
     @ApiModelProperty(required = true, value =  "Required: always" + "The street must have at least 4 characters")
     public String street;
 
@@ -17,7 +17,7 @@ public class Swagger_Tariff_User_Details_Edit {
     public String street_number;
 
     @Constraints.Required
-    @Constraints.MinLength(value = 5, message = "The city must have at least 4 characters")
+    @Constraints.MinLength(value = 4, message = "The city must have at least 4 characters")
     @ApiModelProperty(required = true, value =  "Required: always" + "The city must have at least 4 characters")
     public String city;
 
@@ -33,7 +33,7 @@ public class Swagger_Tariff_User_Details_Edit {
     public String country;
 
 
-    @ApiModelProperty(required = true, value =  "Required: only if user want have business account")
+    @ApiModelProperty(required = false, value =  "Required: only if user want have business account")
     public boolean company_account;
 
 

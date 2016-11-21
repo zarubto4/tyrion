@@ -123,11 +123,9 @@ create table c_program (
   type_of_board_id          varchar(255),
   date_of_create            timestamp,
   first_default_version_object_id varchar(255),
-  defaul_program_type_of_board_id varchar(255),
-  default_main_version_id   varchar(255),
+  default_program_type_of_board_id varchar(255),
   azure_c_program_link      varchar(255),
-  constraint uq_c_program_defaul_program_type unique (defaul_program_type_of_board_id),
-  constraint uq_c_program_default_main_versio unique (default_main_version_id),
+  constraint uq_c_program_default_program_typ unique (default_program_type_of_board_id),
   constraint pk_c_program primary key (id))
 ;
 
@@ -186,10 +184,8 @@ create table file_record (
   id                        varchar(255) not null,
   file_name                 varchar(255),
   file_path                 varchar(255),
-  person_id                 varchar(255),
   boot_loader_id            varchar(255),
   version_object_id         varchar(255),
-  constraint uq_file_record_person_id unique (person_id),
   constraint uq_file_record_boot_loader_id unique (boot_loader_id),
   constraint pk_file_record primary key (id))
 ;
@@ -229,7 +225,7 @@ create table general_tariff (
   credit_card_support       boolean,
   mode_annually             boolean,
   mode_credit               boolean,
-  free                      boolean,
+  free_tariff               boolean,
   constraint uq_general_tariff_identificator unique (identificator),
   constraint pk_general_tariff primary key (id))
 ;
@@ -441,11 +437,13 @@ create table person (
   nick_name                 varchar(255),
   full_name                 varchar(255),
   azure_picture_link        varchar(255),
+  picture_id                varchar(255),
   freeze_account            boolean,
   mail_validated            boolean,
   sha_password              bytea,
   constraint uq_person_mail unique (mail),
   constraint uq_person_nick_name unique (nick_name),
+  constraint uq_person_picture_id unique (picture_id),
   constraint pk_person primary key (id))
 ;
 
@@ -566,10 +564,13 @@ create table type_of_board (
   name                      varchar(255),
   compiler_target_name      varchar(255),
   revision                  varchar(255),
+  azure_picture_link        varchar(255),
   description               TEXT,
   producer_id               varchar(255),
   processor_id              varchar(255),
   connectible_to_internet   boolean,
+  picture_id                varchar(255),
+  constraint uq_type_of_board_picture_id unique (picture_id),
   constraint pk_type_of_board primary key (id))
 ;
 
@@ -606,12 +607,14 @@ create table version_object (
   c_program_id              varchar(255),
   compilation_in_progress   boolean,
   compilable                boolean,
+  default_version_program_id varchar(255),
   approval_state            varchar(11),
   b_program_id              varchar(255),
   m_program_id              varchar(255),
   qr_token                  varchar(255),
   blob_version_link         varchar(255),
   constraint ck_version_object_approval_state check (approval_state in ('approved','edited','pending','disapproved')),
+  constraint uq_version_object_default_versio unique (default_version_program_id),
   constraint pk_version_object primary key (id))
 ;
 

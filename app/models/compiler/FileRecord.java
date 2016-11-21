@@ -6,16 +6,19 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.azure.storage.blob.CloudBlob;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
+import com.microsoft.azure.storage.blob.CloudBlockBlob;
+import com.microsoft.azure.storage.blob.ListBlobItem;
 import io.swagger.annotations.ApiModelProperty;
 import models.person.Person;
 import models.project.c_program.C_Compilation;
 import models.project.c_program.actualization.C_Program_Update_Plan;
 import utilities.Server;
+import utilities.UtilTools;
 
 import javax.persistence.*;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 @Entity
@@ -32,11 +35,16 @@ public class FileRecord extends Model {
     @ApiModelProperty(required = true)                          public String file_name;
                                                  @JsonIgnore    public String file_path;
 
-                                    @JsonIgnore @OneToOne(fetch = FetchType.LAZY)       public Person person;   // personal_picture
+                @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "picture")     public Person person;   // personal_picture
+                @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "picture")     public TypeOfBoard type_of_board;   // type_of_board_picture
                                     @JsonIgnore @OneToOne()                             public BootLoader boot_loader;
                                    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)       public Version_Object version_object;
              @JsonIgnore @OneToMany(mappedBy="binary_file",fetch = FetchType.LAZY)      public List<C_Program_Update_Plan> c_program_update_plen  = new ArrayList<>();
     @JsonIgnore @OneToOne(mappedBy="bin_compilation_file")                              public C_Compilation c_compilations_binary_file;
+
+
+
+
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
@@ -90,6 +98,88 @@ public class FileRecord extends Model {
     }
 
     @JsonIgnore @Transient
+    public static FileRecord uploadAzure_Version(String file_content, String file_name, String file_path, Version_Object version_object) throws Exception{
+
+        logger.debug("Azure load: "+ file_path + version_object.get_path() + "/" + file_name );
+
+
+        int slash = file_path.indexOf("/");
+        String container_name = file_path.substring(0,slash);
+        String real_file_path = file_path.substring(slash+1);
+        CloudBlobContainer container = Server.blobClient.getContainerReference(container_name );
+
+        CloudBlockBlob blob = container.getBlockBlobReference( real_file_path + version_object.get_path() + "/" + file_name);
+
+        InputStream is = new ByteArrayInputStream(file_content.getBytes());
+        blob.upload(is, -1);
+
+        FileRecord fileRecord = new FileRecord();
+        fileRecord.file_name = file_name;
+        fileRecord.version_object = version_object;
+        fileRecord.file_path =  file_path   + version_object.get_path() + "/" + file_name;
+        fileRecord.save();
+
+        version_object.files.add(fileRecord);
+        version_object.update();
+
+        return fileRecord;
+    }
+
+    @JsonIgnore @Transient
+    public static FileRecord uploadAzure_Version(File file, String file_name, String file_path, Version_Object version_object) throws Exception{
+
+        logger.debug("Azure load: "+ file_path + version_object.get_path() + "/" + file_name);
+
+
+        int slash = file_path.indexOf("/");
+        String container_name = file_path.substring(0,slash);
+        String real_file_path = file_path.substring(slash+1);
+        CloudBlobContainer container = Server.blobClient.getContainerReference(container_name );
+
+        CloudBlockBlob blob = container.getBlockBlobReference( real_file_path + version_object.get_path() + "/" + file_name);
+
+        InputStream is = new FileInputStream(file);
+        blob.upload(is, -1);
+
+        FileRecord fileRecord = new FileRecord();
+        fileRecord.file_name = file_name;
+        fileRecord.version_object = version_object;
+        fileRecord.file_path =   file_path + version_object.get_path()+ "/" + file_name;
+        fileRecord.save();
+
+        version_object.files.add(fileRecord);
+        version_object.update();
+
+        // Sobor smažu z adresáře
+        try {
+            file.delete();
+        }catch (Exception e){}
+
+        return fileRecord;
+    }
+
+    @JsonIgnore @Transient
+    public static FileRecord uploadAzure_File(File file, String file_name, String file_path) throws Exception{
+
+        logger.debug("Azure load: "+ file_path);
+
+        String container_name = file_path.substring(0,file_path.indexOf("/"));
+        CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
+
+        CloudBlockBlob blob = container.getBlockBlobReference(file_name);
+
+        InputStream is = new FileInputStream(file);
+        blob.upload(is, -1);
+
+        FileRecord fileRecord = new FileRecord();
+        fileRecord.file_name = file_name;
+        fileRecord.file_path = file_path;
+        fileRecord.save();
+
+        return fileRecord;
+    }
+
+    @JsonIgnore @Transient
     public void remove_file_from_Azure(){
         try{
 
@@ -104,6 +194,71 @@ public class FileRecord extends Model {
         }catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+    @JsonIgnore @Transient
+    public static FileRecord create_Binary_file(String file_path, String file_content, String file_name) throws Exception{
+
+        logger.debug("Azure create_Binary_file: " + file_path +"/"+ file_name );
+
+        int slash = file_path.indexOf("/");
+        String container_name = file_path.substring(0,slash);
+        String real_file_path = file_path.substring(slash+1);
+
+        logger.debug("Azure save path: " + file_path );
+        logger.debug("Azure Container: " + container_name);
+        logger.debug("Real File  Path: " + real_file_path);
+
+        CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
+        CloudBlockBlob blob = container.getBlockBlobReference( real_file_path +"/" + file_name );
+
+        InputStream is = new ByteArrayInputStream(file_content.getBytes());
+        blob.upload(is, -1);
+
+        FileRecord fileRecord = new FileRecord();
+        fileRecord.file_name = file_name;
+        fileRecord.file_path = file_path + "/" + file_name;
+        fileRecord.save();
+
+        return fileRecord;
+    }
+
+    /**
+     *  MEtoda slouží k rekurzivnímu procháázení úrovně adresáře v Azure data storage a mazání jeho obsahu.
+     *  Azure data storage je totiž jednoúrovňové datové skladiště! KJde není možné vytvářet složky, v nich složky
+     *  a do nich dávat soubory. Jménbo souboru sice má podobu neco/neco2/něco3/soubor.txt ale je to přímá cesta.
+     *  Proto když je potřeba promazat něco v něco2 a všechno dál, je nutné nasadit rekurzivní algoritmus, který se
+     *  podívá na obsah a vše promazává.
+     *
+     */
+    @JsonIgnore @Transient
+    public static void azureDelete(CloudBlobContainer container, String pocatekMazani) throws Exception {
+
+        for (ListBlobItem blobItem : container.listBlobs( pocatekMazani + "/" )) {
+
+            if (blobItem instanceof CloudBlob) ((CloudBlob) blobItem).deleteIfExists();
+
+            // Break & loop
+            String help = blobItem.getUri().toString().substring(0,blobItem.getUri().toString().length() -1);
+
+            azureDelete(container, pocatekMazani +  help.substring( help.lastIndexOf("/") ,help.length()) );
+        }
+    }
+
+    @JsonIgnore @Transient
+    public static String get_encoded_binary_string_from_File(File binary_file) throws Exception {
+
+        FileInputStream fileInputStreamReader = new FileInputStream(binary_file);
+        byte[] bytes = new byte[(int)binary_file.length()];
+        fileInputStreamReader.read(bytes);
+
+        return new String(Base64.getEncoder().encode(bytes));
+
+    }
+
+    @JsonIgnore @Transient
+    public static String get_encoded_binary_string_from_body(byte[] bytes) throws Exception {
+        return new String(Base64.getEncoder().encode( bytes ));
     }
 
     @Override

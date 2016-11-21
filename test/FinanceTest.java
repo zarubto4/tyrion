@@ -1,9 +1,8 @@
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import junit.framework.TestCase;
-import models.person.FloatingPersonToken;
 import models.person.Person;
+import models.project.global.Product;
 import models.project.global.financial.GeneralTariff;
-import models.project.global.financial.GeneralTariffLabel;
 import org.junit.*;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
@@ -15,6 +14,7 @@ import play.mvc.Http.RequestBuilder;
 import play.mvc.Result;
 import play.test.FakeApplication;
 import play.test.Helpers;
+import controllers.routes;
 
 
 import java.util.UUID;
@@ -28,7 +28,8 @@ public class FinanceTest extends TestHelper{
 
     public static GeneralTariff tariff_personal;
     public static GeneralTariff tariff_company;
-    public static GeneralTariffLabel label;
+
+    public static Product product;
 
     public static String adminToken;
 
@@ -44,15 +45,16 @@ public class FinanceTest extends TestHelper{
         app = Helpers.fakeApplication();
         Helpers.start(app);
 
-        adminToken = FloatingPersonToken.find.where().eq("person.mail", "admin@byzance.cz").findList().get(0).authToken;
+        adminToken = person_login(Person.find.byId("1"));
 
-        tariff_personal = tariff_personal_create();
-        label = tariff_add_label(tariff_personal);
-        tariff_company = tariff_company_create();
+        tariff_personal = GeneralTariff.find.byId("2");
+        tariff_company = GeneralTariff.find.byId("3");
 
         person = person_create();
         person_authenticate(person);
         userToken = person_login(person);
+
+        product = product_create(person);
 
         randomPerson = person_create();
         person_authenticate(randomPerson);
@@ -61,10 +63,10 @@ public class FinanceTest extends TestHelper{
 
     @AfterClass
     public static void stopApp() throws Exception{
-        tariff_delete(tariff_personal);
-        tariff_delete(tariff_company);
+        product_delete(product);
         person_delete(person);
         person_delete(randomPerson);
+        person_token_delete(adminToken);
         Helpers.stop(app);
     }
 
@@ -79,128 +81,43 @@ public class FinanceTest extends TestHelper{
             logger.info("Test {} successfully run.", description.getMethodName());
         }
         public void failed(Throwable e, Description description) {
-            logger.error("Test {} failed! Reason: {} a.", description.getMethodName(), e.getMessage());
+            logger.error("Test {} failed! Reason: {}.", description.getMethodName(), e.getMessage());
         }
     };
-
-    @Test
-    public void tariff_general_create() {
-
-        ObjectNode body = Json.newObject();
-
-        body.put("tariff_name", UUID.randomUUID().toString());
-        body.put("identificator", UUID.randomUUID().toString());
-        body.put("tariff_description", UUID.randomUUID().toString());
-        body.put("color", "blue");
-        body.put("number_of_free_months", 3);
-        body.put("czk", 3.0);
-        body.put("usd", 3.0);
-        body.put("eur", 3.0);
-        body.put("company_details_required", false);
-        body.put("required_payment_mode", false);
-        body.put("required_payment_method", false);
-        body.put("required_paid_that", false);
-        body.put("credit_card_support", true);
-        body.put("bank_transfer_support", true);
-        body.put("mode_annually", true);
-        body.put("mode_credit", true);
-        body.put("free", true);
-
-        RequestBuilder request = new RequestBuilder()
-                .method(POST)
-                .uri("/admin/tariff")
-                .bodyJson(body)
-                .header("X-AUTH-TOKEN", adminToken);
-
-        Result result = route(request);
-        assertEquals(OK, result.status());
-    }
-
-    @Test
-    public void tariff_general_edit() {
-
-        ObjectNode body = Json.newObject();
-
-        body.put("tariff_name", UUID.randomUUID().toString());
-        body.put("identificator", tariff_personal.identificator);
-        body.put("tariff_description", UUID.randomUUID().toString());
-        body.put("color", "blue");
-        body.put("number_of_free_months", 3);
-        body.put("czk", 3.0);
-        body.put("usd", 3.0);
-        body.put("eur", 3.0);
-        body.put("company_details_required", false);
-        body.put("required_payment_mode", false);
-        body.put("required_payment_method", false);
-        body.put("required_paid_that", false);
-        body.put("credit_card_support", false);
-        body.put("bank_transfer_support", false);
-        body.put("mode_annually", false);
-        body.put("mode_credit", false);
-        body.put("free", true);
-
-        RequestBuilder request = new RequestBuilder()
-                .method(PUT)
-                .uri("/admin/tariff/" + tariff_personal.id)
-                .bodyJson(body)
-                .header("X-AUTH-TOKEN", adminToken);
-
-        Result result = route(request);
-        assertEquals(OK, result.status());
-    }
-
-    @Test
-    public void tariff_general_add_label() {
-
-        ObjectNode body = Json.newObject();
-
-        body.put("general_tariff_id", tariff_personal.id);
-        body.put("description", UUID.randomUUID().toString());
-        body.put("label", UUID.randomUUID().toString());
-        body.put("icon", UUID.randomUUID().toString());
-
-        RequestBuilder request = new RequestBuilder()
-                .method(POST)
-                .uri("/admin/label")
-                .bodyJson(body)
-                .header("X-AUTH-TOKEN", adminToken);
-
-        Result result = route(request);
-        assertEquals(OK, result.status());
-    }
-
-    @Test
-    public void tariff_general_remove_label() {
-
-        RequestBuilder request = new RequestBuilder()
-                .method(DELETE)
-                .uri("/admin/label/" + label.id)
-                .header("X-AUTH-TOKEN", adminToken);
-
-        Result result = route(request);
-        assertEquals(OK, result.status());
-    }
 
     @Test
     public void get_products_tariffs() {
 
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
-                .uri("/product/tarifs/for_registration")
-                .header("X-AUTH-TOKEN", adminToken);
+                .uri(routes.Finance_Controller.get_products_tariffs().toString())
+                .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
         assertEquals(OK, result.status());
     }
 
     @Test
-    public void set_tariff_with_account() {
+    public void get_applicable_products_for_creating_new_project() {
+
+        RequestBuilder request = new RequestBuilder()
+                .method(GET)
+                .uri(routes.Finance_Controller.get_applicable_products_for_creating_new_project().toString())
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+        assertEquals(OK, result.status());
+    }
+
+    @Test
+    public void person_set_tariff_with_account() {
 
         ObjectNode body = Json.newObject();
 
         body.put("tariff_type", tariff_personal.identificator);
         body.put("product_individual_name", UUID.randomUUID().toString());
         body.put("currency_type", "CZK");
+        body.put("payment_method", "credit_card");
         body.put("city", UUID.randomUUID().toString());
         body.put("country", UUID.randomUUID().toString());
         body.put("street_number", UUID.randomUUID().toString());
@@ -209,9 +126,108 @@ public class FinanceTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(POST)
-                .uri("/product/tarif")
+                .uri(routes.Finance_Controller.set_tariff_with_account().toString())
                 .bodyJson(body)
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+        assertEquals(OK, result.status());
+    }
+
+    @Test
+    public void company_set_tariff_with_account() {
+
+        ObjectNode body = Json.newObject();
+
+        body.put("tariff_type", tariff_company.identificator);
+        body.put("product_individual_name", UUID.randomUUID().toString());
+        body.put("currency_type", "CZK");
+        body.put("city", UUID.randomUUID().toString());
+        body.put("country", UUID.randomUUID().toString());
+        body.put("street_number", UUID.randomUUID().toString());
+        body.put("street", UUID.randomUUID().toString());
+        body.put("zip_code", UUID.randomUUID().toString());
+
+        body.put("payment_mode", "monthly");
+        body.put("payment_method", "credit_card");
+
+        body.put("registration_no", UUID.randomUUID().toString());
+        body.put("vat_number", "CZ" + UUID.randomUUID().toString());
+        body.put("company_name", UUID.randomUUID().toString());
+        body.put("company_authorized_email", UUID.randomUUID().toString());
+        body.put("company_authorized_phone", UUID.randomUUID().toString());
+        body.put("company_web", UUID.randomUUID().toString());
+        body.put("company_invoice_email", UUID.randomUUID().toString() + "@mail.com");
+
+        RequestBuilder request = new RequestBuilder()
+                .method(POST)
+                .uri(routes.Finance_Controller.set_tariff_with_account().toString())
+                .bodyJson(body)
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+        assertEquals(OK, result.status());
+    }
+
+    @Test
+    public void edit_payment_details() {
+
+        ObjectNode body = Json.newObject();
+
+        body.put("city", UUID.randomUUID().toString());
+        body.put("country", UUID.randomUUID().toString());
+        body.put("street_number", UUID.randomUUID().toString());
+        body.put("street", UUID.randomUUID().toString());
+        body.put("zip_code", UUID.randomUUID().toString());
+
+        RequestBuilder request = new RequestBuilder()
+                .method(PUT)
+                .uri(routes.Finance_Controller.edit_payment_details(product.payment_details.id).toString())
+                .bodyJson(body)
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+        assertEquals(OK, result.status());
+    }
+
+    @Test
+    public void edit_general_product_details() {
+
+        ObjectNode body = Json.newObject();
+
+        body.put("product_individual_name", UUID.randomUUID().toString());
+        body.put("currency_type", "EUR");
+
+        RequestBuilder request = new RequestBuilder()
+                .method(PUT)
+                .uri(routes.Finance_Controller.edit_general_product_details(product.id).toString())
+                .bodyJson(body)
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+        assertEquals(OK, result.status());
+    }
+
+
+    @Test
+    public void deactivate_product() {
+
+        RequestBuilder request = new RequestBuilder()
+                .method(PUT)
+                .uri(routes.Finance_Controller.deactivate_product(product.id).toString())
                 .header("X-AUTH-TOKEN", adminToken);
+
+        Result result = route(request);
+        assertEquals(OK, result.status());
+    }
+
+    @Test
+    public void get_financial_summary() {
+
+        RequestBuilder request = new RequestBuilder()
+                .method(GET)
+                .uri(routes.Finance_Controller.get_financial_summary().toString())
+                .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
         assertEquals(OK, result.status());

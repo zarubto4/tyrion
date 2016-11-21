@@ -128,7 +128,7 @@ public class PersonController extends Controller {
     }
 
     @ApiOperation(value = "Email verification of registration", hidden = true)
-    public Result email_Person_authentitaction(String mail, String authToken) {
+    public Result email_Person_authentication(String mail, String authToken) {
         try{
 
             Person person = Person.find.where().eq("mail", mail).findUnique();
@@ -973,9 +973,12 @@ public class PersonController extends Controller {
 
             // Přijmu soubor
             Http.MultipartFormData body = request().body().asMultipartFormData();
+
+            if (body == null) return GlobalResult.notFoundObject("Missing picture!");
+
             Http.MultipartFormData.FilePart file_from_request = body.getFile("file");
 
-            if (file_from_request == null) return GlobalResult.notFoundObject("Picture not found!");
+            if (file_from_request == null) return GlobalResult.notFoundObject("Missing picture!");
 
             File file = file_from_request.getFile();
 
@@ -1010,11 +1013,9 @@ public class PersonController extends Controller {
 
             String file_path = person.get_picture_path();
 
-            int slash = file_path.indexOf("/");
-            String file_name = file_path.substring(slash+1);
+            String file_name = file_path.substring(file_path.indexOf("/") + 1);
 
-            FileRecord fileRecord = UtilTools.uploadAzure_File(file, file_name, file_path);
-            person.picture = fileRecord;
+            person.picture = FileRecord.uploadAzure_File(file, file_name, file_path);
             person.update();
 
 

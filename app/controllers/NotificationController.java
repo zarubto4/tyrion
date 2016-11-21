@@ -1,8 +1,6 @@
 package controllers;
 
 import com.avaje.ebean.Query;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.*;
 import models.compiler.Board;
 import models.compiler.Version_Object;
@@ -12,6 +10,8 @@ import models.person.Person;
 import models.project.b_program.B_Program;
 import models.project.b_program.instnace.Homer_Instance;
 import models.project.c_program.C_Program;
+import models.project.c_program.actualization.Actualization_procedure;
+import models.project.c_program.actualization.C_Program_Update_Plan;
 import models.project.global.Project;
 import play.data.Form;
 import play.libs.Json;
@@ -33,7 +33,6 @@ import utilities.swagger.outboundClass.Filter_List.Swagger_Notification_List;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Swagger_C_Program_Version;
 import utilities.webSocket.WS_Becki_Website;
-import utilities.webSocket.WebSCType;
 
 import java.util.List;
 
@@ -42,9 +41,6 @@ public class NotificationController extends Controller {
 
   //####################################################################################################################
   static play.Logger.ALogger logger = play.Logger.of("Loggy");
-
-
-
 
   private static void send_notification(Person person, Notification notification) {
 
@@ -71,7 +67,7 @@ public class NotificationController extends Controller {
         send_notification(person, notification);
   }
 
-  public static void upload_firmare_progress(Person person, String version_object){
+  public static void upload_firmware_progress(Person person, String version_object){
     // TODO
   }
 
@@ -131,7 +127,8 @@ public class NotificationController extends Controller {
   }
 
 
-  public static void upload_Instance_was_unsuccessfull(Person person, Homer_Instance instance, String reason){
+  public static void upload_Instance_was_unsuccessful(Person person, Homer_Instance instance, String reason){
+
 
     Notification notification = new Notification(Notification_importance.normal, Notification_level.warning, person)
                                     .setText("Server not upload instance to cloud on Blocko Version <b>" + instance.actual_instance.version_object.version_name + "</b> from Blocko program <b>" + instance.b_program.name + "</b> for <b> reason:\"" +  reason + "\" </b> ")
@@ -144,7 +141,7 @@ public class NotificationController extends Controller {
 
   }
 
-  public static void upload_of_Instance_was_unsuccessfull_with_error(Person person, Version_Object version_object){
+  public static void upload_of_Instance_was_unsuccessful_with_error(Person person, Version_Object version_object){
 
     Notification notification = new Notification(Notification_importance.normal, Notification_level.error, person)
                                     .setText("Server not upload instance to cloud on Blocko Version")

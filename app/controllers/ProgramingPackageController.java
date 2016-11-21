@@ -33,7 +33,8 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.Server;
-import utilities.UtilTools;
+import utilities.becki_widgets.Becki_Widget_Generator;
+import utilities.becki_widgets.Becki_Color;
 import utilities.emails.EmailTool;
 import utilities.enums.Approval_state;
 import utilities.enums.Type_of_command;
@@ -282,7 +283,7 @@ public class ProgramingPackageController extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Project_New",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Project_Edit",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -302,9 +303,9 @@ public class ProgramingPackageController extends Controller {
         try {
 
             // Zpracování Json
-            final Form<Swagger_Project_New> form = Form.form(Swagger_Project_New.class).bindFromRequest();
+            final Form<Swagger_Project_Edit> form = Form.form(Swagger_Project_Edit.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-            Swagger_Project_New help = form.get();
+            Swagger_Project_Edit help = form.get();
 
             // Kontrola objektu
             Project project = Project.find.byId(project_id);
@@ -561,8 +562,15 @@ public class ProgramingPackageController extends Controller {
             // Kontrola oprávnění
             if (!project.unshare_permission() )   return GlobalResult.forbidden_Permission();
 
+            List<Person> list = new ArrayList<>();
+
             // Získání seznamu
-            List<Person> list = Person.find.where().eq("mail",help.persons_mail).findList();
+            for (String mail : help.persons_mail){
+
+                Person person = Person.find.where().eq("mail",mail).findUnique();
+                if(person != null)
+                    list.add(person);
+            }
 
             for (Person person : list) {
                 if (person.owningProjects.contains(project)) {
@@ -609,8 +617,10 @@ public class ProgramingPackageController extends Controller {
             invitation.project.invitations.remove(invitation);
             invitation.owner.invitations.remove(invitation);
 
-            Notification notification = Notification.find.byId(invitation.notification_id);
-            if(!(notification == null)) notification.delete();
+            Notification notification = null;
+            if(invitation.notification_id != null)
+                notification = Notification.find.byId(invitation.notification_id);
+            if(notification != null) notification.delete();
 
             invitation.delete();
 
@@ -1314,7 +1324,7 @@ public class ProgramingPackageController extends Controller {
             version_object.refresh();
 
             // Nahrání na Azure
-             UtilTools.uploadAzure_Version(file_content, "program.js", b_program.get_path() , version_object);
+             FileRecord.uploadAzure_Version(file_content, "program.js", b_program.get_path() , version_object);
 
             // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson( version_object.b_program.program_version(version_object) ));
@@ -1604,7 +1614,7 @@ public class ProgramingPackageController extends Controller {
 
                         // Ověřím připojený server
                         if (!WebSocketController.blocko_servers.containsKey(b_program.instance.cloud_homer_server.server_name)) {
-                            NotificationController.upload_Instance_was_unsuccessfull(person, b_program.instance, "Server is offline. It will be uploaded as soon as possible");
+                            NotificationController.upload_Instance_was_unsuccessful(person, b_program.instance, "Server is offline now. It will be uploaded as soon as possible");
                             logger.warn("Server je offline!! Nenahraju instanci!!");
                             return;
                         }

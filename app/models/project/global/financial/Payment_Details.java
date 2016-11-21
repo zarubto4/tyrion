@@ -39,6 +39,45 @@ public class Payment_Details extends Model {
     @ApiModelProperty(required = true, value = "Used for billing and invoices") public String zip_code;
     @ApiModelProperty(required = true, value = "Used for billing and invoices") public String country;
 
+/* JSON IGNORE ----------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient
+    public static boolean control_vat_number(String vat_number){
+
+            // Jestli je přítomné VAT number - musí dojít ke kontrole validity Vat number!
+            switch (vat_number.substring(0,2)){
+
+                case "BE" : {return true;}
+                case "BG" : {return true;}
+                case "CZ" : {return true;}
+                case "DK" : {return true;}
+                case "EE" : {return true;}
+                case "FI" : {return true;}
+                case "FR" : {return true;}
+                case "IE" : {return true;}
+                case "IT" : {return true;}
+                case "CY" : {return true;}
+                case "LT" : {return true;}
+                case "LV" : {return true;}
+                case "LU" : {return true;}
+                case "HU" : {return true;}
+                case "MT" : {return true;}
+                case "DE" : {return true;}
+                case "NL" : {return true;}
+                case "PT" : {return true;}
+                case "AT" : {return true;}
+                case "RO" : {return true;}
+                case "EL" : {return true;}
+                case "SK" : {return true;}
+                case "SI" : {return true;}
+                case "GB" : {return true;}
+                case "ES" : {return true;}
+                case "SE" : {return true;}
+                default: {return false;}
+            }
+
+    }
+
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 

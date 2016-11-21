@@ -78,7 +78,7 @@ PUT            /coreClient/person/person/activate/:person_id                @con
 DELETE         /coreClient/person/person/clean_all_tokens/:person_id        @controllers.PersonController.delete_all_tokens(person_id)
 PUT            /coreClient/person/person/valid_email/:person_id             @controllers.PersonController.valid_email_Person(person_id)
 
-GET            /mail_person_authentication/:mail/:token                     @controllers.PersonController.email_Person_authentitaction(mail,token)
+GET            /mail_person_authentication/:mail/:token                     @controllers.PersonController.email_Person_authentication(mail,token)
 
 POST           /coreClient/person/changeProperty                            @controllers.PersonController.changePersonLoginProperty()
 GET            /coreClient/authorize_change/:token                          @controllers.PersonController.authorizePropertyChange(token)
@@ -468,6 +468,14 @@ GET             /admin/public_code                              @controllers.Das
 GET             /admin/general_tariffs                          @controllers.DashboardController.general_tariffs_list()
 GET             /admin/general_tariffs/:general_tariff_id       @controllers.DashboardController.general_tariff_edit(general_tariff_id)
 GET             /admin/general_tariff_extension/:extension_id   @controllers.DashboardController.general_tariff_extension_edit(extension_id)
+
+GET             /admin/test                                     @controllers.DashboardController.test()
+
+# Test
+GET             /admin/test/run/:cmd                            @utilities.test.TestLauncher.launch_test(cmd)
+GET             /admin/test/log                                 @utilities.test.TestLog.get_test_log()
+GET             /admin/test/log/clear                           @utilities.test.TestLog.clear_test_log()
+
 
 # Tariff
 POST            /admin/tariff                                   @controllers.Finance_Controller.tariff_general_create()

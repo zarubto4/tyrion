@@ -509,7 +509,6 @@ public class DashboardController extends Controller {
             return return_page(blocko_management_content);
 
         }catch (Exception e){
-            e.printStackTrace();
             return ok();
         }
     }
@@ -522,7 +521,26 @@ public class DashboardController extends Controller {
             return return_page(public_code_content);
 
         }catch (Exception e){
-            e.printStackTrace();
+            return ok();
+        }
+    }
+
+// TEST ################################################################################################################
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result test(){
+        try {
+
+            List<String> fileNames = new ArrayList<>();
+            File[] files = new File(application.path() + "/test").listFiles();
+            for (File file : files) {fileNames.add((file.getName().substring(0, file.getName().lastIndexOf('.'))));}
+
+            String log =  new String(Files.readAllBytes(Paths.get(application.path() + "/logs/test.log")), StandardCharsets.UTF_8);
+
+            Html test_content = test.render(fileNames, log);
+            return return_page(test_content);
+
+        }catch (Exception e){
             return ok();
         }
     }

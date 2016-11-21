@@ -47,8 +47,8 @@ public class C_Program extends Model {
     @JsonIgnore @OneToMany(mappedBy="c_program", cascade = CascadeType.ALL, fetch = FetchType.LAZY)public List<Version_Object> version_objects = new ArrayList<>();
                                                                                      @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)   public Version_Object first_default_version_object;
 
-    @JsonIgnore @OneToOne() public TypeOfBoard defaul_program_type_of_board;   // Pro defaultní program na devicu a první verzi C_Programu při vytvoření  (Určeno výhradně pro Byzance)
-    @JsonIgnore @OneToOne() public Version_Object default_main_version;        // Defualtní verze programu, konkrétního typu desky  (Určeno výhradně pro Byzance)
+    @JsonIgnore @OneToOne                                     public TypeOfBoard default_program_type_of_board;   // Pro defaultní program na devicu a první verzi C_Programu při vytvoření  (Určeno výhradně pro Byzance)
+    @JsonIgnore @OneToOne(mappedBy="default_version_program") public Version_Object default_main_version;        // Defaultní verze programu, konkrétního typu desky  (Určeno výhradně pro Byzance)
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
@@ -71,6 +71,22 @@ public class C_Program extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Override public void delete() {
+
+        // Složí k odpojení defaultních prvních verzí programu pro divnostav
+        // Lexa
+        
+        if (this.first_default_version_object != null) {
+            this.first_default_version_object.first_version_of_c_programs.remove(this);
+            this.first_default_version_object.update();
+        }
+
+        if (this.default_main_version != null) this.default_main_version.delete();
+
+        super.delete();
+    }
+
+    /* Private Documentation Class -------------------------------------------------------------------------------------*/
 
     @JsonProperty @Transient public List<Version_Object> getVersion_objects() {
         return Version_Object.find.where().eq("c_program.id", id).eq("removed_by_user", false).order().asc("date_of_create").findList();

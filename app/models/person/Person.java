@@ -37,7 +37,7 @@ public class Person extends Model {
     @ApiModelProperty(required = true)                          public String full_name;
 
                                                     @JsonIgnore public String azure_picture_link;
-                    @JsonIgnore @OneToOne(mappedBy = "person")  public FileRecord picture;
+                                        @JsonIgnore @OneToOne   public FileRecord picture;
 
                                                  @JsonIgnore    public boolean freeze_account; // Zmražený účet - Účty totiž nechceme mazat!
                                                  @JsonIgnore    public boolean mailValidated;

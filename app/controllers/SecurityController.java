@@ -201,7 +201,7 @@ public class SecurityController extends Controller {
     public Result GET_github_oauth(String url) {
         try {
 
-            Map<String, String> map = UtilTools.getMap_From_querry(request().queryString().entrySet());
+            Map<String, String> map = UtilTools.getMap_From_query(request().queryString().entrySet());
 
             if (map.containsKey("error")) {
                 if (map.containsKey("state"))
@@ -280,7 +280,7 @@ public class SecurityController extends Controller {
     public Result GET_facebook_oauth(String url) {
         try {
 
-            Map<String, String> map = UtilTools.getMap_From_querry(request().queryString().entrySet());
+            Map<String, String> map = UtilTools.getMap_From_query(request().queryString().entrySet());
 
             if (map.containsKey("error")) {
                 if (map.containsKey("state"))
