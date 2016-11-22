@@ -18,6 +18,7 @@ import models.project.b_program.B_Program;
 import models.project.b_program.servers.Cloud_Homer_Server;
 import models.project.b_program.servers.Private_Homer_Server;
 import models.project.c_program.C_Program;
+import models.project.global.Product;
 import models.project.global.Project;
 import models.project.m_program.M_Program;
 import models.project.m_program.M_Project;
@@ -302,6 +303,8 @@ public class Server {
                 // global
                     for(Enum en : Private_Homer_Server.permissions.values())permissions.add(en.name());
                     for(Enum en : Project.permissions.values())             permissions.add(en.name());
+                    for(Enum en : Product.permissions.values())             permissions.add(en.name());
+
                 // m_project
                     for(Enum en : M_Project.permissions.values())           permissions.add(en.name());
                     for(Enum en : M_Program.permissions.values())           permissions.add(en.name());

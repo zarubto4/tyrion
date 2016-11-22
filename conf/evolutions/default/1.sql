@@ -173,6 +173,7 @@ create table cloud_homer_server (
   destination_address       varchar(255),
   mqtt_port                 varchar(255),
   grid_port                 varchar(255),
+  web_view_port             varchar(255),
   server_url                varchar(255),
   is_private                boolean,
   constraint uq_cloud_homer_server_server_nam unique (server_name),

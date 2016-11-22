@@ -223,7 +223,7 @@ GET            /b_program/version/:version_id                                   
 DELETE         /b_program/version/:version_id                                               @controllers.ProgramingPackageController.remove_b_Program_version(version_id)
 
 #Instance
-PUT            /b_program/uploadToCloud/:version_id                                         @controllers.ProgramingPackageController.upload_b_Program_ToCloud(version_id)
+
 
 GET            /instance/project/:project_id                            @controllers.ProgramingPackageController.get_b_program_instance_under_project(project_id)
 GET            /instance/get/:instance_id                               @controllers.ProgramingPackageController.get_b_program_instance(instance_id)
@@ -236,6 +236,7 @@ PUT            /instance/add_yoda/:instance_id/:yoda_id                 @control
 PUT            /instance/remove_yoda/:instance_id/:yoda_id              @controllers.ProgramingPackageController.instance_remove_yoda(instance_id, yoda_id)
 PUT            /instance/add_device/:instance_id/:yoda_id/:device_id    @controllers.ProgramingPackageController.instance_add_device(instance_id, yoda_id, device_id)
 PUT            /instance/remove_device/:instance_id/:yoda_id/:device_id @controllers.ProgramingPackageController.instance_remove_device(instance_id, yoda_id, device_id)
+PUT            /instance/uploadToCloud/:version_id                      @controllers.ProgramingPackageController.upload_b_Program_ToCloud(version_id)
 PUT            /instance/shut_down/:instance_name                       @controllers.ProgramingPackageController.instance_shut_down(instance_name)
 
 
@@ -468,6 +469,23 @@ GET             /admin/public_code                              @controllers.Das
 GET             /admin/general_tariffs                          @controllers.DashboardController.general_tariffs_list()
 GET             /admin/general_tariffs/:general_tariff_id       @controllers.DashboardController.general_tariff_edit(general_tariff_id)
 GET             /admin/general_tariff_extension/:extension_id   @controllers.DashboardController.general_tariff_extension_edit(extension_id)
+
+# Demo Data
+GET             /admin/demo_data                                @controllers.DashboardController.demo_data()
+
+PUT             /admin/demo_data/extendension_servers           @utilities.demo_data.Demo_Data_Controller.extendension_servers()
+PUT             /admin/demo_data/basic_tarifs                   @utilities.demo_data.Demo_Data_Controller.basic_tariffs()
+PUT             /admin/demo_data/producers                      @utilities.demo_data.Demo_Data_Controller.producers()
+PUT             /admin/demo_data/type_of_board                  @utilities.demo_data.Demo_Data_Controller.type_of_board()
+PUT             /admin/demo_data/test_boards                    @utilities.demo_data.Demo_Data_Controller.test_boards()
+
+PUT             /admin/demo_data/blocko_demo_data               @utilities.demo_data.Demo_Data_Controller.blocko_demo_data()
+
+PUT             /admin/demo_data/person                         @utilities.demo_data.Demo_Data_Controller.person_test_user()
+PUT             /admin/demo_data/person_project                 @utilities.demo_data.Demo_Data_Controller.person_project_and_programs()
+PUT             /admin/demo_data/person_instancies              @utilities.demo_data.Demo_Data_Controller.person_instancies()
+
+
 
 GET             /admin/test                                     @controllers.DashboardController.test()
 

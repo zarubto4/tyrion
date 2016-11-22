@@ -1,0 +1,167 @@
+
+
+<section class="content-header">
+    <h1> Demo Data <small>(Allowable only on DEV-Blue Tyrion mode)</small> </h1>
+    <ol class="breadcrumb">
+        <li><a href="@routes.DashboardController.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
+        <li class="active"><i class="fa fa-share"></i> Server Management </li>
+        <li class="active"><i class="fa fa-wrench"></i> Demo Data </li>
+    </ol>
+</section>
+
+
+    <section>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="box">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">Demo data</h3>
+                    </div>
+                    <div class="box-body">
+                        <table id="allHomerServers" class="table table-bordered">
+                            <tr>
+                                <th class="col-md-2"> Data name </th>
+                                <th class="col-md-8"> Description </th>
+                                <th class="col-md-2"> Action </th>
+                            </tr>
+
+
+                            <!--  Person -->
+                            <tr>
+                                <td>External Servers</td>
+                                <td>dsmflsdajhfiaujsdhflkjshdlfkjhsdkljfh lkjdksajfhlksjdfhlkjasdhf</td>
+                                <td align="center">
+                                    <button type="submit"  onclick="set_data('extendension_servers')" class="btn btn-block btn-info btn-xs">Create</button>
+                                </td>
+                            </tr>
+
+                            <!--  Person -->
+                            <tr>
+                                <td>Basic tariffs</td>
+                                <td>dsmflsdajhfiaujsdhflkjshdlfkjhsdkljfh lkjdksajfhlksjdfhlkjasdhf</td>
+                                <td align="center">
+                                    <button type="submit"  onclick="set_data('basic_tarifs')"  class="btn btn-block btn-info btn-xs">Create</button>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>Producers</td>
+                                <td>Nastaví výrobce desek - prerekvizita pro type of Boards </td>
+                                <td align="center">
+                                    <button type="submit"  onclick="set_data('producers')"  class="btn btn-block btn-info btn-xs">Create</button>
+                                </td>
+                            </tr>
+
+
+                            <tr>
+                                <td>Type of Boards </td>
+                                <td>Vytvoří základní typy desek - prerekvizita pro vytvoření objektů HW</td>
+                                <td align="center">
+                                    <button type="submit"  onclick="set_data('type_of_board')"  class="btn btn-block btn-info btn-xs">Create</button>
+                                </td>
+                            </tr>
+
+
+                            <tr>
+                                <td>Boards</td>
+                                <td>Vytvoří zatím seznam HW, který má reálnou fyzickou podobu HW v kanceláři</td>
+                                <td align="center">
+                                    <button type="submit"  onclick="set_data('test_boards')"  class="btn btn-block btn-info btn-xs">Create</button>
+                                </td>
+                            </tr>
+
+
+                            <tr>
+                                <td>Blocko demo data</td>
+                                <td>Vytvoří demo data se skupinami bločků a vytvoří fakové bločky do těchto skupin</td>
+                                <td align="center">
+                                    <button type="submit"  onclick="set_data('blocko_demo_data')"  class="btn btn-block btn-info btn-xs">Create</button>
+                                </td>
+                            </tr>
+
+
+                            <tr>
+                                <td>Demo uživatel</td>
+                                <td>Vytvoří demo uživatele test_user@@byzanece.cz a heslo 123456789 </td>
+                                <td align="center">
+                                    <button type="submit"  onclick="set_data('person')"  class="btn btn-block btn-info btn-xs">Create</button>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>Demo data pro demo uživatele</td>
+                                <td>Vytvoří několik projektů uživateli a do nich blocko programy</td>
+                                <td align="center">
+                                    <button type="submit"  onclick="set_data('person_project')"  class="btn btn-block btn-info btn-xs">Create</button>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>Instnace demo uživatele</td>
+                                <td>Podle vytvořneých demo blocko programů nahraje na blcko server instnace - prerekvizitou jsou vytvořené a puštěné servery!</td>
+                                <td align="center">
+                                    <button type="submit"  onclick="set_data('person_instancies')"  class="btn btn-block btn-info btn-xs">Create</button>
+                                </td>
+                            </tr>
+
+
+                        </table>
+                    </div>
+                    <div class="box-footer">
+        </div>
+
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <script>
+
+             function set_data(link){
+
+                 $.ajax({
+                     url: '/admin/demo_data/' + link,
+                     type: 'PUT',
+                     contentType: 'application/json',
+                     headers: {
+                         "X-AUTH-TOKEN":getCookie("authToken"),
+                         "Content-Type":"application/json"
+                     },
+                     data: '{}',
+                     dataType: 'json',
+
+                     success:function(data){
+                         BootstrapDialog.show({
+                             message:  "Success",
+                             buttons: [{
+                                 label: 'Close',
+                                 action: function(dialogItself){
+                                     dialogItself.close();
+                                 }
+                             }]
+
+                         });
+                     },
+                     error:function(data) {
+                         console.log(data);
+
+                         BootstrapDialog.show({
+                             message:  syntaxHighlight(data),
+                             type: BootstrapDialog.TYPE_DANGER,
+                             buttons: [{
+                                 label: 'Close',
+                                 action: function(dialogItself){
+                                     dialogItself.close();
+                                 }
+                             }]
+
+                         });
+                     }
+                 })
+             }
+
+    </script>

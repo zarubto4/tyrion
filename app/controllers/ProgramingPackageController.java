@@ -1594,9 +1594,10 @@ public class ProgramingPackageController extends Controller {
             //Určím podle časové konstanty zda nahraju hned nebo až za chvíli
             if(record.planed_when != null) return GlobalResult.result_ok();
 
-
-            b_program.instance.actual_instance.actual_running_instance = null;
-            b_program.instance.actual_instance.update();
+            if( b_program.instance.actual_instance != null) {
+                b_program.instance.actual_instance.actual_running_instance = null;
+                b_program.instance.actual_instance.update();
+            }
 
             b_program.instance.actual_instance = record;
             record.actual_running_instance = b_program.instance;
@@ -1643,6 +1644,40 @@ public class ProgramingPackageController extends Controller {
 
             upload_instance.start();
             return GlobalResult.result_ok();
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "shutDown Instance by Instnace Id",
+            tags = {"Instance"},
+            notes = "",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successful removed",                        response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",                      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",                  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result instance_shut_down(String instance_name){
+        try{
+
+            // Kontrola objektu
+            Homer_Instance homer_instance = Homer_Instance.find.where().eq("blocko_instance_name", instance_name).findUnique();
+            if (homer_instance == null) return GlobalResult.notFoundObject("Homer_Instance id not found");
+
+            if (!homer_instance.getB_program().update_permission() ) return GlobalResult.forbidden_Permission();
+
+            JsonNode result = homer_instance.remove_instance_to_server();
+
+            if(result.has("status") && result.get("status").asText().equals("success")) return GlobalResult.result_ok();
+            return GlobalResult.result_BadRequest(result);
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -1888,27 +1923,7 @@ public class ProgramingPackageController extends Controller {
 
 
 
-    @ApiOperation(value = "Only for Tyrion Front End",  hidden = true)
-    @Security.Authenticated(Secured_Admin.class)
-    public Result instance_shut_down(String instance_name){
-        try{
 
-            // Kontrola objektu
-            Homer_Instance homer_instance = Homer_Instance.find.where().eq("blocko_instance_name", instance_name).findUnique();
-            if (homer_instance == null) return GlobalResult.notFoundObject("Homer_Instance id not found");
-
-            if (!homer_instance.instance_online()) return GlobalResult.notFoundObject("Homer_Instance on Tyrion is not online");
-
-
-            JsonNode result =  homer_instance.cloud_homer_server.remove_instance(homer_instance.blocko_instance_name);
-
-            if(result.has("status") && result.get("status").asText().equals("success")) return GlobalResult.result_ok();
-            return GlobalResult.result_BadRequest(result);
-
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
 
 
 

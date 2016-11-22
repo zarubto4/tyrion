@@ -38,6 +38,7 @@ import views.html.boards.board_settings;
 import views.html.tariffs.tariffs;
 import views.html.tariffs.tariff_edit;
 import views.html.tariffs.extension_edit;
+import views.html.demo_data.demo_data_main;
 import views.html.super_general.menu;
 import views.html.user_summary.user_summary;
 import views.html.websocket.instance_detail;
@@ -533,7 +534,14 @@ public class DashboardController extends Controller {
 
             List<String> fileNames = new ArrayList<>();
             File[] files = new File(application.path() + "/test").listFiles();
-            for (File file : files) {fileNames.add((file.getName().substring(0, file.getName().lastIndexOf('.'))));}
+
+            for (File file : files) {
+
+                if(file.getName().equals(".DS_Store")) continue;
+                if(file.getName().equals("resources")) continue;
+
+                fileNames.add((file.getName().substring(0, file.getName().lastIndexOf('.'))));
+            }
 
             String log =  new String(Files.readAllBytes(Paths.get(application.path() + "/logs/test.log")), StandardCharsets.UTF_8);
 
@@ -541,9 +549,24 @@ public class DashboardController extends Controller {
             return return_page(test_content);
 
         }catch (Exception e){
+            e.printStackTrace();
             return ok();
         }
     }
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result demo_data(){
+        try {
+
+            Html test_content = demo_data_main.render();
+            return return_page(test_content);
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return ok();
+        }
+    }
+
 
 
 

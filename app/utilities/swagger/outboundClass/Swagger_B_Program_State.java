@@ -15,18 +15,19 @@ public class Swagger_B_Program_State {
     public boolean online;
 
 
-    @ApiModelProperty(required = false, readOnly = true, value = "Id of B_Program version whitch is running on Homer Server")
+    @ApiModelProperty(required = false, readOnly = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String version_id;
 
+    @ApiModelProperty(required = false, readOnly = true)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String version_name;
 
 
     // Instance Informace
-    @ApiModelProperty(required = false, readOnly = true, value = "Id of Instance - independent object")
+    @ApiModelProperty(required = false, readOnly = true, value = "Id of Instance -its independent object!")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String instance_id;
-
-
 
 
     // Server informace

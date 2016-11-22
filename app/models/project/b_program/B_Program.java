@@ -66,7 +66,7 @@ public class B_Program extends Model {
         return versions;
     }
 
-    @JsonProperty @Transient public Swagger_B_Program_State program_state(){
+    @JsonProperty @Transient public Swagger_B_Program_State instance_details(){
 
         Swagger_B_Program_State state = new Swagger_B_Program_State();
 
@@ -76,10 +76,12 @@ public class B_Program extends Model {
         }
 
         // Je nahrán
-        state.uploaded = true;
+        state.uploaded = true;          // Jestli je aktuální - nebo plánovaný
+        state.online = instance.instance_online();
 
         // Jaká verze Blocko Programu?
-        state.version_id = instance.actual_instance.id;
+        state.version_id = instance.actual_instance.version_object.id;
+        state.version_name = instance.actual_instance.version_object.version_name;
 
         // Instnace ID
         state.instance_id = instance.blocko_instance_name;
@@ -115,13 +117,10 @@ public class B_Program extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient public List<Version_Object> getVersion_objects() {
+    @JsonIgnore @Transient public List<Version_Object> getVersion_objects() {
         return Version_Object.find.where().eq("b_program.id", id).eq("removed_by_user", false).order().asc("date_of_create").findList();
     }
 
-    @JsonIgnore @Transient  public Version_Object where_program_run(){
-        return Version_Object.find.where().eq("b_program.id", id).isNotNull("homer_instance").findUnique();
-    }
 
 
 /* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/

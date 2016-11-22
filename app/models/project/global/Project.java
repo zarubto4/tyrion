@@ -47,7 +47,7 @@ public class Project extends Model {
     @JsonIgnore @OneToOne(fetch = FetchType.EAGER)  public Homer_Instance private_instance;
 
 
-    @JsonIgnore @ManyToOne( cascade = CascadeType.ALL) public Product product;
+    @JsonIgnore @ManyToOne() public Product product;
 
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "owningProjects")  @JoinTable(name = "connected_projects") public List<Person> ownersOfProject = new ArrayList<>();
 

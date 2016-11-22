@@ -31,9 +31,10 @@ public class Cloud_Homer_Server extends Model{
                                        @Column(unique=true)     public String server_name;
                                                                 public String destination_address;
 
-                                                                public String mqtt_port;              // Přidává se destination_address + "/" grid_ulr
+                                                                public String mqtt_port;              // Přidává se destination_address + "/" mqtt_port
                                                                 public String grid_port;              // Přidává se destination_address + "/" grid_ulr
-                                        @Column(unique=true)    public String server_url;            // Může být i IP adresa
+                                                                public String webView_port;           // Přidává se destination_address + "/" webView_port
+                                        @Column(unique=true)    public String server_url;             // Může být i IP adresa
 
     @JsonIgnore                                                 public boolean is_private = false;  // Todo navázat na produkt
 

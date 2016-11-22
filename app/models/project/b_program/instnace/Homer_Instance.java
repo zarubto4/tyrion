@@ -317,6 +317,12 @@ public class Homer_Instance extends Model {
 
             // Vytvořím Instanci
             JsonNode result_instance        = this.cloud_homer_server.remove_instance(this.blocko_instance_name);
+
+            this.actual_instance.actual_running_instance = null;
+            this.actual_instance.update();
+
+            this.refresh();
+
             return result_instance;
 
         }catch (Exception e){
