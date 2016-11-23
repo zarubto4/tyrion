@@ -7,6 +7,7 @@ import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
 import models.blocko.TypeOfBlock;
 import models.compiler.Board;
+import models.notification.Notification;
 import models.person.Invitation;
 import models.person.Person;
 import models.project.b_program.B_Program;
@@ -16,7 +17,11 @@ import models.project.b_program.servers.Private_Homer_Server;
 import models.project.c_program.C_Program;
 import models.project.c_program.actualization.Actualization_procedure;
 import models.project.m_program.M_Project;
+import utilities.enums.Notification_action;
+import utilities.enums.Notification_importance;
+import utilities.enums.Notification_level;
 import utilities.swagger.documentationClass.Swagger_Object_detail;
+import utilities.swagger.outboundClass.Swagger_Notification_Button;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -47,7 +52,7 @@ public class Project extends Model {
     @JsonIgnore @OneToOne(fetch = FetchType.EAGER)  public Homer_Instance private_instance;
 
 
-    @JsonIgnore @ManyToOne( cascade = CascadeType.ALL) public Product product;
+    @JsonIgnore @ManyToOne public Product product;
 
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "owningProjects")  @JoinTable(name = "connected_projects") public List<Person> ownersOfProject = new ArrayList<>();
 
@@ -115,8 +120,57 @@ public class Project extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Transient
+    public void notification_project_invitation(Person person, Invitation invitation){
 
+        Person owner = SecurityController.getPerson();
+
+        List<Person> receivers = new ArrayList<>();
+        receivers.add(person);
+
+        new Notification(Notification_importance.normal, Notification_level.info)
+                .setText("User ", "black", false, false, false)
+                .setObject(Person.class, owner.id, owner.full_name, null, "black", false, true, false, false)
+                .setText(" invited you into the project ", "black", false, false, false)
+                .setObject(Project.class, this.id, this.name, this.id, "black", false, true, false, false)
+                .setText(". Do you accept the invitation?", "black", false, false, false)
+                .setButtons(new Swagger_Notification_Button("Yes", Notification_action.accept_project_invitation, "green", invitation.id), new Swagger_Notification_Button("No", Notification_action.reject_project_invitation, "red", invitation.id))
+                .send(receivers);
+    }
+
+    @JsonIgnore @Transient
+    public void notification_project_invitation_rejected(Person owner){
+
+        Person person = SecurityController.getPerson();
+        List<Person> receivers = new ArrayList<>();
+        receivers.add(owner);
+
+        new Notification(Notification_importance.normal, Notification_level.info)
+                .setText("User ", "black", false, false, false)
+                .setObject(Person.class, person.id, person.full_name, null, "black", false, true, false, false)
+                .setText(" did not accept your invitation to the project ", "black", false, false, false)
+                .setObject(Project.class, this.id, this.name, this.id, "black", false, true, false, false)
+                .setText(".", "black", false, false, false)
+                .send(receivers);
+    }
+
+    @JsonIgnore @Transient
+    public void notification_project_invitation_accepted(Person owner){
+
+        Person person = SecurityController.getPerson();
+        List<Person> receivers = new ArrayList<>();
+        receivers.add(owner);
+
+        new Notification(Notification_importance.normal, Notification_level.info)
+                .setText("User ", "black", false, false, false)
+                .setObject(Person.class, person.id, person.full_name, null, "black", false, true, false, false)
+                .setText(" accepted your invitation to the project ", "black", false, false, false)
+                .setObject(Project.class, this.id, this.name, this.id, "black", false, true, false, false)
+                .setText(".", "black", false, false, false)
+                .send(receivers);
+    }
 
 
 /* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/

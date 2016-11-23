@@ -447,7 +447,7 @@ public class ProgramingPackageController extends Controller {
                     project.invitations.add(invitation);
                 }
 
-                NotificationController.project_invitation(SecurityController.getPerson(), person, project, invitation);
+                project.notification_project_invitation(person, invitation);
             }
 
             // Uložení do DB
@@ -496,9 +496,9 @@ public class ProgramingPackageController extends Controller {
 
             // Odeslání notifikace podle rozhodnutí uživatele
             if(!decision){
-                NotificationController.project_rejected_by_invited_person(invitation.owner, person, project);
+                project.notification_project_invitation_rejected(invitation.owner);
             }else{
-                NotificationController.project_accepted_by_invited_person(invitation.owner, person, project);
+                project.notification_project_invitation_accepted(invitation.owner);
             }
 
             // Smazání pozvánky

@@ -6,7 +6,8 @@ public enum Notification_type {
 
     link,
     object,
-    text;
+    text,
+    buttons;
 
     @JsonCreator
     public static Notification_type fromString(String key) {

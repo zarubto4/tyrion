@@ -561,7 +561,7 @@ public class Finance_Controller extends Controller {
 
 
                 // payment_mode
-                if(tariff.required_payment_method) {
+                if(tariff.required_payment_mode) {
 
                     if(help.payment_mode == null) return GlobalResult.result_BadRequest("Payment_mode is required!");
 
@@ -572,7 +572,7 @@ public class Finance_Controller extends Controller {
                 }
 
 
-                if(tariff.required_payment_mode) {
+                if(tariff.required_payment_method) {
 
                     if(help.payment_method == null) return GlobalResult.result_BadRequest("payment_method is required with this tariff");
 
@@ -580,7 +580,7 @@ public class Finance_Controller extends Controller {
                          if(help.payment_method.equals( Payment_method.bank_transfer.name()))  product.method = Payment_method.bank_transfer;
                     else if(help.payment_method.equals( Payment_method.credit_card.name()))    product.method = Payment_method.credit_card;
                     else if(help.payment_method.equals( Payment_method.free.name()))           product.method = Payment_method.free;
-                    else { return GlobalResult.result_BadRequest("payment_mode is invalid. Use only (bank_transfer, credit_card, free)");}
+                    else { return GlobalResult.result_BadRequest("payment_method is invalid. Use only (bank_transfer, credit_card, free)");}
 
                 }
 

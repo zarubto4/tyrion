@@ -4,6 +4,7 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
+import models.notification.Notification;
 import models.person.Person;
 import models.project.b_program.B_Pair;
 import models.project.b_program.B_Program;
@@ -16,6 +17,9 @@ import models.project.c_program.actualization.C_Program_Update_Plan;
 import models.project.m_program.M_Program;
 import models.project.m_program.M_Project_Program_SnapShot;
 import utilities.enums.Approval_state;
+import utilities.enums.Notification_importance;
+import utilities.enums.Notification_level;
+import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -112,10 +116,60 @@ public class Version_Object extends Model {
 
 /* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/
 
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Transient
+    public void notification_compilation_start(){
 
+        List<Person> receivers = new ArrayList<>();
+        receivers.add(SecurityController.getPerson());
 
+        new Notification(Notification_importance.low, Notification_level.info)
+                .setText("Server starts compilation of Version ", "black", false, false, false)
+                .setObject(Swagger_B_Program_Version.class, this.id, this.version_name + ".", this.c_program.project_id(), "black", false, true, false, false)
+                .send(receivers);
+    }
 
+    @JsonIgnore @Transient
+    public void notification_compilation_success(){
+
+        List<Person> receivers = new ArrayList<>();
+        receivers.add(SecurityController.getPerson());
+
+        new Notification(Notification_importance.low, Notification_level.success)
+                .setText("Compilation of Version ", "black", false, false, false)
+                .setObject(Swagger_B_Program_Version.class, this.id, this.version_name, this.c_program.project_id(), "black", false, true, false, false)
+                .setText("was successful.", "black", false, false, false)
+                .send(receivers);
+    }
+
+    @JsonIgnore @Transient
+    public void notification_compilation_unsuccessful_warn(String reason){
+
+        List<Person> receivers = new ArrayList<>();
+        receivers.add(SecurityController.getPerson());
+
+        new Notification(Notification_importance.normal,  Notification_level.warning)
+                .setText("Compilation of Version", "black", false, false, false)
+                .setObject(Swagger_B_Program_Version.class, this.id, this.version_name, this.c_program.project_id(), "black", false, true, false, false)
+                .setText("was unsuccessful, for reason:", "black", false, false, false)
+                .setText(reason, "black", true, false, false)
+                .send(receivers);
+    }
+
+    @JsonIgnore @Transient
+    public void notification_compilation_unsuccessful_error(String result){
+
+        List<Person> receivers = new ArrayList<>();
+        receivers.add(SecurityController.getPerson());
+
+        new Notification(Notification_importance.normal, Notification_level.error)
+                .setText( "Compilation of Version", "black", false, false, false)
+                .setObject(Swagger_B_Program_Version.class, this.id, this.version_name, this.c_program.project_id(), "black", false, true, false, false)
+                .setText("with critical Error:", "black", false, false, false)
+                .setText(result, "black", true, false, false)
+                .send(receivers);
+    }
 /* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/
 
 

@@ -14,10 +14,12 @@ import utilities.enums.Notification_type;
 import utilities.enums.Notification_importance;
 import utilities.enums.Notification_level;
 import utilities.notifications.Notification_Handler;
+import utilities.swagger.outboundClass.Swagger_Notification_Button;
 import utilities.swagger.outboundClass.Swagger_Notification_Element;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -34,7 +36,7 @@ public class Notification extends Model {
     @Enumerated(EnumType.STRING)       @ApiModelProperty(required = true) public Notification_importance notification_importance; // Důležitost (podbarvení zprávy)
 
     @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true) private String content_string;                           // Obsah v podobě Json.toString().
-    @ApiModelProperty(required = true) public boolean confirmation_required;
+
                         @JsonIgnore    public boolean confirmed;
     @ApiModelProperty(required = true) public boolean was_read;
 
@@ -66,7 +68,7 @@ public class Notification extends Model {
     public  Notification(Notification_importance importance, Notification_level level){
         this.notification_level = level;
         this.notification_importance = importance;
-        created = new Date();
+        this.created = new Date();
     }
 
     //---------------------------------------------------------------------------------------------------------------------
@@ -84,6 +86,20 @@ public class Notification extends Model {
         return this;
     }
 
+    public Notification setText(String message, String color, boolean bold, boolean italic, boolean underline){
+
+        Swagger_Notification_Element element = new Swagger_Notification_Element();
+        element.type     = Notification_type.text;
+        element.text     = message;
+        element.color    = color;
+        element.bold     = bold;
+        element.italic   = italic;
+        element.underline= underline;
+
+        array.add(element);
+        return this;
+    }
+
     @JsonIgnore @Transient
     public Notification setBoldText(String message){
 
@@ -91,30 +107,6 @@ public class Notification extends Model {
         element.type     = Notification_type.text;
         element.text     = message;
         element.bold     = true;
-
-        array.add(element);
-        return this;
-    }
-
-    @JsonIgnore @Transient
-    public Notification setItalicText(String message){
-
-        Swagger_Notification_Element element = new Swagger_Notification_Element();
-        element.type     = Notification_type.text;
-        element.text     = message;
-        element.italic   = true;
-
-        array.add(element);
-        return this;
-    }
-
-    @JsonIgnore @Transient
-    public Notification setUnderlineText(String message){
-
-        Swagger_Notification_Element element = new Swagger_Notification_Element();
-        element.type     = Notification_type.text;
-        element.text     = message;
-        element.underline= true;
 
         array.add(element);
         return this;
@@ -135,12 +127,62 @@ public class Notification extends Model {
     }
 
     @JsonIgnore @Transient
-    public Notification setLink_ToTyrion(String text, String url){
+    public Notification setObject(Class object , String id , String text, String project_id, String color, boolean button, boolean bold, boolean italic, boolean underline){
 
         Swagger_Notification_Element element = new Swagger_Notification_Element();
-        element.type     = Notification_type.link;
-        element.url = url;
+        element.type       = Notification_type.object;
+        element.name       = object.getSimpleName().replaceAll("Swagger_","");
+        element.id         = id;
+        element.text       = text;
+        element.project_id = project_id;
+        element.color      = color;
+        element.button     = button;
+        element.bold       = bold;
+        element.italic     = italic;
+        element.underline  = underline;
+
+        array.add(element);
+        return this;
+    }
+
+    @JsonIgnore @Transient
+    public Notification setLink(String text, String url, String color, boolean button, boolean bold, boolean italic, boolean underline){
+
+        Swagger_Notification_Element element = new Swagger_Notification_Element();
+        element.type = Notification_type.link;
+        element.url  = url;
         element.text = text;
+        element.color     = color;
+        element.button    = button;
+        element.bold      = bold;
+        element.italic    = italic;
+        element.underline = underline;
+
+        array.add(element);
+        return this;
+    }
+
+    @JsonIgnore @Transient
+    public Notification setLink(String text, String url){
+
+        Swagger_Notification_Element element = new Swagger_Notification_Element();
+        element.type = Notification_type.link;
+        element.url  = url;
+        element.text = text;
+
+        array.add(element);
+        return this;
+    }
+
+    @JsonIgnore @Transient
+    public Notification setButtons(Swagger_Notification_Button... args){
+
+        List<Swagger_Notification_Button> buttons = new ArrayList<>();
+        buttons.addAll(Arrays.asList(args));
+
+        Swagger_Notification_Element element = new Swagger_Notification_Element();
+        element.type    = Notification_type.buttons;
+        element.buttons = buttons;
 
         array.add(element);
         return this;
@@ -188,13 +230,6 @@ public class Notification extends Model {
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
-    public Notification confirmation_required(){
-        this.confirmation_required = true;
-        this.update();
-        return this;
-    }
-
-    @JsonIgnore @Transient
     public void set_read(){
         this.was_read = true;
         this.update();
@@ -203,6 +238,7 @@ public class Notification extends Model {
     @JsonIgnore @Transient
     public void confirm(){
         this.confirmed = true;
+        this.was_read = true;
         this.update();
     }
 
@@ -214,13 +250,12 @@ public class Notification extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public boolean delete_permission(){return this.person.id.equals(SecurityController.getPerson().id);}
+    @JsonIgnore @Transient public boolean delete_permission(){return this.person.id.equals(SecurityController.getPerson().id) || SecurityController.getPerson().has_permission("Notification_delete") ;}
+    @JsonIgnore @Transient public boolean confirm_permission(){return this.person.id.equals(SecurityController.getPerson().id) || SecurityController.getPerson().has_permission("Notification_confirm") ;}
 
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
     public static Finder<String,Notification> find = new Finder<>(Notification.class);
-
-/* ENUM ----------------------------------------------------------------------------------------------------------------*/
 
 }

@@ -241,12 +241,23 @@ public class Board extends Model {
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Transient
     public void notification_board_connect(){
 
         new Notification(Notification_importance.low, Notification_level.info)
-                .setText("One of your Board " + (this.personal_description != null ? this.personal_description : null))
-                .setObject(Board.class, this.id, this.id, this.project_id())
-                .setText("is connected.")
+                .setText("One of your Boards " + (this.personal_description != null ? this.personal_description : null ), "black", false, false, false)
+                .setObject(Board.class, this.id, this.id, this.project_id(), "black", false, true, false, false)
+                .setText("is connected.", "black", false, false, false)
+                .send(this.project.ownersOfProject);
+    }
+
+    @JsonIgnore @Transient
+    public void notification_board_disconnect(){
+
+        new Notification(Notification_importance.low, Notification_level.info)
+                .setText("One of your Boards " + (this.personal_description != null ? this.personal_description : null ), "black", false, false, false)
+                .setObject(Board.class, this.id, this.id, this.project_id(), "black", false, true, false, false)
+                .setText("is disconnected.", "black", false, false, false)
                 .send(this.project.ownersOfProject);
     }
 

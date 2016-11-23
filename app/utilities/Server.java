@@ -18,6 +18,7 @@ import models.project.b_program.B_Program;
 import models.project.b_program.servers.Cloud_Homer_Server;
 import models.project.b_program.servers.Private_Homer_Server;
 import models.project.c_program.C_Program;
+import models.project.global.Product;
 import models.project.global.Project;
 import models.project.m_program.M_Program;
 import models.project.m_program.M_Project;
@@ -27,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import play.Configuration;
 import play.Play;
 import utilities.hardware_updater.Master_Updater;
+import utilities.notifications.Notification_Handler;
 import utilities.schedules_activities.Removing_Unused_Tokens;
 import utilities.schedules_activities.Sending_Invoices;
 
@@ -302,6 +304,7 @@ public class Server {
                 // global
                     for(Enum en : Private_Homer_Server.permissions.values())permissions.add(en.name());
                     for(Enum en : Project.permissions.values())             permissions.add(en.name());
+                    for(Enum en : Product.permissions.values())             permissions.add(en.name());
                 // m_project
                     for(Enum en : M_Project.permissions.values())           permissions.add(en.name());
                     for(Enum en : M_Program.permissions.values())           permissions.add(en.name());
@@ -326,6 +329,9 @@ public class Server {
 
         //1. Nastartovat aktualizační vlákna
         Master_Updater.start_thread_box();
+
+        //1. Nastartovat notifikační vlákno
+        Notification_Handler.start_notification_thread();
 
     }
 

@@ -64,14 +64,19 @@
                                                 <option value="normal">normal</option>
                                                 <option value="high">high</option>
                                             </select>
-                                            <select style="margin-top: 10px;" name="type" id="type">
+                                            <select style="margin-top: 10px; width: 100%;" name="type" id="type">
                                                 <option value="1">All objects</option>
                                                 <option value="2">Object and long text</option>
                                                 <option value="3">Short text and link</option>
                                                 <option value="4">Object and link</option>
                                             </select>
-                                            <input class="pull-left"  style="margin-top: 10px;" type="checkbox" name="confirmation_required">
-                                            <input style="margin-top: 10px;" type="button" onclick="test_notification('@(Person.find.byId( x.identifikator ).mail )')" class="btn btn-primary btn-xs pull-right" value="Send test notification">
+                                            <select style="margin-top: 10px; width: 100%;" name="buttons" id="buttons">
+                                                <option value="0">none</option>
+                                                <option value="1">OK button</option>
+                                                <option value="2">YES & NO buttons</option>
+                                                <option value="3">YES, NO, CLOSE</option>
+                                            </select>
+                                            <input style="margin-top: 10px;" type="button" onclick="test_notification('@(Person.find.byId( x.identifikator ).mail )')" class="btn btn-block btn-primary btn-xs" value="Send test notification">
                                         </form>
                                     </th>
                                 </tr>

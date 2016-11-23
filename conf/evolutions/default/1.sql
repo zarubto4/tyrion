@@ -391,7 +391,6 @@ create table notification (
   notification_level        varchar(8),
   notification_importance   varchar(6),
   content_string            TEXT,
-  confirmation_required     boolean,
   confirmed                 boolean,
   was_read                  boolean,
   created                   timestamp,

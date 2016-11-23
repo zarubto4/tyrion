@@ -17,11 +17,15 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.Server;
+import utilities.enums.Notification_action;
 import utilities.enums.Notification_importance;
 import utilities.enums.Notification_level;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_API;
+import utilities.notifications.Notification_Handler;
 import utilities.response.GlobalResult;
+import utilities.response.response_objects.Result_NotFound;
+import utilities.response.response_objects.Result_PermissionRequired;
 import utilities.response.response_objects.Result_Unauthorized;
 import utilities.response.response_objects.Result_ok;
 import utilities.swagger.documentationClass.Swagger_B_Program_Version_New;
@@ -30,8 +34,10 @@ import utilities.swagger.documentationClass.Swagger_Notification_Test;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Notification_List;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Swagger_C_Program_Version;
+import utilities.swagger.outboundClass.Swagger_Notification_Button;
 import utilities.webSocket.WS_Becki_Website;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
@@ -43,7 +49,7 @@ public class NotificationController extends Controller {
   private static void send_notification(Person person, Notification notification) {
 
     // Pokud je notification_importance vyšší než "low" notifikaci uložím
-    if(!(notification.notification_importance == Notification_importance.low))
+    if((notification.notification_importance != Notification_importance.low)&&(notification.id == null))
       notification.save_object();
 
     // Pokud je uživatel přihlášený pošlu notifikaci přes websocket
@@ -56,6 +62,7 @@ public class NotificationController extends Controller {
   // Tvroba objektů jednotlivých notifikací ############################################################################
 
 
+  // Hotovo
   public static void starting_of_compilation(Person person, Version_Object version_object){
 
         Notification notification = new Notification(Notification_importance.low, Notification_level.info, person)
@@ -70,6 +77,7 @@ public class NotificationController extends Controller {
   }
 
 
+  // Hotovo
   public static void successful_compilation(Person person, Version_Object version_object ){
 
       Notification notification = new Notification(Notification_importance.low, Notification_level.success, person)
@@ -80,6 +88,7 @@ public class NotificationController extends Controller {
       send_notification(person, notification);
   }
 
+  // Hotovo
   public static void unsuccessful_compilation_warn(Person person, Version_Object version_object, String reason){
 
       Notification notification = new Notification(Notification_importance.normal,  Notification_level.warning , person)
@@ -91,6 +100,7 @@ public class NotificationController extends Controller {
       send_notification(person, notification);
   }
 
+  // Hotovo
   public static void unsuccessful_compilation_error(Person person, Version_Object version_object, String result){
 
     Notification notification = new Notification(Notification_importance.normal, Notification_level.error, person)
@@ -189,7 +199,7 @@ public class NotificationController extends Controller {
 
   }
 
-
+  // Hotovo
   public static void board_connect(Person person, Board board){
 
       Notification notification = new Notification(Notification_importance.low, Notification_level.info, person)
@@ -201,6 +211,7 @@ public class NotificationController extends Controller {
 
   }
 
+  // Hotovo
   public static void board_disconnect(Person person, Board board){
 
     Notification notification = new Notification(Notification_importance.low, Notification_level.info, person)
@@ -212,19 +223,19 @@ public class NotificationController extends Controller {
 
   }
 
-
+  //Hotovo
   public static void project_invitation(Person owner, Person receiver, Project project, Invitation invitation){
 
     Notification notification = new Notification(Notification_importance.normal, Notification_level.info, receiver)
-            .setText("User")
-            .setObject(Person.class, owner.id, owner.full_name, "")
+            .setText("User ")
+            .setObject(Person.class, owner.id, owner.full_name, null)
             .setText("wants to invite you into the project ")
             .setObject(Project.class, project.id, project.name, project.id)
             .setText(".")
             .setText("Do you agree?")
-            .setLink_ToTyrion("Yes", Server.tyrion_serverAddress + "/project/project/addParticipant/" + invitation.id + "/true")
+            .setLink("Yes", Server.tyrion_serverAddress + "/project/project/addParticipant/" + invitation.id + "/true")
             .setText(" / ")
-            .setLink_ToTyrion("No", Server.tyrion_serverAddress + "/project/project/addParticipant/" + invitation.id + "/false")
+            .setLink("No", Server.tyrion_serverAddress + "/project/project/addParticipant/" + invitation.id + "/false")
             .setText(".");
 
     invitation.notification_id = notification.id;
@@ -234,7 +245,7 @@ public class NotificationController extends Controller {
 
   }
 
-
+  //Hotovo
   public static void project_accepted_by_invited_person(Person owner, Person person, Project project){
 
     Notification notification = new Notification(Notification_importance.normal, Notification_level.info, owner)
@@ -248,6 +259,7 @@ public class NotificationController extends Controller {
 
   }
 
+  //Hotovo
   public static void project_rejected_by_invited_person(Person owner, Person person, Project project){
 
     Notification notification = new Notification(Notification_importance.normal, Notification_level.info, owner)
@@ -261,7 +273,7 @@ public class NotificationController extends Controller {
 
   }
 
-  public static void test_notification(Person person, String level, String importance, boolean confirmation_required, String type){
+  public static void test_notification(Person person, String level, String importance, String type, String buttons){
 
     Notification_level lvl;
 
@@ -288,46 +300,60 @@ public class NotificationController extends Controller {
       case "1":{
         notification = new Notification(imp, lvl, person)
               .setText("Test object: ")
-              .setObject(Person.class, person.id, person.full_name, "")
+              .setObject(Person.class, person.id, person.full_name, null)
               .setText(" test bold text: ")
               .setBoldText("bold text ")
               .setText("test link: ")
-              .setLink_ToTyrion("TestLink","#");
+              .setLink("TestLink","#");
         break;}
       case "2":{
         notification = new Notification(imp, lvl, person)
                 .setText("Test object and long text: ")
-                .setObject(Person.class, person.id, person.full_name, "")
+                .setObject(Person.class, person.id, person.full_name, null)
                 .setText(" test text: Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. ");
         break;}
       case "3":{
         notification = new Notification(imp, lvl, person)
                 .setText("Test short text with link: ")
-                .setLink_ToTyrion("TestLink","#");
+                .setLink("TestLink","#");
         break;}
       case "4": {
         notification = new Notification(imp, lvl, person)
                 .setText("Test object and link: ")
-                .setObject(Person.class, person.id, person.full_name, "")
-                .setText(" test decision link: ")
-                .setLink_ToTyrion("Yes","#")
-                .setText(" / ")
-                .setLink_ToTyrion("No","#");
+                .setObject(Person.class, person.id, person.full_name, null)
+                .setText(" test link: ")
+                .setLink("Yes","#");
         break;}
       default:{
         notification = new Notification(imp, lvl, person)
                 .setText("Test object: ")
-                .setObject(Person.class, person.id, person.full_name, "")
+                .setObject(Person.class, person.id, person.full_name, null)
                 .setText(" test bold text: ")
                 .setBoldText("bold text ")
                 .setText("test link: ")
-                .setLink_ToTyrion("TestLink","#");
+                .setLink("TestLink","#");
+        break;}
+    }
+    switch (buttons){
+      case "0": break;
+      case "1":{
+        notification.setButtons(new Swagger_Notification_Button("OK", Notification_action.confirm_notification, "blue", "test"));
+        break;}
+      case "2":{
+        notification.setButtons(new Swagger_Notification_Button("YES", Notification_action.accept_project_invitation, "green", "test"), new Swagger_Notification_Button("NO", Notification_action.reject_project_invitation, "red", "test"));
+        break;}
+      case "3":{
+        notification.setButtons(new Swagger_Notification_Button("CLOSE", Notification_action.confirm_notification, "blue", "test"), new Swagger_Notification_Button("YES", Notification_action.accept_project_invitation, "green", "test"), new Swagger_Notification_Button("NO", Notification_action.reject_project_invitation, "red", "test"));
+        break;}
+      default:{
+        notification.setButtons(new Swagger_Notification_Button("OK", Notification_action.confirm_notification, "blue", "test"));
         break;}
     }
 
-    if(confirmation_required) notification.confirmation_required = true;
+    List<Person> receivers = new ArrayList<>();
+    receivers.add(person);
 
-    send_notification(person,notification);
+    notification.send(receivers);
   }
 
 
@@ -383,15 +409,19 @@ public class NotificationController extends Controller {
           code = 200
   )
   @ApiResponses(value = {
-          @ApiResponse(code = 200, message = "Delete Successful",        response = Result_ok.class),
+          @ApiResponse(code = 200, message = "Delete Successful",       response = Result_ok.class),
+          @ApiResponse(code = 400, message = "Objects not found",       response = Result_NotFound.class),
           @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+          @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
           @ApiResponse(code = 500, message = "Server side Error")
   })
   @Security.Authenticated(Secured_API.class)
   public Result delete_notification(@ApiParam(value = "notification_id String path", required = true) String notification_id){
     try {
 
-      Notification notification =  Notification.find.byId(notification_id);
+      Notification notification = Notification.find.byId(notification_id);
+      if (notification == null) return GlobalResult.notFoundObject("Notification does not exist");
+
       if( !notification.delete_permission()) return GlobalResult.forbidden_Permission();
 
       notification.delete();
@@ -463,7 +493,7 @@ public class NotificationController extends Controller {
   @Security.Authenticated(Secured_API.class)
   public Result get_unconfirmed_notifications(){
     try{
-      List<Notification> notifications = Notification.find.where().eq("person", SecurityController.getPerson()).eq("confirmation_required", true).eq("confirmed", false).findList();
+      List<Notification> notifications = Notification.find.where().eq("person.id", SecurityController.getPerson().id).eq("notification_importance", Notification_importance.high).eq("confirmed", false).findList();
       if(notifications.isEmpty()) return GlobalResult.result_ok("No new notifications");
 
       for (Notification notification : notifications){
@@ -487,7 +517,7 @@ public class NotificationController extends Controller {
       Person person = Person.find.where().eq("mail", mail).findUnique();
       if (person == null) return GlobalResult.notFoundObject("Person not found");
 
-      NotificationController.test_notification(person, help.level, help.importance, help.confirmation_required, help.type);
+      NotificationController.test_notification(person, help.level, help.importance, help.type, help.buttons);
       return GlobalResult.result_ok();
 
     }catch (Exception e){
@@ -505,17 +535,25 @@ public class NotificationController extends Controller {
   )
   @ApiResponses(value = {
           @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+          @ApiResponse(code = 400, message = "Objects not found",       response = Result_NotFound.class),
           @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+          @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
           @ApiResponse(code = 500, message = "Server side Error")
   })
   @Security.Authenticated(Secured_API.class)
-  public Result notification_confirm(@ApiParam(value = "notification_id String path", required = true) String notification_id){
+  public Result notification_confirm(@ApiParam(value = "notification_id String path", required = true) String notification_id, @ApiParam(value = "action String path", required = true) String action){
 
     try{
       Notification notification = Notification.find.byId(notification_id);
       if(notification == null) return GlobalResult.notFoundObject("Notification does not exist");
 
-      notification.confirm();
+      if (!notification.confirm_permission()) return GlobalResult.forbidden_Permission();
+
+      switch (action){
+        case "confirm_notification"       : notification.confirm(); break;
+        case "accept_project_invitation"  : break;
+        case "reject_project_invitation"  : break;
+      }
 
       return GlobalResult.result_ok();
 

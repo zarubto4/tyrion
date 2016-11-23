@@ -999,7 +999,7 @@ public class CompilationLibrariesController extends Controller {
             logger.debug("CompilationControler:: Server send c++ program for compilation");
             // Odesílám na compilační cloud_compilation_server
 
-            NotificationController.starting_of_compilation(SecurityController.getPerson(), version_object);
+            version_object.notification_compilation_start();
 
             JsonNode compilation_result = Cloud_Compilation_Server.make_Compilation(result);
 
@@ -1007,7 +1007,7 @@ public class CompilationLibrariesController extends Controller {
             // V případě úspěšného buildu obsahuje příchozí JsonNode buildUrl
            if( compilation_result.has("buildUrl") ){
 
-               NotificationController.successful_compilation(SecurityController.getPerson(), version_object);
+               version_object.notification_compilation_success();
 
                logger.debug("CompilationControler:: Build was succesfull");
                // Updatuji verzi - protože vše proběhlo v pořádku
@@ -1057,7 +1057,7 @@ public class CompilationLibrariesController extends Controller {
             // Kompilace nebyla úspěšná a tak vracím obsah neuspěšné kompilace
            else if(compilation_result.has("buildErrors")){
 
-               NotificationController.unsuccessful_compilation_warn( SecurityController.getPerson(), version_object, compilation_result.get("buildErrors").asText() );
+               version_object.notification_compilation_unsuccessful_warn(compilation_result.get("buildErrors").asText());
 
                logger.debug("CompilationControler:: Build wasn't succesfull - buildErrors");
                version_object.compilable = false;
@@ -1072,7 +1072,7 @@ public class CompilationLibrariesController extends Controller {
             // Nebylo úspěšné ani odeslání reqestu - Chyba v konfiguraci a tak vracím defaulní chybz
            }else if(compilation_result.has("error") ){
 
-               NotificationController.unsuccessful_compilation_error( SecurityController.getPerson(), version_object,  compilation_result.get("error").asText());
+               version_object.notification_compilation_unsuccessful_error(compilation_result.get("error").asText());
 
                logger.debug("CompilationControler:: Build wasn't successful - error in communication");
                version_object.compilable = false;
