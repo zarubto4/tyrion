@@ -49,9 +49,9 @@ public class GeneralTariff extends Model {
     @JsonIgnore public boolean free_tariff;
 
 
-                @OneToMany(mappedBy="general_tariff", cascade = CascadeType.ALL) @OrderBy("order_position ASC") public List<GeneralTariffLabel> labels = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="general_tariff", cascade = CascadeType.ALL, fetch = FetchType.LAZY) @OrderBy("order_position ASC") public List<GeneralTariff_Extensions> extensionses = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="general_tariff", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Product> product = new ArrayList<>(); //Vazba na uživateli zaregistrované produkty
+                @OneToMany(mappedBy="general_tariff", cascade = CascadeType.ALL, fetch = FetchType.EAGER) @OrderBy("order_position ASC") public List<GeneralTariffLabel> labels = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="general_tariff", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  @OrderBy("order_position ASC") public List<GeneralTariff_Extensions> extensionses = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="general_tariff", cascade = CascadeType.ALL, fetch = FetchType.LAZY)                                 public List<Product> product = new ArrayList<>(); //Vazba na uživateli zaregistrované produkty
 
 /* JSON PROPERTY METHOD -----------------------------------------------------------------------------------------------*/
 

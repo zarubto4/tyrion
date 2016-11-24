@@ -10,12 +10,10 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.UtilTools;
 import utilities.enums.Currency;
 import utilities.enums.Payment_method;
 import utilities.enums.Payment_mode;
 import utilities.enums.Payment_status;
-import utilities.enums.*;
 import utilities.fakturoid.Fakturoid_Controller;
 import utilities.goPay.GoPay_Controller;
 import utilities.loggy.Loggy;
@@ -203,7 +201,7 @@ public class Finance_Controller extends Controller {
             if(extensions == null) return GlobalResult.notFoundObject("Tariff not found");
 
             GeneralTariffLabel label = new GeneralTariffLabel();
-            label.general_tariff_extension = extensions;
+            label.extensions = extensions;
             label.description = help.description;
             label.label = help.label;
             label.icon = help.icon;

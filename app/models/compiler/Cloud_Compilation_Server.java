@@ -60,30 +60,38 @@ public class Cloud_Compilation_Server extends Model {
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
 
+    @JsonIgnore @Transient public static boolean is_online(){
+        return  !WebSocketController.compiler_cloud_servers.isEmpty();
+    }
+
     @JsonIgnore @Transient public static JsonNode make_Compilation(ObjectNode request){
         try{
-        List<String> keys        = new ArrayList<>(WebSocketController.compiler_cloud_servers.keySet());
-        WS_CompilerServer server = (WS_CompilerServer) WebSocketController.compiler_cloud_servers.get( keys.get( new Random().nextInt(keys.size())) );
 
-        ObjectNode compilation_request = server.write_with_confirmation(request, 1000*5, 0, 3);
+            List<String> keys        = new ArrayList<>(WebSocketController.compiler_cloud_servers.keySet());
+            WS_CompilerServer server = (WS_CompilerServer) WebSocketController.compiler_cloud_servers.get( keys.get( new Random().nextInt(keys.size())) );
+
             request.put("messageChannel", CHANNEL);
+            ObjectNode compilation_request = server.write_with_confirmation(request, 1000*5, 0, 3);
 
-        if(!compilation_request.get("status").asText().equals("success")) {
+            if(!compilation_request.get("status").asText().equals("success")) {
 
-            logger.debug("Incoming message has not contains state = success");
+                logger.debug("Incoming message has not contains state = success");
 
-            ObjectNode error_result = Json.newObject();
-            error_result.put("error", "Something was wrong");
-            return  error_result;
-        }
+                ObjectNode error_result = Json.newObject();
+                error_result.put("error", "Something was wrong");
+                return  error_result;
+            }
 
-        logger.debug("Start of compilation was successful - waiting for result");
+            logger.debug("Start of compilation was successful - waiting for result");
 
-        SendMessage get_compilation = new SendMessage(null, null, null, "compilation_message", 1000 * 35, 0, 1);
-        server.sendMessageMap.put( compilation_request.get("buildId").asText(), get_compilation);
-        ObjectNode result = get_compilation.send_with_response();
-        result.set("interface",compilation_request.get("interface") ); // Přiřadím interface do zprávy
-        return result;
+            SendMessage get_compilation = new SendMessage(null, null, null, "compilation_message", 1000 * 35, 0, 1);
+            server.sendMessageMap.put( compilation_request.get("buildId").asText(), get_compilation);
+
+            ObjectNode result = get_compilation.send_with_response();
+            result.set("interface_code", compilation_request.get("interface_code") ); // Přiřadím interface do zprávy
+            result.put("status", "success" );
+
+            return result;
 
         }catch (Exception e){
             return Cloud_Homer_Server.RESULT_server_is_offline();

@@ -102,6 +102,7 @@ create table c_compilation (
   id                        varchar(255) not null,
   date_of_create            timestamp,
   c_compilation_version     varchar(255),
+  status                    varchar(34),
   virtual_input_output      TEXT,
   c_comp_build_url          TEXT,
   file_id                   varchar(255),
@@ -110,6 +111,7 @@ create table c_compilation (
   firmware_version_lib      varchar(255),
   firmware_build_id         varchar(255),
   firmware_build_datetime   varchar(255),
+  constraint ck_c_compilation_status check (status in ('file_with_code_not_found','json_code_is_broken','successfully_compiled_and_restored','compilation_in_progress','compilation_server_error','server_was_offline','successfully_compiled_not_restored','compiled_with_code_errors','undefined')),
   constraint uq_c_compilation_c_compilation_v unique (c_compilation_version),
   constraint uq_c_compilation_file_id unique (file_id),
   constraint pk_c_compilation primary key (id))
@@ -234,7 +236,7 @@ create table general_tariff (
 create table general_tariff_label (
   id                        varchar(255) not null,
   general_tariff_id         varchar(255),
-  general_tariff_extension_id varchar(255),
+  extensions_id             varchar(255),
   label                     varchar(255),
   description               varchar(255),
   icon                      varchar(255),
@@ -606,8 +608,6 @@ create table version_object (
   library_group_id          varchar(255),
   single_library_id         varchar(255),
   c_program_id              varchar(255),
-  compilation_in_progress   boolean,
-  compilable                boolean,
   default_version_program_id varchar(255),
   approval_state            varchar(11),
   b_program_id              varchar(255),
@@ -863,8 +863,8 @@ alter table floating_person_token add constraint fk_floating_person_token_pers_3
 create index ix_floating_person_token_pers_35 on floating_person_token (person_id);
 alter table general_tariff_label add constraint fk_general_tariff_label_gener_36 foreign key (general_tariff_id) references general_tariff (id);
 create index ix_general_tariff_label_gener_36 on general_tariff_label (general_tariff_id);
-alter table general_tariff_label add constraint fk_general_tariff_label_gener_37 foreign key (general_tariff_extension_id) references general_tariff_extensions (id);
-create index ix_general_tariff_label_gener_37 on general_tariff_label (general_tariff_extension_id);
+alter table general_tariff_label add constraint fk_general_tariff_label_exten_37 foreign key (extensions_id) references general_tariff_extensions (id);
+create index ix_general_tariff_label_exten_37 on general_tariff_label (extensions_id);
 alter table general_tariff_extensions add constraint fk_general_tariff_extensions__38 foreign key (general_tariff_id) references general_tariff (id);
 create index ix_general_tariff_extensions__38 on general_tariff_extensions (general_tariff_id);
 alter table homer_instance add constraint fk_homer_instance_cloud_homer_39 foreign key (cloud_homer_server_id) references cloud_homer_server (id);

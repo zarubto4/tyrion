@@ -96,7 +96,18 @@
                             <div class="box box-primary">
                                 <div class="box-body table-responsive no-padding">
                                     <div class="box-header">
-                                        <h3 class="box-title"> Yoda: @x.main_board_pair.board.id </h3>
+                                        <h3 class="box-title"> Yoda: @x.main_board_pair.board.id Name: @x.main_board_pair.board.personal_description </h3>
+                                        <h3 class="box-title">
+                                        @if(x.main_board_pair.board.is_online()){
+                                                <p class="text-red"> Online</p>
+                                        }else{
+                                                <p class="text-red"> Offline</p>
+                                        }
+
+                                        </h3>
+                                    </div>
+
+                                    <div class="box-header">
                                         <div class="pull-right">
                                             <div class="btn-group">
 
@@ -123,11 +134,14 @@
                                             </div>
                                         </div>
                                     </div>
+
+
                                     <table class="table table-bordered">
                                         <tr>
                                             <th>Device Id</th>
                                             <th>Type Of Board</th>
                                             <th>User Name</th>
+                                            <th>Status</th>
                                             <th>BootLoader</th>
                                             <th>Commands</th>
                                             <th>Remove</th>
@@ -139,6 +153,15 @@
                                                 <td> @b_pair.board.id</td>
                                                 <td> @b_pair.board.type_of_board.name</td>
                                                 <td> @b_pair.board.personal_description</td>
+
+                                                <td>
+                                                @if(b_pair.board.is_online()){
+                                                    <p class="text-red">Online</p>
+                                                }else{
+                                                    <p class="text-red">Offline</p>
+                                                }
+                                                </td>
+
                                                 <td>
                                                 @if(BootLoader.find.where().eq("main_type_of_board.id", b_pair.board.id ).findUnique() != null){
                                                     @if(b_pair.board.update_boot_loader_required()) {
@@ -150,8 +173,8 @@
                                                     <p class="text-red">(Missing bootloader)</p>
                                                 }
                                                 </td>
-                                                <td><a onclick="showCommandDeviceModal('@b_pair.board.id ', true, '@b_pair.board.type_of_board.name')" class="btn btn-info btn-sm"><b>Open Commander</b></a></td>
-                                                <td><a onclick="removeDevice('@x.main_board_pair.id','@b_pair.board.id ')" class="btn btn-danger btn-sm"><b>Remove Device</b></a></td>
+                                                <td><a onclick="showCommandDeviceModal('@b_pair.board.id ', true, '@b_pair.board.type_of_board.name')" class="btn btn-info btn-sm"><b>Commands</b></a></td>
+                                                <td><a onclick="removeDevice('@x.main_board_pair.id','@b_pair.board.id ')" class="btn btn-danger btn-sm"><b>Remove</b></a></td>
                                             </tr>
 
 
@@ -226,44 +249,46 @@
                             <th class="col-md-1">Bin Restored</th>
                         </tr>
 
-                        @for(x <- instance.actual_instance.hardware_group()){
-                            <tr>
-                                <td>@x.main_board_pair.board.type_of_board.name</td>
-                                <td>@x.main_board_pair.board.id</td>
-                                <td>@if(x.main_board_pair.board.actual_c_program_version != null){
+                        @if(instance.actual_instance != null) {
+                            @for(x <- instance.actual_instance.hardware_group()) {
+                                <tr>
+                                    <td>@x.main_board_pair.board.type_of_board.name</td>
+                                    <td>@x.main_board_pair.board.id</td>
+                                    <td>@if(x.main_board_pair.board.actual_c_program_version != null) {
                                         @x.main_board_pair.board.actual_c_program_version.id
-                                    }else{
+                                    } else {
                                         Not Yet Databased
                                     }
-                                </td>
-                                <td>@x.main_board_pair.c_program_version.id</td>
-                                <td>@if(x.main_board_pair.c_program_version.c_compilation != null){
-                                        c_compilation tu je
-                                    }else{
-                                    <p class="text-red">(Missing compilation)</p>
-                                     }
-                                </td>
-                            </tr>
-                            @for(y <- x.device_board_pairs){
-
-                                <tr>
-                                    <td>@y.board.type_of_board.name</td>
-                                    <td>@y.board.id</td>
-                                    <td>
-                                        @if(y.board.actual_c_program_version != null){
-                                            @y.board.actual_c_program_version.id
-                                        }else{
-                                            Not Yet Databased
-                                        }
                                     </td>
-                                    <td>@y.c_program_version.id</td>
-                                    <td>@if(y.c_program_version.c_compilation != null){
-                                            c_compilation tu je
-                                         }else{
-                                            <p class="text-red">(Missing compilation)</p>
+                                    <td>@x.main_board_pair.c_program_version.id</td>
+                                    <td>@if(x.main_board_pair.c_program_version.c_compilation != null) {
+                                            @x.main_board_pair.c_program_version.c_compilation.status.name()
+                                        }else{
+                                            Compilation file missing
                                         }
                                     </td>
                                 </tr>
+                                @for(y <- x.device_board_pairs) {
+
+                                    <tr>
+                                        <td>@y.board.type_of_board.name</td>
+                                        <td>@y.board.id</td>
+                                        <td>
+                                        @if(y.board.actual_c_program_version != null) {
+                                            @y.board.actual_c_program_version.id
+                                        } else {
+                                            Not Yet Databased
+                                        }
+                                        </td>
+                                        <td>@y.c_program_version.id</td>
+                                        <td>@if(y.c_program_version.c_compilation != null) {
+                                                @y.c_program_version.c_compilation.status.name()
+                                            }else{
+                                            Compilation file missing
+                                             }
+                                        </td>
+                                    </tr>
+                                }
                             }
                         }
                     </table>

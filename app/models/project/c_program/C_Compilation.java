@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import models.compiler.FileRecord;
 import models.compiler.Version_Object;
+import utilities.enums.Compile_Status;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -17,12 +18,13 @@ public class C_Compilation extends Model {
               @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)      public String id;
                                                           @JsonIgnore      public Date date_of_create;
 
-    @JsonIgnore @OneToOne(cascade = CascadeType.ALL)   @JoinColumn(name="c_compilation_version")      public Version_Object version_object;
+    @JsonIgnore @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)   @JoinColumn(name="c_compilation_version") public Version_Object version_object;
 
+    @JsonIgnore  public Compile_Status status; // Používáme jako flag pro mezičas kdy se verze kompiluje a uživatel vyvolá get Version
 
     @ApiModelProperty(required = true, value = virtual_input_output_docu) @Column(columnDefinition = "TEXT")       public String virtual_input_output;
                                                             @JsonIgnore   @Column(columnDefinition = "TEXT")       public String c_comp_build_url;
-    @JsonIgnore   @OneToOne(cascade = CascadeType.ALL) @JoinColumn(name="file_id")                                 public FileRecord bin_compilation_file;
+    @JsonIgnore   @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY) @JoinColumn(name="file_id")         public FileRecord bin_compilation_file;
 
     @JsonIgnore  public String firmware_version_core;
     @JsonIgnore  public String firmware_version_mbed;
@@ -30,12 +32,19 @@ public class C_Compilation extends Model {
     @JsonIgnore  public String firmware_build_id;
     @JsonIgnore  public String firmware_build_datetime;   // Kdy bylo vybylděno
 
+
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
     public FileRecord compilation(){
         return FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "compilation.bin").findUnique();
     }
+
+    @JsonIgnore @Transient @Override
+    public void save(){
+        this.date_of_create = new Date();
+    }
+
 
 /* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/
 

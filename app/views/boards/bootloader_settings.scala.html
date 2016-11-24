@@ -3,6 +3,7 @@
 @import models.compiler.Version_Object
 @import com.avaje.ebean.Expr
 @import utilities.Server
+@import utilities.enums.Compile_Status
 
 @(typeOfBoard: TypeOfBoard)
 
@@ -148,7 +149,7 @@
                             <td>@version.version_description</td>
 
                             <td>
-                                @if(version.c_compilation != null && version.c_compilation.bin_compilation_file != null){
+                                @if(version.c_compilation.status == Compile_Status.successfully_compiled_and_restored){
                                     <p class="text-green">Yes</p>
 
                                 }else{
@@ -157,14 +158,14 @@
                             </td>
 
                             <td>
-                                @if(typeOfBoard.default_program.default_main_version != null && typeOfBoard.default_program.default_main_version.id == version.id) {
+                                @if(typeOfBoard.default_program != null && typeOfBoard.default_program.default_main_version != null && typeOfBoard.default_program.default_main_version.id == version.id) {
                                     <p class="lead text-green">(ITS Main)</p>
                                 }
-                                @if(version.default_version_program == null && version.c_compilation != null && version.c_compilation.bin_compilation_file != null){
-                                    <button class="btn btn-block btn-warning" type="button" onclick="setVersionAsMain('@typeOfBoard.id', '@version.id')" > SET as Main </button>
+                                @if(version.default_version_program == null && (version.c_compilation.status == Compile_Status.successfully_compiled_and_restored)){
+                                    <button class="btn btn-block btn-warning" type="button" onclick="setVersionAsMain('@version.id')" > SET as Main </button>
                                 }
-                                @if(version.default_version_program == null && version.c_compilation == null || version.c_compilation.bin_compilation_file == null){
-                                    <p class="text-red"> Not compilable!!</p>
+                                @if(version.default_version_program == null && (version.c_compilation.status != Compile_Status.successfully_compiled_and_restored) ){
+                                    <p class="text-red"> @version.c_compilation.status</p>
                                 }
                             </td>
 
@@ -185,13 +186,13 @@
                 <div class="box-header with-border">
                     <h3 class="box-title">Picture</h3>
                     <button id="showPictureRemoveModalButton" @if(typeOfBoard.picture_link() == null) { disabled="disabled" } class="btn btn-danger pull-right @if(typeOfBoard.picture_link() == null) { disabled }" type="button" onclick="showPictureRemoveModal(@typeOfBoard.id)">Remove Picture</button>
-                    <button style="margin-right: 10px;" class="btn btn-success pull-right" type="button" onclick="showPictureModal(@typeOfBoard.id)">Upload Picture</button>
+                    <button class="btn btn-success pull-right" type="button" onclick="showPictureModal(@typeOfBoard.id)">Upload Picture</button>
                 </div>
                 <div id="picture_container" class="box-body">
                     @if(typeOfBoard.picture_link() == null) {
                         <p>Picture is not available</p>
                     }else{
-                        <img style=" display: block; max-width: 100%; margin-right: auto; margin-left: auto;" src="@typeOfBoard.picture_link()">
+                        <img style="" src="@typeOfBoard.picture_link()">
                     }
                 </div>
                 <div class="box-footer"></div>
@@ -216,7 +217,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newBootLoaderModal').css('display','none')">Close</button>
-                <button id="newBootLoaderButton" value="" class="btn btn-primary" type="button" onclick="createNewBootLoaderRecord(this.value)">Create</button>
+                <button id="newBootLoaderButton" value="" class="btn btn-primary" type="button" onclick="createNewBootLoaderRecord()">Create</button>
             </div>
         </div>
     </div>
@@ -382,7 +383,7 @@
     function setBootLoaderAsMain(boot_loader_id) {
 
         $.ajax({
-            url: '@routes.CompilationLibrariesController.boot_loader_mark_as_main("") +  boot_loader_id',
+            url: '@routes.CompilationLibrariesController.boot_loader_mark_as_main("")' + boot_loader_id,
             type: 'PUT',
             headers: {
                 "X-AUTH-TOKEN": getCookie("authToken"),
@@ -408,10 +409,10 @@
         })
     }
 
-    function setVersionAsMain(boot_loader_id, version_id) {
+    function setVersionAsMain(version_id) {
 
         $.ajax({
-            url: '@routes.CompilationLibrariesController.typeOfBoard_mark_C_program_Version_as_main("","")' + boot_loader_id + "/" + version_id,
+            url: '@routes.CompilationLibrariesController.typeOfBoard_mark_C_program_Version_as_main(typeOfBoard.id,"")' + version_id,
             type: 'PUT',
             headers: {
                 "X-AUTH-TOKEN": getCookie("authToken"),
@@ -421,6 +422,7 @@
             success: function(data, status) {
                 $('#allCProgramsVersions').load(document.URL + ' #allCProgramsVersions');
             },
+
             error: function(data) {
                 BootstrapDialog.show({
                     message: syntaxHighlight(data),
@@ -437,11 +439,11 @@
         })
     }
 
-    function createNewBootLoaderRecord(boot_loader_id) {
+    function createNewBootLoaderRecord() {
         model_data = $("#newBootLoaderForm").serializeObject();
 
         $.ajax({
-            url: '@routes.CompilationLibrariesController.new_Boot_loader("") +  boot_loader_id',
+            url: '@routes.CompilationLibrariesController.new_Boot_loader(typeOfBoard.id)',
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -661,7 +663,7 @@
         var model_data = new FormData($("#pictureForm")[0]);
 
         $.ajax({
-            url: "@Server.tyrion_serverAddress" + "/compilation/typeOfBoard/upload_picture/" + id,
+            url: '@routes.CompilationLibrariesController.upload_TypeOfBoard_picture(typeOfBoard.id)',
             type: 'PUT',
             contentType: false,
             processData: false,
@@ -694,9 +696,9 @@
         })
     }
 
-    function removePicture(id) {
+    function removePicture() {
         $.ajax({
-            url: "@Server.tyrion_serverAddress" + "/compilation/typeOfBoard/remove_picture/" + id,
+            url: '@routes.CompilationLibrariesController.remove_TypeOfBoard_picture(typeOfBoard.id)',
             type: 'PUT',
             headers: {
                 "X-AUTH-TOKEN": getCookie("authToken")

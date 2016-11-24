@@ -1,6 +1,5 @@
 package models.project.c_program;
 
-import com.avaje.ebean.Expr;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -14,6 +13,7 @@ import models.compiler.Version_Object;
 import models.project.b_program.B_Pair;
 import models.project.global.Project;
 import play.libs.Json;
+import utilities.enums.Compile_Status;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_New;
 import utilities.swagger.outboundClass.Swagger_C_Program_Version;
 
@@ -48,7 +48,7 @@ public class C_Program extends Model {
                                                                                      @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)   public Version_Object first_default_version_object;
 
     @JsonIgnore @OneToOne                                     public TypeOfBoard default_program_type_of_board;   // Pro defaultní program na devicu a první verzi C_Programu při vytvoření  (Určeno výhradně pro Byzance)
-    @JsonIgnore @OneToOne(mappedBy="default_version_program") public Version_Object default_main_version;        // Defaultní verze programu, konkrétního typu desky  (Určeno výhradně pro Byzance)
+    @JsonIgnore @OneToOne(mappedBy="default_version_program", cascade = CascadeType.ALL) public Version_Object default_main_version;        // Defaultní verze programu, konkrétního typu desky  (Určeno výhradně pro Byzance)
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
@@ -99,14 +99,8 @@ public class C_Program extends Model {
 
             Swagger_C_Program_Version c_program_versions = new Swagger_C_Program_Version();
 
-            c_program_versions.compilation_in_progress = version_object.compilation_in_progress;
-            c_program_versions.compilable = version_object.compilable;
+            c_program_versions.status = version_object.c_compilation != null ? version_object.c_compilation.status : Compile_Status.undefined;
             c_program_versions.version_object = version_object;
-            c_program_versions.successfully_compiled = version_object.c_compilation != null;
-            c_program_versions.compilation_restored = FileRecord.find.where().disjunction()
-                    .add(Expr.eq("c_compilations_binary_file.version_object.c_program.id", id))
-                    .add(Expr.eq("c_compilations_binary_file.version_object.c_program.id", id))
-                    .where().eq("file_name", "compilation.bin").findRowCount() > 0;
             c_program_versions.remove_permission = version_object.c_program.delete_permission();
 
 
@@ -174,6 +168,16 @@ public class C_Program extends Model {
 
     @JsonIgnore @Transient
     public String get_path(){
+
+       if(azure_c_program_link == null){  // Tato vyjímka je tu pro demo data která nevyvolají metodu save();
+            while(true){ // I need Unique Value
+                this.azure_c_program_link = "public-c-programs/"  + UUID.randomUUID().toString();
+                if (C_Program.find.where().eq("azure_c_program_link", azure_c_program_link ).findUnique() == null) break;
+            }
+            update();
+        }
+
+
         return  azure_c_program_link;
     }
 

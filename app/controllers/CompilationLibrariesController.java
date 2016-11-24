@@ -10,19 +10,17 @@ import com.google.inject.Inject;
 import io.swagger.annotations.*;
 import models.compiler.*;
 import models.project.b_program.instnace.Homer_Instance;
-import models.project.c_program.C_Compilation;
 import models.project.c_program.C_Program;
 import models.project.global.Product;
 import models.project.global.Project;
 import play.data.Form;
-import play.libs.F;
 import play.libs.Json;
 import play.libs.ws.WSClient;
-import play.libs.ws.WSResponse;
 import play.mvc.*;
 import utilities.Server;
 import utilities.emails.EmailTool;
 import utilities.enums.Approval_state;
+import utilities.enums.Compile_Status;
 import utilities.enums.Firmware_type;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_API;
@@ -466,43 +464,9 @@ public class CompilationLibrariesController extends Controller {
             // Content se nahraje na Azure
 
             FileRecord.uploadAzure_Version(content.toString(), "code.json" , c_program.get_path() ,  version_object);
-
-
-            String token = request().getHeader("X-AUTH-TOKEN"); // Určen pro exetrní vlákno zpracování
-            version_object.compilation_in_progress = true;
-            version_object.compilable = true;
             version_object.update();
 
-            Thread compile_that = new Thread() {
-                @Override
-                public void run() {
-                    try {
-
-                       F.Promise<WSResponse> responsePromise = ws.url(Server.tyrion_serverAddress + "/compilation/c_program/version/compile/" + version_object.id)
-                                .setContentType("undefined")
-                                .setMethod("PUT")
-                                .setHeader("X-AUTH-TOKEN", token)
-                                .setRequestTimeout(50000)
-                                .put("");
-
-                        JsonNode result = responsePromise.get(50000).asJson();
-
-                         // At se deje co se deje nakonci stejnak musím změnit stav compilation_in_progress = false.
-                         // A objekt hledám znovu protože na druhe strane ho nekdo mohl updatovat o nove iformace a ty bych updatem na puvodnim objeektu přemazal
-                         Version_Object update_version = Version_Object.find.byId(version_object.id);
-                         update_version.compilation_in_progress = false;
-                         update_version.update();
-                         return;
-
-
-                    }catch (Exception e){
-                        logger.error("Error while cloud_compilation_server tried compile version of C_program", e);
-                    }
-
-                }
-            };
-
-            compile_that.start();
+            version_object.compile_program_thread();
 
             // Vracím vytvořený objekt
             return GlobalResult.created(Json.toJson(c_program.program_version(version_object)));
@@ -848,43 +812,9 @@ public class CompilationLibrariesController extends Controller {
             // Content se nahraje na Azure
 
             FileRecord.uploadAzure_Version(content.toString(), "code.json" , c_program.get_path() ,  version_object);
-
-
-            String token = request().getHeader("X-AUTH-TOKEN"); // Určen pro exetrní vlákno zpracování
-            version_object.compilation_in_progress = true;
-            version_object.compilable = true;
             version_object.update();
 
-            Thread compile_that = new Thread() {
-                @Override
-                public void run() {
-                    try {
-
-                        F.Promise<WSResponse> responsePromise = ws.url(Server.tyrion_serverAddress + "/compilation/c_program/version/compile/" + version_object.id)
-                                .setContentType("undefined")
-                                .setMethod("PUT")
-                                .setHeader("X-AUTH-TOKEN", token)
-                                .setRequestTimeout(50000)
-                                .put("");
-
-                        JsonNode result = responsePromise.get(50000).asJson();
-
-                        // At se deje co se deje nakonci stejnak musím změnit stav compilation_in_progress = false.
-                        // A objekt hledám znovu protože na druhe strane ho nekdo mohl updatovat o nove iformace a ty bych updatem na puvodnim objeektu přemazal
-                        Version_Object update_version = Version_Object.find.byId(version_object.id);
-                        update_version.compilation_in_progress = false;
-                        update_version.update();
-                        return;
-
-
-                    }catch (Exception e){
-                        logger.error("Error while cloud_compilation_server tried compile version of C_program", e);
-                    }
-
-                }
-            };
-
-            compile_that.start();
+            version_object.compile_program_thread();
 
             // Odeslání emailu s důvodem
             try {
@@ -955,10 +885,6 @@ public class CompilationLibrariesController extends Controller {
             Version_Object version_object = Version_Object.find.byId(version_id);
             if(version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
-
-            FileRecord file = FileRecord.find.where().eq("file_name", "code.json").eq("version_object.id", version_id).findUnique();
-            if(file == null) return GlobalResult.notFoundObject("Server has no content from version");
-
             // Smažu předchozí kompilaci
             if(version_object.c_program == null) return GlobalResult.result_BadRequest("Version is not version of C_Program");
 
@@ -968,124 +894,15 @@ public class CompilationLibrariesController extends Controller {
             // Smažu předchozí kompilaci
             if(version_object.c_compilation != null) return GlobalResult.result_ok(Json.toJson( new Swagger_Compilation_Ok()));
 
-            // Zpracování Json
-            JsonNode json = Json.parse( file.get_fileRecord_from_Azure_inString() );
-            Form<Swagger_C_Program_Version_Update> form = Form.form(Swagger_C_Program_Version_Update.class).bind(json);
-            Swagger_C_Program_Version_Update help = form.get();
 
+            JsonNode result = version_object.compile_program_procedure();
 
-            TypeOfBoard typeOfBoard = TypeOfBoard.find.where().eq("c_programs.id", version_object.c_program.id).findUnique();
-            if(typeOfBoard == null) return GlobalResult.result_BadRequest("Version is not version of C_Program");
+            if(result.has("status") && result.get("status").asText().equals("success")) return  GlobalResult.result_ok(result);
 
+            if(result.has("error_code") && result.get("error_code").asInt() == 400) return GlobalResult.badRequest(result);
+            if(result.has("error_code") && result.get("error_code").asInt() == 477) return GlobalResult.external_server_is_offline();
 
-            logger.debug("CompilationControler:: Server has all the information it needs ");
-
-            // Vytvářím objekt, jež se zašle přes websocket ke kompilaci
-            ObjectNode result = Json.newObject();
-                       result.put("messageType", "build");
-                       result.put("target", typeOfBoard.compiler_target_name);
-                       result.put("libVersion", "v0");
-                       result.put("versionId", version_id);
-                       result.put("code", help.main);
-                       result.set("includes", help.includes() == null ? Json.newObject() : help.includes() );
-
-            logger.debug("CompilationControler:: Server checks compilation cloud_compilation_server");
-            // Kontroluji zda je nějaký kompilační cloud_compilation_server připojený
-            if (WebSocketController.compiler_cloud_servers.isEmpty()) {
-                logger.error("All compilation servers are offline!!!!!!!!!!!");
-                return GlobalResult.result_external_server_is_offline("Compilation cloud_compilation_server is offline!");
-            }
-
-            logger.debug("CompilationControler:: Server send c++ program for compilation");
-            // Odesílám na compilační cloud_compilation_server
-
-            NotificationController.starting_of_compilation(SecurityController.getPerson(), version_object);
-
-            JsonNode compilation_result = Cloud_Compilation_Server.make_Compilation(result);
-
-
-            // V případě úspěšného buildu obsahuje příchozí JsonNode buildUrl
-           if( compilation_result.has("buildUrl") ){
-
-               NotificationController.successful_compilation(SecurityController.getPerson(), version_object);
-
-               logger.debug("CompilationControler:: Build was succesfull");
-               // Updatuji verzi - protože vše proběhlo v pořádku
-               version_object.compilation_in_progress = false;
-               version_object.compilable = true;
-               version_object.update();
-
-                // Vytvářím objekt hotové kompilace
-                C_Compilation c_compilation = new C_Compilation();
-                c_compilation.c_comp_build_url = compilation_result.get("buildUrl").asText();
-                c_compilation.virtual_input_output = compilation_result.get("interface").toString();
-                c_compilation.version_object = version_object;
-                c_compilation.date_of_create = new Date();
-
-               // Ukládám kompilační objekt
-
-
-                logger.debug("CompilationControler:: Trying download bin file");
-               try{
-
-                   logger.debug("Sending request to Compilation server for downloading");
-                   F.Promise<WSResponse> responsePromise = ws.url(c_compilation.c_comp_build_url)
-                           .setContentType("undefined")
-                           .setRequestTimeout(2500)
-                           .get();
-
-
-                   byte[] body = responsePromise.get(2500).asByteArray();
-
-                   logger.debug("CompilationControler:: Compilatin server respond successfuly WITH File");
-                   if( body != null) {
-                        // Daný soubor potřebuji dostat na Azure a Propojit s verzí
-
-                        String binary_file_in_string = FileRecord.get_encoded_binary_string_from_body(body);
-                        c_compilation.bin_compilation_file = FileRecord.create_Binary_file( c_compilation.get_path() , binary_file_in_string, "compilation.bin");
-
-                        logger.debug("CompilationControler:: File succesfuly restored in Azure!");
-                    }
-                } catch (Exception e) {
-                    logger.warn("Došlo k chybě při stahování souboru", e);
-                }
-
-               c_compilation.save();
-
-               return GlobalResult.result_ok(Json.toJson(new Swagger_Compilation_Ok() ));
-           }
-            // Kompilace nebyla úspěšná a tak vracím obsah neuspěšné kompilace
-           else if(compilation_result.has("buildErrors")){
-
-               NotificationController.unsuccessful_compilation_warn( SecurityController.getPerson(), version_object, compilation_result.get("buildErrors").asText() );
-
-               logger.debug("CompilationControler:: Build wasn't succesfull - buildErrors");
-               version_object.compilable = false;
-               version_object.update();
-
-               Form< Swagger_Compilation_Build_Error> form_compilation =  Form.form(Swagger_Compilation_Build_Error.class).bind(compilation_result.get("buildErrors").get(0) );
-               Swagger_Compilation_Build_Error swagger_compilation_build_error = form_compilation.get();
-
-
-               return GlobalResult.result_buildErrors(Json.toJson( swagger_compilation_build_error ));
-
-            // Nebylo úspěšné ani odeslání reqestu - Chyba v konfiguraci a tak vracím defaulní chybz
-           }else if(compilation_result.has("error") ){
-
-               NotificationController.unsuccessful_compilation_error( SecurityController.getPerson(), version_object,  compilation_result.get("error").asText());
-
-               logger.debug("CompilationControler:: Build wasn't successful - error in communication");
-               version_object.compilable = false;
-               version_object.update();
-
-               return GlobalResult.result_external_server_error(Json.toJson(compilation_result.get("error")));
-           }
-
-            logger.error("Build wasn't successful - unknown error!!");
-            version_object.compilable = false;
-            version_object.update();
-
-           // Neznámá chyba se kterou nebylo počítání
+            // Neznámá chyba se kterou nebylo počítání
            return GlobalResult.result_BadRequest("unknown_error");
 
         }catch (Exception e){
@@ -1374,20 +1191,24 @@ public class CompilationLibrariesController extends Controller {
             // Zkontroluji oprávnění
             if(! c_program_version.c_program.read_permission())  return GlobalResult.forbidden_Permission();
 
-            // Ověření zda je kompilovatelná verze a nebo zda kompilace stále neběží
-            if(!c_program_version.compilable || c_program_version.compilation_in_progress) return GlobalResult.result_BadRequest("You cannot upload uncompilable version or compilation in progress");
-
             //Zkontroluji validitu Verze zda sedí k C_Programu
             if(c_program_version.c_program == null) return GlobalResult.result_BadRequest("Version_Object its not version of C_Program");
 
+            //Zkontroluji validitu Verze zda sedí k C_Programu
+            if(c_program_version.c_compilation == null) return GlobalResult.result_BadRequest("Version_Object its not version of C_Program - Missing compilation File");
+
+            // Ověření zda je kompilovatelná verze a nebo zda kompilace stále neběží
+            if(   c_program_version.c_compilation.status == Compile_Status.compilation_in_progress
+               || c_program_version.c_compilation.status == Compile_Status.file_with_code_not_found
+               || c_program_version.c_compilation.status == Compile_Status.json_code_is_broken
+               || c_program_version.c_compilation.status == Compile_Status.compilation_server_error
+               || c_program_version.c_compilation.status == Compile_Status.compiled_with_code_errors
+               || c_program_version.c_compilation.status == Compile_Status.successfully_compiled_and_restored
+              ) return GlobalResult.result_BadRequest("You cannot upload code in state:: " + c_program_version.c_compilation.status.name());
+
 
             //Zkontroluji zda byla verze už zkompilována
-            if(c_program_version.c_compilation == null) return GlobalResult.result_BadRequest("The program is not yet compiled");
-
-            // Pokud nemám kompilaci a zároveň je kompilační cloud_compilation_server offline - oznámím nemožnost pokračovat
-            if(c_program_version.c_compilation.bin_compilation_file == null && WebSocketController.compiler_cloud_servers.isEmpty()){
-                return GlobalResult.result_BadRequest("We have not your historic compilation and int the same time compilation cloud_compilation_server for compile your code is offline! So we cannot do anything now :((( ");
-            }
+            if(!c_program_version.c_compilation.status.name().equals(Compile_Status.successfully_compiled_and_restored.name())) return GlobalResult.result_BadRequest("The program is not yet compiled & Restored");
 
             String typeOfBoard_id = c_program_version.c_program.type_of_board_id();
 
@@ -3297,6 +3118,10 @@ public class CompilationLibrariesController extends Controller {
             }
 
             typeOfBoard.default_program.default_main_version = version_object;
+
+            version_object.default_version_program = typeOfBoard.default_program;
+            version_object.update();
+
             typeOfBoard.default_program.update();
 
             // Vracím Json
@@ -3307,22 +3132,7 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
-    @ApiOperation(value = "upload TypeOfBoard picture",
-            tags = {"TypeOfBoard"},
-            notes = "Uploads photo of TypeOfBoard. Picture must be smaller than 500 KB and its dimensions must be between 50 and 400 pixels. If picture already exists, it will be replaced by the new one. " +
-                    "API requires 'multipart/form-data' Content-Type, name of the property is 'file'.",
-            produces = "application/json",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK Result",               response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @Security.Authenticated(Secured_API.class)
+    @ApiOperation(value = "Mark as main", hidden = true)
     public Result upload_TypeOfBoard_picture(@ApiParam(required = true) String type_of_board_id){
         try {
 
@@ -3384,20 +3194,8 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
-    @ApiOperation(value = "remove TypeOfBoard picture",
-            tags = {"TypeOfBoard"},
-            notes = "Removes picture of given TypeOfBoard",
-            produces = "application/json",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK Result",               response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @Security.Authenticated(Secured_API.class)
+    @ApiOperation(value = "Mark as main", hidden = true)
+    @Security.Authenticated(Secured_Admin.class)
     public Result remove_TypeOfBoard_picture(@ApiParam(required = true) String type_of_board_id){
         try {
 
@@ -3423,6 +3221,7 @@ public class CompilationLibrariesController extends Controller {
     // BootLoader ---------------------------------------------------------------------------------------------------------------------
 
     @ApiOperation(value = "new_boot_loader", hidden = true)
+    @Security.Authenticated(Secured_Admin.class)
     @BodyParser.Of(BodyParser.Json.class)
     public Result new_Boot_loader(@ApiParam(value = "type_of_board_id", required = true) String type_of_board_id) {
         try {

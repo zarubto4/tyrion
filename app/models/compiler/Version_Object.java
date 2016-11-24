@@ -2,6 +2,8 @@ package models.compiler;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
 import models.person.Person;
@@ -15,7 +17,19 @@ import models.project.c_program.actualization.Actualization_procedure;
 import models.project.c_program.actualization.C_Program_Update_Plan;
 import models.project.m_program.M_Program;
 import models.project.m_program.M_Project_Program_SnapShot;
+import org.apache.commons.io.FileExistsException;
+import play.api.Play;
+import play.data.Form;
+import play.libs.F;
+import play.libs.Json;
+import play.libs.ws.WSClient;
+import play.libs.ws.WSResponse;
 import utilities.enums.Approval_state;
+import utilities.enums.Compile_Status;
+import utilities.swagger.documentationClass.Swagger_C_Program_Version_Update;
+import utilities.swagger.documentationClass.Swagger_Cloud_Compilation_Server_CompilationResult;
+import utilities.swagger.outboundClass.Swagger_Compilation_Build_Error;
+import utilities.swagger.outboundClass.Swagger_Compilation_Ok;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -31,7 +45,7 @@ public class Version_Object extends Model {
                                                             @ApiModelProperty(required = true)  public String version_name;
                      @Column(columnDefinition = "TEXT")     @ApiModelProperty(required = true)  public String version_description;
 
-                         @ManyToOne(fetch = FetchType.LAZY) @ApiModelProperty(required = true)  public Person author;
+    @ManyToOne(fetch = FetchType.LAZY) @ApiModelProperty(required = false, value = "can be empty!")  public Person author;
 
 
                                                 @JsonIgnore @ApiModelProperty(required = true)  public boolean public_version;
@@ -53,10 +67,10 @@ public class Version_Object extends Model {
 
 
     // C_Programs --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    @JsonIgnore @ManyToOne                                                                                      public C_Program c_program;
+    @JsonIgnore @ManyToOne()                                                                                    public C_Program c_program;
     @JsonIgnore @OneToOne(mappedBy="version_object", cascade = CascadeType.ALL)                                 public C_Compilation c_compilation;
-    @JsonIgnore                                                                                                 public boolean compilation_in_progress; // Používáme jako flag pro mezičas kdy se verze kompiluje a uživatel vyvolá get Version
-    @JsonIgnore                                                                                                 public boolean compilable;
+
+
     @JsonIgnore @OneToMany(mappedBy="actual_c_program_version")                                                 public List<Board>  c_program_version_boards  = new ArrayList<>(); // Používám pro zachycení, která verze C_programu na desce běží
     @JsonIgnore @OneToMany(mappedBy="c_program_version_for_update",cascade=CascadeType.ALL)                     public List<C_Program_Update_Plan> c_program_update_plans = new ArrayList<>();
 
@@ -114,7 +128,228 @@ public class Version_Object extends Model {
 
 
 
+/* JSON IGNORE DATA  ---------------------------------------------------------------------------------------------------*/
+    static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
+    @JsonIgnore @Transient  public void compile_program_thread() {
+
+        Version_Object version = this;
+
+        Thread compile_that = new Thread() {
+
+            @Override
+            public void run() {
+                try {
+
+                    version.compile_program_procedure();
+
+                }catch (Exception e){
+                     e.printStackTrace();
+                }
+
+            }
+        };
+
+        compile_that.start();
+
+    }
+
+
+    @JsonIgnore @Transient public ObjectNode compile_program_procedure(){
+
+
+        TypeOfBoard typeOfBoard = TypeOfBoard.find.where().eq("c_programs.id", this.c_program.id).findUnique();
+        if(typeOfBoard == null){
+
+            logger.error("Version Object:: compile_program_procedure:: Type_of_Board not found!!! - Not found way how to compile that");
+
+            ObjectNode result = Json.newObject();
+            result.put("status", "error");
+            result.put("error", "Version is not version of C_Program");
+            result.put("error_code", 400);
+            return result;
+        }
+
+        if(this.c_compilation == null) {
+
+            this.c_compilation = new C_Compilation();
+            this.update();
+        }
+
+        c_compilation.status = Compile_Status.compilation_in_progress;
+        c_compilation.save();
+
+        FileRecord file = FileRecord.find.where().eq("file_name", "code.json").eq("version_object.id", id).findUnique();
+        if(file == null){
+
+            logger.error("Version Object:: compile_program_procedure:: File not found!!! - Version is not compilable!");
+
+            c_compilation.status = Compile_Status.file_with_code_not_found;
+            c_compilation.update();
+
+            ObjectNode result = Json.newObject();
+            result.put("status", "error");
+            result.put("error", "Server has no content from version");
+            result.put("error_code", 400);
+            return result;
+        }
+
+        // Zpracování Json
+        JsonNode json = Json.parse( file.get_fileRecord_from_Azure_inString() );
+        System.out.println("JSON:::::" + json.toString());
+        Form<Swagger_C_Program_Version_Update> form = Form.form(Swagger_C_Program_Version_Update.class).bind(json);
+        if(form.hasErrors()){
+
+
+
+            logger.error("Version Object:: compile_program_procedure:: File found but json is not parsable!!! - Version!");
+            c_compilation.status = Compile_Status.json_code_is_broken;
+            c_compilation.update();
+
+            ObjectNode result = Json.newObject();
+            result.put("status", "error");
+            result.put("error", "Json code is broken - contact tech support!");
+            result.put("error_code", 400);
+            return result;
+        }
+        Swagger_C_Program_Version_Update code_file = form.get();
+
+
+        // Vytvářím objekt, jež se zašle přes websocket ke kompilaci
+        ObjectNode request = Json.newObject();
+        request.put("messageType", "build");
+        request.put("target", typeOfBoard.compiler_target_name);
+        request.put("libVersion", "v0");
+        request.put("versionId", this.id);
+        request.put("code", code_file.main);
+        request.set("includes", code_file.includes() == null ? Json.newObject() : code_file.includes() );
+
+
+        // Kontroluji zda je nějaký kompilační cloud_compilation_server připojený
+        if (!Cloud_Compilation_Server.is_online()) {
+
+            logger.error("Version Object:: compile_program_procedure:: Server is offline!!!");
+
+            c_compilation.status = Compile_Status.server_was_offline;
+            c_compilation.update();
+
+            ObjectNode result = Json.newObject();
+            result.put("status", "error");
+            result.put("error", "Compilation cloud_compilation_server is offline! It will be compiled as soon as possible!");
+            result.put("error_code", 477);
+            return result;
+        }
+
+        JsonNode json_compilation_result = Cloud_Compilation_Server.make_Compilation(request);
+        Form<Swagger_Cloud_Compilation_Server_CompilationResult> comp_form = Form.form(Swagger_Cloud_Compilation_Server_CompilationResult.class).bind(json_compilation_result);
+        if(comp_form.hasErrors()){
+
+            logger.error("Version Object:: compile_program_procedure:: Json Result from Compilation server has not required labels!");
+
+            c_compilation.status = Compile_Status.json_code_is_broken;
+            c_compilation.update();
+
+            ObjectNode result = Json.newObject();
+            result.put("status", "error");
+            result.put("error", "Json code is broken - contact tech support!");
+            result.put("error_code", 400);
+            return result;
+        }
+        Swagger_Cloud_Compilation_Server_CompilationResult compilation_result = comp_form.get();
+        if(json_compilation_result.has("interface_code")){
+            compilation_result.interface_code = json_compilation_result.get("interface_code").asText();
+        }
+
+
+        // NotificationController.successful_compilation(SecurityController.getPerson(), this); TODO Notifikace
+
+        // Když obsahuje chyby - vrátím rovnou Becki
+        if(compilation_result.buildErrors != null) {
+            logger.debug("Version Object:: compile_program_procedure:: compilation contains user Errors");
+
+            Form<Swagger_Compilation_Build_Error> form_compilation =  Form.form(Swagger_Compilation_Build_Error.class).bind(json_compilation_result.get("buildErrors").get(0) );
+            Swagger_Compilation_Build_Error swagger_compilation_build_error = form_compilation.get();
+
+            c_compilation.status = Compile_Status.compiled_with_code_errors;
+            c_compilation.update();
+
+            return (ObjectNode) Json.toJson( swagger_compilation_build_error );
+        }
+        else if(compilation_result.status.equals("success")) {
+            logger.debug("Version Object:: compile_program_procedure:: compilation was successfull");
+
+            try {
+
+                logger.debug("Version Object:: compile_program_procedure:: try to download file");
+
+
+                WSClient ws = Play.current().injector().instanceOf(WSClient.class);
+                F.Promise<WSResponse> responsePromise = ws.url(compilation_result.buildUrl)
+                        .setContentType("undefined")
+                        .setRequestTimeout(2500)
+                        .get();
+
+
+                byte[] body = responsePromise.get(2500).asByteArray();
+
+                if (body == null || body.length == 0){
+                    throw new FileExistsException();
+                }
+
+                logger.debug("Version Object:: compile_program_procedure:: Body is ok - uploading to Azure");
+
+                // Daný soubor potřebuji dostat na Azure a Propojit s verzí
+                c_compilation.bin_compilation_file = FileRecord.create_Binary_file(c_compilation.get_path(), FileRecord.get_encoded_binary_string_from_body(body), "compilation.bin");
+
+                logger.debug("Version Object:: compile_program_procedure:: Body is ok - uploading to Azure was succesfull");
+                c_compilation.status = Compile_Status.successfully_compiled_and_restored;
+                c_compilation.c_comp_build_url = compilation_result.buildUrl;
+                c_compilation.virtual_input_output = compilation_result.interface_code;
+                c_compilation.date_of_create = new Date();
+                c_compilation.update();
+
+                return (ObjectNode) Json.toJson(new Swagger_Compilation_Ok());
+
+
+            }catch (FileExistsException e){
+
+                logger.debug("Version Object:: compile_program_procedure:: FileExistsException - Body is empty");
+
+                c_compilation.status = Compile_Status.successfully_compiled_not_restored;
+                c_compilation.update();
+
+                ObjectNode result = Json.newObject();
+                result.put("status", "error");
+                result.put("error", "Server side Error");
+                result.put("error_code", 400);
+                return result;
+
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+                c_compilation.status = Compile_Status.compilation_server_error;
+                c_compilation.update();
+
+                ObjectNode result = Json.newObject();
+                result.put("status", "error");
+                result.put("error", "Server side Error");
+                result.put("error_code", 400);
+                return result;
+            }
+
+        }
+
+        c_compilation.status = Compile_Status.compilation_server_error;
+        c_compilation.update();
+
+        ObjectNode result = Json.newObject();
+        result.put("status", "error");
+        result.put("error", "Server side Error");
+        result.put("error_code", 400);
+        return result;
+    }
 
 /* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/
 

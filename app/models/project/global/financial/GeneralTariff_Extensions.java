@@ -30,7 +30,7 @@ public class GeneralTariff_Extensions extends Model {
     @JsonIgnore  public Double eur;
     @JsonIgnore  public Double czk;
 
-    @OneToMany(mappedBy="general_tariff_extension", cascade = CascadeType.ALL) @OrderBy("order_position ASC")  public List<GeneralTariffLabel> labels = new ArrayList<>();
+    @OneToMany(mappedBy="extensions", cascade = CascadeType.ALL) @OrderBy("order_position ASC")  public List<GeneralTariffLabel> labels = new ArrayList<>();
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public GeneralTariff general_tariff;
 
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Product> products = new ArrayList<>();

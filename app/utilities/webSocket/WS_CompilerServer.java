@@ -30,6 +30,7 @@ public class WS_CompilerServer extends WebSCType{
     @Override
     public void onClose() {
         this.close();
+        WebSocketController.compiler_cloud_servers.remove(this.identifikator);
         server.compiler_server_is_disconnect();
     }
 

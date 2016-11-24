@@ -4,6 +4,7 @@ import com.avaje.ebean.Expr;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.ActualizationController;
 import controllers.SecurityController;
@@ -17,6 +18,7 @@ import models.project.b_program.servers.Private_Homer_Server;
 import models.project.c_program.actualization.C_Program_Update_Plan;
 import models.project.global.Project;
 import play.data.Form;
+import play.libs.Json;
 import utilities.enums.Notification_importance;
 import utilities.enums.Notification_level;
 import utilities.swagger.outboundClass.Swagger_Board_status;
@@ -61,8 +63,8 @@ public class Board extends Model {
 
 
 
-    @JsonIgnore  @OneToMany(mappedBy="board", cascade=CascadeType.ALL, fetch = FetchType.EAGER)     public List<B_Pair> b_pair = new ArrayList<>();
-    @JsonIgnore  @OneToMany(mappedBy="board", cascade=CascadeType.ALL, fetch = FetchType.EAGER)     public List<C_Program_Update_Plan> c_program_update_plans;
+    @JsonIgnore  @OneToMany(mappedBy="board", cascade=CascadeType.ALL, fetch = FetchType.LAZY)     public List<B_Pair> b_pair = new ArrayList<>();
+    @JsonIgnore  @OneToMany(mappedBy="board", cascade=CascadeType.ALL, fetch = FetchType.LAZY)     public List<C_Program_Update_Plan> c_program_update_plans;
 
 
 
@@ -141,6 +143,44 @@ public class Board extends Model {
 
 /* BOARD WEBSOCKET CONTROLLING UNDER INSTANCE --------------------------------------------------------------------------*/
 
+    @JsonIgnore @Transient public boolean is_online(){ // Velmi opatrně s touto proměnou - je časově velmi náročná!!!!!!!!
+        try {
+
+            Homer_Instance homer_instance;
+
+            // Buď zkoumám virutální instnaci
+            if (virtual_instance_under_project != null) {
+
+                homer_instance = virtual_instance_under_project;
+
+                // Nebo reálnou instnaci
+            } else {
+
+                homer_instance = Homer_Instance.find.where().disjunction()
+                        .eq("actual_instance.version_object.b_program_hw_groups.device_board_pairs.board.id", this.id)
+                        .eq("actual_instance.version_object.b_program_hw_groups.device_board_pairs.board.id", this.id)
+                        .endJunction().findUnique();
+            }
+
+            if (homer_instance == null || !homer_instance.instance_online()) return false;
+
+
+            ObjectNode request = Json.newObject();
+            request.put("messageType", "device_online_state");
+            request.put("messageChannel", Homer_Instance.CHANNEL);
+            request.put("instanceId", homer_instance.blocko_instance_name);
+            request.put("devicesId", this.id);
+
+            JsonNode result = homer_instance.sendToInstance().write_with_confirmation(request, 1000 * 3, 0, 4);
+
+            return !result.get("status").asText().equals("error") && result.get("device_state").asBoolean();
+
+
+        }catch (Exception e){
+            logger.error("Board:: is_online:: Error:: ", e);
+            return false;
+        }
+    }
 
     @JsonIgnore @Transient  public static void master_device_Connected(WS_BlockoServer server, ObjectNode json){
         try {

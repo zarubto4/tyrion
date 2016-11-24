@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import models.compiler.Cloud_Compilation_Server;
+import models.compiler.Version_Object;
 import models.notification.Notification;
 import models.person.Person;
 import models.project.b_program.instnace.Homer_Instance;
@@ -16,6 +17,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import play.mvc.WebSocket;
+import utilities.enums.Compile_Status;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_API;
 import utilities.loginEntities.TokenCache;
@@ -239,6 +241,34 @@ public class WebSocketController extends Controller {
 
             // Inicializuji Websocket pro Homera
             WS_CompilerServer server = new WS_CompilerServer(cloud_compilation_server, compiler_cloud_servers );
+
+            // Vlákno které hledá záznamy nezkompilovaných programů a dodělá je se zpožděním.
+            // Vyhledá vždy jedno! aby když se připojí více kompilačních serverů aby nekompilovaly tentýž program
+            class Compilation_Thread extends Thread{
+
+                @Override
+                public void run() {
+                    try {
+                        while (true) {
+
+                            sleep(400);
+                            Version_Object version_object = Version_Object.find.where().eq("c_compilation.status", "server_was_offline").order().desc("date_of_create").setMaxRows(1).findUnique();
+                            if(version_object == null) break;
+
+                            version_object.c_compilation.status = Compile_Status.compilation_in_progress;
+                            version_object.c_compilation.update();
+
+                           JsonNode jsonNode = version_object.compile_program_procedure();
+                        }
+                    }catch(Exception e){
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            logger.debug("Blocko Server: Starting connection control procedure");
+            new Compilation_Thread().start();
+
 
             // Připojím se
             logger.debug("Compiling cloud_blocko_server connect");

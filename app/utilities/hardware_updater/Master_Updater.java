@@ -197,7 +197,6 @@ public class Master_Updater{
                                 System.out.println("..........V Blob serveru nebyla - musí se vytvořit");
                                 System.out.println("..........Spouštím proceduru dodatečné procedury protože kompilačku v azure nemám");
                                 System.out.println("..........Tato procedura chybí!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                                // TODO
                                 continue;
                             }
 
