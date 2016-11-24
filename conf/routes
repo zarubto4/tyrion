@@ -49,7 +49,7 @@ GET             /notification/list/:page_number             @controllers.Notific
 DELETE          /notification/:notification_id              @controllers.NotificationController.delete_notification(notification_id)
 
 GET             /notification/unconfirmed                   @controllers.NotificationController.get_unconfirmed_notifications()
-PUT             /notification/confirm/:notification_id/:action          @controllers.NotificationController.notification_confirm(notification_id, action)
+PUT             /notification/confirm/:notification_id      @controllers.NotificationController.notification_confirm(notification_id)
 
 PUT             /notification/read                          @controllers.NotificationController.mark_as_read_notification()
 

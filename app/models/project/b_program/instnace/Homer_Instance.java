@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import controllers.SecurityController;
 import controllers.WebSocketController;
 import io.swagger.annotations.ApiModelProperty;
 import models.compiler.Board;
@@ -22,6 +23,7 @@ import utilities.enums.Firmware_type;
 import utilities.enums.Notification_importance;
 import utilities.enums.Notification_level;
 import utilities.enums.Type_of_command;
+import utilities.swagger.documentationClass.Swagger_B_Program_Version_New;
 import utilities.swagger.outboundClass.Swagger_B_Program_Instance;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Swagger_Instance_HW_Group;
@@ -61,36 +63,54 @@ public class Homer_Instance extends Model {
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
-    public void notification_instance_start_upload(Person person){
+    public void notification_instance_start_upload(){
 
         new Notification(Notification_importance.low,  Notification_level.info)
                 .setText("Server started creating new Blocko Instance of Blocko Version ")
                 .setText(this.actual_instance.version_object.b_program.name + " ", "black", true, false, false)
                 .setObject(Swagger_B_Program_Version.class, this.actual_instance.version_object.id, this.actual_instance.version_object.version_name, this.actual_instance.version_object.b_program.project_id() )
                 .setText(" from Blocko program ")
-                .setObject(B_Program.class, this.actual_instance.version_object.b_program.id, this.actual_instance.version_object.b_program.name + ".", this.actual_instance.version_object.b_program.project_id());
+                .setObject(B_Program.class, this.actual_instance.version_object.b_program.id, this.actual_instance.version_object.b_program.name + ".", this.actual_instance.version_object.b_program.project_id())
+                .send(SecurityController.getPerson());
     }
 
     @JsonIgnore @Transient
-    public void notification_instance_successful_upload(Person person, Homer_Instance instance){
+    public void notification_instance_successful_upload(){
 
         new Notification(Notification_importance.low, Notification_level.success)
-                .setText("Server created successfully instance in cloud on Blocko Version")
-                .setObject(Swagger_B_Program_Version.class, instance.actual_instance.version_object.id, instance.actual_instance.version_object.version_name, instance.actual_instance.version_object.b_program.project_id() )
-                .setText("from Blocko program")
-                .setObject(B_Program.class, instance.actual_instance.version_object.b_program.id, instance.actual_instance.version_object.b_program.name + ".", instance.actual_instance.version_object.b_program.project_id());
+                .setText("Server successfully created the instance of Blocko Version ")
+                .setObject(Swagger_B_Program_Version.class, this.actual_instance.version_object.id, this.actual_instance.version_object.version_name, this.actual_instance.version_object.b_program.project_id() )
+                .setText(" from Blocko program ")
+                .setObject(B_Program.class, this.actual_instance.version_object.b_program.id, this.actual_instance.version_object.b_program.name + ".", this.actual_instance.version_object.b_program.project_id())
+                .send(SecurityController.getPerson());
     }
 
     @JsonIgnore @Transient
-    public void notification_instance_unsuccessful_upload(Person person, Homer_Instance instance, String reason){
+    public void notification_instance_unsuccessful_upload(String reason){
 
 
         new Notification(Notification_importance.normal, Notification_level.warning)
-                .setText("Server did not upload instance to cloud on Blocko Version <b>" + instance.actual_instance.version_object.version_name + "</b> from Blocko program <b>" + instance.b_program.name + "</b> for <b> reason:\"" +  reason + "\" </b> ")
-                .setObject(Swagger_B_Program_Version.class, instance.actual_instance.version_object.id, instance.actual_instance.version_object.version_name, instance.b_program.project_id() )
-                .setText("from Blocko program")
-                .setObject(B_Program.class, instance.b_program.id, instance.b_program.name, instance.b_program.project_id() )
-                .setText("Server will try to do that as soon as possible.");
+                .setText("Server did not upload instance to cloud on Blocko Version ")
+                .setText(this.actual_instance.version_object.version_name, "black", true, false, false)
+                .setText(" from Blocko program ")
+                .setText(this.b_program.name, "black", true, false, false)
+                .setText("for reason: ")
+                .setText(reason + " ", "black", true, false, false)
+                .setObject(Swagger_B_Program_Version.class, this.actual_instance.version_object.id, this.actual_instance.version_object.version_name, this.b_program.project_id() )
+                .setText(" from Blocko program ")
+                .setObject(B_Program.class, this.b_program.id, this.b_program.name, this.b_program.project_id() )
+                .setText(". Server will try to do that as soon as possible.")
+                .send(SecurityController.getPerson()); // TODO jestli bude uživatel přihlášen, když se notifikace odesílá
+    }
+
+    @JsonIgnore @Transient
+    public void notification_new_actualization_request_instance(){
+
+        new Notification(Notification_importance.low, Notification_level.info)
+                .setText("New actualization task was added to Task Queue on Version ")
+                .setObject(Swagger_B_Program_Version_New.class, this.actual_instance.version_object.id, this.actual_instance.version_object.version_name, this.actual_instance.version_object.b_program.project_id())
+                .send(this.project.ownersOfProject);
+
     }
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 

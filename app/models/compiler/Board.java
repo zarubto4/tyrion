@@ -261,6 +261,16 @@ public class Board extends Model {
                 .send(this.project.ownersOfProject);
     }
 
+    @JsonIgnore @Transient
+    public void notification_new_actualization_request_with_file(){
+
+        new Notification(Notification_importance.low, Notification_level.info)
+                .setText("New actualization task was added to Task Queue on ")
+                .setObject(Board.class, this.id, "board", this.project_id())
+                .setText(" with user File ") // TODO ? asi dodělat soubor ?
+                .send(SecurityController.getPerson());
+    }
+
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     // Floating shared documentation for Swagger

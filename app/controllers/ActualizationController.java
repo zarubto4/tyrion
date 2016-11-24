@@ -147,7 +147,7 @@ public class ActualizationController extends Controller {
 
     public static void add_new_actualization_request_with_user_file(Project project, Firmware_type command, Board board, FileRecord file_record){
 
-            NotificationController.new_actualization_request_with_file( SecurityController.getPerson(), board);
+            board.notification_new_actualization_request_with_file();
 
             List<Board> boards = new ArrayList<>();
             boards.add(board);
@@ -234,7 +234,7 @@ public class ActualizationController extends Controller {
 
     public static void add_new_actualization_request_with_user_file(Project project, Board board, Version_Object c_program_version){
 
-        NotificationController.new_actualization_request_on_version( SecurityController.getPerson(), c_program_version);
+        c_program_version.notification_new_actualization_request_on_version();
 
         List<Board> boards = new ArrayList<>();
         boards.add(board);
@@ -322,7 +322,7 @@ public class ActualizationController extends Controller {
 
         try {
 
-            NotificationController.new_actualization_request_homer_instance( project, program_cloud);
+            program_cloud.notification_new_actualization_request_instance();
 
             logger.debug("Incoming new Actualization request under program_cloud!");
 

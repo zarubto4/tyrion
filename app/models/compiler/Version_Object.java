@@ -20,6 +20,7 @@ import utilities.enums.Approval_state;
 import utilities.enums.Notification_importance;
 import utilities.enums.Notification_level;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
+import utilities.swagger.outboundClass.Swagger_C_Program_Version;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -156,6 +157,17 @@ public class Version_Object extends Model {
                 .setObject(Swagger_B_Program_Version.class, this.id, this.version_name, this.c_program.project_id(), "black", false, true, false, false)
                 .setText("with critical Error:")
                 .setText(result, "black", true, false, false)
+                .send(SecurityController.getPerson());
+    }
+
+    @JsonIgnore @Transient
+    public void notification_new_actualization_request_on_version(){
+
+        new Notification(Notification_importance.low, Notification_level.info)
+                .setText("New actualization task was added to Task Queue on Version ")
+                .setObject(Swagger_C_Program_Version.class, this.id, this.version_name, this.c_program.project_id() )
+                .setText(" from Program ")
+                .setObject(C_Program.class, this.c_program.id, this.c_program.name, this.c_program.project_id())
                 .send(SecurityController.getPerson());
     }
 /* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/

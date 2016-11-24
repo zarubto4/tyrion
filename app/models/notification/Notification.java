@@ -185,6 +185,8 @@ public class Notification extends Model {
     @JsonIgnore @Transient
     public Notification setButton(Notification_action action, String payload, String color, String text, boolean bold, boolean italic, boolean underline){
 
+        this.confirmation_required = true;
+
         Swagger_Notification_Button button = new Swagger_Notification_Button();
         button.action    = action;
         button.payload   = payload;
@@ -218,15 +220,6 @@ public class Notification extends Model {
         super.save();
         return this;
     }
-
-    @JsonIgnore @Transient
-    public Notification confirmation_required(){
-        this.confirmation_required = true;
-        return this;
-    }
-
-
-
 
  /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 

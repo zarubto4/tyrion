@@ -1,6 +1,7 @@
 package controllers;
 
 import com.avaje.ebean.Query;
+import com.google.inject.Inject;
 import io.swagger.annotations.*;
 import models.compiler.Board;
 import models.compiler.Version_Object;
@@ -29,6 +30,7 @@ import utilities.response.response_objects.Result_PermissionRequired;
 import utilities.response.response_objects.Result_Unauthorized;
 import utilities.response.response_objects.Result_ok;
 import utilities.swagger.documentationClass.Swagger_B_Program_Version_New;
+import utilities.swagger.documentationClass.Swagger_Notification_Confirm;
 import utilities.swagger.documentationClass.Swagger_Notification_Read;
 import utilities.swagger.documentationClass.Swagger_Notification_Test;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Notification_List;
@@ -42,6 +44,9 @@ import java.util.List;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class NotificationController extends Controller {
+
+  @Inject
+  ProgramingPackageController programingPackageController;
 
   //####################################################################################################################
   static play.Logger.ALogger logger = play.Logger.of("Loggy");
@@ -73,7 +78,7 @@ public class NotificationController extends Controller {
   }
 
   public static void upload_firmware_progress(Person person, String version_object){
-    // TODO
+    // TODO a taky zařadit pod objekt
   }
 
 
@@ -112,6 +117,7 @@ public class NotificationController extends Controller {
     send_notification(person, notification);
   }
 
+  // Hotovo
   public static void upload_Instance_start(Person person, Homer_Instance instance){
 
     Notification notification = new Notification(Notification_importance.low,  Notification_level.info, person)
@@ -123,6 +129,7 @@ public class NotificationController extends Controller {
     send_notification(person, notification);
   }
 
+  // Hotovo
   public static void upload_Instance_was_successful(Person person, Homer_Instance instance){
 
     Notification notification = new Notification(Notification_importance.low, Notification_level.success, person)
@@ -134,7 +141,7 @@ public class NotificationController extends Controller {
     send_notification(person, notification);
   }
 
-
+  // Hotovo
   public static void upload_Instance_was_unsuccessful(Person person, Homer_Instance instance, String reason){
 
 
@@ -149,6 +156,7 @@ public class NotificationController extends Controller {
 
   }
 
+  // TODO zařadit pod objekt
   public static void upload_of_Instance_was_unsuccessful_with_error(Person person, Version_Object version_object){
 
     Notification notification = new Notification(Notification_importance.normal, Notification_level.error, person)
@@ -161,6 +169,7 @@ public class NotificationController extends Controller {
     send_notification(person, notification);
   }
 
+  // Hotovo
   public static void new_actualization_request_with_file(Person person, Board board){
 
     Notification notification = new Notification(Notification_importance.low, Notification_level.info, person)
@@ -173,6 +182,7 @@ public class NotificationController extends Controller {
 
   }
 
+  // Hotovo
   public static void new_actualization_request_on_version(Person person, Version_Object version_object){
 
     Notification notification = new Notification(Notification_importance.low, Notification_level.info, person)
@@ -186,6 +196,7 @@ public class NotificationController extends Controller {
 
   }
 
+  // Hotovo
   public static void new_actualization_request_homer_instance(Project project, Homer_Instance homer_instance){
 
     for(Person person : project.ownersOfProject) {
@@ -541,7 +552,11 @@ public class NotificationController extends Controller {
           @ApiResponse(code = 500, message = "Server side Error")
   })
   @Security.Authenticated(Secured_API.class)
-  public Result notification_confirm(@ApiParam(value = "notification_id String path", required = true) String notification_id, @ApiParam(value = "action String path", required = true) String action){
+  public Result notification_confirm(@ApiParam(value = "notification_id String path", required = true) String notification_id){
+
+    final Form<Swagger_Notification_Confirm> form = Form.form(Swagger_Notification_Confirm.class).bindFromRequest();
+    if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+    Swagger_Notification_Confirm help = form.get();
 
     try{
       Notification notification = Notification.find.byId(notification_id);
@@ -549,13 +564,19 @@ public class NotificationController extends Controller {
 
       if (!notification.confirm_permission()) return GlobalResult.forbidden_Permission();
 
-      switch (action){
-        case "confirm_notification"       : notification.confirm(); break;
-        case "accept_project_invitation"  : break;
-        case "reject_project_invitation"  : break;
+      switch (help.action){
+        case "confirm_notification"       : {
+          notification.confirm();
+          return GlobalResult.result_ok("Notification confirmed");
+        }
+        case "accept_project_invitation"  : {
+          return programingPackageController.addParticipantToProject(help.payload, true);
+        }
+        case "reject_project_invitation"  : {
+          return programingPackageController.addParticipantToProject(help.payload, false);
+        }
+        default: return GlobalResult.result_BadRequest("Unknown action");
       }
-
-      return GlobalResult.result_ok();
 
     }catch (Exception e){
       return Loggy.result_internalServerError(e, request());
