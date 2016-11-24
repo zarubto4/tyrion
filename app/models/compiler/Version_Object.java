@@ -27,7 +27,6 @@ import play.libs.ws.WSResponse;
 import utilities.enums.Approval_state;
 import utilities.enums.Compile_Status;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_Update;
-import utilities.swagger.documentationClass.Swagger_Cloud_Compilation_Server_CompilationResult;
 import utilities.swagger.outboundClass.Swagger_Compilation_Build_Error;
 import utilities.swagger.outboundClass.Swagger_Compilation_Ok;
 
@@ -241,8 +240,24 @@ public class Version_Object extends Model {
         }
 
         JsonNode json_compilation_result = Cloud_Compilation_Server.make_Compilation(request);
-        Form<Swagger_Cloud_Compilation_Server_CompilationResult> comp_form = Form.form(Swagger_Cloud_Compilation_Server_CompilationResult.class).bind(json_compilation_result);
-        if(comp_form.hasErrors()){
+
+
+        // NotificationController.successful_compilation(SecurityController.getPerson(), this); TODO Notifikace
+
+        // Když obsahuje chyby - vrátím rovnou Becki
+        if(json_compilation_result.has("buildErrors")) {
+            logger.debug("Version Object:: compile_program_procedure:: compilation contains user Errors");
+
+            Form<Swagger_Compilation_Build_Error> form_compilation =  Form.form(Swagger_Compilation_Build_Error.class).bind(json_compilation_result.get("buildErrors").get(0) );
+            Swagger_Compilation_Build_Error swagger_compilation_build_error = form_compilation.get();
+
+            c_compilation.status = Compile_Status.compiled_with_code_errors;
+            c_compilation.update();
+
+            return (ObjectNode) Json.toJson( swagger_compilation_build_error );
+        }
+
+        if(!json_compilation_result.has("interface_code") || !json_compilation_result.has("buildUrl")){
 
             logger.error("Version Object:: compile_program_procedure:: Json Result from Compilation server has not required labels!");
 
@@ -255,27 +270,23 @@ public class Version_Object extends Model {
             result.put("error_code", 400);
             return result;
         }
-        Swagger_Cloud_Compilation_Server_CompilationResult compilation_result = comp_form.get();
-        if(json_compilation_result.has("interface_code")){
-            compilation_result.interface_code = json_compilation_result.get("interface_code").asText();
-        }
+
+        if(json_compilation_result.has("error")){
+
+            logger.error("Version Object:: compile_program_procedure:: Json Result from Compilation server has not required labels!");
 
 
-        // NotificationController.successful_compilation(SecurityController.getPerson(), this); TODO Notifikace
-
-        // Když obsahuje chyby - vrátím rovnou Becki
-        if(compilation_result.buildErrors != null) {
-            logger.debug("Version Object:: compile_program_procedure:: compilation contains user Errors");
-
-            Form<Swagger_Compilation_Build_Error> form_compilation =  Form.form(Swagger_Compilation_Build_Error.class).bind(json_compilation_result.get("buildErrors").get(0) );
-            Swagger_Compilation_Build_Error swagger_compilation_build_error = form_compilation.get();
-
-            c_compilation.status = Compile_Status.compiled_with_code_errors;
+            c_compilation.status = Compile_Status.compilation_server_error;
             c_compilation.update();
 
-            return (ObjectNode) Json.toJson( swagger_compilation_build_error );
+            ObjectNode result = Json.newObject();
+            result.put("status", "error");
+            result.put("error", "Server side Error");
+            result.put("error_code", 400);
+            return result;
         }
-        else if(compilation_result.status.equals("success")) {
+
+        if(json_compilation_result.get("status").asText().equals("success")) {
             logger.debug("Version Object:: compile_program_procedure:: compilation was successfull");
 
             try {
@@ -284,7 +295,7 @@ public class Version_Object extends Model {
 
 
                 WSClient ws = Play.current().injector().instanceOf(WSClient.class);
-                F.Promise<WSResponse> responsePromise = ws.url(compilation_result.buildUrl)
+                F.Promise<WSResponse> responsePromise = ws.url(json_compilation_result.get("buildUrl").asText())
                         .setContentType("undefined")
                         .setRequestTimeout(2500)
                         .get();
@@ -303,8 +314,8 @@ public class Version_Object extends Model {
 
                 logger.debug("Version Object:: compile_program_procedure:: Body is ok - uploading to Azure was succesfull");
                 c_compilation.status = Compile_Status.successfully_compiled_and_restored;
-                c_compilation.c_comp_build_url = compilation_result.buildUrl;
-                c_compilation.virtual_input_output = compilation_result.interface_code;
+                c_compilation.c_comp_build_url = json_compilation_result.get("buildId").asText();
+                c_compilation.virtual_input_output = json_compilation_result.get("interface_code").toString();
                 c_compilation.date_of_create = new Date();
                 c_compilation.update();
 
@@ -341,7 +352,7 @@ public class Version_Object extends Model {
 
         }
 
-        c_compilation.status = Compile_Status.compilation_server_error;
+        c_compilation.status = Compile_Status.undefined;
         c_compilation.update();
 
         ObjectNode result = Json.newObject();
