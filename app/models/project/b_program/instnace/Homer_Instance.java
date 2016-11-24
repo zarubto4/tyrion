@@ -9,6 +9,8 @@ import controllers.WebSocketController;
 import io.swagger.annotations.ApiModelProperty;
 import models.compiler.Board;
 import models.compiler.FileRecord;
+import models.notification.Notification;
+import models.person.Person;
 import models.project.b_program.B_Pair;
 import models.project.b_program.B_Program;
 import models.project.b_program.B_Program_Hw_Group;
@@ -17,8 +19,11 @@ import models.project.b_program.servers.Private_Homer_Server;
 import models.project.global.Project;
 import play.libs.Json;
 import utilities.enums.Firmware_type;
+import utilities.enums.Notification_importance;
+import utilities.enums.Notification_level;
 import utilities.enums.Type_of_command;
 import utilities.swagger.outboundClass.Swagger_B_Program_Instance;
+import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Swagger_Instance_HW_Group;
 import utilities.webSocket.WebSCType;
 
@@ -53,7 +58,40 @@ public class Homer_Instance extends Model {
 
     @JsonIgnore @OneToMany(mappedBy="virtual_instance_under_project", cascade=CascadeType.ALL, fetch = FetchType.LAZY)  public List<Board> boards_in_virtual_instance = new ArrayList<>();
 
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Transient
+    public void notification_instance_start_upload(Person person){
+
+        new Notification(Notification_importance.low,  Notification_level.info)
+                .setText("Server started creating new Blocko Instance of Blocko Version ")
+                .setText(this.actual_instance.version_object.b_program.name + " ", "black", true, false, false)
+                .setObject(Swagger_B_Program_Version.class, this.actual_instance.version_object.id, this.actual_instance.version_object.version_name, this.actual_instance.version_object.b_program.project_id() )
+                .setText(" from Blocko program ")
+                .setObject(B_Program.class, this.actual_instance.version_object.b_program.id, this.actual_instance.version_object.b_program.name + ".", this.actual_instance.version_object.b_program.project_id());
+    }
+
+    @JsonIgnore @Transient
+    public void notification_instance_successful_upload(Person person, Homer_Instance instance){
+
+        new Notification(Notification_importance.low, Notification_level.success)
+                .setText("Server created successfully instance in cloud on Blocko Version")
+                .setObject(Swagger_B_Program_Version.class, instance.actual_instance.version_object.id, instance.actual_instance.version_object.version_name, instance.actual_instance.version_object.b_program.project_id() )
+                .setText("from Blocko program")
+                .setObject(B_Program.class, instance.actual_instance.version_object.b_program.id, instance.actual_instance.version_object.b_program.name + ".", instance.actual_instance.version_object.b_program.project_id());
+    }
+
+    @JsonIgnore @Transient
+    public void notification_instance_unsuccessful_upload(Person person, Homer_Instance instance, String reason){
+
+
+        new Notification(Notification_importance.normal, Notification_level.warning)
+                .setText("Server did not upload instance to cloud on Blocko Version <b>" + instance.actual_instance.version_object.version_name + "</b> from Blocko program <b>" + instance.b_program.name + "</b> for <b> reason:\"" +  reason + "\" </b> ")
+                .setObject(Swagger_B_Program_Version.class, instance.actual_instance.version_object.id, instance.actual_instance.version_object.version_name, instance.b_program.project_id() )
+                .setText("from Blocko program")
+                .setObject(B_Program.class, instance.b_program.id, instance.b_program.name, instance.b_program.project_id() )
+                .setText("Server will try to do that as soon as possible.");
+    }
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
 

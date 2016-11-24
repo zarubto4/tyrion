@@ -127,49 +127,43 @@ public class Project extends Model {
 
         Person owner = SecurityController.getPerson();
 
-        List<Person> receivers = new ArrayList<>();
-        receivers.add(person);
-
         new Notification(Notification_importance.normal, Notification_level.info)
-                .setText("User ", "black", false, false, false)
+                .setText("User ")
                 .setObject(Person.class, owner.id, owner.full_name, null, "black", false, true, false, false)
-                .setText(" invited you into the project ", "black", false, false, false)
+                .setText(" invited you into the project ")
                 .setObject(Project.class, this.id, this.name, this.id, "black", false, true, false, false)
-                .setText(". Do you accept the invitation?", "black", false, false, false)
-                .setButtons(new Swagger_Notification_Button("Yes", Notification_action.accept_project_invitation, "green", invitation.id), new Swagger_Notification_Button("No", Notification_action.reject_project_invitation, "red", invitation.id))
-                .send(receivers);
+                .setText(". Do you accept the invitation?")
+                .setButton(Notification_action.accept_project_invitation, invitation.id, "green", "Yes", false, false, false)
+                .setButton(Notification_action.reject_project_invitation, invitation.id, "red", "No", false, false, false)
+                .send(person);
     }
 
     @JsonIgnore @Transient
     public void notification_project_invitation_rejected(Person owner){
 
         Person person = SecurityController.getPerson();
-        List<Person> receivers = new ArrayList<>();
-        receivers.add(owner);
 
         new Notification(Notification_importance.normal, Notification_level.info)
-                .setText("User ", "black", false, false, false)
+                .setText("User ")
                 .setObject(Person.class, person.id, person.full_name, null, "black", false, true, false, false)
-                .setText(" did not accept your invitation to the project ", "black", false, false, false)
+                .setText(" did not accept your invitation to the project ")
                 .setObject(Project.class, this.id, this.name, this.id, "black", false, true, false, false)
-                .setText(".", "black", false, false, false)
-                .send(receivers);
+                .setText(".")
+                .send(owner);
     }
 
     @JsonIgnore @Transient
     public void notification_project_invitation_accepted(Person owner){
 
         Person person = SecurityController.getPerson();
-        List<Person> receivers = new ArrayList<>();
-        receivers.add(owner);
 
         new Notification(Notification_importance.normal, Notification_level.info)
-                .setText("User ", "black", false, false, false)
+                .setText("User ")
                 .setObject(Person.class, person.id, person.full_name, null, "black", false, true, false, false)
-                .setText(" accepted your invitation to the project ", "black", false, false, false)
+                .setText(" accepted your invitation to the project ")
                 .setObject(Project.class, this.id, this.name, this.id, "black", false, true, false, false)
-                .setText(".", "black", false, false, false)
-                .send(receivers);
+                .setText(".")
+                .send(owner);
     }
 
 

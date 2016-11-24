@@ -13,9 +13,9 @@ public enum Notification_action {
 
     @JsonCreator
     public static Notification_action fromString(String key) {
-        for(Notification_action type : Notification_action.values()) {
-            if(type.name().equalsIgnoreCase(key)) {
-                return type;
+        for(Notification_action action : Notification_action.values()) {
+            if(action.name().equalsIgnoreCase(key)) {
+                return action;
             }
         }
         return null;

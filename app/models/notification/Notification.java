@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiModelProperty;
 import models.person.Person;
 import play.libs.Json;
 import utilities.Server;
+import utilities.enums.Notification_action;
 import utilities.enums.Notification_type;
 import utilities.enums.Notification_importance;
 import utilities.enums.Notification_level;
@@ -35,10 +36,12 @@ public class Notification extends Model {
     @Enumerated(EnumType.STRING)       @ApiModelProperty(required = true) public Notification_level notification_level;     // Důležitost (podbarvení zprávy)     // Typ zprávy
     @Enumerated(EnumType.STRING)       @ApiModelProperty(required = true) public Notification_importance notification_importance; // Důležitost (podbarvení zprávy)
 
-    @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true) private String content_string;                           // Obsah v podobě Json.toString().
+    @Column(columnDefinition = "TEXT")  private String content_string;                           // Obsah v podobě Json.toString().
+    @Column(columnDefinition = "TEXT")  private String buttons_string;
 
-                        @JsonIgnore    public boolean confirmed;
-    @ApiModelProperty(required = true) public boolean was_read;
+    @ApiModelProperty(required = true)  public boolean confirmation_required;
+    @ApiModelProperty(required = true)  public boolean confirmed;
+    @ApiModelProperty(required = true)  public boolean was_read;
 
     @ApiModelProperty(required = true,
             dataType = "integer", readOnly = true,
@@ -52,6 +55,9 @@ public class Notification extends Model {
 
     @JsonIgnore @Transient
     List<Swagger_Notification_Element> array = new ArrayList<>();
+
+    @JsonIgnore @Transient
+    List<Swagger_Notification_Button> buttons = new ArrayList<>();
 
     @JsonIgnore @Transient
     public List<Person> receivers = new ArrayList<>();
@@ -81,6 +87,7 @@ public class Notification extends Model {
         Swagger_Notification_Element element = new Swagger_Notification_Element();
         element.type     = Notification_type.text;
         element.text     = message;
+        element.color    = "black";
 
         array.add(element);
         return this;
@@ -121,6 +128,7 @@ public class Notification extends Model {
         element.id       = id;
         element.text    = text;
         element.project_id = project_id;
+        element.color      = "black";
 
         array.add(element);
         return this;
@@ -175,16 +183,18 @@ public class Notification extends Model {
     }
 
     @JsonIgnore @Transient
-    public Notification setButtons(Swagger_Notification_Button... args){
+    public Notification setButton(Notification_action action, String payload, String color, String text, boolean bold, boolean italic, boolean underline){
 
-        List<Swagger_Notification_Button> buttons = new ArrayList<>();
-        buttons.addAll(Arrays.asList(args));
+        Swagger_Notification_Button button = new Swagger_Notification_Button();
+        button.action    = action;
+        button.payload   = payload;
+        button.text      = text;
+        button.color     = color;
+        button.bold      = bold;
+        button.italic    = italic;
+        button.underline = underline;
 
-        Swagger_Notification_Element element = new Swagger_Notification_Element();
-        element.type    = Notification_type.buttons;
-        element.buttons = buttons;
-
-        array.add(element);
+        buttons.add(button);
         return this;
     }
 
@@ -204,7 +214,14 @@ public class Notification extends Model {
 
         // Uložím notifikaci a její obsah převedu do Stringu
         content_string = Json.toJson(array).toString();
+        buttons_string = Json.toJson(buttons).toString();
         super.save();
+        return this;
+    }
+
+    @JsonIgnore @Transient
+    public Notification confirmation_required(){
+        this.confirmation_required = true;
         return this;
     }
 
@@ -221,8 +238,22 @@ public class Notification extends Model {
                 return array;
 
         }catch (Exception e){
-            logger.error("Parsing notification error", e);
+            logger.error("Parsing notification body error", e);
             return new ArrayList<Swagger_Notification_Element>();   // Vracím prázdný list - ale reportuji chybu
+        }
+
+    }
+
+    @JsonProperty
+    @ApiModelProperty(required = true)
+    public List<Swagger_Notification_Button> buttons(){
+        try {
+            if(buttons == null || buttons.size() < 1) buttons = new ObjectMapper().readValue(buttons_string, new TypeReference<List<Swagger_Notification_Button>>() {});
+            return buttons;
+
+        }catch (Exception e){
+            logger.error("Parsing notification buttons error", e);
+            return new ArrayList<Swagger_Notification_Button>();   // Vracím prázdný list - ale reportuji chybu
         }
 
     }
@@ -245,6 +276,12 @@ public class Notification extends Model {
     @JsonIgnore @Transient
     public void send(List<Person> receivers){
         this.receivers = receivers;
+        Notification_Handler.add_to_queue(this);
+    }
+
+    @JsonIgnore @Transient
+    public void send(Person person){
+        this.receivers.add(person);
         Notification_Handler.add_to_queue(this);
     }
 

@@ -337,23 +337,23 @@ public class NotificationController extends Controller {
     switch (buttons){
       case "0": break;
       case "1":{
-        notification.setButtons(new Swagger_Notification_Button("OK", Notification_action.confirm_notification, "blue", "test"));
+        notification.setButton(Notification_action.confirm_notification, "test", "blue", "OK", false, false, false);
         break;}
       case "2":{
-        notification.setButtons(new Swagger_Notification_Button("YES", Notification_action.accept_project_invitation, "green", "test"), new Swagger_Notification_Button("NO", Notification_action.reject_project_invitation, "red", "test"));
+        notification.setButton(Notification_action.accept_project_invitation, "test", "green", "Yes", false, false, true);
+        notification.setButton(Notification_action.reject_project_invitation, "test", "red", "No", false, false, true);
         break;}
       case "3":{
-        notification.setButtons(new Swagger_Notification_Button("CLOSE", Notification_action.confirm_notification, "blue", "test"), new Swagger_Notification_Button("YES", Notification_action.accept_project_invitation, "green", "test"), new Swagger_Notification_Button("NO", Notification_action.reject_project_invitation, "red", "test"));
+        notification.setButton(Notification_action.accept_project_invitation, "test", "green", "Yes", true, false, false);
+        notification.setButton(Notification_action.reject_project_invitation, "test", "red", "No", true, false, false);
+        notification.setButton(Notification_action.confirm_notification, "test", "white", "Close", false, true, false);
         break;}
       default:{
-        notification.setButtons(new Swagger_Notification_Button("OK", Notification_action.confirm_notification, "blue", "test"));
+        notification.setButton(Notification_action.accept_project_invitation, "test", "green", "Yes", false, false, false);
         break;}
     }
 
-    List<Person> receivers = new ArrayList<>();
-    receivers.add(person);
-
-    notification.send(receivers);
+    notification.send(person);
   }
 
 
@@ -497,7 +497,7 @@ public class NotificationController extends Controller {
       if(notifications.isEmpty()) return GlobalResult.result_ok("No new notifications");
 
       for (Notification notification : notifications){
-          NotificationController.send_notification(SecurityController.getPerson(), notification);
+          notification.send(SecurityController.getPerson());
       }
 
       return GlobalResult.result_ok("Notifications were sent again");

@@ -448,6 +448,9 @@ public class WebSocketController extends Controller {
                 result.put("notification_level",   notification.notification_level.name());
                 result.put("notification_importance", notification.notification_importance.name());
                 result.set("notification_body", Json.toJson(notification.notification_body()));
+                result.set("buttons", Json.toJson(notification.buttons()));
+                result.put("confirmation_required", notification.confirmation_required);
+                result.put("confirmed", notification.confirmed);
                 result.put("was_read", notification.was_read);
                 result.put("created", notification.created.getTime());
 

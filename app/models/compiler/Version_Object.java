@@ -121,54 +121,42 @@ public class Version_Object extends Model {
     @JsonIgnore @Transient
     public void notification_compilation_start(){
 
-        List<Person> receivers = new ArrayList<>();
-        receivers.add(SecurityController.getPerson());
-
         new Notification(Notification_importance.low, Notification_level.info)
-                .setText("Server starts compilation of Version ", "black", false, false, false)
+                .setText("Server starts compilation of Version ")
                 .setObject(Swagger_B_Program_Version.class, this.id, this.version_name + ".", this.c_program.project_id(), "black", false, true, false, false)
-                .send(receivers);
+                .send(SecurityController.getPerson());
     }
 
     @JsonIgnore @Transient
     public void notification_compilation_success(){
 
-        List<Person> receivers = new ArrayList<>();
-        receivers.add(SecurityController.getPerson());
-
         new Notification(Notification_importance.low, Notification_level.success)
-                .setText("Compilation of Version ", "black", false, false, false)
+                .setText("Compilation of Version ")
                 .setObject(Swagger_B_Program_Version.class, this.id, this.version_name, this.c_program.project_id(), "black", false, true, false, false)
-                .setText("was successful.", "black", false, false, false)
-                .send(receivers);
+                .setText("was successful.")
+                .send(SecurityController.getPerson());
     }
 
     @JsonIgnore @Transient
     public void notification_compilation_unsuccessful_warn(String reason){
 
-        List<Person> receivers = new ArrayList<>();
-        receivers.add(SecurityController.getPerson());
-
         new Notification(Notification_importance.normal,  Notification_level.warning)
-                .setText("Compilation of Version", "black", false, false, false)
+                .setText("Compilation of Version")
                 .setObject(Swagger_B_Program_Version.class, this.id, this.version_name, this.c_program.project_id(), "black", false, true, false, false)
-                .setText("was unsuccessful, for reason:", "black", false, false, false)
+                .setText("was unsuccessful, for reason:")
                 .setText(reason, "black", true, false, false)
-                .send(receivers);
+                .send(SecurityController.getPerson());
     }
 
     @JsonIgnore @Transient
     public void notification_compilation_unsuccessful_error(String result){
 
-        List<Person> receivers = new ArrayList<>();
-        receivers.add(SecurityController.getPerson());
-
         new Notification(Notification_importance.normal, Notification_level.error)
-                .setText( "Compilation of Version", "black", false, false, false)
+                .setText( "Compilation of Version")
                 .setObject(Swagger_B_Program_Version.class, this.id, this.version_name, this.c_program.project_id(), "black", false, true, false, false)
-                .setText("with critical Error:", "black", false, false, false)
+                .setText("with critical Error:")
                 .setText(result, "black", true, false, false)
-                .send(receivers);
+                .send(SecurityController.getPerson());
     }
 /* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/
 

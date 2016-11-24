@@ -7,8 +7,6 @@ import utilities.enums.Notification_type;
 
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import java.util.ArrayList;
-import java.util.List;
 
 @ApiModel(description = "Json Model for notification body elements",
         value = "Notification_Element")
@@ -29,6 +27,4 @@ public class Swagger_Notification_Element {
     @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public String color    = null;
     @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public String id       = null;
     @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public String project_id = null;
-    @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_EMPTY) public List<Swagger_Notification_Button> buttons = new ArrayList<>();
-
 }
