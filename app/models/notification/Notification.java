@@ -268,12 +268,14 @@ public class Notification extends Model {
 
     @JsonIgnore @Transient
     public void send(List<Person> receivers){
+        this.receivers = new ArrayList<>();
         this.receivers = receivers;
         Notification_Handler.add_to_queue(this);
     }
 
     @JsonIgnore @Transient
     public void send(Person person){
+        this.receivers = new ArrayList<>();
         this.receivers.add(person);
         Notification_Handler.add_to_queue(this);
     }

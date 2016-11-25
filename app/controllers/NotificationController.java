@@ -25,10 +25,7 @@ import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_API;
 import utilities.notifications.Notification_Handler;
 import utilities.response.GlobalResult;
-import utilities.response.response_objects.Result_NotFound;
-import utilities.response.response_objects.Result_PermissionRequired;
-import utilities.response.response_objects.Result_Unauthorized;
-import utilities.response.response_objects.Result_ok;
+import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.Swagger_B_Program_Version_New;
 import utilities.swagger.documentationClass.Swagger_Notification_Confirm;
 import utilities.swagger.documentationClass.Swagger_Notification_Read;
@@ -463,6 +460,7 @@ public class NotificationController extends Controller {
   )
   @ApiResponses(value = {
           @ApiResponse(code = 200, message = "Successfully marked as read", response = Result_ok.class),
+          @ApiResponse(code = 400, message = "Some Json value Missing",     response = Result_JsonValueMissing.class),
           @ApiResponse(code = 401, message = "Unauthorized request",        response = Result_Unauthorized.class),
           @ApiResponse(code = 500, message = "Server side Error")
   })
@@ -546,7 +544,9 @@ public class NotificationController extends Controller {
   )
   @ApiResponses(value = {
           @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+          @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
           @ApiResponse(code = 400, message = "Objects not found",       response = Result_NotFound.class),
+          @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
           @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
           @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
           @ApiResponse(code = 500, message = "Server side Error")
