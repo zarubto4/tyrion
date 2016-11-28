@@ -1007,6 +1007,7 @@ public class CompilationLibrariesController extends Controller {
 
     }
 
+    /**
     @ApiOperation(value = "update Embedded Hardware with  binary file",
             tags = {"C_Program", "Actualization"},
             notes = "Upload Binary file and choose hardware_id for update. Result (HTML code) will be every time 200. - Its because upload, restart, etc.. operation need more than ++30 second " +
@@ -1077,6 +1078,7 @@ public class CompilationLibrariesController extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
     }
+    */
 
     @ApiOperation(value = "only for Tyrion Front End", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
@@ -1214,8 +1216,7 @@ public class CompilationLibrariesController extends Controller {
 
             // Vyhledání objektů
             List<Board> board_from_request = Board.find.where().idIn(help.board_id).findList();
-            if (board_from_request.size() == 0)
-                return GlobalResult.result_BadRequest("no device is available. Does not exist or is decommissioned.");
+            if (board_from_request.size() == 0) return GlobalResult.result_BadRequest("0 device is available. Does not exist or is decommissioned.");
 
             // Vyseparované desky nad který lze provádět nějaké operace
             List<Board> board_for_update = Board.find.where().idIn(help.board_id).findList();
@@ -1227,7 +1228,11 @@ public class CompilationLibrariesController extends Controller {
             }
 
 
-            ActualizationController.add_new_actualization_request_with_user_file(c_program_version.c_program.project, board_for_update, c_program_version);
+
+            // TODO
+
+
+            //ActualizationController.add_new_actualization_request_with_user_file(c_program_version.c_program.project, board_for_update, c_program_version);
 
             // Vracím odpověď
             return GlobalResult.result_ok("Procedura byla spuštěna - uživatel bude informován!");
@@ -3338,60 +3343,14 @@ public class CompilationLibrariesController extends Controller {
 
     @ApiOperation(value = "Update bootloader on device list", hidden = true)
     @BodyParser.Of(BodyParser.Json.class)
-    public Result boot_loader_update_device_list(){
+    public Result boot_loader_update_instanace(String instance_id){
         try {
 
-            // Zpracování Json
-            final Form<Swagger_BootLoader_Update_Devices> form = Form.form(Swagger_BootLoader_Update_Devices.class).bindFromRequest();
-            if(form.hasErrors()){return GlobalResult.formExcepting(form.errorsAsJson());}
-            Swagger_BootLoader_Update_Devices help = form.get();
+            Homer_Instance instance = Homer_Instance.find.byId(instance_id);
+            if(instance == null) return GlobalResult.notFoundObject("Instance not found");
 
-            // Vyzískám seznam podle IDs
-            List<Board> boards = Board.find.where().idIn(help.device_ids).findList();
-
-            HashMap<String, HashMap<String, ArrayList<Board> >  > update_list = new HashMap<>();    // Podle Projektu
-
-            // Skontroluji oprávnění a zároveň roztřídím
-            for(Board board : boards){
-
-                // Kontrola oprávnění
-                if(!board.edit_permission()) return GlobalResult.forbidden_Permission();
-                if(board.type_of_board.main_boot_loader == null) return GlobalResult.result_BadRequest("TypeOfBoard has not set main Boot Loader");
-
-                // Kontrola smysluplnosti nahrávání
-                if(board.actual_boot_loader != null &&  board.actual_boot_loader.id.equals(board.type_of_board.main_boot_loader.id)){
-                    logger.warn("Snažím se updatovat device na nový bootloader, který ale už aktuální má - nic se neprovede!");
-                    continue;
-                }
-
-                // Třídím podle projektů
-                if(!update_list.containsKey(board.project.id)){
-                    update_list.put(board.project.id, new HashMap<String, ArrayList<Board>>() );
-                }
-
-
-                // Roztřídím podle typů desek
-                if(!update_list.get(board.project.id).containsKey(board.type_of_board.id)) {
-                    update_list.get(board.project.id).put(board.type_of_board.id, new ArrayList<>());
-                }
-
-                // Zatřídím do Listu
-                update_list.get(board.project.id).get(board.type_of_board.id).add(board);
-
-            }
-
-            for (Map.Entry<String, HashMap<String, ArrayList<Board>>> project : update_list.entrySet()) {
-                for(Map.Entry<String, ArrayList<Board>> type_of_board : project.getValue().entrySet()){
-
-                    TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(type_of_board.getKey());
-
-                    logger.debug("CompilationControler:: Vytvářím aktualizační proceduru nad projektem: ", Project.find.byId(project.getKey()) ," na Počtu desek: " , type_of_board.getValue().size());
-                    ActualizationController.add_new_actualization_request_with_user_file(Project.find.byId(project.getKey()),
-                                                                          Firmware_type.BOOTLOADER ,
-                                                                          type_of_board.getValue(),
-                                                                          typeOfBoard.main_boot_loader.file);
-                }
-            }
+            if(instance.actual_instance == null) return GlobalResult.notFoundObject("Instance not found");
+            instance.actual_instance.add_new_actualization_request_bootloader();
 
 
             // Vracím Json

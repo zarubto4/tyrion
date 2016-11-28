@@ -54,6 +54,23 @@ public class Demo_Data_Controller extends Controller {
         Demodata je povolené tvořit jen a pouze v "Developer modu"!!!!!!!!!!
      */
 
+    public Result all_for_becki(){
+
+        Result result = this.producers();           if(result.status() != 200 ) return result;
+        result =   this.type_of_board();            if(result.status() != 200 ) return result;
+        result =   this.test_boards();              if(result.status() != 200 ) return result;
+        result =   this.extendension_servers();     if(result.status() != 200 ) return result;
+        result =   this.basic_tariffs();            if(result.status() != 200 ) return result;
+        result =   this.blocko_demo_data();         if(result.status() != 200 ) return result;
+        result =   this.c_program_configuration();  if(result.status() != 200 ) return result;
+
+        result =  this.person_test_user();            if(result.status() != 200 ) return result;
+        result =  this.person_project_and_programs(); if(result.status() != 200 ) return result;
+        result =  this.person_instancies();           if(result.status() != 200 ) return result;
+
+        return result;
+    }
+
     public Result producers(){
         try {
 
@@ -1188,6 +1205,8 @@ public class Demo_Data_Controller extends Controller {
             version_object_1.update();
             yoda.update();
 
+
+
             TypeOfBoard wireless = TypeOfBoard.find.where().eq("name", "Wireless G2").findUnique();
 
             C_Program c_program_2 = new C_Program();
@@ -1506,7 +1525,7 @@ public class Demo_Data_Controller extends Controller {
             // První verze C_Programu pro Yodu c_program_1
             Version_Object version_c_program_1 = new Version_Object();
             version_c_program_1.version_name = "Verze 0.0.1";
-            version_c_program_1.version_name = "Když jem poprvé zkoušel blikat ledkou";
+            version_c_program_1.version_description = "Když jem poprvé zkoušel blikat ledkou - Yoda";
             version_c_program_1.c_program = c_program_1;
             version_c_program_1.save();
 
@@ -1522,7 +1541,7 @@ public class Demo_Data_Controller extends Controller {
             // Druhá verze verze C_Programu pro YODU c_program_1
             Version_Object version_c_program_1_2 = new Version_Object();
             version_c_program_1_2.version_name = "Verze 0.0.2";
-            version_c_program_1_2.version_name = "Když jem podruhé a snad finálně zkoušel blikat ledkou";
+            version_c_program_1_2.version_description = "Když jem podruhé zkoušel blikat ledkou - Yoda";
             version_c_program_1_2.c_program = c_program_1;
             version_c_program_1_2.save();
 
@@ -1539,7 +1558,7 @@ public class Demo_Data_Controller extends Controller {
             // Druhá verze verze C_Programu pro YODU c_program_1
             Version_Object version_c_program_2 = new Version_Object();
             version_c_program_2.version_name = "Verze 0.0.1";
-            version_c_program_2.version_name = "Trala la tra lalala";
+            version_c_program_2.version_description = "Když jiná věc pro Yodu poprvé";
             version_c_program_2.c_program = c_program_2;
             version_c_program_2.save();
 
@@ -1548,7 +1567,7 @@ public class Demo_Data_Controller extends Controller {
             content_2.put("main", "/****************************************\r\n * Popis programu                       *\r\n ****************************************\r\n *\r\n * Zaregistruju si 2 tla\u010D\u00EDtka - Up a Down.\r\n * To jsou moje digit\u00E1ln\u00ED vstupy.\r\n * Zaregistruju si ledPwm, to je m\u016Fj analogov\u00FD v\u00FDstup.\r\n * Pokud stisknu tla\u010D\u00EDtko Up, po\u0161le se informace do Blocka.\r\n * Pokud stisknu tla\u010D\u00EDtko Down, po\u0161le se informace do Blocka.\r\n * V Blocku mus\u00ED b\u00FDt naprogramovan\u00E9, co se stane.\r\n * Nap\u0159. p\u0159i tla\u010D\u00EDtku Up se zv\u00FD\u0161\u00ED jas LEDky a p\u0159i Down se sn\u00ED\u017E\u00ED.\r\n *\r\n * D\u00E1le si inicializuju u\u017Eivatelsk\u00E9 tla\u010D\u00EDtko na desce.\r\n * Toto z\u00E1m\u011Brn\u011B neregistruju do Blocka, ale slou\u017E\u00ED mi jenom lok\u00E1ln\u011B.\r\n * Takt\u00E9\u017E si zaregistruju message out zp\u00E1vu.\r\n * Zpr\u00E1vu nav\u00E1\u017Eu uvnit\u0159 yody na tla\u010D\u00EDtko.\r\n * Ve zpr\u00E1v\u011B se po stisknut\u00ED tla\u010D\u00EDtka ode\u0161le do Blocka po\u010Det stisknut\u00ED tla\u010D\u00EDtka jako string.\r\n *\r\n * D\u00E1le, pokud p\u0159ijde z blocka digital IN, tak to rozsv\u00EDt\u00ED/zhasne zelenou ledku na desce.\r\n *\r\n * Nakonec si zaregistruju Message In. Pokud mi z blocka n\u011Bjak\u00E1 zpr\u00E1va p\u0159ijde, vyp\u00ED\u0161u ji do termin\u00E1lu.\r\n *\r\n */\r\n\r\n/*\r\n * na za\u010D\u00E1tku v\u017Edy mus\u00ED b\u00FDt tento \u0159\u00E1dek\r\n */\r\n#include \"byzance.h\"\r\n\r\n/*\r\n * inicializuju si LEDky (na desce)\r\n */\r\nDigitalOut\tledRed(LED_RED);\r\nDigitalOut\tledGrn(LED_GRN);\r\n\r\n/*\r\n * inicializuju si LEDky (vlastn\u00ED)\r\n */\r\nPwmOut\t\tledTom(X05);\r\n\r\n/*\r\n * inicializuju si USR tla\u010D\u00EDtko (na desce)\r\n * co se stane po stisku tla\u010D\u00EDtka mus\u00EDm o\u0161et\u0159it v jeho callbacku\r\n * callback si zaregistruju v k\u00F3du funkc\u00ED btnUsr.fall(&nazev_funkce);\r\n *\r\n */\r\nInterruptIn btnUsr(USER_BUTTON);\r\n\r\n/*\r\n * inicializuju si vlastn\u00ED tla\u010D\u00EDtka\r\n * co se stane po stisku tla\u010D\u00EDtka mus\u00EDm o\u0161et\u0159it v jeho callbacku\r\n * callback si zaregistruju v k\u00F3du funkc\u00ED\r\n * btnUp.fall(&nazev_funkce);\r\n * btnDown.fall(&nazev_funkce);\r\n *\r\n * InterruptIn je default pull down, tak\u017Ee se pin mus\u00ED p\u0159ipojit proti VCC.\r\n */\r\nInterruptIn btnUp(X00);\r\nInterruptIn btnDown(X02);\r\n\r\n/*\r\n * inicializuju si s\u00E9riovou linku\r\n */\r\nSerial pc(SERIAL_TX, SERIAL_RX); // tx, rx\r\n\r\n/*\r\n * Zaregistruju si digit\u00E1ln\u00ED vstupy\r\n * (to, co mi p\u0159ijde z Blocka DO desky)\r\n * Budou vid\u011Bt v Blocku.\r\n */\r\nBYZANCE_DIGITAL_IN (led_green, {\r\n    ledGrn = value;\r\n    pc.printf(\"led_green: %d \\n\", value);\r\n})\r\n\r\n/*\r\n * Zaregistruju si analogov\u00E9 vstupy.\r\n * (to, co mi p\u0159ijde z Blocka DO desky)\r\n * Budou vid\u011Bt v Blocku.\r\n */\r\nBYZANCE_ANALOG_IN(led_pwm, {\r\n    ledTom = value;\r\n    pc.printf(\"led_pwm: %f \\n\", value);\r\n})\r\n\r\n/*\r\n * Zaregistruju si message vstupy.\r\n * (to, co mi p\u0159ijde z Blocka DO desky)\r\n * Budou vid\u011Bt v Blocku.\r\n */\r\n\r\nBYZANCE_MESSAGE_IN(msg, ByzanceString, {\r\n    pc.printf(\"message_in=%s\\n\", arg1);\r\n});\r\n\r\n/*\r\n * Zaregistruju si message v\u00FDstupy.\r\n * (to, co mi p\u0159ijde z Blocka Z desky)\r\n * Budou vid\u011Bt v Blocku.\r\n */\r\nBYZANCE_MESSAGE_OUT(message_out_counter, ByzanceString);\r\n\r\n/*\r\n * Zaregistruju si digit\u00E1ln\u00ED v\u00FDstupy.\r\n * (to, co mi p\u0159ijde z Blocka Z desky)\r\n * Budou vid\u011Bt v Blocku.\r\n */\r\nBYZANCE_DIGITAL_OUT(dig_out_btn_up);\r\nBYZANCE_DIGITAL_OUT(dig_out_btn_down);\r\n\r\n/*\r\n * Prom\u011Bnn\u00E9 pot\u0159ebn\u00E9 pro program.\r\n */\r\nvolatile bool button_usr_clicked\t\t= 0;\r\nvolatile bool button_up_state\t\t\t= 0;\r\nvolatile bool button_up_last_state\t\t= 0;\r\nvolatile bool button_down_state\t\t\t= 0;\r\nvolatile bool button_down_last_state \t= 0;\r\n\r\nint button_usr_counter = 0;\r\n\r\n/*\r\n * Callback, kter\u00FD bude vyvol\u00E1n po stisku USR tla\u010D\u00EDtka.\r\n * Tento callback si registruju v u\u017Eivatelsk\u00E9m k\u00F3du.\r\n */\r\nvoid button_usr_fall_callback(){\r\n\tpc.printf((const char*)\"Button USR clicked.\\n\");\r\n\tbutton_usr_clicked = 1;\r\n}\r\n\r\n/*\r\n * Callback, kter\u00FD bude vyvol\u00E1n po stisku extern\u00EDho tla\u010D\u00EDtka UP.\r\n * Tento callback si registruju v u\u017Eivatelsk\u00E9m k\u00F3du.\r\n */\r\nvoid button_up_fall_callback(){\r\n\tpc.printf((const char*)\"Button UP clicked.\\n\");\r\n\tbutton_up_state = 1;\r\n}\r\n\r\n/*\r\n * Callback, kter\u00FD bude vyvol\u00E1n po stisku extern\u00EDho tla\u010D\u00EDtka UP.\r\n * Tento callback si registruju v u\u017Eivatelsk\u00E9m k\u00F3du.\r\n */\r\nvoid button_up_rise_callback(){\r\n\tpc.printf((const char*)\"Button UP released.\\n\");\r\n\tbutton_up_state = 0;\r\n}\r\n\r\n/*\r\n * Callback, kter\u00FD bude vyvol\u00E1n po stisku extern\u00EDho tla\u010D\u00EDtka DOWN.\r\n * Tento callback si registruju v u\u017Eivatelsk\u00E9m k\u00F3du.\r\n */\r\nvoid button_down_fall_callback(){\r\n\tpc.printf((const char*)\"Button DOWN clicked.\\n\");\r\n\tbutton_down_state = 1;\r\n}\r\n\r\n/*\r\n * Callback, kter\u00FD bude vyvol\u00E1n po stisku extern\u00EDho tla\u010D\u00EDtka DOWN.\r\n * Tento callback si registruju v u\u017Eivatelsk\u00E9m k\u00F3du.\r\n */\r\nvoid button_down_rise_callback(){\r\n\tpc.printf((const char*)\"Button DOWN released.\\n\");\r\n\tbutton_down_state = 0;\r\n}\r\n\r\nint main(int argc, char* argv[]){\r\n\r\n\t/*\r\n\t * nastav\u00EDm si baud rychlost s\u00E9riov\u00E9 linky\r\n\t */\r\n    pc.baud(115200);\r\n\r\n    /*\r\n     * Inicializace Byzance knihovny\r\n     */\r\n    Byzance::init();\r\n    pc.printf(\"Byzance initialized\\n\");\r\n\r\n    /*\r\n     * P\u0159ipojen\u00ED na Byzance servery.\r\n     */\r\n\r\n    Byzance::connect();\r\n\tpc.printf(\"Succesfully connected to MQTT broker\\n\");\r\n\r\n\t/*\r\n\t * p\u0159ipoj\u00ED callback, do kter\u00E9ho program sko\u010D\u00ED po stisku tla\u010D\u00EDtka USR\r\n\t */\r\n    btnUsr.fall(&button_usr_fall_callback);\r\n\r\n\t/*\r\n\t * p\u0159ipoj\u00ED callback, do kter\u00E9ho program sko\u010D\u00ED po stisku extern\u011B p\u0159ipojen\u00E9ho tla\u010D\u00EDtka UP\r\n\t */\r\n    btnUp.fall(&button_up_fall_callback);\r\n    btnUp.rise(&button_up_rise_callback);\r\n    btnUp.mode(PullUp); // toto musi byt za attachnuti callbacku\r\n\r\n\t/*\r\n\t * p\u0159ipoj\u00ED callback, do kter\u00E9ho program sko\u010D\u00ED po stisku extern\u011B p\u0159ipojen\u00E9ho tla\u010D\u00EDtka UP\r\n\t */\r\n    btnDown.fall(&button_down_fall_callback);\r\n    btnDown.rise(&button_down_rise_callback);\r\n    btnDown.mode(PullUp); // toto musi byt za attachnuti callbacku\r\n\r\n    /*\r\n     * b\u011Bh programu\r\n     */\r\n    while(true) {\r\n\r\n    \t/*\r\n    \t * prom\u011Bnnou, co jsem naplnil v callbacku USR tla\u010D\u00EDtka si p\u0159e\u010Dtu\r\n    \t * a pokud nab\u00FDv\u00E1 nenulov\u00E9 hodnoty, provedu funkce,\r\n    \t * co maj\u00ED nastat po zm\u00E1\u010Dknut\u00ED tla\u010D\u00EDtka\r\n    \t */\r\n    \tif(button_usr_clicked)\r\n    \t{\r\n    \t\tbutton_usr_clicked=0;\r\n    \t\tbutton_usr_counter++;\r\n\r\n    \t\tchar buffer[100];\r\n    \t\tsprintf(buffer, \"Pocet stisknuti = %d\\n\", button_usr_counter);\r\n    \t\tpc.printf(buffer);\r\n\r\n    \t\t/*\r\n    \t\t * Toto je funkce, kterou jsem si p\u0159ed startem programu zaregistroval\r\n    \t\t * tak\u017Ee bude vid\u011Bt v Blocku.\r\n    \t\t */\r\n    \t\tmessage_out_counter(buffer);\r\n    \t}\r\n\r\n    \t/*\r\n    \t * prom\u011Bnnou, co jsem naplnil v callbacku USR tla\u010D\u00EDtka si p\u0159e\u010Dtu\r\n    \t * pokud se zm\u011Bnila oproti p\u0159edchoz\u00ED kontrole, stisknul/pustil jsem tla\u010D\u00EDtko\r\n    \t */\r\n    \tif(button_up_state!=button_up_last_state)\r\n    \t{\r\n    \t\tbutton_up_last_state = button_up_state;\r\n    \t\tledGrn = 1;\r\n    \t\twait_ms(20);\r\n    \t\tledGrn = 0;\r\n\r\n   \t\t\tdig_out_btn_up(button_up_state);\r\n\r\n   \t\t\tpc.printf(\"button_up_clicked = %d\\n\", button_up_state);\r\n    \t}\r\n\r\n    \tif(button_down_state!=button_down_last_state)\r\n    \t{\r\n    \t\tbutton_down_last_state = button_down_state;\r\n    \t\tledRed = 1;\r\n    \t\twait_ms(20);\r\n    \t\tledRed = 0;\r\n\r\n   \t\t\tdig_out_btn_down(button_down_state);\r\n\r\n   \t\t\tpc.printf(\"button_down_clicked = %d\\n\", button_down_state);\r\n    \t}\r\n\r\n        Thread::wait(100);\r\n    }\r\n}\r\n");
             content_2.set("user_files", null);
             content_2.set("external_libraries", null);
-            FileRecord.uploadAzure_Version(content_2.toString(), "code.json", c_program_3.get_path(), version_c_program_2);
+            FileRecord.uploadAzure_Version(content_2.toString(), "code.json", c_program_2.get_path(), version_c_program_2);
             version_c_program_2.compile_program_procedure();
             version_c_program_2.update();
 
@@ -1556,7 +1575,7 @@ public class Demo_Data_Controller extends Controller {
             // První verze  C_Programu pro Wireles c_program_3
             Version_Object version_c_program_3 = new Version_Object();
             version_c_program_3.version_name = "Verze 0.0.1";
-            version_c_program_3.version_name = "Když jem podruhé a snad finálně zkoušel blikat ledkou";
+            version_c_program_3.version_description = "Když jem poprvé Wireles";
             version_c_program_3.c_program = c_program_3;
             version_c_program_3.save();
 
@@ -1573,7 +1592,7 @@ public class Demo_Data_Controller extends Controller {
             // První verze  C_Programu pro BUS c_program_4
             Version_Object version_c_program_4 = new Version_Object();
             version_c_program_4.version_name = "Verze 0.0.1";
-            version_c_program_4.version_name = "Když jem podruhé a snad finálně zkoušel blikat ledkou";
+            version_c_program_4.version_description = "Když jem poprvé Drát";
             version_c_program_4.c_program = c_program_4;
             version_c_program_4.save();
 

@@ -172,7 +172,7 @@ public class Cloud_Homer_Server extends Model{
             return  WebSocketController.blocko_servers.get(server_name).write_with_confirmation(request, 1000 * 5, 0, 3);
 
         }catch (Exception e){
-            e.printStackTrace();
+            logger.warn("Cloud Homer server", server_name, " is offline!");
             return RESULT_server_is_offline();
         }
 

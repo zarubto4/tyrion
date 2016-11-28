@@ -5,14 +5,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 
 public enum Approval_state {
 
-    @EnumValue("pending")
-    pending,
-    @EnumValue("approved")
-    approved,
-    @EnumValue("disapproved")
-    disapproved,
-    @EnumValue("edited")
-    edited;
+    @EnumValue("pending")       pending,
+    @EnumValue("approved")      approved,
+    @EnumValue("disapproved")   disapproved,
+    @EnumValue("edited")        edited;
 
     @JsonCreator
     public static Approval_state fromString(String key) {

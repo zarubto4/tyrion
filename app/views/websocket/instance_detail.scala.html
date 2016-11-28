@@ -16,9 +16,6 @@
     </ol>
 </section>
 
-
-
-
 <section class="content">
     <div class="row">
         <div class="col-xs-3">
@@ -236,7 +233,7 @@
         <div class="col-xs-12">
             <div class="box">
                 <div class="box-header">
-                    <h3 class="box-title">Hardware Updater scheduling progress</h3>
+                    <h3 class="box-title">Hardware - PŘEHLED</h3>
                 </div>
                 <div class="box-body table-responsive no-padding">
                     <table class="table table-bordered">
@@ -298,9 +295,130 @@
     </div>
 </section>
 
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-header">
+                    <h3 class="box-title">Hardware Updater scheduling progress</h3>
+                </div>
+                <div class="box-body table-responsive no-padding">
+                    <table class="table table-bordered">
+
+                        <tr>
+                            <th class="col-md-1">Type</th>
+                            <th class="col-md-1">Type</th>
+                            <th class="col-md-1">ID</th>
+                            <th class="col-md-2">Date of create</th>
+                            <th class="col-md-1">Date of finish</th>
+                            <th class="col-md-1">C_program</th>
+                            <th class="col-md-1">Board Id</th>
+                            <th class="col-md-1">Type</th>
+                            <th class="col-md-1">State</th>
+
+                        </tr>
+
+                        @if(instance.actual_instance != null) {
+
+                            @for(x <- instance.actual_instance.getProcedures()) {
+
+                                <tr>
+                                    <td>Act. Proc</td>
+                                    <td></td>
+                                    <td>@x.id</td>
+                                    <td>@x.date_of_create</td>
+                                    <td>@x.date_of_finish</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>@x.state.name()</td>
+
+
+                                </tr>
+
+                                @for(y <- x.updates) {
+
+                                    <tr>
+                                        <td></td>
+                                        <td>C_p Proc</td>
+                                        <td>@y.id</td>
+                                        <td>@y.date_of_create</td>
+                                        <td>@y.date_of_finish</td>
+                                        <td>@if(y.firmware_type == Firmware_type.FIRMWARE){
+                                                 @y.c_program_version_for_update.id
+                                            }@if(y.firmware_type == Firmware_type.BOOTLOADER){
+                                                 @y.bootloader.id
+                                            }
+                                            @if(y.firmware_type == Firmware_type.BACKUP){
+                                                @y.c_program_version_for_update.id
+                                            }
+                                        </td>
+                                        <td>@y.board.id</td>
+                                        <td>@y.firmware_type.name()</td>
+                                        <td>@y.state.name()</td>
+
+                                    </tr>
+                                }
+                            }
+                        }
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
 
 
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-header">
+                    <h3 class="box-title">Instance Records</h3>
+                </div>
+                <div class="box-body table-responsive no-padding">
+                    <table class="table table-bordered">
+
+                        <tr>
+                            <th>Recordl ID</th>
+                            <th>Date of Created</th>
+                            <th>Running from</th>
+                            <th>Running to</th>
+                            <th>Planed when</th>
+                            <th>Version Id</th>
+                            <th>Version name</th>
+                            <th>Status</th>
+                        </tr>
+
+
+                        @for(x <- instance.instance_history){
+
+                            <tr>
+                                <td>@x.id</td>
+                                <td>@x.date_of_created</td>
+                                <td>@x.running_from</td>
+                                <td>@x.running_to</td>
+                                <td>@x.planed_when</td>
+                                <td>@x.version_object.id</td>
+                                <td>@x.version_object.version_name</td>
+                                <td>
+                                @if(x.actual_running_instance != null){
+                                    Actual
+                                }else{
+                                    History
+                                }
+                                </td>
+                            </tr>
+
+                        }
+
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
 
 <section class="content">
@@ -397,10 +515,10 @@
                     <table class="table table-bordered">
 
                         <tr>
-                            <th> Common Commands  </th>
-                            <th> Yoda Commands    </th>
-                            <th> Instance Commands</th>
-                            <th>Special Commands  </th>
+                            <th> Common Commands   </th>
+                            <th> Yoda Commands     </th>
+                            <th> Instance Commands </th>
+                            <th> Special Commands  </th>
                         </tr>
 
                         <tr>
@@ -693,11 +811,11 @@
                 })
             }
 
-            function updateBootLoader(target_id){
-                var obj = '{' +'"device_ids":' + '["' + target_id + '"]' + '}';
+            function updateBootLoader(){
+
 
                 $.ajax({
-                    url: '@routes.CompilationLibrariesController.boot_loader_update_device_list()',
+                    url: '@routes.CompilationLibrariesController.boot_loader_update_instanace(instance.blocko_instance_name)',
                     type: 'PUT',
                     contentType: 'application/json',
                     headers: {

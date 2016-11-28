@@ -77,7 +77,7 @@ public class B_Program extends Model {
 
         // Je nahrán
         state.uploaded = true;          // Jestli je aktuální - nebo plánovaný
-        state.online = instance.instance_online();
+        state.instance_online = instance.instance_online();
 
         // Jaká verze Blocko Programu?
         state.version_id = instance.actual_instance.version_object.id;
@@ -89,6 +89,7 @@ public class B_Program extends Model {
         // Informace o Serveru
         state.server_id = instance.cloud_homer_server.id;
         state.server_name = instance.cloud_homer_server.server_name;
+        state.server_online = instance.cloud_homer_server.server_is_online();
 
         return state;
     }

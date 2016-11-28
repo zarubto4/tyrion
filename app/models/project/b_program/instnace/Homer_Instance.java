@@ -163,7 +163,7 @@ public class Homer_Instance extends Model {
             board.update();
 
             if(this.boards_in_virtual_instance.isEmpty()){
-                this.remove_instance_to_server();
+                this.remove_instance_from_server();
             }
 
             update();;
@@ -303,6 +303,7 @@ public class Homer_Instance extends Model {
             // Nahraju Blocko Program
             JsonNode result_blocko_program  = this.upload_blocko_program();
 
+            this.actual_instance.add_new_actualization_request();
 
             return   result_blocko_program;
 
@@ -312,7 +313,7 @@ public class Homer_Instance extends Model {
         }
     }
 
-    @JsonIgnore @Transient public  JsonNode remove_instance_to_server() {
+    @JsonIgnore @Transient public  JsonNode remove_instance_from_server() {
         try{
 
             // Vytvořím Instanci
@@ -330,8 +331,11 @@ public class Homer_Instance extends Model {
         }
     }
 
-    @JsonIgnore @Transient public  JsonNode update_instance_to_actual_instance_record() {
+    @JsonIgnore @Transient public  JsonNode update_instance_to_actual_instance_record() { // TODO tuto metodu budu volat ve chvíli kdy nějakou časovu známkou prohodím verze - podle času uživatele
         try{
+
+            // Nastartuji aktualizační proces
+            this.actual_instance.add_new_actualization_request();
 
             // Doplním do ní HW
             JsonNode result_device          = this.update_device_summary_collection();

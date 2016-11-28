@@ -138,9 +138,10 @@ public class Master_Updater{
                    // Najdu instanci - pod kterou deska běží
                    Homer_Instance homer_instance = Homer_Instance.find.where()
                            .disjunction()
-                            .add(Expr.eq("version_object.b_program_hw_groups.main_board_pair.board.id", board.id))
-                            .add(Expr.eq("version_object.b_program_hw_groups.device_board_pairs.board.id", board.id))
-                            .add(Expr.eq("private_instance_board.id", board.id))
+                              .add(Expr.eq("actual_instance.version_object.b_program_hw_groups.main_board_pair.board.id", board.id))
+                              .add(Expr.eq("actual_instance.version_object.b_program_hw_groups.device_board_pairs.board.id", board.id))
+                              .add(Expr.eq("boards_in_virtual_instance.id", board.id))
+                           .endJunction()
                    .findUnique();
 
                    if (homer_instance == null) {

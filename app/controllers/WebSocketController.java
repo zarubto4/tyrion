@@ -156,13 +156,31 @@ public class WebSocketController extends Controller {
                                 instances_in_database_for_uploud.addAll( Homer_Instance.find.where().eq("cloud_homer_server.id", homer_server.id).eq("virtual_instance", false).isNotNull("actual_instance").select("blocko_instance_name").findList());
 
                                 // Přidám všechny virtuální instance, kde je ještě alespoň jeden Yoda
-                                List<Homer_Instance> help1 =  Homer_Instance.find.where().eq("cloud_homer_server.id", homer_server.id).eq("virtual_instance", true).isNotNull("boards_in_virtual_instance").select("blocko_instance_name").findList();
-
                                 instances_in_database_for_uploud.addAll( Homer_Instance.find.where().eq("cloud_homer_server.id", homer_server.id).eq("virtual_instance", true).isNotNull("boards_in_virtual_instance").select("blocko_instance_name").findList());
 
 
-                                logger.trace("Homer Server:: Connection::Starting to uploud new instances to cloud_blocko_server");
+                                List<String> instances_for_removing = new ArrayList<>();
 
+                                // Vytvořím kopii seznamu instancí, které by měli běžet na Homer Serveru
+                                for(String  identificator : instances_on_server){
+                                    if(Homer_Instance.find.where().eq("id",identificator ).isNotNull("actual_instance").findRowCount() < 1){
+                                        instances_for_removing.add(identificator);
+                                    }
+                                }
+
+                                logger.debug("Blocko Server: The number of instances for removing from homer server: ");
+
+
+                                if (!instances_for_removing.isEmpty()) {
+                                    for (String identificator : instances_for_removing) {
+                                        JsonNode remove_result = homer_server.remove_instance(identificator);
+                                        if(!remove_result.has("status") || !remove_result.get("status").asText().equals("success"))   logger.error("Blocko Server: Removing instance Error: ", remove_result.toString());
+                                    }
+                                }
+
+
+                                // Nahraji tam ty co tam patří
+                                logger.trace("Homer Server:: Connection::Starting to uploud new instances to cloud_blocko_server");
                                 for (Homer_Instance instance : instances_in_database_for_uploud) {
 
                                     if(instances_on_server.contains(instance.blocko_instance_name)){
@@ -179,26 +197,6 @@ public class WebSocketController extends Controller {
                                     }
                                 }
 
-                                /*
-                                List<Homer_Instance> instances_for_removing_from_homer = Homer_Instance.find.where().eq("cloud_homer_server.id", homer_server.id).eq("virtual_instance", false).isNull("actual_instance").select("blocko_instance_name").findList();
-
-                                // Vytvořím kopii seznamu instancí, které by měli běžet na Homer Serveru
-                                logger.debug("Blocko Server: The number of instances for removing from homer server: " + instances_for_removing_from_homer.size());
-
-
-                                if (!instances_for_removing_from_homer.isEmpty()) {
-
-                                    for (Homer_Instance instance_for_remove : instances_for_removing_from_homer) {
-
-                                        JsonNode remove_instance = homer_server.remove_instance(instance_for_remove.blocko_instance_name);
-                                        if (remove_instance.get("status").asText().equals("error")) {
-                                            logger.error("Blocko Server: Fail when Tyrion try to remove instance from Blocko cloud_blocko_server");
-                                        }
-
-                                        sleep(50); // Abych Homer server tolik nevytížil
-                                    }
-                                }
-                                */
 
                                 logger.debug("Blocko Server: Successfully finished connection procedure");
                                 interrupter = (long) 0;

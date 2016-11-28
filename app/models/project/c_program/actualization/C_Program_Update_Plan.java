@@ -6,12 +6,14 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import models.compiler.Board;
+import models.compiler.BootLoader;
 import models.compiler.FileRecord;
 import models.compiler.Version_Object;
 import utilities.enums.Firmware_type;
 import utilities.hardware_updater.States.C_ProgramUpdater_State;
 
 import javax.persistence.*;
+import java.util.Date;
 
 /**
  * Objekt slouží k aktualizačnímu plánu jednotlivých zařízení!
@@ -28,12 +30,21 @@ public class C_Program_Update_Plan extends Model {
 
               @JsonIgnore @ManyToOne()                                          public Actualization_procedure actualization_procedure;
 
+
+    @ApiModelProperty(required = true, value = "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
+                                                                example = "1466163478925")   public Date date_of_create;
+    @ApiModelProperty(required = true, value = "can be empty, which means that the procedure is not done yet. " +
+                                               "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
+                                                                example = "1466163478925")   public Date date_of_finish;
+
+
               @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)                   public Board board; // Deska k aktualizaci
               @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)  public Firmware_type firmware_type;
 
                                                                                 // Aktualizace je vázána buď na verzi C++ kodu nebo na soubor, nahraný uživatelem
     /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)                 public Version_Object c_program_version_for_update; // C_program k aktualizaci
-    /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                  public FileRecord binary_file; // Soubor, když firmware nahrává uživatel sám mimo flow
+    /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                  public BootLoader bootloader;   // Když nahrávám Firmware
+    /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                  public FileRecord binary_file;  // Soubor, když firmware nahrává uživatel sám mimo flow
 
     @ApiModelProperty(required = true, value = "Description on Model C_ProgramUpdater_State")  @Enumerated(EnumType.STRING)    public C_ProgramUpdater_State state;
 

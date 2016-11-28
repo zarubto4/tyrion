@@ -13,7 +13,6 @@ import models.project.b_program.B_Program_Hw_Group;
 import models.project.b_program.instnace.Homer_Instance_Record;
 import models.project.c_program.C_Compilation;
 import models.project.c_program.C_Program;
-import models.project.c_program.actualization.Actualization_procedure;
 import models.project.c_program.actualization.C_Program_Update_Plan;
 import models.project.m_program.M_Program;
 import models.project.m_program.M_Project_Program_SnapShot;
@@ -100,9 +99,6 @@ public class Version_Object extends Model {
 
     @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)    public M_Program m_program;
     @JsonIgnore  public String qr_token;
-
-    // Actual Procedure --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    @JsonIgnore @OneToMany(mappedBy="b_program_version_procedure", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Actualization_procedure>  actualization_procedures  = new ArrayList<>();
 
 
     @JsonIgnore @Override public void delete() {
@@ -227,7 +223,7 @@ public class Version_Object extends Model {
         // Kontroluji zda je nějaký kompilační cloud_compilation_server připojený
         if (!Cloud_Compilation_Server.is_online()) {
 
-            logger.error("Version Object:: compile_program_procedure:: Server is offline!!!");
+            logger.warn("Version Object:: compile_program_procedure:: Server is offline!!!");
 
             c_compilation.status = Compile_Status.server_was_offline;
             c_compilation.update();

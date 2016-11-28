@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
+import models.project.c_program.actualization.C_Program_Update_Plan;
 import utilities.Server;
 
 import javax.persistence.*;
@@ -31,6 +32,8 @@ public class BootLoader extends Model {
                                           public String version_identificator; // HW identifikator od kluků ve formátu 255.255.255 -> ex. 0.1.6 || 0.1.77
     @Column(columnDefinition = "TEXT")    public String changing_note;
 
+
+    @JsonIgnore @OneToMany(mappedBy="bootloader",cascade=CascadeType.ALL, fetch = FetchType.LAZY)  public List<C_Program_Update_Plan> c_program_update_plans = new ArrayList<>();
 
 
     @JsonIgnore  @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST) public TypeOfBoard type_of_board;

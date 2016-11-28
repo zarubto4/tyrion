@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import controllers.ActualizationController;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
 import models.notification.Notification;
@@ -19,8 +18,11 @@ import models.project.c_program.actualization.C_Program_Update_Plan;
 import models.project.global.Project;
 import play.data.Form;
 import play.libs.Json;
+import utilities.enums.Firmware_type;
 import utilities.enums.Notification_importance;
 import utilities.enums.Notification_level;
+import utilities.hardware_updater.Master_Updater;
+import utilities.hardware_updater.States.C_ProgramUpdater_State;
 import utilities.swagger.outboundClass.Swagger_Board_status;
 import utilities.webSocket.WS_BlockoServer;
 import utilities.webSocket.messageObjects.WS_DeviceConnected;
@@ -220,10 +222,8 @@ public class Board extends Model {
                 master_device.update();
             }
 
-
-
             // Požádám o kontrolu zda nečeká nějaká nová aktualizační procedura - pro Yodu nebo jeho device
-            ActualizationController.hardware_connected(master_device, help);
+            Board.hardware_connected(master_device, help);
 
         }catch (Exception e){
             logger.error("Board:: master_device_Connected:: ERROR::", e);
@@ -264,7 +264,7 @@ public class Board extends Model {
             }
 
             // Požádám o kontrolu zda nečeká nějaká nová aktualizační procedura - pro Yodu nebo jeho device
-            ActualizationController.hardware_connected(device, help);
+            Board.hardware_connected(device, help);
 
         }catch (Exception e){
             logger.error("Board:: device_Connected:: ERROR:: ", e);
@@ -280,6 +280,187 @@ public class Board extends Model {
     }
 
 
+    @JsonIgnore @Transient public static void hardware_connected(Board board, WS_YodaConnected report){
+
+        logger.debug("Tyrion Checking summary information of connected master board: ", board.id);
+
+
+        // Kontrola nastavení Backup modu
+        logger.trace("Checking autobackup");
+        if(board.backup_mode != report.autobackup){
+            // TODO
+
+        }
+
+        // Pokusím se najít Aktualizační proceduru jestli existuje s následujícími stavy
+        logger.debug("Tyrion Checking actualization state of connected board: ", board.id);
+        List<C_Program_Update_Plan> plans = C_Program_Update_Plan.find.where().eq("board.id", board.id).disjunction()
+                    .add(   Expr.eq("state", C_ProgramUpdater_State.in_progress)         )
+                    .add(   Expr.eq("state", C_ProgramUpdater_State.waiting_for_device)         )
+                    .add(   Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible)      )
+                    .add(   Expr.eq("state", C_ProgramUpdater_State.critical_error)      )
+                    .add(   Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline)    )
+                .endJunction().order().asc("id").findList();
+
+
+        if(plans.size() > 1){
+            logger.error("Hardware Yoda: ", board.id, " connected into system, but we have mote than 2 update-plan!!!");
+            logger.error("Earlier plans are terminate! Last one - by ID is used now!");
+
+            for(int i = 1; i < plans.size(); i++ ){
+                plans.get(i).state = C_ProgramUpdater_State.overwritten;
+                plans.get(i).update();
+                plans.remove(i);
+            }
+        }
+
+        if(plans.size() == 1){
+
+            logger.debug("Found one actualization procedure on ", board.id);
+
+            C_Program_Update_Plan plan = plans.get(0);
+
+
+            if(plan.firmware_type == Firmware_type.FIRMWARE){
+
+                logger.debug("Checking Firmware");
+
+                // Mám shodu oproti očekávánemů
+                if(plan.c_program_version_for_update.c_compilation.firmware_build_id .equals( report.firmware_build_id )){
+
+                    plan.state = C_ProgramUpdater_State.complete;
+                    plan.update();
+
+                }else {
+
+                    plan.state = C_ProgramUpdater_State.in_progress;
+                    plan.update();
+
+                    Master_Updater.add_new_Procedure(plan.actualization_procedure);
+
+                }
+
+            }else if(plan.firmware_type == Firmware_type.BOOTLOADER){
+
+                logger.debug("Checking Firmware");
+
+                // Mám shodu oproti očekávánemů
+                if(plan.binary_file.boot_loader.version_identificator.equals( report.bootloader_build_id )){
+
+                    plan.state = C_ProgramUpdater_State.complete;
+                    plan.update();
+
+                }else {
+
+                    plan.state = C_ProgramUpdater_State.in_progress;
+                    plan.update();
+
+                    Master_Updater.add_new_Procedure(plan.actualization_procedure);
+                }
+
+            }else if(plan.firmware_type == Firmware_type.BACKUP){
+
+                logger.debug("Checking Backup");
+
+                plan.state = C_ProgramUpdater_State.complete;
+                plan.update();
+            }
+        }else {
+            logger.debug("No actualization plan found for Master Device: " + board.id);
+        }
+
+
+        for(WS_DeviceConnected device_report : report.devices_summary){
+
+            Board device = Board.find.byId(device_report.deviceId);
+
+            // Smazat device z instance a tím i z yody
+            if(device == null){
+                logger.error("Unauthorized device connected to Yoda!" + board.id);
+                //TODO
+
+            }else {
+                Board.hardware_connected(device, device_report);
+            }
+
+        }
+
+    }
+
+    @JsonIgnore @Transient public static void hardware_connected(Board board, WS_DeviceConnected report) {
+        logger.debug("Tyrion Checking summary information of connected padavan board: ", board.id);
+
+        // Pokusím se najít Aktualizační proceduru jestli existuje s následujícími stavy
+        logger.debug("Tyrion Checking actualization state of connected board: ", board.id);
+        List<C_Program_Update_Plan> plans = C_Program_Update_Plan.find.where().eq("board.id", board.id).disjunction()
+                .add(   Expr.eq("state", C_ProgramUpdater_State.in_progress)         )
+                .add(   Expr.eq("state", C_ProgramUpdater_State.waiting_for_device)         )
+                .add(   Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible)      )
+                .add(   Expr.eq("state", C_ProgramUpdater_State.critical_error)      )
+                .add(   Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline)    ).order().asc("id").findList();
+
+
+        if(plans.size() > 1){
+            logger.error("Hardware Board: ", board.id, " connected into system, but we have mote than 2 update-plan!!!");
+            logger.error("Earlier plans are terminate! Last one - by ID is used now!");
+
+            for(int i = 1; i < plans.size(); i++ ){
+                plans.get(i).state = C_ProgramUpdater_State.overwritten;
+                plans.get(i).update();
+                plans.remove(i);
+            }
+        }
+
+        if(plans.size() == 1){
+
+            logger.debug("Found one actualization procedure on ", board.id);
+
+            C_Program_Update_Plan plan = plans.get(0);
+
+            if(plan.firmware_type == Firmware_type.FIRMWARE){
+
+                logger.debug("Checking Firmware");
+
+                // Mám shodu oproti očekávánemů
+                if(plan.c_program_version_for_update.c_compilation.firmware_build_id .equals( report.firmware_build_id )){
+
+                    plan.state = C_ProgramUpdater_State.complete;
+                    plan.update();
+
+                }else {
+
+                    plan.state = C_ProgramUpdater_State.in_progress;
+                    plan.update();
+
+                    Master_Updater.add_new_Procedure(plan.actualization_procedure);
+
+                }
+
+            }else if(plan.firmware_type == Firmware_type.BOOTLOADER) {
+
+                logger.debug("Checking Firmware");
+
+                // Mám shodu oproti očekávánemů
+                if (plan.binary_file.boot_loader.version_identificator.equals(report.bootloader_build_id)) {
+
+                    plan.state = C_ProgramUpdater_State.complete;
+                    plan.update();
+
+                } else {
+
+                    plan.state = C_ProgramUpdater_State.in_progress;
+                    plan.update();
+
+                    Master_Updater.add_new_Procedure(plan.actualization_procedure);
+                }
+            }
+
+        }else {
+            logger.debug("No actualization plan found for Master Device: " + board.id);
+        }
+
+
+    }
 
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/

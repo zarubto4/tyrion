@@ -649,11 +649,6 @@ public class Finance_Controller extends Controller {
                 return GlobalResult.result_ok(Json.toJson(swager_goPay_url));
 
 
-
-
-
-
-
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }

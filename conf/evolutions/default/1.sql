@@ -5,12 +5,11 @@
 
 create table actualization_procedure (
   id                        varchar(255) not null,
-  state                     integer,
-  project_id                varchar(255),
-  b_program_version_procedure_id varchar(255),
+  state                     varchar(19),
+  homer_instance_record_id  varchar(255),
   date_of_create            timestamp,
   date_of_finish            timestamp,
-  constraint ck_actualization_procedure_state check (state in (0,1,2,3,4)),
+  constraint ck_actualization_procedure_state check (state in ('complete_with_error','canceled','in_progress','successful_complete','complete','not_start_yet')),
   constraint pk_actualization_procedure primary key (id))
 ;
 
@@ -134,13 +133,16 @@ create table c_program (
 create table c_program_update_plan (
   id                        varchar(255) not null,
   actualization_procedure_id varchar(255),
+  date_of_create            timestamp,
+  date_of_finish            timestamp,
   board_id                  varchar(255),
   firmware_type             varchar(10),
   c_program_version_for_update_id varchar(255),
+  bootloader_id             varchar(255),
   binary_file_id            varchar(255),
   state                     varchar(23),
   constraint ck_c_program_update_plan_firmware_type check (firmware_type in ('FIRMWARE','BOOTLOADER','BACKUP')),
-  constraint ck_c_program_update_plan_state check (state in ('complete','canceled','in_progress','overwritten','waiting_for_device','instance_inaccessible','homer_server_is_offline','critical_error')),
+  constraint ck_c_program_update_plan_state check (state in ('canceled','in_progress','waiting_for_device','overwritten','homer_server_is_offline','complete','instance_inaccessible','critical_error','not_start_yet')),
   constraint pk_c_program_update_plan primary key (id))
 ;
 
@@ -791,66 +793,66 @@ create sequence type_of_post_seq;
 
 create sequence version_object_seq;
 
-alter table actualization_procedure add constraint fk_actualization_procedure_pro_1 foreign key (project_id) references project (id);
-create index ix_actualization_procedure_pro_1 on actualization_procedure (project_id);
-alter table actualization_procedure add constraint fk_actualization_procedure_b_p_2 foreign key (b_program_version_procedure_id) references version_object (id);
-create index ix_actualization_procedure_b_p_2 on actualization_procedure (b_program_version_procedure_id);
-alter table b_pair add constraint fk_b_pair_c_program_version_3 foreign key (c_program_version_id) references version_object (id);
-create index ix_b_pair_c_program_version_3 on b_pair (c_program_version_id);
-alter table b_pair add constraint fk_b_pair_board_4 foreign key (board_id) references board (id);
-create index ix_b_pair_board_4 on b_pair (board_id);
-alter table b_pair add constraint fk_b_pair_device_board_pair_5 foreign key (device_board_pair_id) references b_program_hw_group (id);
-create index ix_b_pair_device_board_pair_5 on b_pair (device_board_pair_id);
-alter table b_pair add constraint fk_b_pair_main_board_pair_6 foreign key (main_board_pair_id) references b_program_hw_group (id);
-create index ix_b_pair_main_board_pair_6 on b_pair (main_board_pair_id);
-alter table b_program add constraint fk_b_program_instance_7 foreign key (instance_blocko_instance_name) references homer_instance (blocko_instance_name);
-create index ix_b_program_instance_7 on b_program (instance_blocko_instance_name);
-alter table b_program add constraint fk_b_program_project_8 foreign key (project_id) references project (id);
-create index ix_b_program_project_8 on b_program (project_id);
-alter table blocko_block add constraint fk_blocko_block_author_9 foreign key (author_id) references person (id);
-create index ix_blocko_block_author_9 on blocko_block (author_id);
-alter table blocko_block add constraint fk_blocko_block_type_of_block_10 foreign key (type_of_block_id) references type_of_block (id);
-create index ix_blocko_block_type_of_block_10 on blocko_block (type_of_block_id);
-alter table blocko_block add constraint fk_blocko_block_producer_11 foreign key (producer_id) references producer (id);
-create index ix_blocko_block_producer_11 on blocko_block (producer_id);
-alter table blocko_block_version add constraint fk_blocko_block_version_block_12 foreign key (blocko_block_id) references blocko_block (id);
-create index ix_blocko_block_version_block_12 on blocko_block_version (blocko_block_id);
-alter table board add constraint fk_board_type_of_board_13 foreign key (type_of_board_id) references type_of_board (id);
-create index ix_board_type_of_board_13 on board (type_of_board_id);
-alter table board add constraint fk_board_project_14 foreign key (project_id) references project (id);
-create index ix_board_project_14 on board (project_id);
-alter table board add constraint fk_board_actual_c_program_ver_15 foreign key (actual_c_program_version_id) references version_object (id);
-create index ix_board_actual_c_program_ver_15 on board (actual_c_program_version_id);
-alter table board add constraint fk_board_actual_boot_loader_16 foreign key (actual_boot_loader_id) references boot_loader (id);
-create index ix_board_actual_boot_loader_16 on board (actual_boot_loader_id);
-alter table board add constraint fk_board_latest_know_server_17 foreign key (latest_know_server_id) references cloud_homer_server (id);
-create index ix_board_latest_know_server_17 on board (latest_know_server_id);
-alter table board add constraint fk_board_private_homer_server_18 foreign key (private_homer_servers_id) references private_homer_server (id);
-create index ix_board_private_homer_server_18 on board (private_homer_servers_id);
-alter table board add constraint fk_board_virtual_instance_und_19 foreign key (virtual_instance_under_project_blocko_instance_name) references homer_instance (blocko_instance_name);
-create index ix_board_virtual_instance_und_19 on board (virtual_instance_under_project_blocko_instance_name);
-alter table boot_loader add constraint fk_boot_loader_type_of_board_20 foreign key (type_of_board_id) references type_of_board (id);
-create index ix_boot_loader_type_of_board_20 on boot_loader (type_of_board_id);
-alter table boot_loader add constraint fk_boot_loader_main_type_of_b_21 foreign key (main_type_of_board_id) references type_of_board (id);
-create index ix_boot_loader_main_type_of_b_21 on boot_loader (main_type_of_board_id);
-alter table c_compilation add constraint fk_c_compilation_version_obje_22 foreign key (c_compilation_version) references version_object (id);
-create index ix_c_compilation_version_obje_22 on c_compilation (c_compilation_version);
-alter table c_compilation add constraint fk_c_compilation_bin_compilat_23 foreign key (file_id) references file_record (id);
-create index ix_c_compilation_bin_compilat_23 on c_compilation (file_id);
-alter table c_program add constraint fk_c_program_project_24 foreign key (project_id) references project (id);
-create index ix_c_program_project_24 on c_program (project_id);
-alter table c_program add constraint fk_c_program_type_of_board_25 foreign key (type_of_board_id) references type_of_board (id);
-create index ix_c_program_type_of_board_25 on c_program (type_of_board_id);
-alter table c_program add constraint fk_c_program_first_default_ve_26 foreign key (first_default_version_object_id) references version_object (id);
-create index ix_c_program_first_default_ve_26 on c_program (first_default_version_object_id);
-alter table c_program add constraint fk_c_program_default_program__27 foreign key (default_program_type_of_board_id) references type_of_board (id);
-create index ix_c_program_default_program__27 on c_program (default_program_type_of_board_id);
-alter table c_program_update_plan add constraint fk_c_program_update_plan_actu_28 foreign key (actualization_procedure_id) references actualization_procedure (id);
-create index ix_c_program_update_plan_actu_28 on c_program_update_plan (actualization_procedure_id);
-alter table c_program_update_plan add constraint fk_c_program_update_plan_boar_29 foreign key (board_id) references board (id);
-create index ix_c_program_update_plan_boar_29 on c_program_update_plan (board_id);
-alter table c_program_update_plan add constraint fk_c_program_update_plan_c_pr_30 foreign key (c_program_version_for_update_id) references version_object (id);
-create index ix_c_program_update_plan_c_pr_30 on c_program_update_plan (c_program_version_for_update_id);
+alter table actualization_procedure add constraint fk_actualization_procedure_hom_1 foreign key (homer_instance_record_id) references homer_instance_record (id);
+create index ix_actualization_procedure_hom_1 on actualization_procedure (homer_instance_record_id);
+alter table b_pair add constraint fk_b_pair_c_program_version_2 foreign key (c_program_version_id) references version_object (id);
+create index ix_b_pair_c_program_version_2 on b_pair (c_program_version_id);
+alter table b_pair add constraint fk_b_pair_board_3 foreign key (board_id) references board (id);
+create index ix_b_pair_board_3 on b_pair (board_id);
+alter table b_pair add constraint fk_b_pair_device_board_pair_4 foreign key (device_board_pair_id) references b_program_hw_group (id);
+create index ix_b_pair_device_board_pair_4 on b_pair (device_board_pair_id);
+alter table b_pair add constraint fk_b_pair_main_board_pair_5 foreign key (main_board_pair_id) references b_program_hw_group (id);
+create index ix_b_pair_main_board_pair_5 on b_pair (main_board_pair_id);
+alter table b_program add constraint fk_b_program_instance_6 foreign key (instance_blocko_instance_name) references homer_instance (blocko_instance_name);
+create index ix_b_program_instance_6 on b_program (instance_blocko_instance_name);
+alter table b_program add constraint fk_b_program_project_7 foreign key (project_id) references project (id);
+create index ix_b_program_project_7 on b_program (project_id);
+alter table blocko_block add constraint fk_blocko_block_author_8 foreign key (author_id) references person (id);
+create index ix_blocko_block_author_8 on blocko_block (author_id);
+alter table blocko_block add constraint fk_blocko_block_type_of_block_9 foreign key (type_of_block_id) references type_of_block (id);
+create index ix_blocko_block_type_of_block_9 on blocko_block (type_of_block_id);
+alter table blocko_block add constraint fk_blocko_block_producer_10 foreign key (producer_id) references producer (id);
+create index ix_blocko_block_producer_10 on blocko_block (producer_id);
+alter table blocko_block_version add constraint fk_blocko_block_version_block_11 foreign key (blocko_block_id) references blocko_block (id);
+create index ix_blocko_block_version_block_11 on blocko_block_version (blocko_block_id);
+alter table board add constraint fk_board_type_of_board_12 foreign key (type_of_board_id) references type_of_board (id);
+create index ix_board_type_of_board_12 on board (type_of_board_id);
+alter table board add constraint fk_board_project_13 foreign key (project_id) references project (id);
+create index ix_board_project_13 on board (project_id);
+alter table board add constraint fk_board_actual_c_program_ver_14 foreign key (actual_c_program_version_id) references version_object (id);
+create index ix_board_actual_c_program_ver_14 on board (actual_c_program_version_id);
+alter table board add constraint fk_board_actual_boot_loader_15 foreign key (actual_boot_loader_id) references boot_loader (id);
+create index ix_board_actual_boot_loader_15 on board (actual_boot_loader_id);
+alter table board add constraint fk_board_latest_know_server_16 foreign key (latest_know_server_id) references cloud_homer_server (id);
+create index ix_board_latest_know_server_16 on board (latest_know_server_id);
+alter table board add constraint fk_board_private_homer_server_17 foreign key (private_homer_servers_id) references private_homer_server (id);
+create index ix_board_private_homer_server_17 on board (private_homer_servers_id);
+alter table board add constraint fk_board_virtual_instance_und_18 foreign key (virtual_instance_under_project_blocko_instance_name) references homer_instance (blocko_instance_name);
+create index ix_board_virtual_instance_und_18 on board (virtual_instance_under_project_blocko_instance_name);
+alter table boot_loader add constraint fk_boot_loader_type_of_board_19 foreign key (type_of_board_id) references type_of_board (id);
+create index ix_boot_loader_type_of_board_19 on boot_loader (type_of_board_id);
+alter table boot_loader add constraint fk_boot_loader_main_type_of_b_20 foreign key (main_type_of_board_id) references type_of_board (id);
+create index ix_boot_loader_main_type_of_b_20 on boot_loader (main_type_of_board_id);
+alter table c_compilation add constraint fk_c_compilation_version_obje_21 foreign key (c_compilation_version) references version_object (id);
+create index ix_c_compilation_version_obje_21 on c_compilation (c_compilation_version);
+alter table c_compilation add constraint fk_c_compilation_bin_compilat_22 foreign key (file_id) references file_record (id);
+create index ix_c_compilation_bin_compilat_22 on c_compilation (file_id);
+alter table c_program add constraint fk_c_program_project_23 foreign key (project_id) references project (id);
+create index ix_c_program_project_23 on c_program (project_id);
+alter table c_program add constraint fk_c_program_type_of_board_24 foreign key (type_of_board_id) references type_of_board (id);
+create index ix_c_program_type_of_board_24 on c_program (type_of_board_id);
+alter table c_program add constraint fk_c_program_first_default_ve_25 foreign key (first_default_version_object_id) references version_object (id);
+create index ix_c_program_first_default_ve_25 on c_program (first_default_version_object_id);
+alter table c_program add constraint fk_c_program_default_program__26 foreign key (default_program_type_of_board_id) references type_of_board (id);
+create index ix_c_program_default_program__26 on c_program (default_program_type_of_board_id);
+alter table c_program_update_plan add constraint fk_c_program_update_plan_actu_27 foreign key (actualization_procedure_id) references actualization_procedure (id);
+create index ix_c_program_update_plan_actu_27 on c_program_update_plan (actualization_procedure_id);
+alter table c_program_update_plan add constraint fk_c_program_update_plan_boar_28 foreign key (board_id) references board (id);
+create index ix_c_program_update_plan_boar_28 on c_program_update_plan (board_id);
+alter table c_program_update_plan add constraint fk_c_program_update_plan_c_pr_29 foreign key (c_program_version_for_update_id) references version_object (id);
+create index ix_c_program_update_plan_c_pr_29 on c_program_update_plan (c_program_version_for_update_id);
+alter table c_program_update_plan add constraint fk_c_program_update_plan_boot_30 foreign key (bootloader_id) references boot_loader (id);
+create index ix_c_program_update_plan_boot_30 on c_program_update_plan (bootloader_id);
 alter table c_program_update_plan add constraint fk_c_program_update_plan_bina_31 foreign key (binary_file_id) references file_record (id);
 create index ix_c_program_update_plan_bina_31 on c_program_update_plan (binary_file_id);
 alter table change_property_token add constraint fk_change_property_token_pers_32 foreign key (person_id) references person (id);

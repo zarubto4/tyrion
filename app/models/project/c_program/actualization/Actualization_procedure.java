@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
-import models.compiler.Version_Object;
+import models.project.b_program.instnace.Homer_Instance_Record;
 import models.project.global.Project;
 import utilities.hardware_updater.States.Actual_procedure_State;
 import utilities.hardware_updater.States.C_ProgramUpdater_State;
@@ -28,9 +28,7 @@ public class Actualization_procedure extends Model {
     @ApiModelProperty(required = true, value = "Find description on Model Actual_procedure_State")   public Actual_procedure_State state;
 
 
-                           @JsonIgnore     @ManyToOne()     public Project project;
-                           @JsonIgnore     @ManyToOne()     public Version_Object b_program_version_procedure;
-
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)   public Homer_Instance_Record homer_instance_record;
 
     @ApiModelProperty(required = true, value = "Can be empty")  @OneToMany(mappedBy="actualization_procedure", cascade = CascadeType.ALL)   public List<C_Program_Update_Plan> updates = new ArrayList<>();
 
@@ -43,38 +41,24 @@ public class Actualization_procedure extends Model {
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient @ApiModelProperty(required = true ) public Program_Actualization b_program_actualization(){
 
-        if(b_program_version_procedure != null ) {
-
-            Program_Actualization program_actualization = new  Program_Actualization();
-            program_actualization.b_program_id = b_program_version_procedure.b_program.id;
-            program_actualization.b_program_name = b_program_version_procedure.b_program.name;
-            program_actualization.b_program_version_id = b_program_version_procedure.id;
-            program_actualization.b_program_version_name = b_program_version_procedure.version_name;
-            return program_actualization;
-        }
-
-        return null;
-    }
 
     @JsonProperty @Transient @ApiModelProperty(required = true ) public Actual_procedure_State state (){
-        update_state();
+        //update_state();
         return state;
     }
 
 
-
-    // TODO - připraveno pro becki - nutno dodělat v Tyrionovi http://youtrack.byzance.cz/youtrack/issue/TYRION-346
-    @JsonProperty @Transient @ApiModelProperty(required = true, readOnly = true) public Integer state_percentage(){ return 41; }
-
-    // TODO - http://youtrack.byzance.cz/youtrack/issue/TYRION-347
-    @JsonProperty @Transient @ApiModelProperty(required = true, readOnly = true) public String  state_fraction(){ return "21/35"; }
+    @JsonProperty @Transient @ApiModelProperty(required = true, readOnly = true) public Integer state_percentage(){ return 41; }        // TODO - připraveno pro becki - nutno dodělat v Tyrionovi http://youtrack.byzance.cz/youtrack/issue/TYRION-346
+    @JsonProperty @Transient @ApiModelProperty(required = true, readOnly = true) public String  state_fraction(){ return "21/35"; }     // TODO - http://youtrack.byzance.cz/youtrack/issue/TYRION-347
 
 
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
+    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+
+    /**
     @JsonIgnore @Transient
     public void update_state(){
 
@@ -129,8 +113,8 @@ public class Actualization_procedure extends Model {
             this.update();
             return;
         }
-
     }
+     */
 
     @JsonIgnore @Transient
     public void cancel_procedure(){
@@ -154,10 +138,13 @@ public class Actualization_procedure extends Model {
 
 
 
+
+
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient   public static final String read_permission_docs   = "User can read Actualization_procedure if they have ID of Actualization_procedure";
-    @JsonIgnore @Transient   public boolean read_permission()      {  return project.read_permission() || SecurityController.getPerson().has_permission("Actualization_procedure_read"); }
+
+    @JsonIgnore @Transient   public boolean read_permission()      {  return Project.find.where().eq("b_program.version_objects.actualization_procedures.id",id ).findUnique().read_permission() || SecurityController.getPerson().has_permission("Actualization_procedure_read"); }
 
     public enum permissions{Actualization_procedure_read}
 

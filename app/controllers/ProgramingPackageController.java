@@ -1629,10 +1629,6 @@ public class ProgramingPackageController extends Controller {
                                  record.main_instance_history.update_instance_to_actual_instance_record();
                             }
 
-                            // Zpouštím aktualizační proceduru na sesynchronizování HW a verzí
-                            ActualizationController.add_new_actualization_request_Checking_HW_Firmware(b_program.project, b_program.instance);
-
-
                         } catch (Exception e) {
                             logger.error("Error while cloud_compilation_server tried compile version of C_program", e);
                         }
@@ -1674,7 +1670,7 @@ public class ProgramingPackageController extends Controller {
 
             if (!homer_instance.getB_program().update_permission() ) return GlobalResult.forbidden_Permission();
 
-            JsonNode result = homer_instance.remove_instance_to_server();
+            JsonNode result = homer_instance.remove_instance_from_server();
 
             if(result.has("status") && result.get("status").asText().equals("success")) return GlobalResult.result_ok();
             return GlobalResult.result_BadRequest(result);

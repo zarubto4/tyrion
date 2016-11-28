@@ -12,8 +12,10 @@ public class Swagger_B_Program_State {
     public boolean uploaded;
 
     @ApiModelProperty(required = true, readOnly = true)
-    public boolean online;
+    public boolean instance_online;
 
+    @ApiModelProperty(required = true, readOnly = true)
+    public boolean server_online;
 
     @ApiModelProperty(required = false, readOnly = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
