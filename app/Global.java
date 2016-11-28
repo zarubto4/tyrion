@@ -36,7 +36,7 @@ public class Global extends GlobalSettings {
            Server.setDirectory();
 
            //5
-           logger.warn("Starting actualization threads");
+           logger.warn("Starting threads");
            Server.startThreads();
 
            //6

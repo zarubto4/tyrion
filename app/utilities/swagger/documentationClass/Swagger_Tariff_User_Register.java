@@ -17,9 +17,9 @@ public class Swagger_Tariff_User_Register {
     public String tariff_id;
 
     @Constraints.Required
-    @Constraints.MinLength(value = 5, message = "The tariff_individual_name must have at least 4 characters")
+    @Constraints.MinLength(value = 4, message = "The product_individual_name must have at least 4 characters")
     @ApiModelProperty(required = true, value =  "Required: always." +
-                                                "The street must have at least 4 characters")
+                                                "The product_individual_name must have at least 4 characters")
     public String product_individual_name;
 
     @Constraints.Required
@@ -31,12 +31,12 @@ public class Swagger_Tariff_User_Register {
     @ApiModelProperty(required = false, value =  "Required: only in if required_payment_mode is true")
     public String payment_mode;
 
-    @ApiModelProperty(required = false, value =  "Required: only in if required_payment_mode is true  values =>[bank_transfer, credit_card]")
+    @ApiModelProperty(required = false, value =  "Required: only in if required_payment_method is true  values =>[bank_transfer, credit_card]")
     public String payment_method;
 
 
     @Constraints.Required
-    @Constraints.MinLength(value = 5, message = "The street must have at least 4 characters")
+    @Constraints.MinLength(value = 4, message = "The street must have at least 4 characters")
     @ApiModelProperty(required = true, value =  "Required: always" +
                                                 "The street must have at least 4 characters")
     public String street;
@@ -47,7 +47,7 @@ public class Swagger_Tariff_User_Register {
     public String street_number;
 
     @Constraints.Required
-    @Constraints.MinLength(value = 5, message = "The city must have at least 4 characters")
+    @Constraints.MinLength(value = 4, message = "The city must have at least 4 characters")
     @ApiModelProperty(required = true, value =  "Required: always" +
                                                 "The city must have at least 4 characters")
     public String city;

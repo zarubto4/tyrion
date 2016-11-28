@@ -7,8 +7,7 @@ public enum Notification_level {
     info,
     success,
     warning,
-    error,
-    question;
+    error;
 
     @JsonCreator
     public static Notification_level fromString(String key) {

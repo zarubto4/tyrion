@@ -32,6 +32,7 @@ public class Master_Updater{
 
     public static void start_thread_box(){
         logger.debug("Master Update will be started");
+
         if(!comprimator_thread.isAlive()) comprimator_thread.start();
     }
 

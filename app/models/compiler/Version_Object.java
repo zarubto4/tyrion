@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
+import models.notification.Notification;
 import models.person.Person;
 import models.project.b_program.B_Pair;
 import models.project.b_program.B_Program;
@@ -24,10 +25,10 @@ import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import utilities.enums.Approval_state;
-import utilities.enums.Compile_Status;
-import utilities.swagger.documentationClass.Swagger_C_Program_Version_Update;
-import utilities.swagger.outboundClass.Swagger_Compilation_Build_Error;
-import utilities.swagger.outboundClass.Swagger_Compilation_Ok;
+import utilities.enums.Notification_importance;
+import utilities.enums.Notification_level;
+import utilities.swagger.outboundClass.Swagger_B_Program_Version;
+import utilities.swagger.outboundClass.Swagger_C_Program_Version;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -121,8 +122,59 @@ public class Version_Object extends Model {
 
 /* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/
 
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Transient
+    public void notification_compilation_start(){
 
+        new Notification(Notification_importance.low, Notification_level.info)
+                .setText("Server starts compilation of Version ")
+                .setObject(Swagger_B_Program_Version.class, this.id, this.version_name + ".", this.c_program.project_id(), "black", false, true, false, false)
+                .send(SecurityController.getPerson());
+    }
+
+    @JsonIgnore @Transient
+    public void notification_compilation_success(){
+
+        new Notification(Notification_importance.low, Notification_level.success)
+                .setText("Compilation of Version ")
+                .setObject(Swagger_B_Program_Version.class, this.id, this.version_name, this.c_program.project_id(), "black", false, true, false, false)
+                .setText("was successful.")
+                .send(SecurityController.getPerson());
+    }
+
+    @JsonIgnore @Transient
+    public void notification_compilation_unsuccessful_warn(String reason){
+
+        new Notification(Notification_importance.normal,  Notification_level.warning)
+                .setText("Compilation of Version")
+                .setObject(Swagger_B_Program_Version.class, this.id, this.version_name, this.c_program.project_id(), "black", false, true, false, false)
+                .setText("was unsuccessful, for reason:")
+                .setText(reason, "black", true, false, false)
+                .send(SecurityController.getPerson());
+    }
+
+    @JsonIgnore @Transient
+    public void notification_compilation_unsuccessful_error(String result){
+
+        new Notification(Notification_importance.normal, Notification_level.error)
+                .setText( "Compilation of Version")
+                .setObject(Swagger_B_Program_Version.class, this.id, this.version_name, this.c_program.project_id(), "black", false, true, false, false)
+                .setText("with critical Error:")
+                .setText(result, "black", true, false, false)
+                .send(SecurityController.getPerson());
+    }
+
+    @JsonIgnore @Transient
+    public void notification_new_actualization_request_on_version(){
+
+        new Notification(Notification_importance.low, Notification_level.info)
+                .setText("New actualization task was added to Task Queue on Version ")
+                .setObject(Swagger_C_Program_Version.class, this.id, this.version_name, this.c_program.project_id() )
+                .setText(" from Program ")
+                .setObject(C_Program.class, this.c_program.id, this.c_program.name, this.c_program.project_id())
+                .send(SecurityController.getPerson());
+    }
 /* JSON IGNORE DATA  ---------------------------------------------------------------------------------------------------*/
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 

@@ -273,11 +273,12 @@ public class Board extends Model {
 
     @JsonIgnore @Transient  public static void device_Disconnected(ObjectNode json){
         try {
-
+            //TODO
         }catch (Exception e){
             logger.error("Board:: device_Disconnected:: ERROR:: ", e);
         }
     }
+
 
 
     @JsonIgnore @Transient public static void hardware_connected(Board board, WS_YodaConnected report){
@@ -295,11 +296,11 @@ public class Board extends Model {
         // Pokusím se najít Aktualizační proceduru jestli existuje s následujícími stavy
         logger.debug("Tyrion Checking actualization state of connected board: ", board.id);
         List<C_Program_Update_Plan> plans = C_Program_Update_Plan.find.where().eq("board.id", board.id).disjunction()
-                    .add(   Expr.eq("state", C_ProgramUpdater_State.in_progress)         )
-                    .add(   Expr.eq("state", C_ProgramUpdater_State.waiting_for_device)         )
-                    .add(   Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible)      )
-                    .add(   Expr.eq("state", C_ProgramUpdater_State.critical_error)      )
-                    .add(   Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline)    )
+                .add(   Expr.eq("state", C_ProgramUpdater_State.in_progress)         )
+                .add(   Expr.eq("state", C_ProgramUpdater_State.waiting_for_device)         )
+                .add(   Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible)      )
+                .add(   Expr.eq("state", C_ProgramUpdater_State.critical_error)      )
+                .add(   Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline)    )
                 .endJunction().order().asc("id").findList();
 
 
@@ -463,6 +464,40 @@ public class Board extends Model {
     }
 
 
+
+
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient
+    public void notification_board_connect(){
+
+        new Notification(Notification_importance.low, Notification_level.info)
+                .setText("One of your Boards " + (this.personal_description != null ? this.personal_description : null ), "black", false, false, false)
+                .setObject(Board.class, this.id, this.id, this.project_id(), "black", false, true, false, false)
+                .setText("is connected.", "black", false, false, false)
+                .send(this.project.ownersOfProject);
+    }
+
+    @JsonIgnore @Transient
+    public void notification_board_disconnect(){
+
+        new Notification(Notification_importance.low, Notification_level.info)
+                .setText("One of your Boards " + (this.personal_description != null ? this.personal_description : null ), "black", false, false, false)
+                .setObject(Board.class, this.id, this.id, this.project_id(), "black", false, true, false, false)
+                .setText("is disconnected.", "black", false, false, false)
+                .send(this.project.ownersOfProject);
+    }
+
+    @JsonIgnore @Transient
+    public void notification_new_actualization_request_with_file(){
+
+        new Notification(Notification_importance.low, Notification_level.info)
+                .setText("New actualization task was added to Task Queue on ")
+                .setObject(Board.class, this.id, "board", this.project_id())
+                .setText(" with user File ") // TODO ? asi dodělat soubor ?
+                .send(SecurityController.getPerson());
+    }
+
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     // Floating shared documentation for Swagger
@@ -491,19 +526,5 @@ public class Board extends Model {
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String, Board> find = new Finder<>(Board.class);
-
-/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
-
-    public void board_connect(){
-
-        for(Person person : this.project.ownersOfProject) {
-
-            Notification notification = new Notification(Notification_importance.low, Notification_level.info, person)
-                    .setText("One of your Board " + (this.personal_description != null ? this.personal_description : null))
-                    .setObject(Board.class, this.id, this.id, this.project_id())
-                    .setText("is connected.");
-        }
-
-    }
 
 }

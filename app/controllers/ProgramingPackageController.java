@@ -354,6 +354,7 @@ public class ProgramingPackageController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response = Project.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -447,7 +448,7 @@ public class ProgramingPackageController extends Controller {
                     project.invitations.add(invitation);
                 }
 
-                NotificationController.project_invitation(SecurityController.getPerson(), person, project, invitation);
+                project.notification_project_invitation(person, invitation);
             }
 
             // Uložení do DB
@@ -496,9 +497,9 @@ public class ProgramingPackageController extends Controller {
 
             // Odeslání notifikace podle rozhodnutí uživatele
             if(!decision){
-                NotificationController.project_rejected_by_invited_person(invitation.owner, person, project);
+                project.notification_project_invitation_rejected(invitation.owner);
             }else{
-                NotificationController.project_accepted_by_invited_person(invitation.owner, person, project);
+                project.notification_project_invitation_accepted(invitation.owner);
             }
 
             // Smazání pozvánky

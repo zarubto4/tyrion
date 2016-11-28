@@ -4,10 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 
 public enum Notification_type {
 
-    confirmation,
     link,
     object,
-    bold_text,
     text;
 
     @JsonCreator

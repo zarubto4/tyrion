@@ -22,7 +22,7 @@
                     <h3 class="box-title">Tyrion internal recorded errors </h3>
                     <div class="pull-right">
                         <div class="btn-group">
-                            <a class="btn btn-block btn-danger btn-sm" href='/public/bugs/deleteAll'>Remove all</a>
+                            <a class="btn btn-block btn-danger btn-sm" href='/admin/bugs/deleteAll'>Remove all</a>
                         </div>
                     </div>
                 </div>
@@ -43,14 +43,14 @@
                                         <code class="javascript">@i.description</code></pre>
                                     </td>
                                     <td>
-                                        <span> <a class="btn btn-block btn-danger btn-sm" href='/public/bug/remove/@i.id' >Remove</a></span>
+                                        <span> <a class="btn btn-block btn-danger btn-sm" href='/admin/bug/remove/@i.id' >Remove</a></span>
                                     </td>
                                 </tr>
 
                                 <tr>
                                     <td>
                                         @if(i.youtrack_url == null) {
-                                            <span> <a class="btn btn-block btn-warning btn-sm"  href='/public/bug/report/@i.id' >Report to Youtrack</a></span>
+                                            <span> <a class="btn btn-block btn-warning btn-sm"  href='/admin/bug/report/@i.id' >Report to Youtrack</a></span>
                                         } else {
                                             <span> <a class="btn btn-block btn-success btn-sm"  href='@i.youtrack_url' >View on Youtrack</a></span>
                                         }
@@ -58,7 +58,7 @@
                                 </tr>
                                 <tr>
                                     <td>
-                                        <span> <a class="btn btn-block btn-info btn-sm" href='/public/bug/comment/@i.id' >Add Description</a></span>
+                                        <span> <a class="btn btn-block btn-info btn-sm" href='#' >Add Description</a></span>
                                     </td>
                                 </tr>
 

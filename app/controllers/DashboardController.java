@@ -51,6 +51,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -348,7 +349,7 @@ public class DashboardController extends Controller {
 
     // Odstraní konkrétní bug ze seznamu (souboru)
     public Result loggy_remove_bug(String bug_id) {
-        logger.debug("Trying to upload bug to youtrack");
+        logger.debug("Removing bug");
 
         Loggy.remove_error(bug_id);
         return redirect("/admin/bugs");
@@ -532,6 +533,8 @@ public class DashboardController extends Controller {
     public Result test(){
         try {
 
+
+
             List<String> fileNames = new ArrayList<>();
             File[] files = new File(application.path() + "/test").listFiles();
 
@@ -543,7 +546,18 @@ public class DashboardController extends Controller {
                 fileNames.add((file.getName().substring(0, file.getName().lastIndexOf('.'))));
             }
 
-            String log =  new String(Files.readAllBytes(Paths.get(application.path() + "/logs/test.log")), StandardCharsets.UTF_8);
+            Path path;
+
+            try {
+                path = Paths.get(application.path() + "/logs/test.log");
+            }catch (Exception e){
+                File file = new File(application.path() + "/logs/test.log");
+                file.getParentFile().mkdirs();
+                file.createNewFile();
+                path = Paths.get(application.path() + "/logs/test.log");
+            }
+
+            String log =  new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
 
             Html test_content = test.render(fileNames, log);
             return return_page(test_content);

@@ -21,7 +21,7 @@ public class Notification_Handler {
 
     public static void start_notification_thread(){
         logger.debug("Notification Handler will be started");
-        send_notification_thread.start();
+        if(!send_notification_thread.isAlive()) send_notification_thread.start();
     }
 
     public static void add_to_queue(Notification notification){
@@ -79,7 +79,7 @@ public class Notification_Handler {
         for (Person person : receivers) {
 
             // Pokud je notification_importance vyšší než "low" notifikaci uložím
-            if (notification.notification_importance != Notification_importance.low) {
+            if ((notification.notification_importance != Notification_importance.low)&&(notification.id == null)) {
 
                 notification.person = person;
                 notification.save_object();
@@ -89,6 +89,8 @@ public class Notification_Handler {
             if (WebSocketController.becki_website.containsKey(person.id)) {
                 WebSocketController.becki_sendNotification((WS_Becki_Website) WebSocketController.becki_website.get(person.id), notification);
             }
+
+            notification.id = null;
         }
     }
 }
