@@ -101,7 +101,7 @@ public class WS_BlockoServer extends WebSCType{
                         System.out.println("Odesílám požadavek na aktualizaci!");
 
                         if(task.instance != null){
-                            JsonNode result = task.instance.update_devices_firmware(task.actualization_procedure_id, task.get_ids(), task.firmware_type, task.file_record);
+                            JsonNode result = task.instance.actual_instance.update_devices_firmware(task.actualization_procedure_id, task.get_ids(), task.firmware_type, task.file_record);
                             System.out.println("Odpověď na Aktualizaci:" + result.toString());
                             System.out.println("Ještě neřeším reakci");
                             task_list.remove(task);

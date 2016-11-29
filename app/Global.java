@@ -43,11 +43,6 @@ public class Global extends GlobalSettings {
            logger.warn("Starting all scheduler threads");
            Server.startScheduling_procedures();
 
-           //7
-           logger.warn("Creating default system data in database");
-           Basic_Data.set_default_objects();
-
-           //8
            logger.warn("Creating Administrator");
            Basic_Data.set_Developer_objects();
     //****************************************************************************************************************************

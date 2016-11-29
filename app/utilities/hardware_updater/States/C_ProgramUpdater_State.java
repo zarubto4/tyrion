@@ -14,6 +14,9 @@ public enum C_ProgramUpdater_State {
     @ApiModelProperty(value = " State where the procedure is canceled by system or board owner" )  @EnumValue("canceled")  canceled,
 
     // Proces ještě nezačal
+    @ApiModelProperty(value = " State where Tyrion not yet compiled firmware for hardware" )  @EnumValue("bin_file_not_found") bin_file_not_found,
+
+    // Proces ještě nezačal
     @ApiModelProperty(value = " State where system is installing new firmware to board. Its not possible terminate this procedure in this time" )  @EnumValue("not_start_yet") not_start_yet,
 
     // Proces probíhá - němělo by do něj být zasahováno!

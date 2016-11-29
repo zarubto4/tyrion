@@ -4,20 +4,28 @@ import com.avaje.ebean.Expr;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.ApiModelProperty;
+import models.compiler.FileRecord;
 import models.compiler.Version_Object;
 import models.project.b_program.B_Pair;
 import models.project.b_program.B_Program_Hw_Group;
+import models.project.b_program.servers.Cloud_Homer_Server;
 import models.project.c_program.actualization.Actualization_procedure;
 import models.project.c_program.actualization.C_Program_Update_Plan;
 import models.project.m_program.M_Project_Program_SnapShot;
+import play.libs.Json;
 import utilities.enums.Firmware_type;
 import utilities.hardware_updater.Master_Updater;
 import utilities.hardware_updater.States.Actual_procedure_State;
 import utilities.hardware_updater.States.C_ProgramUpdater_State;
 
 import javax.persistence.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
 @Entity
 public class Homer_Instance_Record  extends Model {
@@ -65,6 +73,8 @@ public class Homer_Instance_Record  extends Model {
     @JsonIgnore @Transient
     public void add_new_actualization_request() {
         try {
+
+            if(!getProcedures().isEmpty() || version_object.b_program_hw_groups.isEmpty()) return;
 
             // Projedu seznam HW - podle skupin instancí jak jsou poskládané podle Yody
             for(B_Program_Hw_Group group : version_object.b_program_hw_groups) {
@@ -230,7 +240,34 @@ public class Homer_Instance_Record  extends Model {
         }
     }
 
+    @JsonIgnore @Transient public JsonNode update_devices_firmware(String actualization_procedure_id, List<String> targetIds, Firmware_type firmware_type, FileRecord record){
 
+        try {
+            logger.debug("Homer: " + actual_running_instance.sendToInstance().identifikator + ", will update Yodas or Devices");
+
+            ObjectNode result = Json.newObject();
+            result.put("messageChannel", Homer_Instance.CHANNEL);
+            result.put("instanceId", actual_running_instance.blocko_instance_name);
+            result.put("messageType", "updateDevice");
+            result.put("actualization_procedure_id", actualization_procedure_id);
+
+            result.put("firmware_type", firmware_type.get_firmwareType());
+            result.set("targetIds", Json.toJson(targetIds));
+
+            // Nahrávám Bootloader
+            if (record.boot_loader != null) result.put("build_id", record.boot_loader.version_identificator);
+
+                // Nahrávám klasický Firmware
+            else result.put("build_id", record.c_compilations_binary_file.firmware_build_id);
+
+            result.put("program", record.get_fileRecord_from_Azure_inString());
+
+            return actual_running_instance.sendToInstance().write_with_confirmation(result, 1000 * 30, 0, 3);
+
+        }catch (Exception e){
+            return Cloud_Homer_Server.RESULT_server_is_offline();
+        }
+    }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String, Homer_Instance_Record> find = new Finder<>(Homer_Instance_Record.class);

@@ -163,7 +163,22 @@ public class WebSocketController extends Controller {
 
                                 // Vytvořím kopii seznamu instancí, které by měli běžet na Homer Serveru
                                 for(String  identificator : instances_on_server){
-                                    if(Homer_Instance.find.where().eq("id",identificator ).isNotNull("actual_instance").findRowCount() < 1){
+
+                                    // NAjdu jestli instance má oprávnění být nazasená podle parametrů nasaditelné instnace
+                                    Integer size = Homer_Instance.find.where().eq("id", identificator )
+                                            .disjunction()
+                                                .conjunction()
+                                                    .eq("virtual_instance", false)
+                                                    .isNotNull("actual_instance")
+                                                .endJunction()
+                                                .conjunction()
+                                                    .eq("virtual_instance", true)
+                                                    .isNotNull("boards_in_virtual_instance")
+                                                .endJunction()
+                                            .endJunction().findRowCount();
+
+                                    if(size < 1){
+                                        logger.warn("Blocko Server: removing instnace:: ", identificator);
                                         instances_for_removing.add(identificator);
                                     }
                                 }
@@ -189,8 +204,12 @@ public class WebSocketController extends Controller {
                                         JsonNode add_instance = instance.add_instance_to_server();
                                         logger.debug("add_instance: " + add_instance.toString());
 
-                                        if (add_instance.get("status").asText().equals("error")) {
-                                            logger.error("Blocko Server: Fail when Tyrion try to add instance from Blocko cloud_blocko_server:: ", add_instance.toString());
+                                        if (add_instance.get("status").asText().equals("success")) {
+                                            logger.trace("Blocko Server: Uploud instance was succesful");
+                                            instance.check_hardware_c_program_state();
+                                        }
+                                        else if (add_instance.get("status").asText().equals("error")) {
+                                            logger.warn("Blocko Server: Fail when Tyrion try to add instance from Blocko cloud_blocko_server:: ", add_instance.toString());
                                         }
 
                                         sleep(50); // Abych Homer server tolik nevytížil
@@ -336,30 +355,45 @@ public class WebSocketController extends Controller {
 
         switch (json.get("messageChannel").asText()){
 
-            case "homer-server" : {
+
+            case "homer-server" : { // Komunikace mezi Tyrion server a Homer Server
+                Cloud_Homer_Server.Messages(json);
+            }
+
+
+            case "tyrion": {    // Komunikace mezi Tyrion server a Homer Instance
+                Homer_Instance.Messages(json);
+            }
+
+
+            case "becki": {    // Komunikace mezi Becki a Homer Instance
 
                 switch (json.get("messageType").asText()){
 
+
+                    case "notification" : {
+
+                        return;
+                    }
+
                     default: {
-                        logger.error("ERROR");
-                        logger.error("Blocko Server Incoming messageChanel homer-server not recognize messageType ->" + json.get("messageType").asText());
-                        logger.error("ERROR");
+                        logger.error("Homer Server:: Incoming message:: Chanel becki:: not recognize messageType ->" + json.get("messageType").asText());
+                        return;
                     }
 
                 }
+
             }
+
             default: {
-                logger.error("ERROR");
-                logger.error("Blocko Server Incoming message not recognize incoming messageChanel!!! ->" + json.get("messageChannel").asText());
-                logger.error("ERROR");
+                logger.error("Homer Server Incoming message not recognize incoming messageChanel!!! ->" + json.get("messageChannel").asText());
+
             }
 
         }
 
     }else {
-        logger.error("ERROR");
-        logger.error("Homer: "+ blockoServer.identifikator + " Incoming message has not messageChannel!!!!");
-        logger.error("ERROR");
+        logger.error("Homer Server: "+ blockoServer.identifikator + " Incoming message has not messageChannel!!!!");
     }
 }
 
@@ -384,9 +418,9 @@ public class WebSocketController extends Controller {
                 case "becki": {
                     switch (json.get("messageType").asText()) {
 
-                        case "notification"             :   {  becki_notification_confirmation_from_becki(becki, json); return;}
-                        case "subscribe_notification"   :   {  becki_subscribe_notification(becki, json);               return;}
-                        case "unsubscribe_notification" :   {  becki_unsubscribe_notification(becki, json);             return;}
+                        case "notification"             :   {  becki_notification_confirmation_from_becki(becki, json); return;}    // Becki poslala odpověď, že dostala notifikaci
+                        case "subscribe_notification"   :   {  becki_subscribe_notification(becki, json);               return;}    // Becki poslala odpověď, že ví že subscribe_notification
+                        case "unsubscribe_notification" :   {  becki_unsubscribe_notification(becki, json);             return;}    // Becki poslala odpověď, že ví že už ne! subscribe_notification
 
                         default: {
                             logger.error("ERROR \n");
@@ -490,7 +524,8 @@ public class WebSocketController extends Controller {
             }
 
             public static void becki_notification_confirmation_from_becki(WS_Becki_Website becki, JsonNode json){
-
+                // TODO
+                // Tady dosátvám potvrzení, že becki dostala notifikaci
             }
 
         // Ping
@@ -521,7 +556,7 @@ public class WebSocketController extends Controller {
 
         try {
             terminal.close();
-        }catch (Exception e){}
+        }catch(Exception e){}
     }
 
     public static void disconnect_all_Blocko_Servers() {

@@ -10,15 +10,12 @@ import com.google.inject.Inject;
 import io.swagger.annotations.*;
 import models.compiler.*;
 import models.project.b_program.instnace.Homer_Instance;
-import models.project.c_program.C_Compilation;
 import models.project.c_program.C_Program;
 import models.project.global.Product;
 import models.project.global.Project;
 import play.data.Form;
-import play.libs.F;
 import play.libs.Json;
 import play.libs.ws.WSClient;
-import play.libs.ws.WSResponse;
 import play.mvc.*;
 import utilities.Server;
 import utilities.emails.EmailTool;
@@ -3353,7 +3350,8 @@ public class CompilationLibrariesController extends Controller {
             if(instance == null) return GlobalResult.notFoundObject("Instance not found");
 
             if(instance.actual_instance == null) return GlobalResult.notFoundObject("Instance not found");
-            instance.actual_instance.add_new_actualization_request_bootloader();
+
+             instance.actual_instance.add_new_actualization_request_bootloader();
 
 
             // Vracím Json

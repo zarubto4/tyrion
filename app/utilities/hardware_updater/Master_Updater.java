@@ -199,6 +199,8 @@ public class Master_Updater{
                                 System.out.println("..........V Blob serveru nebyla - musí se vytvořit");
                                 System.out.println("..........Spouštím proceduru dodatečné procedury protože kompilačku v azure nemám");
                                 System.out.println("..........Tato procedura chybí!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                                plan.state = C_ProgramUpdater_State.bin_file_not_found;
+                                plan.update();
                                 continue;
                             }
 

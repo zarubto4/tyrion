@@ -95,8 +95,9 @@
                                     <div class="box-header">
                                         <h3 class="box-title"> Yoda: @x.main_board_pair.board.id Name: @x.main_board_pair.board.personal_description </h3>
                                         <h3 class="box-title">
-                                        @if(x.main_board_pair.board.is_online()){
-                                                <p class="text-red"> Online</p>
+
+                                        @if( x.main_board_pair.board.is_online()  == true){
+                                                <p class="text-green"> Online</p>
                                         }else{
                                                 <p class="text-red"> Offline</p>
                                         }
@@ -152,8 +153,8 @@
                                                 <td> @b_pair.board.personal_description</td>
 
                                                 <td>
-                                                @if(b_pair.board.is_online()){
-                                                    <p class="text-red">Online</p>
+                                                @if(b_pair.board.is_online() == true){
+                                                    <p class="text-green">Online</p>
                                                 }else{
                                                     <p class="text-red">Offline</p>
                                                 }

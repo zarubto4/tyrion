@@ -9,8 +9,6 @@ import java.util.List;
 
 public class Basic_Data {
 
-    public static void  set_default_objects(){
-    }
 
     public static void set_Developer_objects(){
 

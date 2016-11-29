@@ -1,5 +1,6 @@
 package models.project.b_program.instnace;
 
+import com.avaje.ebean.Expr;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -11,23 +12,26 @@ import io.swagger.annotations.ApiModelProperty;
 import models.compiler.Board;
 import models.compiler.FileRecord;
 import models.notification.Notification;
-import models.person.Person;
 import models.project.b_program.B_Pair;
 import models.project.b_program.B_Program;
 import models.project.b_program.B_Program_Hw_Group;
 import models.project.b_program.servers.Cloud_Homer_Server;
 import models.project.b_program.servers.Private_Homer_Server;
+import models.project.c_program.actualization.C_Program_Update_Plan;
 import models.project.global.Project;
 import play.libs.Json;
 import utilities.enums.Firmware_type;
 import utilities.enums.Notification_importance;
 import utilities.enums.Notification_level;
 import utilities.enums.Type_of_command;
+import utilities.hardware_updater.Master_Updater;
+import utilities.hardware_updater.States.C_ProgramUpdater_State;
 import utilities.swagger.documentationClass.Swagger_B_Program_Version_New;
 import utilities.swagger.outboundClass.Swagger_B_Program_Instance;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Swagger_Instance_HW_Group;
 import utilities.webSocket.WebSCType;
+import utilities.webSocket.messageObjects.WS_BoardStats_AbstractClass;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -196,7 +200,46 @@ public class Homer_Instance extends Model {
     public static String CHANNEL = "tyrion";
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
-    @JsonIgnore @Transient public WebSCType sendToInstance(){return WebSocketController.blocko_servers.get(this.cloud_homer_server.server_name);}
+
+    // Messenger
+    @JsonIgnore @Transient public static void Messages(ObjectNode json){
+
+        try {
+            switch (json.get("messageType").asText()) {
+
+
+                case "deviceConnected": {
+                    logger.debug("Homer_Instance:: Incoming message:: deviceConnected");
+
+
+                    return;
+                }
+                case "yodaConnected": {
+                    logger.debug("Homer_Instance:: Incoming message:: yodaConnected");
+
+                    return;
+                }
+                case "instanceSummary": {
+                    logger.debug("Homer_Instance:: Incoming message:: instanceSummary");
+
+                    return;
+                }
+
+
+                default: {
+                    logger.error("Homer_Instance:: Incoming message:: Chanel tyrion:: not recognize messageType ->" + json.get("messageType").asText());
+                    return;
+                }
+
+            }
+        }catch (Exception e){
+            logger.error("Homer_Instance:: Incoming message:: Error", e.getMessage());
+        }
+    }
+
+
+
+    @JsonIgnore @Transient public WebSCType sendToInstance(){ return WebSocketController.blocko_servers.get(this.cloud_homer_server.server_name);}
 
     @JsonIgnore @Transient public  JsonNode getState(){
         try{
@@ -401,6 +444,10 @@ public class Homer_Instance extends Model {
 
             // Nahraju Blocko Program
             JsonNode result_blocko_program  = this.upload_blocko_program();
+            if(!result_device.get("status").asText().equals("success")) return result_blocko_program;
+
+            this.check_hardware_c_program_state();
+
             return   result_blocko_program;
 
         }catch (Exception e){
@@ -517,35 +564,87 @@ public class Homer_Instance extends Model {
         }
     }
 
-    @JsonIgnore @Transient public  JsonNode update_devices_firmware(String actualization_procedure_id, List<String> targetIds, Firmware_type firmware_type, FileRecord record){
+    @JsonIgnore @Transient public  void check_hardware_c_program_state(){
 
-        try {
-            logger.debug("Homer: " + sendToInstance().identifikator + ", will update Yodas or Devices");
+        logger.error("Tady chci kontrolovat hardware!!! Všechen!!!!!! Instance ID:: ", blocko_instance_name);
 
-            ObjectNode result = Json.newObject();
-            result.put("messageChannel", CHANNEL);
-            result.put("instanceId", this.blocko_instance_name);
-            result.put("messageType", "updateDevice");
-            result.put("actualization_procedure_id", actualization_procedure_id);
-
-            result.put("firmware_type", firmware_type.get_firmwareType());
-            result.set("targetIds", Json.toJson(targetIds));
-
-            // Nahrávám Bootloader
-            if (record.boot_loader != null) result.put("build_id", record.boot_loader.version_identificator);
-
-            // Nahrávám klasický Firmware
-            else result.put("build_id", record.c_compilations_binary_file.firmware_build_id);
-
-            result.put("program", record.get_fileRecord_from_Azure_inString());
-
-            return sendToInstance().write_with_confirmation(result, 1000 * 30, 0, 3);
-
-        }catch (Exception e){
-            return Cloud_Homer_Server.RESULT_server_is_offline();
-        }
     }
 
+    @JsonIgnore @Transient public  void check_hardware(Board board, WS_BoardStats_AbstractClass report){
+
+        logger.error("Tady chci kontrolovat hardware!!! Všechen!!!!!! Instance ID:: ", blocko_instance_name, " hardware ID:: ", board.id);
+
+        if(!virtual_instance) {
+            logger.debug("Homer_Instance_Record:: check_hardware:: Found one actualization procedure on ", board.id);
+            C_Program_Update_Plan plan = C_Program_Update_Plan.find.where()
+                    .eq("board.id", board.id)
+                    .eq("actualization_procedure.homer_instance_record.id", actual_instance.id)
+                    .disjunction()
+                    .add(Expr.eq("state", C_ProgramUpdater_State.not_start_yet))
+                    .add(Expr.eq("state", C_ProgramUpdater_State.in_progress))
+                    .add(Expr.eq("state", C_ProgramUpdater_State.waiting_for_device))
+                    .add(Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible))
+                    .add(Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline))
+                    .endJunction().findUnique();
+
+            if (plan.firmware_type == Firmware_type.FIRMWARE) {
+
+                logger.debug("Homer_Instance_Record:: check_hardware:: Checking Firmware");
+
+                // Mám shodu oproti očekávánemů
+                if (plan.c_program_version_for_update.c_compilation.firmware_build_id.equals(report.firmware_build_id)) {
+
+                    plan.state = C_ProgramUpdater_State.complete;
+                    plan.update();
+
+                } else {
+
+                    plan.state = C_ProgramUpdater_State.in_progress;
+                    plan.update();
+
+                    Master_Updater.add_new_Procedure(plan.actualization_procedure);
+
+                }
+
+            } else if (plan.firmware_type == Firmware_type.BOOTLOADER) {
+
+                logger.debug("Homer_Instance_Record:: check_hardware:: Checking Firmware");
+
+                // Mám shodu oproti očekávánemů
+                if (plan.binary_file.boot_loader.version_identificator.equals(report.bootloader_build_id)) {
+
+                    plan.state = C_ProgramUpdater_State.complete;
+                    plan.update();
+
+                } else {
+
+                    plan.state = C_ProgramUpdater_State.in_progress;
+                    plan.update();
+
+                    Master_Updater.add_new_Procedure(plan.actualization_procedure);
+                }
+
+            } else if (plan.firmware_type == Firmware_type.BACKUP) {
+
+                logger.debug("Homer_Instance_Record:: check_hardware:: Checking Backup");
+
+                plan.state = C_ProgramUpdater_State.complete;
+                plan.update();
+            }
+
+        }
+        else {
+
+            System.out.println("Virutální instanci update zatím nepodporujeme!!!");
+
+        }
+
+    }
+
+
+
+
+    // Smažu s podporou a změnou websocketu na Homerovi
     @JsonIgnore @Transient public  JsonNode add_grid_token(String token){
         try {
 
@@ -578,7 +677,6 @@ public class Homer_Instance extends Model {
             return Cloud_Homer_Server.RESULT_server_is_offline();
         }
     }
-
 
     // Pomocné objekty - Defaultní zprávy
 

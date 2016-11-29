@@ -82,6 +82,26 @@ public class Cloud_Homer_Server extends Model{
     public static String CHANNEL = "homer-server";
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
+    @JsonIgnore @Transient public static void Messages(ObjectNode json){
+        try {
+            switch (json.get("messageType").asText()) {
+
+                case "yoda_unauthorized_logging": {
+                    logger.warn("Cloud_Homer_Server:: Incoming message:: Chanel homer-server:: Unauthorized login!");
+                    //TODO
+                    return;
+                }
+
+                default: {
+                    logger.error("Cloud_Homer_Server:: Incoming message:: Chanel homer-server:: not recognize messageType ->" + json.get("messageType").asText());
+                    return;
+                }
+            }
+        }catch (Exception e){
+            logger.error("Cloud_Homer_Server:: Incoming message:: Error", e.getMessage());
+        }
+    }
+
     @JsonIgnore @Transient  public JsonNode get_homer_server_listOfInstance(){
         try {
 

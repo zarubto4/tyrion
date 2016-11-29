@@ -458,8 +458,9 @@ public class Demo_Data_Controller extends Controller {
 
 
                     GeneralTariff_Extensions extensions_1 = new GeneralTariff_Extensions();
+                    extensions_1.name = "Super tunning";
                     extensions_1.active = true;
-                    extensions_1.color = "gree";
+                    extensions_1.color = "blue-madison";
                     extensions_1.description = "testovací extension";
                     extensions_1.order_position = 1;
                     extensions_1.eur = 1.0;
@@ -483,8 +484,9 @@ public class Demo_Data_Controller extends Controller {
 
 
                     GeneralTariff_Extensions extensions_2 = new GeneralTariff_Extensions();
+                    extensions_2.name = "Super bonus ";
                     extensions_2.active = true;
-                    extensions_2.color = "red";
+                    extensions_2.color = "blue-chambray";
                     extensions_2.description = "testovací extension";
                     extensions_2.order_position = 1;
                     extensions_2.eur = 2.0;
@@ -516,7 +518,7 @@ public class Demo_Data_Controller extends Controller {
             geek_tariff.tariff_description = "Temporary account only for next 3 months";
             geek_tariff.identificator = "geek";
 
-            geek_tariff.color            = "green";
+            geek_tariff.color            = "green-jungle";
 
             geek_tariff.required_paid_that = false;
             geek_tariff.number_of_free_months = 1;
@@ -578,7 +580,7 @@ public class Demo_Data_Controller extends Controller {
             business_tariff.tariff_description = "Best for true business";
             business_tariff.identificator = "business_1";
 
-            business_tariff.color            = "yellow";
+            business_tariff.color            = "green-jungle";
 
             business_tariff.required_paid_that = false;
             business_tariff.number_of_free_months = 1;
@@ -657,7 +659,7 @@ public class Demo_Data_Controller extends Controller {
             business_tariff_2.tariff_description = "You know what you need!";
             business_tariff_2.identificator = "business_2";
 
-            business_tariff_2.color            = "red";
+            business_tariff_2.color            = "green-sharp";
 
             business_tariff_2.required_paid_that = true;
             business_tariff_2.number_of_free_months = 0;
@@ -731,8 +733,9 @@ public class Demo_Data_Controller extends Controller {
 
 
             GeneralTariff_Extensions extensions_3 = new GeneralTariff_Extensions();
+            extensions_3.name = "Mega tunning";
             extensions_3.active = true;
-            extensions_3.color = "gree";
+            extensions_3.color = "purple-sharp";
             extensions_3.description = "testovací extension";
             extensions_3.order_position = 1;
             extensions_3.eur = 1.0;
@@ -756,8 +759,9 @@ public class Demo_Data_Controller extends Controller {
 
 
             GeneralTariff_Extensions extensions_6 = new GeneralTariff_Extensions();
+            extensions_6.name = "HyperTotal tunning";
             extensions_6.active = true;
-            extensions_6.color = "red";
+            extensions_6.color = "red-flamingo";
             extensions_6.description = "testovací extension";
             extensions_6.order_position = 1;
             extensions_6.eur = 2.0;
@@ -782,8 +786,9 @@ public class Demo_Data_Controller extends Controller {
 
 
             GeneralTariff_Extensions extensions_7 = new GeneralTariff_Extensions();
+            extensions_7.name = "Mega tunning";
             extensions_7.active = true;
-            extensions_7.color = "blue";
+            extensions_7.color = "YELLOW-CRUSTA";
             extensions_7.description = "testovací extension";
             extensions_7.order_position = 1;
             extensions_7.eur = 20.0;

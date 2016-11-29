@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
 import models.notification.Notification;
-import models.person.Person;
 import models.project.b_program.B_Pair;
 import models.project.b_program.instnace.Homer_Instance;
 import models.project.b_program.servers.Cloud_Homer_Server;
@@ -18,10 +17,8 @@ import models.project.c_program.actualization.C_Program_Update_Plan;
 import models.project.global.Project;
 import play.data.Form;
 import play.libs.Json;
-import utilities.enums.Firmware_type;
 import utilities.enums.Notification_importance;
 import utilities.enums.Notification_level;
-import utilities.hardware_updater.Master_Updater;
 import utilities.hardware_updater.States.C_ProgramUpdater_State;
 import utilities.swagger.outboundClass.Swagger_Board_status;
 import utilities.webSocket.WS_BlockoServer;
@@ -148,6 +145,54 @@ public class Board extends Model {
     @JsonIgnore @Transient public boolean is_online(){ // Velmi opatrně s touto proměnou - je časově velmi náročná!!!!!!!!
         try {
 
+            System.err.println("Kontorloa toho zda je deivce ONLINE ID:: " + id);
+
+            Homer_Instance homer_instance = get_instance();
+
+            if(homer_instance == null){
+                logger.warn("Board::"+  id + " has not set instance!");
+                return false;
+            }
+
+            ObjectNode request = Json.newObject();
+            request.put("messageType", "device_online_state");
+            request.put("messageChannel", Homer_Instance.CHANNEL);
+            request.put("instanceId", homer_instance.blocko_instance_name);
+            request.put("devicesId", this.id);
+
+            JsonNode result = homer_instance.sendToInstance().write_with_confirmation(request, 1000 * 3, 0, 4);
+
+            System.out.println("Status: JSON:::::: " + result.toString());
+
+
+            if( result.get("status").asText().equals("error")){
+                System.out.println("Status: JSON:::::: je error");
+                return false;
+            }
+
+            if( result.get("status").asText().equals("success") ){
+
+                System.out.println("Status: JSON:::::: je success");
+
+                boolean status =  result.get("device_state").asBoolean();
+
+                System.out.println("Status: JSON:::::: je success status je " + status);
+
+                return result.get("device_state").asBoolean();
+            }
+
+            return false;
+
+        }catch (NullPointerException e){
+            return false;
+        }catch (Exception e){
+            logger.error("Board:: is_online:: Error:: ", e);
+            return false;
+        }
+    }
+
+    @JsonIgnore @Transient public Homer_Instance get_instance(){
+
             Homer_Instance homer_instance;
 
             // Buď zkoumám virutální instnaci
@@ -159,30 +204,14 @@ public class Board extends Model {
             } else {
 
                 homer_instance = Homer_Instance.find.where().disjunction()
-                        .eq("actual_instance.version_object.b_program_hw_groups.device_board_pairs.board.id", this.id)
-                        .eq("actual_instance.version_object.b_program_hw_groups.device_board_pairs.board.id", this.id)
+                            .eq("actual_instance.version_object.b_program_hw_groups.main_board_pair.board.id", this.id)
+                            .eq("actual_instance.version_object.b_program_hw_groups.device_board_pairs.board.id", this.id)
                         .endJunction().findUnique();
             }
 
-            if (homer_instance == null || !homer_instance.instance_online()) return false;
-
-
-            ObjectNode request = Json.newObject();
-            request.put("messageType", "device_online_state");
-            request.put("messageChannel", Homer_Instance.CHANNEL);
-            request.put("instanceId", homer_instance.blocko_instance_name);
-            request.put("devicesId", this.id);
-
-            JsonNode result = homer_instance.sendToInstance().write_with_confirmation(request, 1000 * 3, 0, 4);
-
-            return !result.get("status").asText().equals("error") && result.get("device_state").asBoolean();
-
-
-        }catch (Exception e){
-            logger.error("Board:: is_online:: Error:: ", e);
-            return false;
-        }
+            return homer_instance;
     }
+
 
     @JsonIgnore @Transient  public static void master_device_Connected(WS_BlockoServer server, ObjectNode json){
         try {
@@ -286,98 +315,30 @@ public class Board extends Model {
         logger.debug("Tyrion Checking summary information of connected master board: ", board.id);
 
 
-        // Kontrola nastavení Backup modu
-        logger.trace("Checking autobackup");
-        if(board.backup_mode != report.autobackup){
-            // TODO
-
-        }
-
         // Pokusím se najít Aktualizační proceduru jestli existuje s následujícími stavy
         logger.debug("Tyrion Checking actualization state of connected board: ", board.id);
-        List<C_Program_Update_Plan> plans = C_Program_Update_Plan.find.where().eq("board.id", board.id).disjunction()
-                .add(   Expr.eq("state", C_ProgramUpdater_State.in_progress)         )
-                .add(   Expr.eq("state", C_ProgramUpdater_State.waiting_for_device)         )
-                .add(   Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible)      )
-                .add(   Expr.eq("state", C_ProgramUpdater_State.critical_error)      )
-                .add(   Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline)    )
-                .endJunction().order().asc("id").findList();
+        Integer plans = C_Program_Update_Plan.find.where().eq("board.id", board.id).disjunction()
+                    .add(   Expr.eq("state", C_ProgramUpdater_State.not_start_yet)              )
+                    .add(   Expr.eq("state", C_ProgramUpdater_State.in_progress)                )
+                    .add(   Expr.eq("state", C_ProgramUpdater_State.waiting_for_device)         )
+                    .add(   Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible)      )
+                    .add(   Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline)    )
+                .endJunction().findRowCount();
 
-
-        if(plans.size() > 1){
-            logger.error("Hardware Yoda: ", board.id, " connected into system, but we have mote than 2 update-plan!!!");
-            logger.error("Earlier plans are terminate! Last one - by ID is used now!");
-
-            for(int i = 1; i < plans.size(); i++ ){
-                plans.get(i).state = C_ProgramUpdater_State.overwritten;
-                plans.get(i).update();
-                plans.remove(i);
-            }
-        }
-
-        if(plans.size() == 1){
-
-            logger.debug("Found one actualization procedure on ", board.id);
-
-            C_Program_Update_Plan plan = plans.get(0);
-
-
-            if(plan.firmware_type == Firmware_type.FIRMWARE){
-
-                logger.debug("Checking Firmware");
-
-                // Mám shodu oproti očekávánemů
-                if(plan.c_program_version_for_update.c_compilation.firmware_build_id .equals( report.firmware_build_id )){
-
-                    plan.state = C_ProgramUpdater_State.complete;
-                    plan.update();
-
-                }else {
-
-                    plan.state = C_ProgramUpdater_State.in_progress;
-                    plan.update();
-
-                    Master_Updater.add_new_Procedure(plan.actualization_procedure);
-
-                }
-
-            }else if(plan.firmware_type == Firmware_type.BOOTLOADER){
-
-                logger.debug("Checking Firmware");
-
-                // Mám shodu oproti očekávánemů
-                if(plan.binary_file.boot_loader.version_identificator.equals( report.bootloader_build_id )){
-
-                    plan.state = C_ProgramUpdater_State.complete;
-                    plan.update();
-
-                }else {
-
-                    plan.state = C_ProgramUpdater_State.in_progress;
-                    plan.update();
-
-                    Master_Updater.add_new_Procedure(plan.actualization_procedure);
-                }
-
-            }else if(plan.firmware_type == Firmware_type.BACKUP){
-
-                logger.debug("Checking Backup");
-
-                plan.state = C_ProgramUpdater_State.complete;
-                plan.update();
-            }
+        if(plans > 0){
+            board.get_instance().check_hardware(board, report);
         }else {
             logger.debug("No actualization plan found for Master Device: " + board.id);
         }
 
+        board.notification_board_connect();
 
         for(WS_DeviceConnected device_report : report.devices_summary){
 
             Board device = Board.find.byId(device_report.deviceId);
 
-            // Smazat device z instance a tím i z yody
-            if(device == null){
-                logger.error("Unauthorized device connected to Yoda!" + board.id);
+            if(device == null){ // Smazat device z instance a tím i z yody
+                logger.error("Unauthorized device connected to Yoda:: ", board.id, " unauthorized device id is:: ", device_report.deviceId);
                 //TODO
 
             }else {
@@ -393,72 +354,28 @@ public class Board extends Model {
 
         // Pokusím se najít Aktualizační proceduru jestli existuje s následujícími stavy
         logger.debug("Tyrion Checking actualization state of connected board: ", board.id);
-        List<C_Program_Update_Plan> plans = C_Program_Update_Plan.find.where().eq("board.id", board.id).disjunction()
-                .add(   Expr.eq("state", C_ProgramUpdater_State.in_progress)         )
-                .add(   Expr.eq("state", C_ProgramUpdater_State.waiting_for_device)         )
-                .add(   Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible)      )
-                .add(   Expr.eq("state", C_ProgramUpdater_State.critical_error)      )
-                .add(   Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline)    ).order().asc("id").findList();
+        Integer plans  = C_Program_Update_Plan.find.where().eq("board.id", board.id)
+                .disjunction()
+                    .add(   Expr.eq("state", C_ProgramUpdater_State.not_start_yet)              )
+                    .add(   Expr.eq("state", C_ProgramUpdater_State.in_progress)                )
+                    .add(   Expr.eq("state", C_ProgramUpdater_State.waiting_for_device)         )
+                    .add(   Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible)      )
+                    .add(   Expr.eq("state", C_ProgramUpdater_State.critical_error)             )
+                    .add(   Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline)    )
+                .endJunction()
+                .findRowCount();
 
-
-        if(plans.size() > 1){
-            logger.error("Hardware Board: ", board.id, " connected into system, but we have mote than 2 update-plan!!!");
-            logger.error("Earlier plans are terminate! Last one - by ID is used now!");
-
-            for(int i = 1; i < plans.size(); i++ ){
-                plans.get(i).state = C_ProgramUpdater_State.overwritten;
-                plans.get(i).update();
-                plans.remove(i);
-            }
-        }
-
-        if(plans.size() == 1){
-
-            logger.debug("Found one actualization procedure on ", board.id);
-
-            C_Program_Update_Plan plan = plans.get(0);
-
-            if(plan.firmware_type == Firmware_type.FIRMWARE){
-
-                logger.debug("Checking Firmware");
-
-                // Mám shodu oproti očekávánemů
-                if(plan.c_program_version_for_update.c_compilation.firmware_build_id .equals( report.firmware_build_id )){
-
-                    plan.state = C_ProgramUpdater_State.complete;
-                    plan.update();
-
-                }else {
-
-                    plan.state = C_ProgramUpdater_State.in_progress;
-                    plan.update();
-
-                    Master_Updater.add_new_Procedure(plan.actualization_procedure);
-
-                }
-
-            }else if(plan.firmware_type == Firmware_type.BOOTLOADER) {
-
-                logger.debug("Checking Firmware");
-
-                // Mám shodu oproti očekávánemů
-                if (plan.binary_file.boot_loader.version_identificator.equals(report.bootloader_build_id)) {
-
-                    plan.state = C_ProgramUpdater_State.complete;
-                    plan.update();
-
-                } else {
-
-                    plan.state = C_ProgramUpdater_State.in_progress;
-                    plan.update();
-
-                    Master_Updater.add_new_Procedure(plan.actualization_procedure);
-                }
-            }
-
+        if(plans > 0){
+            board.get_instance().check_hardware(board, report);
         }else {
-            logger.debug("No actualization plan found for Master Device: " + board.id);
+            logger.debug("No actualization plan found for Device: " + board.id);
         }
+
+        board.notification_board_connect();
+
+        // TODO pokračovat s dalšíma píčovinama
+
+        // TODO log device is online!
 
 
     }
