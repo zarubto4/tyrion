@@ -319,6 +319,17 @@ public class NotificationController extends Controller {
           protocols = "https",
           code = 200
   )
+  @ApiImplicitParams(
+          {
+                  @ApiImplicitParam(
+                          name = "body",
+                          dataType = "utilities.swagger.documentationClass.Swagger_Notification_Confirm",
+                          required = true,
+                          paramType = "body",
+                          value = "Contains Json with values"
+                  )
+          }
+  )
   @ApiResponses(value = {
           @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
           @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
