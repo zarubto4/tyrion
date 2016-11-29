@@ -563,9 +563,11 @@ public class Finance_Controller extends Controller {
 
                     if(help.payment_mode == null) return GlobalResult.result_BadRequest("Payment_mode is required!");
 
-                         if(help.payment_mode.equals( Payment_mode.monthly.name()))      product.mode = Payment_mode.monthly;
+                    if(help.payment_mode.equals( Payment_mode.free.name()))              product.mode = Payment_mode.free;
+                    else if(help.payment_mode.equals( Payment_mode.annual.name()))      product.mode = Payment_mode.annual;
+                    else if(help.payment_mode.equals( Payment_mode.monthly.name()))      product.mode = Payment_mode.monthly;
                     else if(help.payment_mode.equals( Payment_mode.per_credit.name()))   product.mode = Payment_mode.per_credit;
-                    else { return GlobalResult.result_BadRequest("payment_mode is invalid. Use only (monthly, annual, per_credit)");}
+                    else { return GlobalResult.result_BadRequest("payment_mode is invalid. Use only (free, monthly, annual, per_credit)");}
 
                 }
 
@@ -643,10 +645,10 @@ public class Finance_Controller extends Controller {
                 }
 
 
-                Swagger_GoPay_Url swager_goPay_url = new Swagger_GoPay_Url();
-                swager_goPay_url.gw_url = result.get("gw_url").asText();
+                Swagger_GoPay_Url swagger_goPay_url = new Swagger_GoPay_Url();
+                swagger_goPay_url.gw_url = result.get("gw_url").asText();
 
-                return GlobalResult.result_ok(Json.toJson(swager_goPay_url));
+                return GlobalResult.result_ok(Json.toJson(swagger_goPay_url));
 
 
         } catch (Exception e) {

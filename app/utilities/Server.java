@@ -29,6 +29,8 @@ import play.Configuration;
 import play.Play;
 import utilities.hardware_updater.Master_Updater;
 import utilities.notifications.Notification_Handler;
+import utilities.schedules_activities.Old_Floating_Person_Token_Removal;
+import utilities.schedules_activities.Old_Notification_Removal;
 import utilities.schedules_activities.Removing_Unused_Tokens;
 import utilities.schedules_activities.Sending_Invoices;
 
@@ -344,8 +346,10 @@ public class Server {
 
 
             // Klíč / identifikátor Trrigru definující, kdy se konkrétní job zapne.
-            TriggerKey every_day_key = TriggerKey.triggerKey("every_day_02:10");
-            TriggerKey every_second_day_key = TriggerKey.triggerKey("every_second_day_2:30");
+            TriggerKey every_day_key1 = TriggerKey.triggerKey("every_day_03:00");
+            TriggerKey every_day_key2 = TriggerKey.triggerKey("every_day_03:10");
+            TriggerKey every_day_key3 = TriggerKey.triggerKey("every_day_03:20");
+            TriggerKey every_second_day_key = TriggerKey.triggerKey("every_second_day_4:00");
 
             //-------------------------
 
@@ -353,27 +357,46 @@ public class Server {
             // slr pomáhá v případě problémů s operační pamětí - v režimu developer  je v metodě která ukončuje server třeba při buildu procedura, která vyčistí RAM
             // scheduler.clear();
 
-
             // Definované Trigry
-            if(!scheduler.checkExists(every_day_key)){
+            if(!scheduler.checkExists(every_day_key1)){
 
-                Trigger every_day_1 = newTrigger().withIdentity(every_day_key).startNow()
-                        .withSchedule(dailyAtHourAndMinute(2,10))// Spuštění každý den v 02:10 AM
+                Trigger every_day_1 = newTrigger().withIdentity(every_day_key1).startNow()
+                        .withSchedule(dailyAtHourAndMinute(3,0))// Spuštění každý den v 03:00 AM
                         .build();
 
-                Trigger every_day_2 = newTrigger().withIdentity(every_day_key).startNow()
-                        .withSchedule(dailyAtHourAndMinute(2,10))// Spuštění každý den v 02:10 AM
+                Trigger every_day_2 = newTrigger().withIdentity(every_day_key2).startNow()
+                        .withSchedule(dailyAtHourAndMinute(3,10))// Spuštění každý den v 03:10 AM
                         .build();
+
+                Trigger every_day_3 = newTrigger().withIdentity(every_day_key3).startNow()
+                        .withSchedule(dailyAtHourAndMinute(3,20))// Spuštění každý den v 03:20 AM
+                        .build();
+
+                /**
+                 *  !!!
+                 *  Každý Job musí mít Trigger, který má unikátní TriggerKey
+                 *  !!!
+                 */
 
                 // Přidání úkolů do scheduleru
 
-                // 1) Odstraňování nepřihlášených tokenů ze sociálních sítí, kteér mají živostnost jen 24h
-                scheduler.scheduleJob(  newJob(     Removing_Unused_Tokens.class    ).withIdentity( JobKey.jobKey("removing_unused_tokens") ).build(), every_day_1);
+                // 1) Odstraňování starých auth-tokenů z přihlášení, které mají živostnost jen 72h
+                logger.info("Scheduling new Job - Old_Floating_Person_Token_Removal");
+                scheduler.scheduleJob( newJob(Old_Floating_Person_Token_Removal.class).withIdentity( JobKey.jobKey("removing_old_floating_person_tokens") ).build(), every_day_1);
 
-                // 2) Kontrola a fakturace klientů na měsíční bázi
-                scheduler.scheduleJob(  newJob(     Sending_Invoices.class          ).withIdentity( JobKey.jobKey("sending_invoices")       ).build(), every_day_2);
+                // 2) Odstraňování notifikací starších, než měsíc
+                logger.info("Scheduling new Job - Old_Notification_Removal");
+                scheduler.scheduleJob( newJob(Old_Notification_Removal.class).withIdentity( JobKey.jobKey("removing_old_notifications") ).build(), every_day_2);
 
-                // 3) Přesouvání logů v DB do Blob Serveru a uvolňování místa v DB a na serveru
+                // 3) Odstraňování nepřihlášených tokenů ze sociálních sítí, které mají živostnost jen 24h
+                logger.info("Scheduling new Job - Removing_Unused_Tokens");
+                scheduler.scheduleJob( newJob(Removing_Unused_Tokens.class).withIdentity( JobKey.jobKey("removing_unused_tokens") ).build(), every_day_3);
+
+                // 4) Kontrola a fakturace klientů na měsíční bázi
+                // logger.info("Scheduling new Job - Sending_Invoices");
+                //scheduler.scheduleJob( newJob(Sending_Invoices.class).withIdentity( JobKey.jobKey("sending_invoices") ).build(), every_day_4); // nemůže být Job se stejným triggrem
+
+                // 5) Přesouvání logů v DB do Blob Serveru a uvolňování místa v DB a na serveru
 
 
 
@@ -386,7 +409,7 @@ public class Server {
 
                 Trigger every_second_day = newTrigger()
                         .withIdentity(every_second_day_key)
-                        .startAt(tomorrowAt(15, 0, 0)) // První spuštění další den v 03:30
+                        .startAt(tomorrowAt(4, 0, 0)) // První spuštění další den v 04:0
                         .withSchedule(simpleSchedule().withIntervalInHours(2 * 24).repeatForever()) // A opakovávání každé 2 dny || .withIntervalInDays(2)
                         .build();
 
@@ -397,14 +420,11 @@ public class Server {
                 logger.warn("CRON (Every-SecondDay) is in RAM yet. Be careful with that!");
             }
 
-
-
-
             // Nastartování scheduleru
             scheduler.start();
 
         }catch (Exception e){
-           // logger.error("Scheduller_Exception", e);
+           logger.error("Scheduler_Exception", e);
         }
 
     }
