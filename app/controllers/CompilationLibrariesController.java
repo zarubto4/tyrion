@@ -215,7 +215,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result get_C_Program_by_Filter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true)  Integer page_number){
+    public Result get_C_Program_by_Filter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true)  int page_number){
 
         try {
 
@@ -229,7 +229,7 @@ public class CompilationLibrariesController extends Controller {
             query.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id);
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
-            if(help.project_id != null){
+            if((help.project_id != null)||!(help.project_id.equals(""))){
 
                 query.where().eq("project.id", help.project_id);
             }
@@ -241,7 +241,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok(Json.toJson(result));
 
         }catch (Exception e){
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -274,7 +274,7 @@ public class CompilationLibrariesController extends Controller {
             return GlobalResult.result_ok(Json.toJson(result));
 
         }catch (Exception e){
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -357,7 +357,7 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_C_Program_Description(@ApiParam(value = "c_program_id String query", required = true)  String c_program_id) {
+    public Result edit_C_Program(@ApiParam(value = "c_program_id String query", required = true)  String c_program_id) {
         try {
 
             // Zpracování Json
@@ -373,7 +373,7 @@ public class CompilationLibrariesController extends Controller {
             TypeOfBoard typeOfBoard = TypeOfBoard.find.byId(help.type_of_board_id);
             if(typeOfBoard == null) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
 
-            // úprava objektu
+            // Úprava objektu
             c_program.name = help.name;
             c_program.description = help.description;
             c_program.type_of_board = typeOfBoard;
@@ -690,7 +690,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_C_Program_public_list(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true)  Integer page_number){
+    public Result get_C_Program_public_list(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true)  int page_number){
         try {
 
             // Vytřídění objektů
@@ -2075,7 +2075,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result get_LibraryGroup_Filter( @ApiParam(value = "page_number is Integer. 1,2,3...n For first call, use 1 (first page of list) ",required = true)Integer page_number)  {
+    public Result get_LibraryGroup_Filter( @ApiParam(value = "page_number is Integer. 1,2,3...n For first call, use 1 (first page of list) ",required = true) int page_number)  {
         try {
 
             // Zpracování Json
@@ -2454,7 +2454,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result get_SingleLibrary_Filter( @ApiParam(value = "page_number is Integer. 1,2,3...n For first call, use 1",required = true) Integer page_number) {
+    public Result get_SingleLibrary_Filter( @ApiParam(value = "page_number is Integer. 1,2,3...n For first call, use 1",required = true) int page_number) {
         try {
 
             // Zpracování Json
@@ -3137,7 +3137,7 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
-    @ApiOperation(value = "Mark as main", hidden = true)
+    @ApiOperation(value = "Upload TypeOfBoard picture", hidden = true)
     public Result upload_TypeOfBoard_picture(@ApiParam(required = true) String type_of_board_id){
         try {
 
@@ -3199,7 +3199,7 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
-    @ApiOperation(value = "Mark as main", hidden = true)
+    @ApiOperation(value = "Remove TypeOfBoard picture", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
     public Result remove_TypeOfBoard_picture(@ApiParam(required = true) String type_of_board_id){
         try {
@@ -3214,7 +3214,7 @@ public class CompilationLibrariesController extends Controller {
                 type_of_board.update();
                 fileRecord.delete();
             }else{
-                return GlobalResult.badRequest("There is no picture to remove.");
+                return GlobalResult.result_BadRequest("There is no picture to remove.");
             }
 
             return GlobalResult.result_ok("Picture successfully removed");
@@ -3545,7 +3545,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result get_Board_Filter(@ApiParam(value = "page_number is Integer. Contain  1,2...n. For first call, use 1", required = false)  Integer page_number) {
+    public Result get_Board_Filter(@ApiParam(value = "page_number is Integer. Contain  1,2...n. For first call, use 1", required = false)  int page_number) {
         try {
 
             // Zpracování Json

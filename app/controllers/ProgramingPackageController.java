@@ -818,7 +818,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public  Result get_Homers_by_Filter( @ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) Integer page_number){
+    public  Result get_Homers_by_Filter( @ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number){
         try {
 
             // Zpracování Json
@@ -1451,7 +1451,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_b_Program_by_Filter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) Integer page_number){
+    public Result get_b_Program_by_Filter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number){
         try {
 
             // Získání JSON
@@ -1476,7 +1476,7 @@ public class ProgramingPackageController extends Controller {
             return GlobalResult.result_ok(Json.toJson(result));
 
         }catch (Exception e){
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -1605,8 +1605,6 @@ public class ProgramingPackageController extends Controller {
             record.update();
             b_program.instance.update();
 
-            Person person = SecurityController.getPerson();
-
             Thread upload_instance = new Thread() {
                 @Override
                 public void run() {
@@ -1615,7 +1613,7 @@ public class ProgramingPackageController extends Controller {
 
                         // Ověřím připojený server
                         if (!WebSocketController.blocko_servers.containsKey(b_program.instance.cloud_homer_server.server_name)) {
-                            NotificationController.upload_Instance_was_unsuccessful(person, b_program.instance, "Server is offline now. It will be uploaded as soon as possible");
+                            b_program.instance.notification_instance_unsuccessful_upload("Server is offline now. It will be uploaded as soon as possible");
                             logger.warn("Server je offline!! Nenahraju instanci!!");
                             return;
                         }
@@ -2464,7 +2462,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_TypeOfBlock_by_Filter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) Integer page_number){
+    public Result get_TypeOfBlock_by_Filter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number){
         try {
 
             // Získání JSON
@@ -2495,7 +2493,7 @@ public class ProgramingPackageController extends Controller {
 
         }catch (Exception e){
             e.printStackTrace();
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 
@@ -2772,7 +2770,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_BlockoBlock_by_Filter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) Integer page_number){
+    public Result get_BlockoBlock_by_Filter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number){
         try {
 
             // Získání JSON
@@ -2798,7 +2796,7 @@ public class ProgramingPackageController extends Controller {
 
         }catch (Exception e){
             e.printStackTrace();
-            return GlobalResult.internalServerError();
+            return Loggy.result_internalServerError(e, request());
         }
     }
 

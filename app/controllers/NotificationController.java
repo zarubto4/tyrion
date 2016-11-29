@@ -48,109 +48,10 @@ public class NotificationController extends Controller {
   //####################################################################################################################
   static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
-  private static void send_notification(Person person, Notification notification) {
-
-    // Pokud je notification_importance vyšší než "low" notifikaci uložím
-    if((notification.notification_importance != Notification_importance.low)&&(notification.id == null))
-      notification.save_object();
-
-    // Pokud je uživatel přihlášený pošlu notifikaci přes websocket
-    if (WebSocketController.becki_website.containsKey(person.id) ) {
-      WebSocketController.becki_sendNotification( (WS_Becki_Website) WebSocketController.becki_website.get(person.id)  , notification );
-    }
-  }
-
-
   // Tvroba objektů jednotlivých notifikací ############################################################################
-
-
-  // Hotovo
-  public static void starting_of_compilation(Person person, Version_Object version_object){
-
-        Notification notification = new Notification(Notification_importance.low, Notification_level.info, person)
-                                     .setText("Server start with compilation on Version")
-                                     .setObject(Swagger_B_Program_Version.class, version_object.id, version_object.version_name + ".", version_object.c_program.project_id());
-
-        send_notification(person, notification);
-  }
 
   public static void upload_firmware_progress(Person person, String version_object){
     // TODO a taky zařadit pod objekt
-  }
-
-
-  // Hotovo
-  public static void successful_compilation(Person person, Version_Object version_object ){
-
-      Notification notification = new Notification(Notification_importance.low, Notification_level.success, person)
-                                    .setText("Compilation on Version")
-                                    .setObject(Swagger_B_Program_Version.class, version_object.id, version_object.version_name, version_object.c_program.project_id() )
-                                    .setText("was successful.");
-
-      send_notification(person, notification);
-  }
-
-  // Hotovo
-  public static void unsuccessful_compilation_warn(Person person, Version_Object version_object, String reason){
-
-      Notification notification = new Notification(Notification_importance.normal,  Notification_level.warning , person)
-                                      .setText("Compilation on Version")
-                                      .setObject(Swagger_B_Program_Version.class, version_object.id, version_object.version_name, version_object.c_program.project_id() )
-                                      .setText("was unsuccessful, for reason:")
-                                      .setBoldText(reason);
-
-      send_notification(person, notification);
-  }
-
-  // Hotovo
-  public static void unsuccessful_compilation_error(Person person, Version_Object version_object, String result){
-
-    Notification notification = new Notification(Notification_importance.normal, Notification_level.error, person)
-                                      .setText( "Compilation on Version")
-                                      .setObject(Swagger_B_Program_Version.class, version_object.id, version_object.version_name, version_object.c_program.project_id() )
-                                      .setText("with critical Error:")
-                                      .setBoldText(result);
-
-    send_notification(person, notification);
-  }
-
-  // Hotovo
-  public static void upload_Instance_start(Person person, Homer_Instance instance){
-
-    Notification notification = new Notification(Notification_importance.low,  Notification_level.info, person)
-                                  .setText("Server start creating new Blocko Instance on Blocko Version  <b>" + instance.actual_instance.version_object.b_program.name + "</b>")
-                                  .setObject(Swagger_B_Program_Version.class, instance.actual_instance.version_object.id, instance.actual_instance.version_object.version_name, instance.actual_instance.version_object.b_program.project_id() )
-                                  .setText("from Blocko program")
-                                  .setObject(B_Program.class, instance.actual_instance.version_object.b_program.id, instance.actual_instance.version_object.b_program.name + ".", instance.actual_instance.version_object.b_program.project_id());
-
-    send_notification(person, notification);
-  }
-
-  // Hotovo
-  public static void upload_Instance_was_successful(Person person, Homer_Instance instance){
-
-    Notification notification = new Notification(Notification_importance.low, Notification_level.success, person)
-                                    .setText("Server created successfully instance in cloud on Blocko Version")
-                                    .setObject(Swagger_B_Program_Version.class, instance.actual_instance.version_object.id, instance.actual_instance.version_object.version_name, instance.actual_instance.version_object.b_program.project_id() )
-                                    .setText("from Blocko program")
-                                    .setObject(B_Program.class, instance.actual_instance.version_object.b_program.id, instance.actual_instance.version_object.b_program.name + ".", instance.actual_instance.version_object.b_program.project_id());
-
-    send_notification(person, notification);
-  }
-
-  // Hotovo
-  public static void upload_Instance_was_unsuccessful(Person person, Homer_Instance instance, String reason){
-
-
-    Notification notification = new Notification(Notification_importance.normal, Notification_level.warning, person)
-                                    .setText("Server not upload instance to cloud on Blocko Version <b>" + instance.actual_instance.version_object.version_name + "</b> from Blocko program <b>" + instance.b_program.name + "</b> for <b> reason:\"" +  reason + "\" </b> ")
-                                    .setObject(Swagger_B_Program_Version.class, instance.actual_instance.version_object.id, instance.actual_instance.version_object.version_name, instance.b_program.project_id() )
-                                    .setText("from Blocko program")
-                                    .setObject(B_Program.class, instance.b_program.id, instance.b_program.name, instance.b_program.project_id() )
-                                    .setText("Server will try to do that as soon as possible.");
-
-    send_notification(person, notification);
-
   }
 
   // TODO zařadit pod objekt
@@ -163,122 +64,7 @@ public class NotificationController extends Controller {
                                     .setObject(B_Program.class, version_object.b_program.id, version_object.b_program.name, version_object.b_program.project_id() )
                                     .setText("with Critical unknown Error, Probably some bug.");
 
-    send_notification(person, notification);
-  }
-
-  // Hotovo
-  public static void new_actualization_request_with_file(Person person, Board board){
-
-    Notification notification = new Notification(Notification_importance.low, Notification_level.info, person)
-            .setText("New actualization task was added to Task Queue on")
-            .setObject(Board.class, board.id, "board", board.project_id())
-            .setText("with user File ");
-
-
-    send_notification(person, notification);
-
-  }
-
-  // Hotovo
-  public static void new_actualization_request_on_version(Person person, Version_Object version_object){
-
-    Notification notification = new Notification(Notification_importance.low, Notification_level.info, person)
-            .setText("New actualization task was added to Task Queue on ")
-            .setObject(Swagger_C_Program_Version.class, version_object.id, "Version " + version_object.version_name, version_object.c_program.project_id() )
-            .setText("from Program ")
-            .setObject(C_Program.class, version_object.c_program.id, "Program " + version_object.c_program.name, version_object.c_program.project_id() );
-
-
-    send_notification(person, notification);
-
-  }
-
-  // Hotovo
-  public static void new_actualization_request_homer_instance(Project project, Homer_Instance homer_instance){
-
-    for(Person person : project.ownersOfProject) {
-      Notification notification = new Notification(Notification_importance.low, Notification_level.info, person)
-              .setText("New actualization task was added to Task Queue on ")
-              .setObject(Swagger_B_Program_Version_New.class, homer_instance.actual_instance.version_object.id, "Version " + homer_instance.actual_instance.version_object.version_name, homer_instance.actual_instance.version_object.b_program.project_id());
-
-
-      send_notification(person, notification);
-    }
-
-  }
-
-  // Hotovo
-  public static void board_connect(Person person, Board board){
-
-      Notification notification = new Notification(Notification_importance.low, Notification_level.info, person)
-              .setText("One of your Board " + (board.personal_description != null ? board.personal_description : null ))
-              .setObject(Board.class, board.id, board.id, board.project_id())
-              .setText("is connected.");
-
-      send_notification(person, notification);
-
-  }
-
-  // Hotovo
-  public static void board_disconnect(Person person, Board board){
-
-    Notification notification = new Notification(Notification_importance.low, Notification_level.info, person)
-            .setText("One of your Board " + (board.personal_description != null ? board.personal_description : null ))
-            .setObject(Board.class, board.id, board.id, board.project_id())
-            .setText("is disconnected.");
-
-    send_notification(person, notification);
-
-  }
-
-  //Hotovo
-  public static void project_invitation(Person owner, Person receiver, Project project, Invitation invitation){
-
-    Notification notification = new Notification(Notification_importance.normal, Notification_level.info, receiver)
-            .setText("User ")
-            .setObject(Person.class, owner.id, owner.full_name, null)
-            .setText("wants to invite you into the project ")
-            .setObject(Project.class, project.id, project.name, project.id)
-            .setText(".")
-            .setText("Do you agree?")
-            .setLink("Yes", Server.tyrion_serverAddress + "/project/project/addParticipant/" + invitation.id + "/true")
-            .setText(" / ")
-            .setLink("No", Server.tyrion_serverAddress + "/project/project/addParticipant/" + invitation.id + "/false")
-            .setText(".");
-
-    invitation.notification_id = notification.id;
-    invitation.update();
-
-    send_notification(receiver, notification);
-
-  }
-
-  //Hotovo
-  public static void project_accepted_by_invited_person(Person owner, Person person, Project project){
-
-    Notification notification = new Notification(Notification_importance.normal, Notification_level.info, owner)
-            .setText("User ")
-            .setObject(Person.class, person.id, person.full_name, "")
-            .setText("did not accept your invitation to the project ")
-            .setObject(Project.class, project.id, project.name, project.id)
-            .setText(".");
-
-    send_notification(owner,notification);
-
-  }
-
-  //Hotovo
-  public static void project_rejected_by_invited_person(Person owner, Person person, Project project){
-
-    Notification notification = new Notification(Notification_importance.normal, Notification_level.info, owner)
-            .setText("User ")
-            .setObject(Person.class, person.id, person.full_name, "")
-            .setText("accepted your invitation to the project ")
-            .setObject(Project.class, project.id, project.name, project.id)
-            .setText(".");
-
-    send_notification(owner,notification);
-
+    //send_notification(person, notification);
   }
 
   public static void test_notification(Person person, String level, String importance, String type, String buttons){
@@ -363,15 +149,6 @@ public class NotificationController extends Controller {
 
     notification.send(person);
   }
-
-
-
-
-
-
-
-
-
 
     // Public REST-API (Zdokumentované ve SWAGGER)  #######################################################################
 
@@ -563,6 +340,8 @@ public class NotificationController extends Controller {
       if(notification == null) return GlobalResult.notFoundObject("Notification does not exist");
 
       if (!notification.confirm_permission()) return GlobalResult.forbidden_Permission();
+
+      if (notification.confirmed) return GlobalResult.badRequest("Notification is already confirmed");
 
       switch (help.action){
         case "confirm_notification"       : {

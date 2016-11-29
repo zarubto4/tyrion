@@ -48,7 +48,7 @@ public class C_Program extends Model {
                                                                                      @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)   public Version_Object first_default_version_object;
 
     @JsonIgnore @OneToOne                                     public TypeOfBoard default_program_type_of_board;   // Pro defaultní program na devicu a první verzi C_Programu při vytvoření  (Určeno výhradně pro Byzance)
-    @JsonIgnore @OneToOne(mappedBy="default_version_program", cascade = CascadeType.ALL) public Version_Object default_main_version;        // Defaultní verze programu, konkrétního typu desky  (Určeno výhradně pro Byzance)
+    @JsonIgnore @OneToOne(mappedBy="default_version_program") public Version_Object default_main_version;        // Defaultní verze programu, konkrétního typu desky  (Určeno výhradně pro Byzance)
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
@@ -73,7 +73,7 @@ public class C_Program extends Model {
 
     @JsonIgnore @Override public void delete() {
 
-        // Složí k odpojení defaultních prvních verzí programu pro divnostav
+        // Slouží k odpojení defaultních prvních verzí programu pro divnostav
         // Lexa
 
         if (this.first_default_version_object != null) {

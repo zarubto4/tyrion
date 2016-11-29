@@ -131,7 +131,7 @@ public class FinanceTest extends TestHelper{
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
-        assertEquals(OK, result.status());
+        assertEquals(CREATED, result.status());
     }
 
     @Test
@@ -166,7 +166,7 @@ public class FinanceTest extends TestHelper{
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
-        assertEquals(OK, result.status());
+        assertEquals(CREATED, result.status());
     }
 
     @Test
