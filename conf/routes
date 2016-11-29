@@ -112,7 +112,7 @@ POST           /overflow/post                                                   
 GET            /overflow/post/:post_id                                                      @controllers.OverFlowController.get_Post(post_id)
 DELETE         /overflow/post/:post_id                                                      @controllers.OverFlowController.delete_Post(post_id)
 PUT            /overflow/post/:post_id                                                      @controllers.OverFlowController.edit_Post(post_id)
-POST           /overflow/filter/:page_number                                                @controllers.OverFlowController.get_Post_ByFilter(page_number: Integer)
+POST           /overflow/filter/:page_number                                                @controllers.OverFlowController.get_Post_ByFilter(page_number:Int)
 
 POST           /overflow/typeOfPost                                                         @controllers.OverFlowController.new_TypeOfPost()
 GET            /overflow/typeOfPost/all                                                     @controllers.OverFlowController.get_TypeOfPost_all()
@@ -194,7 +194,7 @@ DELETE         /project/deleteInvitation/:invitation_id                         
 
 #Homer
 POST           /homer                                                                       @controllers.ProgramingPackageController.newHomer()
-PUT            /homer/filter/:page_number                                                   @controllers.ProgramingPackageController.get_Homers_by_Filter(page_number: Integer)
+PUT            /homer/filter/:page_number                                                   @controllers.ProgramingPackageController.get_Homers_by_Filter(page_number:Int )
 DELETE         /homer/:homer_id                                                             @controllers.ProgramingPackageController.removeHomer(homer_id)
 GET            /homer/:homer_id                                                             @controllers.ProgramingPackageController.getHomer(homer_id)
 
@@ -208,7 +208,7 @@ POST           /b_program/:project_id                                           
 GET            /b_program/:b_program_id                                                     @controllers.ProgramingPackageController.get_b_Program(b_program_id)
 PUT            /b_program/:b_program_id                                                     @controllers.ProgramingPackageController.edit_b_Program(b_program_id)
 DELETE         /b_program/:b_program_id                                                     @controllers.ProgramingPackageController.remove_b_Program(b_program_id)
-PUT            /b_program/list/:page_number                                                 @controllers.ProgramingPackageController.get_b_Program_by_Filter(page_number: Integer)
+PUT            /b_program/list/:page_number                                                 @controllers.ProgramingPackageController.get_b_Program_by_Filter(page_number:Int )
         
 PUT            /b_program/version/:b_program_id                                             @controllers.ProgramingPackageController.update_b_program_new_version(b_program_id)
 GET            /b_program/version/:version_id                                               @controllers.ProgramingPackageController.get_b_Program_version(version_id)
@@ -237,7 +237,7 @@ POST           /blockoBlock                                                     
 PUT            /blockoBlock/:blocko_block_id                                        @controllers.ProgramingPackageController.edit_Block(blocko_block_id)
 GET            /blockoBlock/:blocko_block_id                                        @controllers.ProgramingPackageController.getBlockoBlock(blocko_block_id)
 DELETE         /blockoBlock/:blocko_block_id                                        @controllers.ProgramingPackageController.deleteBlock(blocko_block_id)
-PUT            /blockoBlock/list/:page_number                                       @controllers.ProgramingPackageController.get_BlockoBlock_by_Filter(page_number: Integer)
+PUT            /blockoBlock/list/:page_number                                       @controllers.ProgramingPackageController.get_BlockoBlock_by_Filter(page_number:Int )
 
 POST           /blockoBlock/version/:blocko_block_id                                @controllers.ProgramingPackageController.new_BlockoBlock_Version(blocko_block_id)
 PUT            /blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.edit_BlockoBlock_Version(blocko_block_version_id)
@@ -252,11 +252,10 @@ PUT            /blockoBlock/scheme/version                                      
 #TypeOfBlocko
 POST           /typeOfBlock                                                         @controllers.ProgramingPackageController.newTypeOfBlock()
 GET            /typeOfBlock                                                         @controllers.ProgramingPackageController.getAllTypeOfBlocks
-PUT            /typeOfBlock/list/:page_number                                       @controllers.ProgramingPackageController.get_TypeOfBlock_by_Filter(page_number: Integer)
+PUT            /typeOfBlock/list/:page_number                                       @controllers.ProgramingPackageController.get_TypeOfBlock_by_Filter(page_number: Int)
 GET            /typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.get_TypeOfBlock(type_of_block_id)
 PUT            /typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.editTypeOfBlock(type_of_block_id)
 DELETE         /typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.deleteTypeOfBlock(type_of_block_id)
-
 
 
 #BLocko Server
@@ -289,9 +288,9 @@ GET             /actualization_procedure/:actualization_procedure_id            
 #C_Program
 POST            /compilation/c_program/c_program                                            @controllers.CompilationLibrariesController.create_C_Program()
 GET             /compilation/c_program/c_program/:c_program_id                              @controllers.CompilationLibrariesController.get_C_Program(c_program_id)
-PUT             /compilation/c_program/list/:page_number                                    @controllers.CompilationLibrariesController.get_C_Program_by_Filter(page_number: Integer)
+PUT             /compilation/c_program/list/:page_number                                    @controllers.CompilationLibrariesController.get_C_Program_by_Filter(page_number: Int)
 
-PUT             /compilation/c_program/c_program/:c_program_id                              @controllers.CompilationLibrariesController.edit_C_Program_Description(c_program_id)
+PUT             /compilation/c_program/c_program/:c_program_id                              @controllers.CompilationLibrariesController.edit_C_Program(c_program_id)
 DELETE          /compilation/c_program/c_program/:c_program_id                              @controllers.CompilationLibrariesController.delete_C_Program(c_program_id)
 
 POST            /compilation/c_program/version/create/:c_program_id                         @controllers.CompilationLibrariesController.new_C_Program_Version(c_program_id)
@@ -303,7 +302,7 @@ POST            /compilation/c_program/version/compile                          
 PUT             /compilation/c_program/version/compile/:version_id                          @controllers.CompilationLibrariesController.compile_C_Program_version(version_id)
 
 PUT             /compilation/c_program/version/make_public/:version_id                      @controllers.CompilationLibrariesController.make_C_Program_Version_public(version_id)
-GET             /compilation/c_program/version/public/list/:page_number                     @controllers.CompilationLibrariesController.get_C_Program_public_list(page_number: Integer)
+GET             /compilation/c_program/version/public/list/:page_number                     @controllers.CompilationLibrariesController.get_C_Program_public_list(page_number: Int)
 
 PUT             /compilation/c_program/version/approval                                     @controllers.CompilationLibrariesController.changeApprovalState()
 PUT             /compilation/c_program/version/approve_with_changes                         @controllers.CompilationLibrariesController.approveWithChanges()
@@ -323,7 +322,7 @@ DELETE          /processor/:processor_id                                        
 POST            /board                                                          @controllers.CompilationLibrariesController.new_Board()
 PUT             /board/userDescription/:type_of_board_id                        @controllers.CompilationLibrariesController.edit_Board_User_Description(type_of_board_id)
 
-PUT             /board/filter/:page_number                                      @controllers.CompilationLibrariesController.get_Board_Filter(page_number: Integer)
+PUT             /board/filter/:page_number                                      @controllers.CompilationLibrariesController.get_Board_Filter(page_number:Int )
 GET             /board/:board_id                                                @controllers.CompilationLibrariesController.get_Board(board_id)
 DELETE          /board/deactivateBoard/:board_id                                @controllers.CompilationLibrariesController.deactivate_Board(board_id)
 PUT             /board/:board_id/:project_id                                    @controllers.CompilationLibrariesController.connect_Board_with_Project(board_id, project_id)
@@ -357,7 +356,7 @@ PUT             /bootloader/update_device_list/:instance_id                     
 
 #LibraryGroups
 POST            /compilation/libraryGroup                                                   @controllers.CompilationLibrariesController.new_LibraryGroup()
-PUT             /compilation/libraryGroup/filter/:page_number                               @controllers.CompilationLibrariesController.get_LibraryGroup_Filter(page_number: Integer)
+PUT             /compilation/libraryGroup/filter/:page_number                               @controllers.CompilationLibrariesController.get_LibraryGroup_Filter(page_number:Int )
 
 POST            /compilation/libraryGroup/upload/:version_id                                @controllers.CompilationLibrariesController.upload_Library_To_LibraryGroup(version_id)
 
@@ -371,7 +370,7 @@ PUT             /compilation/libraryGroup/:libraryGroup_id                      
 GET             /file/listOfFiles/:version_id                                               @controllers.CompilationLibrariesController.get_LibraryGroup_Version_Libraries(version_id)
 #Single Library
 POST            /compilation/library                                                        @controllers.CompilationLibrariesController.new_SingleLibrary()
-PUT             /compilation/library/filter/:page_number                                    @controllers.CompilationLibrariesController.get_SingleLibrary_Filter(page_number: Integer)
+PUT             /compilation/library/filter/:page_number                                    @controllers.CompilationLibrariesController.get_SingleLibrary_Filter(page_number:Int  )
 POST            /compilation/library/version/:library_id                                    @controllers.CompilationLibrariesController.new_SingleLibrary_Version(library_id)
 
 GET             /compilation/library/:library_id                                            @controllers.CompilationLibrariesController.get_SingleLibrary(library_id)

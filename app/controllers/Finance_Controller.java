@@ -589,7 +589,7 @@ public class Finance_Controller extends Controller {
 
                 if(!tariff.required_paid_that) {
                     product.save();
-                    return GlobalResult.result_ok(Json.toJson(product));
+                    return GlobalResult.created(Json.toJson(product));
                 }
 
 
