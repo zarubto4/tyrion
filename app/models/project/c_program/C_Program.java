@@ -73,7 +73,7 @@ public class C_Program extends Model {
 
     @JsonIgnore @Override public void delete() {
 
-        // Složí k odpojení defaultních prvních verzí programu pro divnostav
+        // Slouží k odpojení defaultních prvních verzí programu pro divnostav
         // Lexa
 
         if (this.first_default_version_object != null) {
@@ -107,6 +107,7 @@ public class C_Program extends Model {
                     .add(Expr.eq("c_compilations_binary_file.version_object.c_program.id", id))
                     .add(Expr.eq("c_compilations_binary_file.version_object.c_program.id", id))
                     .where().eq("file_name", "compilation.bin").findRowCount() > 0;
+            if(version_object.c_program != null)
             c_program_versions.remove_permission = version_object.c_program.delete_permission();
 
 

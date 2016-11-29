@@ -519,7 +519,7 @@
         model_data = $("#editCProgramForm").serializeObject();
 
         $.ajax({
-            url: '@routes.CompilationLibrariesController.edit_C_Program_Description("")' + c_program_id,
+            url: '@routes.CompilationLibrariesController.edit_C_Program("")' + c_program_id,
             type: 'PUT',
             contentType: 'application/json',
             headers: {

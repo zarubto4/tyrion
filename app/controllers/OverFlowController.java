@@ -23,7 +23,7 @@ import utilities.swagger.outboundClass.Filter_List.Swagger_Post_List;
 
 import java.util.Date;
 
-@Api(value = "Not Documented API - InProgress or Stuck")
+@Api(value = "Not Documented API - InProgress or Stuck", hidden = true)
 public class OverFlowController  extends Controller {
 
 
@@ -81,7 +81,7 @@ public class OverFlowController  extends Controller {
     })
 
     @BodyParser.Of(BodyParser.Json.class)
-    public Result get_Post_ByFilter(@ApiParam(value = "page_number is Integer. Contain  1,2...n. For first call, use 1", required = false)  Integer page_number){
+    public Result get_Post_ByFilter(@ApiParam(value = "page_number is Integer. Contain  1,2...n. For first call, use 1", required = false)  int page_number){
         try {
 
             final Form<Swagger_Post_Filter> form = Form.form(Swagger_Post_Filter.class).bindFromRequest();

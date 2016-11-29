@@ -1,9 +1,6 @@
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import junit.framework.TestCase;
-import models.compiler.Board;
-import models.compiler.Processor;
-import models.compiler.Producer;
-import models.compiler.TypeOfBoard;
+import models.compiler.*;
 import models.person.Person;
 import models.project.c_program.C_Program;
 import models.project.global.Product;
@@ -38,7 +35,8 @@ public class CompilationLibrariesTest extends TestHelper {
     public static Processor processor;
     public static TypeOfBoard typeOfBoard;
     public static Board board;
-    public static C_Program c_program;
+    public static C_Program private_c_program;
+    public static Version_Object private_c_program_version;
 
     public static String adminToken;
 
@@ -65,6 +63,8 @@ public class CompilationLibrariesTest extends TestHelper {
         producer = producer_create();
         processor = processor_create();
         typeOfBoard = type_of_board_create(producer, processor);
+        private_c_program = private_c_program_create(typeOfBoard, project);
+        private_c_program_version = c_program_version_create(private_c_program);
 
         randomPerson = person_create();
         person_authenticate(randomPerson);
@@ -74,6 +74,8 @@ public class CompilationLibrariesTest extends TestHelper {
     @AfterClass
     public static void stopApp() throws Exception{
 
+        c_program_version_delete(private_c_program_version);
+        c_program_delete(private_c_program);
         type_of_board_delete(typeOfBoard);
         project_delete(project);
         processor_delete(processor);
@@ -119,5 +121,137 @@ public class CompilationLibrariesTest extends TestHelper {
         Result result = route(request);
 
         assertEquals(CREATED, result.status());
+    }
+
+    @Test
+    public void edit_c_program() {
+
+        ObjectNode body = Json.newObject();
+
+        body.put("name", UUID.randomUUID().toString());
+        body.put("description", UUID.randomUUID().toString());
+        body.put("type_of_board_id", typeOfBoard.id);
+
+        RequestBuilder request = new RequestBuilder()
+                .method(PUT)
+                .uri(routes.CompilationLibrariesController.edit_C_Program(private_c_program.id).toString())
+                .bodyJson(body)
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+
+        assertEquals(OK, result.status());
+    }
+
+    @Test
+    public void get_c_program() {
+
+        RequestBuilder request = new RequestBuilder()
+                .method(GET)
+                .uri(routes.CompilationLibrariesController.get_C_Program(private_c_program.id).toString())
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+
+        assertEquals(OK, result.status());
+    }
+
+    @Test
+    public void get_c_program_by_filter() {
+
+        ObjectNode body = Json.newObject();
+
+        body.put("project_id", project.id);
+
+        RequestBuilder request = new RequestBuilder()
+                .method(PUT)
+                .uri(routes.CompilationLibrariesController.get_C_Program_by_Filter(1).toString())
+                .bodyJson(body)
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+
+        assertEquals(OK, result.status());
+    }
+
+    @Test
+    public void delete_c_program() {
+
+        C_Program c = private_c_program_create(typeOfBoard, project);
+
+        RequestBuilder request = new RequestBuilder()
+                .method(DELETE)
+                .uri(routes.CompilationLibrariesController.delete_C_Program(c.id).toString())
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+
+        assertEquals(OK, result.status());
+    }
+
+    @Test
+    public void create_c_program_version() {
+
+        ObjectNode body = Json.newObject();
+
+        body.put("version_name", UUID.randomUUID().toString());
+        body.put("version_description", UUID.randomUUID().toString());
+
+        RequestBuilder request = new RequestBuilder()
+                .method(POST)
+                .uri(routes.CompilationLibrariesController.new_C_Program_Version(private_c_program.id).toString())
+                .bodyJson(body)
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+
+        assertEquals(CREATED, result.status());
+    }
+
+    @Test
+    public void get_c_program_version() {
+
+        RequestBuilder request = new RequestBuilder()
+                .method(GET)
+                .uri(routes.CompilationLibrariesController.get_C_Program_Version(private_c_program_version.id).toString())
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+
+        assertEquals(OK, result.status());
+    }
+
+    @Test
+    public void edit_c_program_version() {
+
+        ObjectNode body = Json.newObject();
+
+        body.put("version_name", UUID.randomUUID().toString());
+        body.put("version_description", UUID.randomUUID().toString());
+
+        RequestBuilder request = new RequestBuilder()
+                .method(PUT)
+                .uri(routes.CompilationLibrariesController.edit_C_Program_version(private_c_program_version.id).toString())
+                .bodyJson(body)
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+
+        assertEquals(OK, result.status());
+    }
+
+    @Test
+    public void delete_c_program_version() {
+
+        Version_Object v = c_program_version_create(private_c_program);
+
+        RequestBuilder request = new RequestBuilder()
+                .method(DELETE)
+                .uri(routes.CompilationLibrariesController.delete_C_Program_Version(v.id).toString())
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+
+        assertEquals(OK, result.status());
     }
 }

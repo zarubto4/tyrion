@@ -367,13 +367,68 @@ public class TestHelper extends Controller{
 
     // BOARD ###########################################################################################################
 
-    public static void method7(){
+    // C_PROGRAM #######################################################################################################
+
+    public static C_Program private_c_program_create(TypeOfBoard typeOfBoard, Project project){
         try {
 
+            C_Program c_program             = new C_Program();
+            c_program.name                  = UUID.randomUUID().toString();
+            c_program.description           = UUID.randomUUID().toString();
+            c_program.date_of_create        = new Date();
+            c_program.type_of_board         = typeOfBoard;
+            c_program.project               = project;
 
+            c_program.save();
+            c_program.refresh();
+
+            return c_program;
 
         }catch (Exception e){
             logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+            return null;
+        }
+    }
+
+    public static void c_program_delete(C_Program c_program){
+        try {
+
+            c_program.delete();
+
+        }catch (Exception e){
+            logger.error("!!!! Error while cleaning up after test. Method {} failed! Reason: {}. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+        }
+    }
+
+    public static Version_Object c_program_version_create(C_Program c_program){
+        try {
+
+            Version_Object version_object      = new Version_Object();
+            version_object.version_name        = UUID.randomUUID().toString();
+            version_object.version_description = UUID.randomUUID().toString();
+            version_object.author              = c_program.project.product.payment_details.person;
+            version_object.date_of_create      = new Date();
+            version_object.c_program           = c_program;
+            version_object.public_version      = false;
+
+            version_object.save();
+            version_object.refresh();
+
+            return version_object;
+
+        }catch (Exception e){
+            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+            return null;
+        }
+    }
+
+    public static void c_program_version_delete(Version_Object version_object){
+        try {
+
+            version_object.delete();
+
+        }catch (Exception e){
+            logger.error("!!!! Error while cleaning up after test. Method {} failed! Reason: {}. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
         }
     }
 
