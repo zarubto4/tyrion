@@ -21,6 +21,7 @@ import utilities.Server;
 import utilities.enums.Notification_action;
 import utilities.enums.Notification_importance;
 import utilities.enums.Notification_level;
+import utilities.enums.Notification_state;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_API;
 import utilities.notifications.Notification_Handler;
@@ -92,7 +93,7 @@ public class NotificationController extends Controller {
 
     switch (type){
       case "1":{
-        notification = new Notification(imp, lvl, person)
+        notification = new Notification(imp, lvl)
               .setText("Test object: ")
               .setObject(Person.class, person.id, person.full_name, null)
               .setText(" test bold text: ")
@@ -101,25 +102,25 @@ public class NotificationController extends Controller {
               .setLink("TestLink","#");
         break;}
       case "2":{
-        notification = new Notification(imp, lvl, person)
+        notification = new Notification(imp, lvl)
                 .setText("Test object and long text: ")
                 .setObject(Person.class, person.id, person.full_name, null)
                 .setText(" test text: Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. ");
         break;}
       case "3":{
-        notification = new Notification(imp, lvl, person)
+        notification = new Notification(imp, lvl)
                 .setText("Test short text with link: ")
                 .setLink("TestLink","#");
         break;}
       case "4": {
-        notification = new Notification(imp, lvl, person)
+        notification = new Notification(imp, lvl)
                 .setText("Test object and link: ")
                 .setObject(Person.class, person.id, person.full_name, null)
                 .setText(" test link: ")
                 .setLink("Yes","#");
         break;}
       default:{
-        notification = new Notification(imp, lvl, person)
+        notification = new Notification(imp, lvl)
                 .setText("Test object: ")
                 .setObject(Person.class, person.id, person.full_name, null)
                 .setText(" test bold text: ")
@@ -134,16 +135,16 @@ public class NotificationController extends Controller {
         notification.setButton(Notification_action.confirm_notification, "test", "blue", "OK", false, false, false);
         break;}
       case "2":{
-        notification.setButton(Notification_action.accept_project_invitation, "test", "green", "Yes", false, false, true);
-        notification.setButton(Notification_action.reject_project_invitation, "test", "red", "No", false, false, true);
+        notification.setButton(Notification_action.confirm_notification, "test", "green", "Yes", false, false, true);
+        notification.setButton(Notification_action.confirm_notification, "test", "red", "No", false, false, true);
         break;}
       case "3":{
-        notification.setButton(Notification_action.accept_project_invitation, "test", "green", "Yes", true, false, false);
-        notification.setButton(Notification_action.reject_project_invitation, "test", "red", "No", true, false, false);
+        notification.setButton(Notification_action.confirm_notification, "test", "green", "Yes", true, false, false);
+        notification.setButton(Notification_action.confirm_notification, "test", "red", "No", true, false, false);
         notification.setButton(Notification_action.confirm_notification, "test", "white", "Close", false, true, false);
         break;}
       default:{
-        notification.setButton(Notification_action.accept_project_invitation, "test", "green", "Yes", false, false, false);
+        notification.setButton(Notification_action.confirm_notification, "test", "green", "Yes", false, false, false);
         break;}
     }
 
@@ -283,7 +284,8 @@ public class NotificationController extends Controller {
       if(notifications.isEmpty()) return GlobalResult.result_ok("No new notifications");
 
       for (Notification notification : notifications){
-          notification.send(SecurityController.getPerson());
+          notification.state = Notification_state.unconfirmed;
+          notification.send();
       }
 
       return GlobalResult.result_ok("Notifications were sent again");
@@ -348,11 +350,11 @@ public class NotificationController extends Controller {
 
     try{
       Notification notification = Notification.find.byId(notification_id);
-      if(notification == null) return GlobalResult.notFoundObject("Notification does not exist");
+      if(notification == null) return GlobalResult.notFoundObject("Notification no longer exists");
 
       if (!notification.confirm_permission()) return GlobalResult.forbidden_Permission();
 
-      if (notification.confirmed) return GlobalResult.badRequest("Notification is already confirmed");
+      if (notification.confirmed) return GlobalResult.result_BadRequest("Notification is already confirmed");
 
       switch (help.action){
         case "confirm_notification"       : {

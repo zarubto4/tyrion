@@ -46,7 +46,8 @@ libraryDependencies ++= Seq(
   javaJdbc,
   filters,
   cache,
-  javaWs
+  javaWs,
+  evolutions
 )
 
 TwirlKeys.templateImports += "utilities.loggy._"
