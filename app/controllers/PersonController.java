@@ -1,11 +1,15 @@
 package controllers;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.*;
 import models.compiler.FileRecord;
 import models.person.*;
 import play.api.libs.mailer.MailerClient;
 import play.data.Form;
+import play.libs.F;
 import play.libs.Json;
+import play.libs.ws.WSClient;
+import play.libs.ws.WSResponse;
 import play.mvc.*;
 import utilities.Server;
 import utilities.UtilTools;
@@ -30,6 +34,7 @@ public class PersonController extends Controller {
 
     @Inject MailerClient mailerClient;
     @Inject ProgramingPackageController programingPackageController;
+    @Inject WSClient ws;
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
 //######################################################################################################################
@@ -696,7 +701,7 @@ public class PersonController extends Controller {
 
     @ApiOperation(value = "validate some Entity",
             tags = {"Person"},
-            notes = "for cyclical validation during registration, key contains 'mail' or 'nick_name'",
+            notes = "for cyclical validation during registration, key contains 'mail' or 'nick_name'. Or can be used for 'vat_number' as a key.",
             produces = "application/json",
             protocols = "https",
             code = 200
@@ -750,8 +755,38 @@ public class PersonController extends Controller {
 
                     break;
                 }
+                case "vat_number":{
 
-                default:return GlobalResult.result_BadRequest("Key does not exist");
+                    try {
+
+                        F.Promise<WSResponse> responsePromise = ws.url("http://www.isvat.eu/" + help.value.substring(0, 2) + "/" + help.value.substring(2))
+                                .setContentType("undefined")
+                                .setHeader("Accept", "application/json")
+                                .setRequestTimeout(10000)
+                                .get();
+
+                        JsonNode body = responsePromise.get(10000).asJson();
+
+                        if (body.get("valid").asBoolean()) {
+
+                            validation.valid = true;
+                            try {
+                                validation.message = body.get("name").get("0").asText();
+                            }catch (Exception e){
+                                // do nothing
+                            }
+                            return GlobalResult.result_ok(Json.toJson(validation));
+                        }
+                    }catch (Exception e){
+
+                        validation.valid = false;
+                        validation.message = "vat_number is not valid or could not be found";
+                    }
+
+                    break;
+                }
+
+                default:return GlobalResult.result_BadRequest("Key does not exist, use only {mail, nick_name or vat_number}");
             }
 
             return GlobalResult.result_ok(Json.toJson(validation));

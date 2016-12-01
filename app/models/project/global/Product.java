@@ -96,8 +96,10 @@ public class Product extends Model {
     @JsonProperty @Transient  @ApiModelProperty(required = true, readOnly = true)
     public String payment_mode(){
         switch (mode) {
-            case free:        {return  "Free Account"; }
-            case monthly:     {return  "Monthly payment"; }
+            case free:        {return  "free"; }
+            case monthly:     {return  "monthly"; }
+            case annual:     {return  "annual"; }
+            case per_credit:  {return  "per_credit"; }
             default: return   "Undefined state";
         }
     }
@@ -106,9 +108,9 @@ public class Product extends Model {
     public String payment_method(){
         try{
             switch (method) {
-                case bank_transfer:        {return  "Bank transfer payment."; }
-                case credit_card:          {return  "Credit-Card payment."; }
-                case free:                 {return  "Free Account"; }
+                case bank_transfer:        {return  "bank_transfer"; }
+                case credit_card:          {return  "credit_card"; }
+                case free:                 {return  "free"; }
                 default: return   "Undefined state";
             }
         }catch (NullPointerException e) {

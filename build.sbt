@@ -43,11 +43,12 @@ libraryDependencies ++= Seq(
   "junit" % "junit" % "4.12" ,
   "org.mockito" % "mockito-core" % "1.10.19" % "test",
 
+  "org.jsmpp" % "jsmpp" % "2.3.0",
+
   javaJdbc,
   filters,
   cache,
-  javaWs,
-  evolutions
+  javaWs
 )
 
 TwirlKeys.templateImports += "utilities.loggy._"

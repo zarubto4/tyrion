@@ -348,11 +348,11 @@ PUT             /typeOfBoard/mark/c_version/:type_of_board_id/:version_id       
 
 #Bootloader
 POST            /bootloader/:type_of_board_id                                               @controllers.CompilationLibrariesController.new_Boot_loader(type_of_board_id)
-PUT             /bootloader/file/:boot_loader_id                                            @controllers.CompilationLibrariesController.boot_loader_uploud_file(boot_loader_id)
+PUT             /bootloader/file/:boot_loader_id                                            @controllers.CompilationLibrariesController.boot_loader_upload_file(boot_loader_id)
 PUT             /bootloader/mark/bootloader/:boot_loader_id                                 @controllers.CompilationLibrariesController.boot_loader_mark_as_main(boot_loader_id)
 
 
-PUT             /bootloader/update_device_list/:instance_id                                @controllers.CompilationLibrariesController.boot_loader_update_instanace(instance_id)
+PUT             /bootloader/update_device_list/:instance_id                                @controllers.CompilationLibrariesController.boot_loader_update_instance(instance_id)
 
 #LibraryGroups
 POST            /compilation/libraryGroup                                                   @controllers.CompilationLibrariesController.new_LibraryGroup()
