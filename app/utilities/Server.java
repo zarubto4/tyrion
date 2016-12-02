@@ -9,6 +9,9 @@ import models.blocko.BlockoBlock;
 import models.blocko.BlockoBlockVersion;
 import models.blocko.TypeOfBlock;
 import models.compiler.*;
+import models.grid.GridWidget;
+import models.grid.GridWidgetVersion;
+import models.grid.TypeOfWidget;
 import models.overflow.*;
 import models.person.FloatingPersonToken;
 import models.person.Person;
@@ -297,6 +300,10 @@ public class Server {
                 for(Enum en : Person.permissions.values())                  permissions.add(en.name());
                 for(Enum en : SecurityRole.permissions.values())            permissions.add(en.name());
                 for(Enum en : PersonPermission.permissions.values())        permissions.add(en.name());
+            //grid
+                for(Enum en : GridWidget.permissions.values())              permissions.add(en.name());
+                for(Enum en : GridWidgetVersion.permissions.values())       permissions.add(en.name());
+                for(Enum en : TypeOfWidget.permissions.values())            permissions.add(en.name());
 
             // project
                 // b_program
