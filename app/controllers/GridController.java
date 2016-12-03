@@ -919,6 +919,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
+    @Security.Authenticated(Secured_API.class)
     public Result typeOfWidget_create(){
         try{
 
@@ -949,7 +950,7 @@ public class GridController extends Controller {
             }
 
             // Kontrola oprávnění těsně před uložením podle standardu
-            if (! typeOfWidget.create_permission() ) return GlobalResult.forbidden_Permission();
+            if (!typeOfWidget.create_permission() ) return GlobalResult.forbidden_Permission();
 
             // Uložení objektu
             typeOfWidget.save();
@@ -987,6 +988,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
+    @Security.Authenticated(Secured_API.class)
     public Result typeOfWidget_get(@ApiParam(value = "type_of_widget_id String path",   required = true)  String type_of_widget_id){
         try {
 
@@ -1039,6 +1041,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
+    @Security.Authenticated(Secured_API.class)
     public Result typeOfWidget_edit(@ApiParam(value = "type_of_widget_id String path",   required = true)  String type_of_widget_id){
         try{
 
@@ -1101,6 +1104,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
+    @Security.Authenticated(Secured_API.class)
     public Result typeOfWidget_delete(@ApiParam(value = "type_of_widget_id String path",   required = true)  String type_of_widget_id){
         try{
 
@@ -1136,6 +1140,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
+    @Security.Authenticated(Secured_API.class)
     public Result typeOfWidget_getAll(){
         try {
 
@@ -1182,6 +1187,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
+    @Security.Authenticated(Secured_API.class)
     public Result typeOfWidget_getByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number){
         try {
 
@@ -1256,6 +1262,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
+    @Security.Authenticated(Secured_API.class)
     public Result gridWidget_create(){
         try{
 
@@ -1342,6 +1349,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
+    @Security.Authenticated(Secured_API.class)
     public Result gridWidget_edit(@ApiParam(value = "grid_widget_id String path",   required = true)  String grid_widget_id){
         try {
 
@@ -1404,6 +1412,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
+    @Security.Authenticated(Secured_API.class)
     public Result gridWidgetVersion_get(@ApiParam(value = "grid_widget_version_id String path",   required = true) String grid_widget_version_id){
         try {
             // Kontrola objektu
@@ -1445,6 +1454,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
+    @Security.Authenticated(Secured_API.class)
     public Result gridWidget_get(@ApiParam(value = "grid_widget_id String path",   required = true) String grid_widget_id){
         try {
             // Kontrola objektu
@@ -1491,6 +1501,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
+    @Security.Authenticated(Secured_API.class)
     public Result gridWidget_getByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number){
         try {
 
@@ -1541,6 +1552,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
+    @Security.Authenticated(Secured_API.class)
     public Result gridWidget_delete(@ApiParam(value = "grid_widget_id String path",   required = true)  String grid_widget_id){
         try {
 
@@ -1582,6 +1594,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
+    @Security.Authenticated(Secured_API.class)
     public Result gridWidgetVersion_delete(@ApiParam(value = "grid_widget_version_id String path",   required = true) String grid_widget_version_id){
         try {
 
@@ -1638,6 +1651,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
+    @Security.Authenticated(Secured_API.class)
     public Result gridWidgetVersion_create(@ApiParam(value = "grid_widget_id String path",   required = true) String grid_widget_id){
         try {
 
@@ -1710,6 +1724,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
+    @Security.Authenticated(Secured_API.class)
     public Result gridWidgetVersion_edit(@ApiParam(value = "grid_widget_version_id String path",   required = true) String grid_widget_version_id){
         try {
 
@@ -1774,6 +1789,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
+    @Security.Authenticated(Secured_API.class)
     public Result gridWidgetVersion_getAll(@ApiParam(value = "grid_widget_id String path",   required = true) String grid_widget_id){
         try {
 
@@ -1815,6 +1831,7 @@ public class GridController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
+    @Security.Authenticated(Secured_API.class)
     public Result gridWidgetVersion_makePublic(@ApiParam(value = "grid_widget_version_id String path",   required = true) String grid_widget_version_id){
         try{
 

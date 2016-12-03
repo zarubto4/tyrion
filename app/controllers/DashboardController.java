@@ -44,6 +44,8 @@ import views.html.user_summary.user_summary;
 import views.html.websocket.instance_detail;
 import views.html.websocket.websocket;
 import views.html.websocket.websocket_homer_server_detail;
+import views.html.grid.grid_management;
+import views.html.grid.grid_public;
 import scala.collection.JavaConversions;
 
 import javax.inject.Inject;
@@ -521,6 +523,30 @@ public class DashboardController extends Controller {
 
             Html public_code_content = public_code.render();
             return return_page(public_code_content);
+
+        }catch (Exception e){
+            return ok();
+        }
+    }
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result grid_public(){
+        try {
+
+            Html grid_public_content = grid_public.render();
+            return return_page(grid_public_content);
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result grid_management(){
+        try {
+
+            Html grid_management_content = grid_management.render();
+            return return_page(grid_management_content);
 
         }catch (Exception e){
             return ok();

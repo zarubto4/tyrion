@@ -442,6 +442,9 @@ GET            /type_of_widget/:type_of_widget_id                               
 PUT            /type_of_widget/:type_of_widget_id                                      @controllers.GridController.typeOfWidget_edit(type_of_widget_id)
 DELETE         /type_of_widget/:type_of_widget_id                                      @controllers.GridController.typeOfWidget_delete(type_of_widget_id)
 
+# Approval
+PUT             /grid/disapprove                                                  @controllers.GridController.gridDisapprove()
+PUT             /grid/approval                                                    @controllers.GridController.gridApproval()
 
 ### TOOLS ############ TOOLS ############### TOOLS ################ TOOLS ######################################################################################################
 ################################################################################################################################################################################
@@ -482,6 +485,8 @@ GET             /admin/permission/permission_summary            @controllers.Das
 GET             /admin/permission/role/:role_id                 @controllers.DashboardController.role(role_id)
 GET             /admin/blocko_objects                           @controllers.DashboardController.blocko_objects()
 GET             /admin/blocko_management                        @controllers.DashboardController.blocko_management()
+GET             /admin/grid_public                              @controllers.DashboardController.grid_public()
+GET             /admin/grid_management                          @controllers.DashboardController.grid_management()
 GET             /admin/public_code                              @controllers.DashboardController.public_code()
 GET             /admin/general_tariffs                          @controllers.DashboardController.general_tariffs_list()
 GET             /admin/general_tariffs/:general_tariff_id       @controllers.DashboardController.general_tariff_edit(general_tariff_id)
@@ -498,6 +503,7 @@ PUT             /admin/demo_data/test_boards                    @utilities.demo_
 PUT             /admin/demo_data/c_program_configuration        @utilities.demo_data.Demo_Data_Controller.c_program_configuration()
 
 PUT             /admin/demo_data/blocko_demo_data               @utilities.demo_data.Demo_Data_Controller.blocko_demo_data()
+PUT             /admin/demo_data/grid_demo_data                 @utilities.demo_data.Demo_Data_Controller.grid_demo_data()
 
 PUT             /admin/demo_data/person                         @utilities.demo_data.Demo_Data_Controller.person_test_user()
 PUT             /admin/demo_data/person_project                 @utilities.demo_data.Demo_Data_Controller.person_project_and_programs()

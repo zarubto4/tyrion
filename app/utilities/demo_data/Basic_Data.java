@@ -1,15 +1,43 @@
 package utilities.demo_data;
 
+import models.blocko.BlockoBlockVersion;
+import models.grid.GridWidgetVersion;
 import models.person.FloatingPersonToken;
 import models.person.Person;
 import models.person.PersonPermission;
 import models.person.SecurityRole;
+import utilities.enums.Approval_state;
 
+import java.util.Date;
 import java.util.List;
 
 public class Basic_Data {
 
     public static void  set_default_objects(){
+
+        // Version schemes
+
+        if (GridWidgetVersion.find.where().eq("version_name", "version_scheme").findUnique() == null){
+            GridWidgetVersion gridScheme = new GridWidgetVersion();
+            gridScheme.version_name = "version_scheme";
+            gridScheme.version_description = "This is a GridWidgetVersion scheme. When GridWidget is made, its first version will look like this.";
+            gridScheme.approval_state = Approval_state.approved;
+            gridScheme.date_of_create = new Date();
+            gridScheme.design_json = "{ This is a design JSON scheme. }";
+            gridScheme.logic_json = "{ This is a logic JSON scheme. }";
+            gridScheme.save();
+        }
+
+        if (BlockoBlockVersion.find.where().eq("version_name", "version_scheme").findUnique() == null){
+            BlockoBlockVersion blockoScheme = new BlockoBlockVersion();
+            blockoScheme.version_name = "version_scheme";
+            blockoScheme.version_description = "This is a BlockoBlockVersion scheme. When BlockoBlock is made, its first version will look like this.";
+            blockoScheme.approval_state = Approval_state.approved;
+            blockoScheme.date_of_create = new Date();
+            blockoScheme.design_json = "{ This is a design JSON scheme. }";
+            blockoScheme.logic_json = "{ This is a logic JSON scheme. }";
+            blockoScheme.save();
+        }
     }
 
     public static void set_Developer_objects(){

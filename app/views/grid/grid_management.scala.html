@@ -1,0 +1,688 @@
+@import models.grid.TypeOfWidget
+@import utilities.Server
+
+
+
+<section class="content-header">
+  <h1> Grid Object Settings </h1>
+  <ol class="breadcrumb">
+    <li><a href="@routes.DashboardController.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
+    <li class="active"><i class="fa fa-share"></i> Server Management </li>
+    <li class="active"><i class="fa fa-wrench"></i> Grid Management </li>
+    <li class="active"><i class="fa fa-wrench"></i> Grid Object Settings </li>
+  </ol>
+</section>
+
+<section class="content">
+
+  @*/*/*  Modals ---------------------------------------------------------------------------------------------   */*/*@
+
+<div id="newTypeOfWidgetModal" style="display: none;" class="modal">
+  <div style="margin-top: 5%;" class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">New Type of Widget</h4>
+      </div>
+      <div class="modal-body">
+        <form id="newTypeOfWidget">
+          <div style="float: left; width: 30%;">
+            <label>Name</label>
+            <input id="newTypeOfWidgetName" placeholder="Name" style="display: block" type="text" name="name" >
+          </div>
+          <div style="width: 100%;">
+            <label>Description</label>
+            <input id="newTypeOfWidgetDescription" placeholder="Description" style="display: block; width: 70%;" type="text" name="general_description" >
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newTypeOfWidgetModal').css('display','none')">Close</button>
+        <button class="btn btn-success" type="button" onclick="newTypeOfWidget()">New Type of Widget</button>
+      </div>
+    </div>
+      <!-- /.modal-content -->
+  </div>
+    <!-- /.modal-dialog -->
+</div>
+<div id="newGridWidgetModal" style="display: none;" class="modal">
+  <div style="margin-top: 5%;" class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">New Grid Widget</h4>
+      </div>
+      <div class="modal-body">
+        <form id="newGridWidget">
+          <label id="newGridWidgetTypeOfWidgetName" style="display: block"></label>
+          <div style="float: left; width: 30%;">
+            <label>Name</label>
+            <input placeholder="Name" style="display: block" type="text" name="name" >
+          </div>
+          <div style="width: 100%;">
+            <label>Description</label>
+            <input placeholder="Description" style="display: block; width: 70%;" type="text" name="general_description" >
+          </div>
+          <input id="newGridWidgetTypeOfWidgetId" style="display: none;" type="text" name="type_of_widget_id">
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newGridWidgetModal').css('display','none')">Close</button>
+        <button class="btn btn-success" type="button" onclick="newGridWidget()">New Grid Widget</button>
+      </div>
+    </div>
+      <!-- /.modal-content -->
+  </div>
+    <!-- /.modal-dialog -->
+</div>
+<div id="newGridWidgetVersionModal" style="display: none;" class="modal">
+    <div style="margin-top: 5%;" class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">New Grid Widget Version</h4>
+        </div>
+        <div class="modal-body">
+          <form id="newGridWidgetVersion">
+            <label id="newGridWidgetVersionGridWidgetName" style="display: block"></label>
+            <div style="float: left; width: 30%;">
+              <label>Name</label>
+              <input placeholder="Name" style="display: block" type="text" name="version_name" >
+            </div>
+            <div style=" width: 100%;">
+              <label>Description</label>
+              <input placeholder="Description" style="display: block; width: 70%;" type="text" name="version_description" >
+            </div>
+            <label style="color: #2e6da4">Design JSON:</label>
+            <textarea name="design_json" style="display: block; width: 100%; height: auto;" rows="6"></textarea>
+            <label style="color: #2e6da4">Logic JSON:</label>
+            <textarea name="logic_json" style="display: block; width: 100%; height: auto;" rows="6"></textarea>
+            </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newGridWidgetVersionModal').css('display','none')">Close</button>
+          <button id="newGridWidgetVersionButton" value="" class="btn btn-success" type="button" onclick="newGridWidgetVersion(this.value)">New Grid Widget Version</button>
+        </div>
+      </div>
+        <!-- /.modal-content -->
+    </div>
+      <!-- /.modal-dialog -->
+  </div>
+
+<div id="editTypeOfWidgetModal" style="display: none;" class="modal">
+  <div style="margin-top: 5%;" class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Edit Type of Widget</h4>
+      </div>
+      <div class="modal-body">
+        <form id="editTypeOfWidget">
+          <label id="typeOfWidgetId" style="display: block">ID</label>
+          <div style="float: left; width: 30%;">
+            <label>Name</label>
+            <input placeholder="Name" style="display: block" type="text" name="name" >
+          </div>
+          <div style="width: 100%;">
+            <label>Description</label>
+            <input placeholder="Description" style="display: block; width: 70%;" type="text" name="general_description" >
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editTypeOfWidgetModal').css('display','none')">Close</button>
+        <button id="editTypeOfWidgetButton" value="" class="btn btn-primary" type="button" onclick="editTypeOfWidget(this.value)">Save changes</button>
+      </div>
+    </div>
+      <!-- /.modal-content -->
+  </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div id="editGridWidgetModal" style="display: none;" class="modal">
+  <div style="margin-top: 5%;" class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Edit Grid Widget</h4>
+      </div>
+      <div class="modal-body">
+        <form id="editGridWidget">
+          <label id="gridWidgetId" style="display: block">ID</label>
+          <div style="float: left; width: 30%;">
+            <label>Name</label>
+            <input placeholder="Name" style="display: block" id="edit_grid_widget_name" type="text" name="name" >
+          </div>
+          <div style="width: 100%;">
+            <label>Description</label>
+            <input placeholder="Description" style="display: block; width: 70%;" id="edit_grid_widget_description" type="text" name="general_description" >
+          </div>
+          <label>Type of Widget</label>
+          <select style="display: block;" name="type_of_widget_id">
+            <option id="current_type_of_widget" selected value=""></option>
+          @for(typeOfWidget <- TypeOfWidget.find.where().isNull("project").findList()) {
+            <option value="@typeOfWidget.id">@typeOfWidget.name</option>
+          }
+          </select>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editGridWidgetModal').css('display','none')">Close</button>
+        <button id="editGridWidgetButton" value="" class="btn btn-primary" type="button" onclick="editGridWidget(this.value)">Save changes</button>
+      </div>
+    </div>
+      <!-- /.modal-content -->
+  </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div id="editGridWidgetVersionModal" style="display: none;" class="modal">
+  <div style="margin-top: 5%;" class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Edit Grid Widget Version</h4>
+      </div>
+      <div class="modal-body">
+        <form id="editGridWidgetVersion">
+          <div style="float: left; width: 30%;">
+            <label style="color: #2e6da4">Version name:</label>
+            <input type="text" id="edit_grid_version_name" name="version_name" style="display: block;">
+          </div>
+          <div style="width:100%;">
+            <label style="color: #2e6da4">Version description:</label>
+            <input type="text" id="edit_grid_version_description" name="version_description" style="display: block; width: 70%;">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editGridWidgetVersionModal').css('display','none')">Close</button>
+        <button id="editGridWidgetVersionButton" value="" class="btn btn-primary" type="button" onclick="editGridWidgetVersion(this.value)">Save changes</button>
+      </div>
+    </div>
+      <!-- /.modal-content -->
+  </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div id="editVersionSchemeModal" style="display: none;" class="modal">
+  <div style="margin-top: 5%;" class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Edit Version Scheme </h4>
+      </div>
+      <div class="modal-body">
+        <form id="editVersionScheme">
+          <label style="color: #2e6da4">Design JSON:</label>
+          <textarea id="version_scheme_design" name="design_json" style="display: block; width: 100%; height: auto;" rows="6"></textarea>
+          <label style="color: #2e6da4">Logic JSON:</label>
+          <textarea id="version_scheme_logic" name="logic_json" style="display: block; width: 100%; height: auto;" rows="6"></textarea>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editVersionSchemeModal').css('display','none')">Close</button>
+        <button class="btn btn-primary" type="button" onclick="editVersionScheme()">Save changes</button>
+      </div>
+    </div>
+      <!-- /.modal-content -->
+  </div>
+    <!-- /.modal-dialog -->
+</div>
+
+  @*/*/*  Content ---------------------------------------------------------------------------------------------   */*/*@
+
+  <div class="row">
+    <div class="col-md-2">
+      <div class="box">
+        <div class="box-header with-border">
+          <h3 class="box-title">Type</h3>
+          <button class="btn btn-xs btn-success pull-right" type="button" onclick="$('#newTypeOfWidgetModal').css('display','block')"><i class="fa fa-plus"></i></button>
+        </div>
+        <div id="typeOfWidgetTableWrapper" class="box-body">
+          <table id="allTypesOfWidgets" class="table table-bordered">
+            <thead><tr><th>Types of Widget</th></tr></thead>
+            <tbody>
+            @for(typeOfWidget <- TypeOfWidget.find.where().isNull("project").findList()) {
+              <tr>
+                <td><button class="btn btn-block btn-info" type="button" onclick="openTypeOfWidget('@typeOfWidget.id')">@typeOfWidget.name</button></td>
+              </tr>
+            }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="box">
+        <div class="box-header with-border">
+          <h3 id="type_of_widget" style="max-width: 60%;" class="box-title"></h3>
+          <div id="type_info_id" style="display: none;"></div>
+          <div id="type_info_description" style="display: none;"></div>
+          <div id="type_btn_group" class="btn-group pull-right">
+            <button class="btn btn-xs btn-danger disabled" disabled type="button" onclick="deleteTypeOfWidget(document.getElementById('type_info_id').textContent)"><i class="fa fa-times"></i></button>
+            <button class="btn btn-xs btn-info disabled" disabled type="button" onclick="showEditTypeForm(document.getElementById('type_info_id').textContent, document.getElementById('type_of_widget').textContent, document.getElementById('type_info_description').textContent)"><i class="fa fa-edit"></i></button>
+            <button class="btn btn-xs btn-success disabled" disabled type="button" onclick="$('#newGridWidgetModal').css('display','block'); $('#newGridWidgetTypeOfWidgetId').val(document.getElementById('type_info_id').textContent)"><i class="fa fa-plus"></i></button>
+          </div>
+        </div>
+        <div class="box-body">
+
+          <table id="gridWidgets" class="table table-bordered">
+            <thead><tr><th>Widgets</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="box">
+        <div class="box-header with-border">
+          <h3 id="grid_widget" style="max-width: 60%;" class="box-title"></h3>
+          <div id="widget_info_id" style="display: none;"></div>
+          <div id="widget_info_description" style="display: none;"></div>
+          <div id="widget_btn_group" class="btn-group pull-right">
+            <button class="btn btn-xs btn-danger disabled" disabled type="button" onclick="deleteGridWidget(document.getElementById('widget_info_id').textContent)"><i class="fa fa-times"></i></button>
+            <button class="btn btn-xs btn-info disabled" disabled type="button" onclick="
+              $('#editGridWidgetModal').css('display','block');
+              $('#editGridWidgetButton').val(document.getElementById('widget_info_id').textContent);
+              $('#edit_grid_widget_name').val(document.getElementById('grid_widget').textContent);
+              $('#edit_grid_widget_description').val(document.getElementById('widget_info_description').textContent);
+              $('#current_type_of_widget').val(document.getElementById('type_info_id').textContent);
+              $('#current_type_of_widget').text(document.getElementById('type_of_widget').textContent);"><i class="fa fa-edit"></i></button>
+            <button class="btn btn-xs btn-success disabled" disabled type="button" onclick="$('#newGridWidgetVersionModal').css('display','block'); $('#newGridWidgetVersionButton').val(document.getElementById('widget_info_id').textContent); $('#newGridWidgetVersionGridWidgetName').val('Widget: ' + document.getElementById('grid_widget').textContent)"><i class="fa fa-plus"></i></button>
+          </div>
+        </div>
+        <div class="box-body">
+          <table id="gridWidgetVersions" class="table table-bordered">
+            <thead><tr><th>Versions</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="box">
+        <div class="box-header with-border">
+          <h3 id="grid_widget_version" class="box-title"></h3>
+          <div id="version_info_id" style="display: none;"></div>
+          <div id="version_btn_group" class="btn-group pull-right">
+            <button class="btn btn-xs btn-danger disabled" disabled type="button" onclick="deleteGridWidgetVersion(document.getElementById('version_info_id').textContent)"><i class="fa fa-times"></i></button>
+            <button class="btn btn-xs btn-info disabled" disabled type="button" onclick="$('#editGridWidgetVersionModal').css('display','block'); $('#editGridWidgetVersionButton').val(document.getElementById('version_info_id').textContent);  $('#edit_grid_version_name').val(document.getElementById('grid_version_name').value); $('#edit_grid_version_description').val(document.getElementById('grid_version_description').value);"><i class="fa fa-edit"></i></button>
+          </div>
+          <button class="btn btn-primary btn-xs pull-right" style="margin-right: 10px;" type="button" onclick="showVersionScheme()">Version scheme</button>
+        </div>
+        <div class="box-body">
+          <div style="display: none" id="gridWidgetVersion">
+            <div style="float: left; width: 30%;">
+              <label style="color: #2e6da4">Version name:</label>
+              <input readonly type="text" id="grid_version_name" style="display: block;">
+            </div>
+            <div style="width:100%;">
+              <label style="color: #2e6da4">Version description:</label>
+              <input readonly type="text" id="grid_version_description" style="display: block; width: 70%;">
+            </div>
+            <label style="color: #2e6da4">Design JSON:</label>
+            <textarea readonly id="grid_version_design" style="display: block; width: 100%; height: auto;" rows="6"></textarea>
+            <label style="color: #2e6da4">Logic JSON:</label>
+            <textarea readonly id="grid_version_logic" style="display: block; width: 100%; height: auto;" rows="6"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+</section>
+
+<script>
+
+        $.ajaxSetup({ cache: false });
+
+@*/*/*  TypeOfWidget ---------------------------------------------------------------------------------------------   */*/*@
+
+        function newTypeOfWidget(){
+          model_data = $("#newTypeOfWidget").serializeObject();
+          $.ajax({
+            url: '@routes.GridController.typeOfWidget_create()',
+            type: 'POST',
+            contentType: 'application/json',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+            success:function(e){
+              $("#newTypeOfWidget input[type=text]").val("");
+              $("#newTypeOfWidgetModal").css("display","none");
+              $('#typeOfWidgetTableWrapper').html("").load(document.URL +  ' #allTypesOfWidgets');
+            },
+            error:function(e) {
+              alert(e.responseText);
+            }
+          })}
+
+        function newGridWidget(){
+          model_data = $("#newGridWidget").serializeObject();
+          $.ajax({
+            url: '@routes.GridController.gridWidget_create()',
+            type: 'POST',
+            contentType: 'application/json',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+            success:function(e){
+              $("#newGridWidget input[type=text]").val("");
+              $("#newGridWidgetModal").css("display","none");
+              openTypeOfWidget(document.getElementById('type_info_id').textContent)
+            },
+            error:function(e) {
+              alert(e.responseText);
+            }
+          })}
+
+        function newGridWidgetVersion(id){
+          model_data = $("#newGridWidgetVersion").serializeObject();
+          $.ajax({
+            url: '@Server.tyrion_serverAddress' + '/grid_widget/version/' + id,
+            type: 'POST',
+            contentType: 'application/json',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+            success:function(e){
+              $("#newGridWidgetVersion input[type=text]").val("");
+              $("#newGridWidgetVersion textarea").text("");
+              $("#newGridWidgetVersionModal").css("display","none");
+              openGridWidget(document.getElementById('widget_info_id').textContent);
+            },
+            error:function(e) {
+              alert(e.responseText);
+            }
+          })}
+
+        function editTypeOfWidget(id){
+          model_data = $("#editTypeOfWidget").serializeObject();
+
+          $.ajax({
+            url: "@Server.tyrion_serverAddress" + "/type_of_widget/" + id ,
+            type: 'PUT',
+            contentType: 'application/json',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+            success:function(json){
+              $("#editTypeOfWidget input[type=text]").val("");
+              $("#editTypeOfWidgetModal").css("display","none");
+              $('#typeOfWidgetTableWrapper').load(document.URL +  ' #allTypesOfWidgets');
+              $('#type_of_widget').text(json.name);
+              $('#type_info_id').text(json.id);
+              $('#type_info_description').text(json.general_description);
+              $('#gridWidgets tbody').html("");
+              $('#gridWidgetVersions tbody').html("");
+              $("#gridWidgetVersion").css("display","none");
+              $('#grid_widget_version').text("");
+              $('#grid_widget').text("");
+              $('#deleteTypeOfWidgetButton').val(json.id);
+              disableButtonGroup('#widget_btn_group', true);
+              disableButtonGroup('#version_btn_group', true);
+              var content = '';
+              $.each(json.grid_widgets, function(k, v) {
+                content = "<tr><td><button class='btn btn-block btn-info' type='button' onclick=\"openGridWidget('" + v.id + "')\">" + v.name + "</button></td></tr>";
+                $('#gridWidgets tbody').append(content);
+              });
+            },
+            error:function(e) {
+              alert(e.responseText);
+            }
+          })}
+
+        function editGridWidget(id){
+          model_data = $("#editGridWidget").serializeObject();
+
+          $.ajax({
+            url: "@Server.tyrion_serverAddress" + "/grid_widget/" + id ,
+            type: 'PUT',
+            contentType: 'application/json',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+            success:function(json){
+              $("#editGridWidget input[type=text]").val("");
+              $("#editGridWidgetModal").css("display","none");
+              openTypeOfWidget(json.type_of_widget_id);
+              openGridWidget(json.id);
+            },
+            error:function(e) {
+              alert(e.responseText);
+            }
+          })}
+
+        function editGridWidgetVersion(id){
+          model_data = $("#editGridWidgetVersion").serializeObject();
+
+          $.ajax({
+            url: "@Server.tyrion_serverAddress" + "/grid_widget/version/" + id ,
+            type: 'PUT',
+            contentType: 'application/json',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+            success:function(e){
+              $("#editGridWidgetVersion input[type=text]").val("");
+              $("#editGridWidgetVersionModal").css("display","none");
+              openGridWidgetVersion(document.getElementById('version_info_id').textContent);
+            },
+            error:function(e) {
+              alert(e.responseText);
+            }
+          })}
+
+        function deleteTypeOfWidget(id){
+
+          $.ajax({
+            url: " @Server.tyrion_serverAddress" + "/type_of_widget/" + id ,
+            type: 'DELETE',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            success:function(e){
+              $('#typeOfWidgetTableWrapper').load(document.URL +  ' #allTypesOfWidgets');
+              $('#type_of_widget').text("");
+              $('#gridWidgets tbody').html("");
+              $('#gridWidgetVersions tbody').html("");
+              $("#gridWidgetVersion").css("display","none");
+              $('#grid_widget_version').text("");
+              $('#grid_widget').text("");
+              disableButtonGroup('#type_btn_group', true);
+              disableButtonGroup('#widget_btn_group', true);
+              disableButtonGroup('#version_btn_group', true);
+            },
+            error:function(e) {
+              alert(e.responseText);
+            }
+          })}
+
+        function deleteGridWidget(id){
+
+          $.ajax({
+            url: " @Server.tyrion_serverAddress" + "/grid_widget/" + id ,
+            type: 'DELETE',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            success:function(e){
+              openTypeOfWidget(document.getElementById('type_info_id').textContent);
+              $('#grid_widget').text("");
+            },
+            error:function(e) {
+              alert(e.responseText);
+            }
+          })}
+
+        function deleteGridWidgetVersion(id){
+
+          $.ajax({
+            url: " @Server.tyrion_serverAddress" + "/grid_widget/version/" + id ,
+            type: 'DELETE',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            success:function(e){
+              openGridWidget(document.getElementById('widget_info_id').textContent);
+              $('#grid_widget_version').text("");
+            },
+            error:function(e) {
+              alert(e.responseText);
+            }
+          })}
+
+        function showEditTypeForm(id, name, description){
+          $("#editTypeOfWidgetModal").css("display","block");
+          $('#editTypeOfWidgetButton').val(id);
+          $('#typeOfWidgetId').text("ID = " + id);
+          $("#editTypeOfWidget input[name=name]").val(name);
+          $("#editTypeOfWidget input[name=general_description]").val(description);
+
+        }
+
+        function openTypeOfWidget(id){
+          $.ajax({
+            url: '@Server.tyrion_serverAddress' + '/type_of_widget/' + id,
+            type: 'GET',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            dataType: 'json',
+            success:function(json){
+              $('#type_of_widget').text(json.name);
+              $('#type_info_id').text(json.id);
+              $('#type_info_description').text(json.general_description);
+              $('#gridWidgets tbody').html("");
+              $('#gridWidgetVersions tbody').html("");
+              $("#gridWidgetVersion").css("display","none");
+              $('#grid_widget_version').text("");
+              $('#grid_widget').text("");
+              $('#deleteTypeOfWidgetButton').val(json.id);
+              disableButtonGroup('#type_btn_group', false);
+              disableButtonGroup('#widget_btn_group', true);
+              disableButtonGroup('#version_btn_group', true);
+              var content = '';
+              $.each(json.grid_widgets, function(k, v) {
+                content = "<tr><td><button class='btn btn-block btn-info' type='button' onclick=\"openGridWidget('" + v.id + "')\">" + v.name + "</button></td></tr>";
+                $('#gridWidgets tbody').append(content);
+              });
+            },
+            error:function(e) {
+              alert(e.responseText);
+            }
+          })}
+
+        function openGridWidget(id){
+          $.ajax({
+            url: '@Server.tyrion_serverAddress' + '/grid_widget/' + id,
+            type: 'GET',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            dataType: 'json',
+            success:function(json){
+              $('#grid_widget').text(json.name);
+              $('#widget_info_id').text(json.id);
+              $('#widget_info_description').text(json.general_description);
+              $('#grid_widget_version').text("");
+              $('#deleteGridWidgetButton').val(json.id);
+              $('#gridWidgetVersions tbody').html("");
+              $("#gridWidgetVersion").css("display","none");
+              disableButtonGroup('#widget_btn_group', false);
+              disableButtonGroup('#version_btn_group', true);
+              var content = '';
+              $.each(json.versions, function(k, v) {
+                content = "<tr><td><button class='btn btn-block btn-info' type='button' onclick=\"openGridWidgetVersion('" + v.id + "')\">" + v.name + "</button></td></tr>";
+                $('#gridWidgetVersions tbody').append(content);
+              });
+            },
+            error:function(e) {
+              alert(e.responseText);
+            }
+          })}
+
+        function openGridWidgetVersion(id){
+          $("#gridWidgetVersion").css("display","block");
+          $.ajax({
+            url: '@Server.tyrion_serverAddress' + '/grid_widget/version/' + id,
+            type: 'GET',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            dataType: 'json',
+            success:function(json){
+              $('#deleteGridWidgetVersionButton').val(json.id);
+              $('#version_info_id').text(json.id);
+              $('#grid_widget_version').text(json.version_name);
+              $('#grid_version_name').val(json.version_name);
+              $('#grid_version_description').val(json.version_description);
+              $('#grid_version_design').text(json.design_json);
+              $('#grid_version_logic').text(json.logic_json);
+              disableButtonGroup('#version_btn_group', false);
+
+            },
+            error:function(e) {
+              alert(e.responseText);
+            }
+          })}
+
+        function disableButtonGroup(id, state) {
+          $(id + ' button').prop('disabled', state);
+          if(state){
+            $(id + ' button').addClass('disabled');
+          }else {
+            $(id + ' button').removeClass('disabled');
+          }
+        }
+
+        function showVersionScheme(){
+          $.ajax({
+            url: '@routes.GridController.gridWidgetVersion_getScheme()',
+            type: 'GET',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            dataType: 'json',
+            success:function(json){
+              $("#editVersionSchemeModal").css("display","block");
+              $('#version_scheme_design').val(json.design_json);
+              $('#version_scheme_logic').val(json.logic_json);
+            },
+            error:function(e) {
+              alert(e.responseText);
+            }
+          })}
+
+        function editVersionScheme(){
+          model_data = $("#editVersionScheme").serializeObject();
+          $.ajax({
+            url: '@routes.GridController.gridWidgetVersion_editScheme()',
+            type: 'PUT',
+            contentType: 'application/json',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+            success:function(e){
+              $("#editVersionScheme input[type=text]").val("");
+              $("#editVersionSchemeModal").css("display","none");
+            },
+            error:function(e) {
+              alert(e.responseText);
+            }
+          })}
+</script>
