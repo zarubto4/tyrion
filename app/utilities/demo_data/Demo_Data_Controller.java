@@ -1201,18 +1201,21 @@ public class Demo_Data_Controller extends Controller {
             //1
             GridWidget gridWidget_1_1 = new GridWidget();
             gridWidget_1_1.name = "Apple";
+            gridWidget_1_1.author = Person.find.where().eq("mail", "admin@byzance.cz").findUnique();
             gridWidget_1_1.general_description = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.";
             gridWidget_1_1.type_of_widget = typeOfWidget_1;
             gridWidget_1_1.save();
 
             GridWidget gridWidget_1_2 = new GridWidget();
             gridWidget_1_2.name = "Banana";
+            gridWidget_1_2.author = Person.find.where().eq("mail", "admin@byzance.cz").findUnique();
             gridWidget_1_2.general_description = "Lorem ipsum di lasjdhflkj dshaflj  sadfsdfas dfsadf sad gsfgsdf sadfsd fas";
             gridWidget_1_2.type_of_widget = typeOfWidget_1;
             gridWidget_1_2.save();
 
             GridWidget gridWidget_1_3 = new GridWidget();
             gridWidget_1_3.name = "Orange";
+            gridWidget_1_3.author = Person.find.where().eq("mail", "admin@byzance.cz").findUnique();
             gridWidget_1_3.general_description = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit.";
             gridWidget_1_3.type_of_widget = typeOfWidget_1;
             gridWidget_1_3.save();
@@ -1220,12 +1223,14 @@ public class Demo_Data_Controller extends Controller {
             // 2
             GridWidget gridWidget_2_1 = new GridWidget();
             gridWidget_2_1.name = "Nice Widget";
+            gridWidget_2_1.author = Person.find.where().eq("mail", "admin@byzance.cz").findUnique();
             gridWidget_2_1.general_description = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit.";
             gridWidget_2_1.type_of_widget = typeOfWidget_2;
             gridWidget_2_1.save();
 
             GridWidget gridWidget_2_2 = new GridWidget();
             gridWidget_2_2.name = "Ugly Widget";
+            gridWidget_2_2.author = Person.find.where().eq("mail", "admin@byzance.cz").findUnique();
             gridWidget_2_2.general_description = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit.";
             gridWidget_2_2.type_of_widget = typeOfWidget_2;
             gridWidget_2_2.save();
