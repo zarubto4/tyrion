@@ -255,6 +255,8 @@ public class NotificationController extends Controller {
       for(Notification notification : notifications) {
 
         notification.set_read();
+        notification.state = Notification_state.updated;
+        notification.send();
       }
 
       return GlobalResult.result_ok();
