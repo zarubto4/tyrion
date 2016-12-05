@@ -8,10 +8,7 @@ import play.data.validation.Constraints;
 public class Swagger_Mobile_Connection_Request {
 
     @Constraints.Required
-    public String instance_id;
-
-    @Constraints.Required
-    public String m_program_id;
+    public String instance_record_id;
 
     @Constraints.Required
     public String version_object_id;

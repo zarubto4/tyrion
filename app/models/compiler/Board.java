@@ -11,8 +11,6 @@ import io.swagger.annotations.ApiModelProperty;
 import models.notification.Notification;
 import models.project.b_program.B_Pair;
 import models.project.b_program.instnace.Homer_Instance;
-import models.project.b_program.servers.Cloud_Homer_Server;
-import models.project.b_program.servers.Private_Homer_Server;
 import models.project.c_program.actualization.C_Program_Update_Plan;
 import models.project.global.Project;
 import play.data.Form;
@@ -29,6 +27,7 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 
 @Entity
@@ -40,27 +39,26 @@ public class Board extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @Id                                @ApiModelProperty(required = true)   public String id; // Vlastní id je přidělováno
+     @Id  @ApiModelProperty(required = true)                                public String id;              // Full_Id procesoru přiřazené Garfieldem
 
-                                                                            public String ethernet_mac_address;
-                                                                            public String wifi_mac_address;
+                                                                            public String hash_for_adding;    // Vygenerovaný Hash pro přidávání a párování s Platformou.
+
+                                                                            public String ethernet_mac_address; // Mac Addressa Ethernet konektoru - pravděpodobně stejná jako defaultní MacAdressa!
+                                                                            public String wifi_mac_address;     // Mac addressa wifi čipu
+                                                                            public String mac_address;          // Přiřazená MacAdresa z rozsahu Adres
+
 
     @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)   public String personal_description;
                                        @JsonIgnore  @ManyToOne              public TypeOfBoard type_of_board;
-                                       @ApiModelProperty(required = true)   public boolean is_active;
+                                       @JsonIgnore                          public boolean is_active;
                                        @ApiModelProperty(required = true)   public boolean backup_mode;
-                                                              @JsonIgnore   public Date date_of_create;
+                                       @JsonIgnore                          public Date date_of_create;
 
                       @JsonIgnore @ManyToOne(cascade = CascadeType.MERGE)   public Project project;
 
                                                    @JsonIgnore @ManyToOne   public Version_Object actual_c_program_version;
                                                    @JsonIgnore              public String alternative_program_name;
                                                    @JsonIgnore @ManyToOne   public BootLoader actual_boot_loader;
-
-                                                   @JsonIgnore @ManyToOne   public Cloud_Homer_Server latest_know_server;  // Pouze pokud je připojen přímo na blocko cloud_blocko_server!
-                                                   @JsonIgnore @ManyToOne   public Private_Homer_Server private_homer_servers;
-
-
 
     @JsonIgnore  @OneToMany(mappedBy="board", cascade=CascadeType.ALL, fetch = FetchType.LAZY)     public List<B_Pair> b_pair = new ArrayList<>();
     @JsonIgnore  @OneToMany(mappedBy="board", cascade=CascadeType.ALL, fetch = FetchType.LAZY)     public List<C_Program_Update_Plan> c_program_update_plans;
@@ -97,13 +95,7 @@ public class Board extends Model {
 
         }else  {
 
-            if (instance.cloud_homer_server != null) {
-                board_status.where = "cloud";
-            }
-
-            if (instance.private_server  != null) {
-                board_status.where = "local";
-            }
+            board_status.where = "cloud";
 
             board_status.b_program_id = instance.b_program.id;
             board_status.b_program_name = instance.b_program.name;
@@ -132,6 +124,8 @@ public class Board extends Model {
             board_status.required_c_program_version_name = plan.c_program_version_for_update.version_name;
          }
 
+
+
         return board_status;
 
     }
@@ -144,8 +138,6 @@ public class Board extends Model {
 
     @JsonIgnore @Transient public boolean is_online(){ // Velmi opatrně s touto proměnou - je časově velmi náročná!!!!!!!!
         try {
-
-            System.err.println("Kontorloa toho zda je deivce ONLINE ID:: " + id);
 
             Homer_Instance homer_instance = get_instance();
 
@@ -166,18 +158,10 @@ public class Board extends Model {
 
 
             if( result.get("status").asText().equals("error")){
-                System.out.println("Status: JSON:::::: je error");
                 return false;
             }
 
             if( result.get("status").asText().equals("success") ){
-
-                System.out.println("Status: JSON:::::: je success");
-
-                boolean status =  result.get("device_state").asBoolean();
-
-                System.out.println("Status: JSON:::::: je success status je " + status);
-
                 return result.get("device_state").asBoolean();
             }
 
@@ -230,26 +214,6 @@ public class Board extends Model {
             }
 
             logger.debug("Board:: master_device_Connected:: Board connected to Blocko cloud_blocko_server:: ", help.deviceId);
-
-            // Pokud se Yoda přihlásil poprvé - a nikdy neměl intanci a asi nemá ani klienta!
-            if(master_device.latest_know_server == null){
-
-                logger.debug("Board:: master_device_Connected:: ", help.deviceId, " The Board is not yet matched the Server");
-                Cloud_Homer_Server cloud_server = Cloud_Homer_Server.find.where().eq("server_name", server.identifikator).findUnique();
-                if(cloud_server == null) {
-                    logger.error("Board:: master_device_Connected:: ", help.deviceId, " Cloud_Homer_Server not exist!!!!");
-                    return;
-                }
-
-                cloud_server.boards.add(master_device);
-                cloud_server.refresh();
-                cloud_server.update();
-
-                master_device.refresh();
-                master_device.latest_know_server = cloud_server;
-                master_device.is_active = true;
-                master_device.update();
-            }
 
             // Požádám o kontrolu zda nečeká nějaká nová aktualizační procedura - pro Yodu nebo jeho device
             Board.hardware_connected(master_device, help);
@@ -439,6 +403,17 @@ public class Board extends Model {
     @Override
     public void update(){
         super.update();
+    }
+
+    @Override
+    public void save(){
+
+        while(true){ // I need Unique Value
+            this.hash_for_adding =  UUID.randomUUID().toString().substring(0,14);
+            if (Board.find.where().eq("hash_for_adding", hash_for_adding).findUnique() == null) break;
+        }
+
+        super.save();
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

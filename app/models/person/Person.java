@@ -15,6 +15,7 @@ import models.overflow.LinkedPost;
 import models.overflow.Post;
 import models.project.global.Project;
 import models.project.global.financial.Payment_Details;
+import models.project.m_program.Grid_Terminal;
 import org.hibernate.validator.constraints.Email;
 import play.data.validation.Constraints;
 import utilities.Server;
@@ -62,7 +63,7 @@ public class Person extends Model {
     @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<FloatingPersonToken>  floatingPersonTokens = new ArrayList<>(); // Propojení, které uživatel napsal
     @JsonIgnore  @OneToMany(mappedBy="owner",  cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<Invitation>           invitations          = new ArrayList<>(); // Pozvánky, které uživatel rozeslal
     @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<Notification>         notifications        = new ArrayList<>();
-
+    @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<Grid_Terminal>        grid_terminals       = new ArrayList<>(); // Přihlášený websocket uživatele
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 

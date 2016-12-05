@@ -32,6 +32,12 @@ public class Swagger_B_Program_State {
     public String instance_id;
 
 
+    // Instance Informace
+    @ApiModelProperty(required = false, readOnly = true, value = "WebSocket URL without Personal AUTH_ID for remove control and webView streaming")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String instance_remote_url;
+
+
     // Server informace
     @ApiModelProperty(required = false, readOnly = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)

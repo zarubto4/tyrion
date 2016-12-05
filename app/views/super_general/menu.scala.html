@@ -20,26 +20,29 @@
                     </a>
                 </li>
  <!-------------------------------------------------------------------------- ------------------------>
-                <li>
-                    <a href='@routes.DashboardController.show_all_logs()' >
-                        <i class="fa  fa-bug"></i> <span>Bug Reporting</span>
-                        @if( Loggy.number_of_reported_errors() > 0) { <small class="label pull-right bg-red">@Loggy.number_of_reported_errors()</small>}
+                <li class="treeview">
+                    <a href="#">
+                        <i class="fa fa-bug"></i> <span>Bugs</span>
+                        <i class="fa fa-angle-left pull-right"></i>
                     </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href='@routes.DashboardController.show_all_logs()' >
+                                <i class="fa  fa-bug"></i> <span>Bug Reporting</span>
+                                @if( Loggy.number_of_reported_errors() > 0) { <small class="label pull-right bg-red">@Loggy.number_of_reported_errors()</small>}
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="http://youtrack.byzance.cz">
+                                <i class="fa  fa-bug"></i> <span>Issue tracker</span>
+                            </a>
+                        </li>
+                    </ul>
                 </li>
 <!-------------------------------------------------------------------------- ------------------------>
-                <li>
-                    <a href="http://youtrack.byzance.cz">
-                        <i class="fa  fa-bug"></i> <span>Issue tracker</span>
-                    </a>
-                </li>
 
- <!-------------------------------------------------------------------------- ------------------------>
-                <li>
-                    <a href='@routes.DashboardController.show_web_socket_stats()' >
-                        <i class="fa fa-heart"></i> <span>Websocket connections</span>
-                        <small class="label pull-right bg-yellow">  @( WebSocketController.becki_website.size()  + WebSocketController.compiler_cloud_servers.size() + WebSocketController.blocko_servers.size()) </small>
-                    </a>
-                </li>
+
 <!-------------------------------------------------------------------------- ------------------------>
                  <li class="treeview">
                     <a href="#">
@@ -60,10 +63,58 @@
                     </ul>
                 </li>
 <!-------------------------------------------------------------------------- ------------------------>
-                <li>
-                    <a href='@routes.DashboardController.show_readme()' >
-                        <i class="fa fa-graduation-cap"></i> <span>Read Me</span>
+                <li class="treeview">
+                    <a href="#">
+                        <i class="fa fa-bug"></i> <span>For Tyrion Developers</span>
+                        <i class="fa fa-angle-left pull-right"></i>
                     </a>
+                    <ul class="treeview-menu">
+
+                        <li class="treeview">
+                            <a href="#">
+                                <i class="fa fa-share"></i> <span>External API</span>
+                                <i class="fa fa-angle-left pull-right"></i>
+                            </a>
+                            <ul class="treeview-menu">
+                                <li><a href='@Server.link_api_swagger'><i class="fa fa-circle-o"></i>Api on latest version</a></li>
+                                <li>
+                                    <a href="#"><i class="fa fa-circle-o"></i> Historical Version <i class="fa fa-angle-left pull-right"></i></a>
+                                    <ul class="treeview-menu">
+                                    @for(version <- Swagger_diff_Controller.json_docu_files() ) {
+                                        <li><a href='@Server.link_api_swagger/@Server.server_version' ><i class="fa fa-circle-o"></i>@Server.server_version</a></li>
+                                    }
+                                    </ul>
+                                </li>
+                                <li><a href='@routes.DashboardController.show_diff_on_Api()' ><i class="fa fa-circle-o"></i> Diff Tools </a></li>
+                            </ul>
+                        </li>
+
+                        <li>
+                            <a href='@routes.DashboardController.show_readme()' >
+                                <i class="fa fa-graduation-cap"></i> <span>Read Me</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href='@routes.DashboardController.test()' >
+                                <i class="fa fa-gears"></i> <span>Test</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href='@routes.DashboardController.show_web_socket_stats()' >
+                                <i class="fa fa-heart"></i> <span>Websocket connections</span>
+                                <small class="label pull-right bg-yellow">  @( WebSocketController.becki_website.size()  + WebSocketController.compiler_cloud_servers.size() + WebSocketController.blocko_servers.size()) </small>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href='@routes.DashboardController.demo_data()' >
+                                <i class="fa fa-bomb"></i> <span>Demo Data</span>
+                            </a>
+                        </li>
+
+                    </ul>
                 </li>
 <!-------------------------------------------------------------------------- ------------------------>
 
@@ -85,6 +136,30 @@
                                 <i class="fa fa-wrench"></i> <span>Embedded HW Management</span>
                             </a>
                         </li>
+
+
+                        <li>
+                            <a href='@routes.DashboardController.general_tariffs_list()'>
+                                <i class="fa fa-wrench"></i> <span>General Tariff Management</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="#"><i class="fa fa-wrench"></i> Grid Management <i class="fa fa-angle-left pull-right"></i></a>
+                            <ul class="treeview-menu">
+                                <li>
+                                    <a href='@routes.DashboardController.grid_management()' >
+                                        <i class="fa fa-wrench"></i> <span>Grid Object Settings</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href='@routes.DashboardController.grid_public()' >
+                                        <i class="fa fa-wrench"></i> <span>Public Object Approval</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
                         <li>
                             <a href="#"><i class="fa fa-wrench"></i> Blocko Management <i class="fa fa-angle-left pull-right"></i></a>
                             <ul class="treeview-menu">
@@ -101,16 +176,16 @@
                             </ul>
                         </li>
                         <li>
-                            <a href="#"><i class="fa fa-wrench"></i> Grid Management <i class="fa fa-angle-left pull-right"></i></a>
+                            <a href="#"><i class="fa fa-wrench"></i> C Program Management <i class="fa fa-angle-left pull-right"></i></a>
                             <ul class="treeview-menu">
                                 <li>
-                                    <a href='@routes.DashboardController.grid_management()' >
-                                        <i class="fa fa-wrench"></i> <span>Grid Object Settings</span>
+                                    <a href='@routes.DashboardController.public_code()'>
+                                        <i class="fa fa-wrench"></i> <span>Public Firmware code</span>
                                     </a>
                                 </li>
                                 <li>
-                                    <a href='@routes.DashboardController.grid_public()' >
-                                        <i class="fa fa-wrench"></i> <span>Public Object Approval</span>
+                                    <a href='@routes.DashboardController.blocko_objects()' >
+                                        <i class="fa fa-wrench"></i> <span>Libraries</span>
                                     </a>
                                 </li>
                             </ul>
@@ -118,11 +193,6 @@
                         <li>
                             <a href='@routes.DashboardController.general_tariffs_list()'>
                                 <i class="fa fa-wrench"></i> <span>General Tariff Management</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href='@routes.DashboardController.public_code()'>
-                                <i class="fa fa-wrench"></i> <span>Public Firmware code</span>
                             </a>
                         </li>
                         <li>
@@ -140,6 +210,46 @@
                                 <i class="fa fa-wrench"></i> <span>System Roles & Permissions</span>
                             </a>
                         </li>
+                    </ul>
+                </li>
+
+
+
+ <!-------------------------------------------------------------------------- ------------------------>
+
+
+
+                <li class="treeview">
+                    <a href="#">
+                        <i class="fa fa-share"></i> <span>Reports</span>
+                        <i class="fa fa-angle-left pull-right"></i>
+                    </a>
+                    <ul class="treeview-menu">
+
+                        <li>
+                            <a href=''>
+                                <i class="fa fa-wrench"></i> <span>Financial Reports</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href=''>
+                                <i class="fa fa-wrench"></i> <span>Bla bla Reports</span>
+                            </a>
+                        </li>
+
+                    </ul>
+                </li>
+
+
+<!-------------------------------------------------------------------------- ------------------------>
+
+                <li class="treeview">
+                    <a href="#">
+                        <i class="fa fa-share"></i> <span>Hardware Generator</span>
+                        <i class="fa fa-angle-left pull-right"></i>
+                    </a>
+                    <ul class="treeview-menu">
                         <li>
                             <a href=''>
                                 <i class="fa fa-wrench"></i> <span>Financial Reports</span>
@@ -147,18 +257,6 @@
                         </li>
                     </ul>
                 </li>
-                <li>
-                    <a href='@routes.DashboardController.test()' >
-                        <i class="fa fa-gears"></i> <span>Test</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href='@routes.DashboardController.demo_data()' >
-                        <i class="fa fa-bomb"></i> <span>Demo Data</span>
-                    </a>
-                </li>
-
 <!-------------------------------------------------------------------------- ------------------------>
 
             </ul>

@@ -5,8 +5,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import models.person.Person;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import java.util.Date;
 import java.util.UUID;
 
@@ -31,7 +33,7 @@ public class Grid_Terminal extends Model {
     // public Integer resolution_weight; -resolution_weight teoreticky potřebné pro vývojáře Gridu 
 
     @ApiModelProperty(required = false, readOnly = true, value = "Only if Terminal Device is connected with logged Person")
-    @JsonIgnore public Person person;
+    @JsonIgnore @ManyToOne(cascade = CascadeType.ALL) public Person person;
 
     @JsonIgnore  public Date date_of_create;
     @JsonIgnore  public Date date_of_last_update;
@@ -45,9 +47,12 @@ public class Grid_Terminal extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
-    public void set_terminal_id() {
-        this.terminal_token = "grid_token_" + UUID.randomUUID().toString() + UUID.randomUUID().toString();
+    @JsonIgnore @Override
+    public void save() {
+         if(person != null) this.terminal_token = "private_grid_token_" + UUID.randomUUID().toString() + UUID.randomUUID().toString();
+         else               this.terminal_token = "public_grid_token_" + UUID.randomUUID().toString() + UUID.randomUUID().toString();
+
+        super.save();
     }
 
 

@@ -7,9 +7,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.SecurityController;
 import controllers.WebSocketController;
-import models.compiler.Board;
 import models.project.b_program.instnace.Homer_Instance;
 import play.libs.Json;
+import utilities.enums.CLoud_Homer_Server_Type;
 import utilities.hardware_updater.Actualization_Task;
 import utilities.webSocket.WS_BlockoServer;
 
@@ -28,19 +28,23 @@ public class Cloud_Homer_Server extends Model{
                                        @JsonIgnore              public String unique_identificator;
                                        @JsonIgnore              public String hash_certificate;
 
-                                       @Column(unique=true)     public String server_name;
-                                                                public String destination_address;
+    @JsonIgnore                                  @Column(unique=true)     public String server_name;
+    @JsonIgnore                         public String destination_address;
 
                                                                 public String mqtt_port;              // Přidává se destination_address + "/" mqtt_port
+                                                                public String mqtt_username;
+                                                                public String mqtt_password;
+
+
                                                                 public String grid_port;              // Přidává se destination_address + "/" grid_ulr
                                                                 public String webView_port;           // Přidává se destination_address + "/" webView_port
                                         @Column(unique=true)    public String server_url;             // Může být i IP adresa
 
-    @JsonIgnore                                                 public boolean is_private = false;  // Todo navázat na produkt
+                                        @JsonIgnore             public CLoud_Homer_Server_Type server_type;  // Určující typ serveru
+
 
     @JsonIgnore @OneToMany(mappedBy="cloud_homer_server", cascade = CascadeType.ALL) public List<Homer_Instance> cloud_instances  = new ArrayList<>();
 
-    @JsonIgnore @OneToMany(mappedBy="latest_know_server") public List<Board>  boards  = new ArrayList<>();
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
@@ -91,6 +95,7 @@ public class Cloud_Homer_Server extends Model{
                     //TODO
                     return;
                 }
+
 
                 default: {
                     logger.error("Cloud_Homer_Server:: Incoming message:: Chanel homer-server:: not recognize messageType ->" + json.get("messageType").asText());
@@ -185,7 +190,7 @@ public class Cloud_Homer_Server extends Model{
             request.put("messageType", "createInstance");
             request.put("messageChannel", CHANNEL);
             request.put("instanceId", instance.blocko_instance_name);
-            request.put("grid_websocket_token", instance.virtual_instance ? (UUID.randomUUID().toString() + UUID.randomUUID().toString()) : instance.actual_instance.websocket_grid_token);
+           // request.put("grid_websocket_token", instance.virtual_instance ? (UUID.randomUUID().toString() + UUID.randomUUID().toString()) : instance.actual_instance.websocket_grid_token);
 
             logger.debug("Sending to cloud_blocko_server request for new instance ");
             logger.debug("Server Name: " + server_name);
@@ -198,6 +203,7 @@ public class Cloud_Homer_Server extends Model{
 
     }
 
+
     @JsonIgnore @Transient  public  JsonNode remove_instance(String instance_name) {
         try {
 
@@ -205,6 +211,7 @@ public class Cloud_Homer_Server extends Model{
             request.put("messageType", "destroyInstance");
             request.put("messageChannel", CHANNEL);
             request.put("instanceId", instance_name);
+
 
             return WebSocketController.blocko_servers.get(server_name).write_with_confirmation(request, 1000 * 5, 0, 3);
 

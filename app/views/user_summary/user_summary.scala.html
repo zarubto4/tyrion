@@ -593,7 +593,6 @@
                         <th>Type Of Board Name</th>
                         <th>Date of Create</th>
                         <th>Under the project</th>
-                        <th>Latest know server</th>
                         <th>Status</th>
                         <th>Active</th>
                         <th>Up to Date Firmware</th>
@@ -610,12 +609,6 @@
                            <td>@board.date_of_create</td>
                            <td>@board.project.name  <button id="show_project_detail" value="" class="btn btn-default.btn-xs" type="button" onclick="editHomerServer(@board.project.id)">Details</button> </td>
 
-                           <td> @if( board.latest_know_server != null) {
-                                    board.latest_know_server.server_name  <button id="show_project_detail" value="" class="btn btn-default.btn-xs" type="button" onclick="editHomerServer(@board.project.id)">Details</button>
-                                }else{
-                                     Not yet connected!
-                               }
-                           </td>
                            <td>@board.status()</td>
                            <td>@board.is_active</td>
                            <td>@if(board.up_to_date_firmware()){

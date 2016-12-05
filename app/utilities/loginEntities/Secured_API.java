@@ -17,9 +17,10 @@ public class Secured_API extends Security.Authenticator {
 
         String[] authTokenHeaderValues = ctx.request().headers().get("X-AUTH-TOKEN");
 
+        //TODO Přepsat do Try and Catche - aby se odstranili podmínkya v případě null poitnexception se vracel null
         if ((authTokenHeaderValues != null) && (authTokenHeaderValues.length == 1) && (authTokenHeaderValues[0] != null)) {
 
-            person = Person.findByAuthToken(authTokenHeaderValues[0]);
+            person = Person.findByAuthToken(authTokenHeaderValues[0]); // TODO do Cache!!!
 
             if (person != null) {
                 ctx.args.put("person", person);

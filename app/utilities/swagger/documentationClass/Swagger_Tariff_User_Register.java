@@ -67,12 +67,15 @@ public class Swagger_Tariff_User_Register {
 
 
     @ApiModelProperty(required = false, value =  "Required: only if account is business" +
-                                                 "The company_registration_no must have at least 4 characters")
+                                                 "The company_registration_no must have at least 4 characters - FOR non-EU countries" +
+                                                 "for Business account is required registration_no OR vat_number")
     public String registration_no;
 
     @ApiModelProperty(required = false, value =  "Required: only if account is business & from EU!!! CZ28496639 " +
-                                                 "The VAT_number must have at least 4 characters")
+                                                 "The VAT_number must have at least 4 characters" +
+                                                 "for Business account is required registration_no OR vat_number")
     public String vat_number;
+
 
     @ApiModelProperty(required = false, value =  "Required: only if account is business" +
                                                  "The company_name must have at least 4 characters")

@@ -25,19 +25,21 @@ import models.project.global.financial.GeneralTariff_Extensions;
 import models.project.global.financial.Payment_Details;
 import models.project.m_program.M_Program;
 import models.project.m_program.M_Project;
+import models.project.m_program.M_Project_Program_SnapShot;
+import org.apache.commons.io.IOUtils;
+import play.Application;
+import play.Play;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.Server;
-import utilities.enums.Approval_state;
-import utilities.enums.Currency;
-import utilities.enums.Payment_method;
-import utilities.enums.Payment_mode;
+import utilities.enums.*;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_Admin;
 import utilities.response.GlobalResult;
 
+import javax.inject.Inject;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.UUID;
@@ -47,6 +49,42 @@ import java.util.UUID;
 @Security.Authenticated(Secured_Admin.class)
 public class Demo_Data_Controller extends Controller {
 
+    @Inject
+    Application application;
+
+    public Result test(){
+        try {
+
+            System.out.println("Demo_Data_Controller :: test :: start");
+
+            byte[] bootloader_content = IOUtils.toByteArray(Play.application().resourceAsStream("/demo_data/demo_bootloader.bin"));
+
+            BootLoader boot_loader = new BootLoader();
+            boot_loader.name = "BootLoader Test";
+            boot_loader.description = " V žádném případě nevypalujte tento bootloader do HW - není aktuální a asi to není ani bootloader!!!";
+            boot_loader.date_of_create = new Date();
+            boot_loader.save();
+
+            FileRecord filerecord  =  FileRecord.create_Binary_file(boot_loader.get_path(), FileRecord.get_encoded_binary_string_from_body(bootloader_content) , "bootloader.bin" );
+            boot_loader.file = filerecord;
+            filerecord.boot_loader = boot_loader;
+            filerecord.update();
+            boot_loader.update();
+
+
+            System.out.println("Demo_Data_Controller :: test ::  Vše v pořádku:: ");
+
+
+            return GlobalResult.result_ok();
+
+
+        }catch (Exception e){
+            System.out.println("Demo_Data_Controller :: test :: "+ "Došlo k problémům!!!!");
+
+            e.printStackTrace();
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
 
     /*
         Slouží primárně k vytváření demo dat při vývoji - je nutné pamatovat že změnou struktury objektů
@@ -56,7 +94,6 @@ public class Demo_Data_Controller extends Controller {
 
         Demodata je povolené tvořit jen a pouze v "Developer modu"!!!!!!!!!!
      */
-
     public Result all_for_becki(){
 
         Result result = this.producers();           if(result.status() != 200 ) return result;
@@ -125,7 +162,10 @@ public class Demo_Data_Controller extends Controller {
             processor_3.speed          = 3000;
             processor_3.save();
 
-            
+
+            byte[] bootloader_content = IOUtils.toByteArray(Play.application().resourceAsStream("/demo_data/demo_bootloader.bin"));
+
+
             // Nastavím Type of Boards - YODA
             TypeOfBoard typeOfBoard_1 = new TypeOfBoard();
             typeOfBoard_1.name        = "Yoda G2";
@@ -137,6 +177,26 @@ public class Demo_Data_Controller extends Controller {
             typeOfBoard_1.connectible_to_internet = true;
             typeOfBoard_1.save();
 
+
+            BootLoader boot_loader_1 = new BootLoader();
+            boot_loader_1.name = "BootLoader Test Yoda G2";
+            boot_loader_1.description = " V žádném případě nevypalujte tento bootloader do HW - není aktuální a asi to není ani bootloader!!!";
+            boot_loader_1.date_of_create = new Date();
+            boot_loader_1.type_of_board = typeOfBoard_1;
+            boot_loader_1.main_type_of_board = typeOfBoard_1;
+            boot_loader_1.save();
+
+
+            FileRecord filerecord_1  =  FileRecord.create_Binary_file(boot_loader_1.get_path(), FileRecord.get_encoded_binary_string_from_body(bootloader_content) , "bootloader.bin" );
+            boot_loader_1.file = filerecord_1;
+            filerecord_1.boot_loader = boot_loader_1;
+            filerecord_1.update();
+            boot_loader_1.update();
+
+
+
+
+
             TypeOfBoard typeOfBoard_2 = new TypeOfBoard();
             typeOfBoard_2.name        = "Wireless G2";
             typeOfBoard_2.description = " Wireless kit second generation";
@@ -146,6 +206,22 @@ public class Demo_Data_Controller extends Controller {
             typeOfBoard_2.producer = producer;
             typeOfBoard_2.connectible_to_internet = false;
             typeOfBoard_2.save();
+
+            BootLoader boot_loader_2 = new BootLoader();
+            boot_loader_2.name = "BootLoader Test Wireless G2";
+            boot_loader_2.description = " V žádném případě nevypalujte tento bootloader do HW - není aktuální a asi to není ani bootloader!!!";
+            boot_loader_2.date_of_create = new Date();
+            boot_loader_2.type_of_board = typeOfBoard_2;
+            boot_loader_2.main_type_of_board = typeOfBoard_2;
+            boot_loader_2.save();
+
+
+            FileRecord filerecord_2  =  FileRecord.create_Binary_file(boot_loader_2.get_path(), FileRecord.get_encoded_binary_string_from_body(bootloader_content) , "bootloader.bin" );
+            boot_loader_2.file = filerecord_2;
+            filerecord_2.boot_loader = boot_loader_2;
+            filerecord_2.update();
+            boot_loader_2.update();
+
 
             TypeOfBoard typeOfBoard_3 = new TypeOfBoard();
             typeOfBoard_3.name        = "BUS G2";
@@ -157,6 +233,22 @@ public class Demo_Data_Controller extends Controller {
             typeOfBoard_3.connectible_to_internet = false;
             typeOfBoard_3.save();
 
+            BootLoader boot_loader_3 = new BootLoader();
+            boot_loader_3.name = "BootLoader Test Wireless G2";
+            boot_loader_3.description = " V žádném případě nevypalujte tento bootloader do HW - není aktuální a asi to není ani bootloader!!!";
+            boot_loader_3.date_of_create = new Date();
+            boot_loader_3.type_of_board = typeOfBoard_3;
+            boot_loader_3.main_type_of_board = typeOfBoard_3;
+            boot_loader_3.save();
+
+
+            FileRecord filerecord_3  =  FileRecord.create_Binary_file(boot_loader_3.get_path(), FileRecord.get_encoded_binary_string_from_body(bootloader_content) , "bootloader.bin" );
+            boot_loader_3.file = filerecord_3;
+            filerecord_3.boot_loader = boot_loader_3;
+            filerecord_3.update();
+            boot_loader_3.update();
+
+
             TypeOfBoard typeOfBoard_4 = new TypeOfBoard();
             typeOfBoard_4.name        = "Quad BUS HUB G1";
             typeOfBoard_4.description = " BUS kit second generation";
@@ -166,6 +258,23 @@ public class Demo_Data_Controller extends Controller {
             typeOfBoard_4.producer = producer;
             typeOfBoard_4.connectible_to_internet = false;
             typeOfBoard_4.save();
+
+
+            BootLoader boot_loader_4 = new BootLoader();
+            boot_loader_4.name = "BootLoader Test Wireless G2";
+            boot_loader_4.description = " V žádném případě nevypalujte tento bootloader do HW - není aktuální a asi to není ani bootloader!!!";
+            boot_loader_4.date_of_create = new Date();
+            boot_loader_4.type_of_board = typeOfBoard_4;
+            boot_loader_4.main_type_of_board = typeOfBoard_4;
+            boot_loader_4.save();
+
+
+            FileRecord filerecord_4  =  FileRecord.create_Binary_file(boot_loader_4.get_path(), FileRecord.get_encoded_binary_string_from_body(bootloader_content) , "bootloader.bin" );
+            boot_loader_4.file = filerecord_4;
+            filerecord_4.boot_loader = boot_loader_4;
+            filerecord_4.update();
+            boot_loader_4.update();
+
             
             return GlobalResult.result_ok();
         }catch (Exception e){
@@ -356,7 +465,10 @@ public class Demo_Data_Controller extends Controller {
             cloud_server_1.server_url   = "localhost";
             cloud_server_1.grid_port    = ":8500";
             cloud_server_1.mqtt_port    = ":1883";
-            cloud_server_1.webView_port = ":8505";
+            cloud_server_1.mqtt_password = "pass";
+            cloud_server_1.mqtt_username = "user";
+            cloud_server_1.webView_port = ":8501";
+            cloud_server_1.server_type  = CLoud_Homer_Server_Type.main_server;
 
             cloud_server_1.set_hash_certificate();
             cloud_server_1.save();
@@ -367,9 +479,29 @@ public class Demo_Data_Controller extends Controller {
             cloud_server_2.server_url   = "localhost2";
             cloud_server_2.grid_port    = ":8500";
             cloud_server_2.mqtt_port    = ":1883";
-            cloud_server_2.webView_port = ":8505";
+            cloud_server_2.mqtt_password = "pass";
+            cloud_server_2.mqtt_username = "user";
+            cloud_server_2.webView_port = ":8501";
+            cloud_server_2.server_type  = CLoud_Homer_Server_Type.backup_server;
+
             cloud_server_2.set_hash_certificate();
             cloud_server_2.save();
+
+
+            Cloud_Homer_Server cloud_server_3 = new Cloud_Homer_Server();
+            cloud_server_3.server_name  = "Andromeda";
+            cloud_server_3.destination_address = Server.tyrion_webSocketAddress + "/websocket/homer_server/" + cloud_server_2.server_name;
+            cloud_server_3.server_url   = "localhost3";
+            cloud_server_3.grid_port    = ":8500";
+            cloud_server_3.mqtt_port    = ":1883";
+            cloud_server_2.mqtt_password = "pass";
+            cloud_server_2.mqtt_username = "user";
+            cloud_server_3.webView_port = ":8501";
+            cloud_server_3.server_type  = CLoud_Homer_Server_Type.public_server;
+
+            cloud_server_3.set_hash_certificate();
+            cloud_server_3.save();
+
 
             // Nastavím kompilační servery
             Cloud_Compilation_Server compilation_server_1 = new Cloud_Compilation_Server();
@@ -1182,7 +1314,7 @@ public class Demo_Data_Controller extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
     }
-
+    
     public Result grid_demo_data(){
         try {
 
@@ -1818,6 +1950,62 @@ public class Demo_Data_Controller extends Controller {
 
 
 
+            M_Project m_project = new M_Project();
+            m_project.project = project_1;
+            m_project.name = "Velkolepá kolekce terminálových přístupů";
+            m_project.description = "Tak tady si pepa dělá všechny svoje super cool apky!!! Je to fakt mazec!! a V připadě updatu je autoincrement true - což znamená že systém v případě updatu lidem na teminálech updatuje verzi";
+            m_project.date_of_create = new Date();
+            m_project.save();
+
+            M_Program m_program_1 = new M_Program();
+            m_program_1.m_project = m_project;
+            m_program_1.date_of_create = new Date();
+            m_program_1.description = "Tohle bude peckový program jež spasí svět";
+            m_program_1.name = "Program pro Dědu";
+            m_program_1.save();
+
+
+            Version_Object m_program_version_object_1 = new Version_Object();
+            m_program_version_object_1.version_description = "Toto je první verze!";
+            m_program_version_object_1.version_name = "1.0.0";
+            m_program_version_object_1.m_program = m_program_1;
+            m_program_version_object_1.public_version = false;
+            m_program_version_object_1.qr_token = "qr_token_1";
+            m_program_version_object_1.save();
+
+            ObjectNode content_m_program_version_1 = Json.newObject();
+            content_m_program_version_1.put("m_code", "{\"device\":\"mobile\",\"screens\":{\"main\":[{\"widgets\":[{\"type\":\"TimeWidget\",\"boxBoundingBox\":{\"x\":2,\"y\":1,\"height\":1,\"width\":1},\"config\":{\"bgColor\":\"#32995F\",\"bgTransparent\":false}},{\"type\":\"LabelWidget\",\"boxBoundingBox\":{\"x\":5,\"y\":1,\"height\":1,\"width\":1},\"config\":{\"text\":\"The Grid\",\"textSize\":100,\"bgColor\":\"#32995F\",\"bgTransparent\":false}},{\"type\":\"ButtonWidget\",\"boxBoundingBox\":{\"x\":0,\"y\":0,\"height\":5,\"width\":2},\"config\":{\"ioName\":\"button_1\",\"text\":\"Byzance!\",\"textSize\":100,\"bgColor\":\"#32995F\",\"bgTransparent\":false}}]}]}}");
+            content_m_program_version_1.put("virtual_input_output", "{\"analogInputs\":{},\"digitalInputs\":{\"button_1\":{}},\"messageInputs\":{},\"analogOutputs\":{},\"digitalOutputs\":{\"button_1\":{}},\"messageOutputs\":{}}");
+
+            FileRecord.uploadAzure_Version(content_m_program_version_1.toString(), "m_program.json" , m_program_1.get_path() ,  m_program_version_object_1);
+            m_program_version_object_1.update();
+
+            M_Program m_program_2 = new M_Program();
+            m_program_2.m_project = m_project;
+            m_program_2.date_of_create = new Date();
+            m_program_2.description = "Fůůů nářez od babičky";
+            m_program_2.name = "Program pro babičku";
+            m_program_2.save();
+
+            Version_Object m_program_version_object_2 = new Version_Object();
+            m_program_version_object_2.version_description = "Toto je první verze!";
+            m_program_version_object_2.version_name = "1.0.0";
+            m_program_version_object_2.m_program = m_program_2;
+            m_program_version_object_2.public_version = false;
+            m_program_version_object_2.qr_token = "qr_token_2";
+            m_program_version_object_2.save();
+
+            ObjectNode content_m_program_version_2 = Json.newObject();
+            content_m_program_version_2.put("m_code", "{\"device\":\"mobile\",\"screens\":{\"main\":[{\"widgets\":[{\"type\":\"TimeWidget\",\"boxBoundingBox\":{\"x\":2,\"y\":1,\"height\":1,\"width\":1},\"config\":{\"bgColor\":\"#32995F\",\"bgTransparent\":false}},{\"type\":\"LabelWidget\",\"boxBoundingBox\":{\"x\":5,\"y\":1,\"height\":1,\"width\":1},\"config\":{\"text\":\"The Grid\",\"textSize\":100,\"bgColor\":\"#32995F\",\"bgTransparent\":false}},{\"type\":\"ButtonWidget\",\"boxBoundingBox\":{\"x\":0,\"y\":0,\"height\":5,\"width\":2},\"config\":{\"ioName\":\"button_1\",\"text\":\"Byzance!\",\"textSize\":100,\"bgColor\":\"#32995F\",\"bgTransparent\":false}}]}]}}");
+            content_m_program_version_2.put("virtual_input_output", "{\"analogInputs\":{},\"digitalInputs\":{\"button_1\":{}},\"messageInputs\":{},\"analogOutputs\":{},\"digitalOutputs\":{\"button_1\":{}},\"messageOutputs\":{}}");
+
+            FileRecord.uploadAzure_Version(content_m_program_version_2.toString(), "m_program.json" , m_program_2.get_path() ,  m_program_version_object_2);
+            m_program_version_object_2.update();
+
+
+
+
+
             // První verze B_Programu - Pro instanc Yoda E a Ci!
             B_Program b_program_1 = new B_Program();
             b_program_1.name = "První blocko program";
@@ -1833,6 +2021,14 @@ public class Demo_Data_Controller extends Controller {
             version_b_program_1.version_description = "Snažím se tu dělat veklé věci";
             version_b_program_1.date_of_create = new Date();
             version_b_program_1.b_program = b_program_1;
+
+
+            // M Program
+            M_Project_Program_SnapShot snap_version_b_program_1 = new M_Project_Program_SnapShot();
+            snap_version_b_program_1.m_project = m_project;
+            snap_version_b_program_1.version_objects_program.add(m_program_version_object_1);
+            snap_version_b_program_1.version_objects_program.add(m_program_version_object_2);
+            version_b_program_1.b_program_version_snapshots.add(snap_version_b_program_1);
 
 
             // Instance 1 (TOM - YODA E a Yoda C)
@@ -1907,6 +2103,12 @@ public class Demo_Data_Controller extends Controller {
             version_b_program_2.date_of_create = new Date();
             version_b_program_2.b_program = b_program_2;
 
+            // M Program
+            M_Project_Program_SnapShot snap_version_b_program_2 = new M_Project_Program_SnapShot();
+            snap_version_b_program_2.m_project = m_project;
+            snap_version_b_program_2.version_objects_program.add(m_program_version_object_1);
+            snap_version_b_program_2.version_objects_program.add(m_program_version_object_2);
+            version_b_program_2.b_program_version_snapshots.add(snap_version_b_program_2);
 
             B_Program_Hw_Group group_3 = new B_Program_Hw_Group();
 
@@ -1935,6 +2137,13 @@ public class Demo_Data_Controller extends Controller {
             version_b_program_3.version_description = "Snažím se tu dělat veklé věci";
             version_b_program_3.date_of_create = new Date();
             version_b_program_3.b_program = b_program_3;
+
+            // M Program
+            M_Project_Program_SnapShot snap_version_b_program_3 = new M_Project_Program_SnapShot();
+            snap_version_b_program_3.m_project = m_project;
+            snap_version_b_program_3.version_objects_program.add(m_program_version_object_1);
+            snap_version_b_program_3.version_objects_program.add(m_program_version_object_2);
+            version_b_program_3.b_program_version_snapshots.add(snap_version_b_program_3);
 
 
             B_Program_Hw_Group group_4 = new B_Program_Hw_Group();
@@ -2021,6 +2230,13 @@ public class Demo_Data_Controller extends Controller {
                 version_b_program_4.date_of_create = new Date();
                 version_b_program_4.b_program = b_program_4;
 
+            // M Program
+            M_Project_Program_SnapShot snap_version_b_program_4 = new M_Project_Program_SnapShot();
+            snap_version_b_program_4.m_project = m_project;
+            snap_version_b_program_4.version_objects_program.add(m_program_version_object_1);
+            snap_version_b_program_4.version_objects_program.add(m_program_version_object_2);
+            version_b_program_4.b_program_version_snapshots.add(snap_version_b_program_4);
+
             B_Program_Hw_Group group_5 = new B_Program_Hw_Group();
 
             B_Pair main_5 = new B_Pair();
@@ -2031,35 +2247,7 @@ public class Demo_Data_Controller extends Controller {
             version_b_program_4.b_program_hw_groups.add(group_5);
             version_b_program_4.save();
 
-            M_Project m_project = new M_Project();
-            m_project.project = project_1;
-            m_project.name = "Velkolepá kolekce terminálových přístupů";
-            m_project.description = "Tak tady si pepa dělá všechny svoje super cool apky!!! Je to fakt mazec!! a V připadě updatu je autoincrement true - což znamená že systém v případě updatu lidem na teminálech updatuje verzi";
-            m_project.date_of_create = new Date();
-            m_project.save();
 
-            M_Program m_program_1 = new M_Program();
-            m_program_1.m_project = m_project;
-            m_program_1.date_of_create = new Date();
-            m_program_1.description = "První verze se snad zdařila!!! Yahoooo!!!!";
-            m_program_1.name = "Velký M PRogram";
-            m_program_1.save();
-
-
-            Version_Object m_program_version_object_1 = new Version_Object();
-            m_program_version_object_1.version_description = "Toto je první verze!";
-            m_program_version_object_1.version_name = "1.0.0";
-            m_program_version_object_1.m_program = m_program_1;
-            m_program_version_object_1.public_version = false;
-            m_program_version_object_1.qr_token = "randooooooooo_uuuuuuid";
-            m_program_version_object_1.save();
-
-            ObjectNode content = Json.newObject();
-            content.put("m_code", "{}");
-            content.put("virtual_input_output", "{}");
-
-            FileRecord.uploadAzure_Version(content.toString(), "m_program.json" , m_program_1.get_path() ,  m_program_version_object_1);
-            m_program_version_object_1.save();
 
             return GlobalResult.result_ok();
         }catch (Exception e){

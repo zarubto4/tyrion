@@ -24,7 +24,7 @@ public class C_Compilation extends Model {
 
     @ApiModelProperty(required = true, value = virtual_input_output_docu) @Column(columnDefinition = "TEXT")       public String virtual_input_output;
                                                             @JsonIgnore   @Column(columnDefinition = "TEXT")       public String c_comp_build_url;
-    @JsonIgnore   @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY) @JoinColumn(name="file_id")         public FileRecord bin_compilation_file;
+    @JsonIgnore   @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY) @JoinColumn(name="bin_compilation_file_id")  public FileRecord bin_compilation_file;
 
     @JsonIgnore  public String firmware_version_core;
     @JsonIgnore  public String firmware_version_mbed;

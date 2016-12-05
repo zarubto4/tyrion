@@ -192,17 +192,6 @@ PUT            /project/unshareProject/:project_id                              
 PUT            /project/addParticipant/:invitation_id/:decision                             @controllers.ProgramingPackageController.addParticipantToProject(invitation_id, decision: Boolean)
 DELETE         /project/deleteInvitation/:invitation_id                                     @controllers.ProgramingPackageController.deleteProjectInvitation(invitation_id)
 
-#Homer
-POST           /homer                                                                       @controllers.ProgramingPackageController.newHomer()
-PUT            /homer/filter/:page_number                                                   @controllers.ProgramingPackageController.get_Homers_by_Filter(page_number:Int )
-DELETE         /homer/:homer_id                                                             @controllers.ProgramingPackageController.removeHomer(homer_id)
-GET            /homer/:homer_id                                                             @controllers.ProgramingPackageController.getHomer(homer_id)
-
-#Project - connection
-PUT            /homer/:project_id/:homer_id                                                 @controllers.ProgramingPackageController.connectHomerWithProject(project_id, homer_id)
-DELETE         /homer/:project_id/:homer_id                                                 @controllers.ProgramingPackageController.disconnectHomerWithProject(project_id, homer_id)
-
-
 #Program
 POST           /b_program/:project_id                                                       @controllers.ProgramingPackageController.new_b_Program(project_id)
 GET            /b_program/:b_program_id                                                     @controllers.ProgramingPackageController.get_b_Program(b_program_id)
@@ -461,7 +450,11 @@ GET           /assets/*file                                 controllers.Assets.a
 GET           /assets/*file                                 controllers.Assets.versioned(path="/public", file: Asset)
 
 
+### HARDWARE - GENERATOR ############ HARDWARE - GENERATOR ############### HARDWARE - GENERATOR ################ HARDWARE - GENERATOR ###########################################
+###################################################################################f#############################################################################################
 
+PUT             /admin/embedded_hardware/request                      @utilities.hardware_generator.HardwareGeneratorController.new_hardware_request()
+PUT             /admin/embedded_hardware/result                       @utilities.hardware_generator.HardwareGeneratorController.new_hardware_result()
 
 ### PUBLIC - ADMIN ############ PUBLIC  - ADMIN ############### PUBLIC  - ADMIN ################ PUBLIC  - ADMIN ################################################################
 ###################################################################################f#############################################################################################
@@ -494,6 +487,7 @@ GET             /admin/general_tariff_extension/:extension_id   @controllers.Das
 
 # Demo Data
 GET             /admin/demo_data                                @controllers.DashboardController.demo_data()
+PUT             /admin/demo_data/test                           @utilities.demo_data.Demo_Data_Controller.test()
 PUT             /admin/demo_data/all_for_becki                  @utilities.demo_data.Demo_Data_Controller.all_for_becki()
 PUT             /admin/demo_data/extendension_servers           @utilities.demo_data.Demo_Data_Controller.extendension_servers()
 PUT             /admin/demo_data/basic_tarifs                   @utilities.demo_data.Demo_Data_Controller.basic_tariffs()

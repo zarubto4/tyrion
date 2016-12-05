@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.*;
 import models.compiler.FileRecord;
 import models.compiler.Version_Object;
+import models.person.Person;
 import models.grid.GridWidget;
 import models.grid.GridWidgetVersion;
 import models.grid.TypeOfWidget;
@@ -655,7 +656,7 @@ public class GridController extends Controller {
             if(record.actual_running_instance == null)  return GlobalResult.notFoundObject("Instance not found or not running in cloud!");
 
             Swagger_Mobile_Connection_Summary summary = new Swagger_Mobile_Connection_Summary();
-            summary.url = "ws://" + record.actual_running_instance.cloud_homer_server.server_url  + record.actual_running_instance.cloud_homer_server.grid_port + "/" + record.websocket_grid_token + "/#grid_connection_token";
+            summary.url = "ws://" + record.actual_running_instance.cloud_homer_server.server_url + record.actual_running_instance.cloud_homer_server.grid_port + "/" + record.main_instance_history.b_program_name() + "/";
             summary.m_program = M_Program.get_m_code(record.version_object);
 
             return GlobalResult.result_ok(Json.toJson(summary));
@@ -683,23 +684,24 @@ public class GridController extends Controller {
         try{
 
             List<Homer_Instance_Record> list = Homer_Instance_Record.find.where()
-                    .isNotNull("homer_instance_record")
-                    .eq("main_instance_history.b_program.project.ownersOfProject.id",  SecurityController.getPerson().id)
-                    .select("version_object")
-                    .select("main_instance_history")
+                    .isNotNull("actual_running_instance")
+                        .eq("main_instance_history.b_program.project.ownersOfProject.id",  SecurityController.getPerson().id)
+                        .select("version_object")
+                        .select("main_instance_history")
                     .select("id")
                     .findList();
 
 
             List<Swagger_Mobile_M_Project_Snapshot> result = new ArrayList<>();
-            for(Homer_Instance_Record instnace : list){
+            for(Homer_Instance_Record instnace_record : list){
 
                 Swagger_Mobile_M_Project_Snapshot o = new Swagger_Mobile_M_Project_Snapshot();
-                o.b_program_name = instnace.main_instance_history.b_program_name();
-                o.b_program_name = instnace.main_instance_history.b_program_description();
+                o.b_program_name = instnace_record.main_instance_history.b_program_name();
+                o.b_program_description = instnace_record.main_instance_history.b_program_description();
 
-                o.instance_id = instnace.id;
-                o.snapshots = instnace.m_project_snapshop();
+                o.instance_record_id = instnace_record.id;
+                o.snapshots = instnace_record.m_project_snapshop();
+
                 result.add(o);
             }
 
@@ -745,18 +747,21 @@ public class GridController extends Controller {
             if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Mobile_Connection_Request help = form.get();
 
-            Homer_Instance_Record record = Homer_Instance_Record.find.byId(help.instance_id);
+            Homer_Instance_Record record = Homer_Instance_Record.find.byId(help.instance_record_id);
             if(record == null) return GlobalResult.notFoundObject("Instance not found");
 
-            if(!record.actual_running_instance.instance_online()){
-                return GlobalResult.result_external_server_is_offline("Instance is offline");
-            }
+            /*
+                // Uživatelům dovolíme se připojit na offline instanci - odpovědnost a vysvětlení přebírá Grid APP
+                if(!record.actual_running_instance.instance_online()){
+                    return GlobalResult.result_external_server_is_offline("Instance is offline");
+                }
+            */
 
-            Version_Object version_object = Version_Object.find.where().eq("id",help.version_object_id).eq("m_program.id",help.m_program_id).findUnique();
-            if(version_object == null) return GlobalResult.notFoundObject("M_program not found");
+            Version_Object version_object = Version_Object.find.where().eq("id", help.version_object_id).isNotNull("m_program").findUnique();
+            if(version_object == null) return GlobalResult.notFoundObject("Version M_program_Version not found");
 
             Swagger_Mobile_Connection_Summary summary = new Swagger_Mobile_Connection_Summary();
-            summary.url = "ws://" + record.actual_running_instance.cloud_homer_server.server_url + record.actual_running_instance.cloud_homer_server.grid_port + "/" + record.websocket_grid_token + "/";
+            summary.url = "ws://" + record.actual_running_instance.cloud_homer_server.server_url + record.actual_running_instance.cloud_homer_server.grid_port + "/" + record.main_instance_history.blocko_instance_name + "/";
             summary.m_program = M_Program.get_m_code(version_object);
 
             return GlobalResult.created(Json.toJson(summary));
@@ -802,7 +807,6 @@ public class GridController extends Controller {
             if(terminal == null){
 
                 terminal = new Grid_Terminal();
-                terminal.set_terminal_id();
                 terminal.device_name = help.device_name;
                 terminal.device_type = help.device_type;
                 terminal.date_of_create = new Date();
@@ -867,11 +871,21 @@ public class GridController extends Controller {
             if( Http.Context.current().request().headers().get("User-Agent")[0] != null) terminal.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
             else  terminal.user_agent = "Unknown browser";
 
-            terminal.set_terminal_id();
+
+            // Tato část je určená pro nalezení tokenu a přihlášení uživatele - bylo totiž nutné zpřístupnit tuto metodu i nepřihlášeným (bez loginu). Kvuli tomu že by to přes  @Security.Authenticated(Secured_API.class)  neprošlo
+            String[] token_values =  Http.Context.current().request().headers().get("X-AUTH-TOKEN");
 
 
-            if(SecurityController.getPerson() !=  null) {
-                terminal.person = SecurityController.getPerson();
+            if ((token_values != null) && (token_values.length == 1) && (token_values[0] != null)) {
+                logger.debug("GridController :: get_identificator :: HTTP request containts X-AUTH-TOKEN");
+                Person person = Person.findByAuthToken(token_values[0]);
+                if (person != null) {
+                    logger.debug("GridController :: get_identificator :: Person with X-AUTH-TOKEN found");
+                  terminal.person = person;
+
+                }else {
+                    logger.warn("GridController :: get_identificator :: Person with X-AUTH-TOKEN not found!");
+                }
             }
 
             terminal.save();

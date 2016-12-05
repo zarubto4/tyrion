@@ -3,8 +3,10 @@ package utilities.webSocket;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.WebSocketController;
+import models.project.b_program.instnace.Homer_Instance;
 import models.project.b_program.servers.Cloud_Homer_Server;
 import utilities.hardware_updater.Actualization_Task;
+import utilities.loginEntities.TokenCache;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,6 +16,10 @@ public class WS_BlockoServer extends WebSCType{
 
     public Map<String, WebSCType> virtual_homers = new HashMap<>();  // Zde si udržuju referenci na tímto serverem vytvořené virtuální homery, které jsem dal do globální mapy (incomingConnections_homers) - určeno pro vývojáře
     public Cloud_Homer_Server server;
+
+    public TokenCache token_grid_Cache    = new TokenCache( (long) 15, (long) 500, 5000);
+    public TokenCache token_webview_Cache = new TokenCache( (long) 15, (long) 500, 5000);
+
 
     public WS_BlockoServer(Cloud_Homer_Server server, Map<String, WebSCType> blocko_servers) {
         super();
@@ -44,23 +50,53 @@ public class WS_BlockoServer extends WebSCType{
     @Override
     public void onMessage(ObjectNode json) {
 
-        // Zpráva je z virtuální instance
-        if(json.has ("instanceId") ){
-            try {
-                WebSCType ws = virtual_homers.get(json.get("instanceId").asText());
-                ws.onMessage(json);
-            }catch (NullPointerException e){
-                if(! virtual_homers.containsKey (json.get("instanceId").asText())){
-                    logger.warn("Something is wrong. Message from Instance, which not created by Tyrion!");
-                    logger.warn("Message is interrupt!");
-                }
-            }
-        }
+            logger.debug("BlockoServer: "+ super.identifikator + " Incoming message: " + json.toString());
 
-        // Zpráva je ze serveru
-        else {
-            WebSocketController.homer_server_incoming_message(this, json);
-        }
+            if(json.has("messageChannel")){
+
+                switch (json.get("messageChannel").asText()){
+
+
+                    case "homer-server" : { // Komunikace mezi Tyrion server a Homer Server
+                        Cloud_Homer_Server.Messages(json);
+                        return;
+                    }
+
+
+                    case "tyrion": {    // Komunikace mezi Tyrion server a Homer Instance
+                        Homer_Instance.Messages(json);
+                        return;
+                    }
+
+
+                    case "becki": {    // Komunikace mezi Becki a Homer Instance
+
+                        switch (json.get("messageType").asText()){
+
+
+                            case "notification" : {
+
+                                return;
+                            }
+
+                            default: {
+                                logger.error("Homer Server:: Incoming message:: Chanel becki:: not recognize messageType ->" + json.get("messageType").asText());
+                                return;
+                            }
+
+                        }
+                    }
+
+                    default: {
+                        logger.error("Homer Server Incoming message not recognize incoming messageChanel!!! ->" + json.get("messageChannel").asText());
+
+                    }
+
+                }
+
+            }else {
+                logger.error("Homer Server: "+ super.identifikator + " Incoming message has not messageChannel!!!!");
+            }
 
     }
 

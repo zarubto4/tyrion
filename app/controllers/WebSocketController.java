@@ -25,6 +25,7 @@ import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_Unauthorized;
 import utilities.swagger.outboundClass.Swagger_Websocket_Token;
 import utilities.webSocket.*;
+import utilities.webSocket.messageObjects.WS_Token;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -49,7 +50,9 @@ public class WebSocketController extends Controller {
     // Becki (frontend) spojení na synchronizaci blocka atd.. - Podporován režim multipřihlášení.
     public static Map<String, WebSCType> becki_website = new HashMap<>(); // (Person_id - Identificator, List of Websocket connections - Identificator je Token)
 
-    public static TokenCache tokenCache = new TokenCache( (long) 5, (long) 500, 500);
+    public static TokenCache tokenCache = new TokenCache( (long) 5, (long) 500, 50000); // Tokeny pro ověření uživatele
+
+
 
     // PUBLIC API -------------------------------------------------------------------------------------------------------------------
 
@@ -72,7 +75,11 @@ public class WebSocketController extends Controller {
 
             String web_socket_token = UUID.randomUUID().toString();
 
-            tokenCache.put(web_socket_token, SecurityController.getPerson().id);
+            WS_Token token = new WS_Token();
+            token.token = web_socket_token;
+            token.person_id = SecurityController.getPerson().id;
+
+            tokenCache.put(web_socket_token, token);
 
             Swagger_Websocket_Token swagger_websocket_token = new Swagger_Websocket_Token();
             swagger_websocket_token.websocket_token = web_socket_token;
@@ -165,7 +172,7 @@ public class WebSocketController extends Controller {
                                 for(String  identificator : instances_on_server){
 
                                     // NAjdu jestli instance má oprávnění být nazasená podle parametrů nasaditelné instnace
-                                    Integer size = Homer_Instance.find.where().eq("id", identificator )
+                                    Integer size = Homer_Instance.find.where().eq("blocko_instance_name", identificator)
                                             .disjunction()
                                                 .conjunction()
                                                     .eq("virtual_instance", false)
@@ -304,13 +311,22 @@ public class WebSocketController extends Controller {
 
             logger.debug("Becki: Incoming connection: " + security_token);
 
-            String person_id = tokenCache.get(security_token);
+
+            WS_Token token = tokenCache.get(security_token);
+
+            if(token == null ) {
+              logger.warn("Becki: Incoming token " + security_token + " is invalid! Probably to late for axcess");
+              return WebSocket.reject(forbidden());
+            }
+
+            String person_id = token.person_id;
             tokenCache.remove(security_token);
 
-            if(person_id == null ) {
-                logger.warn("Becki: Incoming token " + security_token + " is invalid! Probably to late for axcess");
-                return WebSocket.reject(forbidden());
-            }
+
+
+
+
+
 
 
             logger.debug("Becki: Controlling of incoming token " + security_token);
@@ -346,56 +362,7 @@ public class WebSocketController extends Controller {
 
 
 
-// PRIVATE Homer-Server ---------------------------------------------------------------------------------------------------------
-    public static void homer_server_incoming_message(WS_BlockoServer blockoServer, ObjectNode json){
 
-    logger.debug("BlockoServer: "+ blockoServer.identifikator + " Incoming message: " + json.toString());
-
-    if(json.has("messageChannel")){
-
-        switch (json.get("messageChannel").asText()){
-
-
-            case "homer-server" : { // Komunikace mezi Tyrion server a Homer Server
-                Cloud_Homer_Server.Messages(json);
-            }
-
-
-            case "tyrion": {    // Komunikace mezi Tyrion server a Homer Instance
-                Homer_Instance.Messages(json);
-            }
-
-
-            case "becki": {    // Komunikace mezi Becki a Homer Instance
-
-                switch (json.get("messageType").asText()){
-
-
-                    case "notification" : {
-
-                        return;
-                    }
-
-                    default: {
-                        logger.error("Homer Server:: Incoming message:: Chanel becki:: not recognize messageType ->" + json.get("messageType").asText());
-                        return;
-                    }
-
-                }
-
-            }
-
-            default: {
-                logger.error("Homer Server Incoming message not recognize incoming messageChanel!!! ->" + json.get("messageChannel").asText());
-
-            }
-
-        }
-
-    }else {
-        logger.error("Homer Server: "+ blockoServer.identifikator + " Incoming message has not messageChannel!!!!");
-    }
-}
 
 
 // PRIVATE Compiler-Server --------------------------------------------------------------------------------------------------------

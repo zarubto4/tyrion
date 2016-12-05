@@ -129,15 +129,34 @@
 
                         <label>Server Name</label>
                         <input type="text" class="form-control" id="name"  name="server_name" readonly>
+                        <div class="form-group">
+                        </div>
+                        <div class="form-group">
+                            <label style="">MQTT Port:</label>
+                            <input type="text" class="form-control" id="mqtt_port"  name="mqtt_port">
 
-                        <label style="">MQTT Port:</label>
-                        <input type="text" class="form-control" id="mqtt_port"  name="mqtt_port">
+                            <label style="">MQTT UserName:</label>
+                            <input type="text" class="form-control" id="mqtt_username"  name="mqtt_username">
+
+                            <label style="">MQTT Password:</label>
+                            <input type="text" class="form-control" id="mqtt_username"  name="mqtt_password">
+                        </div>
+
+                        <div class="form-group">
+                        </div>
 
                         <label style="">Grid Port:</label>
                         <input type="text" class="form-control" id="grid_port"  name="grid_port">
 
+                        <label style="">Becki - WebView and Remote control Port:</label>
+                        <input type="text" class="form-control" id="webView_port"  name="webView_port">
+
+
+
                         <label style="">Server Url:</label>
                         <input type="text" class="form-control" id="server_url"  name="server_url">
+
+
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -156,16 +175,30 @@
                     <h4 class="modal-title">Create new Homer Server</h4>
                 </div>
                 <div class="modal-body">
-                    <form id="newHomerServer")>
+                    <form id="newHomerServer">
 
                         <label>Server name</label>
                         <input type="text" class="form-control" name="server_name" >
 
-                        <label style="">MQTT Port:</label>
-                        <input type="text" class="form-control" id="mqtt_port"  name="mqtt_port">
+                        <div class="form-group">
+                            <label style="">MQTT Port:</label>
+                            <input type="text" class="form-control" id="mqtt_port"  name="mqtt_port">
+
+                            <label style="">MQTT UserName:</label>
+                            <input type="text" class="form-control" id="mqtt_username"  name="mqtt_username">
+
+                            <label style="">MQTT Password:</label>
+                            <input type="text" class="form-control" id="mqtt_username"  name="mqtt_password">
+                        </div>
+
 
                         <label style="">Grid Port:</label>
                         <input type="text" class="form-control" id="grid_port"  name="grid_port">
+
+                        <label style="">Becki - WebView and Remote control Port:</label>
+                        <input type="text" class="form-control" id="webView_port"  name="webView_port">
+
+
 
                         <label style="">Server Url:</label>
                         <input type="text" class="form-control" id="server_url"  name="server_url">
@@ -216,7 +249,7 @@
                                 <td>@homer_server.hash_certificate</td>
                                 <td>@homer_server.destination_address</td>
                                 <td>@homer_server.server_is_online()</td>
-                                <td><button class="btn btn-block btn-info" type="button" onclick="showEditFormHomerServer('@homer_server.id', '@homer_server.server_name','@homer_server.mqtt_port', '@homer_server.grid_port',  '@homer_server.server_url' )">Edit</button></td>
+                                <td><button class="btn btn-block btn-info" type="button" onclick="showEditFormHomerServer('@homer_server.id', '@homer_server.server_name','@homer_server.mqtt_port', '@homer_server.mqtt_username','@homer_server.mqtt_password', '@homer_server.webView_port', '@homer_server.grid_port',  '@homer_server.server_url' )">Edit</button></td>
                                 <td><button class="btn btn-block btn-danger" type="button" onclick="deleteHomerServer(@homer_server.id)">Delete</button></td>
                             </tr>
                         }
@@ -440,13 +473,16 @@ function deleteHomerServer(id){
         }
     })}
 
-function showEditFormHomerServer(id, server_name, mqtt_port, grid_port, server_url){
+function showEditFormHomerServer(id, server_name, mqtt_port, mqtt_username, mqtt_password, webView_port, grid_port, server_url){
     $("#editHomerServerModal").css("display","block");
     $('#editHomerServerButton').val(id);
     $('#compilationServerId').text("ID = " + id);
 
     $("#editHomerServer input[name=server_name]").val(server_name);
     $("#editHomerServer input[name=mqtt_port]").val(mqtt_port);
+    $("#editHomerServer input[name=mqtt_username]").val(mqtt_username);
+    $("#editHomerServer input[name=mqtt_password]").val(mqtt_password);
+    $("#editHomerServer input[name=webView_port]").val(webView_port);
     $("#editHomerServer input[name=grid_port]").val(grid_port);
     $("#editHomerServer input[name=server_url]").val(server_url);
 

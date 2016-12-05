@@ -21,8 +21,21 @@ public class Swagger_Cloud_Homer_Server_New {
 
     @Constraints.Required
     @Constraints.MinLength(value = 4, message = "The name must have at least 4 characters")
+    @Constraints.MaxLength(value = 40, message = "The name must not have more than 5 characters")
+    public String mqtt_username;
+
+    @Constraints.Required
+    @Constraints.MinLength(value = 4, message = "The name must have at least 4 characters")
+    @Constraints.MaxLength(value = 40, message = "The name must not have more than 5 characters")
+    public String mqtt_password;
+
+    @Constraints.Required
+    @Constraints.MinLength(value = 4, message = "The name must have at least 4 characters")
     @Constraints.MaxLength(value = 5, message = "The name must not have more than 5 characters")
     public String grid_port;
+
+    public String webView_port;
+
 
     @Constraints.Required
     @Constraints.MinLength(value = 6, message = "The name must have at least 4 characters")

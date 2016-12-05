@@ -43,12 +43,9 @@ public abstract class WebSCType {
 
             // V případě že zpráva byla odeslaná Tyironem - existuje v zásobníku její objekt
             if (json.has("messageId") && sendMessageMap.containsKey(json.get("messageId").asText())) {
-
                 sendMessageMap.get(json.get("messageId").asText()).insert_result(json);
                 return;
             }
-
-            System.out.println("Zprávu se nepodařilo najít v seznamu odeslaných zpráv - a asi je to zpráva - kterou nám někdo poslal zvenčí");
 
             onMessage(json);
 
@@ -129,8 +126,7 @@ public abstract class WebSCType {
 
     // Odeslání bez nutnosti vyčkat na potvrzení
     public void write_without_confirmation(ObjectNode json){
-        String messageId = UUID.randomUUID().toString();
-        json.put("messageId", messageId );
+        if(!json.has("messageId")) json.put("messageId", UUID.randomUUID().toString() );
         out.write( json.toString() );
     }
 

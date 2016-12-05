@@ -51,7 +51,7 @@ public class Version_Object extends Model {
     @ManyToOne(fetch = FetchType.LAZY) @ApiModelProperty(required = false, value = "can be empty!")  public Person author;
 
 
-                                                @JsonIgnore @ApiModelProperty(required = true)  public boolean public_version;
+                                                                                        @JsonIgnore  public boolean public_version;  // Pižívá se u Gridu, u C_programů atd..
 
     // OBJEKT V KOŠI!! - SLOUŽÍ K ODSTRANĚNÍ Z POHLEDU UŽIVATELE - ALE NIKOLIV Z DATABÁZE!
     public boolean removed_by_user; // Defaultně false - když true - tak se to nemá uživateli vracet!
@@ -91,8 +91,8 @@ public class Version_Object extends Model {
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)     public List<B_Program_Hw_Group> b_program_hw_groups = new ArrayList<>();
 
 
-    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, mappedBy = "instance_versions")         public List<M_Project_Program_SnapShot> b_program_version_snapshots = new ArrayList<>();    // Bazba kvůli puštěným B_programům
-    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, mappedBy = "version_objects_program")   public List<M_Project_Program_SnapShot> m_project_program_snapshots = new ArrayList<>();    // Bazba kvůli puštěným B_programům
+    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, mappedBy = "instance_versions")         public List<M_Project_Program_SnapShot> b_program_version_snapshots = new ArrayList<>();    // Vazba kvůli puštěným B_programům
+    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, mappedBy = "version_objects_program")   public List<M_Project_Program_SnapShot> m_project_program_snapshots = new ArrayList<>();    // Vazba kvůli puštěným M_programům
 
 
         // B_Program - Instance

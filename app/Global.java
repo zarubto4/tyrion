@@ -5,7 +5,6 @@ import play.GlobalSettings;
 import play.mvc.Action;
 import play.mvc.Http;
 import utilities.Server;
-import utilities.demo_data.Basic_Data;
 
 import java.lang.reflect.Method;
 import java.util.Date;
@@ -44,7 +43,7 @@ public class Global extends GlobalSettings {
            Server.startScheduling_procedures();
 
            logger.warn("Creating Administrator");
-           Basic_Data.set_Developer_objects();
+           Server.set_Developer_objects();
     //****************************************************************************************************************************
 
        }catch (Exception e){

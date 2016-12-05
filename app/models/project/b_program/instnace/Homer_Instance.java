@@ -12,13 +12,14 @@ import io.swagger.annotations.ApiModelProperty;
 import models.compiler.Board;
 import models.compiler.FileRecord;
 import models.notification.Notification;
+import models.person.FloatingPersonToken;
 import models.project.b_program.B_Pair;
 import models.project.b_program.B_Program;
 import models.project.b_program.B_Program_Hw_Group;
 import models.project.b_program.servers.Cloud_Homer_Server;
-import models.project.b_program.servers.Private_Homer_Server;
 import models.project.c_program.actualization.C_Program_Update_Plan;
 import models.project.global.Project;
+import models.project.m_program.Grid_Terminal;
 import play.libs.Json;
 import utilities.enums.Firmware_type;
 import utilities.enums.Notification_importance;
@@ -30,6 +31,7 @@ import utilities.swagger.documentationClass.Swagger_B_Program_Version_New;
 import utilities.swagger.outboundClass.Swagger_B_Program_Instance;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Swagger_Instance_HW_Group;
+import utilities.webSocket.WS_BlockoServer;
 import utilities.webSocket.WebSCType;
 import utilities.webSocket.messageObjects.WS_BoardStats_AbstractClass;
 
@@ -37,8 +39,6 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 @Entity
 public class Homer_Instance extends Model {
@@ -47,8 +47,6 @@ public class Homer_Instance extends Model {
 
                                                   @Id               public String blocko_instance_name;
                              @JsonIgnore @ManyToOne()               public Cloud_Homer_Server cloud_homer_server;
-        @JsonIgnore @OneToOne(fetch = FetchType.LAZY)               public Private_Homer_Server private_server; // Nevyužívané
-
 
 
     @JsonIgnore @OneToOne(mappedBy="instance", fetch = FetchType.LAZY)                                  public B_Program b_program;                     //LAZY!! - přes Getter!! // BLocko program ke kterému se Homer Instance váže
@@ -224,6 +222,19 @@ public class Homer_Instance extends Model {
 
                     return;
                 }
+
+                case "token_grid_verification": {
+                    logger.debug("Homer_Instance:: Incoming message:: Token Grid Verification");
+                    Homer_Instance.find.byId(json.get("instanceId").asText()).cloud_verification_token_GRID(json);
+                    return;
+                }
+
+                case "token_webView_verification": {
+                    logger.debug("Homer_Instance:: Incoming message:: Token WebView Verification");
+                    Homer_Instance.find.byId(json.get("instanceId").asText()).cloud_verification_token_WEBVIEW(json);
+                    return;
+                }
+
 
 
                 default: {
@@ -564,10 +575,102 @@ public class Homer_Instance extends Model {
         }
     }
 
+
+    // TOKEN verification
+    @JsonIgnore @Transient  public  void cloud_verification_token_GRID(JsonNode node){
+        try {
+
+            logger.debug("Homer_Instance:: cloud_GRID verification_token::  Checking Token");
+            WS_BlockoServer server = (WS_BlockoServer) WebSocketController.blocko_servers.get(server_name());
+
+            Grid_Terminal terminal = Grid_Terminal.find.where().eq("terminal_token", node.get("token").asText()).findUnique();
+
+
+            ObjectNode request = Json.newObject();
+            request.put("messageType", "result");
+            request.put("messageChannel", node.get("messageChannel").asText());
+            request.put("status", "Success");
+            request.put("instanceId", node.get("instanceId").asText());
+
+            if(terminal == null){
+                logger.warn("Homer_Instance:: cloud_verification_token:: Grid_Terminal object not found!");
+                request.put("token_approve", false);
+                WebSocketController.blocko_servers.get(server_name()).write_without_confirmation(node.get("messageId").asText(), request);
+                return;
+            }
+
+            Integer size;
+
+            if(terminal.person == null) {
+                logger.debug("Homer_Instance:: cloud_verification_token:: Grid_Terminal object has not own Person - its probably public - Trying to find Instance");
+                size = Homer_Instance.find.where().eq("blocko_instance_name", node.get("instanceId").asText()).eq("actual_instance.version_object.public_version", true).findRowCount();
+            }else {
+                logger.debug("Homer_Instance:: cloud_verification_token:: Grid_Terminal object has  own Person - its probably private or it can be public - Trying to find Instance with user ID and public value");
+                size = Homer_Instance.find.where().eq("blocko_instance_name", node.get("instanceId").asText())
+                            .disjunction()
+                                .eq("b_program.project.ownersOfProject.id", terminal.person.id)    // Uživatel může být přihlášený a přihlašovat se k free programu
+                                .eq("actual_instance.version_object.public_version", true)
+                            .findRowCount();
+            }
+
+            if(size == 0){
+                logger.warn("Homer_Instance:: cloud_verification_token:: Token found but this user has not permission!");
+                request.put("token_approve", false);
+                WebSocketController.blocko_servers.get(server_name()).write_without_confirmation(node.get("messageId").asText(), request);
+                return;
+            }
+
+            logger.debug("Cloud_Homer_server:: cloud_verification_token:: Token found and user have permission");
+            request.put("token_approve", true);
+            WebSocketController.blocko_servers.get(server_name()).write_without_confirmation( node.get("messageId").asText(), request);
+            return;
+
+        }catch (Exception e){
+            e.printStackTrace();
+            logger.warn("Cloud Homer server", server_name(), " is offline!");
+        }
+
+    }
+    @JsonIgnore @Transient  public  void cloud_verification_token_WEBVIEW(JsonNode node){
+        try {
+
+            logger.debug("Homer_Instance:: cloud_verification_token:: WebView  Checking Token");
+            WS_BlockoServer server = (WS_BlockoServer) WebSocketController.blocko_servers.get(server_name());
+
+
+            FloatingPersonToken floatingPersonToken = FloatingPersonToken.find.where().eq("authToken", node.get("token").asText()).findUnique();
+
+            // Ještě instanci ke které se to chce přihlásit
+
+
+            ObjectNode request = Json.newObject();
+            request.put("messageType", "result");
+            request.put("messageChannel", node.get("messageChannel").asText());
+            request.put("status", "Success");
+            request.put("instanceId", node.get("instanceId").asText());
+
+            if(floatingPersonToken == null){
+                logger.warn("Homer_Instance:: cloud_verification_token:: FloatingPersonToken not found!");
+                request.put("token_approve", false);
+                WebSocketController.blocko_servers.get(server_name()).write_without_confirmation(node.get("messageId").asText(), request);
+                return;
+            }
+
+            logger.debug("Cloud_Homer_server:: cloud_verification_token:: WebView FloatingPersonToken Token found and user have permission");
+            request.put("token_approve", true);
+            WebSocketController.blocko_servers.get(server_name()).write_without_confirmation( node.get("messageId").asText(), request);
+            return;
+
+        }catch (Exception e){
+            e.printStackTrace();
+            logger.warn("Cloud Homer server", server_name(), " is offline!");
+        }
+
+    }
+
+    // Update
     @JsonIgnore @Transient public  void check_hardware_c_program_state(){
-
         logger.error("Tady chci kontrolovat hardware!!! Všechen!!!!!! Instance ID:: ", blocko_instance_name);
-
     }
 
     @JsonIgnore @Transient public  void check_hardware(Board board, WS_BoardStats_AbstractClass report){
@@ -643,40 +746,6 @@ public class Homer_Instance extends Model {
 
 
 
-
-    // Smažu s podporou a změnou websocketu na Homerovi
-    @JsonIgnore @Transient public  JsonNode add_grid_token(String token){
-        try {
-
-            ObjectNode result = Json.newObject();
-            result.put("messageType", "add_gridToken");
-            result.put("messageChannel", CHANNEL);
-            result.put("instanceId", this.blocko_instance_name);
-            result.put("gridToken", token);
-            result.put("expiration_time", 25 * 1000); // Počet sekund platnosti tokenu na Homer serveru - po této době se token sám smaže a nebude platný pro připojení
-
-            return sendToInstance().write_with_confirmation(result, 1000 * 3, 0, 4);
-
-        } catch (Exception e){
-            return Cloud_Homer_Server.RESULT_server_is_offline();
-        }
-    }
-
-    @JsonIgnore @Transient public  JsonNode remove_grid_token(String token) throws  ExecutionException, TimeoutException, InterruptedException {
-        try {
-
-            ObjectNode result = Json.newObject();
-            result.put("messageType", "remove_gridToken");
-            result.put("messageChannel", CHANNEL);
-            result.put("instanceId", this.blocko_instance_name);
-            result.put("gridToken", token);
-
-            return sendToInstance().write_with_confirmation(result, 1000*3, 0, 4);
-
-        } catch (Exception e){
-            return Cloud_Homer_Server.RESULT_server_is_offline();
-        }
-    }
 
     // Pomocné objekty - Defaultní zprávy
 

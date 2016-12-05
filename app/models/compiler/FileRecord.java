@@ -13,7 +13,6 @@ import models.person.Person;
 import models.project.c_program.C_Compilation;
 import models.project.c_program.actualization.C_Program_Update_Plan;
 import utilities.Server;
-import utilities.UtilTools;
 
 import javax.persistence.*;
 import java.io.*;
@@ -39,7 +38,7 @@ public class FileRecord extends Model {
                 @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "picture")     public TypeOfBoard type_of_board;   // type_of_board_picture
                                     @JsonIgnore @OneToOne()                             public BootLoader boot_loader;
                                    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)       public Version_Object version_object;
-             @JsonIgnore @OneToMany(mappedBy="binary_file",fetch = FetchType.LAZY)      public List<C_Program_Update_Plan> c_program_update_plen  = new ArrayList<>();
+             @JsonIgnore @OneToMany(mappedBy="binary_file",fetch = FetchType.LAZY)      public List<C_Program_Update_Plan> c_program_update_plan  = new ArrayList<>();
     @JsonIgnore @OneToOne(mappedBy="bin_compilation_file")                              public C_Compilation c_compilations_binary_file;
 
 
@@ -224,7 +223,7 @@ public class FileRecord extends Model {
     }
 
     /**
-     *  MEtoda slouží k rekurzivnímu procháázení úrovně adresáře v Azure data storage a mazání jeho obsahu.
+     *  Metoda slouží k rekurzivnímu procháázení úrovně adresáře v Azure data storage a mazání jeho obsahu.
      *  Azure data storage je totiž jednoúrovňové datové skladiště! KJde není možné vytvářet složky, v nich složky
      *  a do nich dávat soubory. Jménbo souboru sice má podobu neco/neco2/něco3/soubor.txt ale je to přímá cesta.
      *  Proto když je potřeba promazat něco v něco2 a všechno dál, je nutné nasadit rekurzivní algoritmus, který se
@@ -260,6 +259,7 @@ public class FileRecord extends Model {
     public static String get_encoded_binary_string_from_body(byte[] bytes) throws Exception {
         return new String(Base64.getEncoder().encode( bytes ));
     }
+
 
     @Override
     public void delete(){

@@ -20,7 +20,6 @@ import models.project.b_program.B_Program_Hw_Group;
 import models.project.b_program.instnace.Homer_Instance;
 import models.project.b_program.instnace.Homer_Instance_Record;
 import models.project.b_program.servers.Cloud_Homer_Server;
-import models.project.b_program.servers.Private_Homer_Server;
 import models.project.c_program.C_Program;
 import models.project.global.Product;
 import models.project.global.Project;
@@ -45,7 +44,6 @@ import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Filter_List.Swagger_B_Program_List;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Blocko_Block_List;
-import utilities.swagger.outboundClass.Filter_List.Swagger_Homer_List;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Type_Of_Block_List;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Swagger_BlockoBlock_Version_scheme;
@@ -636,334 +634,11 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-// HOMER   #############################################################################################################
-
-    @ApiOperation(value = "create new Homer",
-            tags = {"Homer"},
-            notes = "create new Homer",
-            produces = "application/json",
-            protocols = "https",
-            code = 201,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Private_Homer_Server.create_permission", value = Private_Homer_Server.create_permission_docs ),
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Project.update_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "Private_Homer_Server_create" )
-                    })
-            }
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Homer_New",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successfully created", response =  Private_Homer_Server.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @BodyParser.Of(BodyParser.Json.class)
-    public  Result newHomer(){
-        try{
-
-            // Zpracování Json
-            final Form<Swagger_Homer_New> form = Form.form(Swagger_Homer_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-            Swagger_Homer_New help = form.get();
-
-            // Kontrola před vytvořením objektu
-            if ( Private_Homer_Server.find.where().eq("mac_address", help.mac_address).findUnique() != null ) return GlobalResult.result_BadRequest("Homer with this id exist");
-
-            // Vytvoření objektu
-            Private_Homer_Server privateHomerServer = new Private_Homer_Server();
-            privateHomerServer.mac_address = help.mac_address;
-            privateHomerServer.type_of_device = help.type_of_device;
-
-            if(help.project_id != null){
-                Project project = Project.find.byId(help.project_id);
-                if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
-                privateHomerServer.project = project;
-            }
-
-            // Kontrola oprávnění těsně před uložením
-            if (!privateHomerServer.create_permission() )   return GlobalResult.forbidden_Permission();
-
-            // Uložení objektu
-            privateHomerServer.save();
-
-            // Vrácení objektu
-            return GlobalResult.created(Json.toJson(privateHomerServer));
-
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "remove Homer",
-            tags = {"Homer"},
-            notes = "remove Homer",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Private_Homer_Server.delete_permission", value = "true"),
-                    })
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Result_ok.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public  Result removeHomer(@ApiParam(value = "b_program_id String path",   required = true) String homer_id){
-        try{
-
-           // Kontrola objektu
-           Private_Homer_Server privateHomerServer = Private_Homer_Server.find.byId(homer_id);
-           if(privateHomerServer == null) return GlobalResult.notFoundObject("Homer id not found");
-
-           // Kontrola oprávnění
-           if (!privateHomerServer.delete_permission() )   return GlobalResult.forbidden_Permission();
-
-           // Smazání objektu
-           privateHomerServer.delete();
-
-           // Vrácení potvrzení
-           return GlobalResult.result_ok();
-
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "remove Homer",
-            tags = {"Homer"},
-            notes = "remove Homer",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Private_Homer_Server.read_permission", value = Private_Homer_Server.read_permission_docs),
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Private_Homer_Server.read_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "Private_Homer_Server_read" )
-                    })
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Private_Homer_Server.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public  Result getHomer(@ApiParam(value = "b_program_id String path",   required = true) String homer_id){
-        try {
-
-            // Kontrola objektu
-            Private_Homer_Server privateHomerServer = Private_Homer_Server.find.byId(homer_id);
-            if (privateHomerServer == null) return GlobalResult.notFoundObject("Homer id not found");
-
-            // Kontrola oprávnění
-            if (!privateHomerServer.read_permission() )   return GlobalResult.forbidden_Permission();
-
-            // Vrácení objektu
-            return GlobalResult.result_ok( Json.toJson(privateHomerServer) );
-
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
 
 
-    @ApiOperation(value = "get Homers with Filters parameters",
-            tags = {"Homer"},
-            notes = "If you want get all or only some Homers you can use filter parameters in Json. But EveryTime server return maximal 25 objects \n\n" +
-                    "so, you have to used that limit for frontend pagination -> first round (0,25), second round (26, 50) etc... in Json we help you with pages list \n ",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
-                    }),
-            }
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Homer_Filter",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result",               response = Swagger_Homer_List.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @BodyParser.Of(BodyParser.Json.class)
-    public  Result get_Homers_by_Filter( @ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number){
-        try {
 
-            // Zpracování Json
-            final Form<Swagger_Homer_Filter> form = Form.form(Swagger_Homer_Filter.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-            Swagger_Homer_Filter help = form.get();
 
-            // Získání objektu
-            Query<Private_Homer_Server> query = Ebean.find(Private_Homer_Server.class);
 
-            // If Json contains project_ids list of id's
-            if(help.project_ids != null ){
-                query.where().in("project.id", help.project_ids);
-            }
-
-            // Omezení počtu vrácených objektů
-            Swagger_Homer_List result = new Swagger_Homer_List(query, page_number);
-
-            // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(result));
-
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-// HOMMER CONNECTIONS ##################################################################################################
-
-    @ApiOperation(value = "connect Homer with Project",
-            tags = {"Homer", "Project"},
-            notes = "remove Homer",
-            produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission", value = "It requires both permission"),
-
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Project.update_permission", value = "true"),
-                            @ExtensionProperty(name = "Homer.update_permission", value = "true"),
-                    })
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Project.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public  Result connectHomerWithProject(@ApiParam(value = "project_id String path",   required = true) String project_id, @ApiParam(value = "id String path",   required = true) String homer_id){
-        try{
-
-            // Získání objektů
-            Project project = Project.find.byId(project_id);
-            Private_Homer_Server privateHomerServer = Private_Homer_Server.find.byId(homer_id);
-
-            // Kontrola objektů
-            if(project == null)  return GlobalResult.notFoundObject("Project project_id not found");
-            if(privateHomerServer == null)  return GlobalResult.notFoundObject("Homer id not found");
-
-            // Kontrola oprávnění
-            if (!project.update_permission() ) return GlobalResult.forbidden_Permission();
-            if (!privateHomerServer.update_permission() )   return GlobalResult.forbidden_Permission();
-
-            // Úprava objektu
-            privateHomerServer.project = project;
-
-            // Uložení objektu
-            privateHomerServer.update();
-
-            // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(project));
-
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "connect Homer with Project",
-            tags = {"Homer", "Project"},
-            notes = "remove Homer",
-            produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission", value = "It requires both permission"),
-
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Project.update_permission", value = "true"),
-                            @ExtensionProperty(name = "Homer.update_permission", value = "true"),
-                    })
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Project.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public  Result disconnectHomerWithProject(@ApiParam(value = "project_id String path",   required = true) String project_id, @ApiParam(value = "id String path",   required = true) String homer_id){
-        try{
-
-            // Získání objektů
-            Project project = Project.find.byId(project_id);
-            Private_Homer_Server privateHomerServer = Private_Homer_Server.find.byId(homer_id);
-
-            // Kontrola objektů
-            if(project == null)  return GlobalResult.notFoundObject("Project project_id not found");
-            if(privateHomerServer == null)  return GlobalResult.notFoundObject("Homer id not found");
-
-            // Kontrola oprávnění
-            if (!project.update_permission() ) return GlobalResult.forbidden_Permission();
-            if (!privateHomerServer.update_permission() )   return GlobalResult.forbidden_Permission();
-
-            // Úprava objektu
-            if( project.privateHomerServerList.contains(privateHomerServer)) privateHomerServer.project = null;
-
-            // Uložení objektu
-            privateHomerServer.update();
-
-            // Úprava objektu
-            project.privateHomerServerList.remove(privateHomerServer);
-
-            // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(project));
-
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
 
 // B PROGRAM ############################################################################################################
 
@@ -2006,8 +1681,15 @@ public class ProgramingPackageController extends Controller {
             Cloud_Homer_Server server = new Cloud_Homer_Server();
             server.server_name = help.server_name;
             server.destination_address = Server.tyrion_webSocketAddress + "/websocket/blocko_server/" + server.server_name;
+
             server.mqtt_port = help.mqtt_port;
+            server.mqtt_password = help.mqtt_password;
+            server.mqtt_username = help.mqtt_username;
+
             server.grid_port = help.grid_port;
+
+            server.webView_port = help.webView_port;
+
             server.server_url = help.server_url;
 
             server.set_hash_certificate();
@@ -2076,8 +1758,15 @@ public class ProgramingPackageController extends Controller {
             // Úprava objektu
             server.server_name = help.server_name;
             server.destination_address = Server.tyrion_webSocketAddress + "/websocket/blocko_server/" + server.server_name;
+
             server.mqtt_port = help.mqtt_port;
+            server.mqtt_password = help.mqtt_password;
+            server.mqtt_username = help.mqtt_username;
+
             server.grid_port = help.grid_port;
+
+            server.webView_port = help.webView_port;
+
             server.server_url = help.server_url;
 
             // Uložení objektu

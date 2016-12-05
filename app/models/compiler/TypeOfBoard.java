@@ -20,7 +20,7 @@ public class TypeOfBoard extends Model {
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
      @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true) public String id;
                                                              @ApiModelProperty(required = true) public String name;
-                                                                                    @JsonIgnore public String compiler_target_name;
+                                                             @Column(unique=true)  @JsonIgnore  public String compiler_target_name;
                                                              @ApiModelProperty(required = true) public String revision;
                                                                                     @JsonIgnore public String azure_picture_link;
 
@@ -37,7 +37,7 @@ public class TypeOfBoard extends Model {
                 @OneToOne (mappedBy="main_type_of_board")                       public BootLoader        main_boot_loader;
 
 
-    @JsonIgnore @OneToOne(mappedBy="default_program_type_of_board")             public C_Program default_program;
+    @JsonIgnore @OneToOne(mappedBy="default_program_type_of_board")  public C_Program default_program;
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
@@ -51,9 +51,7 @@ public class TypeOfBoard extends Model {
 
     @JsonProperty @ApiModelProperty(required = true)
     public String picture_link(){
-        if(this.azure_picture_link == null){
-            return null;
-        }
+        if(this.azure_picture_link == null){ return null;}
         return Server.azureLink + azure_picture_link;
     }
 

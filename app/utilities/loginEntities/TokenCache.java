@@ -2,6 +2,7 @@ package utilities.loginEntities;
 
 import org.apache.commons.collections.MapIterator;
 import org.apache.commons.collections.map.LRUMap;
+import utilities.webSocket.messageObjects.WS_Token;
 
 import java.util.ArrayList;
 
@@ -12,9 +13,9 @@ public class TokenCache {
 
     protected class CrunchifyCacheObject {
         public long lastAccessed = System.currentTimeMillis();
-        public String value;
+        public WS_Token value;
 
-        protected CrunchifyCacheObject(String value) {
+        protected CrunchifyCacheObject(WS_Token value) {
             this.value = value;
         }
     }
@@ -43,14 +44,14 @@ public class TokenCache {
         }
     }
 
-    public void put(String key, String value) {
+    public void put(String key, WS_Token value) {
         synchronized (crunchifyCacheMap) {
             crunchifyCacheMap.put(key, new CrunchifyCacheObject(value));
         }
     }
 
     @SuppressWarnings("unchecked")
-    public String get(String key) {
+    public WS_Token get(String key) {
         synchronized (crunchifyCacheMap) {
             CrunchifyCacheObject c = (CrunchifyCacheObject) crunchifyCacheMap.get(key);
 
@@ -84,7 +85,7 @@ public class TokenCache {
         synchronized (crunchifyCacheMap) {
             MapIterator itr = crunchifyCacheMap.mapIterator();
 
-            deleteKey = new ArrayList<String>((crunchifyCacheMap.size() / 2) + 1);
+            deleteKey = new ArrayList<>((crunchifyCacheMap.size() / 2) + 1);
             String key = null;
             CrunchifyCacheObject c = null;
 

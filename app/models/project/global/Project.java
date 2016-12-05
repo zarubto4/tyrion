@@ -14,14 +14,12 @@ import models.person.Person;
 import models.project.b_program.B_Program;
 import models.project.b_program.instnace.Homer_Instance;
 import models.project.b_program.servers.Cloud_Homer_Server;
-import models.project.b_program.servers.Private_Homer_Server;
 import models.project.c_program.C_Program;
 import models.project.m_program.M_Project;
 import utilities.enums.Notification_action;
 import utilities.enums.Notification_importance;
 import utilities.enums.Notification_level;
 import utilities.swagger.documentationClass.Swagger_Object_detail;
-import utilities.swagger.outboundClass.Swagger_Notification_Button;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -38,7 +36,6 @@ public class Project extends Model {
                                                              public String name;
                                                              public String description;
 
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Private_Homer_Server>     privateHomerServerList = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<B_Program>                b_programs        = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<C_Program>                c_programs        = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<M_Project>                m_projects        = new ArrayList<>();
@@ -58,7 +55,6 @@ public class Project extends Model {
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> homers_id()                     { List<String> l = new ArrayList<>();                   for( Private_Homer_Server m    : privateHomerServerList)   l.add(m.id); return l;  }
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> boards_id()                     { List<String> l = new ArrayList<>();                   for( Board m                   : boards)                   l.add(m.id); return l;  }
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Object_detail> b_programs()     { List<Swagger_Object_detail> l = new ArrayList<>();    for( B_Program m               : b_programs)               l.add(new Swagger_Object_detail(m.name, m.description, m.id)); return l;  }
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Object_detail> c_programs()     { List<Swagger_Object_detail> l = new ArrayList<>();    for( C_Program m               : c_programs)               l.add(new Swagger_Object_detail(m.name, m.description, m.id)); return l;  }

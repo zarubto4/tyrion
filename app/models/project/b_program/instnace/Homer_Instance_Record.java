@@ -25,7 +25,6 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 public class Homer_Instance_Record  extends Model {
@@ -33,7 +32,6 @@ public class Homer_Instance_Record  extends Model {
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public String id;
-    @JsonIgnore  public String websocket_grid_token;
 
     @JsonIgnore @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY) public Homer_Instance main_instance_history;
 
@@ -62,7 +60,7 @@ public class Homer_Instance_Record  extends Model {
 
     @Override
     public void save(){
-        this.websocket_grid_token = UUID.randomUUID().toString() +"_"+ UUID.randomUUID().toString();
+       // this.websocket_grid_token = UUID.randomUUID().toString() +"_"+ UUID.randomUUID().toString();
         super.save();
     }
 
