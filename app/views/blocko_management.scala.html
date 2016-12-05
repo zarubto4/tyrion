@@ -451,7 +451,7 @@
             data: JSON.stringify(model_data),
             dataType: 'json',
             success:function(json){
-              $("#editBlckoBlock input[type=text]").val("");
+              $("#editBlockoBlock input[type=text]").val("");
               $("#editBlockoBlockModal").css("display","none");
               openTypeOfBlock(json.type_of_block_id);
               openBlockoBlock(json.id);

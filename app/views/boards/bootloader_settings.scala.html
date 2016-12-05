@@ -185,7 +185,7 @@
             <div class="box">
                 <div class="box-header with-border">
                     <h3 class="box-title">Picture</h3>
-                    <button id="showPictureRemoveModalButton" @if(typeOfBoard.picture_link() == null) { disabled="disabled" } class="btn btn-danger pull-right @if(typeOfBoard.picture_link() == null) { disabled }" type="button" onclick="showPictureRemoveModal(@typeOfBoard.id)">Remove Picture</button>
+                    <button style="margin-left: 10px;" id="showPictureRemoveModalButton" @if(typeOfBoard.picture_link() == null) { disabled="disabled" } class="btn btn-danger pull-right @if(typeOfBoard.picture_link() == null) { disabled }" type="button" onclick="showPictureRemoveModal(@typeOfBoard.id)">Remove Picture</button>
                     <button class="btn btn-success pull-right" type="button" onclick="showPictureModal(@typeOfBoard.id)">Upload Picture</button>
                 </div>
                 <div id="picture_container" class="box-body">
@@ -603,7 +603,7 @@
         formData.append('file', file);
 
         $.ajax({
-            url: '@routes.CompilationLibrariesController.boot_loader_uploud_file("")' + boot_loader_id ,
+            url: '@routes.CompilationLibrariesController.boot_loader_upload_file("")' + boot_loader_id ,
             type: 'PUT',
             processData: false, // tell jQuery not to process the data
             contentType: false, // tell jQuery not to set contentType

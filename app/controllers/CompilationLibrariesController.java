@@ -3264,7 +3264,7 @@ public class CompilationLibrariesController extends Controller {
 
     @ApiOperation(value = "Uploud bootloader file", hidden = true)
     @BodyParser.Of(BodyParser.MultipartFormData.class)
-    public Result boot_loader_uploud_file(@ApiParam(value = "boot_loader_id", required = true) String boot_loader_id) {
+    public Result boot_loader_upload_file(@ApiParam(value = "boot_loader_id", required = true) String boot_loader_id) {
         try {
 
             BootLoader boot_loader = BootLoader.find.byId(boot_loader_id);
@@ -3343,7 +3343,7 @@ public class CompilationLibrariesController extends Controller {
 
     @ApiOperation(value = "Update bootloader on device list", hidden = true)
     @BodyParser.Of(BodyParser.Json.class)
-    public Result boot_loader_update_instanace(String instance_id){
+    public Result boot_loader_update_instance(String instance_id){
         try {
 
             Homer_Instance instance = Homer_Instance.find.byId(instance_id);

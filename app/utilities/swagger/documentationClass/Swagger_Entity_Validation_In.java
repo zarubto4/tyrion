@@ -7,7 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
         value = "Entity_Validation_In")
 public class Swagger_Entity_Validation_In {
 
-    @ApiModelProperty(value = "This field is required", required = true)
+    @ApiModelProperty(value = "This field is required", required = true, allowableValues = "mail, nick_name, vat_number")
     public String key;
 
     @ApiModelProperty(value = "This field is required", required = true)

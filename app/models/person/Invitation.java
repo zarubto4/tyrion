@@ -28,6 +28,6 @@ public class Invitation extends Model{
     @JsonProperty @Transient @ApiModelProperty(required = true) public Person invitedPerson(){return Person.find.where().eq("mail", this.mail).findUnique();}
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Finder<String,Invitation> find = new Finder<>(Invitation.class);
+    public static Model.Finder<String,Invitation> find = new Finder<>(Invitation.class);
 
 }

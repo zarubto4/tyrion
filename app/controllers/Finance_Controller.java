@@ -532,7 +532,7 @@ public class Finance_Controller extends Controller {
 
                     if(tariff.company_details_required){
 
-                        if(help.registration_no == null)            return GlobalResult.result_BadRequest("company_registration_no is required with this tariff");
+                        if((help.registration_no == null)&&(help.vat_number == null)) return GlobalResult.result_BadRequest("company_registration_no or vat_number is required with this tariff");
                         if(help.company_name == null)               return GlobalResult.result_BadRequest("company_name is required with this tariff");
 
                         if(help.company_authorized_email == null)   return GlobalResult.result_BadRequest("company_authorized_email is required with this tariff");
@@ -541,12 +541,14 @@ public class Finance_Controller extends Controller {
                         if(help.company_invoice_email == null)      return GlobalResult.result_BadRequest("company_invoice_email is required with this tariff");
 
                         if(help.vat_number != null) {
-                            if (!Payment_Details.control_vat_number(help.vat_number))return GlobalResult.badRequest("Prefix code in VatNumber is not valid");
                             payment_details.company_vat_number = help.vat_number;
                         }
 
+                        if(help.registration_no != null) {
+                            payment_details.company_registration_no  = help.registration_no;
+                        }
+
                         payment_details.company_account = true;
-                        payment_details.company_registration_no  = help.registration_no;
                         payment_details.company_name             = help.company_name;
                         payment_details.company_authorized_email = help.company_authorized_email;
                         payment_details.company_authorized_phone = help.company_authorized_phone;
@@ -563,9 +565,11 @@ public class Finance_Controller extends Controller {
 
                     if(help.payment_mode == null) return GlobalResult.result_BadRequest("Payment_mode is required!");
 
-                         if(help.payment_mode.equals( Payment_mode.monthly.name()))      product.mode = Payment_mode.monthly;
+                    if(help.payment_mode.equals( Payment_mode.free.name()))              product.mode = Payment_mode.free;
+                    else if(help.payment_mode.equals( Payment_mode.annual.name()))       product.mode = Payment_mode.annual;
+                    else if(help.payment_mode.equals( Payment_mode.monthly.name()))      product.mode = Payment_mode.monthly;
                     else if(help.payment_mode.equals( Payment_mode.per_credit.name()))   product.mode = Payment_mode.per_credit;
-                    else { return GlobalResult.result_BadRequest("payment_mode is invalid. Use only (monthly, annual, per_credit)");}
+                    else { return GlobalResult.result_BadRequest("payment_mode is invalid. Use only (free, monthly, annual, per_credit)");}
 
                 }
 
@@ -643,10 +647,10 @@ public class Finance_Controller extends Controller {
                 }
 
 
-                Swagger_GoPay_Url swager_goPay_url = new Swagger_GoPay_Url();
-                swager_goPay_url.gw_url = result.get("gw_url").asText();
+                Swagger_GoPay_Url swagger_goPay_url = new Swagger_GoPay_Url();
+                swagger_goPay_url.gw_url = result.get("gw_url").asText();
 
-                return GlobalResult.result_ok(Json.toJson(swager_goPay_url));
+                return GlobalResult.result_ok(Json.toJson(swagger_goPay_url));
 
 
         } catch (Exception e) {

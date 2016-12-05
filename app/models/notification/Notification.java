@@ -10,10 +10,7 @@ import io.swagger.annotations.ApiModelProperty;
 import models.person.Person;
 import play.libs.Json;
 import utilities.Server;
-import utilities.enums.Notification_action;
-import utilities.enums.Notification_type;
-import utilities.enums.Notification_importance;
-import utilities.enums.Notification_level;
+import utilities.enums.*;
 import utilities.notifications.Notification_Handler;
 import utilities.swagger.outboundClass.Swagger_Notification_Button;
 import utilities.swagger.outboundClass.Swagger_Notification_Element;
@@ -60,6 +57,9 @@ public class Notification extends Model {
     List<Swagger_Notification_Button> buttons = new ArrayList<>();
 
     @JsonIgnore @Transient
+    public Notification_state state;
+
+    @JsonIgnore @Transient
     public List<Person> receivers = new ArrayList<>();
 
     @JsonIgnore
@@ -74,6 +74,7 @@ public class Notification extends Model {
     public  Notification(Notification_importance importance, Notification_level level){
         this.notification_level = level;
         this.notification_importance = importance;
+        this.state = Notification_state.created;
         this.created = new Date();
     }
 
@@ -211,6 +212,17 @@ public class Notification extends Model {
         }
     }
 
+    @Override
+    public void delete(){
+        try {
+            this.state = Notification_state.deleted;
+            this.send();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        super.delete();
+    }
+
     @JsonIgnore @Transient
     public Notification save_object(){
 
@@ -264,6 +276,8 @@ public class Notification extends Model {
         this.confirmed = true;
         this.was_read = true;
         this.update();
+        this.state = Notification_state.updated;
+        this.send();
     }
 
     @JsonIgnore @Transient
@@ -278,6 +292,19 @@ public class Notification extends Model {
         this.receivers = new ArrayList<>();
         this.receivers.add(person);
         Notification_Handler.add_to_queue(this);
+    }
+
+    // Pro opětovné odeslání, když už notifikace obsahuje person
+    @JsonIgnore @Transient
+    public void send(){
+        try {
+            this.receivers = new ArrayList<>();
+            this.receivers.add(this.person);
+            Notification_Handler.add_to_queue(this);
+        }catch (NullPointerException npe){
+            logger.error("Method probably misused, use this method only when you resend notifications. If notification contains person.");
+        }
+
     }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/

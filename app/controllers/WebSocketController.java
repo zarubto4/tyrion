@@ -515,6 +515,7 @@ public class WebSocketController extends Controller {
                 result.put("confirmed", notification.confirmed);
                 result.put("was_read", notification.was_read);
                 result.put("created", notification.created.getTime());
+                result.put("state", notification.state.name());
 
                 for(String person_connection_token : becki.all_person_Connections.keySet()){
                     WS_Becki_Single_Connection single_connection =  (WS_Becki_Single_Connection) becki.all_person_Connections.get(person_connection_token);

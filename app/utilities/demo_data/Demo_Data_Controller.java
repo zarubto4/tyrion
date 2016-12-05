@@ -6,6 +6,9 @@ import models.blocko.BlockoBlock;
 import models.blocko.BlockoBlockVersion;
 import models.blocko.TypeOfBlock;
 import models.compiler.*;
+import models.grid.GridWidget;
+import models.grid.GridWidgetVersion;
+import models.grid.TypeOfWidget;
 import models.person.FloatingPersonToken;
 import models.person.Person;
 import models.project.b_program.B_Pair;
@@ -62,6 +65,7 @@ public class Demo_Data_Controller extends Controller {
         result =   this.extendension_servers();     if(result.status() != 200 ) return result;
         result =   this.basic_tariffs();            if(result.status() != 200 ) return result;
         result =   this.blocko_demo_data();         if(result.status() != 200 ) return result;
+        result =   this.grid_demo_data();         if(result.status() != 200 ) return result;
         result =   this.c_program_configuration();  if(result.status() != 200 ) return result;
 
         result =  this.person_test_user();            if(result.status() != 200 ) return result;
@@ -75,7 +79,7 @@ public class Demo_Data_Controller extends Controller {
         try {
 
             // Ochranná zarážka proti znovu vytvoření
-            if(Producer.find.where().eq("name", "Byzance ltd").findUnique() != null) return GlobalResult.badRequest("Its Already done!");
+            if(Producer.find.where().eq("name", "Byzance ltd").findUnique() != null) return GlobalResult.result_BadRequest("Its Already done!");
 
             // Nastavím Producer
             Producer producer    = new Producer();
@@ -94,8 +98,8 @@ public class Demo_Data_Controller extends Controller {
 
             // Ochranná zarážka proti znovu vytvoření
             Producer producer = Producer.find.where().eq("name", "Byzance ltd").findUnique();
-            if(producer == null) return GlobalResult.badRequest("Create Producer first");
-            if(Processor.find.where().eq("processor_name", "ARM STM32 FR17").findUnique() != null) return GlobalResult.badRequest("Its Already done!");
+            if(producer == null) return GlobalResult.result_BadRequest("Create Producer first");
+            if(Processor.find.where().eq("processor_name", "ARM STM32 FR17").findUnique() != null) return GlobalResult.result_BadRequest("Its Already done!");
 
             // Nastavím Processor - YODA
             Processor processor_1      = new Processor();
@@ -173,12 +177,12 @@ public class Demo_Data_Controller extends Controller {
         try {
             // Ochranná zarážka proti znovu vytvoření
             TypeOfBoard yoda = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_YODAG2").findUnique();
-            if(yoda == null) return GlobalResult.badRequest("Create Type of Boards first");
+            if(yoda == null) return GlobalResult.result_BadRequest("Create Type of Boards first");
 
             TypeOfBoard wireles = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_WRLSKITG2").findUnique();
             TypeOfBoard buskit = TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_BUSKITG2").findUnique();
 
-            if(Board.find.where().eq("id", "002600513533510B34353732").findUnique() != null) return GlobalResult.badRequest("Its Already done!");
+            if(Board.find.where().eq("id", "002600513533510B34353732").findUnique() != null) return GlobalResult.result_BadRequest("Its Already done!");
 
             // Zaregistruji Yody
             Board board_yoda_1 = new Board();
@@ -343,7 +347,7 @@ public class Demo_Data_Controller extends Controller {
         try {
 
             // Ochranná zarážka proti znovu vytvoření
-            if(Cloud_Homer_Server.find.where().eq("server_name", "Alfa").findUnique() != null) return GlobalResult.badRequest("Its Already done!");
+            if(Cloud_Homer_Server.find.where().eq("server_name", "Alfa").findUnique() != null) return GlobalResult.result_BadRequest("Its Already done!");
 
             // Nasstavím Homer servery
             Cloud_Homer_Server cloud_server_1 = new Cloud_Homer_Server();
@@ -392,7 +396,7 @@ public class Demo_Data_Controller extends Controller {
 
 
             // Ochranná zarážka proti znovu vytvoření
-            if(GeneralTariff.find.where().eq("tariff_name", "Alfa account").findUnique() != null) return GlobalResult.badRequest("Its Already done!");
+            if(GeneralTariff.find.where().eq("tariff_name", "Alfa account").findUnique() != null) return GlobalResult.result_BadRequest("Its Already done!");
 
 
             // Alfa
@@ -827,7 +831,7 @@ public class Demo_Data_Controller extends Controller {
         try {
 
             // Ochranná zarážka proti znovu vytvoření
-            if(TypeOfBlock.find.where().eq("name", "Social Sites Blocks").findUnique() != null) return GlobalResult.badRequest("Its Already done!");
+            if(TypeOfBlock.find.where().eq("name", "Social Sites Blocks").findUnique() != null) return GlobalResult.result_BadRequest("Its Already done!");
 
             TypeOfBlock typeOfBlock_1 = new TypeOfBlock();
             typeOfBlock_1.name =  "Social Sites Blocks";
@@ -931,23 +935,12 @@ public class Demo_Data_Controller extends Controller {
 
             //**************************************************************************************************************
 
-
-            // Version scheme
-
-            BlockoBlockVersion scheme = new BlockoBlockVersion();
-            scheme.version_name = "version_scheme";
-            scheme.version_description = "This is a BlockoBlockVersion scheme. When BlockoBlock is made, its first version will look like this.";
-            scheme.approval_state = Approval_state.approved;
-            scheme.date_of_create = new Date();
-            scheme.design_json = "{ This is a design JSON scheme. }";
-            scheme.logic_json = "{ This is a logic JSON scheme. }";
-            scheme.save();
-
             // 1_1
             BlockoBlockVersion version_1_1_1 = new BlockoBlockVersion();
             version_1_1_1.blocko_block = blockoBlock_1_1;
             version_1_1_1.date_of_create = new Date();
             version_1_1_1.logic_json = "{}";
+            version_1_1_1.design_json = "{}";
             version_1_1_1.version_description = "První update";
             version_1_1_1.version_name = "1.0.1";
             version_1_1_1.approval_state = Approval_state.approved;
@@ -957,6 +950,7 @@ public class Demo_Data_Controller extends Controller {
             version_1_1_2.blocko_block = blockoBlock_1_1;
             version_1_1_2.date_of_create = new Date();
             version_1_1_2.logic_json = "{}";
+            version_1_1_2.design_json = "{}";
             version_1_1_2.version_description = "První update";
             version_1_1_2.version_name = "1.0.1";
             version_1_1_2.approval_state = Approval_state.approved;
@@ -967,6 +961,7 @@ public class Demo_Data_Controller extends Controller {
             version_1_2_1.blocko_block = blockoBlock_1_2;
             version_1_2_1.date_of_create = new Date();
             version_1_2_1.logic_json = "{}";
+            version_1_2_1.design_json = "{}";
             version_1_2_1.version_description = "První update";
             version_1_2_1.version_name = "1.0.1";
             version_1_2_1.approval_state = Approval_state.approved;
@@ -976,6 +971,7 @@ public class Demo_Data_Controller extends Controller {
             version_1_2_2.blocko_block = blockoBlock_1_2;
             version_1_2_2.date_of_create = new Date();
             version_1_2_2.logic_json = "{}";
+            version_1_2_2.design_json = "{}";
             version_1_2_2.version_description = "První update";
             version_1_2_2.version_name = "1.0.1";
             version_1_2_2.approval_state = Approval_state.approved;
@@ -986,6 +982,7 @@ public class Demo_Data_Controller extends Controller {
             version_1_3_1.blocko_block = blockoBlock_1_3;
             version_1_3_1.date_of_create = new Date();
             version_1_3_1.logic_json = "{}";
+            version_1_3_1.design_json = "{}";
             version_1_3_1.version_description = "První update";
             version_1_3_1.version_name = "1.0.1";
             version_1_3_1.approval_state = Approval_state.approved;
@@ -995,6 +992,7 @@ public class Demo_Data_Controller extends Controller {
             version_1_3_2.blocko_block = blockoBlock_1_3;
             version_1_3_2.date_of_create = new Date();
             version_1_3_2.logic_json = "{}";
+            version_1_3_2.design_json = "{}";
             version_1_3_2.version_description = "První update";
             version_1_3_2.version_name = "1.0.1";
             version_1_3_2.approval_state = Approval_state.approved;
@@ -1005,6 +1003,7 @@ public class Demo_Data_Controller extends Controller {
             version_2_1_1.blocko_block = blockoBlock_2_1;
             version_2_1_1.date_of_create = new Date();
             version_2_1_1.logic_json = "{}";
+            version_2_1_1.design_json = "{}";
             version_2_1_1.version_description = "První update";
             version_2_1_1.version_name = "1.0.1";
             version_2_1_1.approval_state = Approval_state.approved;
@@ -1014,6 +1013,7 @@ public class Demo_Data_Controller extends Controller {
             version_2_1_2.blocko_block = blockoBlock_2_1;
             version_2_1_2.date_of_create = new Date();
             version_2_1_2.logic_json = "{}";
+            version_2_1_2.design_json = "{}";
             version_2_1_2.version_description = "Prvnsafd -a.kshm fn.,mbs gjknbm akdfsm,.cxy ndfam,nkvxclůavcx namxyklnvdfsam ,cvklůdfsmv.lyům ,klnvyůmc,.í update";
             version_2_1_2.version_name = "1.0.2";
             version_2_1_2.approval_state = Approval_state.approved;
@@ -1024,6 +1024,7 @@ public class Demo_Data_Controller extends Controller {
             version_2_2_1.blocko_block = blockoBlock_2_2;
             version_2_2_1.date_of_create = new Date();
             version_2_2_1.logic_json = "{}";
+            version_2_2_1.design_json = "{}";
             version_2_2_1.version_description = "První update";
             version_2_2_1.version_name = "1.0.1";
             version_2_2_1.approval_state = Approval_state.approved;
@@ -1033,6 +1034,7 @@ public class Demo_Data_Controller extends Controller {
             version_2_2_2.blocko_block = blockoBlock_2_2;
             version_2_2_2.date_of_create = new Date();
             version_2_2_2.logic_json = "{}";
+            version_2_2_2.design_json = "{}";
             version_2_2_2.version_description = "Druhý update";
             version_2_2_2.version_name = "1.0.2";
             version_2_2_2.approval_state = Approval_state.approved;
@@ -1042,6 +1044,7 @@ public class Demo_Data_Controller extends Controller {
             version_2_2_3.blocko_block = blockoBlock_2_2;
             version_2_2_3.date_of_create = new Date();
             version_2_2_3.logic_json = "{}";
+            version_2_2_3.design_json = "{}";
             version_2_2_3.version_description = "Třetí update";
             version_2_2_3.version_name = "1.0.3";
             version_2_2_3.approval_state = Approval_state.approved;
@@ -1051,6 +1054,7 @@ public class Demo_Data_Controller extends Controller {
             version_2_2_4.blocko_block = blockoBlock_2_2;
             version_2_2_4.date_of_create = new Date();
             version_2_2_4.logic_json = "{}";
+            version_2_2_4.design_json = "{}";
             version_2_2_4.version_description = "Čtvrtý  update";
             version_2_2_4.version_name = "1.0.4";
             version_2_2_4.approval_state = Approval_state.approved;
@@ -1061,6 +1065,7 @@ public class Demo_Data_Controller extends Controller {
             version_2_3_1.blocko_block = blockoBlock_2_3;
             version_2_3_1.date_of_create = new Date();
             version_2_3_1.logic_json = "{}";
+            version_2_3_1.design_json = "{}";
             version_2_3_1.version_description = "První update";
             version_2_3_1.version_name = "Na poprvé";
             version_2_3_1.approval_state = Approval_state.approved;
@@ -1070,6 +1075,7 @@ public class Demo_Data_Controller extends Controller {
             version_2_3_2.blocko_block = blockoBlock_2_3;
             version_2_3_2.date_of_create = new Date();
             version_2_3_2.logic_json = "{}";
+            version_2_3_2.design_json = "{}";
             version_2_3_2.version_description = "První update";
             version_2_3_2.version_name = "Na podruhé";
             version_2_3_2.approval_state = Approval_state.approved;
@@ -1081,6 +1087,7 @@ public class Demo_Data_Controller extends Controller {
             version_3_1_1.blocko_block = blockoBlock_3_1;
             version_3_1_1.date_of_create = new Date();
             version_3_1_1.logic_json = "{}";
+            version_3_1_1.design_json = "{}";
             version_3_1_1.version_description = "První update";
             version_3_1_1.version_name = "Verze 1";
             version_3_1_1.approval_state = Approval_state.approved;
@@ -1090,6 +1097,7 @@ public class Demo_Data_Controller extends Controller {
             version_3_1_2.blocko_block = blockoBlock_3_1;
             version_3_1_2.date_of_create = new Date();
             version_3_1_2.logic_json = "{}";
+            version_3_1_2.design_json = "{}";
             version_3_1_2.version_description = "Druhý velkopeý asdklbfj aslaksbdfjlkbalskbdf lkjbafs lkjbafslbkjafslkjba sdflkbjasf update";
             version_3_1_2.version_name = "Verze 2";
             version_3_1_2.approval_state = Approval_state.approved;
@@ -1100,6 +1108,7 @@ public class Demo_Data_Controller extends Controller {
             version_3_2_1.blocko_block = blockoBlock_3_2;
             version_3_2_1.date_of_create = new Date();
             version_3_2_1.logic_json = "{}";
+            version_3_2_1.design_json = "{}";
             version_3_2_1.version_description = "První update";
             version_3_2_1.version_name = "1.0.1";
             version_3_2_1.approval_state = Approval_state.approved;
@@ -1109,6 +1118,7 @@ public class Demo_Data_Controller extends Controller {
             version_3_2_2.blocko_block = blockoBlock_3_2;
             version_3_2_2.date_of_create = new Date();
             version_3_2_2.logic_json = "{}";
+            version_3_2_2.design_json = "{}";
             version_3_2_2.version_description = "První update";
             version_3_2_2.version_name = "1.0.2";
             version_3_2_2.approval_state = Approval_state.approved;
@@ -1118,6 +1128,7 @@ public class Demo_Data_Controller extends Controller {
             version_3_2_3.blocko_block = blockoBlock_3_2;
             version_3_2_3.date_of_create = new Date();
             version_3_2_3.logic_json = "{}";
+            version_3_2_3.design_json = "{}";
             version_3_2_3.version_description = "První update";
             version_3_2_3.version_name = "1.1.3";
             version_3_2_3.approval_state = Approval_state.approved;
@@ -1128,6 +1139,7 @@ public class Demo_Data_Controller extends Controller {
             version_3_3_1.blocko_block = blockoBlock_3_3;
             version_3_3_1.date_of_create = new Date();
             version_3_3_1.logic_json = "{}";
+            version_3_3_1.design_json = "{}";
             version_3_3_1.version_description = "První update";
             version_3_3_1.version_name = "1.0.1";
             version_3_3_1.approval_state = Approval_state.approved;
@@ -1137,6 +1149,7 @@ public class Demo_Data_Controller extends Controller {
             version_3_3_2.blocko_block = blockoBlock_3_3;
             version_3_3_2.date_of_create = new Date();
             version_3_3_2.logic_json = "{}";
+            version_3_3_2.design_json = "{}";
             version_3_3_2.version_description = "Druhý update";
             version_3_3_2.version_name = "1.0.2";
             version_3_3_2.approval_state = Approval_state.approved;
@@ -1147,6 +1160,7 @@ public class Demo_Data_Controller extends Controller {
             version_3_4_1.blocko_block = blockoBlock_3_4;
             version_3_4_1.date_of_create = new Date();
             version_3_4_1.logic_json = "{}";
+            version_3_4_1.design_json = "{}";
             version_3_4_1.version_description = "První update";
             version_3_4_1.version_name = "1.0.1";
             version_3_4_1.approval_state = Approval_state.approved;
@@ -1156,6 +1170,7 @@ public class Demo_Data_Controller extends Controller {
             version_3_4_2.blocko_block = blockoBlock_3_4;
             version_3_4_2.date_of_create = new Date();
             version_3_4_2.logic_json = "{}";
+            version_3_4_2.design_json = "{}";
             version_3_4_2.version_description = "Druhý update";
             version_3_4_2.version_name = "1.0.2";
             version_3_4_2.approval_state = Approval_state.approved;
@@ -1168,11 +1183,202 @@ public class Demo_Data_Controller extends Controller {
         }
     }
 
+    public Result grid_demo_data(){
+        try {
+
+            // Ochranná zarážka proti znovu vytvoření
+            if(TypeOfWidget.find.where().eq("name", "iOS Widgets").findUnique() != null) return GlobalResult.result_BadRequest("Its Already done!");
+
+            TypeOfWidget typeOfWidget_1 = new TypeOfWidget();
+            typeOfWidget_1.name =  "iOS Widgets";
+            typeOfWidget_1.general_description = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.";
+            typeOfWidget_1.save();
+
+            TypeOfWidget typeOfWidget_2 = new TypeOfWidget();
+            typeOfWidget_2.name =  "Android Widgets";
+            typeOfWidget_2.general_description = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit.";
+            typeOfWidget_2.save();
+
+
+            //**************************************************************************************************************
+
+
+            //1
+            GridWidget gridWidget_1_1 = new GridWidget();
+            gridWidget_1_1.name = "Apple";
+            gridWidget_1_1.author = Person.find.where().eq("mail", "admin@byzance.cz").findUnique();
+            gridWidget_1_1.general_description = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.";
+            gridWidget_1_1.type_of_widget = typeOfWidget_1;
+            gridWidget_1_1.save();
+
+            GridWidget gridWidget_1_2 = new GridWidget();
+            gridWidget_1_2.name = "Banana";
+            gridWidget_1_2.author = Person.find.where().eq("mail", "admin@byzance.cz").findUnique();
+            gridWidget_1_2.general_description = "Lorem ipsum di lasjdhflkj dshaflj  sadfsdfas dfsadf sad gsfgsdf sadfsd fas";
+            gridWidget_1_2.type_of_widget = typeOfWidget_1;
+            gridWidget_1_2.save();
+
+            GridWidget gridWidget_1_3 = new GridWidget();
+            gridWidget_1_3.name = "Orange";
+            gridWidget_1_3.author = Person.find.where().eq("mail", "admin@byzance.cz").findUnique();
+            gridWidget_1_3.general_description = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit.";
+            gridWidget_1_3.type_of_widget = typeOfWidget_1;
+            gridWidget_1_3.save();
+
+            // 2
+            GridWidget gridWidget_2_1 = new GridWidget();
+            gridWidget_2_1.name = "Nice Widget";
+            gridWidget_2_1.author = Person.find.where().eq("mail", "admin@byzance.cz").findUnique();
+            gridWidget_2_1.general_description = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit.";
+            gridWidget_2_1.type_of_widget = typeOfWidget_2;
+            gridWidget_2_1.save();
+
+            GridWidget gridWidget_2_2 = new GridWidget();
+            gridWidget_2_2.name = "Ugly Widget";
+            gridWidget_2_2.author = Person.find.where().eq("mail", "admin@byzance.cz").findUnique();
+            gridWidget_2_2.general_description = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit.";
+            gridWidget_2_2.type_of_widget = typeOfWidget_2;
+            gridWidget_2_2.save();
+
+
+            //**************************************************************************************************************
+
+            // 1_1
+            GridWidgetVersion version_1_1_1 = new GridWidgetVersion();
+            version_1_1_1.grid_widget = gridWidget_1_1;
+            version_1_1_1.date_of_create = new Date();
+            version_1_1_1.logic_json = "{}";
+            version_1_1_1.design_json = "{}";
+            version_1_1_1.version_description = "První update";
+            version_1_1_1.version_name = "1.0.1";
+            version_1_1_1.approval_state = Approval_state.approved;
+            version_1_1_1.save();
+
+            GridWidgetVersion version_1_1_2 = new GridWidgetVersion();
+            version_1_1_2.grid_widget = gridWidget_1_1;
+            version_1_1_2.date_of_create = new Date();
+            version_1_1_2.logic_json = "{}";
+            version_1_1_2.design_json = "{}";
+            version_1_1_2.version_description = "První update";
+            version_1_1_2.version_name = "1.0.1";
+            version_1_1_2.approval_state = Approval_state.approved;
+            version_1_1_2.save();
+
+            // 1_2
+            GridWidgetVersion version_1_2_1 = new GridWidgetVersion();
+            version_1_2_1.grid_widget = gridWidget_1_2;
+            version_1_2_1.date_of_create = new Date();
+            version_1_2_1.logic_json = "{}";
+            version_1_2_1.design_json = "{}";
+            version_1_2_1.version_description = "První update";
+            version_1_2_1.version_name = "1.0.1";
+            version_1_2_1.approval_state = Approval_state.approved;
+            version_1_2_1.save();
+
+            GridWidgetVersion version_1_2_2 = new GridWidgetVersion();
+            version_1_2_2.grid_widget = gridWidget_1_2;
+            version_1_2_2.date_of_create = new Date();
+            version_1_2_2.logic_json = "{}";
+            version_1_2_2.design_json = "{}";
+            version_1_2_2.version_description = "Druhý update";
+            version_1_2_2.version_name = "1.0.2";
+            version_1_2_2.approval_state = Approval_state.approved;
+            version_1_2_2.save();
+
+            // 1_3
+            GridWidgetVersion version_1_3_1 = new GridWidgetVersion();
+            version_1_3_1.grid_widget = gridWidget_1_3;
+            version_1_3_1.date_of_create = new Date();
+            version_1_3_1.logic_json = "{}";
+            version_1_3_1.design_json = "{}";
+            version_1_3_1.version_description = "První update";
+            version_1_3_1.version_name = "1.0.1";
+            version_1_3_1.approval_state = Approval_state.approved;
+            version_1_3_1.save();
+
+            GridWidgetVersion version_1_3_2 = new GridWidgetVersion();
+            version_1_3_2.grid_widget = gridWidget_1_3;
+            version_1_3_2.date_of_create = new Date();
+            version_1_3_2.logic_json = "{}";
+            version_1_3_2.design_json = "{}";
+            version_1_3_2.version_description = "Druhý update";
+            version_1_3_2.version_name = "1.0.2";
+            version_1_3_2.approval_state = Approval_state.approved;
+            version_1_3_2.save();
+
+            // 2_1
+            GridWidgetVersion version_2_1_1 = new GridWidgetVersion();
+            version_2_1_1.grid_widget = gridWidget_2_1;
+            version_2_1_1.date_of_create = new Date();
+            version_2_1_1.logic_json = "{}";
+            version_2_1_1.design_json = "{}";
+            version_2_1_1.version_description = "První update";
+            version_2_1_1.version_name = "1.0.1";
+            version_2_1_1.approval_state = Approval_state.approved;
+            version_2_1_1.save();
+
+            GridWidgetVersion version_2_1_2 = new GridWidgetVersion();
+            version_2_1_2.grid_widget = gridWidget_2_1;
+            version_2_1_2.date_of_create = new Date();
+            version_2_1_2.logic_json = "{}";
+            version_2_1_2.design_json = "{}";
+            version_2_1_2.version_description = "Prvnsafd -a.kshm fn.,mbs gjknbm akdfsm,.cxy ndfam,nkvxclůavcx namxyklnvdfsam ,cvklůdfsmv.lyům ,klnvyůmc,.í update";
+            version_2_1_2.version_name = "1.0.2";
+            version_2_1_2.approval_state = Approval_state.approved;
+            version_2_1_2.save();
+
+            // 2_2
+            GridWidgetVersion version_2_2_1 = new GridWidgetVersion();
+            version_2_2_1.grid_widget = gridWidget_2_2;
+            version_2_2_1.date_of_create = new Date();
+            version_2_2_1.logic_json = "{}";
+            version_2_2_1.design_json = "{}";
+            version_2_2_1.version_description = "První update";
+            version_2_2_1.version_name = "1.0.1";
+            version_2_2_1.approval_state = Approval_state.approved;
+            version_2_2_1.save();
+
+            GridWidgetVersion version_2_2_2 = new GridWidgetVersion();
+            version_2_2_2.grid_widget = gridWidget_2_2;
+            version_2_2_2.date_of_create = new Date();
+            version_2_2_2.logic_json = "{}";
+            version_2_2_2.design_json = "{}";
+            version_2_2_2.version_description = "Druhý update";
+            version_2_2_2.version_name = "1.0.2";
+            version_2_2_2.approval_state = Approval_state.approved;
+            version_2_2_2.save();
+
+            GridWidgetVersion version_2_2_3= new GridWidgetVersion();
+            version_2_2_3.grid_widget = gridWidget_2_2;
+            version_2_2_3.date_of_create = new Date();
+            version_2_2_3.logic_json = "{}";
+            version_2_2_3.design_json = "{}";
+            version_2_2_3.version_description = "Třetí update";
+            version_2_2_3.version_name = "1.0.3";
+            version_2_2_3.approval_state = Approval_state.approved;
+            version_2_2_3.save();
+
+            GridWidgetVersion version_2_2_4 = new GridWidgetVersion();
+            version_2_2_4.grid_widget = gridWidget_2_2;
+            version_2_2_4.date_of_create = new Date();
+            version_2_2_4.logic_json = "{}";
+            version_2_2_4.design_json = "{}";
+            version_2_2_4.version_description = "Čtvrtý  update";
+            version_2_2_4.version_name = "1.0.4";
+            version_2_2_4.approval_state = Approval_state.approved;
+            version_2_2_4.save();
+
+            return GlobalResult.result_ok();
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
     public Result c_program_configuration(){
         try {
 
             // Ochranná zarážka proti znovu vytvoření
-            if(C_Program.find.where().eq("name", "Default C_Program for Yoda").findUnique() != null) return GlobalResult.badRequest("Its Already done!");
+            if(C_Program.find.where().eq("name", "Default C_Program for Yoda").findUnique() != null) return GlobalResult.result_BadRequest("Its Already done!");
 
             TypeOfBoard yoda = TypeOfBoard.find.where().eq("name", "Yoda G2").findUnique();
 
@@ -1298,7 +1504,7 @@ public class Demo_Data_Controller extends Controller {
     public Result person_test_user(){
         try {
 
-            if(Person.find.where().eq("nick_name", "Pepíno").findUnique() != null ) return GlobalResult.badRequest("Its Already done!");
+            if(Person.find.where().eq("nick_name", "Pepíno").findUnique() != null ) return GlobalResult.result_BadRequest("Its Already done!");
 
             String uuid = UUID.randomUUID().toString().substring(0,4);
 

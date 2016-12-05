@@ -502,6 +502,11 @@ public class ProgramingPackageController extends Controller {
                 project.notification_project_invitation_accepted(invitation.owner);
             }
 
+            Notification notification = null;
+            if(invitation.notification_id != null)
+                notification = Notification.find.byId(invitation.notification_id);
+            if(notification != null) notification.confirm();
+
             // Smazání pozvánky
             invitation.delete();
 
