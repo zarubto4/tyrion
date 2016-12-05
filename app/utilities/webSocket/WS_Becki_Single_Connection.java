@@ -19,8 +19,11 @@ public class WS_Becki_Single_Connection extends  WebSCType {
     @Override
     public void onClose() {
         System.out.println("WS_Becki_Single_Connection onClose " + super.identifikator);
+
         this.close();
-        person_connection.person_connection_onClose(this);
+
+        person_connection.all_person_Connections.remove(this.identifikator);
+
         if(person_connection.all_person_Connections.isEmpty()){
             WebSocketController.becki_website.remove(person_connection.identifikator);
         }

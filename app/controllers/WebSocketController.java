@@ -315,7 +315,7 @@ public class WebSocketController extends Controller {
             WS_Token token = tokenCache.get(security_token);
 
             if(token == null ) {
-              logger.warn("Becki: Incoming token " + security_token + " is invalid! Probably to late for axcess");
+              logger.warn("Becki: Incoming token " + security_token + " is invalid! Probably too late for access");
               return WebSocket.reject(forbidden());
             }
 
@@ -497,13 +497,25 @@ public class WebSocketController extends Controller {
             }
 
         // Ping
-        public static JsonNode becki_ping(WebSCType webSCType) throws TimeoutException, InterruptedException, ExecutionException {
+        public static JsonNode becki_ping(WS_Becki_Single_Connection becki) throws TimeoutException, InterruptedException, ExecutionException {
 
             ObjectNode result = Json.newObject();
-            result.put("messageType", "ping");
-            result.put("messageChannel", "tyrion");
 
-            return webSCType.write_with_confirmation(result, 1000 * 3, 0, 3);
+            try {
+
+                result.put("messageType", "ping");
+                result.put("messageChannel", "becki");
+
+                return becki.write_with_confirmation(result, 1000 * 3, 0, 3);
+
+            }catch (ExecutionException e){
+
+                result.put("messageType", "ping");
+                result.put("messageChannel", "becki");
+                result.put("status", "unsuccessful");
+
+                return result;
+            }
         }
 
         // Reakce na odhlášení blocka

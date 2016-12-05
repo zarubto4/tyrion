@@ -554,7 +554,7 @@ GET             /admin/homer_server/disconnect/:id         @controllers.Dashboar
 GET             /admin/compilator_server/ping/:id          @controllers.DashboardController.ping_compilation_server(id)
 GET             /admin/compilator_server/disconnect/:id    @controllers.DashboardController.disconnect_compilation_server(id)
 
-GET             /admin/becki/ping/:id                      @controllers.DashboardController.ping_becki(id)
+GET             /admin/becki/ping/:id/:token               @controllers.DashboardController.ping_becki(id, token)
 GET             /admin/becki/disconnect/:id/:token         @controllers.DashboardController.disconnect_becki(id, token)
 
 
