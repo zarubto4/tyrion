@@ -2596,7 +2596,7 @@ public class ProgramingPackageController extends Controller {
 
     @ApiOperation(value = "edit basic information of the BlockoBlock",
             tags = {"Blocko-Block"},
-            notes = "update basic information (name, and desription) of the independent BlockoBlock",
+            notes = "update basic information (name, and description) of the independent BlockoBlock",
             produces = "application/json",
             protocols = "https",
             code = 200,
@@ -2895,7 +2895,7 @@ public class ProgramingPackageController extends Controller {
             code = 201,
             extensions = {
                     @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "BlockoBlockVersion_creat_permission", value = BlockoBlockVersion.create_permission_docs ),
+                            @ExtensionProperty(name = "BlockoBlockVersion_create_permission", value = BlockoBlockVersion.create_permission_docs ),
                     }),
                     @Extension( name = "permission_required", properties = {
                             @ExtensionProperty(name = "BlockoBlock.update_permission", value = "true"),
