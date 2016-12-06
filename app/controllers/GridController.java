@@ -1366,7 +1366,7 @@ public class GridController extends Controller {
             // Vytvoření objektu první verze
             GridWidgetVersion gridWidgetVersion = new GridWidgetVersion();
             gridWidgetVersion.version_name = "0.0.1";
-            gridWidgetVersion.version_description = "This is a first version of block.";
+            gridWidgetVersion.version_description = "This is a first version of widget.";
             gridWidgetVersion.approval_state = Approval_state.approved;
             gridWidgetVersion.design_json = scheme.design_json;
             gridWidgetVersion.logic_json = scheme.logic_json;
@@ -1384,7 +1384,7 @@ public class GridController extends Controller {
 
     @ApiOperation(value = "edit basic information of the GridWidget",
             tags = {"Grid-Widget"},
-            notes = "update basic information (name, and desription) of the independent GridWidget",
+            notes = "update basic information (name, and description) of the independent GridWidget",
             produces = "application/json",
             protocols = "https",
             code = 200,
@@ -1689,7 +1689,7 @@ public class GridController extends Controller {
             code = 201,
             extensions = {
                     @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "GridWidgetVersion_creat_permission", value = GridWidgetVersion.create_permission_docs ),
+                            @ExtensionProperty(name = "GridWidgetVersion_create_permission", value = GridWidgetVersion.create_permission_docs ),
                     }),
                     @Extension( name = "permission_required", properties = {
                             @ExtensionProperty(name = "GridWidget.update_permission", value = "true"),
@@ -1730,7 +1730,7 @@ public class GridController extends Controller {
 
             // Kontrola objektu
             GridWidget gridWidget = GridWidget.find.byId(grid_widget_id);
-            if(gridWidget == null) return GlobalResult.notFoundObject("gridWidget not found");
+            if(gridWidget == null) return GlobalResult.notFoundObject("GridWidget not found");
 
             // Vytvoření objektu
             GridWidgetVersion version = new GridWidgetVersion();

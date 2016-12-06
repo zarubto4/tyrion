@@ -1,6 +1,5 @@
 
 @import models.person.Person
-@import utilities.enums.Type_of_command
 @import utilities.webSocket.{WS_BlockoServer, WS_CompilerServer, WS_Becki_Website}
 @import models.project.b_program.servers.Cloud_Homer_Server
 @import models.compiler.Cloud_Compilation_Server
@@ -35,12 +34,13 @@
                 </div>
 
                 <div class="box-body table-responsive no-padding">
+                    <div id="becki_table_wrapper">
                     <table id="becki_table" class="table table-bordered">
 
                         <tr>
                             <th>Person email</th>
                             <th colspan="2" >Connection instances</th>
-                            <th class="col-xs-1" >Ping</th>
+                            <th class="col-xs-1" >Test notification</th>
                         </tr>
 
                         @for( x <- becki_Terminal){
@@ -51,7 +51,7 @@
                                     <th></th>
 
                                     <th rowspan="@(x.all_person_Connections.size()+2)">
-                                        <button onclick="ping_becki('@x.identifikator')" class="btn btn-block btn-info btn-xs">Ping</button>
+
                                         <form id="testNotification">
                                             <select style="margin-top: 10px;" name="level" id="level">
                                                 <option value="info">info</option>
@@ -76,7 +76,7 @@
                                                 <option value="2">YES & NO buttons</option>
                                                 <option value="3">YES, NO, CLOSE</option>
                                             </select>
-                                            <input style="margin-top: 10px;" type="button" onclick="test_notification('@(Person.find.byId( x.identifikator ).mail )')" class="btn btn-block btn-primary btn-xs" value="Send test notification">
+                                            <input style="margin-top: 10px;" type="button" onclick="test_notification('@(Person.find.byId( x.identifikator ).mail )')" class="btn btn-block btn-primary btn-xs" value="Send">
                                         </form>
                                     </th>
                                 </tr>
@@ -88,6 +88,7 @@
                                         <td> @x.all_person_Connections.get(k).identifikator      </td>
 
                                         <td>
+                                            <button onclick="ping_becki('@x.identifikator', '@k' )" class="btn btn-block btn-info btn-xs">Ping</button>
                                             <button onclick="disconnect_becki( '@x.identifikator', '@k' )" class="btn btn-block btn-danger btn-xs">Disconnect</button>
                                         </td>
                                     <tr>
@@ -98,7 +99,7 @@
                         }
                     </table>
 
-
+                    </div>
 
 
                 </div><!-- /.box-body -->
@@ -238,9 +239,9 @@
 <script>
         $.ajaxSetup({ cache: false });
 
-        function ping_becki(id){
+        function ping_becki(id, token){
             $.ajax({
-                url: '@routes.DashboardController.ping_becki("")' + id,
+                url: '/admin/becki/ping/' + id + '/' + token,
                 type: 'GET',
 
                 headers: {
@@ -293,10 +294,10 @@
 
         function disconnect_becki(id , token){
             $.ajax({
-                url: '@routes.DashboardController.disconnect_becki("","")' + id + "/" + token,
+                url: '/admin/becki/disconnect/' + id + "/" + token,
                 type: 'GET',
                 success:function(e){
-                    $('#becki').load(document.URL +  ' #becki');
+                    $('#becki_table_wrapper').load(document.URL +  ' #becki_table');
                 },
                 error:function(e) {
                     alert("Unsuccessful.");

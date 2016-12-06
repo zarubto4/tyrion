@@ -269,18 +269,30 @@ public class DashboardController extends Controller {
 
 
     @Security.Authenticated(Secured_Admin.class)
-    public Result ping_becki(String person_id) throws TimeoutException, InterruptedException {
+    public Result ping_becki(String person_id, String token) throws TimeoutException, InterruptedException {
         try {
 
             if ( WebSocketController.becki_website.containsKey(person_id)) {
 
-                JsonNode result = WebSocketController.becki_ping( WebSocketController.becki_website.get(person_id) );
-                return GlobalResult.result_ok(result);
+                WS_Becki_Website ws = (WS_Becki_Website) WebSocketController.becki_website.get(person_id);
+
+                if (ws.all_person_Connections.containsKey(token)){
+
+                    JsonNode result = WebSocketController.becki_ping((WS_Becki_Single_Connection) ws.all_person_Connections.get(token));
+
+                    return GlobalResult.result_ok(result);
+                }else {
+
+                    ObjectNode result = Json.newObject();
+                    result.put("status", "Becki terminal is not connected now");
+
+                    return GlobalResult.result_BadRequest(result);
+                }
 
             }else {
 
                 ObjectNode result = Json.newObject();
-                result.put("status", "Homer server ID is not connected now");
+                result.put("status", "Becki terminal is not connected now");
 
                 return GlobalResult.result_BadRequest(result);
             }
@@ -288,7 +300,6 @@ public class DashboardController extends Controller {
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
         }
-
     }
 
     @Security.Authenticated(Secured_Admin.class)

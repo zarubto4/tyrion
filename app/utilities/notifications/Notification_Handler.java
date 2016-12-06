@@ -3,7 +3,9 @@ package utilities.notifications;
 
 import controllers.WebSocketController;
 import models.notification.Notification;
+import models.person.Invitation;
 import models.person.Person;
+import utilities.enums.Notification_action;
 import utilities.enums.Notification_importance;
 import utilities.webSocket.WS_Becki_Website;
 
@@ -83,6 +85,17 @@ public class Notification_Handler {
 
                 notification.person = person;
                 notification.save_object();
+
+                try {
+                    if((!notification.buttons().isEmpty())&&(notification.buttons().get(0).action == Notification_action.accept_project_invitation)){
+
+                        Invitation invitation = Invitation.find.byId(notification.buttons().get(0).payload);
+                        invitation.notification_id = notification.id;
+                        invitation.update();
+                    }
+                }catch (Exception e){
+                    logger.error("Notification Handler Error: Cannot find project invitation about which is this notification.");
+                }
             }
 
             // Pokud je uživatel přihlášený pošlu notifikaci přes websocket

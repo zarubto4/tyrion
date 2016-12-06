@@ -395,7 +395,7 @@ public class ProgramingPackageController extends Controller {
             // Vytvoření pozvánky pro nezaregistrované uživatele
             for (String mail :  help.persons_mail){
 
-                Invitation invitation = Invitation.find.where().eq("mail", mail).findUnique();
+                Invitation invitation = Invitation.find.where().eq("mail", mail).eq("project.id", project.id).findUnique();
                 if(invitation == null){
                     invitation = new Invitation();
                     invitation.mail = mail;
@@ -403,7 +403,6 @@ public class ProgramingPackageController extends Controller {
                     invitation.owner = SecurityController.getPerson();
                     invitation.project = project;
                     invitation.save();
-                    project.invitations.add(invitation);
                 }
 
                 String link = Server.becki_invitationToCollaborate + "/" + mail;
@@ -435,7 +434,7 @@ public class ProgramingPackageController extends Controller {
 
             for (Person person : listIn) {
 
-                Invitation invitation = Invitation.find.where().eq("mail", person.mail).findUnique();
+                Invitation invitation = Invitation.find.where().eq("mail", person.mail).eq("project.id", project.id).findUnique();
                 if(invitation == null){
                     invitation = new Invitation();
                     invitation.mail = person.mail;
@@ -443,7 +442,6 @@ public class ProgramingPackageController extends Controller {
                     invitation.owner = SecurityController.getPerson();
                     invitation.project = project;
                     invitation.save();
-                    project.invitations.add(invitation);
                 }
 
                 project.notification_project_invitation(person, invitation);
@@ -614,11 +612,8 @@ public class ProgramingPackageController extends Controller {
     public Result deleteProjectInvitation(@ApiParam(value = "invitation_id String path", required = true)  String invitation_id){
         try {
 
-            Invitation invitation = Invitation.find.where().eq("owner",SecurityController.getPerson()).eq("id", invitation_id).findUnique();
+            Invitation invitation = Invitation.find.where().eq("owner.id",SecurityController.getPerson().id).eq("id", invitation_id).findUnique();
             if(invitation == null) return GlobalResult.notFoundObject("Invitation does not exist");
-
-            invitation.project.invitations.remove(invitation);
-            invitation.owner.invitations.remove(invitation);
 
             Notification notification = null;
             if(invitation.notification_id != null)
@@ -2288,7 +2283,7 @@ public class ProgramingPackageController extends Controller {
 
     @ApiOperation(value = "edit basic information of the BlockoBlock",
             tags = {"Blocko-Block"},
-            notes = "update basic information (name, and desription) of the independent BlockoBlock",
+            notes = "update basic information (name, and description) of the independent BlockoBlock",
             produces = "application/json",
             protocols = "https",
             code = 200,
@@ -2587,7 +2582,7 @@ public class ProgramingPackageController extends Controller {
             code = 201,
             extensions = {
                     @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "BlockoBlockVersion_creat_permission", value = BlockoBlockVersion.create_permission_docs ),
+                            @ExtensionProperty(name = "BlockoBlockVersion_create_permission", value = BlockoBlockVersion.create_permission_docs ),
                     }),
                     @Extension( name = "permission_required", properties = {
                             @ExtensionProperty(name = "BlockoBlock.update_permission", value = "true"),

@@ -253,7 +253,7 @@ public class Notification extends Model {
     @ApiModelProperty(required = true)
     public List<Swagger_Notification_Button> buttons(){
         try {
-            if(buttons == null || buttons.size() < 1) buttons = new ObjectMapper().readValue(buttons_string, new TypeReference<List<Swagger_Notification_Button>>() {});
+            if(buttons == null || buttons.size() < 1 || (buttons_string != null && !buttons_string.equals("[]"))) buttons = new ObjectMapper().readValue(buttons_string, new TypeReference<List<Swagger_Notification_Button>>() {});
             return buttons;
 
         }catch (Exception e){
