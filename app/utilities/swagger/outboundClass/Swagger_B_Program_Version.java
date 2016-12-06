@@ -26,4 +26,10 @@ public class Swagger_B_Program_Version {
     @ApiModelProperty(required = true, readOnly = true, value = "Json/Javascript Code")
     public String program;
 
+    @ApiModelProperty(required = true, readOnly = true)
+    public boolean remove_permission;
+
+    @ApiModelProperty(required = true, readOnly = true)
+    public boolean edit_permission;
+
 }

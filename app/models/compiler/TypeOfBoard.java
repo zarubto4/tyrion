@@ -55,6 +55,7 @@ public class TypeOfBoard extends Model {
         return Server.azureLink + azure_picture_link;
     }
 
+
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override public void delete() {

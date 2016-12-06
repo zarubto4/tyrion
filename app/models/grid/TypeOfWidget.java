@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
 import models.project.global.Project;
+import utilities.swagger.outboundClass.Swagger_TypeOfWidget_Short_Detail;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ public class TypeOfWidget extends Model{
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true) public String id;
                                                             @ApiModelProperty(required = true) public String name;
-                    @Column(columnDefinition = "TEXT")      @ApiModelProperty(required = true) public String general_description;
+                    @Column(columnDefinition = "TEXT")      @ApiModelProperty(required = true) public String description;
 
 
     @JsonIgnore @ManyToOne  public Project project;
@@ -33,6 +34,15 @@ public class TypeOfWidget extends Model{
 
 /* JSON PROPERTY -------------------------------------------------------------------------------------------------------*/
 
+    /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
+
+    @Transient @JsonIgnore public Swagger_TypeOfWidget_Short_Detail get_typeOfWidget_short_detail(){
+        Swagger_TypeOfWidget_Short_Detail help = new Swagger_TypeOfWidget_Short_Detail();
+        help.id = id;
+        help.name = name;
+        help.description = description;
+        return help;
+    }
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     // Floating shared documentation for Swagger

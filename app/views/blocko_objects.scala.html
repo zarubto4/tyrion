@@ -180,16 +180,16 @@
                         @for(blockoBlockVersion <- BlockoBlockVersion.find.where().eq("approval_state",Approval_state.pending).findList()) {
                             <tr>
                                 <td>@blockoBlockVersion.blocko_block.name</td>
-                                <td>@blockoBlockVersion.blocko_block.general_description</td>
+                                <td>@blockoBlockVersion.blocko_block.description</td>
                                 <td>@blockoBlockVersion.blocko_block.type_of_block_name()</td>
-                                <td>@blockoBlockVersion.blocko_block.type_of_block.general_description</td>
+                                <td>@blockoBlockVersion.blocko_block.type_of_block.description</td>
                                 <td>@blockoBlockVersion.version_name</td>
                                 <td>@blockoBlockVersion.version_description</td>
                                 <td><button class="btn btn-block btn-primary" type="button" onclick="showVersionDetail('@blockoBlockVersion.design_json')">Show Design</button></td>
                                 <td><button class="btn btn-block btn-primary" type="button" onclick="showVersionDetail('@blockoBlockVersion.logic_json')">Show Logic</button></td>
-                                <td><button class="btn btn-block btn-info" type="button" onclick="showEditForm('@blockoBlockVersion.blocko_block.name','@blockoBlockVersion.blocko_block.general_description','@blockoBlockVersion.id', '@blockoBlockVersion.version_name', '@blockoBlockVersion.version_description', '@blockoBlockVersion.design_json', '@blockoBlockVersion.logic_json')">Edit</button></td>
+                                <td><button class="btn btn-block btn-info" type="button" onclick="showEditForm('@blockoBlockVersion.blocko_block.name','@blockoBlockVersion.blocko_block.description','@blockoBlockVersion.id', '@blockoBlockVersion.version_name', '@blockoBlockVersion.version_description', '@blockoBlockVersion.design_json', '@blockoBlockVersion.logic_json')">Edit</button></td>
                                 <td>
-                                    <button style="width: 48%; margin-right: 2%; display: inline-block; float: left;" class="btn btn-block btn-success" type="button" onclick="showApproveVersionForm('@blockoBlockVersion.blocko_block.name','@blockoBlockVersion.blocko_block.general_description','@blockoBlockVersion.id', '@blockoBlockVersion.version_name', '@blockoBlockVersion.version_description', '@blockoBlockVersion.design_json', '@blockoBlockVersion.logic_json')">Approve</button>
+                                    <button style="width: 48%; margin-right: 2%; display: inline-block; float: left;" class="btn btn-block btn-success" type="button" onclick="showApproveVersionForm('@blockoBlockVersion.blocko_block.name','@blockoBlockVersion.blocko_block.description','@blockoBlockVersion.id', '@blockoBlockVersion.version_name', '@blockoBlockVersion.version_description', '@blockoBlockVersion.design_json', '@blockoBlockVersion.logic_json')">Approve</button>
                                     <button style="width: 48%; margin-left: 2%; margin-top: 0; display: inline-block; float: left;" class="btn btn-block btn-danger" type="button" onclick="showDisapproveVersionForm('@blockoBlockVersion.id', '@blockoBlockVersion.version_name')">Disapprove</button>
                                 </td>
                             </tr>

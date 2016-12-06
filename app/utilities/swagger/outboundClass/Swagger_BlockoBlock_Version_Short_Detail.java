@@ -6,9 +6,9 @@ import io.swagger.annotations.ApiModelProperty;
 
 import java.util.Date;
 
-@ApiModel(description = "Json Model for Version of BlockoBlock",
-        value = "BlockoBlock_ShortVersion ")
-public class Swagger_BlockoBlock_ShortVersion {
+@ApiModel(description = "Json Model details of Version of BlockoBlock",
+        value = "BlockoBlock_Version_Short_Detail")
+public class Swagger_BlockoBlock_Version_Short_Detail {
 
     @ApiModelProperty(required = true, readOnly = true)    public String id;
     @ApiModelProperty(required = true, readOnly = true)    public String name;

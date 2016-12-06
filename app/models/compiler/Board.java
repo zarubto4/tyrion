@@ -18,7 +18,8 @@ import play.libs.Json;
 import utilities.enums.Notification_importance;
 import utilities.enums.Notification_level;
 import utilities.hardware_updater.States.C_ProgramUpdater_State;
-import utilities.swagger.outboundClass.Swagger_Board_status;
+import utilities.swagger.outboundClass.Swagger_Board_Short_Detail;
+import utilities.swagger.outboundClass.Swagger_Board_Status;
 import utilities.webSocket.WS_BlockoServer;
 import utilities.webSocket.messageObjects.WS_DeviceConnected;
 import utilities.webSocket.messageObjects.WS_YodaConnected;
@@ -67,7 +68,8 @@ public class Board extends Model {
 
     @JsonIgnore @ManyToOne( cascade = CascadeType.ALL, fetch = FetchType.LAZY) public Homer_Instance virtual_instance_under_project; // Propojení pokud HW není připojen do intnace - ale potřebuji na něj referenci - je ve vrituální instanci
 
-/* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/
+
+/* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty  @Transient @ApiModelProperty(required = true) public String type_of_board_id()   { return type_of_board.id; }
     @JsonProperty  @Transient @ApiModelProperty(required = true) public String type_of_board_name() { return type_of_board.name; }
@@ -77,7 +79,7 @@ public class Board extends Model {
     @JsonProperty  @Transient @ApiModelProperty(required = true) public String project_id()         { return       project == null ? null : project.id; }
     @JsonProperty  @Transient @ApiModelProperty(required = true) public String project_name()       { return       project == null ? null : project.name; }
 
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public Swagger_Board_status status()       {
+    @JsonProperty  @Transient @ApiModelProperty(required = true) public Swagger_Board_Status status()       {
 
         // Složený SQL dotaz pro nalezení funkční běžící instance (B_Pair)
         Homer_Instance instance =  Homer_Instance.find.where().disjunction()
@@ -86,7 +88,7 @@ public class Board extends Model {
                 .findUnique();
 
 
-        Swagger_Board_status board_status = new Swagger_Board_status();
+        Swagger_Board_Status board_status = new Swagger_Board_Status();
 
 
         if(instance == null){
@@ -132,6 +134,21 @@ public class Board extends Model {
 
     @JsonProperty  @Transient @ApiModelProperty(required = true) public boolean up_to_date_firmware()        { return  (c_program_update_plans == null);    }
     @JsonProperty  @Transient @ApiModelProperty(required = true) public boolean update_boot_loader_required(){ return  (type_of_board.main_boot_loader == null || actual_boot_loader == null) ? true : !this.type_of_board.main_boot_loader.id.equals(this.actual_boot_loader.id);}
+
+
+/* GET Variable short type of objects ----------------------------------------------------------------------------------*/
+
+    @Transient @JsonIgnore public Swagger_Board_Short_Detail get_short_board(){
+
+        Swagger_Board_Short_Detail swagger_board_short_detail = new Swagger_Board_Short_Detail();
+        swagger_board_short_detail.id = id;
+        swagger_board_short_detail.personal_description = personal_description;
+        swagger_board_short_detail.type_of_board_id = type_of_board_id();
+        swagger_board_short_detail.type_of_board_name = type_of_board_name();
+
+        return swagger_board_short_detail;
+
+    }
 
 
 /* BOARD WEBSOCKET CONTROLLING UNDER INSTANCE --------------------------------------------------------------------------*/
@@ -195,7 +212,6 @@ public class Board extends Model {
 
             return homer_instance;
     }
-
 
     @JsonIgnore @Transient  public static void master_device_Connected(WS_BlockoServer server, ObjectNode json){
         try {
@@ -271,8 +287,6 @@ public class Board extends Model {
             logger.error("Board:: device_Disconnected:: ERROR:: ", e);
         }
     }
-
-
 
     @JsonIgnore @Transient public static void hardware_connected(Board board, WS_YodaConnected report){
 

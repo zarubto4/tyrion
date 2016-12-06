@@ -19,7 +19,7 @@ import models.project.m_program.M_Project;
 import utilities.enums.Notification_action;
 import utilities.enums.Notification_importance;
 import utilities.enums.Notification_level;
-import utilities.swagger.documentationClass.Swagger_Object_detail;
+import utilities.swagger.outboundClass.*;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -45,22 +45,22 @@ public class Project extends Model {
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Invitation>               invitations       = new ArrayList<>();
 
 
-    // reference na Fake Instanci - kam připojuji Yody - pokud nejsou připojení do vlastní instnace vytvořené v blocko programu
+    // reference na Fake Instanci - kam připojuji Yody q- pokud nejsou připojení do vlastní instnace vytvořené v blocko programu
     @JsonIgnore @OneToOne(fetch = FetchType.EAGER)  public Homer_Instance private_instance;
 
 
-    @JsonIgnore @ManyToOne public Product product;
+    @JsonIgnore @ManyToOne(fetch = FetchType.EAGER) public Product product;
 
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "owningProjects")  @JoinTable(name = "connected_projects") public List<Person> ownersOfProject = new ArrayList<>();
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> boards_id()                     { List<String> l = new ArrayList<>();                   for( Board m                   : boards)                   l.add(m.id); return l;  }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Object_detail> b_programs()     { List<Swagger_Object_detail> l = new ArrayList<>();    for( B_Program m               : b_programs)               l.add(new Swagger_Object_detail(m.name, m.description, m.id)); return l;  }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Object_detail> c_programs()     { List<Swagger_Object_detail> l = new ArrayList<>();    for( C_Program m               : c_programs)               l.add(new Swagger_Object_detail(m.name, m.description, m.id)); return l;  }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Object_detail> m_projects()     { List<Swagger_Object_detail> l = new ArrayList<>();    for( M_Project m               : m_projects)               l.add(new Swagger_Object_detail(m.name, m.description, m.id)); return l;  }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> type_of_blocks_id()             { List<String> l = new ArrayList<>();                   for( TypeOfBlock m             : type_of_blocks)           l.add(m.id); return l;  }
-
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Board_Short_Detail>         boards()           { List<Swagger_Board_Short_Detail>       l = new ArrayList<>();    for( Board m         : boards)         l.add(m.get_short_board());             return l;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_B_Program_Short_Detail>     b_programs()       { List<Swagger_B_Program_Short_Detail>   l = new ArrayList<>();    for( B_Program m     : b_programs)     l.add(m.get_b_program_short_detail());  return l;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_C_program_Short_Detail>     c_programs()       { List<Swagger_C_program_Short_Detail>   l = new ArrayList<>();    for( C_Program m     : c_programs)     l.add(m.get_c_program_short_detail());     return l;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_M_Project_Short_Detail>     m_projects()       { List<Swagger_M_Project_Short_Detail>   l = new ArrayList<>();    for( M_Project m     : m_projects)     l.add(m.get_short_m_project());         return l;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_TypeOfBlock_Short_Detail>   type_of_blocks()   { List<Swagger_TypeOfBlock_Short_Detail> l = new ArrayList<>();    for( TypeOfBlock m   : type_of_blocks) l.add(m.get_b_program_short_detail());  return l;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_TypeOfWidget_Short_Detail>  type_of_widgets()  { List<Swagger_TypeOfWidget_Short_Detail>l = new ArrayList<>();    for( TypeOfWidget m  : type_of_widgets)l.add(m.get_typeOfWidget_short_detail());return l;}
 
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public String product_individual_name() { return product.product_individual_name;}

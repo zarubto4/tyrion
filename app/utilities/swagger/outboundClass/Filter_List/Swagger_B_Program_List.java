@@ -4,7 +4,7 @@ import com.avaje.ebean.Query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.project.b_program.B_Program;
-import utilities.swagger.outboundClass.Swagger_B_Program_Light;
+import utilities.swagger.outboundClass.Swagger_B_Program_Short_Detail;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +17,7 @@ public class Swagger_B_Program_List {
 /* Content--------------------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true, readOnly = true)
-    public List<Swagger_B_Program_Light> content = new ArrayList<>();
+    public List<Swagger_B_Program_Short_Detail> content = new ArrayList<>();
 
 
 /* Basic Filter Value --------------------------------------------------------------------------------------------------*/
@@ -43,14 +43,7 @@ public class Swagger_B_Program_List {
         List<B_Program> b_programs =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findList();
 
         for(B_Program b_program : b_programs){
-
-            Swagger_B_Program_Light help = new Swagger_B_Program_Light();
-
-            help.b_program_id = b_program.id;
-            help.b_program_name = b_program.name;
-            help.b_program_description = b_program.description;
-
-            this.content.add(help);
+            this.content.add(b_program.get_b_program_short_detail());
         }
 
         this.total = query.findRowCount();

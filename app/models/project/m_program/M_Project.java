@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
 import models.project.global.Project;
+import utilities.swagger.outboundClass.Swagger_M_Program_Short_Detail;
+import utilities.swagger.outboundClass.Swagger_M_Project_Short_Detail;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -26,18 +28,34 @@ public class M_Project extends Model {
     @JsonIgnore @ManyToOne  public Project project;
 
     @JsonIgnore @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "m_project")  public List<M_Project_Program_SnapShot> snapShots = new ArrayList<>();
-    @ApiModelProperty(required = true) @OneToMany(mappedBy="m_project", cascade = CascadeType.ALL) public List<M_Program> m_programs = new ArrayList<>();
+    @JsonIgnore @ApiModelProperty(required = true) @OneToMany(mappedBy="m_project", cascade = CascadeType.ALL) public List<M_Program> m_programs = new ArrayList<>();
 
 
 
-/* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient  @ApiModelProperty(required = true)                         public String project_id()                          {  return project.id; }
+
+/* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
+
+    @JsonProperty @Transient @ApiModelProperty(required = true) public String project_id()      {  return project.id; }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_M_Program_Short_Detail>     m_programs()       { List<Swagger_M_Program_Short_Detail>   l = new ArrayList<>();    for( M_Program m  : m_programs)    l.add(m.get_m_program_short_detail()); return l;}
+
+
+
+
+/* GET Variable short type of objects ----------------------------------------------------------------------------------*/
+
+    @Transient @JsonIgnore public Swagger_M_Project_Short_Detail get_short_m_project(){
+        Swagger_M_Project_Short_Detail swagger_m_project_short_detail = new Swagger_M_Project_Short_Detail();
+        swagger_m_project_short_detail.id = id;
+        swagger_m_project_short_detail.name = name;
+        swagger_m_project_short_detail.description = description;
+        return swagger_m_project_short_detail;
+    }
+
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-
-    /* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/
+    /* BlOB DATA  ------------------------------------------------------------------------------------------------------*/
     @JsonIgnore            private String azure_m_project_link;
 
 

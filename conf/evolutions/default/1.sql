@@ -44,7 +44,7 @@ create table b_program_hw_group (
 create table blocko_block (
   id                        varchar(255) not null,
   name                      varchar(255),
-  general_description       TEXT,
+  description               TEXT,
   author_id                 varchar(255),
   type_of_block_id          varchar(255),
   producer_id               varchar(255),
@@ -266,7 +266,7 @@ create table general_tariff_extensions (
 create table grid_widget (
   id                        varchar(255) not null,
   name                      varchar(255),
-  general_description       TEXT,
+  description               TEXT,
   author_id                 varchar(255),
   type_of_widget_id         varchar(255),
   constraint pk_grid_widget primary key (id))
@@ -392,8 +392,8 @@ create table m_program (
   id                        varchar(255) not null,
   name                      varchar(255),
   description               TEXT,
-  m_project_id              varchar(255),
   date_of_create            timestamp,
+  m_project_id              varchar(255),
   azure_m_program_link      varchar(255),
   constraint pk_m_program primary key (id))
 ;
@@ -572,7 +572,7 @@ create table single_library (
 create table type_of_block (
   id                        varchar(255) not null,
   name                      varchar(255),
-  general_description       TEXT,
+  description               TEXT,
   project_id                varchar(255),
   constraint pk_type_of_block primary key (id))
 ;
@@ -610,7 +610,7 @@ create table type_of_post (
 create table type_of_widget (
   id                        varchar(255) not null,
   name                      varchar(255),
-  general_description       TEXT,
+  description               TEXT,
   project_id                varchar(255),
   constraint pk_type_of_widget primary key (id))
 ;

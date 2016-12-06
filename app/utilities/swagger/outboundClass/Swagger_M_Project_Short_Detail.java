@@ -3,16 +3,17 @@ package utilities.swagger.outboundClass;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-@ApiModel(description = "Type_Of_Block Light (only few properties)",
-        value = "Type_Of_Block_Light")
-public class Swagger_Type_Of_Block_Light {
+@ApiModel(description = "Json Model M_Project - only basic information",
+          value = "M_Project_Short_Detail")
+public class Swagger_M_Project_Short_Detail {
 
     @ApiModelProperty(required = true, readOnly = true)
-    public String type_of_block_id;
+    public String id;
 
     @ApiModelProperty(required = true, readOnly = true)
-    public String type_of_block_name;
+    public String name;
 
     @ApiModelProperty(required = true, readOnly = true)
-    public String type_of_block_description;
+    public String description;
+
 }

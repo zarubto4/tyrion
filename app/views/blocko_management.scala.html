@@ -31,7 +31,7 @@
           </div>
           <div style="width: 100%;">
             <label>Description</label>
-            <input id="newTypeOfBlockDescription" placeholder="Description" style="display: block; width: 70%;" type="text" name="general_description" >
+            <input id="newTypeOfBlockDescription" placeholder="Description" style="display: block; width: 70%;" type="text" name="description" >
           </div>
         </form>
       </div>
@@ -59,7 +59,7 @@
           </div>
           <div style="width: 100%;">
             <label>Description</label>
-            <input placeholder="Description" style="display: block; width: 70%;" type="text" name="general_description" >
+            <input placeholder="Description" style="display: block; width: 70%;" type="text" name="description" >
           </div>
           <input id="newBlockoBlockTypeOfBlockId" style="display: none;" type="text" name="type_of_block_id">
         </form>
@@ -121,7 +121,7 @@
           </div>
           <div style="width: 100%;">
             <label>Description</label>
-            <input placeholder="Description" style="display: block; width: 70%;" type="text" name="general_description" >
+            <input placeholder="Description" style="display: block; width: 70%;" type="text" name="description" >
           </div>
         </form>
       </div>
@@ -150,7 +150,7 @@
           </div>
           <div style="width: 100%;">
             <label>Description</label>
-            <input placeholder="Description" style="display: block; width: 70%;" id="edit_blocko_block_description" type="text" name="general_description" >
+            <input placeholder="Description" style="display: block; width: 70%;" id="edit_blocko_block_description" type="text" name="description" >
           </div>
           <label>Type of Block</label>
           <select style="display: block;" name="type_of_block_id">
@@ -417,7 +417,7 @@
               $('#typeOfBlockTableWrapper').load(document.URL +  ' #allTypesOfBlocks');
               $('#type_of_block').text(json.name);
               $('#type_info_id').text(json.id);
-              $('#type_info_description').text(json.general_description);
+              $('#type_info_description').text(json.description);
               $('#blockoBlocks tbody').html("");
               $('#blockoBlockVersions tbody').html("");
               $("#blockoBlockVersion").css("display","none");
@@ -548,7 +548,7 @@
           $('#editTypeOfBlockButton').val(id);
           $('#typeOfBlockId').text("ID = " + id);
           $("#editTypeOfBlock input[name=name]").val(name);
-          $("#editTypeOfBlock input[name=general_description]").val(description);
+          $("#editTypeOfBlock input[name=description]").val(description);
 
         }
 
@@ -563,7 +563,7 @@
             success:function(json){
               $('#type_of_block').text(json.name);
               $('#type_info_id').text(json.id);
-              $('#type_info_description').text(json.general_description);
+              $('#type_info_description').text(json.description);
               $('#blockoBlocks tbody').html("");
               $('#blockoBlockVersions tbody').html("");
               $("#blockoBlockVersion").css("display","none");
@@ -595,7 +595,7 @@
             success:function(json){
               $('#blocko_block').text(json.name);
               $('#block_info_id').text(json.id);
-              $('#block_info_description').text(json.general_description);
+              $('#block_info_description').text(json.description);
               $('#blocko_block_version').text("");
               $('#deleteBlockoBlockButton').val(json.id);
               $('#blockoBlockVersions tbody').html("");

@@ -13,6 +13,7 @@ import models.project.b_program.instnace.Homer_Instance;
 import models.project.c_program.C_Program;
 import models.project.global.Product;
 import models.project.global.Project;
+import models.project.m_program.M_Project;
 import play.data.Form;
 import play.libs.Json;
 import play.libs.ws.WSClient;
@@ -3811,7 +3812,7 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response =  Swagger_Boards_for_blocko.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response =  Swagger_Boards_For_Blocko.class),
             @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
@@ -3828,11 +3829,15 @@ public class CompilationLibrariesController extends Controller {
             if (! project.read_permission()) return GlobalResult.forbidden_Permission();
 
             // Získání objektu
-            Swagger_Boards_for_blocko boards_for_blocko = new Swagger_Boards_for_blocko();
-            boards_for_blocko.boards = project.boards;
-            boards_for_blocko.type_of_boards = TypeOfBoard.find.where().eq("boards.project.id", project.id ).findList();
-            boards_for_blocko.c_programs = project.c_programs;
-            boards_for_blocko.m_projects = project.m_projects;
+            Swagger_Boards_For_Blocko boards_for_blocko = new Swagger_Boards_For_Blocko();
+
+
+            for (Board board : project.boards)              boards_for_blocko.boards.add(board.get_short_board());
+            for (C_Program c_program : project.c_programs)  boards_for_blocko.c_programs.add(c_program.get_compiled_short_c_program());
+            for (M_Project m_project : project.m_projects)  boards_for_blocko.m_projects.add(m_project.get_short_m_project());
+
+            boards_for_blocko.type_of_boards = TypeOfBoard.find.where().eq("boards.project.id", project.id).findList();
+
 
             // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(boards_for_blocko));

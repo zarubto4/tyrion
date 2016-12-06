@@ -4,7 +4,7 @@ import com.avaje.ebean.Query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.blocko.BlockoBlock;
-import utilities.swagger.outboundClass.Swagger_Blocko_Block_Light;
+import utilities.swagger.outboundClass.Swagger_Blocko_Block_Short_Detail;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +17,7 @@ public class Swagger_Blocko_Block_List {
 /* Content--------------------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true, readOnly = true)
-    public List<Swagger_Blocko_Block_Light> content = new ArrayList<>();
+    public List<Swagger_Blocko_Block_Short_Detail> content = new ArrayList<>();
 
 /* Basic Filter Value --------------------------------------------------------------------------------------------------*/
 
@@ -42,17 +42,17 @@ public class Swagger_Blocko_Block_List {
 
         for(BlockoBlock blockoBlock : blocko_blocks){
 
-            Swagger_Blocko_Block_Light help = new Swagger_Blocko_Block_Light();
+            Swagger_Blocko_Block_Short_Detail help = new Swagger_Blocko_Block_Short_Detail();
 
             help.blocko_block_id = blockoBlock.id;
             help.blocko_block_name = blockoBlock.name;
-            help.blocko_block_description = blockoBlock.general_description;
+            help.blocko_block_description = blockoBlock.description;
             help.blocko_block_version_id = blockoBlock.blocko_versions.get(0).id;
             help.blocko_block_version_name = blockoBlock.blocko_versions.get(0).version_name;
             help.blocko_block_version_description = blockoBlock.blocko_versions.get(0).version_description;
             help.blocko_block_type_of_block_id = blockoBlock.type_of_block.id;
             help.blocko_block_type_of_block_name = blockoBlock.type_of_block.name;
-            help.blocko_block_type_of_block_description = blockoBlock.type_of_block.general_description;
+            help.blocko_block_type_of_block_description = blockoBlock.type_of_block.description;
 
             this.content.add(help);
         }

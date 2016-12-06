@@ -3,17 +3,17 @@ package utilities.swagger.outboundClass;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-@ApiModel(description = "B_Program Light (only few properties)",
-        value = "B_Program_Light")
-public class Swagger_B_Program_Light {
+@ApiModel(description = "Json Model with details of Type of Widget>",
+        value = "TypeOfWidget_Short_Detail")
+public class Swagger_TypeOfWidget_Short_Detail {
 
     @ApiModelProperty(required = true, readOnly = true)
-    public String b_program_id;
+    public String id;
 
     @ApiModelProperty(required = true, readOnly = true)
-    public String b_program_name;
+    public String name;
 
     @ApiModelProperty(required = true, readOnly = true)
-    public String b_program_description;
+    public String description;
 
 }

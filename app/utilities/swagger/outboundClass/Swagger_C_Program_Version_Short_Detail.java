@@ -1,17 +1,14 @@
 package utilities.swagger.outboundClass;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.compiler.Version_Object;
-import models.project.c_program.C_Compilation;
-import utilities.swagger.documentationClass.Swagger_C_Program_Version_New;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.persistence.Transient;
 
 @ApiModel(description = "Json Model for Public Version of C_program",
-        value = "C_Program_Version_Light")
-public class Swagger_C_Program_Version_Light {
+        value = "C_Program_Version_Short_Detail")
+public class Swagger_C_Program_Version_Short_Detail {
 
 
     @ApiModelProperty(required = true, readOnly = true)
@@ -23,6 +20,7 @@ public class Swagger_C_Program_Version_Light {
     @ApiModelProperty(required = true, readOnly = true)
     public String version_description;
 
-    //TODO Lexa - vlastnosti odlehčené verze
 
+    @JsonProperty @Transient public boolean update_permission;
+    @JsonProperty @Transient public boolean delete_permission;
 }

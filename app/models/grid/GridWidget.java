@@ -21,7 +21,7 @@ public class GridWidget extends Model{
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true)   public String id;
                                                             @ApiModelProperty(required = true)   public String name;
-    @Column(columnDefinition = "TEXT")                      @ApiModelProperty(required = true)   public String general_description;
+    @Column(columnDefinition = "TEXT")                      @ApiModelProperty(required = true)   public String description;
 
                                                                         @JsonIgnore @ManyToOne   public Person author;
                                                                         @JsonIgnore @ManyToOne   public TypeOfWidget type_of_widget;

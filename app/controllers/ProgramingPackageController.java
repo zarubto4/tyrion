@@ -772,14 +772,17 @@ public class ProgramingPackageController extends Controller {
         try{
 
             // Kontrola objektu
-            Version_Object program = Version_Object.find.byId(version_id);
-            if (program == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
+            Version_Object version_object = Version_Object.find.byId(version_id);
+            if (version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
             // Kontrola oprávnění
-            if (! program.b_program.read_permission() ) return GlobalResult.forbidden_Permission();
+            if (version_object.b_program == null) return GlobalResult.notFoundObject("Version_Object is not version of B_Program");
+
+            // Kontrola oprávnění
+            if (! version_object.b_program.read_permission() ) return GlobalResult.forbidden_Permission();
 
             // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(program));
+            return GlobalResult.result_ok(Json.toJson(version_object.b_program.program_version(version_object)));
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -1906,7 +1909,7 @@ public class ProgramingPackageController extends Controller {
 
             // Vytvoření objektu
             TypeOfBlock typeOfBlock = new TypeOfBlock();
-            typeOfBlock.general_description = help.general_description;
+            typeOfBlock.description = help.description;
             typeOfBlock.name                = help.name;
 
             // Nejedná se o privátní Typ Bločku
@@ -2029,7 +2032,7 @@ public class ProgramingPackageController extends Controller {
             if (! typeOfBlock.edit_permission() ) return GlobalResult.forbidden_Permission();
 
             // Úprava objektu
-            typeOfBlock.general_description = help.general_description;
+            typeOfBlock.description = help.description;
             typeOfBlock.name                = help.name;
 
             if(help.project_id != null){
@@ -2247,7 +2250,7 @@ public class ProgramingPackageController extends Controller {
            // Vytvoření objektu
            BlockoBlock blockoBlock = new BlockoBlock();
 
-           blockoBlock.general_description = help.general_description;
+           blockoBlock.description = help.general_description;
            blockoBlock.name                = help.name;
            blockoBlock.author              = SecurityController.getPerson();
            blockoBlock.type_of_block       = typeOfBlock;
@@ -2331,7 +2334,7 @@ public class ProgramingPackageController extends Controller {
                 if (! blockoBlock.edit_permission() ) return GlobalResult.forbidden_Permission("You have no permission to edit");
 
                 // Úprava objektu
-                blockoBlock.general_description = help.general_description;
+                blockoBlock.description = help.general_description;
                 blockoBlock.name                = help.name;
 
                 // Kontrola objektu
@@ -2886,7 +2889,7 @@ public class ProgramingPackageController extends Controller {
             // Vytvoření objektu
             BlockoBlock blockoBlock = new BlockoBlock();
             blockoBlock.name = help.blocko_block_name;
-            blockoBlock.general_description = help.blocko_block_general_description;
+            blockoBlock.description = help.blocko_block_general_description;
             blockoBlock.type_of_block = typeOfBlock;
             blockoBlock.author = privateBlockoBlockVersion.blocko_block.author;
             blockoBlock.save();

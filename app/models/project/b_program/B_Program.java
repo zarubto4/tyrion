@@ -10,8 +10,10 @@ import models.compiler.Version_Object;
 import models.project.b_program.instnace.Homer_Instance;
 import models.project.b_program.servers.Cloud_Homer_Server;
 import models.project.global.Project;
+import utilities.swagger.outboundClass.Swagger_B_Program_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_B_Program_State;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
+import utilities.swagger.outboundClass.Swagger_B_Program_Version_Short_Detail;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -46,21 +48,12 @@ public class B_Program extends Model {
 
 /* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient public List<Swagger_B_Program_Version> program_versions() {
+    @JsonProperty @Transient public List<Swagger_B_Program_Version_Short_Detail> program_versions() {
 
-        List<Swagger_B_Program_Version> versions = new ArrayList<>();
+        List<Swagger_B_Program_Version_Short_Detail> versions = new ArrayList<>();
 
-        for(Version_Object v : getVersion_objects()){
-
-            Swagger_B_Program_Version b_program_version = new Swagger_B_Program_Version();
-            b_program_version.version_object = v;
-            b_program_version.hardware_group = v.b_program_hw_groups;
-            b_program_version.m_project_program_snapshots = v.b_program_version_snapshots;
-
-            FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", v.id).eq("file_name", "program.js").findUnique();
-            if(fileRecord != null) b_program_version.program             = fileRecord.get_fileRecord_from_Azure_inString();
-
-            versions.add(b_program_version);
+        for(Version_Object version : getVersion_objects()){
+            versions.add(version.get_short_b_program_version());
         }
 
         return versions;
@@ -97,7 +90,19 @@ public class B_Program extends Model {
     }
 
 
+/* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
+    @Transient @JsonIgnore public Swagger_B_Program_Short_Detail get_b_program_short_detail(){
+        Swagger_B_Program_Short_Detail help = new Swagger_B_Program_Short_Detail();
+        help.id = id;
+        help.name = name;
+        help.description = description;
+
+        help.delete_permission = delete_permission();
+        help.update_permission = update_permission();
+
+        return help;
+    }
 
 /* Private Documentation Class -----------------------------------------------------------------------------------------*/
 
@@ -109,6 +114,10 @@ public class B_Program extends Model {
         Swagger_B_Program_Version b_program_version = new Swagger_B_Program_Version();
 
         b_program_version.version_object                = version_object;
+
+        b_program_version.remove_permission = delete_permission();
+        b_program_version.edit_permission   = edit_permission();
+
         b_program_version.hardware_group                = version_object.b_program_hw_groups;
         b_program_version.m_project_program_snapshots   = version_object.b_program_version_snapshots;
 

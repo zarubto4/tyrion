@@ -18,7 +18,7 @@ public class Swagger_GridWidget_New {
     @Constraints.MinLength(value = 0, message = "The description must have at least 0 characters")
     @Constraints.MaxLength(value = 255, message = "The description must not have more than 255 characters.")
     @ApiModelProperty(required = true, value = "Length must be between 24 and 255 characters.")
-    public String general_description;
+    public String description;
 
 
     @Constraints.Required

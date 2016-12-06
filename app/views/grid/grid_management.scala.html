@@ -31,7 +31,7 @@
           </div>
           <div style="width: 100%;">
             <label>Description</label>
-            <input id="newTypeOfWidgetDescription" placeholder="Description" style="display: block; width: 70%;" type="text" name="general_description" >
+            <input id="newTypeOfWidgetDescription" placeholder="Description" style="display: block; width: 70%;" type="text" name="description" >
           </div>
         </form>
       </div>
@@ -59,7 +59,7 @@
           </div>
           <div style="width: 100%;">
             <label>Description</label>
-            <input placeholder="Description" style="display: block; width: 70%;" type="text" name="general_description" >
+            <input placeholder="Description" style="display: block; width: 70%;" type="text" name="description" >
           </div>
           <input id="newGridWidgetTypeOfWidgetId" style="display: none;" type="text" name="type_of_widget_id">
         </form>
@@ -121,7 +121,7 @@
           </div>
           <div style="width: 100%;">
             <label>Description</label>
-            <input placeholder="Description" style="display: block; width: 70%;" type="text" name="general_description" >
+            <input placeholder="Description" style="display: block; width: 70%;" type="text" name="description" >
           </div>
         </form>
       </div>
@@ -150,7 +150,7 @@
           </div>
           <div style="width: 100%;">
             <label>Description</label>
-            <input placeholder="Description" style="display: block; width: 70%;" id="edit_grid_widget_description" type="text" name="general_description" >
+            <input placeholder="Description" style="display: block; width: 70%;" id="edit_grid_widget_description" type="text" name="description" >
           </div>
           <label>Type of Widget</label>
           <select style="display: block;" name="type_of_widget_id">
@@ -417,7 +417,7 @@
               $('#typeOfWidgetTableWrapper').load(document.URL +  ' #allTypesOfWidgets');
               $('#type_of_widget').text(json.name);
               $('#type_info_id').text(json.id);
-              $('#type_info_description').text(json.general_description);
+              $('#type_info_description').text(json.description);
               $('#gridWidgets tbody').html("");
               $('#gridWidgetVersions tbody').html("");
               $("#gridWidgetVersion").css("display","none");
@@ -548,7 +548,7 @@
           $('#editTypeOfWidgetButton').val(id);
           $('#typeOfWidgetId').text("ID = " + id);
           $("#editTypeOfWidget input[name=name]").val(name);
-          $("#editTypeOfWidget input[name=general_description]").val(description);
+          $("#editTypeOfWidget input[name=description]").val(description);
 
         }
 
@@ -563,7 +563,7 @@
             success:function(json){
               $('#type_of_widget').text(json.name);
               $('#type_info_id').text(json.id);
-              $('#type_info_description').text(json.general_description);
+              $('#type_info_description').text(json.description);
               $('#gridWidgets tbody').html("");
               $('#gridWidgetVersions tbody').html("");
               $("#gridWidgetVersion").css("display","none");
@@ -595,7 +595,7 @@
             success:function(json){
               $('#grid_widget').text(json.name);
               $('#widget_info_id').text(json.id);
-              $('#widget_info_description').text(json.general_description);
+              $('#widget_info_description').text(json.description);
               $('#grid_widget_version').text("");
               $('#deleteGridWidgetButton').val(json.id);
               $('#gridWidgetVersions tbody').html("");

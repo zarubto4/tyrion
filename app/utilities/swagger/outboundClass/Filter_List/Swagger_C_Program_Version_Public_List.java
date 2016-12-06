@@ -5,7 +5,7 @@ import com.avaje.ebean.Query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.compiler.Version_Object;
-import utilities.swagger.outboundClass.Swagger_C_Program_Version_Light;
+import utilities.swagger.outboundClass.Swagger_C_Program_Version_Short_Detail;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +17,7 @@ public class Swagger_C_Program_Version_Public_List {
     /* Content--------------------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true, readOnly = true)
-    public List<Swagger_C_Program_Version_Light> content = new ArrayList<>();
+    public List<Swagger_C_Program_Version_Short_Detail> content = new ArrayList<>();
 
 
 /* Basic Filter Value --------------------------------------------------------------------------------------------------*/
@@ -43,16 +43,7 @@ public class Swagger_C_Program_Version_Public_List {
         List<Version_Object> versions =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findList();
 
         for(Version_Object version : versions){
-
-            Swagger_C_Program_Version_Light help = new Swagger_C_Program_Version_Light();
-
-            help.version_id = version.id;
-            help.version_name = version.version_name;
-            help.version_description = version.version_description;
-
-            //TODO Lexa - doplnit
-
-            this.content.add(help);
+            this.content.add(version.get_short_c_program_version());
         }
 
         this.total = query.findRowCount();

@@ -4,7 +4,7 @@ import com.avaje.ebean.Query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.grid.TypeOfWidget;
-import utilities.swagger.outboundClass.Swagger_Type_Of_Widget_Light;
+import utilities.swagger.outboundClass.Swagger_TypeOfWidget_Short_Detail;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +17,7 @@ public class Swagger_Type_Of_Widget_List {
 /* Content--------------------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true, readOnly = true)
-    public List<Swagger_Type_Of_Widget_Light> content = new ArrayList<>();
+    public List<Swagger_TypeOfWidget_Short_Detail> content = new ArrayList<>();
 
 
 /* Basic Filter Value --------------------------------------------------------------------------------------------------*/
@@ -43,13 +43,7 @@ public class Swagger_Type_Of_Widget_List {
 
         for(TypeOfWidget typeOfWidget : typeOfWidgets){
 
-            Swagger_Type_Of_Widget_Light help = new Swagger_Type_Of_Widget_Light();
-
-            help.type_of_widget_id = typeOfWidget.id;
-            help.type_of_widget_name = typeOfWidget.name;
-            help.type_of_widget_description = typeOfWidget.general_description;
-
-            this.content.add(help);
+            this.content.add(typeOfWidget.get_typeOfWidget_short_detail());
         }
 
         this.total = query.findRowCount();

@@ -31,7 +31,9 @@ public class M_Project_Program_SnapShot extends Model {
 
 /* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient  @ApiModelProperty(required = true, readOnly = true) public String m_project_id() { return m_project.id;}
+    @JsonProperty @Transient  @ApiModelProperty(required = true, readOnly = true) public String m_project_id()          { return m_project.id;}
+    @JsonProperty @Transient  @ApiModelProperty(required = true, readOnly = true) public String m_project_name()        { return m_project.name;}
+    @JsonProperty @Transient  @ApiModelProperty(required = true, readOnly = true) public String m_project_description() { return m_project.description;}
 
     @JsonProperty @Transient  @ApiModelProperty(required = true, readOnly = true) public List<M_Program_SnapShot_Detail> m_program_snapshots() {
         List<M_Program_SnapShot_Detail> list = new ArrayList<>();

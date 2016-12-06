@@ -24,10 +24,11 @@ import utilities.response.response_objects.Result_PermissionRequired;
 import utilities.response.response_objects.Result_Unauthorized;
 import utilities.response.response_objects.Result_ok;
 import utilities.swagger.documentationClass.*;
+import utilities.swagger.outboundClass.Swagged_Applicable_Product;
 import utilities.swagger.outboundClass.Swagger_GoPay_Url;
 import utilities.swagger.outboundClass.Swagger_Invoice_FullDetails;
-import utilities.swagger.outboundClass.Swagger_Product_Applicable;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -1015,7 +1016,7 @@ public class Finance_Controller extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Swagger_Product_Applicable.class),
+            @ApiResponse(code = 200, message = "Ok Result", response =  Swagged_Applicable_Product.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
@@ -1028,14 +1029,19 @@ public class Finance_Controller extends Controller {
             // Vyhledání všech objektů, které se týkají přihlášeného uživatele
             List<Product> list = Product.find.where().eq("active",true).eq("payment_details.person.id", SecurityController.getPerson().id).select("id").select("product_individual_name").select("general_tariff.tariff_name").findList();
 
-            Swagger_Product_Applicable product_applicable = new Swagger_Product_Applicable();
+            List<Swagged_Applicable_Product> products = new ArrayList<>();
 
             for(Product product : list){
-              product_applicable.add(product.id, product.product_individual_name, product.general_tariff.tariff_name);
+                Swagged_Applicable_Product help = new Swagged_Applicable_Product();
+                help.product_id = product.id;
+                help.product_individual_name = product.product_individual_name;
+                help.product_type = product.general_tariff.tariff_name;
+
+                products.add(help);
             }
 
             // Vrácení objektu
-            return GlobalResult.result_ok( Json.toJson(product_applicable));
+            return GlobalResult.result_ok( Json.toJson(products));
 
         }catch (Exception e) {
             return Loggy.result_internalServerError(e, request());

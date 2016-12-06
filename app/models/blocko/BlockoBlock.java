@@ -9,7 +9,7 @@ import io.swagger.annotations.ApiModelProperty;
 import models.compiler.Producer;
 import models.person.Person;
 import utilities.enums.Approval_state;
-import utilities.swagger.outboundClass.Swagger_BlockoBlock_ShortVersion;
+import utilities.swagger.outboundClass.Swagger_BlockoBlock_Version_Short_Detail;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ public class BlockoBlock extends Model {
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true)   public String id;
                                                             @ApiModelProperty(required = true)   public String name;
-                         @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)   public String general_description;
+                         @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)   public String description;
 
                                     @JsonIgnore @ManyToOne                                       public Person author;
                                     @JsonIgnore @ManyToOne                                       public TypeOfBlock type_of_block;
@@ -52,17 +52,15 @@ public class BlockoBlock extends Model {
     @Transient  @JsonProperty @ApiModelProperty(required = true, readOnly = true)  public String  type_of_block_name()           { return type_of_block.name; }
 
 
-    //@Transient  @JsonProperty @ApiModelProperty(required = true)  public List<String>    versions()             { List<String> l = new ArrayList<>();  for( BlockoBlockVersion m : blocko_versions)  l.add(m.id); return l; }
 
+    @Transient  @JsonProperty @ApiModelProperty(required = true) public  List<Swagger_BlockoBlock_Version_Short_Detail> versions(){
 
-    @Transient  @JsonProperty @ApiModelProperty(required = true) public  List<Swagger_BlockoBlock_ShortVersion> versions(){
-
-        List<Swagger_BlockoBlock_ShortVersion> list = new ArrayList<>();
+        List<Swagger_BlockoBlock_Version_Short_Detail> list = new ArrayList<>();
 
         for( BlockoBlockVersion m : blocko_versions){
             if((m.approval_state == Approval_state.approved)||(m.approval_state == Approval_state.edited)||((this.author != null)&&(this.author.id.equals(SecurityController.getPerson().id)))) {
 
-                Swagger_BlockoBlock_ShortVersion short_version = new Swagger_BlockoBlock_ShortVersion();
+                Swagger_BlockoBlock_Version_Short_Detail short_version = new Swagger_BlockoBlock_Version_Short_Detail();
                 short_version.id = m.id;
                 short_version.description = m.version_description;
                 short_version.name = m.version_name;

@@ -5,8 +5,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 @ApiModel(description = "Json Model for Status and all information about embedded Hardware",
-        value = "Board_status")
-public class Swagger_Board_status {
+        value = "Board_Status")
+public class Swagger_Board_Status {
 
     @ApiModelProperty(value = "Can be with null value", readOnly = true, required = true)
     public String where;

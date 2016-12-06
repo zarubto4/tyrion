@@ -46,13 +46,13 @@ public class Swagger_GridWidget_List {
 
             help.grid_widget_id = gridWidget.id;
             help.grid_widget_name = gridWidget.name;
-            help.grid_widget_description = gridWidget.general_description;
+            help.grid_widget_description = gridWidget.description;
             help.grid_widget_version_id = gridWidget.grid_widget_versions.get(0).id;
             help.grid_widget_version_name = gridWidget.grid_widget_versions.get(0).version_name;
             help.grid_widget_version_description = gridWidget.grid_widget_versions.get(0).version_description;
             help.grid_widget_type_of_widget_id = gridWidget.type_of_widget.id;
             help.grid_widget_type_of_widget_name = gridWidget.type_of_widget.name;
-            help.grid_widget_type_of_widget_description = gridWidget.type_of_widget.general_description;
+            help.grid_widget_type_of_widget_description = gridWidget.type_of_widget.description;
 
             this.content.add(help);
         }

@@ -19,7 +19,7 @@ public class Swagger_GridObject_Approve_withChanges {
     @Constraints.Required
     @Constraints.MinLength(value = 24, message = "The description must have at least 24 characters")
     @Constraints.MaxLength(value = 255, message = "The description must not have more than 255 characters.")
-    public String grid_widget_general_description;
+    public String grid_widget_description;
 
     @Constraints.Required
     public String grid_widget_type_of_widget_id;

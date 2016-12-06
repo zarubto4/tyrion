@@ -29,10 +29,7 @@ import utilities.enums.Compile_Status;
 import utilities.enums.Notification_importance;
 import utilities.enums.Notification_level;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_Update;
-import utilities.swagger.outboundClass.Swagger_B_Program_Version;
-import utilities.swagger.outboundClass.Swagger_C_Program_Version;
-import utilities.swagger.outboundClass.Swagger_Compilation_Build_Error;
-import utilities.swagger.outboundClass.Swagger_Compilation_Ok;
+import utilities.swagger.outboundClass.*;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -54,7 +51,7 @@ public class Version_Object extends Model {
                                                                                         @JsonIgnore  public boolean public_version;  // Pižívá se u Gridu, u C_programů atd..
 
     // OBJEKT V KOŠI!! - SLOUŽÍ K ODSTRANĚNÍ Z POHLEDU UŽIVATELE - ALE NIKOLIV Z DATABÁZE!
-    public boolean removed_by_user; // Defaultně false - když true - tak se to nemá uživateli vracet!
+    @JsonIgnore public boolean removed_by_user; // Defaultně false - když true - tak se to nemá uživateli vracet!
 
     @ApiModelProperty(required = true,
             dataType = "integer", readOnly = true,
@@ -126,6 +123,47 @@ public class Version_Object extends Model {
 
 /* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/
 
+
+/* GET Variable short type of objects ----------------------------------------------------------------------------------*/
+
+    @Transient @JsonIgnore public Swagger_C_Program_Version_Short_Detail get_short_c_program_version(){
+        Swagger_C_Program_Version_Short_Detail help = new Swagger_C_Program_Version_Short_Detail();
+
+        help.version_id = id;
+        help.version_name = version_name;
+        help.version_description = version_description;
+        help.delete_permission = c_program.delete_permission();
+        help.update_permission = c_program.update_permission();
+
+        return help;
+    }
+
+    @Transient @JsonIgnore public Swagger_B_Program_Version_Short_Detail get_short_b_program_version(){
+        Swagger_B_Program_Version_Short_Detail help = new Swagger_B_Program_Version_Short_Detail();
+
+        help.version_id = id;
+        help.version_name = version_name;
+        help.version_description = version_description;
+        help.delete_permission = b_program.delete_permission();
+        help.update_permission = b_program.update_permission();
+
+        return help;
+    }
+
+    @Transient @JsonIgnore public Swagger_M_Program_Version_Short_Detail get_short_m_program_version(){
+        Swagger_M_Program_Version_Short_Detail help = new Swagger_M_Program_Version_Short_Detail();
+
+        help.version_id = id;
+        help.version_name = version_name;
+        help.version_description = version_description;
+        help.delete_permission = m_program.delete_permission();
+        help.edit_permission = m_program.edit_permission();
+
+        return help;
+    }
+
+
+
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
@@ -179,6 +217,9 @@ public class Version_Object extends Model {
                 .setObject(C_Program.class, this.c_program.id, this.c_program.name, this.c_program.project_id())
                 .send(SecurityController.getPerson());
     }
+
+
+
 /* JSON IGNORE DATA  ---------------------------------------------------------------------------------------------------*/
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
@@ -204,7 +245,6 @@ public class Version_Object extends Model {
         compile_that.start();
 
     }
-
 
     @JsonIgnore @Transient public ObjectNode compile_program_procedure(){
 
@@ -414,11 +454,15 @@ public class Version_Object extends Model {
         return result;
     }
 
+
+
+
+
+
 /* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/
 
 
     @JsonIgnore public String blob_version_link;
-
 
     @JsonIgnore @Override public void save() {
 
@@ -437,11 +481,14 @@ public class Version_Object extends Model {
         super.save();
     }
 
-
     @JsonIgnore @Transient
     public String get_path(){
         return  blob_version_link;
     }
+
+
+
+
 
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
@@ -449,8 +496,8 @@ public class Version_Object extends Model {
     @JsonIgnore @Transient public static final String read_permission_docs   = "read: If user have \"Object\".read_permission = true, you can read / get version on this Object - Or you need static/dynamic permission key";
     @JsonIgnore @Transient public static final String create_permission_docs = "create: If user have \"Object\".update_permission = true, you can create / update on this Object - Or you need static/dynamic permission key";
 
-    // ZDE BY NIKDY NEMĚLY BÝT OPRÁVNĚNÍ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! - TOMÁŠ Z.
-    // Oprávnění volejte na objektu kterého se to týká např.  version.b_program.read_permission()...
+
+
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String, Version_Object> find = new Finder<>(Version_Object.class);

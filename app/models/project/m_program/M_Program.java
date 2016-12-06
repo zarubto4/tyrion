@@ -13,6 +13,8 @@ import models.project.global.Project;
 import play.libs.Json;
 import utilities.swagger.documentationClass.Swagger_M_Program_Version;
 import utilities.swagger.documentationClass.Swagger_M_Program_Version_Interface;
+import utilities.swagger.outboundClass.Swagger_M_Program_Short_Detail;
+import utilities.swagger.outboundClass.Swagger_M_Program_Version_Short_Detail;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -25,22 +27,16 @@ public class M_Program extends Model{
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)     public String id;
+    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)                         public String id;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)                                      public String name;         // Název programu
+    @JsonInclude(JsonInclude.Include.NON_NULL)  @Column(columnDefinition = "TEXT")  public String description;  // Uživatelský popis programu
 
-    //# Název a popis Programu
-    @JsonInclude(JsonInclude.Include.NON_NULL)                                      public String name;
-    @JsonInclude(JsonInclude.Include.NON_NULL)  @Column(columnDefinition = "TEXT")  public String description;
-
-    //# Vazby Programu
-    @JsonIgnore @ManyToOne      public M_Project m_project;
-
-
-    // Každá verze má datum vytvoření
     @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time stamp in millis", example = "1458315085338") public Date date_of_create;
 
 
 
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public M_Project m_project;
     @JsonIgnore @OneToMany(mappedBy="m_program", cascade = CascadeType.ALL, fetch = FetchType.LAZY) @OrderBy("date_of_create DESC") public List<Version_Object> version_objects = new ArrayList<>();
 
 
@@ -48,14 +44,28 @@ public class M_Program extends Model{
 
 /* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/
 
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  String m_project_id()             {  return m_project.id;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public  String m_project_id()             {  return m_project.id;}
 
 
-    @JsonProperty @Transient public List<Swagger_M_Program_Version> program_versions() {
-        List<Swagger_M_Program_Version> versions = new ArrayList<>();
-
-        for(Version_Object v : getVersion_objects()) versions.add(program_version(v));
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_M_Program_Version_Short_Detail> program_versions() {
+        List<Swagger_M_Program_Version_Short_Detail> versions = new ArrayList<>();
+        for(Version_Object v : getVersion_objects()) versions.add(v.get_short_m_program_version());
         return versions;
+    }
+
+
+/* GET Variable short type of objects ----------------------------------------------------------------------------------*/
+
+    @Transient @JsonIgnore public Swagger_M_Program_Short_Detail get_m_program_short_detail(){
+        Swagger_M_Program_Short_Detail help = new Swagger_M_Program_Short_Detail();
+        help.id = id;
+        help.name = name;
+        help.description = description;
+
+        help.delete_permission = delete_permission();
+        help.edit_permission = edit_permission();
+
+        return help;
     }
 
 

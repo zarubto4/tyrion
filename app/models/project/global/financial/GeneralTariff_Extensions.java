@@ -31,8 +31,9 @@ public class GeneralTariff_Extensions extends Model {
     @JsonIgnore  public Double czk;
 
     @OneToMany(mappedBy="extensions", cascade = CascadeType.ALL) @OrderBy("order_position ASC")  public List<GeneralTariffLabel> labels = new ArrayList<>();
-    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public GeneralTariff general_tariff;
 
+
+    @JsonIgnore  @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY) public GeneralTariff general_tariff;
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Product> products = new ArrayList<>();
 
 
@@ -49,7 +50,7 @@ public class GeneralTariff_Extensions extends Model {
 
 /* Special Method -------------------------------------------------------------------------------------------------------*/
 
-    @Override
+    @Transient @Override
     public void save(){
         order_position = GeneralTariff_Extensions.find.where().eq("general_tariff.id", general_tariff.id).findRowCount() + 1;
         super.save();

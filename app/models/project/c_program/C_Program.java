@@ -10,12 +10,13 @@ import io.swagger.annotations.ApiModelProperty;
 import models.compiler.FileRecord;
 import models.compiler.TypeOfBoard;
 import models.compiler.Version_Object;
-import models.project.b_program.B_Pair;
 import models.project.global.Project;
 import play.libs.Json;
 import utilities.enums.Compile_Status;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_New;
 import utilities.swagger.outboundClass.Swagger_C_Program_Version;
+import utilities.swagger.outboundClass.Swagger_C_Program_Version_Short_Detail;
+import utilities.swagger.outboundClass.Swagger_C_program_Short_Detail;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -57,38 +58,62 @@ public class C_Program extends Model {
     @JsonProperty  @Transient public String type_of_board_id()     { return type_of_board == null ? null : type_of_board.id;}
     @JsonProperty  @Transient public String type_of_board_name()   { return type_of_board == null ? null : type_of_board.name;}
 
-    @JsonProperty @Transient public List<Swagger_C_Program_Version> program_versions() {
-        List<Swagger_C_Program_Version> versions = new ArrayList<>();
 
-        if(first_default_version_object != null) versions.add(program_version(first_default_version_object)); // Přiložím do seznamu první verzi pokud existuje!
+    @JsonProperty @Transient public List<Swagger_C_Program_Version_Short_Detail> program_versions() {
 
-        for(Version_Object v : getVersion_objects()) versions.add(program_version(v));
+        List<Swagger_C_Program_Version_Short_Detail> versions = new ArrayList<>();
 
+        if(first_default_version_object != null) versions.add(first_default_version_object.get_short_c_program_version());
+
+        for(Version_Object version : getVersion_objects()){
+            versions.add(version.get_short_c_program_version());
+        }
 
         return versions;
     }
 
+/* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+    @Transient @JsonIgnore public Swagger_C_program_Short_Detail get_c_program_short_detail(){
 
-    @JsonIgnore @Override public void delete() {
+        Swagger_C_program_Short_Detail help = new Swagger_C_program_Short_Detail();
 
-        // Slouží k odpojení defaultních prvních verzí programu pro divnostav
-        // Lexa
+        help.id = id;
+        help.name = name;
+        help.description = description;
+        help.type_of_board_id = type_of_board_id();
+        help.type_of_board_name = type_of_board_name();
 
-        if (this.first_default_version_object != null) {
-            this.first_default_version_object.first_version_of_c_programs.remove(this);
-            this.first_default_version_object.update();
-        }
+        help.delete_permission = delete_permission();
+        help.update_permission = update_permission();
 
-        if (this.default_main_version != null) this.default_main_version.delete();
-
-        super.delete();
+        return help;
     }
 
-    /* Private Documentation Class -------------------------------------------------------------------------------------*/
+    @Transient @JsonIgnore public Swagger_C_program_Short_Detail get_compiled_short_c_program(){
 
-    @JsonProperty @Transient public List<Version_Object> getVersion_objects() {
+        // Určeno pro výběr C_Programu, který se vypálí na HW
+
+        Swagger_C_program_Short_Detail help = new Swagger_C_program_Short_Detail();
+
+        help.id = id;
+        help.name = name;
+        help.description = description;
+        help.type_of_board_id = type_of_board_id();
+        help.type_of_board_name = type_of_board_name();
+
+        for(Version_Object version_object : Version_Object.find.where().eq("c_program.id", id).eq("removed_by_user", false).eq("c_compilation.status", "successfully_compiled_and_restored").order().asc("date_of_create").findList() ){
+            version_object.get_short_c_program_version();
+        }
+
+        return help;
+    }
+
+
+
+/* Private Documentation Class -------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient public List<Version_Object> getVersion_objects() {
         return Version_Object.find.where().eq("c_program.id", id).eq("removed_by_user", false).order().asc("date_of_create").findList();
     }
 
@@ -101,8 +126,8 @@ public class C_Program extends Model {
 
             c_program_versions.status = version_object.c_compilation != null ? version_object.c_compilation.status : Compile_Status.undefined;
             c_program_versions.version_object = version_object;
-            c_program_versions.remove_permission = version_object.c_program.delete_permission();
-
+            c_program_versions.remove_permission = delete_permission();
+            c_program_versions.edit_permission   = edit_permission();
 
             FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "code.json").findUnique();
 
@@ -122,9 +147,6 @@ public class C_Program extends Model {
                 c_program_versions.virtual_input_output = version_object.c_compilation.virtual_input_output;
             }
 
-            for (B_Pair b_pair : version_object.b_pairs_c_program) {
-                c_program_versions.runing_on_board.add(b_pair.board.id);
-            }
 
             return c_program_versions;
 
@@ -136,27 +158,22 @@ public class C_Program extends Model {
 
 
 
-
-
-
-
-
 /* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore            private String azure_c_program_link;
+    @JsonIgnore private String azure_c_program_link; // Link, který je náhodně generovaný pro Azure - a který se připojuje do cesty souborům
 
     @JsonIgnore @Override public void save() {
 
-        // C_Program je vázaný na Projekt
-        if(project != null){
+
+        if(project != null){   // C_Program je vázaný na Projekt
             while(true){ // I need Unique Value
                 this.azure_c_program_link = project.get_path()  + "/c-programs/"  + UUID.randomUUID().toString();
                 if (C_Program.find.where().eq("azure_c_program_link", azure_c_program_link ).findUnique() == null) break;
             }
         }
 
-        // C_Program je veřejný
-        else{
+
+        else{      // C_Program je veřejný
             while(true){ // I need Unique Value
                 this.azure_c_program_link = "public-c-programs/"  + UUID.randomUUID().toString();
                 if (C_Program.find.where().eq("azure_c_program_link", azure_c_program_link ).findUnique() == null) break;
@@ -183,6 +200,24 @@ public class C_Program extends Model {
 
 
 
+/* Object Override ---------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Override public void delete() {
+
+        // Slouží k odpojení defaultních prvních verzí programu pro divnostav
+        // Lexa
+
+        if (this.first_default_version_object != null) {
+            this.first_default_version_object.first_version_of_c_programs.remove(this);
+            this.first_default_version_object.update();
+        }
+
+        if (this.default_main_version != null) this.default_main_version.delete();
+
+        super.delete();
+    }
+
+
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     // Floating shared documentation for Swagger
@@ -196,6 +231,7 @@ public class C_Program extends Model {
     @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean delete_permission(){  return ( C_Program.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("C_program_delete"); }
 
     public enum permissions{  C_program_create,  C_program_update, C_program_read ,  C_program_edit, C_program_delete; }
+
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String,C_Program> find = new Finder<>(C_Program.class);

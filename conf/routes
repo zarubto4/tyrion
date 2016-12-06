@@ -395,8 +395,9 @@ GET             /m_program/:m_progrm_id                                         
 PUT             /m_program/:m_progrm_id                                                @controllers.GridController.edit_M_Program(m_progrm_id)
 DELETE          /m_program/:m_progrm_id                                                @controllers.GridController.remove_M_Program(m_progrm_id)
 
-POST            /m_program_version/:m_program_id                                       @controllers.GridController.new_M_Program_version(m_program_id)
-DELETE          /m_program_version/:m_program_version_id                               @controllers.GridController.remove_M_Program_version(m_program_version_id)
+POST            /m_program/version/:m_program_id                                       @controllers.GridController.new_M_Program_version(m_program_id)
+GET             /m_program/version/:m_program_version_id                               @controllers.GridController.get_M_Program_version(m_program_version_id)
+DELETE          /m_program/version/:m_program_version_id                               @controllers.GridController.remove_M_Program_version(m_program_version_id)
 
 # Terminals Aps
 GET             /m_program/app/token/:qr_token                                         @controllers.GridController.get_M_Program_byQR_Token_forMobile(qr_token)

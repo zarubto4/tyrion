@@ -7,7 +7,6 @@ import models.project.c_program.C_Compilation;
 import utilities.enums.Compile_Status;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_New;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @ApiModel(description = "Json Model for Version of C_program",
@@ -36,10 +35,10 @@ public class Swagger_C_Program_Version {
     @ApiModelProperty(required = true, readOnly = true, value = "Value can be empty, Server cannot guarantee that. External documentation: " + C_Compilation.virtual_input_output_docu)
     public String virtual_input_output;
 
-   @ApiModelProperty(required = true, readOnly = true)
-    public List<String> runing_on_board = new ArrayList<>();
-
     @ApiModelProperty(required = true, readOnly = true)
     public boolean remove_permission;
+
+    @ApiModelProperty(required = true, readOnly = true)
+    public boolean edit_permission;
 
 }

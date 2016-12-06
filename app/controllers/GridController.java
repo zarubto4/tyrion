@@ -529,6 +529,57 @@ public class GridController extends Controller {
         }
     }
 
+
+    @ApiOperation(value = "get M_Program Version",
+            tags = {"M_Program"},
+            notes = "get M_Program Version by quarry m_program_version_id",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "M_Program.read_permission", value = M_Program.read_permission_docs),
+                    }),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "M_Program.read_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key"    , value = "M_Program_read" ),
+                            @ExtensionProperty(name = "Dynamic Permission key"   , value = "M_Program_read.{project_id}"),
+                    })
+            }
+
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_M_Program_Version.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured_API.class)
+    public Result get_M_Program_version(@ApiParam(value = "m_program_version_id String query", required = true)  String m_program_version_id){
+
+        try {
+            // Kontrola objektu
+            Version_Object version_object = Version_Object.find.byId(m_program_version_id);
+            if (version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
+
+            // Kontrola oprávnění
+            if (version_object.m_program == null)
+                return GlobalResult.notFoundObject("Version_Object is not version of B_Program");
+
+            // Kontrola oprávnění
+            if (!version_object.m_program.read_permission()) return GlobalResult.forbidden_Permission();
+
+            // Vrácení objektu
+            return GlobalResult.result_ok(Json.toJson(version_object.m_program.program_version(version_object)));
+
+        }catch (Exception e) {
+            e.printStackTrace();
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+
     @ApiOperation(value = "update M_Program",
             tags = {"M_Program"},
             notes = "update m_project - in this case we are not support versions of m_project",
@@ -947,7 +998,7 @@ public class GridController extends Controller {
 
             // Vytvoření objektu
             TypeOfWidget typeOfWidget = new TypeOfWidget();
-            typeOfWidget.general_description = help.general_description;
+            typeOfWidget.description = help.general_description;
             typeOfWidget.name                = help.name;
 
             // Nejedná se o privátní Typ Widgetu
@@ -1072,7 +1123,7 @@ public class GridController extends Controller {
             if (! typeOfWidget.edit_permission() ) return GlobalResult.forbidden_Permission();
 
             // Úprava objektu
-            typeOfWidget.general_description = help.general_description;
+            typeOfWidget.description = help.general_description;
             typeOfWidget.name                = help.name;
 
             if(help.project_id != null){
@@ -1295,7 +1346,7 @@ public class GridController extends Controller {
             // Vytvoření objektu
             GridWidget gridWidget = new GridWidget();
 
-            gridWidget.general_description = help.general_description;
+            gridWidget.description         = help.description;
             gridWidget.name                = help.name;
             gridWidget.author              = SecurityController.getPerson();
             gridWidget.type_of_widget      = typeOfWidget;
@@ -1380,7 +1431,7 @@ public class GridController extends Controller {
             if (! gridWidget.edit_permission() ) return GlobalResult.forbidden_Permission();
 
             // Úprava objektu
-            gridWidget.general_description = help.general_description;
+            gridWidget.description        = help.description;
             gridWidget.name                = help.name;
 
             // Kontrola objektu
@@ -1944,7 +1995,7 @@ public class GridController extends Controller {
             // Vytvoření objektu
             GridWidget gridWidget = new GridWidget();
             gridWidget.name = help.grid_widget_name;
-            gridWidget.general_description = help.grid_widget_general_description;
+            gridWidget.description = help.grid_widget_description;
             gridWidget.type_of_widget = typeOfWidget;
             gridWidget.author = privateGridWidgetVersion.grid_widget.author;
             gridWidget.save();
