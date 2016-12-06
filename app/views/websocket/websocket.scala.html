@@ -34,6 +34,7 @@
                 </div>
 
                 <div class="box-body table-responsive no-padding">
+                    <div id="becki_table_wrapper">
                     <table id="becki_table" class="table table-bordered">
 
                         <tr>
@@ -98,7 +99,7 @@
                         }
                     </table>
 
-
+                    </div>
 
 
                 </div><!-- /.box-body -->
@@ -293,10 +294,10 @@
 
         function disconnect_becki(id , token){
             $.ajax({
-                url: '@routes.DashboardController.disconnect_becki("","")' + id + "/" + token,
+                url: '/admin/becki/disconnect/' + id + "/" + token,
                 type: 'GET',
                 success:function(e){
-                    $('#becki').load(document.URL +  ' #becki');
+                    $('#becki_table_wrapper').load(document.URL +  ' #becki_table');
                 },
                 error:function(e) {
                     alert("Unsuccessful.");

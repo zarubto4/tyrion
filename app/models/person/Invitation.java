@@ -25,7 +25,7 @@ public class Invitation extends Model{
 
 /* JSON PROPERTY -------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Person invitedPerson(){return Person.find.where().eq("mail", this.mail).findUnique();}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public Person invited_person(){return Person.find.where().eq("mail", this.mail).findUnique();}
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String,Invitation> find = new Finder<>(Invitation.class);

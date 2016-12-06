@@ -395,7 +395,7 @@ public class ProgramingPackageController extends Controller {
             // Vytvoření pozvánky pro nezaregistrované uživatele
             for (String mail :  help.persons_mail){
 
-                Invitation invitation = Invitation.find.where().eq("mail", mail).findUnique();
+                Invitation invitation = Invitation.find.where().eq("mail", mail).eq("project.id", project.id).findUnique();
                 if(invitation == null){
                     invitation = new Invitation();
                     invitation.mail = mail;
@@ -403,7 +403,6 @@ public class ProgramingPackageController extends Controller {
                     invitation.owner = SecurityController.getPerson();
                     invitation.project = project;
                     invitation.save();
-                    project.invitations.add(invitation);
                 }
 
                 String link = Server.becki_invitationToCollaborate + "/" + mail;
@@ -435,7 +434,7 @@ public class ProgramingPackageController extends Controller {
 
             for (Person person : listIn) {
 
-                Invitation invitation = Invitation.find.where().eq("mail", person.mail).findUnique();
+                Invitation invitation = Invitation.find.where().eq("mail", person.mail).eq("project.id", project.id).findUnique();
                 if(invitation == null){
                     invitation = new Invitation();
                     invitation.mail = person.mail;
@@ -443,7 +442,6 @@ public class ProgramingPackageController extends Controller {
                     invitation.owner = SecurityController.getPerson();
                     invitation.project = project;
                     invitation.save();
-                    project.invitations.add(invitation);
                 }
 
                 project.notification_project_invitation(person, invitation);
@@ -614,11 +612,8 @@ public class ProgramingPackageController extends Controller {
     public Result deleteProjectInvitation(@ApiParam(value = "invitation_id String path", required = true)  String invitation_id){
         try {
 
-            Invitation invitation = Invitation.find.where().eq("owner",SecurityController.getPerson()).eq("id", invitation_id).findUnique();
+            Invitation invitation = Invitation.find.where().eq("owner.id",SecurityController.getPerson().id).eq("id", invitation_id).findUnique();
             if(invitation == null) return GlobalResult.notFoundObject("Invitation does not exist");
-
-            invitation.project.invitations.remove(invitation);
-            invitation.owner.invitations.remove(invitation);
 
             Notification notification = null;
             if(invitation.notification_id != null)

@@ -92,6 +92,14 @@ public class Project extends Model {
             project_participant.user_email = invitation.mail;
             project_participant.state      = "Waiting for decision"; // TODO dá se tu vymyslet mnohem lepší a promakanější stavy
             project_participant.pending_invitation = true;
+
+            Person person = Person.find.where().eq("mail", invitation.mail).findUnique();
+            if(person != null){
+
+                project_participant.id = person.id;
+                project_participant.full_name = person.full_name;
+            }
+
             project_participants.add(project_participant);
         }
 

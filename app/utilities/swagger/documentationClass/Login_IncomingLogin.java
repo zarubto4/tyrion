@@ -10,6 +10,7 @@ import play.data.validation.Constraints;
 public class Login_IncomingLogin {
 
     @Constraints.Required
+    @Constraints.Email
     @ApiModelProperty(required = true)
     public String mail;
 
