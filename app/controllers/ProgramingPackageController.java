@@ -469,7 +469,6 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-
     @ApiOperation(value = "add participant to a Project",
             tags = {"Project"},
             notes = "adds Person to a Project, every piece of information is held in Invitation",
@@ -521,6 +520,64 @@ public class ProgramingPackageController extends Controller {
             invitation.delete();
 
             return GlobalResult.result_ok();
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "change participant status",
+            tags = {"Project"},
+            notes = "Changes participant status ",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Project_Participant_status",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Project_participant.class),
+            @ApiResponse(code = 400, message = "Objects not found",         response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result participant_changeStatus(@ApiParam(value = "project_id String path", required = true)  String project_id){
+        try{
+
+            // Zpracování Json
+            final Form<Swagger_Project_Participant_status> form = Form.form(Swagger_Project_Participant_status.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Project_Participant_status help = form.get();
+
+            // Kontrola objektu
+            Project project = Project.find.byId(project_id);
+            if(project == null) return GlobalResult.notFoundObject("Project no longer exists");
+
+            // Kontrola oprávnění
+            if (!project.admin_permission()) return GlobalResult.forbidden_Permission();
+
+            // Kontrola objektu
+            Project_participant participant = Project_participant.find.where().eq("person.id", help.person_id).eq("project.id", project_id).findUnique();
+            if (participant == null) return GlobalResult.notFoundObject("Participant not found");
+
+            // Uložení změn
+            participant.state = help.state;
+            participant.update();
+
+            // Odeslání notifikace uživateli
+            project.notification_project_participant_change_status(participant);
+
+            return GlobalResult.result_ok(Json.toJson(participant));
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
         }

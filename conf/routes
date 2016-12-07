@@ -190,6 +190,7 @@ DELETE         /project/:project_id                                             
 PUT            /project/shareProject/:project_id                                            @controllers.ProgramingPackageController.shareProjectWithUsers(project_id)
 PUT            /project/unshareProject/:project_id                                          @controllers.ProgramingPackageController.unshareProjectWithUsers(project_id)
 PUT            /project/addParticipant/:invitation_id/:decision                             @controllers.ProgramingPackageController.addParticipantToProject(invitation_id, decision: Boolean)
+PUT            /project/change_participant_state/:project_id                                @controllers.ProgramingPackageController.participant_changeStatus(project_id)
 DELETE         /project/deleteInvitation/:invitation_id                                     @controllers.ProgramingPackageController.deleteProjectInvitation(invitation_id)
 
 #Program

@@ -21,7 +21,7 @@ public class Project_participant extends Model{
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @JsonIgnore public String id;
                          @ManyToOne(fetch = FetchType.LAZY) @JsonIgnore public Project project;
                                                  @ManyToOne @JsonIgnore public Person person;
-                                    @ApiModelProperty(required = true)  public Participant_status state;
+        @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public Participant_status state;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
