@@ -15,6 +15,8 @@ import java.util.List;
 @Entity
 public class Producer extends Model {
 
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true)  public String id;
@@ -25,11 +27,21 @@ public class Producer extends Model {
     @JsonIgnore @OneToMany(mappedBy="producer", cascade = CascadeType.ALL) public List<BlockoBlock> blocko_blocks = new ArrayList<>();
 
 
-/* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/
+/* JSON PROPERTY VALUES ---------------------------------------------------------------------------------------------------------*/
 
    // @JsonProperty @Transient @ApiModelProperty(required = true) public  List<Swagger_Object_detail> type_of_boards()   { List<Swagger_Object_detail> l = new ArrayList<>();  for( TypeOfBoard m  : type_of_boards)   l.add(new Swagger_Object_detail(m.name, m.id)); return l;  }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
+
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+
+/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
+
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore   @Transient                                    public boolean create_permission(){  return SecurityController.getPerson().has_permission("Producer_create"); }
     @JsonIgnore   @Transient                                    public boolean read_permission()  {  return true; }

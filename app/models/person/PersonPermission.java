@@ -16,6 +16,8 @@ import java.util.List;
 @ApiModel(value = "PersonPermission")
 public class PersonPermission extends Model {
 
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(value = "Permission key - \"(static key)\"", required = true, readOnly = true)
@@ -27,8 +29,7 @@ public class PersonPermission extends Model {
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "person_permissions")  @JoinTable(name = "join_prs_prm")   public List<Person>       persons = new ArrayList<>();
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "person_permissions")  @JoinTable(name = "join_group_prm") public List<SecurityRole> roles   = new ArrayList<>();
 
-/* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
-
+/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
@@ -41,19 +42,25 @@ public class PersonPermission extends Model {
         this.save();
     }
 
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
-/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
+
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+
+/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
     // Floating shared documentation for Swagger
     @JsonIgnore @Transient public static final String read_permission_docs         = "read: If user have M_Project.read_permission = true, you can create M_program on this M_Project - Or you need static/dynamic permission key";
     @JsonIgnore @Transient public static final String create_permission_docs       = "create: If user have M_Project.update_permission = true, you can create M_Program on this M_Project - Or you need static/dynamic permission key";
     @JsonIgnore @Transient public static final String read_qr_token_permission_docs = "read: Private settings for M_Program";
 
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_person_permission() {  return SecurityController.getPerson() != null && SecurityController.getPerson().has_permission("PersonPermission_edit_person_permission");  }
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()        {  return SecurityController.getPerson() != null && SecurityController.getPerson().has_permission("PersonPermission_edit"); }
 
     public enum permissions{ PersonPermission_edit_person_permission, PersonPermission_edit }
-
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 

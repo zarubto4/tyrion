@@ -13,12 +13,14 @@ import models.compiler.Board;
 import models.compiler.FileRecord;
 import models.notification.Notification;
 import models.person.FloatingPersonToken;
+import models.person.Person;
 import models.project.b_program.B_Pair;
 import models.project.b_program.B_Program;
 import models.project.b_program.B_Program_Hw_Group;
 import models.project.b_program.servers.Cloud_Homer_Server;
 import models.project.c_program.actualization.C_Program_Update_Plan;
 import models.project.global.Project;
+import models.project.global.Project_participant;
 import models.project.m_program.Grid_Terminal;
 import play.libs.Json;
 import utilities.enums.Firmware_type;
@@ -43,6 +45,8 @@ import java.util.UUID;
 @Entity
 public class Homer_Instance extends Model {
 
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
                                                   @Id               public String blocko_instance_name;
@@ -61,6 +65,82 @@ public class Homer_Instance extends Model {
 
 
     @JsonIgnore @OneToMany(mappedBy="virtual_instance_under_project", cascade=CascadeType.ALL, fetch = FetchType.LAZY)  public List<Board> boards_in_virtual_instance = new ArrayList<>();
+
+/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
+
+
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_id()             {  return this.getB_program().id;}
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_name()           {  return this.getB_program().name;}
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_description()    {  return this.getB_program().description;}
+
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_name()             {  return cloud_homer_server.server_name;}
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_id()               {  return cloud_homer_server.id;}
+
+    @Transient @JsonProperty @ApiModelProperty(required = false, value = "Only if instance is upload in Homer - can be null") public Swagger_B_Program_Instance actual_summary() {
+        try {
+
+            Swagger_B_Program_Instance instance = new Swagger_B_Program_Instance();
+
+            if(actual_instance != null) {
+                instance.instance_record_id = actual_instance.id;
+                instance.date_of_created = actual_instance.date_of_created;
+                instance.running_from = actual_instance.running_from;
+                instance.running_to = actual_instance.running_to;
+                instance.planed_when = actual_instance.planed_when;
+
+                instance.b_program_id = actual_instance.version_object.b_program.id;
+                instance.b_program_name = actual_instance.version_object.b_program.name;
+                instance.b_program_version_name = actual_instance.b_program_version_name();
+                instance.b_program_version_id = actual_instance.b_program_version_id();
+
+                instance.hardware_group = actual_instance.version_object.b_program_hw_groups;
+                instance.m_project_program_snapshots = actual_instance.version_object.b_program_version_snapshots;
+            }
+
+            instance.server_is_online = cloud_homer_server.server_is_online();
+            instance.server_name = cloud_homer_server.server_name;
+            instance.server_id = cloud_homer_server.id;
+
+            return instance;
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore             public B_Program    getB_program()   { return b_program;}
+    @JsonIgnore @Transient  public boolean      instance_online(){ return this.online_state();}
+    @JsonIgnore @Transient  public List<Board>  getBoards_in_virtual_instance() { return boards_in_virtual_instance; }
+
+    @JsonIgnore @Transient
+    private void setUnique_blocko_instance_name() {
+        while(true){ // I need Unique Value
+            this.blocko_instance_name = UUID.randomUUID().toString();
+            if (Homer_Instance.find.where().eq("blocko_instance_name", blocko_instance_name ).findUnique() == null) break;
+        }
+    }
+
+    @Override
+    public void save(){
+        this.setUnique_blocko_instance_name();
+        super.save();
+    }
+
+    @Override
+    public void delete(){
+        try {
+
+            this.cloud_homer_server.remove_instance(blocko_instance_name);
+
+        }catch (Exception e){}
+
+        super.delete();
+    }
+
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
@@ -108,85 +188,15 @@ public class Homer_Instance extends Model {
     @JsonIgnore @Transient
     public void notification_new_actualization_request_instance(){
 
+        List<Person> receivers = new ArrayList<>();
+        for (Project_participant participant : this.project.participants)
+            receivers.add(participant.person);
+
         new Notification(Notification_importance.low, Notification_level.info)
                 .setText("New actualization task was added to Task Queue on Version ")
                 .setObject(Swagger_B_Program_Version_New.class, this.actual_instance.version_object.id, this.actual_instance.version_object.version_name, this.actual_instance.version_object.b_program.project_id())
-                .send(this.project.ownersOfProject);
+                .send(receivers);
 
-    }
-/* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
-
-
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_id()             {  return this.getB_program().id;}
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_name()           {  return this.getB_program().name;}
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_description()    {  return this.getB_program().description;}
-
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_name()             {  return cloud_homer_server.server_name;}
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_id()               {  return cloud_homer_server.id;}
-
-    @Transient @JsonProperty @ApiModelProperty(required = false, value = "Only if instance is upload in Homer - can be null") public Swagger_B_Program_Instance actual_summary() {
-        try {
-
-            Swagger_B_Program_Instance instance = new Swagger_B_Program_Instance();
-
-            if(actual_instance != null) {
-                instance.instance_record_id = actual_instance.id;
-                instance.date_of_created = actual_instance.date_of_created;
-                instance.running_from = actual_instance.running_from;
-                instance.running_to = actual_instance.running_to;
-                instance.planed_when = actual_instance.planed_when;
-
-                instance.b_program_id = actual_instance.version_object.b_program.id;
-                instance.b_program_name = actual_instance.version_object.b_program.name;
-                instance.b_program_version_name = actual_instance.b_program_version_name();
-                instance.b_program_version_id = actual_instance.b_program_version_id();
-
-                instance.hardware_group = actual_instance.version_object.b_program_hw_groups;
-                instance.m_project_program_snapshots = actual_instance.version_object.b_program_version_snapshots;
-            }
-
-            instance.server_is_online = cloud_homer_server.server_is_online();
-            instance.server_name = cloud_homer_server.server_name;
-            instance.server_id = cloud_homer_server.id;
-
-            return instance;
-
-        }catch (Exception e){
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-
-/* JSON IGNORE Standart Method -----------------------------------------------------------------------------------------*/
-
-    @JsonIgnore             public B_Program    getB_program()   { return b_program;}
-    @JsonIgnore @Transient  public boolean      instance_online(){ return this.online_state();}
-    @JsonIgnore @Transient  public List<Board>  getBoards_in_virtual_instance() { return boards_in_virtual_instance; }
-
-    @JsonIgnore @Transient
-    private void setUnique_blocko_instance_name() {
-            while(true){ // I need Unique Value
-                this.blocko_instance_name = UUID.randomUUID().toString();
-                if (Homer_Instance.find.where().eq("blocko_instance_name", blocko_instance_name ).findUnique() == null) break;
-            }
-    }
-
-    @Override
-    public void save(){
-        this.setUnique_blocko_instance_name();
-        super.save();
-    }
-
-    @Override
-    public void delete(){
-        try {
-
-            this.cloud_homer_server.remove_instance(blocko_instance_name);
-
-        }catch (Exception e){}
-
-        super.delete();
     }
 
 
@@ -763,6 +773,11 @@ public class Homer_Instance extends Model {
         }
     }
 
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+
+/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
+
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String, Homer_Instance> find = new Finder<>(Homer_Instance.class);

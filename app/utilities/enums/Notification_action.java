@@ -1,5 +1,6 @@
 package utilities.enums;
 
+import com.avaje.ebean.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 /**
@@ -7,9 +8,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
  */
 public enum Notification_action {
 
-    accept_project_invitation,
-    reject_project_invitation,
-    confirm_notification;
+    @EnumValue("accept_project_invitation")   accept_project_invitation,
+    @EnumValue("reject_project_invitation")   reject_project_invitation,
+    @EnumValue("confirm_notification")        confirm_notification;
 
     @JsonCreator
     public static Notification_action fromString(String key) {

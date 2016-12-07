@@ -435,7 +435,7 @@
                                 <div class="box-body">
 
 
-                                    @for( project <- person.owningProjects) {
+                                    @for( participant <- person.projects_participant) {
                                             <table id="role_table" class="table table-bordered table-hover">
 
 
@@ -444,9 +444,9 @@
 
                                                         <tr>
                                                             <td>Project ID</td>
-                                                            <td>@project.id</td>
+                                                            <td>@participant.project.id</td>
                                                             <td>Project name</td>
-                                                            <td>@project.name</td>
+                                                            <td>@participant.project.name</td>
                                                             <td rowspan="2">
                                                                <button class="btn btn-block btn-info" type="button" onclick="">Project Details</button>
                                                                 <button class="btn btn-block btn-danger" type="button" onclick="">Remove</button>
@@ -455,9 +455,9 @@
 
                                                         <tr>
                                                             <td>Product ID</td>
-                                                            <td>@project.product.id</td>
+                                                            <td>@participant.project.product.id</td>
                                                             <td>Product name</td>
-                                                            <td>@project.product.product_individual_name</td>
+                                                            <td>@participant.project.product.product_individual_name</td>
                                                         </tr>
 
 

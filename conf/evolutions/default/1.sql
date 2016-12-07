@@ -425,8 +425,8 @@ create table notification (
   was_read                  boolean,
   created                   timestamp,
   person_id                 varchar(255),
-  constraint ck_notification_notification_level check (notification_level in ('info','success','warning','error')),
-  constraint ck_notification_notification_importance check (notification_importance in ('low','normal','high')),
+  constraint ck_notification_notification_level check (notification_level in ('success','warning','error','info')),
+  constraint ck_notification_notification_importance check (notification_importance in ('normal','high','low')),
   constraint pk_notification primary key (id))
 ;
 
@@ -546,6 +546,15 @@ create table project (
   blob_project_link         varchar(255),
   constraint uq_project_private_instance_bloc unique (private_instance_blocko_instance_name),
   constraint pk_project primary key (id))
+;
+
+create table project_participant (
+  id                        varchar(255) not null,
+  project_id                varchar(255),
+  person_id                 varchar(255),
+  state                     varchar(7),
+  constraint ck_project_participant_state check (state in ('owner','member','invited','admin')),
+  constraint pk_project_participant primary key (id))
 ;
 
 create table property_of_post (
@@ -674,12 +683,6 @@ create table m_project_program_snapshots (
   constraint pk_m_project_program_snapshots primary key (m_project_program_snap_shot_id, version_object_id))
 ;
 
-create table person_project (
-  person_id                      varchar(255) not null,
-  project_id                     varchar(255) not null,
-  constraint pk_person_project primary key (person_id, project_id))
-;
-
 create table person_post (
   person_id                      varchar(255) not null,
   post_id                        varchar(255) not null,
@@ -802,6 +805,8 @@ create sequence producer_seq;
 create sequence product_seq;
 
 create sequence project_seq;
+
+create sequence project_participant_seq;
 
 create sequence security_role_seq;
 
@@ -953,32 +958,36 @@ alter table project add constraint fk_project_private_instance_66 foreign key (p
 create index ix_project_private_instance_66 on project (private_instance_blocko_instance_name);
 alter table project add constraint fk_project_product_67 foreign key (product_id) references product (id);
 create index ix_project_product_67 on project (product_id);
-alter table single_library add constraint fk_single_library_product_68 foreign key (product_id) references product (id);
-create index ix_single_library_product_68 on single_library (product_id);
-alter table type_of_block add constraint fk_type_of_block_project_69 foreign key (project_id) references project (id);
-create index ix_type_of_block_project_69 on type_of_block (project_id);
-alter table type_of_board add constraint fk_type_of_board_producer_70 foreign key (producer_id) references producer (id);
-create index ix_type_of_board_producer_70 on type_of_board (producer_id);
-alter table type_of_board add constraint fk_type_of_board_processor_71 foreign key (processor_id) references processor (id);
-create index ix_type_of_board_processor_71 on type_of_board (processor_id);
-alter table type_of_board add constraint fk_type_of_board_picture_72 foreign key (picture_id) references file_record (id);
-create index ix_type_of_board_picture_72 on type_of_board (picture_id);
-alter table type_of_widget add constraint fk_type_of_widget_project_73 foreign key (project_id) references project (id);
-create index ix_type_of_widget_project_73 on type_of_widget (project_id);
-alter table version_object add constraint fk_version_object_author_74 foreign key (author_id) references person (id);
-create index ix_version_object_author_74 on version_object (author_id);
-alter table version_object add constraint fk_version_object_library_gro_75 foreign key (library_group_id) references library_group (id);
-create index ix_version_object_library_gro_75 on version_object (library_group_id);
-alter table version_object add constraint fk_version_object_single_libr_76 foreign key (single_library_id) references single_library (id);
-create index ix_version_object_single_libr_76 on version_object (single_library_id);
-alter table version_object add constraint fk_version_object_c_program_77 foreign key (c_program_id) references c_program (id);
-create index ix_version_object_c_program_77 on version_object (c_program_id);
-alter table version_object add constraint fk_version_object_default_ver_78 foreign key (default_version_program_id) references c_program (id);
-create index ix_version_object_default_ver_78 on version_object (default_version_program_id);
-alter table version_object add constraint fk_version_object_b_program_79 foreign key (b_program_id) references b_program (id);
-create index ix_version_object_b_program_79 on version_object (b_program_id);
-alter table version_object add constraint fk_version_object_m_program_80 foreign key (m_program_id) references m_program (id);
-create index ix_version_object_m_program_80 on version_object (m_program_id);
+alter table project_participant add constraint fk_project_participant_projec_68 foreign key (project_id) references project (id);
+create index ix_project_participant_projec_68 on project_participant (project_id);
+alter table project_participant add constraint fk_project_participant_person_69 foreign key (person_id) references person (id);
+create index ix_project_participant_person_69 on project_participant (person_id);
+alter table single_library add constraint fk_single_library_product_70 foreign key (product_id) references product (id);
+create index ix_single_library_product_70 on single_library (product_id);
+alter table type_of_block add constraint fk_type_of_block_project_71 foreign key (project_id) references project (id);
+create index ix_type_of_block_project_71 on type_of_block (project_id);
+alter table type_of_board add constraint fk_type_of_board_producer_72 foreign key (producer_id) references producer (id);
+create index ix_type_of_board_producer_72 on type_of_board (producer_id);
+alter table type_of_board add constraint fk_type_of_board_processor_73 foreign key (processor_id) references processor (id);
+create index ix_type_of_board_processor_73 on type_of_board (processor_id);
+alter table type_of_board add constraint fk_type_of_board_picture_74 foreign key (picture_id) references file_record (id);
+create index ix_type_of_board_picture_74 on type_of_board (picture_id);
+alter table type_of_widget add constraint fk_type_of_widget_project_75 foreign key (project_id) references project (id);
+create index ix_type_of_widget_project_75 on type_of_widget (project_id);
+alter table version_object add constraint fk_version_object_author_76 foreign key (author_id) references person (id);
+create index ix_version_object_author_76 on version_object (author_id);
+alter table version_object add constraint fk_version_object_library_gro_77 foreign key (library_group_id) references library_group (id);
+create index ix_version_object_library_gro_77 on version_object (library_group_id);
+alter table version_object add constraint fk_version_object_single_libr_78 foreign key (single_library_id) references single_library (id);
+create index ix_version_object_single_libr_78 on version_object (single_library_id);
+alter table version_object add constraint fk_version_object_c_program_79 foreign key (c_program_id) references c_program (id);
+create index ix_version_object_c_program_79 on version_object (c_program_id);
+alter table version_object add constraint fk_version_object_default_ver_80 foreign key (default_version_program_id) references c_program (id);
+create index ix_version_object_default_ver_80 on version_object (default_version_program_id);
+alter table version_object add constraint fk_version_object_b_program_81 foreign key (b_program_id) references b_program (id);
+create index ix_version_object_b_program_81 on version_object (b_program_id);
+alter table version_object add constraint fk_version_object_m_program_82 foreign key (m_program_id) references m_program (id);
+create index ix_version_object_m_program_82 on version_object (m_program_id);
 
 
 
@@ -1001,10 +1010,6 @@ alter table b_program_version_snapshots add constraint fk_b_program_version_snap
 alter table m_project_program_snapshots add constraint fk_m_project_program_snapshot_01 foreign key (m_project_program_snap_shot_id) references m_project_program_snap_shot (id);
 
 alter table m_project_program_snapshots add constraint fk_m_project_program_snapshot_02 foreign key (version_object_id) references version_object (id);
-
-alter table person_project add constraint fk_person_project_person_01 foreign key (person_id) references person (id);
-
-alter table person_project add constraint fk_person_project_project_02 foreign key (project_id) references project (id);
 
 alter table person_post add constraint fk_person_post_person_01 foreign key (person_id) references person (id);
 
@@ -1128,8 +1133,6 @@ drop table if exists payment_details cascade;
 
 drop table if exists person cascade;
 
-drop table if exists person_project cascade;
-
 drop table if exists person_post cascade;
 
 drop table if exists person_security_role cascade;
@@ -1155,6 +1158,8 @@ drop table if exists producer cascade;
 drop table if exists product cascade;
 
 drop table if exists project cascade;
+
+drop table if exists project_participant cascade;
 
 drop table if exists property_of_post cascade;
 
@@ -1251,6 +1256,8 @@ drop sequence if exists producer_seq;
 drop sequence if exists product_seq;
 
 drop sequence if exists project_seq;
+
+drop sequence if exists project_participant_seq;
 
 drop sequence if exists security_role_seq;
 

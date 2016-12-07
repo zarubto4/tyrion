@@ -15,6 +15,8 @@ import java.util.List;
 @Entity
 public class SecurityRole extends Model {
 
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true) public String id;
                                                             @ApiModelProperty(required = true) public String name;
@@ -23,12 +25,20 @@ public class SecurityRole extends Model {
     @JsonIgnore @ManyToMany(mappedBy = "roles")  @JoinTable(name = "person_roles") public List<Person> persons = new ArrayList<>();
     @JsonIgnore @ManyToMany() public List<PersonPermission> person_permissions = new ArrayList<>();
 
-
-
-/* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
+/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> persons_id()           {  List<String> l = new ArrayList<>();  for( Person m  : persons)   l.add(m.id); return l;  }
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> person_permissions_id(){  List<String> l = new ArrayList<>();  for( PersonPermission m   : person_permissions)   l.add(m.value); return l;  }
+
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
+
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+
+/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
@@ -38,7 +48,6 @@ public class SecurityRole extends Model {
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return  SecurityController.getPerson().has_permission("SecurityRole_delete");}
 
     public enum permissions{SecurityRole_create, SecurityRole_read, SecurityRole_update , SecurityRole_delete}
-
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 

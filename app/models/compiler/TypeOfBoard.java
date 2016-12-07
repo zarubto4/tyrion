@@ -17,6 +17,8 @@ import java.util.List;
 @Entity
 public class TypeOfBoard extends Model {
 
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
      @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true) public String id;
                                                              @ApiModelProperty(required = true) public String name;
@@ -39,7 +41,7 @@ public class TypeOfBoard extends Model {
 
     @JsonIgnore @OneToOne(mappedBy="default_program_type_of_board")  public C_Program default_program;
 
-/* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
+/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(readOnly =true) @Transient @JsonProperty public String processor_name    (){ return processor == null ? null : processor.processor_name;}
     @ApiModelProperty(readOnly =true) @Transient @JsonProperty public String processor_id      (){ return processor == null ? null : processor.id;}
@@ -83,7 +85,15 @@ public class TypeOfBoard extends Model {
         }
     }
 
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
+
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+
+/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
+
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore   @Transient                                    public boolean create_permission(){  return SecurityController.getPerson().has_permission("TypeOfBoard_create"); }
     @JsonIgnore   @Transient                                    public boolean read_permission()  {  return true; }

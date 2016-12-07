@@ -22,6 +22,8 @@ import java.util.UUID;
 @Entity
 public class Cloud_Compilation_Server extends Model {
 
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  @ApiModelProperty(required = true)     public String id;
@@ -31,7 +33,7 @@ public class Cloud_Compilation_Server extends Model {
                                         @Column(unique=true) @ApiModelProperty(required = true)     public String destination_address;
 
 
-/* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
+/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty @ApiModelProperty(required = true) public boolean server_is_online(){
         return WebSocketController.compiler_cloud_servers.containsKey(this.server_name);
@@ -116,6 +118,13 @@ public class Cloud_Compilation_Server extends Model {
         // Nějaké upozornění???
     }
 
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
+
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+
+/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 

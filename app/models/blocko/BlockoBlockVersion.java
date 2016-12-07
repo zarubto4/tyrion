@@ -14,7 +14,9 @@ import java.util.Date;
 @Entity
 public class BlockoBlockVersion extends Model {
 
- /* DATABASE VALUE  ----------------------------------------------------------------------------------------------------*/
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+/* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true)    public String id;
                                                             @ApiModelProperty(required = true)    public String version_name;
@@ -29,13 +31,22 @@ public class BlockoBlockVersion extends Model {
                          @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)    public String logic_json;
                                      @JsonIgnore @ManyToOne                                       public BlockoBlock blocko_block;
 
+/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
+
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+
+/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient public static final String read_permission_docs   = "read: If user can read BlockoBlock, than can read all Versions from list of BlockoBlock ( You get ids of list of version in object \"BlockoBlocks\" in json)  - Or you need static/dynamic permission key";
     @JsonIgnore @Transient public static final String create_permission_docs = "create: If user have BlockoBlock.update_permission = true, you can create new version of BlockoBlocks on this BlockoBlock - Or you need static/dynamic permission key if user want create version of BlockoBlock in public BlockoBlock in public TypeOfBlock";
 
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean create_permission()  {  return  blocko_block.update_permission() ||  SecurityController.getPerson().has_permission("BlockoBlock_create"); }
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean read_permission()    {  return  blocko_block.read_permission()   ||  SecurityController.getPerson().has_permission("BlockoBlock_read");   }
