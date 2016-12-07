@@ -265,7 +265,7 @@ public class Server {
             person.save();
 
             FloatingPersonToken floatingPersonToken = new FloatingPersonToken();
-            floatingPersonToken.set_basic_values();
+            floatingPersonToken.authToken = "token";
             floatingPersonToken.person = person;
             floatingPersonToken.user_agent = "Unknown browser";
             floatingPersonToken.save();
