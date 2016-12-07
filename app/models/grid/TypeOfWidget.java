@@ -16,6 +16,10 @@ import java.util.List;
 @Entity
 public class TypeOfWidget extends Model{
 
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+/* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
+
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true) public String id;
                                                             @ApiModelProperty(required = true) public String name;
                     @Column(columnDefinition = "TEXT")      @ApiModelProperty(required = true) public String description;
@@ -29,10 +33,11 @@ public class TypeOfWidget extends Model{
     @ApiModelProperty(value = "This value will be in Json only if TypeOfWidget is private!", readOnly = true, required = false)
     @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty @Transient public String project_id() {  return project == null ? null : this.project.id; }
 
+/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-/* JSON PROPERTY -------------------------------------------------------------------------------------------------------*/
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
     /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
@@ -43,13 +48,18 @@ public class TypeOfWidget extends Model{
         help.description = description;
         return help;
     }
-/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
+
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+
+/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
     // Floating shared documentation for Swagger
     @JsonIgnore @Transient public static final String read_permission_docs   = "read: If user have Project.read_permission = true, you can read TypeOfWidget on this Project ( You get ids of list of TypeOfWidget in object \"project\" in json)  - Or you need static/dynamic permission key";
     @JsonIgnore @Transient public static final String create_permission_docs = "create: If user have Project.update_permission = true, you can create TypeOfWidget on this Project - Or you need static/dynamic permission key if user want create public TypeOfWidget";
 
-
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient                                      public boolean create_permission()  {return                      (project != null && project.update_permission()) || SecurityController.getPerson().has_permission("TypeOfWidget_create");}
     @JsonIgnore @Transient                                      public boolean read_permission()    {return (project == null) || (project != null && project.read_permission())   || SecurityController.getPerson().has_permission("TypeOfWidget_read");}
@@ -59,6 +69,6 @@ public class TypeOfWidget extends Model{
 
     public enum permissions{TypeOfWidget_create, TypeOfWidget_read, TypeOfWidget_edit , TypeOfWidget_delete, TypeOfWidget_update}
 
-    /* FINDER --------------------------------------------------------------------------------------------------------------*/
+/* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String,TypeOfWidget> find = new Finder<>(TypeOfWidget.class);
 }

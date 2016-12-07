@@ -19,6 +19,8 @@ import java.util.UUID;
 @Entity
 public class SingleLibrary  extends Model {
 
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true) public String id;
@@ -33,6 +35,7 @@ public class SingleLibrary  extends Model {
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<String>  versions_id()        { List<String> l = new ArrayList<>();  for( Version_Object m : version_objects)  l.add(m.id); return l;  }
 
+/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
@@ -62,7 +65,15 @@ public class SingleLibrary  extends Model {
         return  azure_single_library_link;
     }
 
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
+
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+
+/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
+
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore   @Transient                                    public boolean create_permission(){  return SecurityController.getPerson().has_permission("SingleLibrary_create"); }
     @JsonIgnore   @Transient                                    public boolean read_permission()  {  return true; }

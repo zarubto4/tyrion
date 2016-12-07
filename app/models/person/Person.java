@@ -14,6 +14,7 @@ import models.notification.Notification;
 import models.overflow.LinkedPost;
 import models.overflow.Post;
 import models.project.global.Project;
+import models.project.global.Project_participant;
 import models.project.global.financial.Payment_Details;
 import models.project.m_program.Grid_Terminal;
 import org.hibernate.validator.constraints.Email;
@@ -29,7 +30,9 @@ import java.util.List;
 @Entity
 public class Person extends Model {
 
-    /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+/* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @ApiModelProperty(required = true)                          public String id;
@@ -47,9 +50,9 @@ public class Person extends Model {
     @JsonIgnore  @Column(length = 64)                           public byte[] shaPassword;
     @JsonIgnore  @OneToOne(mappedBy = "person")                 public PasswordRecoveryToken passwordRecoveryToken;
 
-    @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Payment_Details>  payment_details = new ArrayList<>();
+    @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Payment_Details>     payment_details      = new ArrayList<>();
+    @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Project_participant> projects_participant = new ArrayList<>();
 
-    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<Project>              owningProjects            = new ArrayList<>();
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<Post>                 postLiker                 = new ArrayList<>();    // Propojení, které byly uživatelem hodnoceny (jak negativně, tak pozitivně)
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<SecurityRole>         roles                     = new ArrayList<>();
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<PersonPermission>     person_permissions        = new ArrayList<>();
@@ -65,7 +68,7 @@ public class Person extends Model {
     @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<Notification>         notifications        = new ArrayList<>();
     @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<Grid_Terminal>        grid_terminals       = new ArrayList<>(); // Přihlášený websocket uživatele
 
-/* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
+/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty @ApiModelProperty(required = true)
     public String picture_link(){
@@ -76,7 +79,7 @@ public class Person extends Model {
     }
 
 
-/* Security Tools @ JsonIgnore -----------------------------------------------------------------------------------------*/
+/* Security Tools @ JSON IGNORE -----------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
     public static byte[] getSha512(String value) {
@@ -117,6 +120,14 @@ public class Person extends Model {
     public String get_picture_path(){
         return  this.azure_picture_link;
     }
+
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
+
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+
+/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 

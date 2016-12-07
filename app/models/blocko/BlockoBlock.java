@@ -18,6 +18,7 @@ import java.util.List;
 @Entity
 public class BlockoBlock extends Model {
 
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
@@ -74,14 +75,21 @@ public class BlockoBlock extends Model {
         return list;
     }
 
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
-/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+
+/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
     // Floating shared documentation for Swagger
     @JsonIgnore @Transient public static final String read_permission_docs   = "read: If user can read TypeOfBlock, than can read all BlockoBlocks from list of TypeOfBlock ( You get ids of list of BlockoBlocks in object \"BlockoBlocks\" in json)  - Or you need static/dynamic permission key";
     @JsonIgnore @Transient public static final String create_permission_docs = "create: If user have TypeOfBlock.update_permission = true, you can create new BlockoBlocks on this TypeOfBlock - Or you need static/dynamic permission key if user want create BlockoBlock in public TypeOfBlock";
+
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore  @Transient                                     public boolean create_permission() {return  type_of_block.update_permission();}
     @JsonIgnore  @Transient                                     public boolean read_permission()   {return  type_of_block.read_permission();}

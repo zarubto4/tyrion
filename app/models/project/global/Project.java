@@ -19,6 +19,7 @@ import models.project.m_program.M_Project;
 import utilities.enums.Notification_action;
 import utilities.enums.Notification_importance;
 import utilities.enums.Notification_level;
+import utilities.enums.Participant_status;
 import utilities.swagger.outboundClass.*;
 
 import javax.persistence.*;
@@ -29,6 +30,8 @@ import java.util.UUID;
 
 @Entity
 public class Project extends Model {
+
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
@@ -51,9 +54,9 @@ public class Project extends Model {
 
     @JsonIgnore @ManyToOne(fetch = FetchType.EAGER) public Product product;
 
-    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "owningProjects")  @JoinTable(name = "connected_projects") public List<Person> ownersOfProject = new ArrayList<>();
+    @JsonIgnore @OneToMany(cascade = CascadeType.ALL, mappedBy = "project") public List<Project_participant> participants = new ArrayList<>();
 
-/* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
+/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Board_Short_Detail>         boards()           { List<Swagger_Board_Short_Detail>       l = new ArrayList<>();    for( Board m         : boards)         l.add(m.get_short_board());             return l;}
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_B_Program_Short_Detail>     b_programs()       { List<Swagger_B_Program_Short_Detail>   l = new ArrayList<>();    for( B_Program m     : b_programs)     l.add(m.get_b_program_short_detail());  return l;}
@@ -75,30 +78,20 @@ public class Project extends Model {
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Project_participant> participants() {
 
-        List<Project_participant> project_participants = new ArrayList<>();
-
-        for(Person person : ownersOfProject){
-            Project_participant project_participant = new Project_participant();
-            project_participant.id = person.id;
-            project_participant.user_email = person.mail;
-            project_participant.full_name = person.full_name;
-            project_participant.state = "Project Member"; // TODO dá se tu vymyslet mnohem lepší a promakanější stavy
-            project_participant.pending_invitation = false;
-            project_participants.add(project_participant);
-        }
+        List<Project_participant> project_participants = this.participants;
 
         for(Invitation invitation : invitations){
-            Project_participant project_participant = new Project_participant();
-            project_participant.user_email = invitation.mail;
-            project_participant.state      = "Waiting for decision"; // TODO dá se tu vymyslet mnohem lepší a promakanější stavy
-            project_participant.pending_invitation = true;
 
             Person person = Person.find.where().eq("mail", invitation.mail).findUnique();
+
+            Project_participant project_participant = new Project_participant();
+
             if(person != null){
 
-                project_participant.id = person.id;
-                project_participant.full_name = person.full_name;
-            }
+                project_participant.person = person;
+            }else project_participant.user_email = invitation.mail;
+
+            project_participant.state = Participant_status.invited;
 
             project_participants.add(project_participant);
         }
@@ -107,20 +100,9 @@ public class Project extends Model {
 
     }
 
-
-/* POMOCNÉ TŘÍDY ---------------------------------------------------------------------------------------------------------*/
-
-
-    public class Project_participant {
-        @JsonProperty @Transient @ApiModelProperty(required = false, value = "Only if the user is already part of the project") public String full_name;
-        @JsonProperty @Transient @ApiModelProperty(required = true, value = "Its in object always") public String user_email;
-        @JsonProperty @Transient @ApiModelProperty(required = false, value = "Only if the user is already part of the project (for click operations)")  public String id;
-        @JsonProperty @Transient @ApiModelProperty(required = true, value = "Its in object always")  public String state;
-        @JsonProperty @Transient @ApiModelProperty(required = true, value = "Its in object always")  public boolean pending_invitation;
-    }
-
-
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
@@ -169,7 +151,7 @@ public class Project extends Model {
     }
 
 
-/* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
 
     @JsonIgnore private String blob_project_link;
@@ -195,20 +177,21 @@ public class Project extends Model {
         return  blob_project_link;
     }
 
+/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient public static final String read_permission_docs   = "read: For all project: User can read project on API: {GET /project) - get Project by logged Person ";
+
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public static final String read_permission_docs   = "read: For all project: User can read project on API: {GET /project/project) - get Project by logged Person ";
-
-
     @JsonIgnore   @Transient @ApiModelProperty(required = true) public boolean create_permission()    {  return true;  }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission()    {  return ( Project.find.where().eq("ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Project_update");  }
-    @JsonIgnore   @Transient @ApiModelProperty(required = true) public boolean read_permission()      {  return ( Project.find.where().eq("ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Project_read");}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission()    {  return ( Project.find.where().eq("participants.person.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Project_update");  }
+    @JsonIgnore   @Transient @ApiModelProperty(required = true) public boolean read_permission()      {  return ( Project.find.where().eq("participants.person.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Project_read");}
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean unshare_permission()   {  return ( Project.find.where().eq("ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Project_unshare"); }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean share_permission ()    {  return ( Project.find.where().eq("ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Project_share");   }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean unshare_permission()   {  return ( Project.find.where().eq("participants.person.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Project_unshare"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean share_permission ()    {  return ( Project.find.where().eq("participants.person.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Project_share");   }
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()      {  return ( Project.find.where().eq("ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Project_edit");    }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission()    {  return ( Project.find.where().eq("ownersOfProject.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Project_delete");  }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()      {  return ( Project.find.where().eq("participants.person.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Project_edit");    }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission()    {  return ( Project.find.where().eq("participants.person.id", SecurityController.getPerson().id).where().eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("Project_delete");  }
 
     public enum permissions{Project_update, Project_read, Project_unshare , Project_share, Project_edit, Project_delete}
 

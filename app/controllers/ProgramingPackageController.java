@@ -23,6 +23,7 @@ import models.project.b_program.servers.Cloud_Homer_Server;
 import models.project.c_program.C_Program;
 import models.project.global.Product;
 import models.project.global.Project;
+import models.project.global.Project_participant;
 import models.project.m_program.M_Project;
 import models.project.m_program.M_Project_Program_SnapShot;
 import play.api.libs.mailer.MailerClient;
@@ -35,6 +36,7 @@ import play.mvc.Security;
 import utilities.Server;
 import utilities.emails.EmailTool;
 import utilities.enums.Approval_state;
+import utilities.enums.Participant_status;
 import utilities.enums.Type_of_command;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_API;
@@ -109,13 +111,22 @@ public class ProgramingPackageController extends Controller {
             project.description = help.project_description;
             project.product = product;
 
-            project.ownersOfProject.add( SecurityController.getPerson() );
-
             // Kontrola oprávnění těsně před uložením
             if (!project.create_permission())  return GlobalResult.forbidden_Permission();
 
             // Uložení objektu
             project.save();
+
+            project.refresh();
+
+            Project_participant participant = new Project_participant();
+            participant.person = product.payment_details.person;
+            participant.project = project;
+            participant.state = Participant_status.owner;
+
+            participant.save();
+
+            project.refresh();
 
             // Vrácení objektu
             return GlobalResult.created( Json.toJson(project) );
@@ -145,7 +156,7 @@ public class ProgramingPackageController extends Controller {
         try {
 
             // Získání seznamu
-            List<Project> projects = Project.find.where().eq("ownersOfProject.id",SecurityController.getPerson().id).eq("product.active", true).findList();
+            List<Project> projects = Project.find.where().eq("participants.person.id",SecurityController.getPerson().id).eq("product.active", true).findList();
 
             /*
             Swagger_Project_List_DashBoard list = new Swagger_Project_List_DashBoard();
@@ -484,11 +495,14 @@ public class ProgramingPackageController extends Controller {
             Project project = invitation.project;
             if(project == null) return GlobalResult.notFoundObject("Project no longer exists");
 
-            if ((!person.owningProjects.contains(project))&&(decision)) {
+            if ((Project_participant.find.where().eq("person.id", person.id).eq("project.id", project.id).findUnique() == null)&&(decision)) {
 
-                // Úprava objektů
-                project.ownersOfProject.add(person);
-                person.owningProjects.add(project);
+                Project_participant participant = new Project_participant();
+                participant.person = person;
+                participant.project = project;
+                participant.state = Participant_status.member;
+
+                participant.save();
             }
 
             // Odeslání notifikace podle rozhodnutí uživatele
@@ -505,10 +519,6 @@ public class ProgramingPackageController extends Controller {
 
             // Smazání pozvánky
             invitation.delete();
-
-            // Uložení do DB
-            person.update();
-            project.update();
 
             return GlobalResult.result_ok();
         }catch (Exception e){
@@ -574,19 +584,16 @@ public class ProgramingPackageController extends Controller {
             }
 
             for (Person person : list) {
-                if (person.owningProjects.contains(project)) {
+                Project_participant participant = Project_participant.find.where().eq("person.id", person.id).eq("project.id", project.id).findUnique();
+                if (participant != null) {
 
-                    // Úprava objektů
-                    project.ownersOfProject.remove(person);
-                    person.owningProjects.remove(project);
-
-                    // Uložení do DB
-                    person.update();
+                    // Úprava objektu
+                    participant.delete();
                 }
             }
 
-            // Uložení do DB
-            project.update();
+            // Obnovení v DB
+            project.refresh();
 
             // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(project));

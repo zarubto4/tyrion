@@ -24,6 +24,8 @@ import java.util.List;
 @Entity
 public class Notification extends Model {
 
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
     static play.Logger.ALogger logger = play.Logger.of("Notification");
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
@@ -45,8 +47,6 @@ public class Notification extends Model {
             value = "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
             example = "1466163478925")                                    public Date   created;
     @JsonIgnore @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.LAZY)  public Person person;
-
-
 
 /* BODY NOTIFICATION SEGMENTS ------------------------------------------------------------------------------------------*/
 
@@ -77,8 +77,6 @@ public class Notification extends Model {
         this.state = Notification_state.created;
         this.created = new Date();
     }
-
-    //---------------------------------------------------------------------------------------------------------------------
 
     //---------------------------------------------------------------------------------------------------------------------
 
@@ -201,6 +199,38 @@ public class Notification extends Model {
         return this;
     }
 
+ /* JSON PROPERTY VALUES -----------------------------------------------------------------------------------------------*/
+
+    @JsonProperty
+    @ApiModelProperty(required = true)
+    public List<Swagger_Notification_Element> notification_body(){
+        try {
+                if(array == null || array.size() < 1) array = new ObjectMapper().readValue(content_string, new TypeReference<List<Swagger_Notification_Element>>() {});
+                return array;
+
+        }catch (Exception e){
+            logger.error("Parsing notification body error", e);
+            return new ArrayList<Swagger_Notification_Element>();   // Vracím prázdný list - ale reportuji chybu
+        }
+
+    }
+
+    @JsonProperty
+    @ApiModelProperty(required = true)
+    public List<Swagger_Notification_Button> buttons(){
+        try {
+            if(buttons == null || buttons.size() < 1 || (buttons_string != null && !buttons_string.equals("[]"))) buttons = new ObjectMapper().readValue(buttons_string, new TypeReference<List<Swagger_Notification_Button>>() {});
+            return buttons;
+
+        }catch (Exception e){
+            logger.error("Parsing notification buttons error", e);
+            return new ArrayList<Swagger_Notification_Button>();   // Vracím prázdný list - ale reportuji chybu
+        }
+
+    }
+
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
     @Override
     public void save(){
         // Notifikace je automaticky uložena pomocí save_object()
@@ -232,38 +262,6 @@ public class Notification extends Model {
         super.save();
         return this;
     }
-
- /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
-
-    @JsonProperty
-    @ApiModelProperty(required = true)
-    public List<Swagger_Notification_Element> notification_body(){
-        try {
-                if(array == null || array.size() < 1) array = new ObjectMapper().readValue(content_string, new TypeReference<List<Swagger_Notification_Element>>() {});
-                return array;
-
-        }catch (Exception e){
-            logger.error("Parsing notification body error", e);
-            return new ArrayList<Swagger_Notification_Element>();   // Vracím prázdný list - ale reportuji chybu
-        }
-
-    }
-
-    @JsonProperty
-    @ApiModelProperty(required = true)
-    public List<Swagger_Notification_Button> buttons(){
-        try {
-            if(buttons == null || buttons.size() < 1 || (buttons_string != null && !buttons_string.equals("[]"))) buttons = new ObjectMapper().readValue(buttons_string, new TypeReference<List<Swagger_Notification_Button>>() {});
-            return buttons;
-
-        }catch (Exception e){
-            logger.error("Parsing notification buttons error", e);
-            return new ArrayList<Swagger_Notification_Button>();   // Vracím prázdný list - ale reportuji chybu
-        }
-
-    }
-
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
     public void set_read(){
@@ -306,6 +304,12 @@ public class Notification extends Model {
         }
 
     }
+
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+
+/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 

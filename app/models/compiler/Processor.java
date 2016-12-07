@@ -13,6 +13,8 @@ import java.util.List;
 @Entity
 public class Processor extends Model {
 
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true)  public String id;
@@ -29,10 +31,19 @@ public class Processor extends Model {
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> library_groups    (){ List<String> l = new ArrayList<>();  for( LibraryGroup m  : library_groups)    l.add(m.id); return l;  }
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> single_libraries  (){ List<String> l = new ArrayList<>();  for( SingleLibrary m : single_libraries)  l.add(m.id); return l;  }
 
-
-
+/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
+
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+
+/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
+
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore   @Transient                                    public boolean create_permission(){  return SecurityController.getPerson().has_permission("Processor_create"); }
     @JsonIgnore   @Transient                                    public boolean read_permission()  {  return true; }

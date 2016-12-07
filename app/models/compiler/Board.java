@@ -9,10 +9,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
 import models.notification.Notification;
+import models.person.Person;
 import models.project.b_program.B_Pair;
 import models.project.b_program.instnace.Homer_Instance;
 import models.project.c_program.actualization.C_Program_Update_Plan;
 import models.project.global.Project;
+import models.project.global.Project_participant;
 import play.data.Form;
 import play.libs.Json;
 import utilities.enums.Notification_importance;
@@ -366,21 +368,29 @@ public class Board extends Model {
     @JsonIgnore @Transient
     public void notification_board_connect(){
 
+        List<Person> receivers = new ArrayList<>();
+        for (Project_participant participant : this.project.participants)
+            receivers.add(participant.person);
+
         new Notification(Notification_importance.low, Notification_level.info)
                 .setText("One of your Boards " + (this.personal_description != null ? this.personal_description : null ), "black", false, false, false)
                 .setObject(Board.class, this.id, this.id, this.project_id(), "black", false, true, false, false)
                 .setText("is connected.", "black", false, false, false)
-                .send(this.project.ownersOfProject);
+                .send(receivers);
     }
 
     @JsonIgnore @Transient
     public void notification_board_disconnect(){
 
+        List<Person> receivers = new ArrayList<>();
+        for (Project_participant participant : this.project.participants)
+            receivers.add(participant.person);
+
         new Notification(Notification_importance.low, Notification_level.info)
                 .setText("One of your Boards " + (this.personal_description != null ? this.personal_description : null ), "black", false, false, false)
                 .setObject(Board.class, this.id, this.id, this.project_id(), "black", false, true, false, false)
                 .setText("is disconnected.", "black", false, false, false)
-                .send(this.project.ownersOfProject);
+                .send(receivers);
     }
 
     @JsonIgnore @Transient
