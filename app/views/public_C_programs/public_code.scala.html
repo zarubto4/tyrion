@@ -1,5 +1,7 @@
 @import utilities.enums.Approval_state
 @import models.compiler.Version_Object
+@import models.compiler.TypeOfBoard
+@import models.project.c_program.C_Program
 @import utilities.Server
 
 <section class="content-header">
@@ -16,9 +18,11 @@
     <div id="codeModal" style="display: none;" class="modal">
         <div style="" class="modal-dialog">
             <div class="modal-content">
+
                 <div class="modal-header">
                     <h4 class="modal-title">Code</h4>
                 </div>
+
                 <div class="modal-body">
                     <textarea readonly id="code" style="display: block; width: 100%;" rows="15" ></textarea>
                 </div>
@@ -30,6 +34,56 @@
         </div>
             <!-- /.modal-dialog -->
     </div>
+
+
+    <div id="editCodeModal" style="display: none;" class="modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Approve Code</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="newCProgramVersionForm">
+
+                        <div class="form-group">
+                            <label id="codeId" style="display: block;">ID</label>
+                        </div>
+
+                        <div class="form-group">
+                            <label style="">Version name:</label>
+                            <input type="text" id="code_name" style="display: block;">
+                        </div>
+
+                        <div class="form-group">
+                            <label style="">Version description: </label>
+                            <input type="text" id="code_description" style="display: block;">
+                        </div>
+
+
+                        <div class="form-group">
+                            <label style="">Code: </label>
+                            <textarea id="code_edit" style="display: block; width: 100%;" rows="6"></textarea>
+                        </div>
+
+
+                        <div class="form-group">
+                            <label style="">Message to user: </label>
+                            <textarea id="edit_code_reason" style="display: block; width: 100%;" rows="2"></textarea>
+                        </div>
+
+
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editCodeModal').css('display','none')">Close</button>
+                    <button id="editCodeButton" value="" class="btn btn-info" type="button" onclick="approveCodeWithChanges(this.value, document.getElementById('edit_code_reason').value)">Save changes & Approve</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
     <div id="disapproveCodeModal" style="display: none;" class="modal">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -50,38 +104,7 @@
         </div>
             <!-- /.modal-dialog -->
     </div>
-    <div id="editCodeModal" style="display: none;" class="modal">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title">Approve Code</h4>
-                </div>
-                <div class="modal-body">
-                    <label id="codeId" style="display: block;">ID</label>
-                    <div style="float: left;">
-                        <label style="">Version name:</label>
-                        <input type="text" id="code_name" style="display: block;">
-                    </div>
-                    <div style="">
-                        <label style="">Version description:</label>
-                        <input type="text" id="code_description" style="display: block;">
-                    </div>
-                    <label style="">Code:</label>
-                    <textarea id="code_edit" style="display: block; width: 100%;" rows="6"></textarea>
-                    <label style="">Message to user:</label>
-                    <textarea id="edit_code_reason" style="display: block; width: 100%;" rows="2"></textarea>
-                    <div style="display: none;" id="user_files"></div>
-                    <div style="display: none;" id="external_libraries"></div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editCodeModal').css('display','none')">Close</button>
-                    <button id="editCodeButton" value="" class="btn btn-info" type="button" onclick="approveCodeWithChanges(this.value, document.getElementById('edit_code_reason').value)">Save changes & Approve</button>
-                </div>
-            </div>
-                <!-- /.modal-content -->
-        </div>
-            <!-- /.modal-dialog -->
-    </div>
+
     <div class="row">
         <div class="col-md-12">
             <div class="box">
@@ -142,57 +165,409 @@
             <div class="box">
                 <div class="box-header with-border">
                     <h3 class="box-title">All Public programs</h3>
+                    <div class="pull-right">
+                        <div class="btn-group">
+                            <td><button class="btn btn-block btn-info" type="button" onclick="createProgramShow()">Create Public Program</button></td>
+                        </div><!-- /.btn-group -->
+                    </div><!-- /.pull-right -->
                 </div>
-                <div class="box-body">
-                    <label style="">Public C_Program in Becki</label>
-                    <table id="pendingCode" class="table table-bordered">
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Board</th>
-                            <th>Description</th>
-                            <th>C_Program name</th>
-                            <th>C_Program description</th>
-                            <th>Author</th>
-                            <th>Compilable</th>
-                            <th>Code</th>
-                            <th>Edit</th>
-                            <th>Decision</th>
-                        </tr>
-                        @for(version <- Version_Object.find.where().isNotNull("c_program").eq("approval_state", Approval_state.approved ).findList()) {
-                            <tr>
-                                <td>@version.id</td>
-                                <td>@version.version_name</td>
-                                <td>@version.c_program.type_of_board_name()</td>
-                                <td>@version.version_description</td>
-                                <td>@version.c_program.name</td>
-                                <td>@version.c_program.description</td>
-                                <td>@if(version.author != null){
-                                    @version.author.mail
-                                }else{
-                                    not defined
-                                }
-                                </td>
-                                <td>@version.c_compilation.status</td>
-                                <td><button class="btn btn-block btn-primary" type="button" onclick="showCode('@version.id')">Show Code</button></td>
-                                <td><button class="btn btn-block btn-info" type="button" onclick="showEditForm('@version.id')">Edit</button></td>
-                                <td>
-                                    <button style="display: inline-block; float: left;" class="btn btn-block btn-danger" type="button" onclick="showDisapproveCodeForm(@version.id)">Disapprove</button>
-                                </td>
-                            </tr>
-                        }
-                    </table>
+                <div class="box-body" id="all_c_programs">
+
+
+                       <p></p>
+
+                       @for(c_program <- C_Program.find.where().isNull("project").findList()){
+
+                           <label style=""><h4><p class="text-warning"> @c_program.name <small class="text-success">(Visible)</small> </p></h4></label>
+                           <br><label style="">@c_program.description </label>
+
+                           <div class="pull-right">
+                               <div class="btn-group">
+                                   <button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown">
+                                       <span class="caret"></span>
+                                       <span class="sr-only">Toggle Dropdown</span>
+                                       Program Action
+                                   </button>
+                                   <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                                       <li><button class="btn btn-block btn-primary" type="button" onclick="createC_Program_VersionShow('@c_program.id')">Create Version</button></li>
+                                       <li><button class="btn btn-block btn-info"    type="button" onclick="showEditForm('@c_program.id')">Hide</button></li>
+                                       <li><button class="btn btn-block btn-danger"  type="button" onclick="removeProgram('@c_program.id')">Delete</button></li>
+                                   </ul>
+                               </div>
+                           </div>
+                           <table id="c_program_detail" class="table table-bordered">
+
+                               <th class="col-md-1" >Id</th>
+                               <th class="col-md-1" >Name</th>
+                               <th class="col-md-3" >Description</th>
+                               <th class="col-md-1" >Author</th>
+                               <th class="col-md-1" >Comp. Status</th>
+                               <th class="col-md-1" >Visible Status</th>
+                               <th class="col-md-1" >Actions</th>
+
+
+                           @for(version <- c_program.getVersion_objects_all_For_Admin()){
+                               <tr>
+
+                                   <td>@version.id</td>
+                                   <td>@version.version_name</td>
+                                   <td>@version.version_description</td>
+                                   <td>@if(version.author != null){
+                                       @version.author.mail
+                                   }else{
+                                       not defined
+                                   }
+                                   </td>
+                                   <td>@version.c_compilation.status</td>
+                                   <td>@version.public_version</td>
+                                   <td>
+
+
+                                       <div class="btn-group">
+                                           <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown">
+                                               <span class="caret"></span>
+                                               <span class="sr-only">Toggle Dropdown</span>
+                                               Version Action
+                                           </button>
+                                           <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                                               <li><button class="btn btn-block btn-primary" type="button" onclick="showCode('@version.id')">Show Code</button></li>
+                                               <li><button class="btn btn-block btn-info"    type="button" onclick="editC_Program_VersionShow('@version.id', '@version.version_name', '@version.version_description')">Edit</button></li>
+                                                   @if(version.public_version){
+                                                       <li><button class="btn btn-block btn-warning"  type="button" onclick="dispproveVersion(@version.id)">Disapprove</button></li>
+                                                   }else{
+                                                       <li><button class="btn btn-block btn-warning"  type="button" onclick="approveVersion(@version.id)">Approve</button></li>
+                                                   }
+                                               <li><button class="btn btn-block btn-danger"  type="button" onclick="removeVersion(@version.id)">Delete</button></li>
+                                           </ul>
+                                       </div>
+
+
+
+                                   </td>
+
+                               </tr>
+                           }
+                           </table>
+                           <p></p>
+                           <p></p>
+                           <hr>
+                           <p></p>
+                           <p></p>
+                       }
+
                 </div>
                 <div class="box-footer">
                 </div>
             </div>
         </div>
     </div>
+
+
+    <div id="createProgramModal" style="display: none;" class="modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Create Program</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="createProgramForm">
+
+                        <div class="form-group">
+                            <label style="">C Program name</label>
+                            <input type="text" class="form-control" name="name">
+                        </div>
+
+                        <div class="form-group">
+                            <label style="">C Program description </label>
+                            <input type="text" class="form-control" name="description">
+                        </div>
+
+                        <div class="form-group">
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" name="c_program_public_admin_create" value="true" checked true>
+                                Public C Program
+                            </label>
+                            </div>
+                        </div>
+
+
+                        <div class="form-group">
+                            <label style="">Type Of Board</label>
+                            <select class="form-control" id="type_of_board_id" name="type_of_board_id">
+                                @for(x <- TypeOfBoard.find.all()){
+                                    <option  value="@x.id" name="type_of_board_id" >@x.name</option>
+                                }
+                            </select>
+                        </div>
+
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#createProgramModal').css('display','none')">Close</button>
+                    <button id="editCompilationServerButton" value="" class="btn btn-primary" type="button" onclick="createProgram()">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div id="newCProgramVersionModal" style="display: none;" class="modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">New C Program version</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="newCProgramVersionForm">
+                        <label>Version name</label>                 <input type="text" placeholder="1.0.5" name="version_name"> <p><p><p>
+                        <label>Version Description</label><p>       <textarea name="description" class="form-control" rows="3" placeholder="Description...."></textarea> <p><p>
+                        <label>Program</label>  <p>                 <textarea name="main" class="form-control" rows="3" placeholder="Code...."></textarea> <p>
+
+                    </form>
+
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newCProgramVersionModal').css('display','none')">Close</button>
+                    <button id="newCProgramVersionButton" value="" class="btn btn-primary" type="button" onclick="createNewCProgramVersion(this.value)">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="editVersionModal" style="display: none;" class="modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Edit Version</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="editCProgramVersionForm">
+
+                        <div class="form-group">
+                            <label id="c_program_version_id" style="display: block;">ID</label>
+                        </div>
+
+                        <div class="form-group">
+                            <label style="">Version name:</label>
+                            <input type="text" name="name" id="editCProgramVersionForm_name" style="display: block;">
+                        </div>
+
+                        <div class="form-group">
+                            <label style="">Version description: </label>
+                            <input type="text" name="description"  id="editCProgramVersionForm_description" style="display: block;">
+                        </div>
+
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editVersionModal').css('display','none')">Close</button>
+                    <button id="editCodeButton" value="" class="btn btn-info" type="button" onclick="editVersion(this.value)">Save changes & Approve</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
 </section>
+
 
 <script>
 
         $.ajaxSetup({ cache: false });
+
+
+        function createProgramShow(){
+            $("#createProgramModal").css("display","block");
+        }
+
+        function createC_Program_VersionShow(c_program_id){
+            $('#newCProgramVersionButton').val(c_program_id);
+            $("#newCProgramVersionModal").css("display","block");
+        }
+
+        function editC_Program_VersionShow(version_id, name, description){
+            $('#c_program_version_id').val(version_id);
+            $('#editCProgramVersionForm_description').val(description);
+            $('#editCProgramVersionForm_name').val(name);
+            $('#editCodeButton').val(version_id);
+            $("#editVersionModal").css("display","block");
+        }
+
+
+        function createProgram(){
+
+            model_data = $("#createProgramForm").serializeObject();
+
+            $.ajax({
+                url: '@routes.CompilationLibrariesController.create_C_Program()',
+                type: 'POST',
+                contentType: 'application/json',
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken"),
+                    "Content-Type":"application/json"
+                },
+                data: JSON.stringify(model_data),
+                dataType: 'json',
+
+                success:function(e){
+                    $("#createProgramModal input[type=text]").val("");
+                    $("#createProgramModal").css("display","none");
+                    $('#all_c_programs').load(document.URL +  ' #all_c_programs');
+                },
+                error:function(e) {
+                    BootstrapDialog.show({
+                        message: syntaxHighlight(e),
+                        type: BootstrapDialog.TYPE_DANGER,
+                        buttons: [{
+                            label: 'Close',
+                            action: function(dialogItself) {
+                                dialogItself.close();
+                            }
+                        }]
+
+                    });
+                }
+            })}
+
+        function removeProgram(id){
+
+            $.ajax({
+                url: '@routes.CompilationLibrariesController.delete_C_Program("")' + id,
+                type: 'DELETE',
+                contentType: 'application/json',
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken"),
+                    "Content-Type":"application/json"
+                },
+                dataType: 'json',
+
+                success:function(e){
+                    $('#all_c_programs').load(document.URL +  ' #all_c_programs');
+                },
+                error:function(e) {
+                    BootstrapDialog.show({
+                        message: syntaxHighlight(e),
+                        type: BootstrapDialog.TYPE_DANGER,
+                        buttons: [{
+                            label: 'Close',
+                            action: function(dialogItself) {
+                                dialogItself.close();
+                            }
+                        }]
+
+                    });
+                }
+            })}
+
+        function removeVersion(id){
+
+            $.ajax({
+                url: '@routes.CompilationLibrariesController.delete_C_Program_Version("")' + id,
+                type: 'DELETE',
+                contentType: 'application/json',
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken"),
+                    "Content-Type":"application/json"
+                },
+                dataType: 'json',
+
+                success:function(e){
+                    $('#all_c_programs').load(document.URL +  ' #all_c_programs');
+                },
+                error:function(e) {
+                    BootstrapDialog.show({
+                        message: syntaxHighlight(e),
+                        type: BootstrapDialog.TYPE_DANGER,
+                        buttons: [{
+                            label: 'Close',
+                            action: function(dialogItself) {
+                                dialogItself.close();
+                            }
+                        }]
+
+                    });
+                }
+            })}
+
+        function editVersion(id){
+
+            model_data = $("#editCProgramVersionForm").serializeObject();
+
+            $.ajax({
+                url: '@routes.CompilationLibrariesController.edit_C_Program_version("")' + id,
+                type: 'PUT',
+                contentType: 'application/json',
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken"),
+                    "Content-Type":"application/json"
+                },
+                data: JSON.stringify(model_data),
+                dataType: 'json',
+
+                success:function(e){
+                    $("#editCProgramVersionForm input[type=text]").val("");
+                    $("#editVersionModal").css("display","none");
+                    $('#all_c_programs').load(document.URL +  ' #all_c_programs');
+                },
+                error:function(e) {
+                    BootstrapDialog.show({
+                        message: syntaxHighlight(e),
+                        type: BootstrapDialog.TYPE_DANGER,
+                        buttons: [{
+                            label: 'Close',
+                            action: function(dialogItself) {
+                                dialogItself.close();
+                            }
+                        }]
+
+                    });
+                }
+            })}
+
+        function createNewCProgramVersion(c_program_id) {
+
+            model_data = $("#newCProgramVersionForm").serializeObject();
+
+            $.ajax({
+                url: '@routes.CompilationLibrariesController.new_C_Program_Version("")' + c_program_id ,
+                type: 'POST',
+                contentType: 'application/json',
+                headers: {
+                    "X-AUTH-TOKEN": getCookie("authToken"),
+                    "Content-Type": "application/json"
+                },
+                data: JSON.stringify(model_data),
+                dataType: 'json',
+
+                success: function(data) {
+
+                    $("#newCProgramVersionForm input[type=text]").val("");
+                    $("#newCProgramVersionModal").css("display", "none");
+                    $('#all_c_programs').load(document.URL + ' #all_c_programs');
+
+                },
+                error: function(data) {
+
+                    BootstrapDialog.show({
+                        message: syntaxHighlight(data),
+                        type: BootstrapDialog.TYPE_DANGER,
+                        buttons: [{
+                            label: 'Close',
+                            action: function(dialogItself) {
+                                dialogItself.close();
+                            }
+                        }]
+
+                    });
+                }
+            })
+        }
+
         function disapproveCode(id, reason){
           model_data = {"id": id,
                         "decision" : false,
@@ -210,35 +585,64 @@
             success:function(json){
                     $('#pendingCode').load(document.URL + ' #pendingCode');
                     $("#disapproveCodeModal").css("display","none");
+                    $('#all_c_programs').load(document.URL +  ' #all_c_programs');
             },
             error:function(json) {
               alert(json.responseText);
             }
           })}
 
-        function approveCode(id){
+        function approveVersion(id){
 
-                model_data = {
-                    "id": id,
-                    "decision": true
-                };
-          $.ajax({
-            url: '@routes.CompilationLibrariesController.changeApprovalState()' ,
-            type: 'PUT',
-            contentType: 'application/json',
-            headers: {
-              "X-AUTH-TOKEN":getCookie("authToken"),
-              "Content-Type":"application/json"
-            },
-            data: JSON.stringify(model_data),
-            dataType: 'json',
-            success:function(e){
-              $('#pendingCode').load(document.URL +  ' #pendingCode');
-            },
-            error:function(json) {
-              alert(json.message);
-            }
-          })}
+            model_data = {
+                "id": id,
+                "decision": true
+            };
+
+            $.ajax({
+                url: '@routes.CompilationLibrariesController.changeApprovalState()' ,
+                type: 'PUT',
+                contentType: 'application/json',
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken"),
+                    "Content-Type":"application/json"
+                },
+                data: JSON.stringify(model_data),
+                dataType: 'json',
+                success:function(e){
+                    $('#pendingCode').load(document.URL +  ' #pendingCode');
+                    $('#all_c_programs').load(document.URL +  ' #all_c_programs');
+                },
+                error:function(json) {
+                    alert(json.message);
+                }
+            })
+        }
+
+        function dispproveVersion(id){
+
+            model_data = {
+                "id": id,
+                "decision": false
+            };
+            $.ajax({
+                url: '@routes.CompilationLibrariesController.changeApprovalState()' ,
+                type: 'PUT',
+                contentType: 'application/json',
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken"),
+                    "Content-Type":"application/json"
+                },
+                data: JSON.stringify(model_data),
+                dataType: 'json',
+                success:function(e){
+                    $('#pendingCode').load(document.URL +  ' #pendingCode');
+                    $('#all_c_programs').load(document.URL +  ' #all_c_programs');
+                },
+                error:function(json) {
+                    alert(json.message);
+                }
+            })}
 
         function approveCodeWithChanges(id, reason){
 
@@ -271,7 +675,7 @@
 
         function showEditForm(id){
             $.ajax({
-                url: '@Server.tyrion_serverAddress' + '/compilation/c_program/version/' + id,
+                url: '@routes.CompilationLibrariesController.get_C_Program_Version("")' + id,
                 type: 'GET',
                 headers: {
                     "X-AUTH-TOKEN":getCookie("authToken")

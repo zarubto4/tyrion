@@ -117,6 +117,10 @@ public class C_Program extends Model {
         return Version_Object.find.where().eq("c_program.id", id).eq("removed_by_user", false).order().asc("date_of_create").findList();
     }
 
+    @JsonIgnore @Transient public List<Version_Object> getVersion_objects_all_For_Admin() {
+        return Version_Object.find.where().eq("c_program.id", id).order().asc("date_of_create").findList();
+    }
+
     // Objekt určený k vracení verze
     @JsonIgnore @Transient
     public Swagger_C_Program_Version program_version(Version_Object version_object){

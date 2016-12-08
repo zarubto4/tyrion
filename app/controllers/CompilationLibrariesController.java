@@ -127,9 +127,15 @@ public class CompilationLibrariesController extends Controller {
                 if (typeOfBoard.default_program == null || typeOfBoard.default_program.default_main_version == null) return GlobalResult.result_BadRequest("Its not possible Create First program - TypeOf Board has not set default Firmware - This Error is for Byzance team!!");
                 c_program.first_default_version_object = typeOfBoard.default_program.default_main_version;
 
-            }else {
+            }
+            else if(help.c_program_type_of_board_default){      // Admin oprávnění vyždováno - kontrola až v create_permission
+
                 if( c_program.default_program_type_of_board != null) return GlobalResult.result_BadRequest("It is prohibited to set Two C_Programs on one TypeOfBoard");
                 c_program.default_program_type_of_board = typeOfBoard;
+
+            }
+            else if(!help.c_program_public_admin_create){
+                return GlobalResult.result_BadRequest("Its is not possible create C_Program where is not project or default c_program for type of board");
             }
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
@@ -729,32 +735,34 @@ public class CompilationLibrariesController extends Controller {
                 // Schválení objektu
                 version_object.approval_state = Approval_state.approved;
                 version_object.public_version = true;
-
             }else {
 
                 // Neschválení objektu
                 version_object.approval_state = Approval_state.disapproved;
+                version_object.public_version = false;
 
-                if ((help.reason == null)||(help.reason.equals(""))) return GlobalResult.result_BadRequest("Fill in the reason");
+                // Pokud je uveden Reason - tak se to odesílá uživateli.
+                if ( help.reason != null && !help.reason.equals("") ){
 
-                // Odeslání emailu s důvodem
-                try {
-                    new EmailTool()
-                            .addEmptyLineSpace()
-                            .startParagraph("13")
-                            .addText("Your code: ")
-                            .addBoldText(version_object.version_name)
-                            .addText(" was disapproved for this reason: ")
-                            .endParagraph()
-                            .startParagraph("13")
-                            .addText( help.reason)
-                            .endParagraph()
-                            .addEmptyLineSpace()
-                            .sendEmail(version_object.author.mail, "Code disapproved" );
+                    // Odeslání emailu s důvodem
+                    try {
+                        new EmailTool()
+                                .addEmptyLineSpace()
+                                .startParagraph("13")
+                                .addText("Your code: ")
+                                .addBoldText(version_object.version_name)
+                                .addText(" was disapproved for this reason: ")
+                                .endParagraph()
+                                .startParagraph("13")
+                                .addText(help.reason)
+                                .endParagraph()
+                                .addEmptyLineSpace()
+                                .sendEmail(version_object.author.mail, "Code disapproved");
 
-                } catch (Exception e) {
-                    logger.error ("Sending mail -> critical error", e);
-                    e.printStackTrace();
+                    } catch (Exception e) {
+                        logger.error("Sending mail -> critical error", e);
+                        e.printStackTrace();
+                    }
                 }
             }
 

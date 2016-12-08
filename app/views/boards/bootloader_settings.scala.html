@@ -231,9 +231,28 @@
             </div>
             <div class="modal-body">
                 <form id="newCProgramForm">
-                    <label>TypeOfDevice ID</label>                          <input type="text" name="type_of_board_id"> <p>
-                    <label>Name</label>                                     <input type="text" name="name"> <p>
-                    <label>Description</label>  <p>                         <textarea name="description" class="form-control" rows="3" placeholder="Descritpion (24 chartacters at least)... "></textarea> <p>
+
+                    <div class="form-group">
+                        <label>TypeOfDevice ID</label>
+                        <input type="text" name="type_of_board_id"> <p>
+                    </div>
+
+                    <div class="form-group">
+                        <label style="">C Program name</label>
+                        <input type="text" class="form-control" name="name">
+                    </div>
+
+                    <div class="form-group">
+                        <label style="">C Program description </label>
+                        <input type="text" class="form-control" name="description">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-inline">
+                            <input name="c_program_type_of_board_default" type="checkbox" checked="checked" value="true" disabled="disabled">Public C Program</label>
+                    </div>
+
+
                 </form>
             </div>
             <div class="modal-footer">
@@ -276,6 +295,8 @@
                     <label>Version name</label>                 <input type="text" placeholder="1.0.5" name="version_name"> <p><p><p>
                     <label>Version Description</label><p>       <textarea name="description" class="form-control" rows="3" placeholder="Description...."></textarea> <p><p>
                     <label>Program</label>  <p>                 <textarea name="main" class="form-control" rows="3" placeholder="Code...."></textarea> <p>
+
+
                 </form>
             </div>
             <div class="modal-footer">
@@ -375,9 +396,9 @@
         $('#editCProgramButton').val(c_program_id);
     }
 
-    function createCProgramVersionModal(boot_loader_id) {
+    function createCProgramVersionModal(c_program_id) {
         $("#newCProgramVersionModal").css("display", "block");
-        $('#newCProgramVersionButton').val(boot_loader_id);
+        $('#newCProgramVersionButton').val(c_program_id);
     }
 
     function setBootLoaderAsMain(boot_loader_id) {

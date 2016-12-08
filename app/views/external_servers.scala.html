@@ -308,7 +308,6 @@ function editCompilationServer(id){
 
     $.ajax({
         url: '@routes.CompilationLibrariesController.edit_Compilation_Server("")' + id,
-        url: "@Server.tyrion_serverAddress" + "/compilation/server" + id ,
         type: 'PUT',
         contentType: 'application/json',
         headers: {
