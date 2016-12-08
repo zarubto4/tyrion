@@ -69,9 +69,9 @@ public class Homer_Instance extends Model {
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
 
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_id()             {  return this.getB_program().id;}
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_name()           {  return this.getB_program().name;}
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_description()    {  return this.getB_program().description;}
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_id()             {  if (getB_program() == null)return null; return this.getB_program().id;}
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_name()           {  if (getB_program() == null)return null; return this.getB_program().name;}
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_description()    {  if (getB_program() == null)return null; return this.getB_program().description;}
 
     @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_name()             {  return cloud_homer_server.server_name;}
     @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_id()               {  return cloud_homer_server.id;}
@@ -113,7 +113,7 @@ public class Homer_Instance extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient  public B_Program    getB_program()   { return b_program;}
+    @JsonIgnore             public B_Program    getB_program()   { return b_program;}
     @JsonIgnore @Transient  public boolean      instance_online(){ return this.online_state();}
     @JsonIgnore @Transient  public List<Board>  getBoards_in_virtual_instance() { return boards_in_virtual_instance; }
 

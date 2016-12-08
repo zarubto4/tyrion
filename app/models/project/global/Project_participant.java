@@ -25,13 +25,13 @@ public class Project_participant extends Model{
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public String id()          { return person.id;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) @JsonInclude(JsonInclude.Include.NON_NULL) public String user_email()  { return person.mail;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public String full_name()   { return person.full_name;}
-
-    @JsonProperty @Transient @JsonInclude(JsonInclude.Include.NON_NULL)  public String user_email;
+    @JsonProperty @Transient @ApiModelProperty(required = true) public String id()          { if (person == null) return null; return person.id;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public String user_email()  { if (person == null) return this.user_email; return person.mail;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public String full_name()   { if (person == null) return "Unregistered user"; return person.full_name;}
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient  public String user_email;
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
