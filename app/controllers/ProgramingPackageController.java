@@ -156,17 +156,8 @@ public class ProgramingPackageController extends Controller {
         try {
 
             // Získání seznamu
-            List<Project> projects = Project.find.where().eq("participants.person.id",SecurityController.getPerson().id).eq("product.active", true).findList();
-
-            /*
-            Swagger_Project_List_DashBoard list = new Swagger_Project_List_DashBoard();
-            list.projects = projects;
-
-            // TODO doplnovat Widgety de libosti!!
-            list.widget.add( Becki_Widget_Generator.create_A_Type_Widget("My Projects", "Total", projects.size(), Becki_color.byzance_blue, "fa-linode" ));
-            list.widget.add( Becki_Widget_Generator.create_A_Type_Widget("Instances in cloud", "Total", Homer_Instance.find.where().eq("b_program.project.ownersOfProject.id", SecurityController.getPerson().id).isNull("actual_instance").findRowCount(), Becki_color.byzance_pink, "fa-cloud-upload"));
-            */
-
+            List<Project> projects = Project.find.where().eq("participants.person.id",SecurityController.getPerson().id).eq("product.active", true).order().asc("name").findList();
+            
             // Vrácení seznamu
             return GlobalResult.result_ok(Json.toJson( projects ));
 
