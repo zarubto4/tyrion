@@ -420,6 +420,7 @@ public class GridController extends Controller {
             version_object.author              = SecurityController.getPerson();
             version_object.public_version      = help.public_mode;
             version_object.qr_token            = UUID.randomUUID().toString() + UUID.randomUUID().toString();
+            version_object.m_program_virtual_input_output =  help.virtual_input_output;
 
             version_object.save();
 
@@ -427,7 +428,6 @@ public class GridController extends Controller {
 
             ObjectNode content = Json.newObject();
             content.put("m_code", help.m_code);
-            content.put("virtual_input_output", help.virtual_input_output);
 
             FileRecord.uploadAzure_Version(content.toString(), "m_program.json" , main_m_program.get_path() ,  version_object);
 

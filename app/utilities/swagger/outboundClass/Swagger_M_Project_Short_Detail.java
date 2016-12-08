@@ -16,13 +16,17 @@ public class Swagger_M_Project_Short_Detail {
     @ApiModelProperty(required = true, readOnly = true)
     public String description;
 
+
     @ApiModelProperty(required = true, readOnly = true)
+    public String interface_code;
+
+    @ApiModelProperty(required = false, readOnly = true)
     public boolean edit_permission;
 
-    @ApiModelProperty(required = true, readOnly = true)
+    @ApiModelProperty(required = false, readOnly = true)
     public boolean update_permission;
 
-    @ApiModelProperty(required = true, readOnly = true)
+    @ApiModelProperty(required = false, readOnly = true)
     public boolean delete_permission;
 
 }

@@ -157,7 +157,7 @@ public class ProgramingPackageController extends Controller {
 
             // Získání seznamu
             List<Project> projects = Project.find.where().eq("participants.person.id",SecurityController.getPerson().id).eq("product.active", true).order().asc("name").findList();
-            
+
             // Vrácení seznamu
             return GlobalResult.result_ok(Json.toJson( projects ));
 

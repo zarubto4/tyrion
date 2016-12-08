@@ -645,6 +645,7 @@ create table version_object (
   approval_state            varchar(11),
   b_program_id              varchar(255),
   m_program_id              varchar(255),
+  m_program_virtual_input_output TEXT,
   qr_token                  varchar(255),
   blob_version_link         varchar(255),
   constraint ck_version_object_approval_state check (approval_state in ('approved','edited','pending','disapproved')),

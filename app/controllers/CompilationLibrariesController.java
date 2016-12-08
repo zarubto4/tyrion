@@ -13,7 +13,6 @@ import models.project.b_program.instnace.Homer_Instance;
 import models.project.c_program.C_Program;
 import models.project.global.Product;
 import models.project.global.Project;
-import models.project.m_program.M_Project;
 import play.data.Form;
 import play.libs.Json;
 import play.libs.ws.WSClient;
@@ -3838,11 +3837,11 @@ public class CompilationLibrariesController extends Controller {
 
             // Získání objektu
             Swagger_Boards_For_Blocko boards_for_blocko = new Swagger_Boards_For_Blocko();
-
+            boards_for_blocko.add_M_Projects(project.m_projects);
+            boards_for_blocko.add_C_Programs(project.c_programs);
 
             for (Board board : project.boards)              boards_for_blocko.boards.add(board.get_short_board());
-            for (C_Program c_program : project.c_programs)  boards_for_blocko.c_programs.add(c_program.get_compiled_short_c_program());
-            for (M_Project m_project : project.m_projects)  boards_for_blocko.m_projects.add(m_project.get_short_m_project());
+
 
             boards_for_blocko.type_of_boards = TypeOfBoard.find.where().eq("boards.project.id", project.id).findList();
 

@@ -1988,11 +1988,12 @@ public class Demo_Data_Controller extends Controller {
             m_program_version_object_1.m_program = m_program_1;
             m_program_version_object_1.public_version = false;
             m_program_version_object_1.qr_token = "qr_token_1";
+            m_program_version_object_1.m_program_virtual_input_output = "{\"analogInputs\":{},\"digitalInputs\":{\"button_1\":{}},\"messageInputs\":{},\"analogOutputs\":{},\"digitalOutputs\":{\"button_1\":{}},\"messageOutputs\":{}}";
+
             m_program_version_object_1.save();
 
             ObjectNode content_m_program_version_1 = Json.newObject();
             content_m_program_version_1.put("m_code", "{\"device\":\"mobile\",\"screens\":{\"main\":[{\"widgets\":[{\"type\":\"TimeWidget\",\"boxBoundingBox\":{\"x\":2,\"y\":1,\"height\":1,\"width\":1},\"config\":{\"bgColor\":\"#32995F\",\"bgTransparent\":false}},{\"type\":\"LabelWidget\",\"boxBoundingBox\":{\"x\":5,\"y\":1,\"height\":1,\"width\":1},\"config\":{\"text\":\"The Grid\",\"textSize\":100,\"bgColor\":\"#32995F\",\"bgTransparent\":false}},{\"type\":\"ButtonWidget\",\"boxBoundingBox\":{\"x\":0,\"y\":0,\"height\":5,\"width\":2},\"config\":{\"ioName\":\"button_1\",\"text\":\"Byzance!\",\"textSize\":100,\"bgColor\":\"#32995F\",\"bgTransparent\":false}}]}]}}");
-            content_m_program_version_1.put("virtual_input_output", "{\"analogInputs\":{},\"digitalInputs\":{\"button_1\":{}},\"messageInputs\":{},\"analogOutputs\":{},\"digitalOutputs\":{\"button_1\":{}},\"messageOutputs\":{}}");
 
             FileRecord.uploadAzure_Version(content_m_program_version_1.toString(), "m_program.json" , m_program_1.get_path() ,  m_program_version_object_1);
             m_program_version_object_1.update();
@@ -2010,11 +2011,11 @@ public class Demo_Data_Controller extends Controller {
             m_program_version_object_2.m_program = m_program_2;
             m_program_version_object_2.public_version = false;
             m_program_version_object_2.qr_token = "qr_token_2";
+            m_program_version_object_2.m_program_virtual_input_output = "{\"analogInputs\":{},\"digitalInputs\":{\"button_1\":{}},\"messageInputs\":{},\"analogOutputs\":{},\"digitalOutputs\":{\"button_1\":{}},\"messageOutputs\":{}}";
             m_program_version_object_2.save();
 
             ObjectNode content_m_program_version_2 = Json.newObject();
             content_m_program_version_2.put("m_code", "{\"device\":\"mobile\",\"screens\":{\"main\":[{\"widgets\":[{\"type\":\"TimeWidget\",\"boxBoundingBox\":{\"x\":2,\"y\":1,\"height\":1,\"width\":1},\"config\":{\"bgColor\":\"#32995F\",\"bgTransparent\":false}},{\"type\":\"LabelWidget\",\"boxBoundingBox\":{\"x\":5,\"y\":1,\"height\":1,\"width\":1},\"config\":{\"text\":\"The Grid\",\"textSize\":100,\"bgColor\":\"#32995F\",\"bgTransparent\":false}},{\"type\":\"ButtonWidget\",\"boxBoundingBox\":{\"x\":0,\"y\":0,\"height\":5,\"width\":2},\"config\":{\"ioName\":\"button_1\",\"text\":\"Byzance!\",\"textSize\":100,\"bgColor\":\"#32995F\",\"bgTransparent\":false}}]}]}}");
-            content_m_program_version_2.put("virtual_input_output", "{\"analogInputs\":{},\"digitalInputs\":{\"button_1\":{}},\"messageInputs\":{},\"analogOutputs\":{},\"digitalOutputs\":{\"button_1\":{}},\"messageOutputs\":{}}");
 
             FileRecord.uploadAzure_Version(content_m_program_version_2.toString(), "m_program.json" , m_program_2.get_path() ,  m_program_version_object_2);
             m_program_version_object_2.update();

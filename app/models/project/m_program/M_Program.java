@@ -36,6 +36,8 @@ public class M_Program extends Model{
 
 
 
+
+
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public M_Project m_project;
     @JsonIgnore @OneToMany(mappedBy="m_program", cascade = CascadeType.ALL, fetch = FetchType.LAZY) @OrderBy("date_of_create DESC") public List<Version_Object> version_objects = new ArrayList<>();
 
@@ -87,6 +89,8 @@ public class M_Program extends Model{
             m_program_versions.version_object = version_object;
             m_program_versions.public_mode = version_object.public_version;
             m_program_versions.qr_token = version_object.qr_token;
+            m_program_versions.qr_token = version_object.qr_token;
+            m_program_versions.virtual_input_output = version_object.m_program_virtual_input_output;
 
             FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "m_program.json").findUnique();
 
@@ -94,7 +98,7 @@ public class M_Program extends Model{
 
                 JsonNode json = Json.parse(fileRecord.get_fileRecord_from_Azure_inString());
                 m_program_versions.m_code = json.get("m_code").asText();
-                m_program_versions.virtual_input_output = json.get("virtual_input_output").asText();
+
 
             }
 
@@ -122,34 +126,16 @@ public class M_Program extends Model{
     @JsonIgnore @Transient public List<Swagger_M_Program_Version_Interface> program_versions_interface() {
         List<Swagger_M_Program_Version_Interface> versions = new ArrayList<>();
 
-        for(Version_Object v : getVersion_objects()) versions.add(program_version_interface(v));
+        for(Version_Object v : getVersion_objects()){
+            Swagger_M_Program_Version_Interface help = new Swagger_M_Program_Version_Interface();
+            help.version_object = v;
+            help.virtual_input_output = v.m_program_virtual_input_output;
+            versions.add(help);
+        }
         return versions;
     }
 
 
-    @JsonIgnore @Transient
-    public Swagger_M_Program_Version_Interface program_version_interface(Version_Object version_object){
-        try {
-
-            Swagger_M_Program_Version_Interface m_program_versions = new Swagger_M_Program_Version_Interface();
-            m_program_versions.version_object = version_object;
-
-            FileRecord fileRecord = FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "m_program.json").findUnique();
-
-            if (fileRecord != null) {
-
-                JsonNode json = Json.parse(fileRecord.get_fileRecord_from_Azure_inString());
-                m_program_versions.virtual_input_output = json.get("virtual_input_output").asText();
-
-            }
-
-            return m_program_versions;
-
-        }catch (Exception e){
-            e.printStackTrace();
-            return null;
-        }
-    }
 
 
 /* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/
