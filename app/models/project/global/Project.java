@@ -59,22 +59,19 @@ public class Project extends Model {
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Board_Short_Detail>         boards()           { List<Swagger_Board_Short_Detail>       l = new ArrayList<>();    for( Board m         : boards)         l.add(m.get_short_board());                return l;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_B_Program_Short_Detail>     b_programs()       { List<Swagger_B_Program_Short_Detail>   l = new ArrayList<>();    for( B_Program m     : b_programs)     l.add(m.get_b_program_short_detail());     return l;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_C_program_Short_Detail>     c_programs()       { List<Swagger_C_program_Short_Detail>   l = new ArrayList<>();    for( C_Program m     : c_programs)     l.add(m.get_c_program_short_detail());     return l;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_M_Project_Short_Detail>     m_projects()       { List<Swagger_M_Project_Short_Detail>   l = new ArrayList<>();    for( M_Project m     : m_projects)     l.add(m.get_short_m_project());            return l;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_TypeOfBlock_Short_Detail>   type_of_blocks()   { List<Swagger_TypeOfBlock_Short_Detail> l = new ArrayList<>();    for( TypeOfBlock m   : type_of_blocks) l.add(m.get_type_of_block_short_detail()); return l;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_TypeOfWidget_Short_Detail>  type_of_widgets()  { List<Swagger_TypeOfWidget_Short_Detail>l = new ArrayList<>();    for( TypeOfWidget m  : type_of_widgets)l.add(m.get_typeOfWidget_short_detail());  return l;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Board_Short_Detail>         boards()           { List<Swagger_Board_Short_Detail>       l = new ArrayList<>();    for( Board m           : boards)         l.add(m.get_short_board());                return l;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_B_Program_Short_Detail>     b_programs()       { List<Swagger_B_Program_Short_Detail>   l = new ArrayList<>();    for( B_Program m       : b_programs)     l.add(m.get_b_program_short_detail());     return l;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_C_program_Short_Detail>     c_programs()       { List<Swagger_C_program_Short_Detail>   l = new ArrayList<>();    for( C_Program m       : c_programs)     l.add(m.get_c_program_short_detail());     return l;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_M_Project_Short_Detail>     m_projects()       { List<Swagger_M_Project_Short_Detail>   l = new ArrayList<>();    for( M_Project m       : m_projects)     l.add(m.get_short_m_project());            return l;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_TypeOfBlock_Short_Detail>   type_of_blocks()   { List<Swagger_TypeOfBlock_Short_Detail> l = new ArrayList<>();    for( TypeOfBlock m     : type_of_blocks) l.add(m.get_type_of_block_short_detail()); return l;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_TypeOfWidget_Short_Detail>  type_of_widgets()  { List<Swagger_TypeOfWidget_Short_Detail>l = new ArrayList<>();    for( TypeOfWidget m    : type_of_widgets)l.add(m.get_typeOfWidget_short_detail());  return l;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Instance_Short_Detail>      instancies()       { List<Swagger_Instance_Short_Detail>    l = new ArrayList<>();    for( Homer_Instance m  : Homer_Instance.find.where().isNotNull("actual_instance").eq("b_program.project.id", id).findList()) l.add(m.get_instnace_short_detail());  return l;}
 
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public String product_individual_name() { return product.product_individual_name;}
     @JsonProperty @Transient @ApiModelProperty(required = true) public Long   product_id() { return product.id;}
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public String tier_name()  { return product.product_type();}
-
-
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Integer errors() { return 0;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Integer bugs() { return 0;}
 
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Project_participant> participants() {

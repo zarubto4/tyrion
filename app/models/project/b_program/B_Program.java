@@ -131,7 +131,7 @@ public class B_Program extends Model {
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient public List<Version_Object> getVersion_objects() {
-        return Version_Object.find.where().eq("b_program.id", id).eq("removed_by_user", false).order().asc("date_of_create").findList();
+        return Version_Object.find.where().eq("b_program.id", id).eq("removed_by_user", false).order().desc("date_of_create").findList();
     }
 
 

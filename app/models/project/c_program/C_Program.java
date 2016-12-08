@@ -103,7 +103,7 @@ public class C_Program extends Model {
         help.type_of_board_id = type_of_board_id();
         help.type_of_board_name = type_of_board_name();
 
-        for(Version_Object version_object : Version_Object.find.where().eq("c_program.id", id).eq("removed_by_user", false).eq("c_compilation.status", "successfully_compiled_and_restored").order().asc("date_of_create").findList() ){
+        for(Version_Object version_object : Version_Object.find.where().eq("c_program.id", id).eq("removed_by_user", false).eq("c_compilation.status", "successfully_compiled_and_restored").order().desc("date_of_create").findList() ){
             version_object.get_short_c_program_version();
         }
 
@@ -115,11 +115,11 @@ public class C_Program extends Model {
 /* Private Documentation Class -------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient public List<Version_Object> getVersion_objects() {
-        return Version_Object.find.where().eq("c_program.id", id).eq("removed_by_user", false).order().asc("date_of_create").findList();
+        return Version_Object.find.where().eq("c_program.id", id).eq("removed_by_user", false).order().desc("date_of_create").findList();
     }
 
     @JsonIgnore @Transient public List<Version_Object> getVersion_objects_all_For_Admin() {
-        return Version_Object.find.where().eq("c_program.id", id).order().asc("date_of_create").findList();
+        return Version_Object.find.where().eq("c_program.id", id).order().desc("date_of_create").findList();
     }
 
     // Objekt určený k vracení verze

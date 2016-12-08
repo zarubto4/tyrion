@@ -33,6 +33,7 @@ import utilities.swagger.documentationClass.Swagger_B_Program_Version_New;
 import utilities.swagger.outboundClass.Swagger_B_Program_Instance;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Swagger_Instance_HW_Group;
+import utilities.swagger.outboundClass.Swagger_Instance_Short_Detail;
 import utilities.webSocket.WS_BlockoServer;
 import utilities.webSocket.WebSCType;
 import utilities.webSocket.messageObjects.WS_BoardStats_AbstractClass;
@@ -73,9 +74,9 @@ public class Homer_Instance extends Model {
     @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_name()           {  return this.getB_program().name;}
     @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_description()    {  return this.getB_program().description;}
 
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_name()             {  return cloud_homer_server.server_name;}
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_id()               {  return cloud_homer_server.id;}
-
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_name()              {  return cloud_homer_server.server_name;}
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_id()                {  return cloud_homer_server.id;}
+    @Transient @JsonProperty @ApiModelProperty(required = true) public boolean instance_online()          {  return this.online_state();}
     @Transient @JsonProperty @ApiModelProperty(required = false, value = "Only if instance is upload in Homer - can be null") public Swagger_B_Program_Instance actual_summary() {
         try {
 
@@ -111,10 +112,28 @@ public class Homer_Instance extends Model {
         }
     }
 
+
+
+
+/* GET Variable short type of objects ----------------------------------------------------------------------------------*/
+
+    @Transient @JsonIgnore public Swagger_Instance_Short_Detail get_instnace_short_detail(){
+        Swagger_Instance_Short_Detail help = new Swagger_Instance_Short_Detail();
+        help.id = blocko_instance_name;
+        help.b_program_id = b_program.id;
+        help.b_program_name = b_program.name;
+        help.b_program_description = b_program.description;
+
+        help.server_name = cloud_homer_server.server_name;
+        help.server_id = cloud_homer_server.id;
+        help.instance_is_online = online_state();
+        return help;
+    }
+
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient  public B_Program    getB_program()   { return b_program;}
-    @JsonIgnore @Transient  public boolean      instance_online(){ return this.online_state();}
+
     @JsonIgnore @Transient  public List<Board>  getBoards_in_virtual_instance() { return boards_in_virtual_instance; }
 
     @JsonIgnore @Transient
