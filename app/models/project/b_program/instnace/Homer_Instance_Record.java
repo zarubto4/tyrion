@@ -29,6 +29,10 @@ import java.util.List;
 @Entity
 public class Homer_Instance_Record  extends Model {
 
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public String id;
@@ -45,7 +49,7 @@ public class Homer_Instance_Record  extends Model {
     @JsonIgnore @OneToMany(mappedBy="homer_instance_record", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Actualization_procedure> procedures = new ArrayList<>();
 
 
-/* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
+/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String b_program_version_id()    {  return version_object.id;}
     @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String b_program_version_name()  {  return version_object.version_name;}
@@ -65,8 +69,6 @@ public class Homer_Instance_Record  extends Model {
     }
 
 /* INSTANCE WEBSOCKET CONTROLLING ON HOMER SERVER---------------------------------------------------------------------------------*/
-
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
     @JsonIgnore @Transient
     public void add_new_actualization_request() {
@@ -266,6 +268,16 @@ public class Homer_Instance_Record  extends Model {
             return Cloud_Homer_Server.RESULT_server_is_offline();
         }
     }
+
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
+
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+
+/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
+
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String, Homer_Instance_Record> find = new Finder<>(Homer_Instance_Record.class);

@@ -10,6 +10,9 @@ import java.util.UUID;
 
 @Entity
 public class ChangePropertyToken extends Model {
+
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)     public String id;
@@ -18,6 +21,8 @@ public class ChangePropertyToken extends Model {
                                                                 public Date   time_of_creation;
                                                                 public String property;
                                                                 public String value;
+
+/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
@@ -28,6 +33,16 @@ public class ChangePropertyToken extends Model {
             if (ChangePropertyToken.find.where().eq("change_property_token",this.change_property_token).findUnique() == null) break;
         }
     }
+
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
+
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+
+/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
+
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String,ChangePropertyToken> find = new Finder<>(ChangePropertyToken.class);

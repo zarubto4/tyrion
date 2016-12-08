@@ -40,6 +40,10 @@ import java.util.UUID;
 @Entity
 public class Version_Object extends Model {
 
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true)  public String id;
                                                             @ApiModelProperty(required = true)  public String version_name;
@@ -103,26 +107,9 @@ public class Version_Object extends Model {
     @JsonIgnore  public String qr_token;
 
 
-    @JsonIgnore @Override public void delete() {
-
-        for (C_Program c_program : this.first_version_of_c_programs){
-
-            c_program.first_default_version_object = null;
-            c_program.update();
-        }
-
-        if (default_version_program != null) {
-            this.default_version_program.default_main_version = null;
-            this.default_version_program.update();
-        }
-
-        super.delete();
-    }
 
 
-
-/* JSON PROPERTY METHOD ---------------------------------------------------------------------------------------------------------*/
-
+/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
 /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
@@ -163,65 +150,24 @@ public class Version_Object extends Model {
     }
 
 
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
+    @JsonIgnore @Override public void delete() {
 
-    @JsonIgnore @Transient
-    public void notification_compilation_start(){
+        for (C_Program c_program : this.first_version_of_c_programs){
 
-        new Notification(Notification_importance.low, Notification_level.info)
-                .setText("Server starts compilation of Version ")
-                .setObject(Swagger_B_Program_Version.class, this.id, this.version_name + ".", this.c_program.project_id(), "black", false, true, false, false)
-                .send(SecurityController.getPerson());
+            c_program.first_default_version_object = null;
+            c_program.update();
+        }
+
+        if (default_version_program != null) {
+            this.default_version_program.default_main_version = null;
+            this.default_version_program.update();
+        }
+
+        super.delete();
     }
 
-    @JsonIgnore @Transient
-    public void notification_compilation_success(){
-
-        new Notification(Notification_importance.low, Notification_level.success)
-                .setText("Compilation of Version ")
-                .setObject(Swagger_B_Program_Version.class, this.id, this.version_name, this.c_program.project_id(), "black", false, true, false, false)
-                .setText("was successful.")
-                .send(SecurityController.getPerson());
-    }
-
-    @JsonIgnore @Transient
-    public void notification_compilation_unsuccessful_warn(String reason){
-
-        new Notification(Notification_importance.normal,  Notification_level.warning)
-                .setText("Compilation of Version")
-                .setObject(Swagger_B_Program_Version.class, this.id, this.version_name, this.c_program.project_id(), "black", false, true, false, false)
-                .setText("was unsuccessful, for reason:")
-                .setText(reason, "black", true, false, false)
-                .send(SecurityController.getPerson());
-    }
-
-    @JsonIgnore @Transient
-    public void notification_compilation_unsuccessful_error(String result){
-
-        new Notification(Notification_importance.normal, Notification_level.error)
-                .setText( "Compilation of Version")
-                .setObject(Swagger_B_Program_Version.class, this.id, this.version_name, this.c_program.project_id(), "black", false, true, false, false)
-                .setText("with critical Error:")
-                .setText(result, "black", true, false, false)
-                .send(SecurityController.getPerson());
-    }
-
-    @JsonIgnore @Transient
-    public void notification_new_actualization_request_on_version(){
-
-        new Notification(Notification_importance.low, Notification_level.info)
-                .setText("New actualization task was added to Task Queue on Version ")
-                .setObject(Swagger_C_Program_Version.class, this.id, this.version_name, this.c_program.project_id() )
-                .setText(" from Program ")
-                .setObject(C_Program.class, this.c_program.id, this.c_program.name, this.c_program.project_id())
-                .send(SecurityController.getPerson());
-    }
-
-
-
-/* JSON IGNORE DATA  ---------------------------------------------------------------------------------------------------*/
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
     @JsonIgnore @Transient  public void compile_program_thread() {
 
@@ -236,7 +182,7 @@ public class Version_Object extends Model {
                     version.compile_program_procedure();
 
                 }catch (Exception e){
-                     e.printStackTrace();
+                    e.printStackTrace();
                 }
 
             }
@@ -454,13 +400,63 @@ public class Version_Object extends Model {
         return result;
     }
 
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Transient
+    public void notification_compilation_start(){
 
+        new Notification(Notification_importance.low, Notification_level.info)
+                .setText("Server starts compilation of Version ")
+                .setObject(Swagger_B_Program_Version.class, this.id, this.version_name + ".", this.c_program.project_id(), "black", false, true, false, false)
+                .send(SecurityController.getPerson());
+    }
 
+    @JsonIgnore @Transient
+    public void notification_compilation_success(){
 
-/* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/
+        new Notification(Notification_importance.low, Notification_level.success)
+                .setText("Compilation of Version ")
+                .setObject(Swagger_B_Program_Version.class, this.id, this.version_name, this.c_program.project_id(), "black", false, true, false, false)
+                .setText("was successful.")
+                .send(SecurityController.getPerson());
+    }
 
+    @JsonIgnore @Transient
+    public void notification_compilation_unsuccessful_warn(String reason){
+
+        new Notification(Notification_importance.normal,  Notification_level.warning)
+                .setText("Compilation of Version")
+                .setObject(Swagger_B_Program_Version.class, this.id, this.version_name, this.c_program.project_id(), "black", false, true, false, false)
+                .setText("was unsuccessful, for reason:")
+                .setText(reason, "black", true, false, false)
+                .send(SecurityController.getPerson());
+    }
+
+    @JsonIgnore @Transient
+    public void notification_compilation_unsuccessful_error(String result){
+
+        new Notification(Notification_importance.normal, Notification_level.error)
+                .setText( "Compilation of Version")
+                .setObject(Swagger_B_Program_Version.class, this.id, this.version_name, this.c_program.project_id(), "black", false, true, false, false)
+                .setText("with critical Error:")
+                .setText(result, "black", true, false, false)
+                .send(SecurityController.getPerson());
+    }
+
+    @JsonIgnore @Transient
+    public void notification_new_actualization_request_on_version(){
+
+        new Notification(Notification_importance.low, Notification_level.info)
+                .setText("New actualization task was added to Task Queue on Version ")
+                .setObject(Swagger_C_Program_Version.class, this.id, this.version_name, this.c_program.project_id() )
+                .setText(" from Program ")
+                .setObject(C_Program.class, this.c_program.id, this.c_program.name, this.c_program.project_id())
+                .send(SecurityController.getPerson());
+    }
+
+/* BLOB DATA  ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore public String blob_version_link;
 
@@ -487,17 +483,12 @@ public class Version_Object extends Model {
     }
 
 
-
-
-
-
-/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient public static final String read_permission_docs   = "read: If user have \"Object\".read_permission = true, you can read / get version on this Object - Or you need static/dynamic permission key";
     @JsonIgnore @Transient public static final String create_permission_docs = "create: If user have \"Object\".update_permission = true, you can create / update on this Object - Or you need static/dynamic permission key";
 
-
-
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String, Version_Object> find = new Finder<>(Version_Object.class);

@@ -19,6 +19,7 @@ import models.project.b_program.servers.Cloud_Homer_Server;
 import models.project.c_program.C_Program;
 import models.project.global.Product;
 import models.project.global.Project;
+import models.project.global.Project_participant;
 import models.project.global.financial.GeneralTariff;
 import models.project.global.financial.GeneralTariffLabel;
 import models.project.global.financial.GeneralTariff_Extensions;
@@ -1683,28 +1684,44 @@ public class Demo_Data_Controller extends Controller {
             product.payment_details = payment_details;
             product.save();
 
-
             // Vytvořím Projekty
             Project project_1 = new Project();
             project_1.product = product;
-            project_1.ownersOfProject.add(person);
             project_1.name = "První velkolepý projekt";
             project_1.description = "Toto je Pepkův velkolepý testovací projekt primárně určen pro testování Blocko Programu, kde už má zaregistrovaný testovací HW";
             project_1.save();
+            project_1.refresh();
+
+            Project_participant participant_1 = new Project_participant();
+            participant_1.person = person;
+            participant_1.project = project_1;
+            participant_1.state = Participant_status.owner;
+            participant_1.save();
+            System.err.println(Json.toJson(participant_1));
 
             Project project_2 = new Project();
             project_2.product = product;
-            project_2.ownersOfProject.add(person);
             project_2.name = "Druhý prázdný testovací projekt";
             project_2.description = "Toto je Pepkův testovací projekt, kde nic ještě není";
             project_2.save();
 
+            Project_participant participant_2 = new Project_participant();
+            participant_2.person = person;
+            participant_2.project = project_2;
+            participant_2.state = Participant_status.owner;
+            participant_2.save();
+
             Project project_3 = new Project();
             project_3.product = product;
-            project_3.ownersOfProject.add(person);
             project_3.name = "Třetí prázdný testovací projekt";
             project_3.description = "Toto je Pepkův třetí super testovací projekt, kde nic ještě není a ten blázen se musel dlouhosáhle rozepsat v description??? To jako vážně? Jste na to připravený v designu???? ?";
             project_3.save();
+
+            Project_participant participant_3 = new Project_participant();
+            participant_3.person = person;
+            participant_3.project = project_3;
+            participant_3.state = Participant_status.owner;
+            participant_3.save();
 
             // Zaregistruji pod ně Yody
             project_1.boards.add( Board.find.where().eq("personal_description","Yoda A").findUnique());

@@ -13,7 +13,9 @@ import java.util.Date;
 @Entity
 public class GridWidgetVersion extends Model{
 
- /* DATABASE VALUE  ----------------------------------------------------------------------------------------------------*/
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+/* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true)    public String id;
                                                             @ApiModelProperty(required = true)    public String version_name;
@@ -28,13 +30,22 @@ public class GridWidgetVersion extends Model{
     @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)    public String logic_json;
     @JsonIgnore @ManyToOne                                                   public GridWidget grid_widget;
 
+/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
+
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+
+/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient public static final String read_permission_docs   = "read: If user can read GridWidget, than can read all Versions from list of GridWidgets ( You get ids of list of version in object \"GridWidgets\" in json)  - Or you need static/dynamic permission key";
     @JsonIgnore @Transient public static final String create_permission_docs = "create: If user have GridWidget.update_permission = true, you can create new version of GridWidgets on this GridWidget - Or you need static/dynamic permission key if user want create version of GridWidget in public GridWidget in public TypeOfWidget";
 
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean create_permission()  {  return  grid_widget.update_permission() ||  SecurityController.getPerson().has_permission("GridWidgetVersion_create"); }
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean read_permission()    {  return  grid_widget.read_permission()   ||  SecurityController.getPerson().has_permission("GridWidgetVersion_read");   }
@@ -43,7 +54,7 @@ public class GridWidgetVersion extends Model{
 
     public enum permissions{GridWidgetVersion_create, GridWidgetVersion_read, GridWidgetVersion_edit, GridWidgetVersion_delete}
 
-    /* FINDER -------------------------------------------------------------------------------------------------------------*/
+/* FINDER -------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String,GridWidgetVersion> find = new Finder<>(GridWidgetVersion.class);
 
 }

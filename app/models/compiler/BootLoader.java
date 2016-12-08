@@ -18,14 +18,16 @@ import java.util.UUID;
 @Entity
 public class BootLoader extends Model {
 
-    @JsonIgnore @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true)  public String id;
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
+/* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true)  public String id;
 
     @ApiModelProperty(required = true,
             dataType = "integer", readOnly = true,
             value = "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
-            example = "1466163478925")
-    public Date date_of_create;
+            example = "1466163478925")    public Date date_of_create;
 
                                           public String name;
     @Column(columnDefinition = "TEXT")    public String description;
@@ -44,20 +46,15 @@ public class BootLoader extends Model {
     @JsonIgnore  @OneToOne(mappedBy = "boot_loader")  public FileRecord file;
 
 
-/* JSON PROPERTY OBJECTS  ----------------------------------------------------------------------------------------------*/
-
-
-
-
-
+/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
-
-
-/* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/
+/* BLOB DATA  ---------------------------------------------------------------------------------------------------------*/
     @JsonIgnore  private String azure_product_link;
 
     @JsonIgnore @Override public void save() {
@@ -90,9 +87,9 @@ public class BootLoader extends Model {
         return  azure_product_link;
     }
 
-/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
-    // Floating shared documentation for Swagger
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore   @Transient  @ApiModelProperty(required = true) public boolean create_permission(){  return SecurityController.getPerson().has_permission("BootLoader_create");      }
     @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean update_permission(){  return SecurityController.getPerson().has_permission("BootLoader_update"); }

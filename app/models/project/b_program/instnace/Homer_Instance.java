@@ -13,12 +13,14 @@ import models.compiler.Board;
 import models.compiler.FileRecord;
 import models.notification.Notification;
 import models.person.FloatingPersonToken;
+import models.person.Person;
 import models.project.b_program.B_Pair;
 import models.project.b_program.B_Program;
 import models.project.b_program.B_Program_Hw_Group;
 import models.project.b_program.servers.Cloud_Homer_Server;
 import models.project.c_program.actualization.C_Program_Update_Plan;
 import models.project.global.Project;
+import models.project.global.Project_participant;
 import models.project.m_program.Grid_Terminal;
 import play.libs.Json;
 import utilities.enums.Firmware_type;
@@ -43,6 +45,8 @@ import java.util.UUID;
 @Entity
 public class Homer_Instance extends Model {
 
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
                                                   @Id               public String blocko_instance_name;
@@ -62,8 +66,7 @@ public class Homer_Instance extends Model {
 
     @JsonIgnore @OneToMany(mappedBy="virtual_instance_under_project", cascade=CascadeType.ALL, fetch = FetchType.LAZY)  public List<Board> boards_in_virtual_instance = new ArrayList<>();
 
-
-    /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
+/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
 
     @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_id()             {  return this.getB_program().id;}
@@ -108,13 +111,14 @@ public class Homer_Instance extends Model {
         }
     }
 
-
-/* JSON IGNORE Standart Method -----------------------------------------------------------------------------------------*/
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient  public B_Program    getB_program()   { return b_program;}
     @JsonIgnore @Transient  public boolean      instance_online(){ return this.online_state();}
     @JsonIgnore @Transient  public List<Board>  getBoards_in_virtual_instance() { return boards_in_virtual_instance; }
-    @JsonIgnore @Transient  private void setUnique_blocko_instance_name() {
+
+    @JsonIgnore @Transient
+    private void setUnique_blocko_instance_name() {
             while(true){ // I need Unique Value
                 this.blocko_instance_name = UUID.randomUUID().toString();
                 if (Homer_Instance.find.where().eq("blocko_instance_name", blocko_instance_name ).findUnique() == null) break;
@@ -141,6 +145,7 @@ public class Homer_Instance extends Model {
         super.delete();
     }
 
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
@@ -188,12 +193,18 @@ public class Homer_Instance extends Model {
     @JsonIgnore @Transient
     public void notification_new_actualization_request_instance(){
 
+        List<Person> receivers = new ArrayList<>();
+        for (Project_participant participant : this.project.participants)
+            receivers.add(participant.person);
+
         new Notification(Notification_importance.low, Notification_level.info)
                 .setText("New actualization task was added to Task Queue on Version ")
                 .setObject(Swagger_B_Program_Version_New.class, this.actual_instance.version_object.id, this.actual_instance.version_object.version_name, this.actual_instance.version_object.b_program.project_id())
-                .send(this.project.ownersOfProject);
+                .send(receivers);
 
     }
+
+
 
 
 
@@ -767,6 +778,11 @@ public class Homer_Instance extends Model {
         }
     }
 
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+
+/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
+
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String, Homer_Instance> find = new Finder<>(Homer_Instance.class);

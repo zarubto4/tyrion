@@ -1,12 +1,13 @@
 package utilities.enums;
 
+import com.avaje.ebean.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 public enum Notification_importance {
 
-    low,
-    normal,
-    high;
+    @EnumValue("low")     low,
+    @EnumValue("normal")  normal,
+    @EnumValue("high")    high;
 
     @JsonCreator
     public static Notification_importance fromString(String key) {

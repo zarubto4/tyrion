@@ -23,6 +23,7 @@ import models.project.b_program.servers.Cloud_Homer_Server;
 import models.project.c_program.C_Program;
 import models.project.global.Product;
 import models.project.global.Project;
+import models.project.global.Project_participant;
 import models.project.m_program.M_Project;
 import models.project.m_program.M_Project_Program_SnapShot;
 import play.api.libs.mailer.MailerClient;
@@ -35,6 +36,7 @@ import play.mvc.Security;
 import utilities.Server;
 import utilities.emails.EmailTool;
 import utilities.enums.Approval_state;
+import utilities.enums.Participant_status;
 import utilities.enums.Type_of_command;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_API;
@@ -91,7 +93,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public  Result postNewProject() {
+    public Result project_create() {
         try{
 
             // Zpracování Json
@@ -109,13 +111,22 @@ public class ProgramingPackageController extends Controller {
             project.description = help.project_description;
             project.product = product;
 
-            project.ownersOfProject.add( SecurityController.getPerson() );
-
             // Kontrola oprávnění těsně před uložením
             if (!project.create_permission())  return GlobalResult.forbidden_Permission();
 
             // Uložení objektu
             project.save();
+
+            project.refresh();
+
+            Project_participant participant = new Project_participant();
+            participant.person = product.payment_details.person;
+            participant.project = project;
+            participant.state = Participant_status.owner;
+
+            participant.save();
+
+            project.refresh();
 
             // Vrácení objektu
             return GlobalResult.created( Json.toJson(project) );
@@ -141,11 +152,11 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result getProjectsByUserAccount(){
+    public Result project_getByUser(){
         try {
 
             // Získání seznamu
-            List<Project> projects = Project.find.where().eq("ownersOfProject.id",SecurityController.getPerson().id).eq("product.active", true).findList();
+            List<Project> projects = Project.find.where().eq("participants.person.id",SecurityController.getPerson().id).eq("product.active", true).findList();
 
             /*
             Swagger_Project_List_DashBoard list = new Swagger_Project_List_DashBoard();
@@ -190,7 +201,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result getProject(@ApiParam(value = "project_id String path", required = true)  String project_id){
+    public Result project_get(@ApiParam(value = "project_id String path", required = true)  String project_id){
         try {
 
             // Kontrola objektu
@@ -239,7 +250,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public  Result deleteProject(@ApiParam(value = "project_id String path", required = true) String project_id){
+    public Result project_delete(@ApiParam(value = "project_id String path", required = true) String project_id){
         try {
 
             // Kontrola objektu
@@ -296,7 +307,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public  Result edit_Project(@ApiParam(value = "project_id String path", required = true)  String project_id){
+    public Result project_update(@ApiParam(value = "project_id String path", required = true)  String project_id){
         try {
 
             // Zpracování Json
@@ -360,7 +371,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result shareProjectWithUsers(@ApiParam(value = "project_id String path", required = true)  String project_id){
+    public Result project_invite(@ApiParam(value = "project_id String path", required = true)  String project_id){
         try {
 
             // Zpracování Json
@@ -458,7 +469,6 @@ public class ProgramingPackageController extends Controller {
         }
     }
 
-
     @ApiOperation(value = "add participant to a Project",
             tags = {"Project"},
             notes = "adds Person to a Project, every piece of information is held in Invitation",
@@ -471,7 +481,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 400, message = "Objects not found",    response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result addParticipantToProject(String id, boolean decision ){
+    public Result project_addParticipant(String id, boolean decision ){
         try{
 
             // Kontroly objektů
@@ -484,11 +494,14 @@ public class ProgramingPackageController extends Controller {
             Project project = invitation.project;
             if(project == null) return GlobalResult.notFoundObject("Project no longer exists");
 
-            if ((!person.owningProjects.contains(project))&&(decision)) {
+            if ((Project_participant.find.where().eq("person.id", person.id).eq("project.id", project.id).findUnique() == null)&&(decision)) {
 
-                // Úprava objektů
-                project.ownersOfProject.add(person);
-                person.owningProjects.add(project);
+                Project_participant participant = new Project_participant();
+                participant.person = person;
+                participant.project = project;
+                participant.state = Participant_status.member;
+
+                participant.save();
             }
 
             // Odeslání notifikace podle rozhodnutí uživatele
@@ -506,11 +519,65 @@ public class ProgramingPackageController extends Controller {
             // Smazání pozvánky
             invitation.delete();
 
-            // Uložení do DB
-            person.update();
-            project.update();
-
             return GlobalResult.result_ok();
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "change participant status",
+            tags = {"Project"},
+            notes = "Changes participant status ",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Project_Participant_status",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Project_participant.class),
+            @ApiResponse(code = 400, message = "Objects not found",         response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result project_changeParticipantStatus(@ApiParam(value = "project_id String path", required = true)  String project_id){
+        try{
+
+            // Zpracování Json
+            final Form<Swagger_Project_Participant_status> form = Form.form(Swagger_Project_Participant_status.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Project_Participant_status help = form.get();
+
+            // Kontrola objektu
+            Project project = Project.find.byId(project_id);
+            if(project == null) return GlobalResult.notFoundObject("Project no longer exists");
+
+            // Kontrola oprávnění
+            if (!project.admin_permission()) return GlobalResult.forbidden_Permission();
+
+            // Kontrola objektu
+            Project_participant participant = Project_participant.find.where().eq("person.id", help.person_id).eq("project.id", project_id).findUnique();
+            if (participant == null) return GlobalResult.notFoundObject("Participant not found");
+
+            // Uložení změn
+            participant.state = help.state;
+            participant.update();
+
+            // Odeslání notifikace uživateli
+            project.notification_project_participant_change_status(participant);
+
+            return GlobalResult.result_ok(Json.toJson(participant));
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
         }
@@ -548,7 +615,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result unshareProjectWithUsers(@ApiParam(value = "project_id String path", required = true) String project_id){
+    public Result project_removeParticipant(@ApiParam(value = "project_id String path", required = true) String project_id){
         try {
 
             // Zpracování Json
@@ -574,19 +641,16 @@ public class ProgramingPackageController extends Controller {
             }
 
             for (Person person : list) {
-                if (person.owningProjects.contains(project)) {
+                Project_participant participant = Project_participant.find.where().eq("person.id", person.id).eq("project.id", project.id).findUnique();
+                if (participant != null) {
 
-                    // Úprava objektů
-                    project.ownersOfProject.remove(person);
-                    person.owningProjects.remove(project);
-
-                    // Uložení do DB
-                    person.update();
+                    // Úprava objektu
+                    participant.delete();
                 }
             }
 
-            // Uložení do DB
-            project.update();
+            // Obnovení v DB
+            project.refresh();
 
             // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(project));
@@ -609,7 +673,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",                      response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result deleteProjectInvitation(@ApiParam(value = "invitation_id String path", required = true)  String invitation_id){
+    public Result project_deleteInvitation(@ApiParam(value = "invitation_id String path", required = true)  String invitation_id){
         try {
 
             Invitation invitation = Invitation.find.where().eq("owner.id",SecurityController.getPerson().id).eq("id", invitation_id).findUnique();
@@ -1891,7 +1955,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result newTypeOfBlock(){
+    public Result typeOfBlock_create(){
         try{
 
             // Zpracování Json
@@ -1959,7 +2023,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_TypeOfBlock(@ApiParam(value = "type_of_block_id String path",   required = true)  String type_of_block_id){
+    public Result typeOfBlock_get(@ApiParam(value = "type_of_block_id String path",   required = true)  String type_of_block_id){
         try {
 
             // Kontrola objektu
@@ -2011,7 +2075,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result editTypeOfBlock(@ApiParam(value = "type_of_block_id String path",   required = true)  String type_of_block_id){
+    public Result typeOfBlock_update(@ApiParam(value = "type_of_block_id String path",   required = true)  String type_of_block_id){
         try{
 
             // Zpracování Json
@@ -2073,7 +2137,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result deleteTypeOfBlock(@ApiParam(value = "type_of_block_id String path",   required = true)  String type_of_block_id){
+    public Result typeOfBlock_delete(@ApiParam(value = "type_of_block_id String path",   required = true)  String type_of_block_id){
         try{
 
             // Kontrola objektu
@@ -2108,12 +2172,12 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result getAllTypeOfBlocks(){
+    public Result typeOfBlock_getAll(){
         try {
 
             // Získání seznamu
             List<TypeOfBlock> typeOfBlocks = TypeOfBlock.find.where().isNull("project").findList();
-            typeOfBlocks.addAll( TypeOfBlock.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id ).findList() );
+            typeOfBlocks.addAll( TypeOfBlock.find.where().eq("project.participants.person.id", SecurityController.getPerson().id ).findList() );
 
             // Kontrola oprávnění
             for(TypeOfBlock typeOfBlock :typeOfBlocks ) if(! typeOfBlock.read_permission())  return GlobalResult.forbidden_Permission();
@@ -2154,7 +2218,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_TypeOfBlock_by_Filter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number){
+    public Result typeOfBlock_getByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number){
         try {
 
             // Získání JSON
@@ -2227,7 +2291,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result new_Block(){
+    public Result blockoBlock_create(){
        try{
 
            // Zpracování Json
@@ -2313,7 +2377,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_Block(@ApiParam(value = "blocko_block_id String path",   required = true)  String blocko_block_id){
+    public Result blockoBlock_update(@ApiParam(value = "blocko_block_id String path",   required = true)  String blocko_block_id){
         try {
 
                 // Zpracování Json
@@ -2375,7 +2439,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_BlockoBlock_Version(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_version_id){
+    public Result blockoBlockVersion_get(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_version_id){
         try {
                 // Kontrola objektu
                 BlockoBlockVersion blocko_version = BlockoBlockVersion.find.byId(blocko_block_version_id);
@@ -2416,7 +2480,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result getBlockoBlock(@ApiParam(value = "blocko_block_id String path",   required = true) String blocko_block_id){
+    public Result blockoBlock_get(@ApiParam(value = "blocko_block_id String path",   required = true) String blocko_block_id){
         try {
             // Kontrola objektu
             BlockoBlock blockoBlock = BlockoBlock.find.byId(blocko_block_id);
@@ -2462,7 +2526,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_BlockoBlock_by_Filter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number){
+    public Result blockoBlock_getByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number){
         try {
 
             // Získání JSON
@@ -2512,7 +2576,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result deleteBlock(@ApiParam(value = "blocko_block_id String path",   required = true)  String blocko_block_id){
+    public Result blockoBlock_delete(@ApiParam(value = "blocko_block_id String path",   required = true)  String blocko_block_id){
         try {
 
             // Kontrola objektu
@@ -2553,7 +2617,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result delete_BlockoBlock_Version(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_version_id){
+    public Result blockoBlockVersion_delete(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_version_id){
         try {
 
             // Kontrola objektu
@@ -2609,7 +2673,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result new_BlockoBlock_Version(@ApiParam(value = "blocko_block_id String path",   required = true) String blocko_block_id){
+    public Result blockoBlockVersion_create(@ApiParam(value = "blocko_block_id String path",   required = true) String blocko_block_id){
         try {
 
             // Zpracování Json
@@ -2681,7 +2745,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_BlockoBlock_Version(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_version_id){
+    public Result blockoBlockVersion_update(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_version_id){
         try {
 
             // Zpracování Json
@@ -2745,7 +2809,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_BlockoBlock_all_versions(@ApiParam(value = "blocko_block_id String path",   required = true) String blocko_block_id){
+    public Result blockoBlockVersion_getAll(@ApiParam(value = "blocko_block_id String path",   required = true) String blocko_block_id){
         try {
 
             // Kontrola objektu
@@ -2786,7 +2850,7 @@ public class ProgramingPackageController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result make_BlockoBlock_Version_public(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_version_id){
+    public Result blockoBlockVersion_makePublic(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_version_id){
         try{
 
             // Kontrola objektu
@@ -2938,7 +3002,7 @@ public class ProgramingPackageController extends Controller {
     }
 
     @Security.Authenticated(Secured_Admin.class)
-    public Result edit_BlockoBlock_Version_scheme(){
+    public Result blockoBlockVersion_editScheme(){
 
         try {
 
@@ -2966,7 +3030,7 @@ public class ProgramingPackageController extends Controller {
     }
 
     @Security.Authenticated(Secured_Admin.class)
-    public Result get_BlockoBlock_Version_scheme(){
+    public Result blockoBlockVersion_getScheme(){
 
         try {
 
@@ -2981,6 +3045,35 @@ public class ProgramingPackageController extends Controller {
 
             // Vrácení výsledku
             return GlobalResult.result_ok(Json.toJson(result));
+        }catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result blockoBlockVersion_createScheme(){
+
+        try {
+
+            BlockoBlockVersion scheme = BlockoBlockVersion.find.where().eq("version_name", "version_scheme").findUnique();
+            if (scheme != null) return GlobalResult.result_BadRequest("Scheme already exists.");
+
+            // Získání JSON
+            final Form<Swagger_BlockoBlock_BlockoVersion_Scheme_Edit> form = Form.form(Swagger_BlockoBlock_BlockoVersion_Scheme_Edit.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_BlockoBlock_BlockoVersion_Scheme_Edit help = form.get();
+
+            // Úprava objektu
+            scheme = new BlockoBlockVersion();
+            scheme.version_name = "version_scheme";
+            scheme.design_json = help.design_json;
+            scheme.logic_json = help.logic_json;
+
+            // Uložení změn
+            scheme.save();
+
+            // Vrácení výsledku
+            return GlobalResult.result_ok();
         }catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }

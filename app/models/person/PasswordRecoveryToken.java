@@ -9,12 +9,17 @@ import java.util.UUID;
 
 @Entity
 public class PasswordRecoveryToken extends Model{
+
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)     public String id;
     @OneToOne @JoinColumn(name = "person_id")                   public Person person;
                                                                 public String password_recovery_token;
                                                                 public Date time_of_creation;
+
+/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
@@ -25,6 +30,16 @@ public class PasswordRecoveryToken extends Model{
             if (PasswordRecoveryToken.find.where().eq("password_recovery_token",this.password_recovery_token).findUnique() == null) break;
         }
     }
+
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
+
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+
+/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
+
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String,PasswordRecoveryToken> find = new Finder<>(PasswordRecoveryToken.class);

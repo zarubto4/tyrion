@@ -10,12 +10,14 @@ import models.person.ValidationToken;
 import models.project.c_program.C_Program;
 import models.project.global.Product;
 import models.project.global.Project;
+import models.project.global.Project_participant;
 import models.project.global.financial.GeneralTariff;
 import models.project.global.financial.Payment_Details;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.mvc.Controller;
 import utilities.enums.Currency;
+import utilities.enums.Participant_status;
 import utilities.enums.Payment_mode;
 
 import java.util.Date;
@@ -161,9 +163,17 @@ public class TestHelper extends Controller{
             project.name = UUID.randomUUID().toString();
             project.description = UUID.randomUUID().toString();
             project.product = product;
-            project.ownersOfProject.add(product.payment_details.person);
 
             project.save();
+            project.refresh();
+
+            Project_participant participant = new Project_participant();
+            participant.person = product.payment_details.person;
+            participant.project = project;
+            participant.state = Participant_status.member;
+
+            participant.save();
+
             project.refresh();
 
             return project;
@@ -212,8 +222,13 @@ public class TestHelper extends Controller{
     public static void project_add_participant(Project project, Person person){
         try {
 
-            project.ownersOfProject.add(person);
-            project.update();
+            Project_participant participant = new Project_participant();
+            participant.person = person;
+            participant.project = project;
+            participant.state = Participant_status.member;
+
+            participant.save();
+            project.refresh();
 
         }catch (Exception e){
             logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
@@ -221,7 +236,7 @@ public class TestHelper extends Controller{
     }
 
     // HOMER ###########################################################################################################
-
+/*
     public static Private_Homer_Server homer_create(Project project){
         try {
 
@@ -250,7 +265,7 @@ public class TestHelper extends Controller{
             logger.error("!!!! Error while cleaning up after test. Method {} failed! Reason: {}. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
         }
     }
-
+*/
     // PRODUCER ########################################################################################################
 
     public static Producer producer_create(){

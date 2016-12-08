@@ -25,6 +25,12 @@ public class Swagger_C_program_Short_Detail {
     @ApiModelProperty(required = true, readOnly = true)
     public String type_of_board_name;
 
-    @JsonProperty @Transient public boolean update_permission;
-    @JsonProperty @Transient public boolean delete_permission;
+    @ApiModelProperty(required = true, readOnly = true)
+    public boolean edit_permission;
+
+    @ApiModelProperty(required = true, readOnly = true)
+    public boolean update_permission;
+
+    @ApiModelProperty(required = true, readOnly = true)
+    public boolean delete_permission;
 }

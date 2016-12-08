@@ -19,6 +19,8 @@ import java.util.UUID;
 @Entity
 public class LibraryGroup extends Model {
 
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true) public String id;
@@ -34,11 +36,15 @@ public class LibraryGroup extends Model {
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<String>   versions_id()      { List<String> l = new ArrayList<>();  for( Version_Object m : version_objects)  l.add(m.id); return l;  }
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<String>   processors_id()    { List<String> l = new ArrayList<>();  for( Processor m      : processors)       l.add(m.id); return l;  }
 
+/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
+
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
-/* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore  public String azure_library_group_link;
 
@@ -66,15 +72,15 @@ public class LibraryGroup extends Model {
     }
 
 
+/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore   @Transient                                    public boolean create_permission(){  return SecurityController.getPerson().has_permission("LibraryGroup_create"); }
     @JsonIgnore   @Transient                                    public boolean read_permission()  {  return true; }
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()  {  return SecurityController.getPerson().has_permission("LibraryGroup_edit");   }
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return SecurityController.getPerson().has_permission("LibraryGroup_delete"); }
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission(){  return SecurityController.getPerson().has_permission("LibraryGroup_update"); }
-
 
     public enum permissions{LibraryGroup_create, LibraryGroup_edit, LibraryGroup_delete, LibraryGroup_update}
 

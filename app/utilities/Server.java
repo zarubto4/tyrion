@@ -253,7 +253,7 @@ public class Server {
 
         if (Person.find.where().eq("mail", "admin@byzance.cz").findUnique() == null)
         {
-            System.err.println("Creating first admin account: admin@byzance.cz, password: 123456789, token: token");
+            System.err.println("Creating first admin account: admin@byzance.cz, password: 123456789, token: token2");
             Person person = new Person();
             person.full_name = "Admin Byzance";
             person.mailValidated = true;
@@ -265,7 +265,7 @@ public class Server {
             person.save();
 
             FloatingPersonToken floatingPersonToken = new FloatingPersonToken();
-            floatingPersonToken.set_basic_values();
+            floatingPersonToken.authToken = "token2";
             floatingPersonToken.person = person;
             floatingPersonToken.user_agent = "Unknown browser";
             floatingPersonToken.save();

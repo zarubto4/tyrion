@@ -17,6 +17,8 @@ import java.util.List;
 @Entity
 public class GridWidget extends Model{
 
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) @ApiModelProperty(required = true)   public String id;
@@ -63,12 +65,21 @@ public class GridWidget extends Model{
         return list;
     }
 
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
+
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+
+/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
     // Floating shared documentation for Swagger
     @JsonIgnore @Transient public static final String read_permission_docs   = "read: If user can read TypeOfWidget, than can read all GridWidgets from list of TypeOfWidget ( You get ids of list of GridWidgets in object \"GridWidgets\" in json)  - Or you need static/dynamic permission key";
     @JsonIgnore @Transient public static final String create_permission_docs = "create: If user have TypeOfWidget.update_permission = true, you can create new GridWidgets on this TypeOfWidget - Or you need static/dynamic permission key if user want create GridWidget in public TypeOfWidget";
+
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore  @Transient                                     public boolean create_permission() {return  type_of_widget.update_permission();}
     @JsonIgnore  @Transient                                     public boolean read_permission()   {return  type_of_widget.read_permission();}

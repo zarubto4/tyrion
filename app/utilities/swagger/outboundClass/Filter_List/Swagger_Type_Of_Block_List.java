@@ -42,7 +42,7 @@ public class Swagger_Type_Of_Block_List {
         List<TypeOfBlock> typeOfBlocks =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findList();
 
         for(TypeOfBlock typeOfBlock : typeOfBlocks){
-            this.content.add(typeOfBlock.get_b_program_short_detail());
+            this.content.add(typeOfBlock.get_type_of_block_short_detail());
         }
 
         this.total = query.findRowCount();

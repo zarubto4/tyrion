@@ -1,4 +1,5 @@
 @import models.blocko.TypeOfBlock
+@import models.blocko.BlockoBlockVersion
 @import utilities.Server
 
 
@@ -172,7 +173,7 @@
 </div>
 
 <div id="editBlockoBlockVersionModal" style="display: none;" class="modal">
-  <div style="margin-top: 15%;" class="modal-dialog">
+  <div style="margin-top: 5%;" class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
         <h4 class="modal-title">Edit Blocko Block Version</h4>
@@ -200,7 +201,7 @@
 </div>
 
 <div id="editVersionSchemeModal" style="display: none;" class="modal">
-  <div style="margin-top: 15%;" class="modal-dialog">
+  <div style="margin-top: 7%;" class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
         <h4 class="modal-title">Edit Version Scheme </h4>
@@ -216,6 +217,30 @@
       <div class="modal-footer">
         <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editVersionSchemeModal').css('display','none')">Close</button>
         <button class="btn btn-primary" type="button" onclick="editVersionScheme()">Save changes</button>
+      </div>
+    </div>
+      <!-- /.modal-content -->
+  </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div id="newVersionSchemeModal" style="display: none;" class="modal">
+  <div style="margin-top: 7%;" class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">New Version Scheme </h4>
+      </div>
+      <div class="modal-body">
+        <form id="newVersionScheme">
+          <label style="color: #2e6da4">Design JSON:</label>
+          <textarea id="new_version_scheme_design" name="design_json" style="display: block; width: 100%; height: auto;" rows="6"></textarea>
+          <label style="color: #2e6da4">Logic JSON:</label>
+          <textarea id="new_version_scheme_logic" name="logic_json" style="display: block; width: 100%; height: auto;" rows="6"></textarea>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newVersionSchemeModal').css('display','none')">Close</button>
+        <button class="btn btn-primary" type="button" onclick="createVersionScheme()">New Scheme</button>
       </div>
     </div>
       <!-- /.modal-content -->
@@ -302,7 +327,11 @@
             <button class="btn btn-xs btn-danger disabled" disabled type="button" onclick="deleteBlockoBlockVersion(document.getElementById('version_info_id').textContent)"><i class="fa fa-times"></i></button>
             <button class="btn btn-xs btn-info disabled" disabled type="button" onclick="$('#editBlockoBlockVersionModal').css('display','block'); $('#editBlockoBlockVersionButton').val(document.getElementById('version_info_id').textContent);  $('#edit_blocko_version_name').val(document.getElementById('blocko_version_name').value); $('#edit_blocko_version_description').val(document.getElementById('blocko_version_description').value);"><i class="fa fa-edit"></i></button>
           </div>
-          <button class="btn btn-primary btn-xs pull-right" style="margin-right: 10px;" type="button" onclick="showVersionScheme()">Version scheme</button>
+          @if(BlockoBlockVersion.find.where().eq("version_name", "version_scheme").findUnique() == null){
+            <button id="schemeButton" class="btn btn-primary btn-xs pull-right" style="margin-right: 10px;" type="button" onclick="$('#newVersionSchemeModal').css('display','block')">Create scheme</button>
+          }else {
+            <button id="schemeButton" class="btn btn-primary btn-xs pull-right" style="margin-right: 10px;" type="button" onclick="showVersionScheme()">Version scheme</button>
+          }
         </div>
         <div class="box-body">
           <div style="display: none" id="blockoBlockVersion">
@@ -334,7 +363,7 @@
         function newTypeOfBlock(){
           model_data = $("#newTypeOfBlock").serializeObject();
           $.ajax({
-            url: '@routes.ProgramingPackageController.newTypeOfBlock()',
+            url: '@routes.ProgramingPackageController.typeOfBlock_create()',
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -356,7 +385,7 @@
         function newBlockoBlock(){
           model_data = $("#newBlockoBlock").serializeObject();
           $.ajax({
-            url: '@routes.ProgramingPackageController.new_Block()',
+            url: '@routes.ProgramingPackageController.blockoBlock_create()',
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -649,7 +678,7 @@
 
         function showVersionScheme(){
           $.ajax({
-            url: '@routes.ProgramingPackageController.get_BlockoBlock_Version_scheme()',
+            url: '@routes.ProgramingPackageController.blockoBlockVersion_getScheme()',
             type: 'GET',
             headers: {
               "X-AUTH-TOKEN":getCookie("authToken")
@@ -668,7 +697,7 @@
         function editVersionScheme(){
           model_data = $("#editVersionScheme").serializeObject();
           $.ajax({
-            url: '@routes.ProgramingPackageController.edit_BlockoBlock_Version_scheme()',
+            url: '@routes.ProgramingPackageController.blockoBlockVersion_editScheme()',
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -680,6 +709,29 @@
             success:function(e){
               $("#editVersionScheme input[type=text]").val("");
               $("#editVersionSchemeModal").css("display","none");
+            },
+            error:function(e) {
+              alert(e.responseText);
+            }
+          })}
+
+        function createVersionScheme(){
+          model_data = $("#newVersionScheme").serializeObject();
+          $.ajax({
+            url: '@routes.ProgramingPackageController.blockoBlockVersion_createScheme()',
+            type: 'POST',
+            contentType: 'application/json',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+            success:function(json){
+              $("#newVersionScheme input[type=text]").val("");
+              $("#newVersionSchemeModal").css("display","none");
+              $("#schemeButton").text("Version scheme");
+              $("#schemeButton").attr("onclick","showVersionScheme()");
             },
             error:function(e) {
               alert(e.responseText);
