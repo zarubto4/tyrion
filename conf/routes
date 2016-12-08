@@ -236,8 +236,9 @@ GET            /blockoBlock/version/all/:blocko_block_id                        
 GET            /blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.blockoBlockVersion_get(blocko_block_version_id)
 DELETE         /blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.blockoBlockVersion_delete(blocko_block_version_id)
 
-GET            /blockoBlock/scheme/version                                          @controllers.ProgramingPackageController.get_BlockoBlock_Version_scheme()
-PUT            /blockoBlock/scheme/version                                          @controllers.ProgramingPackageController.edit_BlockoBlock_Version_scheme()
+POST           /blockoBlock/scheme/version                                          @controllers.ProgramingPackageController.blockoBlockVersion_createScheme()
+GET            /blockoBlock/scheme/version                                          @controllers.ProgramingPackageController.blockoBlockVersion_getScheme()
+PUT            /blockoBlock/scheme/version                                          @controllers.ProgramingPackageController.blockoBlockVersion_editScheme()
 
 #TypeOfBlocko
 POST           /typeOfBlock                                                         @controllers.ProgramingPackageController.typeOfBlock_create()
@@ -422,6 +423,7 @@ GET            /grid_widget/version/all/:grid_widget_id                         
 GET            /grid_widget/version/:grid_widget_version_id                            @controllers.GridController.gridWidgetVersion_get(grid_widget_version_id)
 DELETE         /grid_widget/version/:grid_widget_version_id                            @controllers.GridController.gridWidgetVersion_delete(grid_widget_version_id)
 
+POST           /grid_widget/scheme/version                                             @controllers.GridController.gridWidgetVersion_createScheme()
 GET            /grid_widget/scheme/version                                             @controllers.GridController.gridWidgetVersion_getScheme()
 PUT            /grid_widget/scheme/version                                             @controllers.GridController.gridWidgetVersion_editScheme()
 

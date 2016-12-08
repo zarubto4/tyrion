@@ -148,6 +148,10 @@ public class Board extends Model {
         swagger_board_short_detail.type_of_board_id = type_of_board_id();
         swagger_board_short_detail.type_of_board_name = type_of_board_name();
 
+        swagger_board_short_detail.edit_permission = edit_permission();
+        swagger_board_short_detail.delete_permission = delete_permission();
+        swagger_board_short_detail.update_permission = update_permission();
+
         return swagger_board_short_detail;
 
     }

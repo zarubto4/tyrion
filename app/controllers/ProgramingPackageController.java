@@ -3002,7 +3002,7 @@ public class ProgramingPackageController extends Controller {
     }
 
     @Security.Authenticated(Secured_Admin.class)
-    public Result edit_BlockoBlock_Version_scheme(){
+    public Result blockoBlockVersion_editScheme(){
 
         try {
 
@@ -3030,7 +3030,7 @@ public class ProgramingPackageController extends Controller {
     }
 
     @Security.Authenticated(Secured_Admin.class)
-    public Result get_BlockoBlock_Version_scheme(){
+    public Result blockoBlockVersion_getScheme(){
 
         try {
 
@@ -3045,6 +3045,35 @@ public class ProgramingPackageController extends Controller {
 
             // Vrácení výsledku
             return GlobalResult.result_ok(Json.toJson(result));
+        }catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result blockoBlockVersion_createScheme(){
+
+        try {
+
+            BlockoBlockVersion scheme = BlockoBlockVersion.find.where().eq("version_name", "version_scheme").findUnique();
+            if (scheme != null) return GlobalResult.result_BadRequest("Scheme already exists.");
+
+            // Získání JSON
+            final Form<Swagger_BlockoBlock_BlockoVersion_Scheme_Edit> form = Form.form(Swagger_BlockoBlock_BlockoVersion_Scheme_Edit.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_BlockoBlock_BlockoVersion_Scheme_Edit help = form.get();
+
+            // Úprava objektu
+            scheme = new BlockoBlockVersion();
+            scheme.version_name = "version_scheme";
+            scheme.design_json = help.design_json;
+            scheme.logic_json = help.logic_json;
+
+            // Uložení změn
+            scheme.save();
+
+            // Vrácení výsledku
+            return GlobalResult.result_ok();
         }catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }

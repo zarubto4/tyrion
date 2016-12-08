@@ -49,6 +49,11 @@ public class M_Project extends Model {
         swagger_m_project_short_detail.id = id;
         swagger_m_project_short_detail.name = name;
         swagger_m_project_short_detail.description = description;
+
+        swagger_m_project_short_detail.edit_permission = edit_permission();
+        swagger_m_project_short_detail.delete_permission = delete_permission();
+        swagger_m_project_short_detail.update_permission = update_permission();
+
         return swagger_m_project_short_detail;
     }
 

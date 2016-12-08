@@ -998,7 +998,7 @@ public class GridController extends Controller {
 
             // Vytvoření objektu
             TypeOfWidget typeOfWidget = new TypeOfWidget();
-            typeOfWidget.description = help.general_description;
+            typeOfWidget.description = help.description;
             typeOfWidget.name                = help.name;
 
             // Nejedná se o privátní Typ Widgetu
@@ -1123,7 +1123,7 @@ public class GridController extends Controller {
             if (! typeOfWidget.edit_permission() ) return GlobalResult.forbidden_Permission();
 
             // Úprava objektu
-            typeOfWidget.description = help.general_description;
+            typeOfWidget.description = help.description;
             typeOfWidget.name                = help.name;
 
             if(help.project_id != null){
@@ -2097,4 +2097,32 @@ public class GridController extends Controller {
         }
     }
 
+    @Security.Authenticated(Secured_Admin.class)
+    public Result gridWidgetVersion_createScheme(){
+
+        try {
+
+            GridWidgetVersion scheme = GridWidgetVersion.find.where().eq("version_name", "version_scheme").findUnique();
+            if (scheme != null) return GlobalResult.result_BadRequest("Scheme already exists.");
+
+            // Získání JSON
+            final Form<Swagger_GridWidgetVersion_Scheme_Edit> form = Form.form(Swagger_GridWidgetVersion_Scheme_Edit.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_GridWidgetVersion_Scheme_Edit help = form.get();
+
+            // Úprava objektu
+            scheme = new GridWidgetVersion();
+            scheme.version_name = "version_scheme";
+            scheme.design_json = help.design_json;
+            scheme.logic_json = help.logic_json;
+
+            // Uložení změn
+            scheme.save();
+
+            // Vrácení výsledku
+            return GlobalResult.result_ok();
+        }catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
 }

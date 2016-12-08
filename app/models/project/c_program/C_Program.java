@@ -84,6 +84,7 @@ public class C_Program extends Model {
         help.type_of_board_id = type_of_board_id();
         help.type_of_board_name = type_of_board_name();
 
+        help.edit_permission = edit_permission();
         help.delete_permission = delete_permission();
         help.update_permission = update_permission();
 

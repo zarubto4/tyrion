@@ -44,11 +44,15 @@ public class TypeOfBlock extends Model {
 
 /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
-    @Transient @JsonIgnore public Swagger_TypeOfBlock_Short_Detail get_b_program_short_detail(){
+    @Transient @JsonIgnore public Swagger_TypeOfBlock_Short_Detail get_type_of_block_short_detail(){
         Swagger_TypeOfBlock_Short_Detail help = new Swagger_TypeOfBlock_Short_Detail();
         help.id = id;
         help.name = name;
         help.description = description;
+
+        help.edit_permission = edit_permission();
+        help.delete_permission = delete_permission();
+        help.update_permission = update_permission();
         return help;
     }
 

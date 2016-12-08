@@ -98,6 +98,7 @@ public class B_Program extends Model {
         help.name = name;
         help.description = description;
 
+        help.edit_permission = edit_permission();
         help.delete_permission = delete_permission();
         help.update_permission = update_permission();
 
