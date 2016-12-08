@@ -12,7 +12,6 @@ import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import play.mvc.*;
 import utilities.Server;
-import utilities.UtilTools;
 import utilities.emails.EmailTool;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_API;
@@ -120,7 +119,7 @@ public class PersonController extends Controller {
                 person.update();
 
                 try {
-                    programingPackageController.addParticipantToProject(invitation.id, true);
+                    programingPackageController.project_addParticipant(invitation.id, true);
                 }catch(Exception e){
                     return Loggy.result_internalServerError(e, request());
                 }

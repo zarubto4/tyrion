@@ -182,16 +182,16 @@ PUT             /invoice/send_remainder/:invoice_id                             
 DELETE          /invoice/:invoice_id                                                        @controllers.Finance_Controller.invoice_remove(invoice_id: Long)
 
 #Project
-POST           /project                                                                     @controllers.ProgramingPackageController.postNewProject()
-PUT            /project/:project_id                                                         @controllers.ProgramingPackageController.edit_Project(project_id)
-GET            /project/:project_id                                                         @controllers.ProgramingPackageController.getProject(project_id)
-GET            /project                                                                     @controllers.ProgramingPackageController.getProjectsByUserAccount
-DELETE         /project/:project_id                                                         @controllers.ProgramingPackageController.deleteProject(project_id)
-PUT            /project/shareProject/:project_id                                            @controllers.ProgramingPackageController.shareProjectWithUsers(project_id)
-PUT            /project/unshareProject/:project_id                                          @controllers.ProgramingPackageController.unshareProjectWithUsers(project_id)
-PUT            /project/addParticipant/:invitation_id/:decision                             @controllers.ProgramingPackageController.addParticipantToProject(invitation_id, decision: Boolean)
-PUT            /project/change_participant_state/:project_id                                @controllers.ProgramingPackageController.participant_changeStatus(project_id)
-DELETE         /project/deleteInvitation/:invitation_id                                     @controllers.ProgramingPackageController.deleteProjectInvitation(invitation_id)
+POST           /project                                                                     @controllers.ProgramingPackageController.project_create()
+PUT            /project/:project_id                                                         @controllers.ProgramingPackageController.project_update(project_id)
+GET            /project/:project_id                                                         @controllers.ProgramingPackageController.project_get(project_id)
+GET            /project                                                                     @controllers.ProgramingPackageController.project_getByUser
+DELETE         /project/:project_id                                                         @controllers.ProgramingPackageController.project_delete(project_id)
+PUT            /project/shareProject/:project_id                                            @controllers.ProgramingPackageController.project_invite(project_id)
+PUT            /project/unshareProject/:project_id                                          @controllers.ProgramingPackageController.project_removeParticipant(project_id)
+PUT            /project/addParticipant/:invitation_id/:decision                             @controllers.ProgramingPackageController.project_addParticipant(invitation_id, decision: Boolean)
+PUT            /project/change_participant_state/:project_id                                @controllers.ProgramingPackageController.project_changeParticipantStatus(project_id)
+DELETE         /project/deleteInvitation/:invitation_id                                     @controllers.ProgramingPackageController.project_deleteInvitation(invitation_id)
 
 #Program
 POST           /b_program/:project_id                                                       @controllers.ProgramingPackageController.new_b_Program(project_id)
@@ -223,29 +223,29 @@ PUT            /instance/shut_down/:instance_name                       @control
 
 
 #Blocks
-POST           /blockoBlock                                                         @controllers.ProgramingPackageController.new_Block()
-PUT            /blockoBlock/:blocko_block_id                                        @controllers.ProgramingPackageController.edit_Block(blocko_block_id)
-GET            /blockoBlock/:blocko_block_id                                        @controllers.ProgramingPackageController.getBlockoBlock(blocko_block_id)
-DELETE         /blockoBlock/:blocko_block_id                                        @controllers.ProgramingPackageController.deleteBlock(blocko_block_id)
-PUT            /blockoBlock/list/:page_number                                       @controllers.ProgramingPackageController.get_BlockoBlock_by_Filter(page_number:Int )
+POST           /blockoBlock                                                         @controllers.ProgramingPackageController.blockoBlock_create()
+PUT            /blockoBlock/:blocko_block_id                                        @controllers.ProgramingPackageController.blockoBlock_update(blocko_block_id)
+GET            /blockoBlock/:blocko_block_id                                        @controllers.ProgramingPackageController.blockoBlock_get(blocko_block_id)
+DELETE         /blockoBlock/:blocko_block_id                                        @controllers.ProgramingPackageController.blockoBlock_delete(blocko_block_id)
+PUT            /blockoBlock/list/:page_number                                       @controllers.ProgramingPackageController.blockoBlock_getByFilter(page_number:Int )
 
-POST           /blockoBlock/version/:blocko_block_id                                @controllers.ProgramingPackageController.new_BlockoBlock_Version(blocko_block_id)
-PUT            /blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.edit_BlockoBlock_Version(blocko_block_version_id)
-PUT            /blockoBlock/version/make_public/:blocko_block_version_id            @controllers.ProgramingPackageController.make_BlockoBlock_Version_public(blocko_block_version_id)
-GET            /blockoBlock/version/all/:blocko_block_id                            @controllers.ProgramingPackageController.get_BlockoBlock_all_versions(blocko_block_id)
-GET            /blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.get_BlockoBlock_Version(blocko_block_version_id)
-DELETE         /blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.delete_BlockoBlock_Version(blocko_block_version_id)
+POST           /blockoBlock/version/:blocko_block_id                                @controllers.ProgramingPackageController.blockoBlockVersion_create(blocko_block_id)
+PUT            /blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.blockoBlockVersion_update(blocko_block_version_id)
+PUT            /blockoBlock/version/make_public/:blocko_block_version_id            @controllers.ProgramingPackageController.blockoBlockVersion_makePublic(blocko_block_version_id)
+GET            /blockoBlock/version/all/:blocko_block_id                            @controllers.ProgramingPackageController.blockoBlockVersion_getAll(blocko_block_id)
+GET            /blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.blockoBlockVersion_get(blocko_block_version_id)
+DELETE         /blockoBlock/version/:blocko_block_version_id                        @controllers.ProgramingPackageController.blockoBlockVersion_delete(blocko_block_version_id)
 
 GET            /blockoBlock/scheme/version                                          @controllers.ProgramingPackageController.get_BlockoBlock_Version_scheme()
 PUT            /blockoBlock/scheme/version                                          @controllers.ProgramingPackageController.edit_BlockoBlock_Version_scheme()
 
 #TypeOfBlocko
-POST           /typeOfBlock                                                         @controllers.ProgramingPackageController.newTypeOfBlock()
-GET            /typeOfBlock                                                         @controllers.ProgramingPackageController.getAllTypeOfBlocks
-PUT            /typeOfBlock/list/:page_number                                       @controllers.ProgramingPackageController.get_TypeOfBlock_by_Filter(page_number: Int)
-GET            /typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.get_TypeOfBlock(type_of_block_id)
-PUT            /typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.editTypeOfBlock(type_of_block_id)
-DELETE         /typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.deleteTypeOfBlock(type_of_block_id)
+POST           /typeOfBlock                                                         @controllers.ProgramingPackageController.typeOfBlock_create()
+GET            /typeOfBlock                                                         @controllers.ProgramingPackageController.typeOfBlock_getAll
+PUT            /typeOfBlock/list/:page_number                                       @controllers.ProgramingPackageController.typeOfBlock_getByFilter(page_number: Int)
+GET            /typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.typeOfBlock_get(type_of_block_id)
+PUT            /typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.typeOfBlock_update(type_of_block_id)
+DELETE         /typeOfBlock/:type_of_block_id                                       @controllers.ProgramingPackageController.typeOfBlock_delete(type_of_block_id)
 
 
 #BLocko Server

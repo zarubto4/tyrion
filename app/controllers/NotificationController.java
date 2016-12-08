@@ -3,28 +3,21 @@ package controllers;
 import com.avaje.ebean.Query;
 import com.google.inject.Inject;
 import io.swagger.annotations.*;
-import models.compiler.Board;
 import models.compiler.Version_Object;
 import models.notification.Notification;
-import models.person.Invitation;
 import models.person.Person;
 import models.project.b_program.B_Program;
-import models.project.b_program.instnace.Homer_Instance;
-import models.project.c_program.C_Program;
-import models.project.global.Project;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.Server;
 import utilities.enums.Notification_action;
 import utilities.enums.Notification_importance;
 import utilities.enums.Notification_level;
 import utilities.enums.Notification_state;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_API;
-import utilities.notifications.Notification_Handler;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.Swagger_B_Program_Version_New;
@@ -32,12 +25,7 @@ import utilities.swagger.documentationClass.Swagger_Notification_Confirm;
 import utilities.swagger.documentationClass.Swagger_Notification_Read;
 import utilities.swagger.documentationClass.Swagger_Notification_Test;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Notification_List;
-import utilities.swagger.outboundClass.Swagger_B_Program_Version;
-import utilities.swagger.outboundClass.Swagger_C_Program_Version;
-import utilities.swagger.outboundClass.Swagger_Notification_Button;
-import utilities.webSocket.WS_Becki_Website;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
@@ -364,10 +352,10 @@ public class NotificationController extends Controller {
           return GlobalResult.result_ok("Notification confirmed");
         }
         case "accept_project_invitation"  : {
-          return programingPackageController.addParticipantToProject(help.payload, true);
+          return programingPackageController.project_addParticipant(help.payload, true);
         }
         case "reject_project_invitation"  : {
-          return programingPackageController.addParticipantToProject(help.payload, false);
+          return programingPackageController.project_addParticipant(help.payload, false);
         }
         default: return GlobalResult.result_BadRequest("Unknown action");
       }

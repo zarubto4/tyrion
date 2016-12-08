@@ -32,7 +32,7 @@ public class ProgramingPackageTest extends TestHelper{
 
     public static Product product;
     public static Project project;
-    public static Private_Homer_Server homer;
+    //public static Private_Homer_Server homer;
 
     public static String adminToken;
 
@@ -58,7 +58,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         product = product_create(person);
         project = project_create(product);
-        homer = homer_create(project);
+        //homer = homer_create(project);
 
         secondPerson = person_create();
         person_authenticate(secondPerson);
@@ -70,7 +70,7 @@ public class ProgramingPackageTest extends TestHelper{
 
     @AfterClass
     public static void stopApp() throws Exception{
-        homer_delete(homer);
+        //homer_delete(homer);
         project_delete(project);
         product_delete(product);
         person_delete(person);
@@ -106,7 +106,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(POST)
-                .uri(routes.ProgramingPackageController.postNewProject().toString())
+                .uri(routes.ProgramingPackageController.project_create().toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -120,7 +120,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
-                .uri(routes.ProgramingPackageController.getProjectsByUserAccount().toString())
+                .uri(routes.ProgramingPackageController.project_getByUser().toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -132,7 +132,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
-                .uri(routes.ProgramingPackageController.getProject(project.id).toString())
+                .uri(routes.ProgramingPackageController.project_get(project.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -144,7 +144,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
-                .uri(routes.ProgramingPackageController.getProject(project.id).toString())
+                .uri(routes.ProgramingPackageController.project_get(project.id).toString())
                 .header("X-AUTH-TOKEN", randomUserToken);
 
         Result result = route(request);
@@ -158,7 +158,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(DELETE)
-                .uri(routes.ProgramingPackageController.deleteProject(p.id).toString())
+                .uri(routes.ProgramingPackageController.project_delete(p.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -172,7 +172,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(DELETE)
-                .uri(routes.ProgramingPackageController.deleteProject(p.id).toString())
+                .uri(routes.ProgramingPackageController.project_delete(p.id).toString())
                 .header("X-AUTH-TOKEN", randomUserToken);
 
         Result result = route(request);
@@ -189,7 +189,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri(routes.ProgramingPackageController.edit_Project(project.id).toString())
+                .uri(routes.ProgramingPackageController.project_update(project.id).toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -208,7 +208,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri(routes.ProgramingPackageController.edit_Project(project.id).toString())
+                .uri(routes.ProgramingPackageController.project_update(project.id).toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", randomUserToken);
 
@@ -230,7 +230,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri(routes.ProgramingPackageController.shareProjectWithUsers(project.id).toString())
+                .uri(routes.ProgramingPackageController.project_invite(project.id).toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -246,7 +246,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri(routes.ProgramingPackageController.addParticipantToProject(i.id, false).toString())
+                .uri(routes.ProgramingPackageController.project_addParticipant(i.id, false).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -268,7 +268,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri(routes.ProgramingPackageController.unshareProjectWithUsers(project.id).toString())
+                .uri(routes.ProgramingPackageController.project_removeParticipant(project.id).toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -284,14 +284,14 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(DELETE)
-                .uri(routes.ProgramingPackageController.deleteProjectInvitation(i.id).toString())
+                .uri(routes.ProgramingPackageController.project_deleteInvitation(i.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
 
         assertEquals(OK, result.status());
     }
-
+/*
     @Test
     public void new_homer_in_project() {
 
@@ -386,4 +386,5 @@ public class ProgramingPackageTest extends TestHelper{
 
         assertEquals(FORBIDDEN, result.status());
     }
+    */
 }

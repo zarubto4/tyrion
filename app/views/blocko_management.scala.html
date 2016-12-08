@@ -334,7 +334,7 @@
         function newTypeOfBlock(){
           model_data = $("#newTypeOfBlock").serializeObject();
           $.ajax({
-            url: '@routes.ProgramingPackageController.newTypeOfBlock()',
+            url: '@routes.ProgramingPackageController.typeOfBlock_create()',
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -356,7 +356,7 @@
         function newBlockoBlock(){
           model_data = $("#newBlockoBlock").serializeObject();
           $.ajax({
-            url: '@routes.ProgramingPackageController.new_Block()',
+            url: '@routes.ProgramingPackageController.blockoBlock_create()',
             type: 'POST',
             contentType: 'application/json',
             headers: {
