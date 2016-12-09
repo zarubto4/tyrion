@@ -133,7 +133,6 @@ public class Homer_Instance extends Model {
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore             public B_Program    getB_program()   { return b_program;}
-    @JsonIgnore @Transient  public boolean      instance_online(){ return this.online_state();}
     @JsonIgnore @Transient  public List<Board>  getBoards_in_virtual_instance() { return boards_in_virtual_instance; }
 
     @JsonIgnore @Transient
