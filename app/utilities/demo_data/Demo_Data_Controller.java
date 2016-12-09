@@ -1887,6 +1887,7 @@ public class Demo_Data_Controller extends Controller {
             version_c_program_1.version_name = "Verze 0.0.1";
             version_c_program_1.version_description = "Když jem poprvé zkoušel blikat ledkou - Yoda";
             version_c_program_1.c_program = c_program_1;
+            version_c_program_1.date_of_create = new Date();
             version_c_program_1.save();
 
             // Nahraje do Azure a připojí do verze soubor
@@ -1903,6 +1904,7 @@ public class Demo_Data_Controller extends Controller {
             version_c_program_1_2.version_name = "Verze 0.0.2";
             version_c_program_1_2.version_description = "Když jem podruhé zkoušel blikat ledkou - Yoda";
             version_c_program_1_2.c_program = c_program_1;
+            version_c_program_1_2.date_of_create = new Date();
             version_c_program_1_2.save();
 
             // Nahraje do Azure a připojí do verze soubor
@@ -1920,6 +1922,7 @@ public class Demo_Data_Controller extends Controller {
             version_c_program_2.version_name = "Verze 0.0.1";
             version_c_program_2.version_description = "Když jiná věc pro Yodu poprvé";
             version_c_program_2.c_program = c_program_2;
+            version_c_program_2.date_of_create = new Date();
             version_c_program_2.save();
 
             // Nahraje do Azure a připojí do verze soubor
@@ -1937,6 +1940,7 @@ public class Demo_Data_Controller extends Controller {
             version_c_program_3.version_name = "Verze 0.0.1";
             version_c_program_3.version_description = "Když jem poprvé Wireles";
             version_c_program_3.c_program = c_program_3;
+            version_c_program_3.date_of_create = new Date();
             version_c_program_3.save();
 
             // Nahraje do Azure a připojí do verze soubor
@@ -1954,6 +1958,7 @@ public class Demo_Data_Controller extends Controller {
             version_c_program_4.version_name = "Verze 0.0.1";
             version_c_program_4.version_description = "Když jem poprvé Drát";
             version_c_program_4.c_program = c_program_4;
+            version_c_program_4.date_of_create = new Date();
             version_c_program_4.save();
 
             // Nahraje do Azure a připojí do verze soubor
@@ -1988,6 +1993,7 @@ public class Demo_Data_Controller extends Controller {
             m_program_version_object_1.m_program = m_program_1;
             m_program_version_object_1.public_version = false;
             m_program_version_object_1.qr_token = "qr_token_1";
+            m_program_version_object_1.date_of_create = new Date();
             m_program_version_object_1.m_program_virtual_input_output = "{\"analogInputs\":{},\"digitalInputs\":{\"button_1\":{}},\"messageInputs\":{},\"analogOutputs\":{},\"digitalOutputs\":{\"button_1\":{}},\"messageOutputs\":{}}";
 
             m_program_version_object_1.save();
@@ -2011,6 +2017,7 @@ public class Demo_Data_Controller extends Controller {
             m_program_version_object_2.m_program = m_program_2;
             m_program_version_object_2.public_version = false;
             m_program_version_object_2.qr_token = "qr_token_2";
+            m_program_version_object_2.date_of_create = new Date();
             m_program_version_object_2.m_program_virtual_input_output = "{\"analogInputs\":{},\"digitalInputs\":{\"button_1\":{}},\"messageInputs\":{},\"analogOutputs\":{},\"digitalOutputs\":{\"button_1\":{}},\"messageOutputs\":{}}";
             m_program_version_object_2.save();
 

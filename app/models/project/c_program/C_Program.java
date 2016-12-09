@@ -63,11 +63,11 @@ public class C_Program extends Model {
 
         List<Swagger_C_Program_Version_Short_Detail> versions = new ArrayList<>();
 
-        if(first_default_version_object != null) versions.add(first_default_version_object.get_short_c_program_version());
-
         for(Version_Object version : getVersion_objects()){
             versions.add(version.get_short_c_program_version());
         }
+
+        //if(first_default_version_object != null) versions.add(first_default_version_object.get_short_c_program_version());
 
         return versions;
     }
@@ -90,26 +90,6 @@ public class C_Program extends Model {
 
         return help;
     }
-
-    @Transient @JsonIgnore public Swagger_C_program_Short_Detail get_compiled_short_c_program(){
-
-        // Určeno pro výběr C_Programu, který se vypálí na HW
-
-        Swagger_C_program_Short_Detail help = new Swagger_C_program_Short_Detail();
-
-        help.id = id;
-        help.name = name;
-        help.description = description;
-        help.type_of_board_id = type_of_board_id();
-        help.type_of_board_name = type_of_board_name();
-
-        for(Version_Object version_object : Version_Object.find.where().eq("c_program.id", id).eq("removed_by_user", false).eq("c_compilation.status", "successfully_compiled_and_restored").order().desc("date_of_create").findList() ){
-            version_object.get_short_c_program_version();
-        }
-
-        return help;
-    }
-
 
 
 /* Private Documentation Class -------------------------------------------------------------------------------------*/
@@ -231,7 +211,10 @@ public class C_Program extends Model {
 
     @JsonIgnore   @Transient  @ApiModelProperty(required = true) public boolean create_permission(){  return project != null ? ( project.update_permission() ) : SecurityController.getPerson().has_permission("C_program_create");      }
     @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean update_permission(){  return ( C_Program.find.where().eq("project.participants.person.id", SecurityController.getPerson().id).eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("C_program_update"); }
-    @JsonIgnore   @Transient  @ApiModelProperty(required = true) public boolean read_permission()  {  return ( C_Program.find.where().eq("project.participants.person.id", SecurityController.getPerson().id).eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("C_program_read"); }
+    @JsonIgnore   @Transient  @ApiModelProperty(required = true) public boolean read_permission()  {
+        if(project == null) return true;
+        return ( C_Program.find.where().eq("project.participants.person.id", SecurityController.getPerson().id).eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("C_program_read");
+    }
     @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean edit_permission()  {  return ( C_Program.find.where().eq("project.participants.person.id", SecurityController.getPerson().id).eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("C_program_edit"); }
     @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean delete_permission(){  return ( C_Program.find.where().eq("project.participants.person.id", SecurityController.getPerson().id).eq("id", id).findRowCount() > 0) || SecurityController.getPerson().has_permission("C_program_delete"); }
 
