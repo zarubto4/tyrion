@@ -132,11 +132,8 @@ public class Homer_Instance extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient  public B_Program    getB_program()   {
-        if(b_program == null) b_program = B_Program.find.where().eq("instance.blocko_instance_name", blocko_instance_name).findUnique();
-        return b_program;
-    }
-
+    @JsonIgnore             public B_Program    getB_program()   { return b_program;}
+    @JsonIgnore @Transient  public boolean      instance_online(){ return this.online_state();}
     @JsonIgnore @Transient  public List<Board>  getBoards_in_virtual_instance() { return boards_in_virtual_instance; }
 
     @JsonIgnore @Transient
