@@ -86,7 +86,6 @@ public class Homer_Instance_Record  extends Model {
 
                 // ID C_programu aktuálního != požadovanému -> zařadím do aktualizační procedury!
                 if(group.main_board_pair.board.actual_c_program_version == null || !group.main_board_pair.c_program_version_id().equals(group.main_board_pair.board.actual_c_program_version.id)){
-
                     // Zrušit aktualizace předchozích!!
                     // TODO
 

@@ -20,10 +20,7 @@ import models.project.c_program.C_Program;
 import models.project.global.Product;
 import models.project.global.Project;
 import models.project.global.Project_participant;
-import models.project.global.financial.GeneralTariff;
-import models.project.global.financial.GeneralTariffLabel;
-import models.project.global.financial.GeneralTariff_Extensions;
-import models.project.global.financial.Payment_Details;
+import models.project.global.financial.*;
 import models.project.m_program.M_Program;
 import models.project.m_program.M_Project;
 import models.project.m_program.M_Project_Program_SnapShot;
@@ -1683,6 +1680,59 @@ public class Demo_Data_Controller extends Controller {
             payment_details.product = product;
             product.payment_details = payment_details;
             product.save();
+
+
+            Invoice invoice = new Invoice();
+            invoice.facturoid_invoice_id = 4023423L;
+            invoice.invoice_number = "324234234";
+            invoice.date_of_create = new Date();
+            invoice.product = product;
+            invoice.status = Payment_status.paid;
+            invoice.method = Payment_method.credit_card;
+
+            Invoice_item item_1 = new Invoice_item();
+            item_1.currency = Currency.CZK;
+            item_1.name = "položka 1";
+            item_1.quantity = 1L;
+            item_1.unit_name = "service";
+            item_1.unit_price = 530.00;
+            invoice.invoice_items.add(item_1);
+
+            Invoice_item item_2 = new Invoice_item();
+            item_2.currency = Currency.CZK;
+            item_2.name = "Databáze";
+            item_2.quantity = 5L;
+            item_2.unit_name = "GB";
+            item_2.unit_price = 99.00;
+            invoice.invoice_items.add(item_2);
+
+            invoice.save();
+
+            Invoice invoice_2 = new Invoice();
+            invoice_2.facturoid_invoice_id = 4023423L;
+            invoice_2.invoice_number = "324234234";
+            invoice_2.date_of_create = new Date();
+            invoice_2.product = product;
+            invoice_2.status = Payment_status.created_waited;
+            invoice_2.method = Payment_method.credit_card;
+
+            Invoice_item item_3 = new Invoice_item();
+            item_3.currency = Currency.CZK;
+            item_3.name = "položka 1";
+            item_3.quantity = 1L;
+            item_3.unit_name = "service";
+            item_3.unit_price = 530.00;
+            invoice_2.invoice_items.add(item_3);
+
+            Invoice_item item_4 = new Invoice_item();
+            item_4.currency = Currency.CZK;
+            item_4.name = "Databáze";
+            item_4.quantity = 5L;
+            item_4.unit_name = "GB";
+            item_4.unit_price = 99.00;
+            invoice_2.invoice_items.add(item_4);
+
+            invoice_2.save();
 
             // Vytvořím Projekty
             Project project_1 = new Project();

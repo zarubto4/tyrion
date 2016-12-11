@@ -1,0 +1,286 @@
+@import utilities.enums.Approval_state
+@import models.compiler.Version_Object
+@import models.compiler.TypeOfBoard
+@import models.project.c_program.C_Program
+@import utilities.Server
+
+<section class="content-header">
+    <h1> Public code </h1>
+    <ol class="breadcrumb">
+        <li><a href="@routes.DashboardController.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
+        <li class="active"><i class="fa fa-share"></i> Server Management </li>
+        <li class="active"><i class="fa fa-wrench"></i> Public Code </li>
+    </ol>
+</section>
+
+
+<section class="content">
+
+
+    <div id="codeModal" style="display: none;" class="modal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h4 class="modal-title">Code</h4>
+                </div>
+
+                <div class="modal-body col-xs-12">
+                    <textarea class="col-xs-12" readonly id="code" rows="15" ></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#codeModal').css('display','none')">Close</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+    <div id="editCodeModal" style="display: none;" class="modal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Approve Code</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="editCodeForm">
+
+                        <div class="form-group col-xs-3">
+                            <label style="display: block;">C_program ID</label>
+                            <input class="col-xs-6" name="c_program_id" id="edit_form_c_program_id" type="text" style="display: block;">
+                        </div>
+
+                        <div class="form-group col-xs-3">
+                            <label style="display: block;">C_program Name</label>
+                            <input class="col-xs-12" name="c_program_name" id="edit_form_c_program_name" type="text" style="display: block;">
+                        </div>
+
+                        <div class="form-group col-xs-6">
+                            <label style="display: block;">C_program Description</label>
+                            <input class="col-xs-12" name="c_program_description" id="edit_form_c_program_description" type="text" style="display: block;">
+                        </div>
+
+                        <p></p>
+
+
+                        <div class="form-group col-xs-3">
+                            <label style="">Version ID</label>
+                            <input type="text" id="edit_form_version_id" style="display: block;">
+                        </div>
+
+                        <div class="form-group col-xs-3">
+                            <label style="">Version name:</label>
+                            <input class="col-xs-12"  type="text" id="edit_form_version_name" style="display: block;">
+                        </div>
+
+
+
+                        <div class="form-group col-xs-6">
+                            <label style="">Version description: </label>
+                            <input class="form-control col-xs-12"  type="text" id="edit_form_version_description" style="display: block;">
+                        </div>
+
+                        <p></p>
+                        <br>
+                        <p></p>
+
+                        <div class="form-group">
+                            <label style="">Code: </label>
+                            <textarea class="form-control col-xs-12" id="edit_form_code_edit" rows="6"></textarea>
+                        </div>
+
+
+                        <div class="form-group">
+                            <label style="">Message to user: </label>
+                            <textarea class="form-control col-xs-12" id="edit_code_reason"  rows="2"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <p></p>
+                        </div>
+
+                    </form>
+                </div>
+                <div>
+                    <p></p><br>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editCodeModal').css('display','none')">Close</button>
+                    <button id="editCodeButton" value="" class="btn btn-info" type="button" onclick="approveCodeWithChanges()">Save changes & Approve</button>
+                    <button id="disapproveCodeButton" value="" class="btn btn-danger" type="button" onclick="disapproveCode()">Disapprove</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">For Admin decision</h3>
+                </div>
+                <div class="box-body">
+                    <label style="">Pending C_Program</label>
+                    <table id="pendingCode" class="table table-bordered">
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>C_Program name</th>
+                            <th>C_Program description</th>
+                            <th>Author</th>
+                            <th>Compilable</th>
+                            <th>Code</th>
+                            <th>Edit</th>
+                        </tr>
+                        @for(version <- Version_Object.find.where().isNotNull("c_program").eq("approval_state", Approval_state.pending ).findList()) {
+                            <tr>
+                                <td>@version.id</td>
+                                <td>@version.version_name</td>
+                                <td>@version.version_description</td>
+                                <td>@version.c_program.name</td>
+                                <td>@version.c_program.description</td>
+                                <td>@if(version.author != null){
+                                    @version.author.mail
+                                }else{
+                                    not defined
+                                }
+                                </td>
+                                <td>@version.c_compilation.status</td>
+                                <td><button class="btn btn-block btn-primary" type="button" onclick="showCode('@version.id')">Show Code</button></td>
+                                <td><button class="btn btn-block btn-info" type="button" onclick="showEditForm('@version.id')">Edit</button></td>
+                            </tr>
+                        }
+                    </table>
+                </div>
+                <div class="box-footer">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+<script>
+
+        $.ajaxSetup({ cache: false });
+
+
+        function disapproveCode(){
+
+            model_data = {
+                "version_id":           document.getElementById('edit_form_version_id').value,
+                "decision": false,
+                "reason" :              document.getElementById('edit_code_reason').value
+            };
+            $.ajax({
+                url: '@routes.CompilationLibrariesController.approve_decision()' ,
+                type: 'PUT',
+                contentType: 'application/json',
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken"),
+                    "Content-Type":"application/json"
+                },
+                data: JSON.stringify(model_data),
+                dataType: 'json',
+                success:function(e){
+                    $("#editCodeModal").css("display","none");
+                    $('#pendingCode').load(document.URL +  ' #pendingCode');
+                    $('#all_c_programs').load(document.URL +  ' #all_c_programs');
+                },
+                error:function(json) {
+                    alert(json.message);
+                }
+            })}
+
+
+
+        function approveCodeWithChanges(){
+
+            model_data = {
+                "decision": true,
+                "c_program_name":       document.getElementById('edit_form_c_program_name').value,
+                "c_program_description":document.getElementById('edit_form_c_program_description').value,
+                "version_id":           document.getElementById('edit_form_version_id').value,
+
+                "version_name":         document.getElementById('edit_form_version_name').value,
+                "version_description":  document.getElementById('edit_form_version_description').value,
+                "main":                 document.getElementById('edit_form_code_edit').value,
+                //"user_files":           document.getElementById('user_files').value,
+                //"external_libraries":   document.getElementById('external_libraries').value,
+
+                "reason" :              document.getElementById('edit_code_reason').value
+            };
+            $.ajax({
+                url: '@routes.CompilationLibrariesController.approve_decision()' ,
+                type: 'PUT',
+                contentType: 'application/json',
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken"),
+                    "Content-Type":"application/json"
+                },
+                data: JSON.stringify(model_data),
+                dataType: 'json',
+                success:function(e){
+                    $("#editCodeModal").css("display","none");
+                    $('#pendingCode').load(document.URL +  ' #pendingCode');
+                },
+                error:function(json) {
+                    alert(json.responseText);
+                }
+            })}
+
+        function showEditForm(id){
+            $.ajax({
+                url: '@routes.CompilationLibrariesController.get_version_for_decision("")' + id,
+                type: 'GET',
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken")
+                },
+                dataType: 'json',
+                success:function(json){
+
+
+                    $('#edit_form_c_program_id').val(json.c_program_id);
+                    $('#edit_form_c_program_name').val(json.c_program_name);
+                    $('#edit_form_c_program_description').val(json.c_program_description);
+
+                    $('#edit_form_version_id').val(id);
+                    $('#edit_form_version_name').val(JSON.parse(JSON.stringify(json.c_program_version.version_object.version_name)));
+                    $('#edit_form_version_description').val(JSON.parse(JSON.stringify(json.c_program_version.version_object.version_description)));
+                    $('#user_files').val(JSON.parse(JSON.stringify(jsonc_program_version.user_files)));
+                    $('#external_libraries').val(JSON.parse(JSON.stringify(json.c_program_version.external_libraries)));
+                    $('#edit_form_code_edit').text(JSON.parse(JSON.stringify(json.c_program_version.main)));
+                },
+                error:function(e) {
+                    alert(e.responseText);
+                }
+            })
+        }
+
+
+        function showDisapproveCodeForm(id){
+            $("#disapproveCodeModal").css("display","block");
+            $('#disapproveCodeButton').val(id);
+        }
+
+        function showCode(id){
+            $.ajax({
+                url: '@Server.tyrion_serverAddress' + '/compilation/c_program/version/' + id,
+                type: 'GET',
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken")
+                },
+                success:function(json){
+                    $("#codeModal").css("display","block");
+                    $('#code').text(JSON.parse(JSON.stringify(json.main)));
+                },
+                error:function(e) {
+                    alert(e.responseText);
+                }
+            })
+        }
+
+</script>

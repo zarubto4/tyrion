@@ -772,6 +772,7 @@ public class CompilationLibrariesController extends Controller {
 
             if(help.decision){
 
+                // Odkomentuj až odzkoušíš že emaily jsou hezky naformátované - můžeš totiž Verzi hodnotit pořád dokola!!
                 // version_old.approval_state = Approval_state.approved;
                 // version_old.update();
 
@@ -809,6 +810,7 @@ public class CompilationLibrariesController extends Controller {
 
                 version_object.compile_program_thread();
 
+                // Admin to schválil bez dalších keců
                 if((help.reason == null || help.reason.length() < 4) ){
                     try {
                         new EmailTool()
@@ -833,6 +835,9 @@ public class CompilationLibrariesController extends Controller {
                         logger.error ("Sending mail -> critical error", e);
                         e.printStackTrace();
                     }
+
+
+                // Admin to schválil ale měl nějaký keci k tomu
                 }else {
 
                     try {
@@ -865,6 +870,7 @@ public class CompilationLibrariesController extends Controller {
 
             }else {
 
+                // Odkomentuj až odzkoušíš že emaily jsou hezky naformátované - můžeš totiž Verzi hodnotit pořád dokola!!
                 // version_old.approval_state = Approval_state.approved;
                 // version_old.update();
 

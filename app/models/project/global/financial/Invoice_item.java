@@ -15,7 +15,6 @@ public class Invoice_item extends Model {
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Invoice invoice;
 
-
     public String name; // Jméno položky
 
     public Long   quantity; // Počet položek

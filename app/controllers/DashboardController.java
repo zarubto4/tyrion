@@ -39,7 +39,8 @@ import views.html.tariffs.tariffs;
 import views.html.tariffs.tariff_edit;
 import views.html.tariffs.extension_edit;
 import views.html.demo_data.demo_data_main;
-import views.html.public_C_programs.*;
+import views.html.public_c_programs.approval_procedure_c_program;
+import views.html.public_c_programs.public_code;
 import views.html.reports.*;
 import views.html.hardware_generator.*;
 import views.html.super_general.menu;
@@ -542,6 +543,19 @@ public class DashboardController extends Controller {
             return ok();
         }
     }
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result public_code_aprove_procedure(){
+        try {
+
+            Html public_code_content = approval_procedure_c_program.render();
+            return return_page(public_code_content);
+
+        }catch (Exception e){
+            return ok();
+        }
+    }
+
 
     @Security.Authenticated(Secured_Admin.class)
     public Result grid_public(){

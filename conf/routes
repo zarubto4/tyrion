@@ -487,6 +487,7 @@ GET             /admin/blocko_management                        @controllers.Das
 GET             /admin/grid_public                              @controllers.DashboardController.grid_public()
 GET             /admin/grid_management                          @controllers.DashboardController.grid_management()
 GET             /admin/public_code                              @controllers.DashboardController.public_code()
+GET             /admin/public_code_aproval                      @controllers.DashboardController.public_code_aprove_procedure()
 GET             /admin/general_tariffs                          @controllers.DashboardController.general_tariffs_list()
 GET             /admin/general_tariffs/:general_tariff_id       @controllers.DashboardController.general_tariff_edit(general_tariff_id)
 GET             /admin/general_tariff_extension/:extension_id   @controllers.DashboardController.general_tariff_extension_edit(extension_id)
