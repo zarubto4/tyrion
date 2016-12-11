@@ -21,7 +21,6 @@ public class Swagger_C_Program_Version {
     @ApiModelProperty(required = true, readOnly = true)
     public Compile_Status status;
 
-
     @ApiModelProperty(required = false, readOnly = true )
     public String main;
 

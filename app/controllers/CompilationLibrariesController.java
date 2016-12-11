@@ -714,71 +714,43 @@ public class CompilationLibrariesController extends Controller {
         }
     }
 
+
+
+
+
     @ApiOperation(value = "only for Tyrion Front End", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
-    public Result changeApprovalState(){
+    public Result get_version_for_decision(String version_id){
         try {
 
-            // Získání Json
-            final Form<Swagger_C_Program_Version_Approval> form = Form.form(Swagger_C_Program_Version_Approval.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-            Swagger_C_Program_Version_Approval help = form.get();
+            // Vyhledám Objekt
+            Version_Object version_object = Version_Object.find.byId(version_id);
+            if(version_object == null) return GlobalResult.notFoundObject("Version_Object version_object not found");
 
-            // Kontrola objektu
-            Version_Object version_object = Version_Object.find.byId(help.id);
-            if(version_object == null) return GlobalResult.notFoundObject("Version not found.");
+            //Zkontroluji validitu Verze zda sedí k C_Programu
+            if(version_object.c_program == null) return GlobalResult.result_BadRequest("Version_Object its not version of C_Program");
 
-            // Úprava objektu na základě rozhodnutí
-            if(help.decision){
+            // Zkontroluji oprávnění
+            if(! version_object.c_program.read_permission())  return GlobalResult.forbidden_Permission();
 
-                // Schválení objektu
-                version_object.approval_state = Approval_state.approved;
-                version_object.public_version = true;
-            }else {
 
-                // Neschválení objektu
-                version_object.approval_state = Approval_state.disapproved;
-                version_object.public_version = false;
+            Swagger_C_Program_Version_For_Public_Decision version = new Swagger_C_Program_Version_For_Public_Decision();
+            version.c_program_version = version_object.c_program.program_version(version_object);
+            version.c_program_id   = version_object.c_program.id;
+            version.c_program_name = version_object.c_program.name;
+            version.c_program_description = version_object.c_program.description;
 
-                // Pokud je uveden Reason - tak se to odesílá uživateli.
-                if ( help.reason != null && !help.reason.equals("") ){
 
-                    // Odeslání emailu s důvodem
-                    try {
-                        new EmailTool()
-                                .addEmptyLineSpace()
-                                .startParagraph("13")
-                                .addText("Your code: ")
-                                .addBoldText(version_object.version_name)
-                                .addText(" was disapproved for this reason: ")
-                                .endParagraph()
-                                .startParagraph("13")
-                                .addText(help.reason)
-                                .endParagraph()
-                                .addEmptyLineSpace()
-                                .sendEmail(version_object.author.mail, "Code disapproved");
+            return  GlobalResult.result_ok(Json.toJson(version));
 
-                    } catch (Exception e) {
-                        logger.error("Sending mail -> critical error", e);
-                        e.printStackTrace();
-                    }
-                }
-            }
 
-            // Uložení změn
-            version_object.update();
-
-            // Potvrzení
-            return GlobalResult.result_ok();
-
-        }catch (Exception e){
+        } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }
     }
-
     @ApiOperation(value = "only for Tyrion Front End", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
-    public Result approveWithChanges(){
+    public Result approve_decision(){
         try {
 
             // Získání Json
@@ -787,65 +759,146 @@ public class CompilationLibrariesController extends Controller {
             Swagger_C_Program_Version_Approve_WithChanges help = form.get();
 
             // Kontrola objektu
-            Version_Object version_old = Version_Object.find.byId(help.id);
+            Version_Object version_old = Version_Object.find.byId(help.version_id);
             if(version_old == null) return GlobalResult.notFoundObject("Version not found");
 
             // Ověření objektu
-            C_Program c_program = C_Program.find.byId(version_old.c_program.id);
-            if(c_program == null) return GlobalResult.notFoundObject("C_Program c_program_id not found");
+            C_Program c_program_old = C_Program.find.byId(version_old.c_program.id);
+            if(c_program_old == null) return GlobalResult.notFoundObject("C_Program c_program_id not found");
 
             // Zkontroluji oprávnění
-            if(!c_program.update_permission()) return GlobalResult.forbidden_Permission();
+            if(!c_program_old.update_permission()) return GlobalResult.forbidden_Permission();
 
-            // První nová Verze
-            Version_Object version_object      = new Version_Object();
-            version_object.version_name        = help.name;
-            version_object.version_description = help.description;
-            version_object.date_of_create      = new Date();
-            version_object.c_program           = c_program;
-            version_object.public_version      = true;
-            version_object.author              = version_old.author;
 
-            // Zkontroluji oprávnění
-            if(!version_object.c_program.update_permission()) return GlobalResult.forbidden_Permission();
+            if(help.decision){
 
-            version_object.save();
+                // version_old.approval_state = Approval_state.approved;
+                // version_old.update();
 
-            // Nahraje do Azure a připojí do verze soubor
-            ObjectNode  content = Json.newObject();
-            content.put("main", help.main );
-            content.set("user_files", Json.toJson( help.user_files) );
-            content.set("external_libraries", Json.toJson( help.external_libraries) );
+                C_Program c_program = new C_Program();
+                c_program.name = help.c_program_name;
+                c_program.description = help.c_program_description;
+                c_program.date_of_create = new Date();
+                c_program.type_of_board = c_program_old.type_of_board;
 
-            // Content se nahraje na Azure
+                // Zkontroluji oprávnění
+                if(!c_program.create_permission()) return GlobalResult.forbidden_Permission();
+                c_program.save();
 
-            FileRecord.uploadAzure_Version(content.toString(), "code.json" , c_program.get_path() ,  version_object);
-            version_object.update();
+                Version_Object version_object      = new Version_Object();
+                version_object.version_name        = help.version_name;
+                version_object.version_description = help.version_description;
+                version_object.date_of_create      = new Date();
+                version_object.c_program           = c_program;
+                version_object.public_version      = true;
+                version_object.author              = version_old.author;
 
-            version_object.compile_program_thread();
+                // Zkontroluji oprávnění
+                if(!version_object.c_program.update_permission()) return GlobalResult.forbidden_Permission();
+                version_object.save();
 
-            // Odeslání emailu s důvodem
-            try {
-                new EmailTool()
-                        .addEmptyLineSpace()
-                        .startParagraph("13")
-                        .addText("Your code: ")
-                        .addBoldText(version_object.version_name)
-                        .addText(" was edited for this reason: ")
-                        .endParagraph()
-                        .startParagraph("13")
-                        .addText( help.reason)
-                        .endParagraph()
-                        .addEmptyLineSpace()
-                        .sendEmail(version_object.c_program.project.product.payment_details.person.mail, "Code edited" );
+                // Nahraje do Azure a připojí do verze soubor
+                ObjectNode  content = Json.newObject();
+                content.put("main", help.main );
+                content.set("user_files", null);
+                content.set("external_libraries", null );
 
-            } catch (Exception e) {
-                logger.error ("Sending mail -> critical error", e);
-                e.printStackTrace();
+
+                FileRecord.uploadAzure_Version(content.toString(), "code.json" , c_program.get_path() ,  version_object);
+                version_object.update();
+
+                version_object.compile_program_thread();
+
+                if((help.reason == null || help.reason.length() < 4) ){
+                    try {
+                        new EmailTool()
+                                .addEmptyLineSpace()
+                                .startParagraph("13")
+                                .addText("Thank you for publishing your program! ")
+                                .addBoldText(version_old.version_name)
+                                .addText(version_old.version_description)
+                                .addLine()
+                                .addText("We will publish it as soon as possible. But we also had to change something or eventually renamed that for some reason.")
+                                .endParagraph()
+                                .addEmptyLineSpace()
+                                .addEmptyLineSpace()
+                                .addBoldText("Thanks!")
+                                .addBoldText(SecurityController.getPerson().full_name)
+                                .endParagraph()
+                                .addEmptyLineSpace()
+                                //.sendEmail(version_object.c_program.project.product.payment_details.person.mail, "Code edited" );
+                                .sendEmail("tomas.zaruba@byzance.cz", "Publish of your program" );
+
+                    } catch (Exception e) {
+                        logger.error ("Sending mail -> critical error", e);
+                        e.printStackTrace();
+                    }
+                }else {
+
+                    try {
+                        new EmailTool()
+                                .addEmptyLineSpace()
+                                .startParagraph("13")
+                                    .addText("Thank you for publishing your program! ")
+                                    .addBoldText(version_old.version_name)
+                                    .addText(version_old.version_description)
+                                    .addLine()
+                                    .addText("We will publish it as soon as possible. But we also had to change something or eventually renamed that for some reason.")
+                                .endParagraph()
+                                .addEmptyLineSpace()
+                                .startParagraph("13")
+                                    .addBoldText("Reason: ")
+                                    .addText( help.reason)
+                                    .addEmptyLineSpace()
+                                    .addBoldText("Thanks!")
+                                    .addBoldText(SecurityController.getPerson().full_name)
+                                .endParagraph()
+                                .addEmptyLineSpace()
+                                //.sendEmail(version_object.c_program.project.product.payment_details.person.mail, "Code edited" );
+                                .sendEmail("tomas.zaruba@byzance.cz", "Publish of your program" );
+
+                    } catch (Exception e) {
+                        logger.error ("Sending mail -> critical error", e);
+                        e.printStackTrace();
+                    }
+                }
+
+            }else {
+
+                // version_old.approval_state = Approval_state.approved;
+                // version_old.update();
+
+                try {
+                    new EmailTool()
+                            .addEmptyLineSpace()
+                            .startParagraph("13")
+                            .addText("First! Thank you for publishing your program! ")
+                            .addBoldText("Version name: " + version_old.version_name)
+                            .addText("Version descripútion: " + version_old.version_description)
+                            .addLine()
+                            .addText("But we found a few problems, why we do not do public. But do not worry and do not give up!")
+                            .addText("We have for you a reason what to fix. So you can try it again")
+                            .addText("We are incredibly grateful to you!")
+                            .endParagraph()
+                            .addEmptyLineSpace()
+                            .startParagraph("13")
+                            .addBoldText("Reason: ")
+                            .addText( help.reason)
+                            .addEmptyLineSpace()
+                            .addBoldText("Thanks!")
+                            .addBoldText(SecurityController.getPerson().full_name)
+                            .endParagraph()
+                            .addEmptyLineSpace()
+                            //.sendEmail(version_object.c_program.project.product.payment_details.person.mail, "Code edited" );
+                            .sendEmail("tomas.zaruba@byzance.cz", "Publish of your program - We have sad news :( " );
+
+                } catch (Exception e) {
+                    logger.error ("Sending mail -> critical error", e);
+                    e.printStackTrace();
+                }
+
             }
 
-            // Uložení změn
-            version_object.update();
 
             // Potvrzení
             return  GlobalResult.result_ok();

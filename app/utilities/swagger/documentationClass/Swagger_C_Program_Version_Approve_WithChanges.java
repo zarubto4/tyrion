@@ -7,30 +7,25 @@ import play.data.validation.Constraints;
 public class Swagger_C_Program_Version_Approve_WithChanges {
 
     @Constraints.Required
+    public String version_id;
+
     @ApiModelProperty(required = true)
-    public String id;
+    public String version_name;
+
+    @ApiModelProperty(required = true)
+    public String version_description;
+
+
+
+    public String c_program_name;
+    public String c_program_description;
+
+
+    public String main; // Program
+
 
     @Constraints.Required
-    @ApiModelProperty(required = true)
-    public String name;
+    public boolean decision;
 
-    @Constraints.Required
-    @ApiModelProperty(required = true)
-    public String description;
-
-    @Constraints.Required
-    @ApiModelProperty(required = true)
-    public String main;
-
-    @Constraints.Required
-    @ApiModelProperty(required = true)
-    public String user_files;
-
-    @Constraints.Required
-    @ApiModelProperty(required = true)
-    public String external_libraries;
-
-    @Constraints.Required
-    @ApiModelProperty(required = true)
     public String reason;
 }
