@@ -26,6 +26,11 @@ public class EmailTool {
         return this;
     }
 
+    public EmailTool nextLine(){
+        emailContent += ("<br>");
+        return this;
+    }
+
     public EmailTool addText(String text){
         emailContent += (text);
         return this;
@@ -46,7 +51,7 @@ public class EmailTool {
         return this;
     }
 
-    public EmailTool addLine(){
+    public EmailTool addSeparatorLine(){
         emailContent += ("<div style='clear: both; height: 0px; width: 100%; border-top: 1px solid #eee'></div>");
         return this;
     }

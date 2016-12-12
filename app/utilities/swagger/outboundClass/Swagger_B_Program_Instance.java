@@ -29,7 +29,7 @@ public class Swagger_B_Program_Instance {
 
     @ApiModelProperty(required = true, readOnly = true)   public boolean server_is_online;
     @ApiModelProperty(required = true, readOnly = true)   public boolean instance_is_online;
-    @ApiModelProperty(required = false, readOnly = true)  public String instance_status_detail;
+
     @ApiModelProperty(required = true, readOnly = true)   public String server_name;
     @ApiModelProperty(required = true, readOnly = true)   public String server_id;
 
@@ -38,5 +38,8 @@ public class Swagger_B_Program_Instance {
 
     @ApiModelProperty(required = true, readOnly = true, value = "can be empty")
     public List<M_Project_Program_SnapShot> m_project_program_snapshots = new ArrayList<>();
+
+
+    @ApiModelProperty(required = false, readOnly = true)  public String instance_remote_url;
 
 }

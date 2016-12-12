@@ -296,8 +296,8 @@ PUT             /compilation/c_program/version/compile/:version_id              
 GET             /compilation/c_program/version/public/list/:page_number                     @controllers.CompilationLibrariesController.get_C_Program_public_list(page_number: Int)
 
 #C_Program/Public
-GET             /compilation/c_program/version/:version_id                                   @controllers.CompilationLibrariesController.get_version_for_decision(version_id)
-PUT             /compilation/c_program/version/approve_decision                             @controllers.CompilationLibrariesController.approve_decision()
+GET             /compilation/c_program/version_for_decision/:version_id                     @controllers.CompilationLibrariesController.get_version_for_decision(version_id)
+PUT             /compilation/c_program/version_for_aprove/approve_decision                  @controllers.CompilationLibrariesController.approve_decision()
 PUT             /compilation/c_program/version/make_public/:version_id                      @controllers.CompilationLibrariesController.make_C_Program_Version_public(version_id)
 
 #Actualization

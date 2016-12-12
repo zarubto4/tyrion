@@ -421,7 +421,7 @@ public class ProgramingPackageController extends Controller {
                             .addText("If you would like to participate in it, please click on the link below and register yourself. ")
                             .endParagraph()
                             .addEmptyLineSpace()
-                            .addLine()
+                            .addSeparatorLine()
                             .addEmptyLineSpace()
                             .addLink(link,"Click here to collaborate","18")
                             .addEmptyLineSpace()

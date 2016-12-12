@@ -48,7 +48,7 @@
 
                         <div class="form-group col-xs-3">
                             <label style="display: block;">C_program ID</label>
-                            <input class="col-xs-6" name="c_program_id" id="edit_form_c_program_id" type="text" style="display: block;">
+                            <input class="col-xs-6" name="c_program_id" id="edit_form_c_program_id" readonly="readonly" type="text" style="display: block;">
                         </div>
 
                         <div class="form-group col-xs-3">
@@ -66,12 +66,12 @@
 
                         <div class="form-group col-xs-3">
                             <label style="">Version ID</label>
-                            <input type="text" id="edit_form_version_id" style="display: block;">
+                            <input class="col-xs-6" type="text" id="edit_form_version_id" readonly="readonly" style="display: block;">
                         </div>
 
                         <div class="form-group col-xs-3">
                             <label style="">Version name:</label>
-                            <input class="col-xs-12"  type="text" id="edit_form_version_name" style="display: block;">
+                            <input class="col-xs-12" type="text" id="edit_form_version_name" style="display: block;">
                         </div>
 
 
@@ -242,7 +242,6 @@
                 dataType: 'json',
                 success:function(json){
 
-
                     $('#edit_form_c_program_id').val(json.c_program_id);
                     $('#edit_form_c_program_name').val(json.c_program_name);
                     $('#edit_form_c_program_description').val(json.c_program_description);
@@ -250,9 +249,11 @@
                     $('#edit_form_version_id').val(id);
                     $('#edit_form_version_name').val(JSON.parse(JSON.stringify(json.c_program_version.version_object.version_name)));
                     $('#edit_form_version_description').val(JSON.parse(JSON.stringify(json.c_program_version.version_object.version_description)));
-                    $('#user_files').val(JSON.parse(JSON.stringify(jsonc_program_version.user_files)));
+                    $('#user_files').val(JSON.parse(JSON.stringify(json.c_program_version.user_files)));
                     $('#external_libraries').val(JSON.parse(JSON.stringify(json.c_program_version.external_libraries)));
                     $('#edit_form_code_edit').text(JSON.parse(JSON.stringify(json.c_program_version.main)));
+
+                    $("#editCodeModal").css("display","block");
                 },
                 error:function(e) {
                     alert(e.responseText);

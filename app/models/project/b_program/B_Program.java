@@ -71,7 +71,7 @@ public class B_Program extends Model {
         // Je nahrán
         state.uploaded = true;          // Jestli je aktuální - nebo plánovaný
         state.instance_online = instance.instance_online();
-        state.instance_remote_url = "ws://" + instance.cloud_homer_server.server_url  + instance.cloud_homer_server.webView_port + "/" + instance.blocko_instance_name + "/";
+        state.instance_remote_url = "ws://" + instance.cloud_homer_server.server_url  + instance.cloud_homer_server.webView_port + "/" + instance.blocko_instance_name + "/#token";
 
 
         // Jaká verze Blocko Programu?

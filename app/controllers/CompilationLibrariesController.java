@@ -169,7 +169,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = C_Program.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -304,7 +304,7 @@ public class CompilationLibrariesController extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_C_Program_Version.class),
             @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -345,7 +345,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",    response = C_Program.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
@@ -425,7 +425,7 @@ public class CompilationLibrariesController extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successful created",        response = Swagger_C_Program_Version.class),
             @ApiResponse(code = 400, message = "Some Json value Missing",   response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
@@ -498,7 +498,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response =  Result_ok.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -556,7 +556,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",                 response = Version_Object.class),
-            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -608,9 +608,9 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result delete_C_Program(@ApiParam(value = "c_program_id String query", required = true)  String c_program_id){
@@ -640,7 +640,7 @@ public class CompilationLibrariesController extends Controller {
 
     @ApiOperation(value = "make C_program_Version public",
             tags = {"C_Program"},
-            notes = "make C_program public, so other users can see it and use it",
+            notes = "Make C_program public, so other users can see it and use it. Attention! Attention! Attention! A user can publish only three programs at the stage waiting for approval.",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -654,9 +654,10 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "The user has entered more than three channels. Or other problem :(", response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result make_C_Program_Version_public(@ApiParam(value = "version_id String query", required = true)  String version_id){
@@ -665,6 +666,15 @@ public class CompilationLibrariesController extends Controller {
             // Kontrola objektu
             Version_Object version = Version_Object.find.byId(version_id);
             if(version == null) return GlobalResult.notFoundObject("Version not found");
+
+            if(version.c_program == null )return GlobalResult.notFoundObject("Version not found");
+
+
+            if(Version_Object.find.where().eq("approval_state", Approval_state.pending.name())
+                                          .eq("c_program.project.participants.person.id", SecurityController.getPerson().id)
+                                          .findList().size() > 3) return GlobalResult.result_BadRequest("You can publish only 3 programs. Wait until the previous ones approved by the administrator. Thanks.");
+
+            if(version.approval_state != null)  return GlobalResult.result_BadRequest("You cannot public same program twice!");
 
             // Úprava objektu
             version.approval_state = Approval_state.pending;
@@ -773,8 +783,8 @@ public class CompilationLibrariesController extends Controller {
             if(help.decision){
 
                 // Odkomentuj až odzkoušíš že emaily jsou hezky naformátované - můžeš totiž Verzi hodnotit pořád dokola!!
-                // version_old.approval_state = Approval_state.approved;
-                // version_old.update();
+                version_old.approval_state = Approval_state.approved;
+                version_old.update();
 
                 C_Program c_program = new C_Program();
                 c_program.name = help.c_program_name;
@@ -816,20 +826,29 @@ public class CompilationLibrariesController extends Controller {
                         new EmailTool()
                                 .addEmptyLineSpace()
                                 .startParagraph("13")
-                                .addText("Thank you for publishing your program! ")
-                                .addBoldText(version_old.version_name)
-                                .addText(version_old.version_description)
-                                .addLine()
-                                .addText("We will publish it as soon as possible. But we also had to change something or eventually renamed that for some reason.")
+                                    .addText("Thank you for publishing your program!")
+                                    .nextLine()
+                                .endParagraph()
+                                .startParagraph("11")
+                                    .addBoldText("C Program Name: ").addText(c_program_old.name).nextLine()
+                                    .addBoldText("C Program Description: ").addText(c_program_old.description).nextLine().nextLine()
+                                    .addBoldText("Version Name: ").addText(version_old.version_name).nextLine()
+                                    .addBoldText("Version Description: ").addText(version_old.version_description)
+                                .endParagraph()
+
+                                .addSeparatorLine()
+
+                                .startParagraph("11")
+                                     .addText("We will publish it as soon as possible. But we also had to change something or eventually renamed something")
+                                .endParagraph()
+
+                                .startParagraph("11")
+                                    .addBoldText("Thanks!").nextLine()
+                                    .addBoldText(SecurityController.getPerson().full_name).nextLine()
                                 .endParagraph()
                                 .addEmptyLineSpace()
-                                .addEmptyLineSpace()
-                                .addBoldText("Thanks!")
-                                .addBoldText(SecurityController.getPerson().full_name)
-                                .endParagraph()
-                                .addEmptyLineSpace()
-                                //.sendEmail(version_object.c_program.project.product.payment_details.person.mail, "Code edited" );
-                                .sendEmail("tomas.zaruba@byzance.cz", "Publish of your program" );
+                                .sendEmail(version_old.c_program.project.product.payment_details.person.mail, "Publish of your program" );
+
 
                     } catch (Exception e) {
                         logger.error ("Sending mail -> critical error", e);
@@ -844,23 +863,39 @@ public class CompilationLibrariesController extends Controller {
                         new EmailTool()
                                 .addEmptyLineSpace()
                                 .startParagraph("13")
-                                    .addText("Thank you for publishing your program! ")
-                                    .addBoldText(version_old.version_name)
-                                    .addText(version_old.version_description)
-                                    .addLine()
+                                    .addText("Thank you for publishing your program!")
+                                    .nextLine()
+                                .endParagraph()
+                                .startParagraph("11")
+                                    .addBoldText("C Program Name: ").addText(c_program_old.name).nextLine()
+                                    .addBoldText("C Program Description: ").addText(c_program_old.description).nextLine().nextLine()
+                                    .addBoldText("Version Name: ").addText(version_old.version_name).nextLine()
+                                    .addBoldText("Version Description: ").addText(version_old.version_description)
+                                .endParagraph()
+
+                                .addSeparatorLine()
+
+                                .startParagraph("11")
                                     .addText("We will publish it as soon as possible. But we also had to change something or eventually renamed that for some reason.")
                                 .endParagraph()
-                                .addEmptyLineSpace()
+
+
                                 .startParagraph("13")
                                     .addBoldText("Reason: ")
+                                .endParagraph()
+                                .startParagraph("11")
                                     .addText( help.reason)
-                                    .addEmptyLineSpace()
-                                    .addBoldText("Thanks!")
-                                    .addBoldText(SecurityController.getPerson().full_name)
+                                .endParagraph()
+
+                                .addEmptyLineSpace()
+
+                                .startParagraph("11")
+                                    .addBoldText("Thanks!").nextLine()
+                                    .addBoldText(SecurityController.getPerson().full_name).nextLine()
                                 .endParagraph()
                                 .addEmptyLineSpace()
-                                //.sendEmail(version_object.c_program.project.product.payment_details.person.mail, "Code edited" );
-                                .sendEmail("tomas.zaruba@byzance.cz", "Publish of your program" );
+                                .sendEmail(version_old.c_program.project.product.payment_details.person.mail, "Publish of your program" );
+
 
                     } catch (Exception e) {
                         logger.error ("Sending mail -> critical error", e);
@@ -871,32 +906,49 @@ public class CompilationLibrariesController extends Controller {
             }else {
 
                 // Odkomentuj až odzkoušíš že emaily jsou hezky naformátované - můžeš totiž Verzi hodnotit pořád dokola!!
-                // version_old.approval_state = Approval_state.approved;
-                // version_old.update();
+                 version_old.approval_state = Approval_state.approved;
+                 version_old.update();
 
                 try {
                     new EmailTool()
                             .addEmptyLineSpace()
                             .startParagraph("13")
-                            .addText("First! Thank you for publishing your program! ")
-                            .addBoldText("Version name: " + version_old.version_name)
-                            .addText("Version descripútion: " + version_old.version_description)
-                            .addLine()
-                            .addText("But we found a few problems, why we do not do public. But do not worry and do not give up!")
-                            .addText("We have for you a reason what to fix. So you can try it again")
-                            .addText("We are incredibly grateful to you!")
+                                .addText("First! Thank you for publishing your program!")
+                                .nextLine()
                             .endParagraph()
-                            .addEmptyLineSpace()
+
+                            .startParagraph("11")
+                                .addBoldText("C Program Name: ").addText(c_program_old.name).nextLine()
+                                .addBoldText("C Program Description: ").addText(c_program_old.description).nextLine().nextLine()
+                                .addBoldText("Version Name: ").addText(version_old.version_name).nextLine()
+                                .addBoldText("Version Description: ").addText(version_old.version_description)
+                            .endParagraph()
+
+                            .addSeparatorLine()
+
+                            .startParagraph("11")
+                                .addText("But we found a few problems, why we do not do public. But do not worry and do not give up!").nextLine()
+                                .addText("We have for you a reason what to fix. So you can try it again").nextLine()
+                                .addText("We are incredibly grateful.").nextLine()
+                            .endParagraph()
+
+
                             .startParagraph("13")
-                            .addBoldText("Reason: ")
-                            .addText( help.reason)
+                                .addBoldText("Reason: ")
+                            .endParagraph()
+                            .startParagraph("11")
+                                .addText( help.reason)
+                            .endParagraph()
+
                             .addEmptyLineSpace()
-                            .addBoldText("Thanks!")
-                            .addBoldText(SecurityController.getPerson().full_name)
+
+                            .startParagraph("11")
+                                .addBoldText("Thanks!").nextLine()
+                                .addBoldText(SecurityController.getPerson().full_name).nextLine()
                             .endParagraph()
                             .addEmptyLineSpace()
-                            //.sendEmail(version_object.c_program.project.product.payment_details.person.mail, "Code edited" );
-                            .sendEmail("tomas.zaruba@byzance.cz", "Publish of your program - We have sad news :( " );
+                            .sendEmail(version_old.c_program.project.product.payment_details.person.mail, "Publish of your program" );
+
 
                 } catch (Exception e) {
                     logger.error ("Sending mail -> critical error", e);
@@ -937,7 +989,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 200, message = "Compilation successful",    response = Swagger_Compilation_Ok.class),
             @ApiResponse(code = 477, message = "External server is offline",response = Result_BadRequest.class),
             @ApiResponse(code = 422, message = "Compilation unsuccessful",  response = Swagger_Compilation_Build_Error.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 478, message = "External server side Error",response = Result_BadRequest.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
@@ -1005,7 +1057,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 200, message = "Compilation successful",    response = Result_ok.class),
             @ApiResponse(code = 477, message = "External server is offline",response = Result_BadRequest.class),
             @ApiResponse(code = 422, message = "Compilation unsuccessful",  response = Swagger_Compilation_Build_Error.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 478, message = "External server side Error",response = Result_PermissionRequired.class),
@@ -1093,7 +1145,7 @@ public class CompilationLibrariesController extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response = Result_ok.class),
             @ApiResponse(code = 477, message = "External Cloud_Homer_server where is hardware is offline", response = Result_serverIsOffline.class),
-            @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
+            @ApiResponse(code = 404, message = "Object not found", response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1238,7 +1290,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1713,7 +1765,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1825,7 +1877,7 @@ public class CompilationLibrariesController extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successfully created",      response = Version_Object.class),
             @ApiResponse(code = 400, message = "Some Json value Missing",   response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -1986,7 +2038,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok result",               response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -2231,7 +2283,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_File_Content.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -2341,7 +2393,7 @@ public class CompilationLibrariesController extends Controller {
     @ApiResponses(value = {
 
             @ApiResponse(code = 201, message = "Successfully created",    response = Version_Object.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -2466,7 +2518,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok result",                response = SingleLibrary.class),
-            @ApiResponse(code = 400, message = "Object not found",         response = Result_NotFound.class),
+            @ApiResponse(code = 404, message = "Object not found",         response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",     response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -2588,7 +2640,7 @@ public class CompilationLibrariesController extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok result",               response = SingleLibrary.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -2842,7 +2894,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Producer.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -2879,7 +2931,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -2933,7 +2985,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successfully created",    response = TypeOfBoard.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
@@ -3003,7 +3055,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = TypeOfBoard.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
@@ -3069,7 +3121,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -3110,7 +3162,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = TypeOfBoard.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -3144,7 +3196,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = TypeOfBoard.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -3461,7 +3513,7 @@ public class CompilationLibrariesController extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successful created",      response = Board.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -3544,7 +3596,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Board.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
@@ -3673,7 +3725,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Board.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -3720,7 +3772,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Board.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -3763,7 +3815,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Board.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -3834,7 +3886,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Board.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -3879,7 +3931,7 @@ public class CompilationLibrariesController extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",                 response =  Swagger_Boards_For_Blocko.class),
-            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")

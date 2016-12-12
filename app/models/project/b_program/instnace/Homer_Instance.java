@@ -61,7 +61,7 @@ public class Homer_Instance extends Model {
                 @OneToMany(mappedBy="main_instance_history", cascade=CascadeType.ALL) @OrderBy("id ASC") public List<Homer_Instance_Record> instance_history = new ArrayList<>(); // Setříděné pořadí různě nasazovaných verzí Blocko programu
 
 
-    @JsonIgnore                                                                                                         public boolean virtual_instance;
+    @JsonIgnore                                                                                                         public boolean virtual_instance; // Pokud je vázaná na project (na držení fiktivního HW)
     @JsonIgnore @OneToOne(mappedBy="private_instance",  cascade = CascadeType.MERGE, fetch = FetchType.LAZY)            public Project project;
 
 
@@ -98,6 +98,8 @@ public class Homer_Instance extends Model {
 
                 instance.hardware_group = actual_instance.version_object.b_program_hw_groups;
                 instance.m_project_program_snapshots = actual_instance.version_object.b_program_version_snapshots;
+
+                instance.instance_remote_url = "ws://" + cloud_homer_server.server_url + cloud_homer_server.webView_port + "/" + blocko_instance_name + "/#token";
             }
 
             instance.server_is_online = cloud_homer_server.server_is_online();
@@ -117,7 +119,7 @@ public class Homer_Instance extends Model {
 
 /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
-    @Transient @JsonIgnore public Swagger_Instance_Short_Detail get_instnace_short_detail(){
+    @Transient @JsonIgnore public Swagger_Instance_Short_Detail get_instance_short_detail(){
         Swagger_Instance_Short_Detail help = new Swagger_Instance_Short_Detail();
         help.id = blocko_instance_name;
         help.b_program_id = getB_program().id;
