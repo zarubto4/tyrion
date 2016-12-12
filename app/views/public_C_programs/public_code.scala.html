@@ -198,7 +198,7 @@
                         "decision" : false,
                         "reason": reason};
           $.ajax({
-            url: '@routes.CompilationLibrariesController.changeApprovalState()',
+            url: '@routes.CompilationLibrariesController.c_programVersion_changeApprovalState()',
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -223,7 +223,7 @@
                     "decision": true
                 };
           $.ajax({
-            url: '@routes.CompilationLibrariesController.changeApprovalState()' ,
+            url: '@routes.CompilationLibrariesController.c_programVersion_changeApprovalState()' ,
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -252,7 +252,7 @@
                 "external_libraries": document.getElementById('external_libraries').value
             };
             $.ajax({
-                url: '@routes.CompilationLibrariesController.changeApprovalState()' ,
+                url: '@routes.CompilationLibrariesController.c_programVersion_changeApprovalState()' ,
                 type: 'PUT',
                 contentType: 'application/json',
                 headers: {

@@ -334,7 +334,7 @@
         function newTypeOfBoard(){
           model_data = $("#newTypeOfBoardForm").serializeObject();
           $.ajax({
-            url: '@routes.CompilationLibrariesController.new_TypeOfBoard()',
+            url: '@routes.CompilationLibrariesController.typeOfBoard_create()',
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -357,7 +357,7 @@
           model_data = $("#editTypeOfBoard").serializeObject();
 
           $.ajax({
-            url: '@routes.CompilationLibrariesController.edit_TypeOfBoard("")' + id ,
+            url: '@routes.CompilationLibrariesController.typeOfBoard_update("")' + id ,
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -379,7 +379,7 @@
         function deleteTypeOfBoard(id){
 
           $.ajax({
-            url: '@routes.CompilationLibrariesController.delete_TypeOfBoard("")' + id ,
+            url: '@routes.CompilationLibrariesController.typeOfBoard_delete("")' + id ,
             type: 'DELETE',
             headers: {
               "X-AUTH-TOKEN":getCookie("authToken"),
@@ -415,7 +415,7 @@
           model_data = $("#newProcessorForm").serializeObject();
 
           $.ajax({
-            url: '@routes.CompilationLibrariesController.new_Processor()',
+            url: '@routes.CompilationLibrariesController.processor_create()',
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -450,7 +450,7 @@
           model_data = $("#editProcessor").serializeObject();
 
           $.ajax({
-            url: '@routes.CompilationLibrariesController.update_Processor("")' + id ,
+            url: '@routes.CompilationLibrariesController.processor_update("")' + id ,
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -472,7 +472,7 @@
         function deleteProcessor(id){
 
           $.ajax({
-            url: '@routes.CompilationLibrariesController.delete_Processor("")' + id ,
+            url: '@routes.CompilationLibrariesController.processor_delete("")' + id ,
             type: 'DELETE',
             headers: {
               "X-AUTH-TOKEN":getCookie("authToken"),

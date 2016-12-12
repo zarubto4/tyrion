@@ -1,4 +1,7 @@
 import junit.framework.TestCase;
+import models.blocko.BlockoBlock;
+import models.blocko.BlockoBlockVersion;
+import models.blocko.TypeOfBlock;
 import models.compiler.Processor;
 import models.compiler.Producer;
 import models.compiler.TypeOfBoard;
@@ -170,7 +173,7 @@ public class TestHelper extends Controller{
             Project_participant participant = new Project_participant();
             participant.person = product.payment_details.person;
             participant.project = project;
-            participant.state = Participant_status.member;
+            participant.state = Participant_status.owner;
 
             participant.save();
 
@@ -446,7 +449,107 @@ public class TestHelper extends Controller{
         }
     }
 
-    public static void method8(){
+    // BLOCKO ##########################################################################################################
+
+    public static TypeOfBlock type_of_block_create(Project project){
+        try {
+
+            TypeOfBlock typeOfBlock = new TypeOfBlock();
+            typeOfBlock.name = UUID.randomUUID().toString();
+            typeOfBlock.description = UUID.randomUUID().toString();
+            typeOfBlock.project = project;
+
+            typeOfBlock.save();
+            typeOfBlock.refresh();
+
+            return typeOfBlock;
+
+        }catch (Exception e){
+            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+            return null;
+        }
+    }
+
+    public static void type_of_block_delete(TypeOfBlock typeOfBlock){
+        try {
+
+            typeOfBlock.delete();
+
+        }catch (Exception e){
+            logger.error("!!!! Error while cleaning up after test. Method {} failed! Reason: {}. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+        }
+    }
+
+    public static BlockoBlock blocko_block_create(TypeOfBlock typeOfBlock){
+        try {
+
+            BlockoBlock blockoBlock = new BlockoBlock();
+            blockoBlock.name = UUID.randomUUID().toString();
+            blockoBlock.description = UUID.randomUUID().toString();
+            blockoBlock.type_of_block = typeOfBlock;
+
+            blockoBlock.save();
+            blockoBlock.refresh();
+
+            return blockoBlock;
+
+        }catch (Exception e){
+            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+            return null;
+        }
+    }
+
+    public static void blocko_block_delete(BlockoBlock blockoBlock){
+        try {
+
+            blockoBlock.delete();
+
+        }catch (Exception e){
+            logger.error("!!!! Error while cleaning up after test. Method {} failed! Reason: {}. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+        }
+    }
+
+    public static BlockoBlockVersion blocko_block_version_create(BlockoBlock blockoBlock){
+        try {
+
+            BlockoBlockVersion blockoBlockVersion = new BlockoBlockVersion();
+            blockoBlockVersion.version_name = UUID.randomUUID().toString();
+            blockoBlockVersion.version_description = UUID.randomUUID().toString();
+            blockoBlockVersion.design_json = UUID.randomUUID().toString();
+            blockoBlockVersion.logic_json = UUID.randomUUID().toString();
+            blockoBlockVersion.blocko_block = blockoBlock;
+
+            blockoBlockVersion.save();
+            blockoBlockVersion.refresh();
+
+            return blockoBlockVersion;
+        }catch (Exception e){
+            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+            return null;
+        }
+    }
+
+    public static void blocko_block_version_delete(BlockoBlockVersion blockoBlockVersion){
+        try {
+
+            blockoBlockVersion.delete();
+
+        }catch (Exception e){
+            logger.error("!!!! Error while cleaning up after test. Method {} failed! Reason: {}. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+        }
+    }
+
+    public static void method4(){
+        try {
+
+
+
+        }catch (Exception e){
+            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+        }
+    }
+
+    public static void method1(){
         try {
 
 

@@ -260,7 +260,7 @@ PUT             /blocko/disapprove                                              
 PUT             /blocko/approval                                                    @controllers.ProgramingPackageController.blockoApproval()
 
 #Board on Project
-GET             /blocko/all_details/:project_id                                     @controllers.CompilationLibrariesController.all_details_for_blocko(project_id)
+GET             /blocko/all_details/:project_id                                     @controllers.CompilationLibrariesController.board_allDetailsForBlocko(project_id)
 
 
 ### ACTUALIZATION PROCEDURE ############ ACTUALIZATION PROCEDURE ############### ACTUALIZATION PROCEDURE ################ ACTUALIZATION PROCEDURE ##############################
@@ -277,47 +277,47 @@ GET             /actualization_procedure/:actualization_procedure_id            
 ################################################################################################################################################################################
 
 #C_Program
-POST            /compilation/c_program/c_program                                            @controllers.CompilationLibrariesController.create_C_Program()
-GET             /compilation/c_program/c_program/:c_program_id                              @controllers.CompilationLibrariesController.get_C_Program(c_program_id)
-PUT             /compilation/c_program/list/:page_number                                    @controllers.CompilationLibrariesController.get_C_Program_by_Filter(page_number: Int)
+POST            /compilation/c_program/c_program                                            @controllers.CompilationLibrariesController.c_program_create()
+GET             /compilation/c_program/c_program/:c_program_id                              @controllers.CompilationLibrariesController.c_program_get(c_program_id)
+PUT             /compilation/c_program/list/:page_number                                    @controllers.CompilationLibrariesController.c_program_getByFilter(page_number: Int)
 
-PUT             /compilation/c_program/c_program/:c_program_id                              @controllers.CompilationLibrariesController.edit_C_Program(c_program_id)
-DELETE          /compilation/c_program/c_program/:c_program_id                              @controllers.CompilationLibrariesController.delete_C_Program(c_program_id)
+PUT             /compilation/c_program/c_program/:c_program_id                              @controllers.CompilationLibrariesController.c_program_update(c_program_id)
+DELETE          /compilation/c_program/c_program/:c_program_id                              @controllers.CompilationLibrariesController.c_program_delete(c_program_id)
 
-POST            /compilation/c_program/version/create/:c_program_id                         @controllers.CompilationLibrariesController.new_C_Program_Version(c_program_id)
-PUT             /compilation/c_program/version/edit/:version_id                             @controllers.CompilationLibrariesController.edit_C_Program_version(version_id)
+POST            /compilation/c_program/version/create/:c_program_id                         @controllers.CompilationLibrariesController.c_programVersion_create(c_program_id)
+PUT             /compilation/c_program/version/edit/:version_id                             @controllers.CompilationLibrariesController.c_programVersion_update(version_id)
 
-DELETE          /compilation/c_program/version/:version_id                                  @controllers.CompilationLibrariesController.delete_C_Program_Version(version_id)
-GET             /compilation/c_program/version/:version_id                                  @controllers.CompilationLibrariesController.get_C_Program_Version(version_id)
+DELETE          /compilation/c_program/version/:version_id                                  @controllers.CompilationLibrariesController.c_programVersion_delete(version_id)
+GET             /compilation/c_program/version/:version_id                                  @controllers.CompilationLibrariesController.c_programVersion_get(version_id)
 POST            /compilation/c_program/version/compile                                      @controllers.CompilationLibrariesController.compile_C_Program_code()
 PUT             /compilation/c_program/version/compile/:version_id                          @controllers.CompilationLibrariesController.compile_C_Program_version(version_id)
 
-PUT             /compilation/c_program/version/make_public/:version_id                      @controllers.CompilationLibrariesController.make_C_Program_Version_public(version_id)
-GET             /compilation/c_program/version/public/list/:page_number                     @controllers.CompilationLibrariesController.get_C_Program_public_list(page_number: Int)
+PUT             /compilation/c_program/version/make_public/:version_id                      @controllers.CompilationLibrariesController.c_programVersion_makePublic(version_id)
+GET             /compilation/c_program/version/public/list/:page_number                     @controllers.CompilationLibrariesController.c_program_getPublicList(page_number: Int)
 
-PUT             /compilation/c_program/version/approval                                     @controllers.CompilationLibrariesController.changeApprovalState()
-PUT             /compilation/c_program/version/approve_with_changes                         @controllers.CompilationLibrariesController.approveWithChanges()
+PUT             /compilation/c_program/version/approval                                     @controllers.CompilationLibrariesController.c_programVersion_changeApprovalState()
+PUT             /compilation/c_program/version/approve_with_changes                         @controllers.CompilationLibrariesController.c_programVersion_approveWithChanges()
 
 #Actualization
 PUT             /compilation/c_program/version/upload/:version_id                           @controllers.CompilationLibrariesController.uploadCompilationToBoard(version_id)
 POST            /admin_binary/:instance_id/:board_id/:build_id/:command                     @controllers.CompilationLibrariesController.uploadBinaryFileToBoard_fake_board(instance_id: String, board_id: String, build_id: String, command: String)
 
 #Processor
-POST            /processor                                                                  @controllers.CompilationLibrariesController.new_Processor()
-GET             /processor/:processor_id                                                    @controllers.CompilationLibrariesController.get_Processor(processor_id)
-GET             /processor                                                                  @controllers.CompilationLibrariesController.get_Processor_All()
-PUT             /processor/:processor_id                                                    @controllers.CompilationLibrariesController.update_Processor(processor_id)
-DELETE          /processor/:processor_id                                                    @controllers.CompilationLibrariesController.delete_Processor(processor_id)
+POST            /processor                                                                  @controllers.CompilationLibrariesController.processor_create()
+GET             /processor/:processor_id                                                    @controllers.CompilationLibrariesController.processor_get(processor_id)
+GET             /processor                                                                  @controllers.CompilationLibrariesController.processor_getAll()
+PUT             /processor/:processor_id                                                    @controllers.CompilationLibrariesController.processor_update(processor_id)
+DELETE          /processor/:processor_id                                                    @controllers.CompilationLibrariesController.processor_delete(processor_id)
 
 #Board
-POST            /board                                                          @controllers.CompilationLibrariesController.new_Board()
-PUT             /board/userDescription/:type_of_board_id                        @controllers.CompilationLibrariesController.edit_Board_User_Description(type_of_board_id)
+POST            /board                                                          @controllers.CompilationLibrariesController.board_create()
+PUT             /board/userDescription/:type_of_board_id                        @controllers.CompilationLibrariesController.board_update(type_of_board_id)
 
-PUT             /board/filter/:page_number                                      @controllers.CompilationLibrariesController.get_Board_Filter(page_number:Int )
-GET             /board/:board_id                                                @controllers.CompilationLibrariesController.get_Board(board_id)
-DELETE          /board/deactivateBoard/:board_id                                @controllers.CompilationLibrariesController.deactivate_Board(board_id)
-PUT             /board/:board_id/:project_id                                    @controllers.CompilationLibrariesController.connect_Board_with_Project(board_id, project_id)
-DELETE          /board/:board_id                                                @controllers.CompilationLibrariesController.disconnect_Board_from_Project(board_id)
+PUT             /board/filter/:page_number                                      @controllers.CompilationLibrariesController.board_getByFilter(page_number:Int )
+GET             /board/:board_id                                                @controllers.CompilationLibrariesController.board_get(board_id)
+DELETE          /board/deactivateBoard/:board_id                                @controllers.CompilationLibrariesController.board_deactivate(board_id)
+PUT             /board/:board_id/:project_id                                    @controllers.CompilationLibrariesController.board_connectProject(board_id, project_id)
+DELETE          /board/:board_id                                                @controllers.CompilationLibrariesController.board_disconnectProject(board_id)
 
 
 #Producer
@@ -328,17 +328,17 @@ GET             /producer/:producer_id                                          
 DELETE          /producer/:producer_id                                          @controllers.CompilationLibrariesController.delete_Producer(producer_id)
 
 #TypeOfBoard
-POST            /typeOfBoard                                                    @controllers.CompilationLibrariesController.new_TypeOfBoard()
-PUT             /typeOfBoard/picture_up/:type_of_board_id                       @controllers.CompilationLibrariesController.upload_TypeOfBoard_picture(type_of_board_id)
-PUT             /typeOfBoard/picture_remove/:type_of_board_id                   @controllers.CompilationLibrariesController.remove_TypeOfBoard_picture(type_of_board_id)
-PUT             /typeOfBoard/:type_of_board_id                                  @controllers.CompilationLibrariesController.edit_TypeOfBoard(type_of_board_id)
-DELETE          /typeOfBoard/:type_of_board_id                                  @controllers.CompilationLibrariesController.delete_TypeOfBoard(type_of_board_id)
-GET             /typeOfBoard/all                                                @controllers.CompilationLibrariesController.get_TypeOfBoard_all()
-GET             /typeOfBoard/:type_of_board_id                                  @controllers.CompilationLibrariesController.get_TypeOfBoard(type_of_board_id)
+POST            /typeOfBoard                                                    @controllers.CompilationLibrariesController.typeOfBoard_create()
+PUT             /typeOfBoard/picture_up/:type_of_board_id                       @controllers.CompilationLibrariesController.typeOfBoard_uploadPicture(type_of_board_id)
+PUT             /typeOfBoard/picture_remove/:type_of_board_id                   @controllers.CompilationLibrariesController.typeOfBoard_removePicture(type_of_board_id)
+PUT             /typeOfBoard/:type_of_board_id                                  @controllers.CompilationLibrariesController.typeOfBoard_update(type_of_board_id)
+DELETE          /typeOfBoard/:type_of_board_id                                  @controllers.CompilationLibrariesController.typeOfBoard_delete(type_of_board_id)
+GET             /typeOfBoard/all                                                @controllers.CompilationLibrariesController.typeOfBoard_getAll()
+GET             /typeOfBoard/:type_of_board_id                                  @controllers.CompilationLibrariesController.typeOfBoard_get(type_of_board_id)
 PUT             /typeOfBoard/mark/c_version/:type_of_board_id/:version_id       @controllers.CompilationLibrariesController.typeOfBoard_mark_C_program_Version_as_main(type_of_board_id,version_id)
 
 #Bootloader
-POST            /bootloader/:type_of_board_id                                               @controllers.CompilationLibrariesController.new_Boot_loader(type_of_board_id)
+POST            /bootloader/:type_of_board_id                                               @controllers.CompilationLibrariesController.boot_loader_create(type_of_board_id)
 PUT             /bootloader/file/:boot_loader_id                                            @controllers.CompilationLibrariesController.boot_loader_upload_file(boot_loader_id)
 PUT             /bootloader/mark/bootloader/:boot_loader_id                                 @controllers.CompilationLibrariesController.boot_loader_mark_as_main(boot_loader_id)
 

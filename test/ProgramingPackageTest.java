@@ -1,5 +1,8 @@
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import junit.framework.TestCase;
+import models.blocko.BlockoBlock;
+import models.blocko.BlockoBlockVersion;
+import models.blocko.TypeOfBlock;
 import models.person.Invitation;
 import models.person.Person;
 import models.project.global.Product;
@@ -34,6 +37,10 @@ public class ProgramingPackageTest extends TestHelper{
     public static Project project;
     //public static Private_Homer_Server homer;
 
+    public static TypeOfBlock type_of_block;
+    public static BlockoBlock blocko_block;
+    public static BlockoBlockVersion blocko_block_version;
+
     public static String adminToken;
 
     public static Person person;
@@ -59,6 +66,10 @@ public class ProgramingPackageTest extends TestHelper{
         product = product_create(person);
         project = project_create(product);
         //homer = homer_create(project);
+
+        type_of_block = type_of_block_create(project);
+        blocko_block = blocko_block_create(type_of_block);
+        blocko_block_version = blocko_block_version_create(blocko_block);
 
         secondPerson = person_create();
         person_authenticate(secondPerson);
@@ -285,6 +296,287 @@ public class ProgramingPackageTest extends TestHelper{
         RequestBuilder request = new RequestBuilder()
                 .method(DELETE)
                 .uri(routes.ProgramingPackageController.project_deleteInvitation(i.id).toString())
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+
+        assertEquals(OK, result.status());
+    }
+
+    @Test
+    public void create_type_of_block() {
+
+        ObjectNode body = Json.newObject();
+
+        body.put("name", UUID.randomUUID().toString());
+        body.put("description", UUID.randomUUID().toString());
+        body.put("project_id", project.id);
+
+        RequestBuilder request = new RequestBuilder()
+                .method(POST)
+                .uri(routes.ProgramingPackageController.typeOfBlock_create().toString())
+                .bodyJson(body)
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+
+        assertEquals(CREATED, result.status());
+    }
+
+    @Test
+    public void get_type_of_block() {
+
+        RequestBuilder request = new RequestBuilder()
+                .method(GET)
+                .uri(routes.ProgramingPackageController.typeOfBlock_get(type_of_block.id).toString())
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+
+        assertEquals(OK, result.status());
+    }
+
+    @Test
+    public void get_all_type_of_block() {
+
+        RequestBuilder request = new RequestBuilder()
+                .method(GET)
+                .uri(routes.ProgramingPackageController.typeOfBlock_getAll().toString())
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+
+        assertEquals(OK, result.status());
+    }
+
+    @Test
+    public void get_by_filter_type_of_block() {
+
+        ObjectNode body = Json.newObject();
+
+        body.put("project_id", project.id);
+        body.put("private_type", true);
+
+        RequestBuilder request = new RequestBuilder()
+                .method(PUT)
+                .uri(routes.ProgramingPackageController.typeOfBlock_getByFilter(1).toString())
+                .bodyJson(body)
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+
+        assertEquals(OK, result.status());
+    }
+
+    @Test
+    public void update_type_of_block() {
+
+        ObjectNode body = Json.newObject();
+
+        body.put("name", UUID.randomUUID().toString());
+        body.put("description", UUID.randomUUID().toString());
+
+        RequestBuilder request = new RequestBuilder()
+                .method(PUT)
+                .uri(routes.ProgramingPackageController.typeOfBlock_update(type_of_block.id).toString())
+                .bodyJson(body)
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+
+        assertEquals(OK, result.status());
+    }
+
+    @Test
+    public void delete_type_of_block() {
+
+        TypeOfBlock t = type_of_block_create(project);
+
+        RequestBuilder request = new RequestBuilder()
+                .method(DELETE)
+                .uri(routes.ProgramingPackageController.typeOfBlock_delete(t.id).toString())
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+
+        assertEquals(OK, result.status());
+    }
+
+    @Test
+    public void create_blocko_block() {
+
+        ObjectNode body = Json.newObject();
+
+        body.put("name", UUID.randomUUID().toString());
+        body.put("general_description", UUID.randomUUID().toString());
+        body.put("type_of_block_id", type_of_block.id);
+
+        RequestBuilder request = new RequestBuilder()
+                .method(POST)
+                .uri(routes.ProgramingPackageController.blockoBlock_create().toString())
+                .bodyJson(body)
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+
+        assertEquals(CREATED, result.status());
+    }
+
+    @Test
+    public void get_blocko_block() {
+
+        RequestBuilder request = new RequestBuilder()
+                .method(GET)
+                .uri(routes.ProgramingPackageController.blockoBlock_get(blocko_block.id).toString())
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+
+        assertEquals(OK, result.status());
+    }
+
+    @Test
+    public void get_by_filter_blocko_block() {
+
+        ObjectNode body = Json.newObject();
+
+        body.put("project_id", project.id);
+
+        RequestBuilder request = new RequestBuilder()
+                .method(PUT)
+                .uri(routes.ProgramingPackageController.blockoBlock_getByFilter(1).toString())
+                .bodyJson(body)
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+
+        assertEquals(OK, result.status());
+    }
+
+    @Test
+    public void update_blocko_block() {
+
+        ObjectNode body = Json.newObject();
+
+        body.put("name", UUID.randomUUID().toString());
+        body.put("general_description", UUID.randomUUID().toString());
+        body.put("type_of_block_id", type_of_block.id);
+
+        RequestBuilder request = new RequestBuilder()
+                .method(PUT)
+                .uri(routes.ProgramingPackageController.blockoBlock_update(blocko_block.id).toString())
+                .bodyJson(body)
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+
+        assertEquals(OK, result.status());
+    }
+
+    @Test
+    public void delete_blocko_block() {
+
+        BlockoBlock b = blocko_block_create(type_of_block);
+
+        RequestBuilder request = new RequestBuilder()
+                .method(DELETE)
+                .uri(routes.ProgramingPackageController.blockoBlock_delete(b.id).toString())
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+
+        assertEquals(OK, result.status());
+    }
+
+    @Test
+    public void create_blocko_block_version() {
+
+        ObjectNode body = Json.newObject();
+
+        body.put("version_name", UUID.randomUUID().toString());
+        body.put("version_description", UUID.randomUUID().toString());
+        body.put("logic_json", UUID.randomUUID().toString());
+        body.put("design_json", UUID.randomUUID().toString());
+
+        RequestBuilder request = new RequestBuilder()
+                .method(POST)
+                .uri(routes.ProgramingPackageController.blockoBlockVersion_create(blocko_block.id).toString())
+                .bodyJson(body)
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+
+        assertEquals(CREATED, result.status());
+    }
+
+    @Test
+    public void get_blocko_block_version() {
+
+        RequestBuilder request = new RequestBuilder()
+                .method(GET)
+                .uri(routes.ProgramingPackageController.blockoBlockVersion_get(blocko_block_version.id).toString())
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+
+        assertEquals(OK, result.status());
+    }
+
+    @Test
+    public void get_blocko_block_blocko_block_version() {
+
+        RequestBuilder request = new RequestBuilder()
+                .method(GET)
+                .uri(routes.ProgramingPackageController.blockoBlockVersion_getAll(blocko_block.id).toString())
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+
+        assertEquals(OK, result.status());
+    }
+
+    @Test
+    public void make_public_blocko_block_version() {
+
+        BlockoBlockVersion b = blocko_block_version_create(blocko_block);
+
+        RequestBuilder request = new RequestBuilder()
+                .method(PUT)
+                .uri(routes.ProgramingPackageController.blockoBlockVersion_makePublic(b.id).toString())
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+
+        assertEquals(OK, result.status());
+    }
+
+    @Test
+    public void update_blocko_block_version() {
+
+        ObjectNode body = Json.newObject();
+
+        body.put("version_name", UUID.randomUUID().toString());
+        body.put("version_description", UUID.randomUUID().toString());
+
+        RequestBuilder request = new RequestBuilder()
+                .method(PUT)
+                .uri(routes.ProgramingPackageController.blockoBlockVersion_update(blocko_block_version.id).toString())
+                .bodyJson(body)
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+
+        assertEquals(OK, result.status());
+    }
+
+    @Test
+    public void delete_blocko_block_version() {
+
+        BlockoBlockVersion b = blocko_block_version_create(blocko_block);
+
+        RequestBuilder request = new RequestBuilder()
+                .method(DELETE)
+                .uri(routes.ProgramingPackageController.blockoBlockVersion_delete(b.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);

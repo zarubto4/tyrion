@@ -114,7 +114,7 @@ public class CompilationLibrariesTest extends TestHelper {
 
         RequestBuilder request = new RequestBuilder()
                 .method(POST)
-                .uri(routes.CompilationLibrariesController.create_C_Program().toString())
+                .uri(routes.CompilationLibrariesController.c_program_create().toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -134,7 +134,7 @@ public class CompilationLibrariesTest extends TestHelper {
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri(routes.CompilationLibrariesController.edit_C_Program(private_c_program.id).toString())
+                .uri(routes.CompilationLibrariesController.c_program_update(private_c_program.id).toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -148,7 +148,7 @@ public class CompilationLibrariesTest extends TestHelper {
 
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
-                .uri(routes.CompilationLibrariesController.get_C_Program(private_c_program.id).toString())
+                .uri(routes.CompilationLibrariesController.c_program_get(private_c_program.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -165,7 +165,7 @@ public class CompilationLibrariesTest extends TestHelper {
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri(routes.CompilationLibrariesController.get_C_Program_by_Filter(1).toString())
+                .uri(routes.CompilationLibrariesController.c_program_getByFilter(1).toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -181,7 +181,7 @@ public class CompilationLibrariesTest extends TestHelper {
 
         RequestBuilder request = new RequestBuilder()
                 .method(DELETE)
-                .uri(routes.CompilationLibrariesController.delete_C_Program(c.id).toString())
+                .uri(routes.CompilationLibrariesController.c_program_delete(c.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -199,7 +199,7 @@ public class CompilationLibrariesTest extends TestHelper {
 
         RequestBuilder request = new RequestBuilder()
                 .method(POST)
-                .uri(routes.CompilationLibrariesController.new_C_Program_Version(private_c_program.id).toString())
+                .uri(routes.CompilationLibrariesController.c_programVersion_create(private_c_program.id).toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -213,7 +213,7 @@ public class CompilationLibrariesTest extends TestHelper {
 
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
-                .uri(routes.CompilationLibrariesController.get_C_Program_Version(private_c_program_version.id).toString())
+                .uri(routes.CompilationLibrariesController.c_programVersion_get(private_c_program_version.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -231,7 +231,7 @@ public class CompilationLibrariesTest extends TestHelper {
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri(routes.CompilationLibrariesController.edit_C_Program_version(private_c_program_version.id).toString())
+                .uri(routes.CompilationLibrariesController.c_programVersion_update(private_c_program_version.id).toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -247,7 +247,56 @@ public class CompilationLibrariesTest extends TestHelper {
 
         RequestBuilder request = new RequestBuilder()
                 .method(DELETE)
-                .uri(routes.CompilationLibrariesController.delete_C_Program_Version(v.id).toString())
+                .uri(routes.CompilationLibrariesController.c_programVersion_delete(v.id).toString())
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+
+        assertEquals(OK, result.status());
+    }
+
+    @Test
+    public void make_c_program_version_public() {
+
+        Version_Object v = c_program_version_create(private_c_program);
+
+        RequestBuilder request = new RequestBuilder()
+                .method(PUT)
+                .uri(routes.CompilationLibrariesController.c_programVersion_makePublic(v.id).toString())
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+
+        assertEquals(OK, result.status());
+    }
+
+    @Test
+    public void change_approval_state() {
+
+        Version_Object v = c_program_version_create(private_c_program);
+
+        ObjectNode body = Json.newObject();
+
+        body.put("id", v.id);
+        body.put("decision", true);
+
+        RequestBuilder request = new RequestBuilder()
+                .method(PUT)
+                .uri(routes.CompilationLibrariesController.c_programVersion_changeApprovalState().toString())
+                .bodyJson(body)
+                .header("X-AUTH-TOKEN", userToken);
+
+        Result result = route(request);
+
+        assertEquals(OK, result.status());
+    }
+
+    @Test
+    public void get_public_c_program() {
+
+        RequestBuilder request = new RequestBuilder()
+                .method(GET)
+                .uri(routes.CompilationLibrariesController.c_program_getPublicList(1).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
