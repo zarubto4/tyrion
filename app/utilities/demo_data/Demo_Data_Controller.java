@@ -1553,7 +1553,7 @@ public class Demo_Data_Controller extends Controller {
             C_Program c_program_2 = new C_Program();
             c_program_2.name = "Default C_Program for Wireless Kit";
             c_program_2.description = "You can used that for prototyping";
-            c_program_2.type_of_board = yoda;
+            c_program_2.type_of_board = wireless;
 
             c_program_2.description = "For first version of every program";
             c_program_2.date_of_create = new Date();
