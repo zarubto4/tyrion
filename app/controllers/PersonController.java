@@ -125,7 +125,7 @@ public class PersonController extends Controller {
                 }
             }
 
-            return GlobalResult.created();
+            return GlobalResult.result_ok();
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }

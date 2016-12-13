@@ -6,18 +6,16 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.project.global.Product;
 import models.project.global.financial.Invoice;
 import play.api.Play;
+import play.api.libs.json.JsPath;
 import play.libs.F;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import play.mvc.Controller;
-import play.mvc.Result;
 import utilities.Server;
 import utilities.emails.EmailTool;
 import utilities.enums.Payment_status;
 import utilities.fakturoid.helps_objects.Fakturoid_Invoice;
-import utilities.loggy.Loggy;
-import utilities.response.GlobalResult;
 
 import java.util.Calendar;
 
@@ -32,13 +30,12 @@ public class Fakturoid_Controller extends Controller {
 // PUBLIC CONTROLLERS METHODS ##########################################################################################
 
 
-    public Result invoice_get_pdf(Long invoice_id){
+   /** public Result invoice_get_pdf(Long invoice_id){
 
         try {
 
             Invoice invoice = Invoice.find.byId(invoice_id);
             if(invoice == null) return GlobalResult.notFoundObject("Invoice invoice_id not found");
-
 
             byte[] pdf_in_array = download_PDF_invoice(invoice);
 
@@ -47,7 +44,7 @@ public class Fakturoid_Controller extends Controller {
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
         }
-    }
+    }*/
 
 
 // PRIVATE EXECUTIVE METHODS ###########################################################################################
@@ -245,8 +242,7 @@ public class Fakturoid_Controller extends Controller {
             request.put("street", product.payment_details.street + " " + product.payment_details.street_number);
             request.put("city", product.payment_details.city);
             request.put("zip", product.payment_details.zip_code);
-            request.put("country", product.payment_details.country);
-            request.put("zip", product.payment_details.city);
+            // request.put("country", product.payment_details.country); (vyžaduje ISO code země - to zatím Tyrion nemá implementováno)
             request.put("vat_no", product.payment_details.company_vat_number);
             request.put("email", product.payment_details.company_authorized_email);
             request.put("phone", product.payment_details.company_authorized_phone);
@@ -257,8 +253,7 @@ public class Fakturoid_Controller extends Controller {
             request.put("street", product.payment_details.street + " " + product.payment_details.street_number);
             request.put("city", product.payment_details.city);
             request.put("zip", product.payment_details.zip_code);
-            request.put("country", product.payment_details.country);
-            request.put("zip", product.payment_details.city);
+            // request.put("country", product.payment_details.country);  (vyžaduje ISO code země - to zatím Tyrion nemá implementováno)
             request.put("email", product.payment_details.person.mail);
         }
 
@@ -282,7 +277,6 @@ public class Fakturoid_Controller extends Controller {
                 .setHeader("User-Agent", Server.Fakturoid_user_agent)
                 .setRequestTimeout(5000)
                 .put(node);
-
 
         try {
 
@@ -337,7 +331,7 @@ public class Fakturoid_Controller extends Controller {
             }else if( response.getStatus() == 422 ){
 
                 logger.error("Fakturoid!!!!!!!!!!!!!");
-                logger.error("Customer s Id je již vytvořen!");
+                logger.error("Error:: " + JsPath.json.toString());
                 logger.error("Fakturoid!!!!!!!!!!!!!");
 
                 throw new NullPointerException();

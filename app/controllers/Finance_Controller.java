@@ -7,6 +7,7 @@ import models.project.global.Product;
 import models.project.global.financial.*;
 import play.data.Form;
 import play.libs.Json;
+import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -490,18 +491,24 @@ public class Finance_Controller extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
+    @BodyParser.Of(BodyParser.Json.class)
     public Result product_create(){
         try{
 
+            logger.debug("Financial_Controller:: product_create:: Creating new product:: ");
             // Zpracování Json
             final Form<Swagger_Tariff_User_Register> form = Form.form(Swagger_Tariff_User_Register.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Tariff_User_Register help = form.get();
 
+
             GeneralTariff tariff = GeneralTariff.find.byId(help.tariff_id);
             if(tariff == null) return GlobalResult.result_BadRequest("Tariff identificator iD: {" + help.tariff_id  + "} not found or not supported now! Use only supported");
 
+            logger.debug("Financial_Controller:: product_create:: On Tariff:: " +  tariff.tariff_name);
+
             if(Product.find.where().eq("product_individual_name", help.product_individual_name).eq("payment_details.person.id", SecurityController.getPerson().id).findRowCount() > 0) return GlobalResult.result_BadRequest("You cannot use same Product name twice!");
+
 
             Product product = new Product();
 
@@ -559,10 +566,12 @@ public class Finance_Controller extends Controller {
 
                     product.payment_details = payment_details;
 
-
+                logger.debug("Financial_Controller:: product_create:: Payment details done");
 
                 // payment_mode
                 if(tariff.required_payment_mode) {
+
+                    logger.debug("Financial_Controller:: product_create:: Payment mode Required");
 
                     if(help.payment_mode == null) return GlobalResult.result_BadRequest("Payment_mode is required!");
 
@@ -577,8 +586,9 @@ public class Finance_Controller extends Controller {
 
                 if(tariff.required_payment_method) {
 
-                    if(help.payment_method == null) return GlobalResult.result_BadRequest("payment_method is required with this tariff");
+                    logger.debug("Financial_Controller:: product_create:: Payment method Required");
 
+                    if(help.payment_method == null) return GlobalResult.result_BadRequest("payment_method is required with this tariff");
 
                          if(help.payment_method.equals( Payment_method.bank_transfer.name()))  product.method = Payment_method.bank_transfer;
                     else if(help.payment_method.equals( Payment_method.credit_card.name()))    product.method = Payment_method.credit_card;
@@ -593,16 +603,18 @@ public class Finance_Controller extends Controller {
                 }
 
                 if(!tariff.required_paid_that) {
+                    logger.debug("Financial_Controller:: product_create:: Its not required pay that!");
                     product.save();
                     return GlobalResult.created(Json.toJson(product));
                 }
 
 
+                logger.debug("Financial_Controller:: product_create:: Creating invoice");
+
                 Invoice invoice = new Invoice();
                 invoice.date_of_create = new Date();
                 invoice.proforma = true;
-                invoice.status = Payment_status.sent;
-
+                invoice.status = Payment_status.created_waited;
 
                 Invoice_item invoice_item_1 = new Invoice_item();
                 invoice_item_1.name = product.general_tariff.tariff_name + " in Mode(" + product.mode.name() + ")";
@@ -614,14 +626,25 @@ public class Finance_Controller extends Controller {
                 invoice.invoice_items.add(invoice_item_1);
                 invoice.method = product.method;
 
-                product.invoices.add(invoice);
-                product.save();
+                invoice.product = product;
 
-                invoice.refresh();
+                logger.debug("Financial_Controller:: product_create:: Saving invoice");
+                invoice.save();
 
-                logger.debug("Creating Proforma in fakturoid");
-                Fakturoid_Controller.create_proforma(product, invoice);
 
+                logger.debug("Financial_Controller:: product_create::  Creating Proforma in fakturoid");
+                invoice = Fakturoid_Controller.create_proforma(product, invoice);
+
+                logger.debug("Financial_Controller:: product_create::  Proforma done");
+
+
+                if(product.mode == Payment_mode.per_credit){
+
+                    logger.debug("Financial_Controller:: product_create::  User want pay it with credit card!");
+                }
+
+
+                logger.debug("Financial_Controller:: product_create::  Proforma done");
                 JsonNode result = GoPay_Controller.provide_payment("First Payment", product, invoice);
 
                 System.out.println(result.toString());
@@ -1119,6 +1142,38 @@ public class Finance_Controller extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
     }
+
+    @ApiOperation(value = "get Invoice PDF file",
+            tags = {"Price & Invoice & Tariffs"},
+            notes = "get PDF invoice file",
+            produces = "multipartFormData",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  Swagger_Invoice_FullDetails.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result invoice_get_pdf(Long invoice_id){
+
+        try {
+
+            Invoice invoice = Invoice.find.byId(invoice_id);
+            if(invoice == null) return GlobalResult.notFoundObject("Invoice invoice_id not found");
+
+            byte[] pdf_in_array = Fakturoid_Controller.download_PDF_invoice(invoice);
+
+            return GlobalResult.result_pdf_file(pdf_in_array, invoice.invoice_number + ".pdf");
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+
 
     // TODO
     public Result send_remainder_to_custumer(Long invoice_id){
