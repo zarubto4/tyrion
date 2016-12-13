@@ -21,7 +21,6 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import play.twirl.api.Html;
-import utilities.Server;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_Admin;
 import utilities.response.GlobalResult;
@@ -43,14 +42,12 @@ import views.html.publiccprograms.approvalprocedurecprogram;
 import views.html.publiccprograms.publiccode;
 import views.html.reports.*;
 import views.html.hardware_generator.*;
-import views.html.super_general.menu;
 import views.html.user_summary.user_summary;
 import views.html.websocket.instance_detail;
 import views.html.websocket.websocket;
 import views.html.websocket.websocket_homer_server_detail;
 import views.html.grid.grid_management;
 import views.html.grid.grid_public;
-import scala.collection.JavaConversions;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -63,7 +60,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
@@ -90,16 +86,16 @@ public class DashboardController extends Controller {
         response().setContentType("text/javascript");
         return ok(
                 Routes.javascriptRouter("jsRoutes",
-                        controllers.routes.javascript.CompilationLibrariesController.new_TypeOfBoard(),
-                        controllers.routes.javascript.CompilationLibrariesController.get_TypeOfBoard(),
-                        controllers.routes.javascript.CompilationLibrariesController.edit_TypeOfBoard(),
-                        controllers.routes.javascript.CompilationLibrariesController.delete_TypeOfBoard(),
+                        controllers.routes.javascript.CompilationLibrariesController.typeOfBoard_create(),
+                        controllers.routes.javascript.CompilationLibrariesController.typeOfBoard_get(),
+                        controllers.routes.javascript.CompilationLibrariesController.typeOfBoard_update(),
+                        controllers.routes.javascript.CompilationLibrariesController.typeOfBoard_delete(),
 
-                        controllers.routes.javascript.CompilationLibrariesController.new_Processor(),
-                        controllers.routes.javascript.CompilationLibrariesController.get_Processor(),
-                        controllers.routes.javascript.CompilationLibrariesController.get_Processor_All(),
-                        controllers.routes.javascript.CompilationLibrariesController.update_Processor(),
-                        controllers.routes.javascript.CompilationLibrariesController.delete_Processor(),
+                        controllers.routes.javascript.CompilationLibrariesController.processor_create(),
+                        controllers.routes.javascript.CompilationLibrariesController.processor_get(),
+                        controllers.routes.javascript.CompilationLibrariesController.processor_getAll(),
+                        controllers.routes.javascript.CompilationLibrariesController.processor_update(),
+                        controllers.routes.javascript.CompilationLibrariesController.processor_delete(),
 
                         controllers.routes.javascript.CompilationLibrariesController.new_Producer(),
                         controllers.routes.javascript.CompilationLibrariesController.edit_Producer(),
@@ -464,7 +460,7 @@ public class DashboardController extends Controller {
         try {
 
             Person person;
-            if(user_email != null && user_email.length() < 1 ){
+            if(user_email != null && !user_email.equals("")){
 
                 person = Person.find.where().eq("mail", user_email).findUnique();
                 if(person == null) person = SecurityController.getPerson();

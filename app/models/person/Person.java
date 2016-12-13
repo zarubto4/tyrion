@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-public class Person extends Model {
+public class  Person extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -40,6 +40,7 @@ public class Person extends Model {
     @ApiModelProperty(required = true) @Column(unique=true) @Email @Constraints.Email public String mail;
     @ApiModelProperty(required = true) @Column(unique=true)     public String nick_name;
     @ApiModelProperty(required = true)                          public String full_name;
+    @ApiModelProperty(required = true)                          public String country;
 
                                                     @JsonIgnore public String azure_picture_link;
                                         @JsonIgnore @OneToOne   public FileRecord picture;
@@ -137,7 +138,7 @@ public class Person extends Model {
     @JsonIgnore   @Transient public boolean activation_permission() {  return SecurityController.getPerson().has_permission("Person_activation");}
     @JsonIgnore   @Transient public boolean delete_permission()     {  return SecurityController.getPerson().has_permission("Person_delete");}
 
-    public enum permissions{ Person_edit, Person_delete, Person_activation }
+    public enum permissions{ Person_edit, Person_delete, Person_activation, Byzance_employee }
 
 
 

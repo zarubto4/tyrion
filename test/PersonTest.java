@@ -88,7 +88,7 @@ public class PersonTest extends TestHelper{
                 .bodyJson(body);
 
         Result result = route(request);
-        assertEquals(CREATED, result.status());
+        assertEquals(OK, result.status());
     }
 
     @Test
@@ -245,6 +245,7 @@ public class PersonTest extends TestHelper{
                 .header("X-AUTH-TOKEN", person_login(p));
 
         Result result = route(request);
+        person_delete(p);
         assertEquals(FORBIDDEN, result.status());
     }
 }

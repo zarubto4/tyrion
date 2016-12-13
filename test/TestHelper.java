@@ -1,8 +1,14 @@
 import junit.framework.TestCase;
+import models.blocko.BlockoBlock;
+import models.blocko.BlockoBlockVersion;
+import models.blocko.TypeOfBlock;
 import models.compiler.Processor;
 import models.compiler.Producer;
 import models.compiler.TypeOfBoard;
 import models.compiler.Version_Object;
+import models.grid.GridWidget;
+import models.grid.GridWidgetVersion;
+import models.grid.TypeOfWidget;
 import models.person.FloatingPersonToken;
 import models.person.Invitation;
 import models.person.Person;
@@ -170,7 +176,7 @@ public class TestHelper extends Controller{
             Project_participant participant = new Project_participant();
             participant.person = product.payment_details.person;
             participant.project = project;
-            participant.state = Participant_status.member;
+            participant.state = Participant_status.owner;
 
             participant.save();
 
@@ -446,7 +452,197 @@ public class TestHelper extends Controller{
         }
     }
 
-    public static void method8(){
+    // BLOCKO ##########################################################################################################
+
+    public static TypeOfBlock type_of_block_create(Project project){
+        try {
+
+            TypeOfBlock typeOfBlock = new TypeOfBlock();
+            typeOfBlock.name = UUID.randomUUID().toString();
+            typeOfBlock.description = UUID.randomUUID().toString();
+            typeOfBlock.project = project;
+
+            typeOfBlock.save();
+            typeOfBlock.refresh();
+
+            return typeOfBlock;
+
+        }catch (Exception e){
+            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+            return null;
+        }
+    }
+
+    public static void type_of_block_delete(TypeOfBlock typeOfBlock){
+        try {
+
+            typeOfBlock.delete();
+
+        }catch (Exception e){
+            logger.error("!!!! Error while cleaning up after test. Method {} failed! Reason: {}. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+        }
+    }
+
+    public static BlockoBlock blocko_block_create(TypeOfBlock typeOfBlock){
+        try {
+
+            BlockoBlock blockoBlock = new BlockoBlock();
+            blockoBlock.name = UUID.randomUUID().toString();
+            blockoBlock.description = UUID.randomUUID().toString();
+            blockoBlock.type_of_block = typeOfBlock;
+
+            blockoBlock.save();
+            blockoBlock.refresh();
+
+            return blockoBlock;
+
+        }catch (Exception e){
+            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+            return null;
+        }
+    }
+
+    public static void blocko_block_delete(BlockoBlock blockoBlock){
+        try {
+
+            blockoBlock.delete();
+
+        }catch (Exception e){
+            logger.error("!!!! Error while cleaning up after test. Method {} failed! Reason: {}. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+        }
+    }
+
+    public static BlockoBlockVersion blocko_block_version_create(BlockoBlock blockoBlock){
+        try {
+
+            BlockoBlockVersion blockoBlockVersion = new BlockoBlockVersion();
+            blockoBlockVersion.version_name = UUID.randomUUID().toString();
+            blockoBlockVersion.version_description = UUID.randomUUID().toString();
+            blockoBlockVersion.design_json = UUID.randomUUID().toString();
+            blockoBlockVersion.logic_json = UUID.randomUUID().toString();
+            blockoBlockVersion.blocko_block = blockoBlock;
+
+            blockoBlockVersion.save();
+            blockoBlockVersion.refresh();
+
+            return blockoBlockVersion;
+        }catch (Exception e){
+            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+            return null;
+        }
+    }
+
+    public static void blocko_block_version_delete(BlockoBlockVersion blockoBlockVersion){
+        try {
+
+            blockoBlockVersion.delete();
+
+        }catch (Exception e){
+            logger.error("!!!! Error while cleaning up after test. Method {} failed! Reason: {}. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+        }
+    }
+
+    // GRID ############################################################################################################
+
+    public static TypeOfWidget type_of_widget_create(Project project){
+        try {
+
+            TypeOfWidget typeOfWidget = new TypeOfWidget();
+            typeOfWidget.name = UUID.randomUUID().toString();
+            typeOfWidget.description = UUID.randomUUID().toString();
+            typeOfWidget.project = project;
+
+            typeOfWidget.save();
+            typeOfWidget.refresh();
+
+            return typeOfWidget;
+
+        }catch (Exception e){
+            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+            return null;
+        }
+    }
+
+    public static void type_of_widget_delete(TypeOfWidget typeOfWidget){
+        try {
+
+            typeOfWidget.delete();
+
+        }catch (Exception e){
+            logger.error("!!!! Error while cleaning up after test. Method {} failed! Reason: {}. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+        }
+    }
+
+    public static GridWidget grid_widget_create(TypeOfWidget typeOfWidget){
+        try {
+
+            GridWidget gridWidget = new GridWidget();
+            gridWidget.name = UUID.randomUUID().toString();
+            gridWidget.description = UUID.randomUUID().toString();
+            gridWidget.type_of_widget = typeOfWidget;
+
+            gridWidget.save();
+            gridWidget.refresh();
+
+            return gridWidget;
+
+        }catch (Exception e){
+            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+            return null;
+        }
+    }
+
+    public static void grid_widget_delete(GridWidget gridWidget){
+        try {
+
+            gridWidget.delete();
+
+        }catch (Exception e){
+            logger.error("!!!! Error while cleaning up after test. Method {} failed! Reason: {}. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+        }
+    }
+
+    public static GridWidgetVersion grid_widget_version_create(GridWidget gridWidget){
+        try {
+
+            GridWidgetVersion gridWidgetVersion = new GridWidgetVersion();
+            gridWidgetVersion.version_name = UUID.randomUUID().toString();
+            gridWidgetVersion.version_description = UUID.randomUUID().toString();
+            gridWidgetVersion.design_json = UUID.randomUUID().toString();
+            gridWidgetVersion.logic_json = UUID.randomUUID().toString();
+            gridWidgetVersion.grid_widget = gridWidget;
+
+            gridWidgetVersion.save();
+            gridWidgetVersion.refresh();
+
+            return gridWidgetVersion;
+        }catch (Exception e){
+            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+            return null;
+        }
+    }
+
+    public static void grid_widget_version_delete(GridWidgetVersion gridWidgetVersion){
+        try {
+
+            gridWidgetVersion.delete();
+
+        }catch (Exception e){
+            logger.error("!!!! Error while cleaning up after test. Method {} failed! Reason: {}. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+        }
+    }
+
+    public static void method4(){
+        try {
+
+
+
+        }catch (Exception e){
+            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+        }
+    }
+
+    public static void method1(){
         try {
 
 

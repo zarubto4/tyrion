@@ -464,7 +464,7 @@
         model_data = $("#newBootLoaderForm").serializeObject();
 
         $.ajax({
-            url: '@routes.CompilationLibrariesController.new_Boot_loader(typeOfBoard.id)',
+            url: '@routes.CompilationLibrariesController.boot_loader_create(typeOfBoard.id)',
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -503,7 +503,7 @@
         model_data = $("#newCProgramForm").serializeObject();
 
         $.ajax({
-            url: '@routes.CompilationLibrariesController.create_C_Program()',
+            url: '@routes.CompilationLibrariesController.c_program_create()',
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -542,7 +542,7 @@
         model_data = $("#editCProgramForm").serializeObject();
 
         $.ajax({
-            url: '@routes.CompilationLibrariesController.edit_C_Program("")' + c_program_id,
+            url: '@routes.CompilationLibrariesController.c_program_update("")' + c_program_id,
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -581,7 +581,7 @@
         model_data = $("#newCProgramVersionForm").serializeObject();
 
         $.ajax({
-            url: '@routes.CompilationLibrariesController.new_C_Program_Version("")' + c_program_id ,
+            url: '@routes.CompilationLibrariesController.c_programVersion_create("")' + c_program_id ,
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -684,7 +684,7 @@
         var model_data = new FormData($("#pictureForm")[0]);
 
         $.ajax({
-            url: '@routes.CompilationLibrariesController.upload_TypeOfBoard_picture(typeOfBoard.id)',
+            url: '@routes.CompilationLibrariesController.typeOfBoard_uploadPicture(typeOfBoard.id)',
             type: 'PUT',
             contentType: false,
             processData: false,
@@ -719,7 +719,7 @@
 
     function removePicture() {
         $.ajax({
-            url: '@routes.CompilationLibrariesController.remove_TypeOfBoard_picture(typeOfBoard.id)',
+            url: '@routes.CompilationLibrariesController.typeOfBoard_removePicture(typeOfBoard.id)',
             type: 'PUT',
             headers: {
                 "X-AUTH-TOKEN": getCookie("authToken")

@@ -101,11 +101,17 @@
                     </ul>
 
                     <div class="tab-content">
+
+
                         <div class="active tab-pane" id="products">
+
                             <div class="tab-pane" id="product_pane">
+
+
                                 <div class="box  box-danger">
                                    <div class="box-body">
                                        <div class="nav-tabs-custom">
+
                                            <ul class="nav nav-tabs">
 
 
@@ -408,10 +414,13 @@
 
                                     </div>
                                 </div>
-                            </div>
+
+                        </div>
+
                         </div>
 
                         <div class="tab-pane" id="projects">
+
                             <div class="box">
                                 <div class="box-header with-border">
                                     <h3 class="box-title">Projects</h3>
@@ -425,9 +434,9 @@
 
                                 <div class="box-body">
 
-
+                                    <table id="role_table" class="table table-bordered table-hover">
                                     @for( participant <- person.projects_participant) {
-                                            <table id="role_table" class="table table-bordered table-hover">
+
 
 
                                                 <tbody>
@@ -457,6 +466,7 @@
                                             <p></p>
                                     }
                                 </div>
+
                             </div>
                         </div>
 
@@ -589,7 +599,7 @@
                 </thead>
                <tbody>
 
-                   @for( board <- Board.find.where().eq("project.ownersOfProject.id", person.id ).findList() ) {
+                   @for( board <- Board.find.where().eq("project.participants.person.id", person.id ).findList() ) {
 
                        <tr>
                            <td>@board.id</td>

@@ -623,6 +623,9 @@ public class PersonController extends Controller {
             person.nick_name    = help.nick_name;
             person.full_name    = help.full_name;
 
+            if (help.country != null && (!help.country.equals("")))
+                person.country = help.country;
+
             person.update();
 
             return GlobalResult.result_ok(Json.toJson(person));

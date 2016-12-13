@@ -1107,7 +1107,7 @@ public class GridController extends Controller {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Secured_API.class)
-    public Result typeOfWidget_edit(@ApiParam(value = "type_of_widget_id String path",   required = true)  String type_of_widget_id){
+    public Result typeOfWidget_update(@ApiParam(value = "type_of_widget_id String path",   required = true)  String type_of_widget_id){
         try{
 
             // Zpracování Json
@@ -1211,7 +1211,7 @@ public class GridController extends Controller {
 
             // Získání seznamu
             List<TypeOfWidget> typeOfWidgets = TypeOfWidget.find.where().isNull("project").findList();
-            typeOfWidgets.addAll( TypeOfWidget.find.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id ).findList() );
+            typeOfWidgets.addAll( TypeOfWidget.find.where().eq("project.participants.person.id", SecurityController.getPerson().id ).findList() );
 
             // Kontrola oprávnění
             for(TypeOfWidget typeOfWidget :typeOfWidgets ) if(! typeOfWidget.read_permission())  return GlobalResult.forbidden_Permission();
@@ -1265,7 +1265,7 @@ public class GridController extends Controller {
             Query<TypeOfWidget> query = Ebean.find(TypeOfWidget.class);
 
             if(help.private_type){
-                query.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id);
+                query.where().eq("project.participants.person.id", SecurityController.getPerson().id);
             }else{
                 query.where().eq("project", null);
             }
@@ -1415,7 +1415,7 @@ public class GridController extends Controller {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Secured_API.class)
-    public Result gridWidget_edit(@ApiParam(value = "grid_widget_id String path",   required = true)  String grid_widget_id){
+    public Result gridWidget_update(@ApiParam(value = "grid_widget_id String path",   required = true)  String grid_widget_id){
         try {
 
             // Zpracování Json
@@ -1790,7 +1790,7 @@ public class GridController extends Controller {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Secured_API.class)
-    public Result gridWidgetVersion_edit(@ApiParam(value = "grid_widget_version_id String path",   required = true) String grid_widget_version_id){
+    public Result gridWidgetVersion_update(@ApiParam(value = "grid_widget_version_id String path",   required = true) String grid_widget_version_id){
         try {
 
             // Zpracování Json

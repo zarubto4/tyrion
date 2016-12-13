@@ -101,8 +101,8 @@ public class Board extends Model {
 
             board_status.where = "cloud";
 
-            board_status.b_program_id = instance.b_program.id;
-            board_status.b_program_name = instance.b_program.name;
+            board_status.b_program_id = instance.getB_program().id;
+            board_status.b_program_name = instance.getB_program().name;
 
             board_status.b_program_version_id = instance.actual_instance != null ? instance.actual_instance.version_object.id : null;
             board_status.b_program_version_name =instance.actual_instance != null ? instance.actual_instance.version_object.version_name : null;

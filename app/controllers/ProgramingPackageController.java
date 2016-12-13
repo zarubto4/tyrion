@@ -2083,7 +2083,7 @@ public class ProgramingPackageController extends Controller {
 
             // Úprava objektu
             typeOfBlock.description = help.description;
-            typeOfBlock.name                = help.name;
+            typeOfBlock.name        = help.name;
 
             if(help.project_id != null){
 
@@ -2221,9 +2221,9 @@ public class ProgramingPackageController extends Controller {
             Query<TypeOfBlock> query = Ebean.find(TypeOfBlock.class);
 
             if(help.private_type){
-                query.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id);
+                query.where().eq("project.participants.person.id", SecurityController.getPerson().id);
             }else{
-                query.where().eq("project", null);
+                query.where().isNull("project");
             }
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
@@ -2385,7 +2385,7 @@ public class ProgramingPackageController extends Controller {
 
                 // Úprava objektu
                 blockoBlock.description = help.general_description;
-                blockoBlock.name                = help.name;
+                blockoBlock.name        = help.name;
 
                 // Kontrola objektu
                 TypeOfBlock typeOfBlock = TypeOfBlock.find.byId(  help.type_of_block_id);

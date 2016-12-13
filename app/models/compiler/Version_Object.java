@@ -120,8 +120,13 @@ public class Version_Object extends Model {
         help.version_id = id;
         help.version_name = version_name;
         help.version_description = version_description;
-        help.delete_permission = c_program.delete_permission();
-        help.update_permission = c_program.update_permission();
+        if(this.default_version_program == null) {
+            help.delete_permission = c_program.delete_permission();
+            help.update_permission = c_program.update_permission();
+        }else{
+            help.delete_permission = false;
+            help.update_permission = false;
+        }
 
         return help;
     }

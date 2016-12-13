@@ -92,7 +92,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result create_C_Program() {
+    public Result c_program_create() {
         try {
 
             // Zpracování Json
@@ -174,7 +174,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_C_Program(@ApiParam(value = "c_program_id String query", required = true) String c_program_id) {
+    public Result c_program_get(@ApiParam(value = "c_program_id String query", required = true) String c_program_id) {
         try {
 
             // Vyhledám Objekt
@@ -221,7 +221,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result get_C_Program_by_Filter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true)  int page_number){
+    public Result c_program_getByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true)  int page_number){
 
         try {
 
@@ -232,7 +232,7 @@ public class CompilationLibrariesController extends Controller {
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<C_Program> query = Ebean.find(C_Program.class);
-            query.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id);
+            query.where().eq("project.participants.person.id", SecurityController.getPerson().id);
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if((help.project_id != null)||!(help.project_id.equals(""))){
@@ -309,7 +309,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result  get_C_Program_Version (@ApiParam(value = "version_id String query", required = true)  String version_id) {
+    public Result c_programVersion_get(@ApiParam(value = "version_id String query", required = true)  String version_id) {
         try {
 
             // Vyhledám Objekt
@@ -363,7 +363,7 @@ public class CompilationLibrariesController extends Controller {
             }
     )
     @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_C_Program(@ApiParam(value = "c_program_id String query", required = true)  String c_program_id) {
+    public Result c_program_update(@ApiParam(value = "c_program_id String query", required = true)  String c_program_id) {
         try {
 
             // Zpracování Json
@@ -432,7 +432,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result new_C_Program_Version(@ApiParam(value = "version_id String query", required = true)  String c_program_id){
+    public Result c_programVersion_create(@ApiParam(value = "version_id String query", required = true)  String c_program_id){
         try{
 
             // Zpracování Json
@@ -503,7 +503,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result delete_C_Program_Version(@ApiParam(value = "version_id String query",   required = true)    String version_id){
+    public Result c_programVersion_delete(@ApiParam(value = "version_id String query",   required = true)    String version_id){
         try{
 
             // Ověření objektu
@@ -562,7 +562,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_C_Program_version( @ApiParam(value = "version_id String query",   required = true)  String version_id){
+    public Result c_programVersion_update(@ApiParam(value = "version_id String query",   required = true)  String version_id){
         try{
 
             // Zpracování Json
@@ -613,7 +613,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result delete_C_Program(@ApiParam(value = "c_program_id String query", required = true)  String c_program_id){
+    public Result c_program_delete(@ApiParam(value = "c_program_id String query", required = true)  String c_program_id){
         try{
 
             // Ověření objektu
@@ -660,7 +660,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result make_C_Program_Version_public(@ApiParam(value = "version_id String query", required = true)  String version_id){
+    public Result c_programVersion_makePublic(@ApiParam(value = "version_id String query", required = true)  String version_id){
         try {
 
             // Kontrola objektu
@@ -706,7 +706,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_C_Program_public_list(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true)  int page_number){
+    public Result c_program_getPublicList(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true)  int page_number){
         try {
 
             // Vytřídění objektů
@@ -730,6 +730,7 @@ public class CompilationLibrariesController extends Controller {
 
     @ApiOperation(value = "only for Tyrion Front End", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
+    public Result c_programVersion_changeApprovalState(){
     public Result get_version_for_decision(String version_id){
         try {
 
@@ -760,6 +761,7 @@ public class CompilationLibrariesController extends Controller {
     }
     @ApiOperation(value = "only for Tyrion Front End", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
+    public Result c_programVersion_approveWithChanges(){
     public Result approve_decision(){
         try {
 
@@ -1594,7 +1596,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result new_Processor() {
+    public Result processor_create() {
         try {
 
             // Zpracování Json
@@ -1640,7 +1642,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 400, message = "Objects not found",     response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_Processor(@ApiParam(value = "processor_id String query", required = true) String processor_id) {
+    public Result processor_get(@ApiParam(value = "processor_id String query", required = true) String processor_id) {
         try {
 
             //Zkontroluji validitu
@@ -1671,7 +1673,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 200, message = "Ok Result",               response = Processor.class, responseContainer = "List"),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_Processor_All() {
+    public Result processor_getAll() {
         try {
 
             //Vyhledám objekty
@@ -1717,7 +1719,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result update_Processor(@ApiParam(value = "processor_id String query", required = true) String processor_id) {
+    public Result processor_update(@ApiParam(value = "processor_id String query", required = true) String processor_id) {
         try {
 
             // Zpracování Json
@@ -1770,7 +1772,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result delete_Processor(@ApiParam(value = "processor_id String query", required = true) String processor_id) {
+    public Result processor_delete(@ApiParam(value = "processor_id String query", required = true) String processor_id) {
         try {
 
             // Kontroluji validitu
@@ -2992,7 +2994,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result new_TypeOfBoard() {
+    public Result typeOfBoard_create() {
         try {
 
             // Zpracování Json
@@ -3062,7 +3064,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_TypeOfBoard(@ApiParam(required = true)  String type_of_board_id) {
+    public Result typeOfBoard_update(@ApiParam(required = true)  String type_of_board_id) {
         try {
 
             // Zpracování Json
@@ -3126,7 +3128,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result delete_TypeOfBoard(@ApiParam(required = true)  String type_of_board_id) {
+    public Result typeOfBoard_delete(@ApiParam(required = true)  String type_of_board_id) {
         try {
 
             // Kontrola objektu
@@ -3167,7 +3169,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_TypeOfBoard_all() {
+    public Result typeOfBoard_getAll() {
         try {
 
             // Získání seznamu
@@ -3201,7 +3203,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_TypeOfBoard(@ApiParam(required = true)  String type_of_board_id) {
+    public Result typeOfBoard_get(@ApiParam(required = true)  String type_of_board_id) {
         try {
 
             // Kontrola validity objektu
@@ -3257,7 +3259,7 @@ public class CompilationLibrariesController extends Controller {
     }
 
     @ApiOperation(value = "Upload TypeOfBoard picture", hidden = true)
-    public Result upload_TypeOfBoard_picture(@ApiParam(required = true) String type_of_board_id){
+    public Result typeOfBoard_uploadPicture(@ApiParam(required = true) String type_of_board_id){
         try {
 
             TypeOfBoard type_of_board = TypeOfBoard.find.byId(type_of_board_id);
@@ -3320,7 +3322,7 @@ public class CompilationLibrariesController extends Controller {
 
     @ApiOperation(value = "Remove TypeOfBoard picture", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
-    public Result remove_TypeOfBoard_picture(@ApiParam(required = true) String type_of_board_id){
+    public Result typeOfBoard_removePicture(@ApiParam(required = true) String type_of_board_id){
         try {
 
             TypeOfBoard type_of_board = TypeOfBoard.find.byId(type_of_board_id);
@@ -3347,7 +3349,7 @@ public class CompilationLibrariesController extends Controller {
     @ApiOperation(value = "new_boot_loader", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
     @BodyParser.Of(BodyParser.Json.class)
-    public Result new_Boot_loader(@ApiParam(value = "type_of_board_id", required = true) String type_of_board_id) {
+    public Result boot_loader_create(@ApiParam(value = "type_of_board_id", required = true) String type_of_board_id) {
         try {
 
             // Zpracování Json
@@ -3519,7 +3521,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result new_Board() {
+    public Result board_create() {
         try {
 
             // Zpracování Json
@@ -3603,7 +3605,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_Board_User_Description(@ApiParam(required = true)  String board_id){
+    public Result board_update(@ApiParam(required = true)  String board_id){
         try {
 
             // Zpracování Json
@@ -3664,7 +3666,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result get_Board_Filter(@ApiParam(value = "page_number is Integer. Contain  1,2...n. For first call, use 1", required = false)  int page_number) {
+    public Result board_getByFilter(@ApiParam(value = "page_number is Integer. Contain  1,2...n. For first call, use 1", required = false)  int page_number) {
         try {
 
             // Zpracování Json
@@ -3730,7 +3732,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result deactivate_Board(@ApiParam(required = true)  String board_id) {
+    public Result board_deactivate(@ApiParam(required = true)  String board_id) {
         try {
 
             // Kotrola objektu
@@ -3777,7 +3779,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_Board(@ApiParam(required = true) String board_id) {
+    public Result board_get(@ApiParam(required = true) String board_id) {
         try {
 
             // Kotrola objektu
@@ -3820,7 +3822,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result connect_Board_with_Project(@ApiParam(required = true) String board_id, @ApiParam(required = true) String project_id){
+    public Result board_connectProject(@ApiParam(required = true) String board_id, @ApiParam(required = true) String project_id){
         try {
 
             logger.debug("CompilationControler:: Registrace nového zařízení ");
@@ -3847,7 +3849,7 @@ public class CompilationLibrariesController extends Controller {
 
             if(board.type_of_board.connectible_to_internet){
 
-                logger.debug("CompilationController:: connect_Board_with_Project:: Deska je připojitelná k internetu");
+                logger.debug("CompilationController:: board_connectProject:: Deska je připojitelná k internetu");
 
                 Homer_Instance instance = project.private_instance;
                 instance.boards_in_virtual_instance.add(board);
@@ -3891,7 +3893,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result disconnect_Board_from_Project(@ApiParam(required = true)   String board_id){
+    public Result board_disconnectProject(@ApiParam(required = true)   String board_id){
         try {
 
             // Kontrola objektu
@@ -3936,7 +3938,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result all_details_for_blocko(@ApiParam(required = true)   String project_id){
+    public Result board_allDetailsForBlocko(@ApiParam(required = true)   String project_id){
         try {
 
             // Kontrola objektu
