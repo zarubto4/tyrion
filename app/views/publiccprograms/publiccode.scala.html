@@ -286,7 +286,7 @@
             model_data = $("#createProgramForm").serializeObject();
 
             $.ajax({
-                url: '@routes.CompilationLibrariesController.create_C_Program()',
+                url: '@routes.CompilationLibrariesController.c_program_create()',
                 type: 'POST',
                 contentType: 'application/json',
                 headers: {
@@ -319,7 +319,7 @@
         function removeProgram(id){
 
             $.ajax({
-                url: '@routes.CompilationLibrariesController.delete_C_Program("")' + id,
+                url: '@routes.CompilationLibrariesController.c_program_delete("")' + id,
                 type: 'DELETE',
                 contentType: 'application/json',
                 headers: {
@@ -349,7 +349,7 @@
         function removeVersion(id){
 
             $.ajax({
-                url: '@routes.CompilationLibrariesController.delete_C_Program_Version("")' + id,
+                url: '@routes.CompilationLibrariesController.c_programVersion_delete("")' + id,
                 type: 'DELETE',
                 contentType: 'application/json',
                 headers: {
@@ -381,7 +381,7 @@
             model_data = $("#editCProgramVersionForm").serializeObject();
 
             $.ajax({
-                url: '@routes.CompilationLibrariesController.edit_C_Program_version("")' + id,
+                url: '@routes.CompilationLibrariesController.c_programVersion_update("")' + id,
                 type: 'PUT',
                 contentType: 'application/json',
                 headers: {
@@ -416,7 +416,7 @@
             model_data = $("#newCProgramVersionForm").serializeObject();
 
             $.ajax({
-                url: '@routes.CompilationLibrariesController.new_C_Program_Version("")' + c_program_id ,
+                url: '@routes.CompilationLibrariesController.c_programVersion_create("")' + c_program_id ,
                 type: 'POST',
                 contentType: 'application/json',
                 headers: {

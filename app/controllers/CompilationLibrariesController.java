@@ -660,7 +660,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result c_programVersion_makePublic(@ApiParam(value = "version_id String query", required = true)  String version_id){
+    public Result make_C_Program_Version_public(@ApiParam(value = "version_id String query", required = true)  String version_id){
         try {
 
             // Kontrola objektu
@@ -706,7 +706,7 @@ public class CompilationLibrariesController extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result c_program_getPublicList(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true)  int page_number){
+    public Result get_C_Program_public_list(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true)  int page_number){
         try {
 
             // Vytřídění objektů
@@ -730,7 +730,6 @@ public class CompilationLibrariesController extends Controller {
 
     @ApiOperation(value = "only for Tyrion Front End", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
-    public Result c_programVersion_changeApprovalState(){
     public Result get_version_for_decision(String version_id){
         try {
 
@@ -761,7 +760,6 @@ public class CompilationLibrariesController extends Controller {
     }
     @ApiOperation(value = "only for Tyrion Front End", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
-    public Result c_programVersion_approveWithChanges(){
     public Result approve_decision(){
         try {
 
