@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.project.global.Product;
 import models.project.global.financial.Invoice;
 import play.api.Play;
-import play.api.libs.json.JsPath;
 import play.libs.F;
 import play.libs.Json;
 import play.libs.ws.WSClient;
@@ -55,12 +54,18 @@ public class Fakturoid_Controller extends Controller {
         fakturoid_invoice.custom_id         = product.id;
         fakturoid_invoice.client_name       = product.payment_details.company_account ? product.payment_details.company_name : product.payment_details.person.full_name;
         fakturoid_invoice.currency          = product.currency;
-        fakturoid_invoice.lines             = invoice.invoice_items;
+        fakturoid_invoice.lines             = invoice.getInvoice_items();
         fakturoid_invoice.proforma          = true;
         fakturoid_invoice.partial_proforma  = true;
 
         if(product.fakturoid_subject_id == null) {
+
             logger.debug("Client has not registration object in Fakturoid");
+            // Ověřím zda tam je - a jestli ano - tak ho jen vytvořím v lokální DB
+
+
+
+            // Pokud ne tak ho vytvořím
             String fakturoid_subject_id = create_subject_in_fakturoid(product);
             product.update();
 
@@ -72,6 +77,7 @@ public class Fakturoid_Controller extends Controller {
             fakturoid_invoice.subject_id = product.fakturoid_subject_id;
         }
 
+        invoice.refresh();
         logger.debug("Sending Proforma to Fakturoid");
 
         F.Promise<WSResponse> responsePromise = Play.current().injector().instanceOf(WSClient.class).url(Server.Fakturoid_url + "/invoices.json")
@@ -84,8 +90,6 @@ public class Fakturoid_Controller extends Controller {
             WSResponse response = responsePromise.get(5000);
 
             logger.debug("Incoming status: " + response.getStatus());
-            logger.debug("Incoming message: " + Json.toJson(response.getBody()).toString());
-
 
 
             if( response.getStatus() == 201) {
@@ -96,6 +100,7 @@ public class Fakturoid_Controller extends Controller {
                     logger.error("Invoice From fakturoid does not contains ID");
                     throw new NullPointerException("Invoice From fakturoid does not contains ID");
                 }
+
 
                 invoice.facturoid_invoice_id = result.get("id").asLong();
                 invoice.facturoid_pdf_url    = result.get("pdf_url").asText();
@@ -114,7 +119,7 @@ public class Fakturoid_Controller extends Controller {
             }else if( response.getStatus() == 422 ){
 
                 logger.error("Fakturoid!!!!!!!!!!!!!");
-                logger.error("Response"+ response.asJson().toString());
+                logger.error("Response"+ response.getBody());
                 logger.error("Fakturoid!!!!!!!!!!!!!");
 
                 throw new NullPointerException();
@@ -237,6 +242,8 @@ public class Fakturoid_Controller extends Controller {
     public static String create_subject_in_fakturoid(Product product){
         ObjectNode request = Json.newObject();
 
+        product.refresh();
+
         if(product.payment_details.company_account) {
             request.put("name", product.payment_details.company_name);
             request.put("street", product.payment_details.street + " " + product.payment_details.street_number);
@@ -331,7 +338,7 @@ public class Fakturoid_Controller extends Controller {
             }else if( response.getStatus() == 422 ){
 
                 logger.error("Fakturoid!!!!!!!!!!!!!");
-                logger.error("Error:: " + JsPath.json.toString());
+                logger.error("Error:: " + Json.toJson(response.getBody()).toString());
                 logger.error("Fakturoid!!!!!!!!!!!!!");
 
                 throw new NullPointerException();

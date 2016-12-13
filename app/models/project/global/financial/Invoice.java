@@ -7,8 +7,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import models.project.global.Product;
 import utilities.Server;
-import utilities.enums.Payment_status;
 import utilities.enums.Payment_method;
+import utilities.enums.Payment_status;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -37,7 +37,7 @@ public class Invoice extends Model {
 
     @JsonIgnore @OneToMany(mappedBy="invoice", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Invoice_item> invoice_items = new ArrayList<>();
 
-    @JsonIgnore @ManyToOne(cascade = CascadeType.ALL) public Product product;
+    @JsonIgnore @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY) public Product product;
 
     @JsonIgnore   @Enumerated(EnumType.STRING)  public Payment_status status;
     @JsonIgnore   @Enumerated(EnumType.STRING)  public Payment_method method;
@@ -52,7 +52,9 @@ public class Invoice extends Model {
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @Transient @ApiModelProperty(required = false, value = "Visible only when the invoice is not paid")
     public boolean require_payment()  {
-        return status.name().equals(Payment_status.sent.name());
+        return status.name().equals(Payment_status.sent.name())
+               || status.name().equals(Payment_status.created_waited.name()
+        )  ;
     }
 
 
@@ -60,7 +62,7 @@ public class Invoice extends Model {
     public String payment_status(){
 
         switch (status) {
-            case paid: {return  "Invoice is paid.";}
+            case paid: {return  "Paid";}
             case sent: {return  "Please pay this invoices.";}
             case created_waited: {return  "Sent to your accounting officer we are waiting for confirmation from the bank_transfer.";}
             case cancelled: {return  "Invoice is canceled.";}
@@ -77,13 +79,24 @@ public class Invoice extends Model {
         }
     }
 
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true)
+    public List<Invoice_item> getInvoice_items() {
+        return invoice_items;
+    }
 
 
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore
+    public Product getProduct() {
+        return product;
+    }
 
-/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+
+
+
+    /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient public boolean create_permission() {  return true;  }
     @JsonIgnore @Transient public boolean read_permission()   {  return true;  }

@@ -19,6 +19,7 @@ import utilities.fakturoid.Fakturoid_Controller;
 import utilities.goPay.GoPay_Controller;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_API;
+import utilities.response.CoreResponse;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_BadRequest;
 import utilities.response.response_objects.Result_PermissionRequired;
@@ -484,8 +485,10 @@ public class Finance_Controller extends Controller {
             }
     )
     @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Created successfully - but payment is required by Credit Card", response =  Swagger_GoPay_Url.class),
             @ApiResponse(code = 201, message = "Created successfully - payment not required",    response =  Product.class),
-            @ApiResponse(code = 200, message = "Created successfully - but payment is required", response =  Swagger_GoPay_Url.class),
+            @ApiResponse(code = 202, message = "Created successfully - but payment is required by Bank Transfer", response =  Invoice.class),
+
             @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
@@ -614,7 +617,13 @@ public class Finance_Controller extends Controller {
                 Invoice invoice = new Invoice();
                 invoice.date_of_create = new Date();
                 invoice.proforma = true;
-                invoice.status = Payment_status.created_waited;
+
+                if(product.method == Payment_method.credit_card) {
+                    invoice.status = Payment_status.sent;
+                }
+                if(product.method == Payment_method.bank_transfer) {
+                    invoice.status = Payment_status.created_waited;
+                }
 
                 Invoice_item invoice_item_1 = new Invoice_item();
                 invoice_item_1.name = product.general_tariff.tariff_name + " in Mode(" + product.mode.name() + ")";
@@ -631,51 +640,54 @@ public class Finance_Controller extends Controller {
                 logger.debug("Financial_Controller:: product_create:: Saving invoice");
                 invoice.save();
 
+                Invoice test = Invoice.find.byId(invoice.id);
+                logger.error("Financial_Controller:: product_create::  test: " + Json.toJson(test));
+
 
                 logger.debug("Financial_Controller:: product_create::  Creating Proforma in fakturoid");
-                invoice = Fakturoid_Controller.create_proforma(product, invoice);
-
+                Fakturoid_Controller.create_proforma(product, invoice);
                 logger.debug("Financial_Controller:: product_create::  Proforma done");
 
 
-                if(product.mode == Payment_mode.per_credit){
+                if(product.method == Payment_method.credit_card){
 
                     logger.debug("Financial_Controller:: product_create::  User want pay it with credit card!");
-                }
+
+                    logger.debug("Financial_Controller:: product_create::  Preparing for providing payment");
+                    JsonNode result = GoPay_Controller.provide_payment("First Payment", product, invoice);
 
 
-                logger.debug("Financial_Controller:: product_create::  Proforma done");
-                JsonNode result = GoPay_Controller.provide_payment("First Payment", product, invoice);
+                    if(result.has("id")){
 
-                System.out.println(result.toString());
+                        logger.debug("Set GoPay ID to Invoice");
 
-                if(result.has("id")){
+                        invoice.refresh();
+                        invoice.gopay_id = result.get("id").asLong();
+                        invoice.gopay_order_number = result.get("order_number").asText();
+                        invoice.update();
 
-                    logger.debug("Set GoPay ID to Invoice");
+                        if(product.on_demand_active) {
 
-                    invoice.refresh();
-                    invoice.gopay_id = result.get("id").asLong();
-                    invoice.gopay_order_number = result.get("order_number").asText();
-                    invoice.update();
+                            logger.debug("Set GoPay ID to Product because Product has ON_DEMAND - TRUE");
 
-                    if(product.on_demand_active) {
+                            product.gopay_id = invoice.gopay_id;
+                            product.update();
+                        }
 
-                        logger.debug("Set GoPay ID to Product because Product has ON_DEMAND - TRUE");
-
-                        product.gopay_id = invoice.gopay_id;
-                        product.update();
+                    }else {
+                        logger.error("Result from GoPay not contains id for invoice!");
                     }
 
+                    Swagger_GoPay_Url swagger_goPay_url = new Swagger_GoPay_Url();
+                    swagger_goPay_url.gw_url = result.get("gw_url").asText();
+
+                    return GlobalResult.result_ok(Json.toJson(swagger_goPay_url));
+
                 }else {
-                    logger.error("Result from GoPay not contains id for invoice!");
+
+                    CoreResponse.cors();
+                    return Controller.status(202, Json.toJson(invoice));
                 }
-
-
-                Swagger_GoPay_Url swagger_goPay_url = new Swagger_GoPay_Url();
-                swagger_goPay_url.gw_url = result.get("gw_url").asText();
-
-                return GlobalResult.result_ok(Json.toJson(swagger_goPay_url));
-
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());

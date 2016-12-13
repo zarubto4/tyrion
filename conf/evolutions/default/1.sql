@@ -346,7 +346,7 @@ create table invoice (
   product_id                bigint,
   status                    varchar(14),
   method                    varchar(13),
-  constraint ck_invoice_status check (status in ('paid','sent','created_waited','cancelled')),
+  constraint ck_invoice_status check (status in ('paid','cancelled','created_waited','sent')),
   constraint ck_invoice_method check (method in ('credit_card','bank_transfer','free')),
   constraint pk_invoice primary key (id))
 ;
