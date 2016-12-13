@@ -811,7 +811,7 @@ public class ProgramingPackageController extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  B_Program.class),
+            @ApiResponse(code = 200, message = "Ok Result", response =  Swagger_B_Program_Version.class),
             @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),

@@ -54,6 +54,8 @@ public class M_Project extends Model {
         swagger_m_project_short_detail.delete_permission = delete_permission();
         swagger_m_project_short_detail.update_permission = update_permission();
 
+        for(M_Program program : m_programs) swagger_m_project_short_detail.programs.add(program.get_m_program_short_detail());
+
         return swagger_m_project_short_detail;
     }
 

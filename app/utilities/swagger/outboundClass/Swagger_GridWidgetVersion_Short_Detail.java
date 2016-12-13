@@ -7,8 +7,8 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.Date;
 
 @ApiModel(description = "Json Model for Version of GridWidgetVersion short",
-        value = "GridWidgetVersion_short")
-public class Swagger_GridWidgetVersion_short {
+        value = "GridWidgetVersion_Short_Detail")
+public class Swagger_GridWidgetVersion_Short_Detail {
 
     @ApiModelProperty(required = true, readOnly = true)    public String id;
     @ApiModelProperty(required = true, readOnly = true)    public String name;

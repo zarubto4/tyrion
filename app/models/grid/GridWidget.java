@@ -8,7 +8,7 @@ import controllers.SecurityController;
 import io.swagger.annotations.ApiModelProperty;
 import models.person.Person;
 import utilities.enums.Approval_state;
-import utilities.swagger.outboundClass.Swagger_GridWidgetVersion_short;
+import utilities.swagger.outboundClass.Swagger_GridWidgetVersion_Short_Detail;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -44,14 +44,14 @@ public class GridWidget extends Model{
     @Transient  @JsonProperty @ApiModelProperty(required = true, readOnly = true)  public String  type_of_widget_id()             { return type_of_widget.id; }
     @Transient  @JsonProperty @ApiModelProperty(required = true, readOnly = true)  public String  type_of_widget_name()           { return type_of_widget.name; }
 
-    @Transient  @JsonProperty @ApiModelProperty(required = true) public  List<Swagger_GridWidgetVersion_short> versions(){
+    @Transient  @JsonProperty @ApiModelProperty(required = true) public  List<Swagger_GridWidgetVersion_Short_Detail> versions(){
 
-        List<Swagger_GridWidgetVersion_short> list = new ArrayList<>();
+        List<Swagger_GridWidgetVersion_Short_Detail> list = new ArrayList<>();
 
         for( GridWidgetVersion m : grid_widget_versions){
             if((m.approval_state == Approval_state.approved)||(m.approval_state == Approval_state.edited)||((this.author != null)&&(this.author.id.equals(SecurityController.getPerson().id)))) {
 
-                Swagger_GridWidgetVersion_short short_version = new Swagger_GridWidgetVersion_short();
+                Swagger_GridWidgetVersion_Short_Detail short_version = new Swagger_GridWidgetVersion_Short_Detail();
                 short_version.id = m.id;
                 short_version.description = m.version_description;
                 short_version.name = m.version_name;
