@@ -434,9 +434,9 @@
 
                                 <div class="box-body">
 
-
+                                    <table id="role_table" class="table table-bordered table-hover">
                                     @for( participant <- person.projects_participant) {
-                                            <table id="role_table" class="table table-bordered table-hover">
+
 
 
                                                 <tbody>
@@ -462,11 +462,9 @@
 
 
                                                 </tbody>
-                                            </table>
-                                            <p></p>
 
                                     }
-
+                                    </table>
                                 </div>
 
                             </div>
@@ -601,7 +599,7 @@
                 </thead>
                <tbody>
 
-                   @for( board <- Board.find.where().eq("project.ownersOfProject.id", person.id ).findList() ) {
+                   @for( board <- Board.find.where().eq("project.participants.person.id", person.id ).findList() ) {
 
                        <tr>
                            <td>@board.id</td>

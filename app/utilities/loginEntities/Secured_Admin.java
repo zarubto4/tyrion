@@ -33,7 +33,9 @@ public class Secured_Admin extends Security.Authenticator {
             if (person != null) {
 
                 ctx.args.put("person", person);
-                return person.id;
+
+                if (person.has_permission("Byzance_employee")) return person.id;
+
             }
 
             return null;

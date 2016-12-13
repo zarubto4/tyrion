@@ -18,11 +18,11 @@
 
   @*/*/*  Modals ---------------------------------------------------------------------------------------------   */*/*@
 
-<div id="newTypeOfBlockModal" style="display: none;" class="modal">
-  <div style="margin-top: 15%;" class="modal-dialog">
+<div id="newTypeOfBlockModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newTypeOfBlockModalTitle">
+  <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">New Type of Block</h4>
+        <h4 id="newTypeOfBlockModalTitle" class="modal-title">New Type of Block</h4>
       </div>
       <div class="modal-body">
         <form id="newTypeOfBlock">
@@ -35,9 +35,10 @@
             <input id="newTypeOfBlockDescription" placeholder="Description" style="display: block; width: 70%;" type="text" name="description" >
           </div>
         </form>
+        <div id="newTypeOfBlockModalMessage" style="display: none"><p style="color: red;"></p></div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newTypeOfBlockModal').css('display','none')">Close</button>
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
         <button class="btn btn-success" type="button" onclick="newTypeOfBlock()">New Type of Block</button>
       </div>
     </div>
@@ -45,11 +46,11 @@
   </div>
     <!-- /.modal-dialog -->
 </div>
-<div id="newBlockoBlockModal" style="display: none;" class="modal">
-  <div style="margin-top: 15%;" class="modal-dialog">
+<div id="newBlockoBlockModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newBlockoBlockModalTitle">
+  <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">New Blocko Block</h4>
+        <h4 id="newBlockoBlockModalTitle" class="modal-title">New Blocko Block</h4>
       </div>
       <div class="modal-body">
         <form id="newBlockoBlock">
@@ -60,13 +61,14 @@
           </div>
           <div style="width: 100%;">
             <label>Description</label>
-            <input placeholder="Description" style="display: block; width: 70%;" type="text" name="description" >
+            <input placeholder="Description" style="display: block; width: 70%;" type="text" name="general_description" >
           </div>
           <input id="newBlockoBlockTypeOfBlockId" style="display: none;" type="text" name="type_of_block_id">
         </form>
+        <div id="newBlockoBlockModalMessage" style="display: none"><p style="color: red;"></p></div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newBlockoBlockModal').css('display','none')">Close</button>
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
         <button class="btn btn-success" type="button" onclick="newBlockoBlock()">New Blocko Block</button>
       </div>
     </div>
@@ -74,11 +76,11 @@
   </div>
     <!-- /.modal-dialog -->
 </div>
-<div id="newBlockoBlockVersionModal" style="display: none;" class="modal">
-    <div style="margin-top: 15%;" class="modal-dialog">
+<div id="newBlockoBlockVersionModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newBlockoBlockVersionModalTitle">
+    <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h4 class="modal-title">New Blocko Block Version</h4>
+          <h4 id="newBlockoBlockVersionModalTitle" class="modal-title">New Blocko Block Version</h4>
         </div>
         <div class="modal-body">
           <form id="newBlockoBlockVersion">
@@ -96,9 +98,10 @@
             <label style="color: #2e6da4">Logic JSON:</label>
             <textarea name="logic_json" style="display: block; width: 100%; height: auto;" rows="6"></textarea>
             </form>
+          <div id="newBlockoBlockVersionModalMessage" style="display: none"><p style="color: red;"></p></div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newBlockoBlockVersionModal').css('display','none')">Close</button>
+          <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
           <button id="newBlockoBlockVersionButton" value="" class="btn btn-success" type="button" onclick="newBlockoBlockVersion(this.value)">New Blocko Block Version</button>
         </div>
       </div>
@@ -107,11 +110,11 @@
       <!-- /.modal-dialog -->
   </div>
 
-<div id="editTypeOfBlockModal" style="display: none;" class="modal">
-  <div style="margin-top: 15%;" class="modal-dialog">
+<div id="editTypeOfBlockModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editTypeOfBlockModalTitle">
+  <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">Edit Type of Block</h4>
+        <h4 id="editTypeOfBlockModalTitle" class="modal-title">Edit Type of Block</h4>
       </div>
       <div class="modal-body">
         <form id="editTypeOfBlock">
@@ -125,9 +128,10 @@
             <input placeholder="Description" style="display: block; width: 70%;" type="text" name="description" >
           </div>
         </form>
+        <div id="editTypeOfBlockModalMessage" style="display: none"><p style="color: red;"></p></div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editTypeOfBlockModal').css('display','none')">Close</button>
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
         <button id="editTypeOfBlockButton" value="" class="btn btn-primary" type="button" onclick="editTypeOfBlock(this.value)">Save changes</button>
       </div>
     </div>
@@ -136,11 +140,11 @@
     <!-- /.modal-dialog -->
 </div>
 
-<div id="editBlockoBlockModal" style="display: none;" class="modal">
-  <div style="margin-top: 15%;" class="modal-dialog">
+<div id="editBlockoBlockModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editBlockoBlockModalTitle">
+  <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">Edit Blocko Block</h4>
+        <h4 id="editBlockoBlockModalTitle" class="modal-title">Edit Blocko Block</h4>
       </div>
       <div class="modal-body">
         <form id="editBlockoBlock">
@@ -151,7 +155,7 @@
           </div>
           <div style="width: 100%;">
             <label>Description</label>
-            <input placeholder="Description" style="display: block; width: 70%;" id="edit_blocko_block_description" type="text" name="description" >
+            <input placeholder="Description" style="display: block; width: 70%;" id="edit_blocko_block_description" type="text" name="general_description" >
           </div>
           <label>Type of Block</label>
           <select style="display: block;" name="type_of_block_id">
@@ -161,9 +165,10 @@
           }
           </select>
         </form>
+        <div id="editBlockoBlockModalMessage" style="display: none"><p style="color: red;"></p></div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editBlockoBlockModal').css('display','none')">Close</button>
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
         <button id="editBlockoBlockButton" value="" class="btn btn-primary" type="button" onclick="editBlockoBlock(this.value)">Save changes</button>
       </div>
     </div>
@@ -172,11 +177,11 @@
     <!-- /.modal-dialog -->
 </div>
 
-<div id="editBlockoBlockVersionModal" style="display: none;" class="modal">
-  <div style="margin-top: 5%;" class="modal-dialog">
+<div id="editBlockoBlockVersionModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editBlockoBlockVersionModalTitle">
+  <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">Edit Blocko Block Version</h4>
+        <h4 id="editBlockoBlockVersionModalTitle" class="modal-title">Edit Blocko Block Version</h4>
       </div>
       <div class="modal-body">
         <form id="editBlockoBlockVersion">
@@ -189,6 +194,7 @@
             <input type="text" id="edit_blocko_version_description" name="version_description" style="display: block; width: 70%;">
           </div>
         </form>
+        <div id="editBlockoBlockVersionModalMessage" style="display: none"><p style="color: red;"></p></div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editBlockoBlockVersionModal').css('display','none')">Close</button>
@@ -200,11 +206,11 @@
     <!-- /.modal-dialog -->
 </div>
 
-<div id="editVersionSchemeModal" style="display: none;" class="modal">
-  <div style="margin-top: 7%;" class="modal-dialog">
+<div id="editVersionSchemeModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editVersionSchemeModalTitle">
+  <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">Edit Version Scheme </h4>
+        <h4 id="editVersionSchemeModalTitle" class="modal-title">Edit Version Scheme </h4>
       </div>
       <div class="modal-body">
         <form id="editVersionScheme">
@@ -213,6 +219,7 @@
           <label style="color: #2e6da4">Logic JSON:</label>
           <textarea id="version_scheme_logic" name="logic_json" style="display: block; width: 100%; height: auto;" rows="6"></textarea>
         </form>
+        <div id="editVersionSchemeModalMessage" style="display: none"><p style="color: red;"></p></div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editVersionSchemeModal').css('display','none')">Close</button>
@@ -224,11 +231,11 @@
     <!-- /.modal-dialog -->
 </div>
 
-<div id="newVersionSchemeModal" style="display: none;" class="modal">
-  <div style="margin-top: 7%;" class="modal-dialog">
+<div id="newVersionSchemeModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newVersionSchemeModalTitle">
+  <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">New Version Scheme </h4>
+        <h4 id="newVersionSchemeModalTitle" class="modal-title">New Version Scheme </h4>
       </div>
       <div class="modal-body">
         <form id="newVersionScheme">
@@ -237,6 +244,7 @@
           <label style="color: #2e6da4">Logic JSON:</label>
           <textarea id="new_version_scheme_logic" name="logic_json" style="display: block; width: 100%; height: auto;" rows="6"></textarea>
         </form>
+        <div id="newVersionSchemeModalMessage" style="display: none"><p style="color: red;"></p></div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newVersionSchemeModal').css('display','none')">Close</button>
@@ -255,7 +263,7 @@
       <div class="box">
         <div class="box-header with-border">
           <h3 class="box-title">Type</h3>
-          <button class="btn btn-xs btn-success pull-right" type="button" onclick="$('#newTypeOfBlockModal').css('display','block')"><i class="fa fa-plus"></i></button>
+          <button class="btn btn-xs btn-success pull-right" type="button" data-toggle="modal" data-target="#newTypeOfBlockModal"><i class="fa fa-plus"></i></button>
         </div>
         <div id="typeOfBlockTableWrapper" class="box-body">
           <table id="allTypesOfBlocks" class="table table-bordered">
@@ -280,7 +288,7 @@
           <div id="type_btn_group" class="btn-group pull-right">
             <button class="btn btn-xs btn-danger disabled" disabled type="button" onclick="deleteTypeOfBlock(document.getElementById('type_info_id').textContent)"><i class="fa fa-times"></i></button>
             <button class="btn btn-xs btn-info disabled" disabled type="button" onclick="showEditTypeForm(document.getElementById('type_info_id').textContent, document.getElementById('type_of_block').textContent, document.getElementById('type_info_description').textContent)"><i class="fa fa-edit"></i></button>
-            <button class="btn btn-xs btn-success disabled" disabled type="button" onclick="$('#newBlockoBlockModal').css('display','block'); $('#newBlockoBlockTypeOfBlockId').val(document.getElementById('type_info_id').textContent)"><i class="fa fa-plus"></i></button>
+            <button class="btn btn-xs btn-success disabled" disabled type="button" data-toggle="modal" data-target="#newBlockoBlockModal" onclick="$('#newBlockoBlockTypeOfBlockId').val(document.getElementById('type_info_id').textContent)"><i class="fa fa-plus"></i></button>
           </div>
         </div>
         <div class="box-body">
@@ -307,7 +315,7 @@
               $('#edit_blocko_block_description').val(document.getElementById('block_info_description').textContent);
               $('#current_type_of_block').val(document.getElementById('type_info_id').textContent);
               $('#current_type_of_block').text(document.getElementById('type_of_block').textContent);"><i class="fa fa-edit"></i></button>
-            <button class="btn btn-xs btn-success disabled" disabled type="button" onclick="$('#newBlockoBlockVersionModal').css('display','block'); $('#newBlockoBlockVersionButton').val(document.getElementById('block_info_id').textContent); $('#newBlockoBlockVersionBlockoBlockName').val('Block: ' + document.getElementById('block_block').textContent)"><i class="fa fa-plus"></i></button>
+            <button class="btn btn-xs btn-success disabled" disabled type="button" data-toggle="modal" data-target="#newBlockoBlockVersionModal" onclick="$('#newBlockoBlockVersionButton').val(document.getElementById('block_info_id').textContent); $('#newBlockoBlockVersionBlockoBlockName').val('Block: ' + document.getElementById('block_block').textContent)"><i class="fa fa-plus"></i></button>
           </div>
         </div>
         <div class="box-body">
@@ -328,7 +336,7 @@
             <button class="btn btn-xs btn-info disabled" disabled type="button" onclick="$('#editBlockoBlockVersionModal').css('display','block'); $('#editBlockoBlockVersionButton').val(document.getElementById('version_info_id').textContent);  $('#edit_blocko_version_name').val(document.getElementById('blocko_version_name').value); $('#edit_blocko_version_description').val(document.getElementById('blocko_version_description').value);"><i class="fa fa-edit"></i></button>
           </div>
           @if(BlockoBlockVersion.find.where().eq("version_name", "version_scheme").findUnique() == null){
-            <button id="schemeButton" class="btn btn-primary btn-xs pull-right" style="margin-right: 10px;" type="button" onclick="$('#newVersionSchemeModal').css('display','block')">Create scheme</button>
+            <button id="schemeButton" class="btn btn-primary btn-xs pull-right" style="margin-right: 10px;" type="button" data-toggle="modal" data-target="#newVersionSchemeModal">Create scheme</button>
           }else {
             <button id="schemeButton" class="btn btn-primary btn-xs pull-right" style="margin-right: 10px;" type="button" onclick="showVersionScheme()">Version scheme</button>
           }
@@ -374,11 +382,13 @@
             dataType: 'json',
             success:function(e){
               $("#newTypeOfBlock input[type=text]").val("");
-              $("#newTypeOfBlockModal").css("display","none");
+              $("#newTypeOfBlockModal").modal('hide');
               $('#typeOfBlockTableWrapper').html("").load(document.URL +  ' #allTypesOfBlocks');
             },
             error:function(e) {
-              alert(e.responseText);
+              $("#newTypeOfBlockModalMessage").css("display", "block");
+              $("#newTypeOfBlockModalMessage p").text(JSON.parse(e.responseText).message);
+              $("#newTypeOfBlockModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
             }
           })}
 
@@ -396,11 +406,13 @@
             dataType: 'json',
             success:function(e){
               $("#newBlockoBlock input[type=text]").val("");
-              $("#newBlockoBlockModal").css("display","none");
+              $("#newBlockoBlockModal").modal('hide');
               openTypeOfBlock(document.getElementById('type_info_id').textContent)
             },
             error:function(e) {
-              alert(e.responseText);
+              $("#newBlockoBlockModalMessage").css("display", "block");
+              $("#newBlockoBlockModalMessage p").text(JSON.parse(e.responseText).message);
+              $("#newBlockoBlockModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
             }
           })}
 
@@ -419,11 +431,14 @@
             success:function(e){
               $("#newBlockoBlockVersion input[type=text]").val("");
               $("#newBlockoBlockVersion textarea").text("");
-              $("#newBlockoBlockVersionModal").css("display","none");
+              $("#newBlockoBlockVersionModal").modal('hide');
+              $("#newBlockoBlockVersionModalMessage").css("display", "none");
               openBlockoBlock(document.getElementById('block_info_id').textContent);
             },
             error:function(e) {
-              alert(e.responseText);
+              $("#newBlockoBlockVersionModalMessage").css("display", "block");
+              $("#newBlockoBlockVersionModalMessage p").text(JSON.parse(e.responseText).message);
+              $("#newBlockoBlockVersionModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
             }
           })}
 
@@ -441,8 +456,9 @@
             data: JSON.stringify(model_data),
             dataType: 'json',
             success:function(json){
+              $("#editTypeOfBlockModalMessage").css("display", "none");
               $("#editTypeOfBlock input[type=text]").val("");
-              $("#editTypeOfBlockModal").css("display","none");
+              $("#editTypeOfBlockModal").modal('hide');
               $('#typeOfBlockTableWrapper').load(document.URL +  ' #allTypesOfBlocks');
               $('#type_of_block').text(json.name);
               $('#type_info_id').text(json.id);
@@ -462,7 +478,9 @@
               });
             },
             error:function(e) {
-              alert(e.responseText);
+              $("#editTypeOfBlockModalMessage").css("display", "block");
+              $("#editTypeOfBlockModalMessage p").text(JSON.parse(e.responseText).message);
+              $("#editTypeOfBlockModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
             }
           })}
 
@@ -480,13 +498,16 @@
             data: JSON.stringify(model_data),
             dataType: 'json',
             success:function(json){
+              $("#editBlockoBlockModalMessage").css("display", "none");
               $("#editBlockoBlock input[type=text]").val("");
-              $("#editBlockoBlockModal").css("display","none");
+              $("#editBlockoBlockModal").modal('hide');
               openTypeOfBlock(json.type_of_block_id);
               openBlockoBlock(json.id);
             },
             error:function(e) {
-              alert(e.responseText);
+              $("#editBlockoBlockModalMessage").css("display", "block");
+              $("#editBlockoBlockModalMessage p").text(JSON.parse(e.responseText).message);
+              $("#editBlockoBlockModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
             }
           })}
 
@@ -504,12 +525,15 @@
             data: JSON.stringify(model_data),
             dataType: 'json',
             success:function(e){
+              $("#editBlockoBlockVersionModalMessage").css("display", "none");
               $("#editBlockoBlockVersion input[type=text]").val("");
-              $("#editBlockoBlockVersionModal").css("display","none");
+              $("#editBlockoBlockVersionModal").modal('hide');
               openBlockoBlockVersion(document.getElementById('version_info_id').textContent);
             },
             error:function(e) {
-              alert(e.responseText);
+              $("#editBlockoBlockVersionModalMessage").css("display", "block");
+              $("#editBlockoBlockVersionModalMessage p").text(JSON.parse(e.responseText).message);
+              $("#editBlockoBlockVersionModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
             }
           })}
 
@@ -573,7 +597,7 @@
           })}
 
         function showEditTypeForm(id, name, description){
-          $("#editTypeOfBlockModal").css("display","block");
+          $("#editTypeOfBlockModal").modal('show');
           $('#editTypeOfBlockButton').val(id);
           $('#typeOfBlockId').text("ID = " + id);
           $("#editTypeOfBlock input[name=name]").val(name);
@@ -685,7 +709,7 @@
             },
             dataType: 'json',
             success:function(json){
-              $("#editVersionSchemeModal").css("display","block");
+              $("#editVersionSchemeModal").modal('show');
               $('#version_scheme_design').val(json.design_json);
               $('#version_scheme_logic').val(json.logic_json);
             },
@@ -707,11 +731,14 @@
             data: JSON.stringify(model_data),
             dataType: 'json',
             success:function(e){
+              $("#editVersionSchemeModalMessage").css("display", "none");
               $("#editVersionScheme input[type=text]").val("");
-              $("#editVersionSchemeModal").css("display","none");
+              $("#editVersionSchemeModal").modal('hide');
             },
             error:function(e) {
-              alert(e.responseText);
+              $("#editVersionSchemeModalMessage").css("display", "block");
+              $("#editVersionSchemeModalMessage p").text(JSON.parse(e.responseText).message);
+              $("#editVersionSchemeModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
             }
           })}
 
@@ -728,13 +755,16 @@
             data: JSON.stringify(model_data),
             dataType: 'json',
             success:function(json){
+              $("#newVersionSchemeModalMessage").css("display", "none");
               $("#newVersionScheme input[type=text]").val("");
-              $("#newVersionSchemeModal").css("display","none");
+              $("#newVersionSchemeModal").modal('hide');
               $("#schemeButton").text("Version scheme");
               $("#schemeButton").attr("onclick","showVersionScheme()");
             },
             error:function(e) {
-              alert(e.responseText);
+              $("#newVersionSchemeModalMessage").css("display", "block");
+              $("#newVersionSchemeModalMessage p").text(JSON.parse(e.responseText).message);
+              $("#newVersionSchemeModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
             }
           })}
 </script>

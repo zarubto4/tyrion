@@ -465,6 +465,7 @@ create table person (
   mail                      varchar(255),
   nick_name                 varchar(255),
   full_name                 varchar(255),
+  country                   varchar(255),
   azure_picture_link        varchar(255),
   picture_id                varchar(255),
   freeze_account            boolean,

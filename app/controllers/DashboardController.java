@@ -459,7 +459,7 @@ public class DashboardController extends Controller {
         try {
 
             Person person;
-            if(user_email != null && user_email.length() < 1 ){
+            if(user_email != null && !user_email.equals("")){
 
                 person = Person.find.where().eq("mail", user_email).findUnique();
                 if(person == null) person = SecurityController.getPerson();

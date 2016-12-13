@@ -6,6 +6,9 @@ import models.compiler.Processor;
 import models.compiler.Producer;
 import models.compiler.TypeOfBoard;
 import models.compiler.Version_Object;
+import models.grid.GridWidget;
+import models.grid.GridWidgetVersion;
+import models.grid.TypeOfWidget;
 import models.person.FloatingPersonToken;
 import models.person.Invitation;
 import models.person.Person;
@@ -533,6 +536,96 @@ public class TestHelper extends Controller{
         try {
 
             blockoBlockVersion.delete();
+
+        }catch (Exception e){
+            logger.error("!!!! Error while cleaning up after test. Method {} failed! Reason: {}. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+        }
+    }
+
+    // GRID ############################################################################################################
+
+    public static TypeOfWidget type_of_widget_create(Project project){
+        try {
+
+            TypeOfWidget typeOfWidget = new TypeOfWidget();
+            typeOfWidget.name = UUID.randomUUID().toString();
+            typeOfWidget.description = UUID.randomUUID().toString();
+            typeOfWidget.project = project;
+
+            typeOfWidget.save();
+            typeOfWidget.refresh();
+
+            return typeOfWidget;
+
+        }catch (Exception e){
+            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+            return null;
+        }
+    }
+
+    public static void type_of_widget_delete(TypeOfWidget typeOfWidget){
+        try {
+
+            typeOfWidget.delete();
+
+        }catch (Exception e){
+            logger.error("!!!! Error while cleaning up after test. Method {} failed! Reason: {}. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+        }
+    }
+
+    public static GridWidget grid_widget_create(TypeOfWidget typeOfWidget){
+        try {
+
+            GridWidget gridWidget = new GridWidget();
+            gridWidget.name = UUID.randomUUID().toString();
+            gridWidget.description = UUID.randomUUID().toString();
+            gridWidget.type_of_widget = typeOfWidget;
+
+            gridWidget.save();
+            gridWidget.refresh();
+
+            return gridWidget;
+
+        }catch (Exception e){
+            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+            return null;
+        }
+    }
+
+    public static void grid_widget_delete(GridWidget gridWidget){
+        try {
+
+            gridWidget.delete();
+
+        }catch (Exception e){
+            logger.error("!!!! Error while cleaning up after test. Method {} failed! Reason: {}. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+        }
+    }
+
+    public static GridWidgetVersion grid_widget_version_create(GridWidget gridWidget){
+        try {
+
+            GridWidgetVersion gridWidgetVersion = new GridWidgetVersion();
+            gridWidgetVersion.version_name = UUID.randomUUID().toString();
+            gridWidgetVersion.version_description = UUID.randomUUID().toString();
+            gridWidgetVersion.design_json = UUID.randomUUID().toString();
+            gridWidgetVersion.logic_json = UUID.randomUUID().toString();
+            gridWidgetVersion.grid_widget = gridWidget;
+
+            gridWidgetVersion.save();
+            gridWidgetVersion.refresh();
+
+            return gridWidgetVersion;
+        }catch (Exception e){
+            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+            return null;
+        }
+    }
+
+    public static void grid_widget_version_delete(GridWidgetVersion gridWidgetVersion){
+        try {
+
+            gridWidgetVersion.delete();
 
         }catch (Exception e){
             logger.error("!!!! Error while cleaning up after test. Method {} failed! Reason: {}. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());

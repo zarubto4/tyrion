@@ -21,5 +21,8 @@ public class Swagger_Person_Update {
     @ApiModelProperty(required = true, value = "Length must be between 8 and 60 characters.")
     public String full_name;
 
+    @ApiModelProperty(required = false, value = "Where does the user come from.")
+    public String country;
+
 
 }

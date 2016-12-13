@@ -81,6 +81,9 @@ public class ProgramingPackageTest extends TestHelper{
 
     @AfterClass
     public static void stopApp() throws Exception{
+        blocko_block_version_delete(blocko_block_version);
+        blocko_block_delete(blocko_block);
+        type_of_block_delete(type_of_block);
         //homer_delete(homer);
         project_delete(project);
         product_delete(product);
