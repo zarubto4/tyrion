@@ -24,6 +24,7 @@ import utilities.loginEntities.Socials;
 import utilities.response.CoreResponse;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_JsonValueMissing;
+import utilities.response.response_objects.Result_NotValidated;
 import utilities.response.response_objects.Result_Unauthorized;
 import utilities.response.response_objects.Result_ok;
 import utilities.swagger.documentationClass.Login_IncomingLogin;
@@ -74,7 +75,8 @@ public class SecurityController extends Controller {
             @ApiResponse(code = 200, message = "Successfully logged",       response = Swagger_Login_Token.class),
             @ApiResponse(code = 400, message = "Some Json value Missing",   response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Wrong Email or Password",   response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error"),
+            @ApiResponse(code = 705, message = "Account not validated",     response = Result_NotValidated.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result login() {
@@ -88,7 +90,7 @@ public class SecurityController extends Controller {
             if (person == null) return GlobalResult.forbidden_Permission("Email or password are wrong");
 
 
-            if (!person.mailValidated) return GlobalResult.result_BadRequest("Your account is not validated");
+            if (!person.mailValidated) return GlobalResult.result_NotValidated();
             if (person.freeze_account) return GlobalResult.result_BadRequest("Your account has been temporarily suspended");
 
 

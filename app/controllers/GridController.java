@@ -736,7 +736,7 @@ public class GridController extends Controller {
 
             List<Homer_Instance_Record> list = Homer_Instance_Record.find.where()
                     .isNotNull("actual_running_instance")
-                        .eq("main_instance_history.b_program.project.ownersOfProject.id",  SecurityController.getPerson().id)
+                        .eq("main_instance_history.b_program.project.participants.person.id",  SecurityController.getPerson().id)
                         .select("version_object")
                         .select("main_instance_history")
                     .select("id")

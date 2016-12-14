@@ -57,6 +57,7 @@ GET            /coreClient/person/person/all                                @con
 GET            /coreClient/person/person/:person_id                         @controllers.PersonController.get_Person(person_id)
 
 POST           /coreClient/person/validate_entity                           @controllers.PersonController.validate_Entity()
+POST           /coreClient/person/authentication_email                      @controllers.PersonController.person_authenticationSendEmail()
 
 
 GET            /coreClient/connections                                      @controllers.PersonController.get_Person_Connections()
