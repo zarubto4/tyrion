@@ -8,8 +8,8 @@ import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 
-@ApiModel(description = "Json Model for new Version of B_Program",
-         value = "B_Program_Version_New")
+@ApiModel(description = "Json Model for new Version of B_Program")
+      //   value = "B_Program_Version_New")
 public class Swagger_B_Program_Version_New {
 
     @Constraints.Required
@@ -28,7 +28,7 @@ public class Swagger_B_Program_Version_New {
     public String program;
 
     @Valid
-    @ApiModelProperty(value = "Connected groups of hardware - User can create Blocko program without hardware.", required = false)
+    @ApiModelProperty(value = "Connected groups of all hardware - User can create Blocko program without hardware.", required = false)
     public List<Hardware_group> hardware_group  = new ArrayList<>();
 
 
@@ -38,6 +38,7 @@ public class Swagger_B_Program_Version_New {
 
 // ---------------------------------------------------------------------------------------------------------------------
 
+    @ApiModel(value = "Hardware_group_IN")
     public static class Hardware_group {
 
         public Hardware_group(){}
@@ -45,11 +46,12 @@ public class Swagger_B_Program_Version_New {
         @Valid @ApiModelProperty(value = "This board must be connectible_to_internet = true! User can create new B_Program version without Main Board, but its not possible to upload that to cloud like new Instance", required = true)
         public Connected_Board main_board_pair;
 
-        @Valid @ApiModelProperty(value = "Connected boards (padavans)", required = false)
+        @Valid @ApiModelProperty(required = false)
         public List<Connected_Board> device_board_pairs = new ArrayList<>();
 
     }
 
+    @ApiModel(value = "Connected_Board_OUT")
     public static class Connected_Board {
 
         public Connected_Board(){}
