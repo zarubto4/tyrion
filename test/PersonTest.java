@@ -84,7 +84,7 @@ public class PersonTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(POST)
-                .uri(routes.PersonController.registred_Person().toString())
+                .uri(routes.PersonController.person_register().toString())
                 .bodyJson(body);
 
         Result result = route(request);

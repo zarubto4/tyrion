@@ -18,11 +18,11 @@
 
   @*/*/*  Modals ---------------------------------------------------------------------------------------------   */*/*@
 
-<div id="newTypeOfWidgetModal" style="display: none;" class="modal">
-  <div style="margin-top: 5%;" class="modal-dialog">
+<div id="newTypeOfWidgetModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newTypeOfWidgetModalTitle">
+  <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">New Type of Widget</h4>
+        <h4 id="newTypeOfWidgetModalTitle" class="modal-title">New Type of Widget</h4>
       </div>
       <div class="modal-body">
         <form id="newTypeOfWidget">
@@ -37,7 +37,7 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newTypeOfWidgetModal').css('display','none')">Close</button>
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
         <button class="btn btn-success" type="button" onclick="newTypeOfWidget()">New Type of Widget</button>
       </div>
     </div>
@@ -45,11 +45,11 @@
   </div>
     <!-- /.modal-dialog -->
 </div>
-<div id="newGridWidgetModal" style="display: none;" class="modal">
-  <div style="margin-top: 5%;" class="modal-dialog">
+<div id="newGridWidgetModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newGridWidgetModalTitle">
+  <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">New Grid Widget</h4>
+        <h4 id="newGridWidgetModalTitle" class="modal-title">New Grid Widget</h4>
       </div>
       <div class="modal-body">
         <form id="newGridWidget">
@@ -66,7 +66,7 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newGridWidgetModal').css('display','none')">Close</button>
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
         <button class="btn btn-success" type="button" onclick="newGridWidget()">New Grid Widget</button>
       </div>
     </div>
@@ -74,11 +74,11 @@
   </div>
     <!-- /.modal-dialog -->
 </div>
-<div id="newGridWidgetVersionModal" style="display: none;" class="modal">
-    <div style="margin-top: 5%;" class="modal-dialog">
+<div id="newGridWidgetVersionModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newGridWidgetVersionModalTitle">
+    <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h4 class="modal-title">New Grid Widget Version</h4>
+          <h4 id="newGridWidgetVersionModalTitle" class="modal-title">New Grid Widget Version</h4>
         </div>
         <div class="modal-body">
           <form id="newGridWidgetVersion">
@@ -98,7 +98,7 @@
             </form>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newGridWidgetVersionModal').css('display','none')">Close</button>
+          <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
           <button id="newGridWidgetVersionButton" value="" class="btn btn-success" type="button" onclick="newGridWidgetVersion(this.value)">New Grid Widget Version</button>
         </div>
       </div>
@@ -107,11 +107,11 @@
       <!-- /.modal-dialog -->
   </div>
 
-<div id="editTypeOfWidgetModal" style="display: none;" class="modal">
-  <div style="margin-top: 5%;" class="modal-dialog">
+<div id="editTypeOfWidgetModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editTypeOfWidgetModalTitle">
+  <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">Edit Type of Widget</h4>
+        <h4 id="editTypeOfWidgetModalTitle" class="modal-title">Edit Type of Widget</h4>
       </div>
       <div class="modal-body">
         <form id="editTypeOfWidget">
@@ -127,7 +127,7 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editTypeOfWidgetModal').css('display','none')">Close</button>
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
         <button id="editTypeOfWidgetButton" value="" class="btn btn-primary" type="button" onclick="editTypeOfWidget(this.value)">Save changes</button>
       </div>
     </div>
@@ -136,11 +136,11 @@
     <!-- /.modal-dialog -->
 </div>
 
-<div id="editGridWidgetModal" style="display: none;" class="modal">
-  <div style="margin-top: 5%;" class="modal-dialog">
+<div id="editGridWidgetModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editGridWidgetModalTitle">
+  <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">Edit Grid Widget</h4>
+        <h4 id="editGridWidgetModalTitle" class="modal-title">Edit Grid Widget</h4>
       </div>
       <div class="modal-body">
         <form id="editGridWidget">
@@ -163,7 +163,7 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editGridWidgetModal').css('display','none')">Close</button>
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
         <button id="editGridWidgetButton" value="" class="btn btn-primary" type="button" onclick="editGridWidget(this.value)">Save changes</button>
       </div>
     </div>
@@ -172,11 +172,11 @@
     <!-- /.modal-dialog -->
 </div>
 
-<div id="editGridWidgetVersionModal" style="display: none;" class="modal">
-  <div style="margin-top: 5%;" class="modal-dialog">
+<div id="editGridWidgetVersionModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editGridWidgetVersionModalTitle">
+  <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">Edit Grid Widget Version</h4>
+        <h4 id="editGridWidgetVersionModalTitle" class="modal-title">Edit Grid Widget Version</h4>
       </div>
       <div class="modal-body">
         <form id="editGridWidgetVersion">
@@ -191,7 +191,7 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editGridWidgetVersionModal').css('display','none')">Close</button>
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
         <button id="editGridWidgetVersionButton" value="" class="btn btn-primary" type="button" onclick="editGridWidgetVersion(this.value)">Save changes</button>
       </div>
     </div>
@@ -200,11 +200,11 @@
     <!-- /.modal-dialog -->
 </div>
 
-<div id="editVersionSchemeModal" style="display: none;" class="modal">
-  <div style="margin-top: 5%;" class="modal-dialog">
+<div id="editVersionSchemeModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editVersionSchemeModalTitle">
+  <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">Edit Version Scheme </h4>
+        <h4 id="editVersionSchemeModalTitle" class="modal-title">Edit Version Scheme </h4>
       </div>
       <div class="modal-body">
         <form id="editVersionScheme">
@@ -215,7 +215,7 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editVersionSchemeModal').css('display','none')">Close</button>
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
         <button class="btn btn-primary" type="button" onclick="editVersionScheme()">Save changes</button>
       </div>
     </div>
@@ -224,11 +224,11 @@
     <!-- /.modal-dialog -->
 </div>
 
-<div id="newVersionSchemeModal" style="display: none;" class="modal">
-  <div style="margin-top: 7%;" class="modal-dialog">
+<div id="newVersionSchemeModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newVersionSchemeModalTitle">
+  <div  class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">New Version Scheme </h4>
+        <h4 id="newVersionSchemeModalTitle" class="modal-title">New Version Scheme </h4>
       </div>
       <div class="modal-body">
         <form id="newVersionScheme">
@@ -239,7 +239,7 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newVersionSchemeModal').css('display','none')">Close</button>
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
         <button class="btn btn-primary" type="button" onclick="createVersionScheme()">New Scheme</button>
       </div>
     </div>
@@ -255,7 +255,7 @@
       <div class="box">
         <div class="box-header with-border">
           <h3 class="box-title">Type</h3>
-          <button class="btn btn-xs btn-success pull-right" type="button" onclick="$('#newTypeOfWidgetModal').css('display','block')"><i class="fa fa-plus"></i></button>
+          <button class="btn btn-xs btn-success pull-right" type="button" data-toggle="modal" data-target="#newTypeOfWidgetModal"><i class="fa fa-plus"></i></button>
         </div>
         <div id="typeOfWidgetTableWrapper" class="box-body">
           <table id="allTypesOfWidgets" class="table table-bordered">
@@ -280,7 +280,7 @@
           <div id="type_btn_group" class="btn-group pull-right">
             <button class="btn btn-xs btn-danger disabled" disabled type="button" onclick="deleteTypeOfWidget(document.getElementById('type_info_id').textContent)"><i class="fa fa-times"></i></button>
             <button class="btn btn-xs btn-info disabled" disabled type="button" onclick="showEditTypeForm(document.getElementById('type_info_id').textContent, document.getElementById('type_of_widget').textContent, document.getElementById('type_info_description').textContent)"><i class="fa fa-edit"></i></button>
-            <button class="btn btn-xs btn-success disabled" disabled type="button" onclick="$('#newGridWidgetModal').css('display','block'); $('#newGridWidgetTypeOfWidgetId').val(document.getElementById('type_info_id').textContent)"><i class="fa fa-plus"></i></button>
+            <button class="btn btn-xs btn-success disabled" disabled type="button" data-toggle="modal" data-target="#newGridWidgetModal" onclick="$('#newGridWidgetTypeOfWidgetId').val(document.getElementById('type_info_id').textContent)"><i class="fa fa-plus"></i></button>
           </div>
         </div>
         <div class="box-body">
@@ -301,13 +301,13 @@
           <div id="widget_btn_group" class="btn-group pull-right">
             <button class="btn btn-xs btn-danger disabled" disabled type="button" onclick="deleteGridWidget(document.getElementById('widget_info_id').textContent)"><i class="fa fa-times"></i></button>
             <button class="btn btn-xs btn-info disabled" disabled type="button" onclick="
-              $('#editGridWidgetModal').css('display','block');
+              $('#editGridWidgetModal').modal('show');
               $('#editGridWidgetButton').val(document.getElementById('widget_info_id').textContent);
               $('#edit_grid_widget_name').val(document.getElementById('grid_widget').textContent);
               $('#edit_grid_widget_description').val(document.getElementById('widget_info_description').textContent);
               $('#current_type_of_widget').val(document.getElementById('type_info_id').textContent);
               $('#current_type_of_widget').text(document.getElementById('type_of_widget').textContent);"><i class="fa fa-edit"></i></button>
-            <button class="btn btn-xs btn-success disabled" disabled type="button" onclick="$('#newGridWidgetVersionModal').css('display','block'); $('#newGridWidgetVersionButton').val(document.getElementById('widget_info_id').textContent); $('#newGridWidgetVersionGridWidgetName').val('Widget: ' + document.getElementById('grid_widget').textContent)"><i class="fa fa-plus"></i></button>
+            <button class="btn btn-xs btn-success disabled" disabled type="button" data-toggle="modal" data-target="#newGridWidgetVersionModal" onclick="$('#newGridWidgetVersionButton').val(document.getElementById('widget_info_id').textContent); $('#newGridWidgetVersionGridWidgetName').val('Widget: ' + document.getElementById('grid_widget').textContent)"><i class="fa fa-plus"></i></button>
           </div>
         </div>
         <div class="box-body">
@@ -325,10 +325,10 @@
           <div id="version_info_id" style="display: none;"></div>
           <div id="version_btn_group" class="btn-group pull-right">
             <button class="btn btn-xs btn-danger disabled" disabled type="button" onclick="deleteGridWidgetVersion(document.getElementById('version_info_id').textContent)"><i class="fa fa-times"></i></button>
-            <button class="btn btn-xs btn-info disabled" disabled type="button" onclick="$('#editGridWidgetVersionModal').css('display','block'); $('#editGridWidgetVersionButton').val(document.getElementById('version_info_id').textContent);  $('#edit_grid_version_name').val(document.getElementById('grid_version_name').value); $('#edit_grid_version_description').val(document.getElementById('grid_version_description').value);"><i class="fa fa-edit"></i></button>
+            <button class="btn btn-xs btn-info disabled" disabled type="button" ata-toggle="modal" data-target="#editGridWidgetVersionModal" onclick="$('#editGridWidgetVersionButton').val(document.getElementById('version_info_id').textContent);  $('#edit_grid_version_name').val(document.getElementById('grid_version_name').value); $('#edit_grid_version_description').val(document.getElementById('grid_version_description').value);"><i class="fa fa-edit"></i></button>
           </div>
           @if(GridWidgetVersion.find.where().eq("version_name", "version_scheme").findUnique() == null){
-            <button id="schemeButton" class="btn btn-primary btn-xs pull-right" style="margin-right: 10px;" type="button" onclick="$('#newVersionSchemeModal').css('display','block')">Create scheme</button>
+            <button id="schemeButton" class="btn btn-primary btn-xs pull-right" style="margin-right: 10px;" type="button" data-toggle="modal" data-target="#newVersionSchemeModal">Create scheme</button>
           }else {
             <button id="schemeButton" class="btn btn-primary btn-xs pull-right" style="margin-right: 10px;" type="button" onclick="showVersionScheme()">Version scheme</button>
           }
@@ -374,7 +374,7 @@
             dataType: 'json',
             success:function(e){
               $("#newTypeOfWidget input[type=text]").val("");
-              $("#newTypeOfWidgetModal").css("display","none");
+              $("#newTypeOfWidgetModal").modal('hide');
               $('#typeOfWidgetTableWrapper').html("").load(document.URL +  ' #allTypesOfWidgets');
             },
             error:function(e) {
@@ -396,7 +396,7 @@
             dataType: 'json',
             success:function(e){
               $("#newGridWidget input[type=text]").val("");
-              $("#newGridWidgetModal").css("display","none");
+              $("#newGridWidgetModal").modal('hide');
               openTypeOfWidget(document.getElementById('type_info_id').textContent)
             },
             error:function(e) {
@@ -419,7 +419,7 @@
             success:function(e){
               $("#newGridWidgetVersion input[type=text]").val("");
               $("#newGridWidgetVersion textarea").text("");
-              $("#newGridWidgetVersionModal").css("display","none");
+              $("#newGridWidgetVersionModal").modal('hide');
               openGridWidget(document.getElementById('widget_info_id').textContent);
             },
             error:function(e) {
@@ -442,7 +442,7 @@
             dataType: 'json',
             success:function(json){
               $("#editTypeOfWidget input[type=text]").val("");
-              $("#editTypeOfWidgetModal").css("display","none");
+              $("#editTypeOfWidgetModal").modal('hide');
               $('#typeOfWidgetTableWrapper').load(document.URL +  ' #allTypesOfWidgets');
               $('#type_of_widget').text(json.name);
               $('#type_info_id').text(json.id);
@@ -481,7 +481,7 @@
             dataType: 'json',
             success:function(json){
               $("#editGridWidget input[type=text]").val("");
-              $("#editGridWidgetModal").css("display","none");
+              $("#editGridWidgetModal").modal('hide');
               openTypeOfWidget(json.type_of_widget_id);
               openGridWidget(json.id);
             },
@@ -505,7 +505,7 @@
             dataType: 'json',
             success:function(e){
               $("#editGridWidgetVersion input[type=text]").val("");
-              $("#editGridWidgetVersionModal").css("display","none");
+              $("#editGridWidgetVersionModal").modal('hide');
               openGridWidgetVersion(document.getElementById('version_info_id').textContent);
             },
             error:function(e) {
@@ -573,7 +573,7 @@
           })}
 
         function showEditTypeForm(id, name, description){
-          $("#editTypeOfWidgetModal").css("display","block");
+          $("#editTypeOfWidgetModal").modal('show');
           $('#editTypeOfWidgetButton').val(id);
           $('#typeOfWidgetId').text("ID = " + id);
           $("#editTypeOfWidget input[name=name]").val(name);
@@ -685,7 +685,7 @@
             },
             dataType: 'json',
             success:function(json){
-              $("#editVersionSchemeModal").css("display","block");
+              $("#editVersionSchemeModal").modal('show');
               $('#version_scheme_design').val(json.design_json);
               $('#version_scheme_logic').val(json.logic_json);
             },
@@ -708,7 +708,7 @@
             dataType: 'json',
             success:function(e){
               $("#editVersionScheme input[type=text]").val("");
-              $("#editVersionSchemeModal").css("display","none");
+              $("#editVersionSchemeModal").modal('hide');
             },
             error:function(e) {
               alert(e.responseText);
@@ -729,7 +729,7 @@
             dataType: 'json',
             success:function(json){
               $("#newVersionScheme input[type=text]").val("");
-              $("#newVersionSchemeModal").css("display","none");
+              $("#newVersionSchemeModal").modal('hide');
               $("#schemeButton").text("Version scheme");
               $("#schemeButton").attr("onclick","showVersionScheme()");
             },

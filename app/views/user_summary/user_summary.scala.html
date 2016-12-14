@@ -460,11 +460,9 @@
                                                             <td>@participant.project.product.product_individual_name</td>
                                                         </tr>
 
-
                                                 </tbody>
-                                            </table>
-                                            <p></p>
                                     }
+                                    </table>
                                 </div>
 
                             </div>
@@ -647,11 +645,11 @@
 
 
 
-<div id="editPersonModal" style="display: none;" class="modal">
+<div id="editPersonModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editPersonModalTitle">
     <div  class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">Create PERSONr</h4>
+                <h4 id="editPersonModalTitle" class="modal-title">Create Person</h4>
             </div>
 
             <div class="modal-body">
@@ -665,7 +663,7 @@
             </div>
 
             <div class="modal-footer">
-                <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editPersonModal').css('display','none')">Close</button>
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
                 <button id="editPersonButton" value="" class="btn btn-primary" type="button" onclick="editPerson(this.value)">Save changes</button>
             </div>
         </div>
@@ -673,11 +671,11 @@
 </div>
 
 
-<div id="editCompilationServerModal" style="display: none;" class="modal">
+<div id="editCompilationServerModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editCompilationServerModalTitle">
     <div style="margin-top: 15%;" class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">Edit Type of Board</h4>
+                <h4 id="editCompilationServerModalTitle" class="modal-title">Edit Type of Board</h4>
             </div>
             <div class="modal-body">
                 <form id="editCompilationServer")>
@@ -688,7 +686,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editCompilationServerModal').css('display','none')">Close</button>
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
                 <button id="editCompilationServerButton" value="" class="btn btn-primary" type="button" onclick="editCompilationServer(this.value)">Save changes</button>
             </div>
         </div>
@@ -713,7 +711,7 @@
                     dataType: 'json',
                     success:function(e){
                         $("#editPerson input[type=text]").val("");
-                        $("#editPersonModal").css("display","none");
+                        $("#editPersonModal").modal('hide');
                         $('#person_detail').load(document.URL +  ' #person_detail');
                     },
                     error:function(e) {
@@ -803,7 +801,7 @@
                 })}
 
             function showEditFormPerson(id, full_name, nick_name, mail){
-                $("#editPersonModal").css("display","block");
+                $("#editPersonModal").modal('show');
                 $('#editPersonButton').val(id);
                 $('#person_id').text("ID = " + id);
                 $("#editPerson input[name=full_name]").val(full_name);

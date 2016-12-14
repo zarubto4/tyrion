@@ -40,7 +40,7 @@ public class PersonController extends Controller {
 
     @ApiOperation(value = "register new Person",
             tags = {"Person"},
-            notes = "create new Person with unique email and nick_name, for standard registration leave invitationToken empty, it's used only if someone is invited via email",
+            notes = "create new Person with unique email and nick_name",
             produces = "application/json",
             protocols = "https",
             code = 200
@@ -59,12 +59,11 @@ public class PersonController extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successful created",      response = Result_ok.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result registred_Person() {
+    public Result person_register() {
         try {
 
             final Form<Swagger_Person_New> form = Form.form(Swagger_Person_New.class).bindFromRequest();
@@ -119,7 +118,7 @@ public class PersonController extends Controller {
                 person.update();
 
                 try {
-                    programingPackageController.project_addParticipant(invitation.id, true);
+                    return programingPackageController.project_addParticipant(invitation.id, true);
                 }catch(Exception e){
                     return Loggy.result_internalServerError(e, request());
                 }
@@ -151,7 +150,72 @@ public class PersonController extends Controller {
         }
     }
 
+    @ApiOperation(value = "send authentication email",
+            tags = {"Person"},
+            notes = "sends authentication email, if user did not get the first one from the registration",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Person_Authentication",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK Result",               response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
+            @ApiResponse(code = 404, message = "Not found object",        response = Result_NotFound.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result person_authenticationSendEmail() {
+        try{
 
+            final Form<Swagger_Person_Authentication> form = Form.form(Swagger_Person_Authentication.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Person_Authentication help = form.get();
+
+            Person person = Person.find.where().eq("mail", help.mail).findUnique();
+            if (person == null) return GlobalResult.notFoundObject("No such user is registered");
+            if (person.mailValidated) return GlobalResult.result_BadRequest("This user is validated");
+
+            ValidationToken validationToken = ValidationToken.find.byId(help.mail);
+            if (validationToken == null) return GlobalResult.notFoundObject("Validation token not found");
+
+            String link = Server.tyrion_serverAddress + "/mail_person_authentication" + "/" + person.mail + "/" + validationToken.authToken;
+
+            try {
+                new EmailTool()
+                        .addEmptyLineSpace()
+                        .startParagraph("13")
+                        .addText("Email verification is needed to complete your registration.")
+                        .endParagraph()
+                        .addEmptyLineSpace()
+                        .addSeparatorLine()
+                        .addEmptyLineSpace()
+                        .addLink(link,"Click here to verify","18")
+                        .addEmptyLineSpace()
+                        .sendEmail(help.mail, "Email Verification");
+
+            } catch (Exception e) {
+                logger.error("Sending mail -> critical error", e);
+                e.printStackTrace();
+            }
+
+            return GlobalResult.result_ok();
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
 
     @ApiOperation(value = "send password recovery email",
             tags = {"Access"},
