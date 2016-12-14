@@ -50,8 +50,6 @@ public class Swagger_B_Program_Version_New {
 
     }
 
-
-    @ApiModel(value = "B_Pair")
     public static class Connected_Board {
 
         public Connected_Board(){}
