@@ -165,6 +165,25 @@ public class GlobalResult extends Controller {
         return Controller.forbidden(Json.toJson(resultPermissionRequired));
     }
 
+    // Používá se výhradně pro odmítnutí uživatele při přihlášení, pokud nemá validovaný účet
+    public static Status result_NotValidated(){
+        CoreResponse.cors();
+
+        Result_NotValidated result_notValidated = new Result_NotValidated();
+
+        return Controller.forbidden(Json.toJson(result_notValidated));
+    }
+
+    // Používá se výhradně pro odmítnutí uživatele při přihlášení, pokud nemá validovaný účet
+    public static Status result_NotValidated(String message){
+        CoreResponse.cors();
+
+        Result_NotValidated result_notValidated = new Result_NotValidated();
+        result_notValidated.message = message;
+
+        return Controller.unauthorized(Json.toJson(result_notValidated));
+    }
+
 //**********************************************************************************************************************
 
 

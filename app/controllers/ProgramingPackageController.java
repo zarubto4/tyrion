@@ -1194,7 +1194,7 @@ public class ProgramingPackageController extends Controller {
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<B_Program> query = Ebean.find(B_Program.class);
-            query.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id);
+            query.where().eq("project.participants.person.id", SecurityController.getPerson().id);
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if(help.project_id != null){

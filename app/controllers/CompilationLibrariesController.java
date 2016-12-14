@@ -273,7 +273,7 @@ public class CompilationLibrariesController extends Controller {
         try {
 
             Query<C_Program> query = Ebean.find(C_Program.class);
-            query.where().eq("project.ownersOfProject.id", SecurityController.getPerson().id).eq("project.id",project_id);
+            query.where().eq("project.participants.person.id", SecurityController.getPerson().id).eq("project.id",project_id);
 
             Swagger_C_Program_List result = new Swagger_C_Program_List(query,page_number);
 
