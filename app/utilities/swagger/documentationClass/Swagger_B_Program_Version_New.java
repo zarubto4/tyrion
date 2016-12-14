@@ -51,7 +51,7 @@ public class Swagger_B_Program_Version_New {
 
     }
 
-    @ApiModel(value = "Connected_Board_OUT")
+    @ApiModel(value = "Connected_Board_IN")
     public static class Connected_Board {
 
         public Connected_Board(){}
